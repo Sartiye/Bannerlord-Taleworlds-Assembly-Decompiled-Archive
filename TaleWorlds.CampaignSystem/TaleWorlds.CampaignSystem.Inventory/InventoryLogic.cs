@@ -71,7 +71,7 @@ public class InventoryLogic
 			}
 		}
 
-		internal void ResetEquipment(MobileParty ownerParty)
+		internal void ResetEquipment()
 		{
 			foreach (KeyValuePair<CharacterObject, Equipment[]> characterEquipment in CharacterEquipments)
 			{
@@ -92,7 +92,7 @@ public class InventoryLogic
 					}
 					else
 					{
-						Debug.FailedAssert("Equipment type cannot be found!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Inventory\\InventoryLogic.cs", "ResetEquipment", 1166);
+						Debug.FailedAssert("Equipment type cannot be found!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Inventory\\InventoryLogic.cs", "ResetEquipment", 1182);
 					}
 				}
 			}
@@ -163,7 +163,7 @@ public class InventoryLogic
 			}
 			else
 			{
-				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Inventory\\InventoryLogic.cs", "RemoveLastTransaction", 1246);
+				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Inventory\\InventoryLogic.cs", "RemoveLastTransaction", 1262);
 			}
 		}
 
@@ -311,6 +311,8 @@ public class InventoryLogic
 
 	private PartyEquipment _partyInitialEquipment;
 
+	private PartyEquipment _otherPartyInitialEquipment;
+
 	private float _xpGainFromDonations;
 
 	private int _transactionDebt;
@@ -378,7 +380,7 @@ public class InventoryLogic
 
 	public TextObject LeftRosterName { get; private set; }
 
-	public bool IsDiscardDonating { get; private set; }
+	public bool CanGainXpFromDiscarding { get; private set; }
 
 	public bool IsOtherPartyFromPlayerClan { get; private set; }
 
@@ -477,15 +479,12 @@ public class InventoryLogic
 		IsTrading = isTrading;
 		IsSpecialActionsPermitted = isSpecialActionsPermitted;
 		_inventoryMode = inventoryMode;
+		IsOtherPartyFromPlayerClan = OtherParty?.MobileParty?.ActualClan == Hero.MainHero.Clan;
 		InitializeRosters(leftItemRoster, rightItemRoster, rightMemberRoster, initialCharacterOfRightRoster, leftMemberRoster);
 		_transactionHistory.Clear();
 		InitializeCategoryAverages();
-		IsDiscardDonating = (_inventoryMode == InventoryScreenHelper.InventoryMode.Default && !Game.Current.CheatMode) || _inventoryMode == InventoryScreenHelper.InventoryMode.Loot;
+		CanGainXpFromDiscarding = _inventoryMode == InventoryScreenHelper.InventoryMode.Loot || (_inventoryMode == InventoryScreenHelper.InventoryMode.Default && OtherParty == null);
 		InitializeXpGainFromDonations();
-		if (OtherParty?.MobileParty?.ActualClan == Hero.MainHero.Clan)
-		{
-			IsOtherPartyFromPlayerClan = true;
-		}
 		if (_inventoryMode == InventoryScreenHelper.InventoryMode.Warehouse)
 		{
 			_workshopWarehouseBehavior = Campaign.Current.GetCampaignBehavior<IWorkshopWarehouseCampaignBehavior>();
@@ -577,7 +576,7 @@ public class InventoryLogic
 				}
 			}
 		}
-		if (IsDiscardDonating)
+		if (CanGainXpFromDiscarding)
 		{
 			CampaignEventDispatcher.Instance.OnItemsDiscardedByPlayer(_rosters[0]);
 		}
@@ -599,6 +598,10 @@ public class InventoryLogic
 			GiveGoldAction.ApplyForCharacterToParty(null, partyBase, TotalAmount);
 		}
 		_partyInitialEquipment = new PartyEquipment(OwnerParty);
+		if (IsOtherPartyFromPlayerClan && LeftMemberRoster != null)
+		{
+			_otherPartyInitialEquipment = new PartyEquipment(OtherParty.MobileParty);
+		}
 		return true;
 	}
 
@@ -664,7 +667,7 @@ public class InventoryLogic
 	{
 		ItemObject item = rosterElement.EquipmentElement.Item;
 		ItemDiscardModel itemDiscardModel = Campaign.Current.Models.ItemDiscardModel;
-		if (IsDiscardDonating && (isSelling || isBuying) && item != null)
+		if (CanGainXpFromDiscarding && (isSelling || isBuying) && item != null)
 		{
 			XpGainFromDonations += itemDiscardModel.GetXpBonusForDiscardingItem(item, amount) * (isSelling ? 1 : (-1));
 		}
@@ -681,9 +684,14 @@ public class InventoryLogic
 
 	public bool IsThereAnyChanges()
 	{
-		if (!IsThereAnyChangeBetweenRosters(_rosters[1], _rostersBackup[1]))
+		if (!IsThereAnyChangeBetweenRosters(_rosters[1], _rostersBackup[1]) && _partyInitialEquipment.IsEqual(new PartyEquipment(OwnerParty)))
 		{
-			return !_partyInitialEquipment.IsEqual(new PartyEquipment(OwnerParty));
+			PartyEquipment otherPartyInitialEquipment = _otherPartyInitialEquipment;
+			if (otherPartyInitialEquipment == null)
+			{
+				return false;
+			}
+			return !otherPartyInitialEquipment.IsEqual(new PartyEquipment(OtherParty?.MobileParty));
 		}
 		return true;
 	}
@@ -720,7 +728,8 @@ public class InventoryLogic
 		TransactionDebt = 0;
 		_transactionHistory.Clear();
 		InitializeXpGainFromDonations();
-		_partyInitialEquipment.ResetEquipment(OwnerParty);
+		_partyInitialEquipment.ResetEquipment();
+		_otherPartyInitialEquipment?.ResetEquipment();
 		this.AfterReset?.Invoke(this, fromCancel);
 		List<TransferCommandResult> resultList = new List<TransferCommandResult>();
 		if (!fromCancel)
@@ -1143,6 +1152,10 @@ public class InventoryLogic
 			_rostersBackup[i] = new ItemRoster(_rosters[i]);
 		}
 		_partyInitialEquipment = new PartyEquipment(OwnerParty);
+		if (IsOtherPartyFromPlayerClan && LeftMemberRoster != null)
+		{
+			_otherPartyInitialEquipment = new PartyEquipment(OtherParty.MobileParty);
+		}
 	}
 
 	public ItemRosterElement? FindItemFromSide(InventorySide side, EquipmentElement item)

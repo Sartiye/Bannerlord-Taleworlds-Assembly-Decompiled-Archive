@@ -14,6 +14,8 @@ public class MapItemVM : SelectorItemVM
 
 	public string MapId { get; private set; }
 
+	public string ForcedSceneLevel { get; private set; }
+
 	[DataSourceProperty]
 	public string NameText
 	{
@@ -31,12 +33,13 @@ public class MapItemVM : SelectorItemVM
 		}
 	}
 
-	public MapItemVM(string mapName, string mapId)
+	public MapItemVM(string mapName, string mapId, string forcedSceneLevel)
 		: base(mapName)
 	{
 		MapName = mapName;
 		MapId = mapId;
 		NameText = mapName;
+		ForcedSceneLevel = forcedSceneLevel;
 	}
 
 	public void UpdateSearchedText(string searchedText)

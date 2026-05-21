@@ -26,7 +26,10 @@ public class DefaultBuildingEffectModel : BuildingEffectModel
 			PerkHelper.AddPerkBonusForTown(DefaultPerks.Engineering.Battlements, building.Town, ref bonuses);
 		}
 		PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.Contractors, building.Town, ref bonuses);
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.MasterOfPlanning, building.Town, ref bonuses);
+		if (building.BuildingType.IsDailyProject)
+		{
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.MasterOfPlanning, building.Town, ref bonuses);
+		}
 		if (building.BuildingType == DefaultBuildingTypes.SettlementMarketplace || building.BuildingType == DefaultBuildingTypes.SettlementDailyFestivalAndGames)
 		{
 			PerkHelper.AddPerkBonusForTown(DefaultPerks.Charm.PublicSpeaker, building.Town, ref bonuses);

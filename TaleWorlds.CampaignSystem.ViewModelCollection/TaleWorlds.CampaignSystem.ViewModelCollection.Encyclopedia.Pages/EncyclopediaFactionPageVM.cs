@@ -1,4 +1,5 @@
 using System.Linq;
+using Helpers;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Encyclopedia;
 using TaleWorlds.CampaignSystem.LogEntries;
@@ -544,7 +545,7 @@ public class EncyclopediaFactionPageVM : EncyclopediaContentPageVM
 				{
 					TradeAgreements.Add(new EncyclopediaFactionVM(kingdom.MapFaction));
 				}
-				if (HasAllianceWithFaction(_faction, kingdom.MapFaction) && !Alliances.Any((EncyclopediaFactionVM x) => x.Faction == kingdom.MapFaction))
+				if (DiplomacyHelper.HasAllianceWithFaction(_faction, kingdom.MapFaction) && !Alliances.Any((EncyclopediaFactionVM x) => x.Faction == kingdom.MapFaction))
 				{
 					Alliances.Add(new EncyclopediaFactionVM(kingdom.MapFaction));
 				}
@@ -574,16 +575,8 @@ public class EncyclopediaFactionPageVM : EncyclopediaContentPageVM
 		{
 			return false;
 		}
-		return Campaign.Current.GetCampaignBehavior<ITradeAgreementsCampaignBehavior>().HasTradeAgreement(faction1 as Kingdom, faction2 as Kingdom);
-	}
-
-	private bool HasAllianceWithFaction(IFaction faction1, IFaction faction2)
-	{
-		if (faction1 == null || faction2 == null || faction1 == faction2 || faction1.IsEliminated || faction2.IsEliminated || !faction1.IsKingdomFaction || !faction2.IsKingdomFaction)
-		{
-			return false;
-		}
-		return Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>().IsAllyWithKingdom(faction1 as Kingdom, faction2 as Kingdom);
+		TradeAgreementsCampaignBehavior.TradeAgreement tradeAgreement;
+		return Campaign.Current.GetCampaignBehavior<ITradeAgreementsCampaignBehavior>()?.HasTradeAgreement(faction1 as Kingdom, faction2 as Kingdom, out tradeAgreement) ?? false;
 	}
 
 	public override string GetName()

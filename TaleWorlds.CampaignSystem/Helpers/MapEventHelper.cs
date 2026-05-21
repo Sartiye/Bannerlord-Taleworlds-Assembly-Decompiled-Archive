@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Encounters;
+using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.Core;
@@ -12,6 +13,50 @@ namespace Helpers;
 
 public static class MapEventHelper
 {
+	public static bool GetRaidContext(MapEvent mapEvent, out BattleSideEnum raiderSide, out bool raiderHasSeaPresence, out bool raiderHasLandPresence, out bool villageFactionSideHasSeaPresence, out bool villageFactionSideHasLandPresence, out bool wasEverInLootingPhase)
+	{
+		raiderSide = BattleSideEnum.None;
+		raiderHasSeaPresence = false;
+		raiderHasLandPresence = false;
+		villageFactionSideHasSeaPresence = false;
+		villageFactionSideHasLandPresence = false;
+		wasEverInLootingPhase = false;
+		if (mapEvent.MapEventSettlement == null || !mapEvent.MapEventSettlement.IsVillage)
+		{
+			return false;
+		}
+		IFaction mapFaction = mapEvent.MapEventSettlement.MapFaction;
+		raiderSide = (mapEvent.AttackerSide.LeaderParty.MapFaction.IsAtWarWith(mapFaction) ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
+		BattleSideEnum otherSide = mapEvent.GetOtherSide(raiderSide);
+		raiderHasSeaPresence = mapEvent.PartiesOnSide(raiderSide).AnyQ((MapEventParty mapEventParty) => mapEventParty.Party.IsMobile && mapEventParty.Party.NumberOfHealthyMembers > 0 && mapEventParty.Party.MobileParty.IsCurrentlyAtSea);
+		raiderHasLandPresence = mapEvent.PartiesOnSide(raiderSide).AnyQ((MapEventParty mapEventParty) => mapEventParty.Party.IsMobile && mapEventParty.Party.NumberOfHealthyMembers > 0 && !mapEventParty.Party.MobileParty.IsCurrentlyAtSea);
+		villageFactionSideHasSeaPresence = mapEvent.PartiesOnSide(otherSide).AnyQ((MapEventParty mapEventParty) => mapEventParty.Party.IsMobile && mapEventParty.Party.NumberOfHealthyMembers > 0 && mapEventParty.Party.MobileParty.IsCurrentlyAtSea);
+		villageFactionSideHasLandPresence = mapEvent.PartiesOnSide(otherSide).AnyQ((MapEventParty mapEventParty) => mapEventParty.Party.IsMobile && mapEventParty.Party.NumberOfHealthyMembers > 0 && !mapEventParty.Party.MobileParty.IsCurrentlyAtSea);
+		wasEverInLootingPhase = mapEvent.WasEverInLootingPhase || (mapEvent == MapEvent.PlayerMapEvent && PlayerEncounter.Current != null && PlayerEncounter.Current.InterruptedWhileLooting);
+		return true;
+	}
+
+	public static bool IsNavalRaid(MapEvent mapEvent)
+	{
+		if (!GetRaidContext(mapEvent, out var _, out var raiderHasSeaPresence, out var raiderHasLandPresence, out var villageFactionSideHasSeaPresence, out var villageFactionSideHasLandPresence, out var wasEverInLootingPhase))
+		{
+			return false;
+		}
+		if (!(!wasEverInLootingPhase && raiderHasSeaPresence))
+		{
+			if (wasEverInLootingPhase && villageFactionSideHasSeaPresence)
+			{
+				if (raiderHasSeaPresence && !raiderHasLandPresence)
+				{
+					return villageFactionSideHasLandPresence;
+				}
+				return true;
+			}
+			return false;
+		}
+		return true;
+	}
+
 	public static PartyBase GetSallyOutDefenderLeader()
 	{
 		if (MobileParty.MainParty.CurrentSettlement.Town.GarrisonParty != null)
@@ -27,7 +72,7 @@ public static class MapEventHelper
 
 	public static bool CanMainPartyLeaveBattleCommonCondition()
 	{
-		if (MobileParty.MainParty.MapEvent.PlayerSide == BattleSideEnum.Defender)
+		if (MobileParty.MainParty.MapEvent.PlayerSide == BattleSideEnum.Defender && !MobileParty.MainParty.MapEvent.IsRaid)
 		{
 			if (MobileParty.MainParty.SiegeEvent != null && !MobileParty.MainParty.SiegeEvent.BesiegerCamp.IsBesiegerSideParty(MobileParty.MainParty))
 			{

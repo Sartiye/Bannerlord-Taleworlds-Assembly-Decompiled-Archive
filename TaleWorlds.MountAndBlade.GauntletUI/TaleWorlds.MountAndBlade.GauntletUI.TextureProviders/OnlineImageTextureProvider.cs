@@ -41,7 +41,7 @@ public class OnlineImageTextureProvider : TextureProvider
 	public OnlineImageTextureProvider()
 	{
 		_onlineImageCache = new Dictionary<string, PlatformFilePath>();
-		_onlineImageCacheFolderPath = new PlatformDirectoryPath(PlatformFileType.Application, DataFolder);
+		_onlineImageCacheFolderPath = new PlatformDirectoryPath(PlatformFileType.User, DataFolder);
 		PopulateOnlineImageCache();
 	}
 
@@ -62,49 +62,56 @@ public class OnlineImageTextureProvider : TextureProvider
 
 	private async void RefreshOnlineImage()
 	{
-		if (_retryCount >= 10)
+		if (string.IsNullOrEmpty(_onlineSourceUrl))
 		{
-			return;
+			_requiresRetry = false;
 		}
-		try
+		else
 		{
-			string guidOfRequestedURL = ToGuid(_onlineSourceUrl).ToString();
-			if (!_onlineImageCache.ContainsKey(guidOfRequestedURL))
+			if (_retryCount >= 10)
 			{
-				PlatformFilePath pathOfTheDownloadedImage = new PlatformFilePath(_onlineImageCacheFolderPath, guidOfRequestedURL + ".png");
-				byte[] array = await HttpHelper.DownloadDataTaskAsync(_onlineSourceUrl);
-				if (array != null)
-				{
-					FileHelper.SaveFile(pathOfTheDownloadedImage, array);
-					_onlineImageCache.Add(guidOfRequestedURL, pathOfTheDownloadedImage);
-				}
+				return;
 			}
-			if (_onlineImageCache.TryGetValue(guidOfRequestedURL, out var value))
+			try
 			{
-				TaleWorlds.Engine.Texture texture = TaleWorlds.Engine.Texture.CreateTextureFromPath(value);
-				if (texture == null)
+				string guidOfRequestedURL = ToGuid(_onlineSourceUrl).ToString();
+				if (!_onlineImageCache.ContainsKey(guidOfRequestedURL))
 				{
-					_onlineImageCache.Remove(guidOfRequestedURL);
-					Debug.Print($"RETRYING TO DOWNLOAD: {_onlineSourceUrl} | RETRY COUNT: {_retryCount}", 0, Debug.DebugColor.Red);
-					_requiresRetry = true;
+					PlatformFilePath pathOfTheDownloadedImage = new PlatformFilePath(_onlineImageCacheFolderPath, guidOfRequestedURL + ".png");
+					byte[] array = await HttpHelper.DownloadDataTaskAsync(_onlineSourceUrl);
+					if (array != null)
+					{
+						FileHelper.SaveFile(pathOfTheDownloadedImage, array);
+						_onlineImageCache.Add(guidOfRequestedURL, pathOfTheDownloadedImage);
+					}
+				}
+				if (_onlineImageCache.TryGetValue(guidOfRequestedURL, out var value))
+				{
+					TaleWorlds.Engine.Texture texture = TaleWorlds.Engine.Texture.CreateTextureFromPath(value);
+					if (texture == null)
+					{
+						_onlineImageCache.Remove(guidOfRequestedURL);
+						Debug.Print($"RETRYING TO DOWNLOAD: {_onlineSourceUrl} | RETRY COUNT: {_retryCount}", 0, Debug.DebugColor.Red);
+						_requiresRetry = true;
+					}
+					else
+					{
+						OnTextureCreated(texture);
+						_requiresRetry = false;
+					}
 				}
 				else
 				{
-					OnTextureCreated(texture);
-					_requiresRetry = false;
+					Debug.Print($"RETRYING TO DOWNLOAD: {_onlineSourceUrl} | RETRY COUNT: {_retryCount}", 0, Debug.DebugColor.Red);
+					_requiresRetry = true;
 				}
 			}
-			else
+			catch (Exception ex)
 			{
+				Debug.FailedAssert("Error while trying to get image online: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\TextureProviders\\OnlineImageTextureProvider.cs", "RefreshOnlineImage", 115);
 				Debug.Print($"RETRYING TO DOWNLOAD: {_onlineSourceUrl} | RETRY COUNT: {_retryCount}", 0, Debug.DebugColor.Red);
 				_requiresRetry = true;
 			}
-		}
-		catch (Exception ex)
-		{
-			Debug.FailedAssert("Error while trying to get image online: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\TextureProviders\\OnlineImageTextureProvider.cs", "RefreshOnlineImage", 109);
-			Debug.Print($"RETRYING TO DOWNLOAD: {_onlineSourceUrl} | RETRY COUNT: {_retryCount}", 0, Debug.DebugColor.Red);
-			_requiresRetry = true;
 		}
 	}
 

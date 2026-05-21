@@ -126,11 +126,11 @@ public class EavesdroppingMissionLogic : MissionLogic
 			_waitTimer = null;
 			EavesdropStarted = false;
 			CurrentEavesdroppingCamera = null;
-			foreach (ScriptComponentBehavior scriptComponent in _currentEventTriggeringUsableMachine.GameEntity.GetScriptComponents())
+			foreach (GenericMissionEventScript scriptComponent in _currentEventTriggeringUsableMachine.GameEntity.GetScriptComponents<GenericMissionEventScript>())
 			{
-				if (scriptComponent is GenericMissionEventScript { EventId: "start_eavesdropping" } genericMissionEventScript)
+				if (scriptComponent.EventId == "start_eavesdropping")
 				{
-					genericMissionEventScript.IsDisabled = true;
+					scriptComponent.IsDisabled = true;
 				}
 			}
 			for (int i = 0; i < _currentEventTriggeringUsableMachine.StandingPoints.Count; i++)

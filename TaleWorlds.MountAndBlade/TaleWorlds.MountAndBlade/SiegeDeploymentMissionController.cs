@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.Core;
@@ -9,7 +10,7 @@ namespace TaleWorlds.MountAndBlade;
 
 public class SiegeDeploymentMissionController : DeploymentMissionController
 {
-	protected MissionAgentSpawnLogic MissionAgentSpawnLogic;
+	protected DefaultBattleMissionAgentSpawnLogic MissionAgentSpawnLogic;
 
 	private SiegeDeploymentHandler _siegeDeploymentHandler;
 
@@ -22,7 +23,7 @@ public class SiegeDeploymentMissionController : DeploymentMissionController
 	{
 		base.OnBehaviorInitialize();
 		_siegeDeploymentHandler = base.Mission.GetMissionBehavior<SiegeDeploymentHandler>();
-		MissionAgentSpawnLogic = base.Mission.GetMissionBehavior<MissionAgentSpawnLogic>();
+		MissionAgentSpawnLogic = base.Mission.GetMissionBehavior<DefaultBattleMissionAgentSpawnLogic>();
 	}
 
 	public List<ItemObject> GetSiegeMissiles()
@@ -84,6 +85,13 @@ public class SiegeDeploymentMissionController : DeploymentMissionController
 
 	protected override void OnSetupTeamsOfSide(BattleSideEnum battleSide)
 	{
+		foreach (Team team2 in base.Mission.Teams)
+		{
+			if (team2.Side == battleSide && team2.GeneralAgent != null && team2.GeneralAgent != Agent.Main)
+			{
+				team2.GeneralAgent.SetDetachableFromFormation(value: false);
+			}
+		}
 		Team team = ((battleSide == BattleSideEnum.Attacker) ? base.Mission.AttackerTeam : base.Mission.DefenderTeam);
 		if (team == base.Mission.PlayerTeam)
 		{
@@ -98,10 +106,10 @@ public class SiegeDeploymentMissionController : DeploymentMissionController
 		MissionAgentSpawnLogic.SetSpawnTroops(battleSide, spawnTroops: true, enforceSpawning: true);
 		foreach (WeakGameEntity item in base.Mission.GetActiveEntitiesWithScriptComponentOfType<SiegeWeapon>())
 		{
-			SiegeWeapon siegeWeapon = item.GetScriptComponents<SiegeWeapon>().FirstOrDefault();
-			if (siegeWeapon != null && siegeWeapon.GetSide() == battleSide)
+			SiegeWeapon firstScriptOfType = item.GetFirstScriptOfType<SiegeWeapon>();
+			if (firstScriptOfType != null && firstScriptOfType.GetSide() == battleSide)
 			{
-				siegeWeapon.TickAuxForInit();
+				firstScriptOfType.TickAuxForInit();
 			}
 		}
 		SetupAgentAIStatesForSide(battleSide);
@@ -118,6 +126,32 @@ public class SiegeDeploymentMissionController : DeploymentMissionController
 	protected override void OnSetupTeamsFinished()
 	{
 		base.Mission.IsTeleportingAgents = true;
+		Agent main = Agent.Main;
+		if (main == null)
+		{
+			return;
+		}
+		Team team = main.Team;
+		if (team == null)
+		{
+			return;
+		}
+		if (base.Mission.DeploymentPlan.HasPlayerSpawnFrame(team.Side))
+		{
+			base.Mission.DeploymentPlan.GetPlayerSpawnFrame(team.Side, out var position, out var direction);
+			if (position.GetNavMesh() != UIntPtr.Zero && position.IsValid)
+			{
+				Agent.Main.TrySetFormationFrame(in position, in direction);
+			}
+		}
+		else if (team.GeneralAgent == main)
+		{
+			base.Mission.GetFormationSpawnFrame(team, FormationClass.NumberOfRegularFormations, isReinforcement: false, out var spawnPosition, out var spawnDirection);
+			if (spawnPosition.GetNavMesh() != UIntPtr.Zero && spawnPosition.IsValid)
+			{
+				main.TrySetFormationFrame(in spawnPosition, in spawnDirection);
+			}
+		}
 	}
 
 	protected override void BeforeDeploymentFinished()
@@ -129,6 +163,13 @@ public class SiegeDeploymentMissionController : DeploymentMissionController
 			select sl).ToList())
 		{
 			item.SetDisabledSynched();
+		}
+		foreach (Team team in base.Mission.Teams)
+		{
+			if (team.GeneralAgent != null && team.GeneralAgent != Agent.Main)
+			{
+				team.GeneralAgent.SetDetachableFromFormation(value: true);
+			}
 		}
 		base.Mission.IsTeleportingAgents = false;
 	}

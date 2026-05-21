@@ -178,7 +178,7 @@ public class ScrollingRichTextWidget : RichTextWidget
 				}
 			}
 		}
-		if (base.EventManager.HoveredView == ScrollOnHoverWidget && !_isHovering)
+		if (base.EventManager.HoveredWidget == ScrollOnHoverWidget && !_isHovering)
 		{
 			_isHovering = true;
 			if (!IsAutoScrolling)
@@ -188,7 +188,7 @@ public class ScrollingRichTextWidget : RichTextWidget
 				_shouldScroll = _wordWidth > GetMaximumAllowedWidth();
 			}
 		}
-		else if (base.EventManager.HoveredView != ScrollOnHoverWidget && _isHovering)
+		else if (base.EventManager.HoveredWidget != ScrollOnHoverWidget && _isHovering)
 		{
 			if (!IsAutoScrolling)
 			{

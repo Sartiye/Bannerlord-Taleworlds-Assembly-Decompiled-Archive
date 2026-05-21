@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -156,14 +157,14 @@ public class GameKeyOptionCategoryVM : ViewModel
 		{
 			if (gameKeyCategory2.Value.Count > 0)
 			{
-				GameKeyGroups.Add(new GameKeyGroupVM(gameKeyCategory2.Key, gameKeyCategory2.Value, _onKeybindRequest, UpdateKeysOfGamekeysWithID));
+				GameKeyGroups.Add(new GameKeyGroupVM(gameKeyCategory2.Key, gameKeyCategory2.Value, _onKeybindRequest, UpdateKeysOfGamekeysWithID, GetExtraInformationText));
 			}
 		}
 		foreach (KeyValuePair<string, List<HotKey>> auxiliaryKeyCategory in _auxiliaryKeyCategories)
 		{
 			if (auxiliaryKeyCategory.Value.Count > 0)
 			{
-				AuxiliaryKeyGroups.Add(new AuxiliaryKeyGroupVM(auxiliaryKeyCategory.Key, auxiliaryKeyCategory.Value, _onKeybindRequest));
+				AuxiliaryKeyGroups.Add(new AuxiliaryKeyGroupVM(auxiliaryKeyCategory.Key, auxiliaryKeyCategory.Value, _onKeybindRequest, GetExtraInformationText));
 			}
 		}
 		RefreshValues();
@@ -298,6 +299,42 @@ public class GameKeyOptionCategoryVM : ViewModel
 				}
 			}
 		}
+	}
+
+	private string GetExtraInformationText(KeyOptionVM keyVM)
+	{
+		List<(string, string)> list = new List<(string, string)>();
+		foreach (GameKeyGroupVM gameKeyGroup in GameKeyGroups)
+		{
+			foreach (GameKeyOptionVM gameKey in gameKeyGroup.GameKeys)
+			{
+				if (gameKey != keyVM && gameKey.CurrentKey == keyVM.CurrentKey)
+				{
+					list.Add((gameKey.Name, gameKeyGroup.Description));
+				}
+			}
+		}
+		foreach (AuxiliaryKeyGroupVM auxiliaryKeyGroup in AuxiliaryKeyGroups)
+		{
+			foreach (AuxiliaryKeyOptionVM hotKey in auxiliaryKeyGroup.HotKeys)
+			{
+				if (hotKey != keyVM && hotKey.CurrentKey == keyVM.CurrentKey)
+				{
+					list.Add((hotKey.Name, auxiliaryKeyGroup.Description));
+				}
+			}
+		}
+		if (list.Count > 0)
+		{
+			StringBuilder stringBuilder = new StringBuilder();
+			foreach (var (text, text2) in list)
+			{
+				stringBuilder.AppendLine("- " + text + " (" + text2 + ")");
+			}
+			return new TextObject("{=Wp6pM9ea}[{CURRENT_KEY}] also used as:{newline}{KEYS}").SetTextVariable("CURRENT_KEY", keyVM.OptionValueText).SetTextVariable("newline", "\n").SetTextVariable("KEYS", stringBuilder.ToString().TrimEnd(Array.Empty<char>()))
+				.ToString();
+		}
+		return string.Empty;
 	}
 
 	public void Cancel()

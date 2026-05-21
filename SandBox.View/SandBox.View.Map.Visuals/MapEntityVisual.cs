@@ -50,6 +50,11 @@ public abstract class MapEntityVisual
 	{
 		return false;
 	}
+
+	public virtual bool IsInSameFaction(IFaction faction)
+	{
+		return false;
+	}
 }
 public abstract class MapEntityVisual<T> : MapEntityVisual
 {

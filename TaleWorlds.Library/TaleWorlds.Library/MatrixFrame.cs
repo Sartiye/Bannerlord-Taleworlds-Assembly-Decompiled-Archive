@@ -495,6 +495,13 @@ public struct MatrixFrame
 		origin.w = 1f;
 	}
 
+	public MatrixFrame Filled()
+	{
+		MatrixFrame result = this;
+		result.Fill();
+		return result;
+	}
+
 	private void AssertFilled()
 	{
 	}

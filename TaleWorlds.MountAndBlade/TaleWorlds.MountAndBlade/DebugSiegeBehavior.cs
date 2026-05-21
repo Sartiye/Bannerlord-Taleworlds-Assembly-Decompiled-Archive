@@ -27,7 +27,7 @@ public static class DebugSiegeBehavior
 
 	public static DebugStateDefender DebugDefendState;
 
-	public static void SiegeDebug(UsableMachine usableMachine)
+	public static void SiegeDebug()
 	{
 		if (Input.DebugInput.IsHotKeyPressed("DebugSiegeBehaviorHotkeyAimAtRam"))
 		{

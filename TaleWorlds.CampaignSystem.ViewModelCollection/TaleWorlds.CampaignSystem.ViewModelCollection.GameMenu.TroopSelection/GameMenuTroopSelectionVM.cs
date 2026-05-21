@@ -321,13 +321,13 @@ public class GameMenuTroopSelectionVM : ViewModel
 		}
 	}
 
-	private void InitList()
+	protected virtual void InitList()
 	{
 		Troops = new MBBindingList<TroopSelectionItemVM>();
 		_currentTotalSelectedTroopCount = 0;
 		foreach (TroopRosterElement item in _fullRoster.GetTroopRoster())
 		{
-			TroopSelectionItemVM troopSelectionItemVM = new TroopSelectionItemVM(item, OnAddCount, OnRemoveCount);
+			TroopSelectionItemVM troopSelectionItemVM = new TroopSelectionItemVM(item, OnAddTroop, OnRemoveTroop);
 			troopSelectionItemVM.IsLocked = !_canChangeChangeStatusOfTroop(item.Character) || item.Number - item.WoundedNumber <= 0;
 			Troops.Add(troopSelectionItemVM);
 			int troopCount = _initialSelections.GetTroopCount(item.Character);
@@ -340,7 +340,7 @@ public class GameMenuTroopSelectionVM : ViewModel
 		Troops.Sort(new TroopItemComparer());
 	}
 
-	private void OnRemoveCount(TroopSelectionItemVM troopItem)
+	private void OnRemoveTroop(TroopSelectionItemVM troopItem)
 	{
 		if (troopItem.CurrentAmount > 0)
 		{
@@ -359,7 +359,7 @@ public class GameMenuTroopSelectionVM : ViewModel
 		OnCurrentSelectedAmountChange();
 	}
 
-	private void OnAddCount(TroopSelectionItemVM troopItem)
+	private void OnAddTroop(TroopSelectionItemVM troopItem)
 	{
 		if (troopItem.CurrentAmount < troopItem.MaxAmount && _currentTotalSelectedTroopCount < _maxSelectableTroopCount)
 		{

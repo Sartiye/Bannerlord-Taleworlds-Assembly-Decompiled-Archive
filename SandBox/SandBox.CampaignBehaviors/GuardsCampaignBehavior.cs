@@ -484,12 +484,12 @@ public class GuardsCampaignBehavior : CampaignBehaviorBase
 		{
 			explanation = new TextObject("{=TP7rZTKs}You don't have {DENAR_AMOUNT}{GOLD_ICON} denars.");
 			explanation.SetTextVariable("DENAR_AMOUNT", bribeToEnterDungeon);
-			explanation.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+			explanation.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 			return false;
 		}
 		explanation = new TextObject("{=hCavIm4G}You will pay {AMOUNT}{GOLD_ICON} denars.");
 		explanation.SetTextVariable("AMOUNT", bribeToEnterDungeon);
-		explanation.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		explanation.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		return true;
 	}
 
@@ -572,12 +572,8 @@ public class GuardsCampaignBehavior : CampaignBehaviorBase
 	{
 		int bribeToEnterDungeon = Campaign.Current.Models.BribeCalculationModel.GetBribeToEnterDungeon(Settlement.CurrentSettlement);
 		MBTextManager.SetTextVariable("AMOUNT", bribeToEnterDungeon);
-		MBTextManager.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
-		if (Hero.MainHero.Gold >= bribeToEnterDungeon)
-		{
-			return !Campaign.Current.IsMainHeroDisguised;
-		}
-		return false;
+		MBTextManager.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
+		return !Campaign.Current.IsMainHeroDisguised;
 	}
 
 	private void conversation_prison_guard_visit_permission_bribe_on_consequence()
@@ -666,7 +662,7 @@ public class GuardsCampaignBehavior : CampaignBehaviorBase
 	{
 		int bribeToEnterLordsHall = Campaign.Current.Models.BribeCalculationModel.GetBribeToEnterLordsHall(Settlement.CurrentSettlement);
 		MBTextManager.SetTextVariable("AMOUNT", bribeToEnterLordsHall);
-		MBTextManager.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		MBTextManager.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		if (bribeToEnterLordsHall > 0 && !Campaign.Current.IsMainHeroDisguised)
 		{
 			return !conversation_castle_guard_nobody_inside_condition();
@@ -687,12 +683,12 @@ public class GuardsCampaignBehavior : CampaignBehaviorBase
 		{
 			explanation = new TextObject("{=TP7rZTKs}You don't have {DENAR_AMOUNT}{GOLD_ICON} denars.");
 			explanation.SetTextVariable("DENAR_AMOUNT", bribeToEnterLordsHall);
-			explanation.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+			explanation.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 			return false;
 		}
 		explanation = new TextObject("{=hCavIm4G}You will pay {AMOUNT}{GOLD_ICON} denars.");
 		explanation.SetTextVariable("AMOUNT", bribeToEnterLordsHall);
-		explanation.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		explanation.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		return true;
 	}
 

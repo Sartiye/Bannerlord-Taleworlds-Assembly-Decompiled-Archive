@@ -132,7 +132,7 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 		base.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0.Background = _widget_0_0;
 		_widget_0.Border = _widget_0_0_0;
 		_widget_0.ActionText = _widget_1;
@@ -149,7 +149,7 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 		_widget_0_0_0.Brush = base.Context.GetBrush("MPHUD.Duel.Card.Frame");
 		_widget_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.HorizontalLeftToRight;

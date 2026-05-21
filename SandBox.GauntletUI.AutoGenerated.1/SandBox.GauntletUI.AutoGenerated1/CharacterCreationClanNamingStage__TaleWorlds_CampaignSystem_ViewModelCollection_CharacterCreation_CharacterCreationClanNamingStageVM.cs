@@ -221,7 +221,7 @@ public class CharacterCreationClanNamingStage__TaleWorlds_CampaignSystem_ViewMod
 		_widget_0_2_0_0_1.VerticalAlignment = VerticalAlignment.Top;
 		_widget_0_2_0_0_1.MarginLeft = 20f;
 		_widget_0_2_0_0_1.MarginRight = 20f;
-		_widget_0_2_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_2_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_2_0_0_1_0.Brush = base.Context.GetBrush("ClanNaming.Stage.Banner");
 		_widget_0_2_0_0_1_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_2_0_0_1_0.HeightSizePolicy = SizePolicy.Fixed;

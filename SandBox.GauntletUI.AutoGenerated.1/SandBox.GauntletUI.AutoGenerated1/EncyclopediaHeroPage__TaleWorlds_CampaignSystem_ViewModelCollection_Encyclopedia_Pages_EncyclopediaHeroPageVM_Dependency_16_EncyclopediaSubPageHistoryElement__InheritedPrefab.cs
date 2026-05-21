@@ -58,7 +58,7 @@ public class EncyclopediaHeroPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0.HorizontalAlignment = HorizontalAlignment.Left;
 		_widget_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0.MarginLeft = 15f;

@@ -759,6 +759,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void HandleCurrentFrameTickEntitiesDelegate(UIntPtr scenePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool HasDecalRendererDelegate(UIntPtr scenePointer);
 
@@ -956,7 +961,7 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate int SelectEntitiesInBoxWithScriptComponentDelegate(UIntPtr scenePointer, ref Vec3 boundingBoxMin, ref Vec3 boundingBoxMax, IntPtr entitiesOutput, int maxCount, byte[] scriptComponentName);
+	public delegate int SelectEntitiesInBoxWithScriptComponentDelegate(UIntPtr scenePointer, ref Vec3 boundingBoxMin, ref Vec3 boundingBoxMax, IntPtr entitiesOutput, int maxCount, byte[] scriptComponentName, [MarshalAs(UnmanagedType.U1)] bool isFixedTick);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -997,6 +1002,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate void SetAtmosphereWithNameDelegate(UIntPtr ptr, byte[] name);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetBlockerDirectionForFacesWithIdDelegate(UIntPtr scenePointer, int faceGroupId, float rotation);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -1476,6 +1486,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void SetUseAdvancedWaterRenderingDelegate(UIntPtr scenePointer, [MarshalAs(UnmanagedType.U1)] bool value);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void SetUseConstantTimeDelegate(UIntPtr ptr, [MarshalAs(UnmanagedType.U1)] bool value);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -1851,6 +1866,8 @@ internal class ScriptingInterfaceOfIScene : IScene
 
 	public static GetWinterTimeFactorDelegate call_GetWinterTimeFactorDelegate;
 
+	public static HandleCurrentFrameTickEntitiesDelegate call_HandleCurrentFrameTickEntitiesDelegate;
+
 	public static HasDecalRendererDelegate call_HasDecalRendererDelegate;
 
 	public static HasNavmeshFaceUnsharedEdgesDelegate call_HasNavmeshFaceUnsharedEdgesDelegate;
@@ -1940,6 +1957,8 @@ internal class ScriptingInterfaceOfIScene : IScene
 	public static SetAntialiasingModeDelegate call_SetAntialiasingModeDelegate;
 
 	public static SetAtmosphereWithNameDelegate call_SetAtmosphereWithNameDelegate;
+
+	public static SetBlockerDirectionForFacesWithIdDelegate call_SetBlockerDirectionForFacesWithIdDelegate;
 
 	public static SetBloomDelegate call_SetBloomDelegate;
 
@@ -2130,6 +2149,8 @@ internal class ScriptingInterfaceOfIScene : IScene
 	public static SetUpgradeLevelVisibilityDelegate call_SetUpgradeLevelVisibilityDelegate;
 
 	public static SetUpgradeLevelVisibilityWithMaskDelegate call_SetUpgradeLevelVisibilityWithMaskDelegate;
+
+	public static SetUseAdvancedWaterRenderingDelegate call_SetUseAdvancedWaterRenderingDelegate;
 
 	public static SetUseConstantTimeDelegate call_SetUseConstantTimeDelegate;
 
@@ -3227,6 +3248,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 		return call_GetWinterTimeFactorDelegate(scenePointer);
 	}
 
+	public void HandleCurrentFrameTickEntities(UIntPtr scenePointer)
+	{
+		call_HandleCurrentFrameTickEntitiesDelegate(scenePointer);
+	}
+
 	public bool HasDecalRenderer(UIntPtr scenePointer)
 	{
 		return call_HasDecalRendererDelegate(scenePointer);
@@ -3489,7 +3515,7 @@ internal class ScriptingInterfaceOfIScene : IScene
 		return result;
 	}
 
-	public int SelectEntitiesInBoxWithScriptComponent(UIntPtr scenePointer, ref Vec3 boundingBoxMin, ref Vec3 boundingBoxMax, UIntPtr[] entitiesOutput, int maxCount, string scriptComponentName)
+	public int SelectEntitiesInBoxWithScriptComponent(UIntPtr scenePointer, ref Vec3 boundingBoxMin, ref Vec3 boundingBoxMax, UIntPtr[] entitiesOutput, int maxCount, string scriptComponentName, bool isFixedTick)
 	{
 		PinnedArrayData<UIntPtr> pinnedArrayData = new PinnedArrayData<UIntPtr>(entitiesOutput);
 		IntPtr pointer = pinnedArrayData.Pointer;
@@ -3501,7 +3527,7 @@ internal class ScriptingInterfaceOfIScene : IScene
 			_utf8.GetBytes(scriptComponentName, 0, scriptComponentName.Length, array, 0);
 			array[byteCount] = 0;
 		}
-		int result = call_SelectEntitiesInBoxWithScriptComponentDelegate(scenePointer, ref boundingBoxMin, ref boundingBoxMax, pointer, maxCount, array);
+		int result = call_SelectEntitiesInBoxWithScriptComponentDelegate(scenePointer, ref boundingBoxMin, ref boundingBoxMax, pointer, maxCount, array, isFixedTick);
 		pinnedArrayData.Dispose();
 		return result;
 	}
@@ -3560,6 +3586,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 			array[byteCount] = 0;
 		}
 		call_SetAtmosphereWithNameDelegate(ptr, array);
+	}
+
+	public void SetBlockerDirectionForFacesWithId(UIntPtr scenePointer, int faceGroupId, float rotation)
+	{
+		call_SetBlockerDirectionForFacesWithIdDelegate(scenePointer, faceGroupId, rotation);
 	}
 
 	public void SetBloom(UIntPtr scenePointer, bool mode)
@@ -4093,6 +4124,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 	public void SetUpgradeLevelVisibilityWithMask(UIntPtr scenePointer, uint mask)
 	{
 		call_SetUpgradeLevelVisibilityWithMaskDelegate(scenePointer, mask);
+	}
+
+	public void SetUseAdvancedWaterRendering(UIntPtr scenePointer, bool value)
+	{
+		call_SetUseAdvancedWaterRenderingDelegate(scenePointer, value);
 	}
 
 	public void SetUseConstantTime(UIntPtr ptr, bool value)

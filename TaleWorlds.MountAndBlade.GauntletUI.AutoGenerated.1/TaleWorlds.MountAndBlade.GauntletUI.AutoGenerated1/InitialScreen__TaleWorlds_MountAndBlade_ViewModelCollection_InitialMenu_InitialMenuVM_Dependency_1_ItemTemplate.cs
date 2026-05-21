@@ -67,27 +67,6 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		return visualDefinition;
 	}
 
-	private VisualDefinition CreateVisualDefinitionWarSailsUpsellButton()
-	{
-		VisualDefinition visualDefinition = new VisualDefinition("WarSailsUpsellButton", 0.22f, 0f, AnimationInterpolation.Type.EaseOut, AnimationInterpolation.Function.Quint);
-		visualDefinition.AddVisualState(new VisualState("Default")
-		{
-			SuggestedWidth = 400f,
-			SuggestedHeight = 233f
-		});
-		visualDefinition.AddVisualState(new VisualState("Hovered")
-		{
-			SuggestedWidth = 402f,
-			SuggestedHeight = 235f
-		});
-		visualDefinition.AddVisualState(new VisualState("Pressed")
-		{
-			SuggestedWidth = 398f,
-			SuggestedHeight = 231f
-		});
-		return visualDefinition;
-	}
-
 	public void CreateWidgets()
 	{
 		_widget = this;

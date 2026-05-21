@@ -13,6 +13,15 @@ namespace TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement.Diplom
 
 public class KingdomDiplomacyVM : KingdomCategoryVM
 {
+	private enum DiplomacyItemType
+	{
+		None,
+		War,
+		Peace,
+		Alliance,
+		TradeAgreement
+	}
+
 	private readonly Action<KingdomDecision> _forceDecision;
 
 	private readonly Kingdom _playerKingdom;
@@ -468,7 +477,7 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 		KingdomDecision unresolvedPeaceDecision = Clan.PlayerClan.Kingdom.UnresolvedDecisions.FirstOrDefault((KingdomDecision d) => d is MakePeaceKingdomDecision makePeaceKingdomDecision && makePeaceKingdomDecision.FactionToMakePeaceWith == item.Faction2 && !d.ShouldBeCancelled());
 		if (unresolvedPeaceDecision != null)
 		{
-			Actions.Add(new KingdomDiplomacyProposalActionItemVM(GameTexts.FindText("str_resolve"), GameTexts.FindText("str_resolve_explanation"), 0, GetAreProposalActionsEnabledWithReason(0f, out var disabledReason), disabledReason, delegate
+			Actions.Add(new KingdomDiplomacyProposalActionItemVM(GameTexts.FindText("str_resolve"), GameTexts.FindText("str_resolve_explanation"), 0, GetAreProposalActionsEnabledWithReason(DiplomacyItemType.Peace, 0f, out var disabledReason), disabledReason, delegate
 			{
 				_forceDecision(unresolvedPeaceDecision);
 			}));
@@ -491,12 +500,12 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 		KingdomDecision unresolvedAllianceDecision = Clan.PlayerClan.Kingdom.UnresolvedDecisions.FirstOrDefault((KingdomDecision d) => d is StartAllianceDecision startAllianceDecision && startAllianceDecision.KingdomToStartAllianceWith == item.Faction2 && !d.ShouldBeCancelled());
 		if (unresolvedAllianceDecision != null)
 		{
-			Actions.Add(new KingdomDiplomacyProposalActionItemVM(GameTexts.FindText("str_resolve"), GameTexts.FindText("str_resolve_explanation"), 0, GetAreProposalActionsEnabledWithReason(0f, out var disabledReason), disabledReason, delegate
+			Actions.Add(new KingdomDiplomacyProposalActionItemVM(GameTexts.FindText("str_resolve"), GameTexts.FindText("str_resolve_explanation"), 0, GetAreProposalActionsEnabledWithReason(DiplomacyItemType.Alliance, 0f, out var disabledReason), disabledReason, delegate
 			{
 				_forceDecision(unresolvedAllianceDecision);
 			}));
 		}
-		else if (!Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>().IsAllyWithKingdom(item.Faction1 as Kingdom, item.Faction2 as Kingdom))
+		else if (!DiplomacyHelper.HasAllianceWithFaction(item.Faction1, item.Faction2))
 		{
 			int influenceCostOfProposingStartingAlliance = Campaign.Current.Models.AllianceModel.GetInfluenceCostOfProposingStartingAlliance(Clan.PlayerClan);
 			Actions.Add(new KingdomDiplomacyProposalActionItemVM((_playerKingdom.Clans.Count > 1) ? GameTexts.FindText("str_policy_propose") : GameTexts.FindText("str_policy_enact"), GameTexts.FindText("str_propose_alliance_explanation").SetTextVariable("SUPPORT", CalculateAllianceSupport(item.Faction2)), influenceCostOfProposingStartingAlliance, GetIsProposingAllianceEnabledWithReason(item, influenceCostOfProposingStartingAlliance, out var disabledReason2), disabledReason2, delegate
@@ -507,7 +516,7 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 		KingdomDecision unresolvedWarDecision = Clan.PlayerClan.Kingdom.UnresolvedDecisions.FirstOrDefault((KingdomDecision d) => d is DeclareWarDecision declareWarDecision && declareWarDecision.FactionToDeclareWarOn == item.Faction2 && !d.ShouldBeCancelled());
 		if (unresolvedWarDecision != null)
 		{
-			Actions.Add(new KingdomDiplomacyProposalActionItemVM(GameTexts.FindText("str_resolve"), GameTexts.FindText("str_resolve_explanation"), 0, GetAreProposalActionsEnabledWithReason(0f, out var disabledReason3), disabledReason3, delegate
+			Actions.Add(new KingdomDiplomacyProposalActionItemVM(GameTexts.FindText("str_resolve"), GameTexts.FindText("str_resolve_explanation"), 0, GetAreProposalActionsEnabledWithReason(DiplomacyItemType.War, 0f, out var disabledReason3), disabledReason3, delegate
 			{
 				_forceDecision(unresolvedWarDecision);
 			}));
@@ -523,12 +532,14 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 		KingdomDecision unresolvedTradeAgreementDecision = Clan.PlayerClan.Kingdom.UnresolvedDecisions.FirstOrDefault((KingdomDecision d) => d is TradeAgreementDecision tradeAgreementDecision && tradeAgreementDecision.TargetKingdom == item.Faction2 && !d.ShouldBeCancelled());
 		if (unresolvedTradeAgreementDecision != null)
 		{
-			Actions.Add(new KingdomDiplomacyProposalActionItemVM(GameTexts.FindText("str_resolve"), GameTexts.FindText("str_resolve_explanation"), 0, GetAreProposalActionsEnabledWithReason(0f, out var disabledReason5), disabledReason5, delegate
+			Actions.Add(new KingdomDiplomacyProposalActionItemVM(GameTexts.FindText("str_resolve"), GameTexts.FindText("str_resolve_explanation"), 0, GetAreProposalActionsEnabledWithReason(DiplomacyItemType.TradeAgreement, 0f, out var disabledReason5), disabledReason5, delegate
 			{
 				_forceDecision(unresolvedTradeAgreementDecision);
 			}));
+			return;
 		}
-		else if (!Campaign.Current.GetCampaignBehavior<ITradeAgreementsCampaignBehavior>().HasTradeAgreement(item.Faction1 as Kingdom, item.Faction2 as Kingdom))
+		ITradeAgreementsCampaignBehavior campaignBehavior = Campaign.Current.GetCampaignBehavior<ITradeAgreementsCampaignBehavior>();
+		if (campaignBehavior != null && !campaignBehavior.HasTradeAgreement(item.Faction1 as Kingdom, item.Faction2 as Kingdom, out var _))
 		{
 			int influenceCostOfProposingTradeAgreement = Campaign.Current.Models.TradeAgreementModel.GetInfluenceCostOfProposingTradeAgreement(Clan.PlayerClan);
 			Actions.Add(new KingdomDiplomacyProposalActionItemVM((_playerKingdom.Clans.Count > 1) ? GameTexts.FindText("str_policy_propose") : GameTexts.FindText("str_policy_enact"), GameTexts.FindText("str_propose_trade_agreement_explanation").SetTextVariable("SUPPORT", CalculateTradeAgreementSupport(item.Faction2)), influenceCostOfProposingTradeAgreement, GetIsProposingTradeAgreementEnabledWithReason(item, influenceCostOfProposingTradeAgreement, out var disabledReason6), disabledReason6, delegate
@@ -540,7 +551,7 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 
 	private bool GetIsProposingWarEnabledWithReason(KingdomTruceItemVM item, float actionInfluenceCost, out TextObject disabledReason)
 	{
-		if (!GetAreProposalActionsEnabledWithReason(actionInfluenceCost, out var disabledReason2))
+		if (!GetAreProposalActionsEnabledWithReason(DiplomacyItemType.War, actionInfluenceCost, out var disabledReason2))
 		{
 			disabledReason = disabledReason2;
 			return false;
@@ -556,7 +567,7 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 
 	private bool GetIsProposingPeaceEnabledWithReason(KingdomWarItemVM item, float actionInfluenceCost, out TextObject disabledReason)
 	{
-		if (!GetAreProposalActionsEnabledWithReason(actionInfluenceCost, out var disabledReason2))
+		if (!GetAreProposalActionsEnabledWithReason(DiplomacyItemType.Peace, actionInfluenceCost, out var disabledReason2))
 		{
 			disabledReason = disabledReason2;
 			return false;
@@ -572,7 +583,7 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 
 	private bool GetIsProposingAllianceEnabledWithReason(KingdomTruceItemVM item, float actionInfluenceCost, out TextObject disabledReason)
 	{
-		if (!GetAreProposalActionsEnabledWithReason(actionInfluenceCost, out var disabledReason2))
+		if (!GetAreProposalActionsEnabledWithReason(DiplomacyItemType.Alliance, actionInfluenceCost, out var disabledReason2))
 		{
 			disabledReason = disabledReason2;
 			return false;
@@ -588,7 +599,7 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 
 	private bool GetIsProposingTradeAgreementEnabledWithReason(KingdomTruceItemVM item, float actionInfluenceCost, out TextObject disabledReason)
 	{
-		if (!GetAreProposalActionsEnabledWithReason(actionInfluenceCost, out var disabledReason2))
+		if (!GetAreProposalActionsEnabledWithReason(DiplomacyItemType.TradeAgreement, actionInfluenceCost, out var disabledReason2))
 		{
 			disabledReason = disabledReason2;
 			return false;
@@ -602,21 +613,36 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 		return true;
 	}
 
-	private bool GetAreProposalActionsEnabledWithReason(float actionInfluenceCost, out TextObject disabledReason)
+	private bool GetAreProposalActionsEnabledWithReason(DiplomacyItemType diplomacyItemType, float actionInfluenceCost, out TextObject disabledReason)
 	{
 		if (!CampaignUIHelper.GetMapScreenActionIsEnabledWithReason(out var disabledReason2))
 		{
 			disabledReason = disabledReason2;
 			return false;
 		}
+		if (Clan.PlayerClan.IsUnderMercenaryService)
+		{
+			switch (diplomacyItemType)
+			{
+			case DiplomacyItemType.War:
+			case DiplomacyItemType.Peace:
+				disabledReason = GameTexts.FindText("str_cannot_propose_war_truce_while_mercenary");
+				break;
+			case DiplomacyItemType.Alliance:
+				disabledReason = GameTexts.FindText("str_cannot_propose_alliance_while_mercenary");
+				break;
+			case DiplomacyItemType.TradeAgreement:
+				disabledReason = GameTexts.FindText("str_cannot_propose_trade_agreement_while_mercenary");
+				break;
+			default:
+				disabledReason = TextObject.GetEmpty();
+				break;
+			}
+			return false;
+		}
 		if (actionInfluenceCost > 0f && Clan.PlayerClan.Influence < actionInfluenceCost)
 		{
 			disabledReason = GameTexts.FindText("str_warning_you_dont_have_enough_influence");
-			return false;
-		}
-		if (Clan.PlayerClan.IsUnderMercenaryService)
-		{
-			disabledReason = GameTexts.FindText("str_cannot_propose_war_truce_while_mercenary");
 			return false;
 		}
 		disabledReason = TextObject.GetEmpty();
@@ -723,23 +749,27 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 		}
 	}
 
-	private int CalculateWarSupport(IFaction faction)
+	private TextObject CalculateWarSupport(IFaction faction)
 	{
-		return TaleWorlds.Library.MathF.Round(new KingdomElection(new DeclareWarDecision(Clan.PlayerClan, faction)).GetLikelihoodForSponsor(Clan.PlayerClan) * 100f);
+		DeclareWarDecision decision = new DeclareWarDecision(Clan.PlayerClan, faction);
+		return GameTexts.FindText("str_decision_outcome_support_status", KingdomElection.GetElectionOutcomeSupport(decision, Clan.PlayerClan).ToString());
 	}
 
-	private int CalculateAllianceSupport(IFaction faction)
+	private TextObject CalculateAllianceSupport(IFaction faction)
 	{
-		return TaleWorlds.Library.MathF.Round(new KingdomElection(new StartAllianceDecision(Clan.PlayerClan, faction as Kingdom)).GetLikelihoodForSponsor(Clan.PlayerClan) * 100f);
+		StartAllianceDecision decision = new StartAllianceDecision(Clan.PlayerClan, faction as Kingdom);
+		return GameTexts.FindText("str_decision_outcome_support_status", KingdomElection.GetElectionOutcomeSupport(decision, Clan.PlayerClan).ToString());
 	}
 
-	private int CalculatePeaceSupport(IFaction faction, int dailyTributeToBePaid, int durationInDays)
+	private TextObject CalculatePeaceSupport(IFaction faction, int dailyTributeToBePaid, int durationInDays)
 	{
-		return TaleWorlds.Library.MathF.Round(new KingdomElection(new MakePeaceKingdomDecision(Clan.PlayerClan, faction, dailyTributeToBePaid, durationInDays)).GetLikelihoodForSponsor(Clan.PlayerClan) * 100f);
+		MakePeaceKingdomDecision decision = new MakePeaceKingdomDecision(Clan.PlayerClan, faction, dailyTributeToBePaid, durationInDays);
+		return GameTexts.FindText("str_decision_outcome_support_status", KingdomElection.GetElectionOutcomeSupport(decision, Clan.PlayerClan).ToString());
 	}
 
-	private int CalculateTradeAgreementSupport(IFaction faction)
+	private TextObject CalculateTradeAgreementSupport(IFaction faction)
 	{
-		return TaleWorlds.Library.MathF.Round(new KingdomElection(new TradeAgreementDecision(Clan.PlayerClan, faction as Kingdom)).GetLikelihoodForSponsor(Clan.PlayerClan) * 100f);
+		TradeAgreementDecision decision = new TradeAgreementDecision(Clan.PlayerClan, faction as Kingdom);
+		return GameTexts.FindText("str_decision_outcome_support_status", KingdomElection.GetElectionOutcomeSupport(decision, Clan.PlayerClan).ToString());
 	}
 }

@@ -257,7 +257,7 @@ public class MPChatLog__TaleWorlds_MountAndBlade_ViewModelCollection_Multiplayer
 		_widget_0_2_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_2_0_0_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0_2_0_0_0.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_0_2_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_2_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_2_0_0_0.MarginBottom = 5f;
 		_widget_0_2_1.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_2_1.HeightSizePolicy = SizePolicy.StretchToParent;

@@ -111,7 +111,7 @@ public class PregnancyCampaignBehavior : CampaignBehaviorBase
 		}
 		else
 		{
-			CheckOffspringsToDeliver(pregnancy);
+			CheckOffspringToDeliver(pregnancy);
 		}
 	}
 
@@ -152,7 +152,7 @@ public class PregnancyCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private void CheckOffspringsToDeliver(Pregnancy pregnancy)
+	private void CheckOffspringToDeliver(Pregnancy pregnancy)
 	{
 		PregnancyModel pregnancyModel = Campaign.Current.Models.PregnancyModel;
 		if (pregnancy.DueDate.IsFuture || !pregnancy.Mother.IsAlive)

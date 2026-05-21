@@ -26,6 +26,8 @@ public sealed class CombatLogNetworkMessage : GameNetworkMessage
 
 	public bool IsFatalDamage { get; private set; }
 
+	public bool IsSpecialDamage { get; private set; }
+
 	public BoneBodyPartType BodyPartHit { get; private set; }
 
 	public float HitSpeed { get; private set; }
@@ -55,6 +57,7 @@ public sealed class CombatLogNetworkMessage : GameNetworkMessage
 		IsRangedAttack = combatLogData.IsRangedAttack;
 		IsFriendlyFire = combatLogData.IsFriendlyFire;
 		IsFatalDamage = combatLogData.IsFatalDamage;
+		IsSpecialDamage = combatLogData.IsSpecialDamage;
 		BodyPartHit = combatLogData.BodyPartHit;
 		HitSpeed = combatLogData.HitSpeed;
 		Distance = combatLogData.Distance;
@@ -75,6 +78,7 @@ public sealed class CombatLogNetworkMessage : GameNetworkMessage
 		GameNetworkMessage.WriteBoolToPacket(IsRangedAttack);
 		GameNetworkMessage.WriteBoolToPacket(IsFriendlyFire);
 		GameNetworkMessage.WriteBoolToPacket(IsFatalDamage);
+		GameNetworkMessage.WriteBoolToPacket(IsSpecialDamage);
 		GameNetworkMessage.WriteIntToPacket((int)BodyPartHit, CompressionBasic.AgentHitBodyPartCompressionInfo);
 		GameNetworkMessage.WriteFloatToPacket(HitSpeed, CompressionBasic.AgentHitRelativeSpeedCompressionInfo);
 		GameNetworkMessage.WriteFloatToPacket(Distance, CompressionBasic.AgentHitRelativeSpeedCompressionInfo);
@@ -100,6 +104,7 @@ public sealed class CombatLogNetworkMessage : GameNetworkMessage
 		IsRangedAttack = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
 		IsFriendlyFire = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
 		IsFatalDamage = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
+		IsSpecialDamage = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
 		BodyPartHit = (BoneBodyPartType)GameNetworkMessage.ReadIntFromPacket(CompressionBasic.AgentHitBodyPartCompressionInfo, ref bufferReadValid);
 		HitSpeed = GameNetworkMessage.ReadFloatFromPacket(CompressionBasic.AgentHitRelativeSpeedCompressionInfo, ref bufferReadValid);
 		Distance = GameNetworkMessage.ReadFloatFromPacket(CompressionBasic.AgentHitRelativeSpeedCompressionInfo, ref bufferReadValid);

@@ -24,7 +24,7 @@ public sealed class PartyHotKeyCategory : GameKeyContext
 	public const string OpenRecruitPopup = "OpenRecruitPopup";
 
 	public PartyHotKeyCategory()
-		: base("PartyHotKeyCategory", 110)
+		: base("PartyHotKeyCategory", 116)
 	{
 		RegisterHotKeys();
 		RegisterGameKeys();

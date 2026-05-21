@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -209,14 +208,9 @@ internal class ClientRestSessionTask
 
 	private void CreateAndSetRequest()
 	{
-		string text = _requestAddress + "/Data/ProcessMessage";
-		new NameValueCollection
-		{
-			{ "url", text },
-			{ "body", _postData },
-			{ "verb", "POST" }
-		};
-		Request = _networkClient.CreateHttpPostRequestTask(text, _postData, withUserToken: true);
+		bool flag = RestRequestMessage is RestObjectRequestMessage restObjectRequestMessage && restObjectRequestMessage.MessageType == MessageType.Login;
+		string address = _requestAddress + (flag ? "/Data/Login" : "/Data/ProcessMessage");
+		Request = _networkClient.CreateHttpPostRequestTask(address, _postData, withUserToken: true);
 		_resultExamined = false;
 	}
 

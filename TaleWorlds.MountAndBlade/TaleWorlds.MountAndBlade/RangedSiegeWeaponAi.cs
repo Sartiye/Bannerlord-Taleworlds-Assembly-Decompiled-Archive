@@ -27,20 +27,24 @@ public abstract class RangedSiegeWeaponAi : UsableMachineAIBase
 
 		public List<Vec3> WeaponPositions;
 
-		private readonly List<ITargetable> _potentialTargetObjects;
+		private List<ITargetable> _potentialTargetObjects;
 
-		private readonly List<ICastleKeyPosition> _referencePositions;
+		private List<ICastleKeyPosition> _referencePositions;
 
 		public ThreatSeeker(RangedSiegeWeapon weapon)
 		{
 			Weapon = weapon;
 			WeaponPositions = new List<Vec3> { Weapon.GameEntity.GlobalPosition };
 			_targetAgent = null;
+			_getMostDangerousThreat = new FindMostDangerousThreat();
+		}
+
+		public void InitializeTargetableObjects()
+		{
 			IEnumerable<MissionObject> source = Mission.Current.ActiveMissionObjects.WhereQ((MissionObject mo) => mo is ITargetable);
 			_potentialTargetObjects = (from to in source.WhereQ((MissionObject to) => to is ITargetable targetable && targetable.IsDestructable() && targetable.GetTargetEntity() != null)
 				select to as ITargetable).ToList();
 			_referencePositions = source.OfType<ICastleKeyPosition>().ToList();
-			_getMostDangerousThreat = new FindMostDangerousThreat();
 		}
 
 		public Threat PrepareTargetFromTask()
@@ -251,6 +255,11 @@ public abstract class RangedSiegeWeaponAi : UsableMachineAIBase
 		_targetEvaluationTimer = new Timer(Mission.Current.CurrentTime, 0.5f);
 	}
 
+	public void InitializeThreatSeeker()
+	{
+		_threatSeeker.InitializeTargetableObjects();
+	}
+
 	protected override void OnTick(Agent agentToCompareTo, Formation formationToCompareTo, Team potentialUsersTeam, float dt)
 	{
 		base.OnTick(agentToCompareTo, formationToCompareTo, potentialUsersTeam, dt);
@@ -291,13 +300,9 @@ public abstract class RangedSiegeWeaponAi : UsableMachineAIBase
 				_target.ComputeGlobalTargetingBoundingBoxMinMax();
 				_ = _target.TargetingPosition;
 			}
-			if (_targetEvaluationTimer.Check(Mission.Current.CurrentTime))
+			if (_targetEvaluationTimer.Check(Mission.Current.CurrentTime) && !((RangedSiegeWeapon)UsableMachine).CanShootAtThreat(_target))
 			{
-				var (boxMin, boxMax) = _target.ComputeGlobalTargetingBoundingBoxMinMax();
-				if (!((RangedSiegeWeapon)UsableMachine).CanShootAtBox(boxMin, boxMax))
-				{
-					_cannotShootCounter++;
-				}
+				_cannotShootCounter++;
 			}
 			if (_cannotShootCounter < 4)
 			{

@@ -309,7 +309,7 @@ public class ChatLogWidget : Widget
 
 	private void UpdateResize(float dt)
 	{
-		if (Input.IsKeyPressed(InputKey.LeftMouseButton) && base.EventManager.HoveredView == ResizerWidget)
+		if (Input.IsKeyPressed(InputKey.LeftMouseButton) && base.EventManager.HoveredWidget == ResizerWidget)
 		{
 			_isResizing = true;
 			_resizeStartMousePosition = Input.MousePositionPixel;

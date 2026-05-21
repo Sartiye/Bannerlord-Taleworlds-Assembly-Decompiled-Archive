@@ -1,8 +1,11 @@
 using Helpers;
+using SandBox.Missions.MissionLogics;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
 
 namespace SandBox.CampaignBehaviors;
@@ -25,7 +28,7 @@ public class TradersCampaignBehavior : CampaignBehaviorBase
 
 	protected void AddDialogs(CampaignGameStarter campaignGameStarter)
 	{
-		campaignGameStarter.AddDialogLine("weaponsmith_talk_start_normal", "start", "weaponsmith_talk_player", "{=7IxFrati}Greetings my {?PLAYER.GENDER}lady{?}lord{\\?}, how may I help you?", conversation_weaponsmith_talk_start_normal_on_condition, null);
+		campaignGameStarter.AddDialogLine("weaponsmith_talk_start_normal", "start", "weaponsmith_talk_player", "{=!}{TRADER_GREETING}", conversation_weaponsmith_talk_start_normal_on_condition, null);
 		campaignGameStarter.AddDialogLine("weaponsmith_talk_start_to_player_in_disguise", "start", "close_window", "{=1auLEn9y}Look, my good {?PLAYER.GENDER}woman{?}man{\\?}, these are hard times for sure, but I need you to move along. You'll scare away my customers.", conversation_weaponsmith_talk_start_to_player_in_disguise_on_condition, null);
 		campaignGameStarter.AddDialogLine("weaponsmith_talk_initial", "weaponsmith_begin", "weaponsmith_talk_player", "{=jxw54Ijt}Okay, is there anything more I can help with?", null, null);
 		campaignGameStarter.AddPlayerLine("weaponsmith_talk_player_1", "weaponsmith_talk_player", "merchant_response_1", "{=ExltvaKo}Let me see what you have for sale...", null, null);
@@ -50,18 +53,28 @@ public class TradersCampaignBehavior : CampaignBehaviorBase
 
 	private bool conversation_weaponsmith_talk_start_normal_on_condition()
 	{
-		if (!Campaign.Current.IsMainHeroDisguised)
+		if (IsTrader())
 		{
-			return IsTrader();
+			if (Campaign.Current.IsMainHeroDisguised)
+			{
+				if (Mission.Current.GetMissionBehavior<DisguiseMissionLogic>().ContactAlreadySetCommonCondition() && Hero.MainHero.GetPerkValue(DefaultPerks.Roguery.SmugglerConnections))
+				{
+					MBTextManager.SetTextVariable("TRADER_GREETING", "{=bqg2gS7i}Ah, a friend of a friend. How may I help you?");
+					return true;
+				}
+				return false;
+			}
+			MBTextManager.SetTextVariable("TRADER_GREETING", "{=7IxFrati}Greetings my {?PLAYER.GENDER}lady{?}lord{\\?}, how may I help you?");
+			return true;
 		}
 		return false;
 	}
 
 	private bool conversation_weaponsmith_talk_start_to_player_in_disguise_on_condition()
 	{
-		if (Campaign.Current.IsMainHeroDisguised)
+		if (IsTrader())
 		{
-			return IsTrader();
+			return !conversation_weaponsmith_talk_start_normal_on_condition();
 		}
 		return false;
 	}
@@ -117,7 +130,7 @@ public class TradersCampaignBehavior : CampaignBehaviorBase
 		foreach (Agent agent in Mission.Current.Agents)
 		{
 			CharacterObject characterObject = (CharacterObject)agent.Character;
-			if (agent.IsHuman && characterObject != null && characterObject.IsHero && characterObject.HeroObject.PartyBelongedTo == MobileParty.MainParty)
+			if (agent.IsHuman && characterObject != null && characterObject.IsHero && characterObject.HeroObject.PartyBelongedTo == MobileParty.MainParty && (!agent.IsMainAgent || !Campaign.Current.IsMainHeroDisguised))
 			{
 				agent.UpdateSpawnEquipmentAndRefreshVisuals(Mission.Current.DoesMissionRequireCivilianEquipment ? characterObject.FirstCivilianEquipment : characterObject.FirstBattleEquipment);
 			}

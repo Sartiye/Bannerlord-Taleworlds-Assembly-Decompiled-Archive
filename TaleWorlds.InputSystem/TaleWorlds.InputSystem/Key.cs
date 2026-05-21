@@ -283,6 +283,7 @@ public class Key
 			return InputType.MouseWheel;
 		case InputKey.ControllerLStick:
 		case InputKey.ControllerRStick:
+		case InputKey.ControllerLOptionTap:
 		case InputKey.ControllerLStickUp:
 		case InputKey.ControllerLStickDown:
 		case InputKey.ControllerLStickLeft:

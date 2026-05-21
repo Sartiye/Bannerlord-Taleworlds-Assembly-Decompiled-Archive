@@ -20,7 +20,7 @@ public class SallyOutMissionNotificationsHandler
 
 	private const float NotificationCheckInterval = 5f;
 
-	private MissionAgentSpawnLogic _spawnLogic;
+	private DefaultBattleMissionAgentSpawnLogic _spawnLogic;
 
 	private SallyOutMissionController _sallyOutController;
 
@@ -42,7 +42,7 @@ public class SallyOutMissionNotificationsHandler
 
 	private int _besiegerSpawnedTroopCount;
 
-	public SallyOutMissionNotificationsHandler(MissionAgentSpawnLogic spawnLogic, SallyOutMissionController sallyOutController)
+	public SallyOutMissionNotificationsHandler(DefaultBattleMissionAgentSpawnLogic spawnLogic, SallyOutMissionController sallyOutController)
 	{
 		_spawnLogic = spawnLogic;
 		_sallyOutController = sallyOutController;

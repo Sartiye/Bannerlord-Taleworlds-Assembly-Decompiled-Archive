@@ -278,7 +278,7 @@ public class EncyclopediaShipPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0_1_1_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_1_1_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_1_1_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0_1_1_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_1_1_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_1_1_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_1_1_0_0_0_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_1_1_0_0_0_0.SuggestedHeight = 60f;
@@ -376,7 +376,7 @@ public class EncyclopediaShipPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0_2_0_0_0_0.DoNotAcceptEvents = true;
 		_widget_0_0_2_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_2_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0_2_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_2_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_2_0_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_2_0_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_2_0_0_0_0_0.MarginLeft = 25f;

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.Library;
@@ -33,7 +32,6 @@ public class MultiplayerLobbyBadgeProgressInformationWidget : Widget
 			{
 				_shownBadgeCount = value;
 				OnPropertyChanged(value, "ShownBadgeCount");
-				ArrangeChildrenSizes();
 			}
 		}
 	}
@@ -49,16 +47,8 @@ public class MultiplayerLobbyBadgeProgressInformationWidget : Widget
 		{
 			if (value != _activeBadgesList)
 			{
-				if (_activeBadgesList != null)
-				{
-					_activeBadgesList.ItemAddEventHandlers.Remove(OnBadgeAdded);
-				}
 				_activeBadgesList = value;
 				OnPropertyChanged(value, "ActiveBadgesList");
-				if (value != null)
-				{
-					_activeBadgesList.ItemAddEventHandlers.Add(OnBadgeAdded);
-				}
 			}
 		}
 	}
@@ -68,30 +58,33 @@ public class MultiplayerLobbyBadgeProgressInformationWidget : Widget
 	{
 	}
 
-	private void OnBadgeAdded(Widget parent, Widget child)
+	protected override void OnLateUpdate(float dt)
 	{
-		ArrangeChildrenSizes();
+		base.OnLateUpdate(dt);
+		if (ActiveBadgesList != null)
+		{
+			ArrangeChildrenSizes();
+		}
 	}
 
 	private void ArrangeChildrenSizes()
 	{
 		ActiveBadgesList.IsVisible = ShownBadgeCount > 0;
-		int num = ShownBadgeCount / 2;
-		int num2 = 0;
-		List<Widget> allChildrenRecursive = ActiveBadgesList.GetAllChildrenRecursive();
-		for (int i = 0; i < allChildrenRecursive.Count; i++)
+		int centerIndex = ShownBadgeCount / 2;
+		int currentIndex = 0;
+		ActiveBadgesList.ApplyActionToAllChildrenRecursive(delegate(Widget widget)
 		{
-			if (allChildrenRecursive[i] is MultiplayerPlayerBadgeVisualWidget multiplayerPlayerBadgeVisualWidget)
+			if (widget is MultiplayerPlayerBadgeVisualWidget multiplayerPlayerBadgeVisualWidget)
 			{
-				float num3 = MathF.Abs(num2 - num);
-				float num4 = OuterBadgeBaseSize - SizeDecayFromCenterPerElement * num3;
-				if (num2 == num)
+				float num = CenterBadgeSize;
+				if (currentIndex != centerIndex)
 				{
-					num4 = CenterBadgeSize;
+					float num2 = MathF.Abs(currentIndex - centerIndex);
+					num = OuterBadgeBaseSize - SizeDecayFromCenterPerElement * num2;
 				}
-				multiplayerPlayerBadgeVisualWidget.SetForcedSize(num4, num4);
-				num2++;
+				multiplayerPlayerBadgeVisualWidget.SetForcedSize(num, num);
+				currentIndex++;
 			}
-		}
+		});
 	}
 }

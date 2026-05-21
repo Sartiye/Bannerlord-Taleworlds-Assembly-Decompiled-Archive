@@ -395,9 +395,19 @@ public sealed class GameEntity : NativeObject
 		EngineApplicationInterface.IGameEntity.CallScriptCallbacks(base.Pointer, registerScriptComponents);
 	}
 
-	public static GameEntity Instantiate(Scene scene, string prefabName, MatrixFrame frame, bool callScriptCallbacks = true, string scriptInclusingTag = "")
+	public static GameEntity Instantiate(Scene scene, string prefabName, MatrixFrame frame, bool callScriptCallbacks = true)
 	{
-		return EngineApplicationInterface.IGameEntity.CreateFromPrefabWithInitialFrame(scene.Pointer, prefabName, ref frame, callScriptCallbacks);
+		return EngineApplicationInterface.IGameEntity.CreateFromPrefabWithInitialFrameAndRestOffset(scene.Pointer, prefabName, createPhysics: true, ref frame, hasCustomRestOffset: false, 0f, callScriptCallbacks, uint.MaxValue);
+	}
+
+	public static GameEntity InstantiateWithRestOffset(Scene scene, string prefabName, bool createPhysics, MatrixFrame frame, float restOffset, bool callScriptCallbacks = true, string scriptInclusingTag = "")
+	{
+		uint scriptInclusionHashTag = uint.MaxValue;
+		if (scriptInclusingTag.Length > 0)
+		{
+			scriptInclusionHashTag = Managed.GetStringHashCode(scriptInclusingTag);
+		}
+		return EngineApplicationInterface.IGameEntity.CreateFromPrefabWithInitialFrameAndRestOffset(scene.Pointer, prefabName, createPhysics, ref frame, hasCustomRestOffset: true, restOffset, callScriptCallbacks, scriptInclusionHashTag);
 	}
 
 	public bool IsGhostObject()
@@ -628,7 +638,12 @@ public sealed class GameEntity : NativeObject
 
 	internal static GameEntity GetFirstEntityWithTagExpression(Scene scene, string tagExpression)
 	{
-		return new GameEntity(EngineApplicationInterface.IGameEntity.GetFirstEntityWithTagExpression(scene.Pointer, tagExpression));
+		UIntPtr firstEntityWithTagExpression = EngineApplicationInterface.IGameEntity.GetFirstEntityWithTagExpression(scene.Pointer, tagExpression);
+		if (!(firstEntityWithTagExpression != UIntPtr.Zero))
+		{
+			return null;
+		}
+		return new GameEntity(firstEntityWithTagExpression);
 	}
 
 	internal static GameEntity GetNextEntityWithTagExpression(Scene scene, GameEntity startEntity, string tagExpression)

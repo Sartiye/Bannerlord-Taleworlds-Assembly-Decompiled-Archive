@@ -56,7 +56,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 		_widget_0_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0.VerticalAlignment = VerticalAlignment.Top;
-		_widget_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 	}
 
 	public void DestroyDataSource()
@@ -80,8 +80,8 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 			for (int num = _widget_0_0_0.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child = _widget_0_0_0.GetChild(num);
-				((SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate)child).OnBeforeRemovedChild(child);
-				((SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate)_widget_0_0_0.GetChild(num)).DestroyDataSource();
+				((SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate)_widget_0_0_0.GetChild(num)).DestroyDataSource();
 			}
 			_datasource_Root_Parties = null;
 		}
@@ -155,9 +155,9 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 			for (int num = _widget_0_0_0.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child3 = _widget_0_0_0.GetChild(num);
-				((SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+				((SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate)child3).OnBeforeRemovedChild(child3);
 				Widget child4 = _widget_0_0_0.GetChild(num);
-				((SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate)child4).SetDataSource(null);
+				((SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate)child4).SetDataSource(null);
 				_widget_0_0_0.RemoveChild(child4);
 			}
 			break;
@@ -173,27 +173,27 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 		}
 		case TaleWorlds.Library.ListChangedType.ItemAdded:
 		{
-			SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate = new SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate(base.Context);
-			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate);
+			SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate = new SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate(base.Context);
+			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate);
 			SPScoreboardPartyVM dataSource = (SPScoreboardPartyVM)(generatedWidgetData.Data = _datasource_Root_Parties[e.NewIndex]);
-			sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate.AddComponent(generatedWidgetData);
-			_widget_0_0_0.AddChildAtIndex(sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate, e.NewIndex);
-			sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate.CreateWidgets();
-			sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate.SetIds();
-			sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate.SetAttributes();
-			sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate.SetDataSource(dataSource);
+			sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate.AddComponent(generatedWidgetData);
+			_widget_0_0_0.AddChildAtIndex(sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate, e.NewIndex);
+			sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate.CreateWidgets();
+			sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate.SetIds();
+			sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate.SetAttributes();
+			sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate.SetDataSource(dataSource);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
 		{
 			Widget child2 = _widget_0_0_0.GetChild(e.NewIndex);
-			((SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate)child2).OnBeforeRemovedChild(child2);
+			((SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate)child2).OnBeforeRemovedChild(child2);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemDeleted:
 		{
 			Widget child = _widget_0_0_0.GetChild(e.NewIndex);
-			((SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate)child).SetDataSource(null);
+			((SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate)child).SetDataSource(null);
 			_widget_0_0_0.RemoveChild(child);
 			break;
 		}
@@ -221,9 +221,9 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 				for (int num = _widget_0_0_0.ChildCount - 1; num >= 0; num--)
 				{
 					Widget child = _widget_0_0_0.GetChild(num);
-					((SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate)child).OnBeforeRemovedChild(child);
+					((SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate)child).OnBeforeRemovedChild(child);
 					Widget child2 = _widget_0_0_0.GetChild(num);
-					((SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate)child2).SetDataSource(null);
+					((SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate)child2).SetDataSource(null);
 					_widget_0_0_0.RemoveChild(child2);
 				}
 				_datasource_Root_Parties = null;
@@ -250,15 +250,15 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 			_datasource_Root_Parties.ListChanged += OnList_datasource_Root_PartiesChanged;
 			for (int i = 0; i < _datasource_Root_Parties.Count; i++)
 			{
-				SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate = new SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate);
+				SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate = new SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate);
 				SPScoreboardPartyVM dataSource = (SPScoreboardPartyVM)(generatedWidgetData.Data = _datasource_Root_Parties[i]);
-				sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_0_0.AddChildAtIndex(sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate, i);
-				sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate.CreateWidgets();
-				sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate.SetIds();
-				sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate.SetAttributes();
-				sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate.SetDataSource(dataSource);
+				sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_0_0.AddChildAtIndex(sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate, i);
+				sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate.CreateWidgets();
+				sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate.SetIds();
+				sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate.SetAttributes();
+				sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}
@@ -271,9 +271,9 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 			for (int num = _widget_0_0_0.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child = _widget_0_0_0.GetChild(num);
-				((SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate)child).OnBeforeRemovedChild(child);
 				Widget child2 = _widget_0_0_0.GetChild(num);
-				((SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate)child2).SetDataSource(null);
+				((SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate)child2).SetDataSource(null);
 				_widget_0_0_0.RemoveChild(child2);
 			}
 			_datasource_Root_Parties = null;
@@ -285,15 +285,15 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 			_datasource_Root_Parties.ListChanged += OnList_datasource_Root_PartiesChanged;
 			for (int i = 0; i < _datasource_Root_Parties.Count; i++)
 			{
-				SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate = new SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate);
+				SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate = new SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate);
 				SPScoreboardPartyVM dataSource = (SPScoreboardPartyVM)(generatedWidgetData.Data = _datasource_Root_Parties[i]);
-				sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_0_0.AddChildAtIndex(sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate, i);
-				sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate.CreateWidgets();
-				sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate.SetIds();
-				sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate.SetAttributes();
-				sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_13_ItemTemplate.SetDataSource(dataSource);
+				sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_0_0.AddChildAtIndex(sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate, i);
+				sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate.CreateWidgets();
+				sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate.SetIds();
+				sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate.SetAttributes();
+				sPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboard_CustomBattleScoreboardVM_Dependency_12_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}

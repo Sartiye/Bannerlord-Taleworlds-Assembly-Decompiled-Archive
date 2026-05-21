@@ -31,6 +31,10 @@ public static class ChangeOwnerOfSettlementAction
 		}
 		if (settlement.IsFortification)
 		{
+			if (detail == ChangeOwnerOfSettlementDetail.BySiege && settlement.Town.GarrisonParty != null)
+			{
+				DestroyPartyAction.Apply(capturerHero.PartyBelongedTo.Party, settlement.Town.GarrisonParty);
+			}
 			if (settlement.Town.GarrisonParty == null)
 			{
 				settlement.AddGarrisonParty();

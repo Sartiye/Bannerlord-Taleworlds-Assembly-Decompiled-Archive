@@ -296,7 +296,7 @@ public class BattleEndLogic : MissionLogic, IBattleEndLogic
 			{
 				return;
 			}
-			float num = _missionAgentSpawnLogic.GetReinforcementInterval() + 3f;
+			float num = _missionAgentSpawnLogic.GetReinforcementInterval(side) + 3f;
 			if (base.Mission.MainAgent != null && base.Mission.MainAgent.IsPlayerControlled && base.Mission.MainAgent.IsActive())
 			{
 				_playerSideNotYetRetreatingTime = MissionTime.Now;
@@ -332,7 +332,7 @@ public class BattleEndLogic : MissionLogic, IBattleEndLogic
 			{
 				return;
 			}
-			float num2 = _missionAgentSpawnLogic.GetReinforcementInterval() + 3f;
+			float num2 = _missionAgentSpawnLogic.GetReinforcementInterval(oppositeSide) + 3f;
 			bool flag2 = true;
 			foreach (Team team2 in base.Mission.Teams)
 			{

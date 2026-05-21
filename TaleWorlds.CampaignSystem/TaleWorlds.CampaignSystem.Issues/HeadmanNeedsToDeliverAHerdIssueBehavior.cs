@@ -88,7 +88,7 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 				TextObject textObject = new TextObject("{=VbRyXBsv}If you're going in the direction of {TARGET_SETTLEMENT}, you can perhaps take our herd there to {TARGET_HERO.LINK}. I am willing to pay {REWARD_AMOUNT}{GOLD_ICON} if you deliver them safe and sound.[if:convo_calm_friendly][ib:normal]");
 				textObject.SetTextVariable("TARGET_SETTLEMENT", _targetSettlement.EncyclopediaLinkWithName);
 				textObject.SetTextVariable("REWARD_AMOUNT", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				StringHelpers.SetCharacterProperties("TARGET_HERO", _targetHero.CharacterObject, textObject);
 				return textObject;
 			}
@@ -101,7 +101,7 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 				TextObject textObject = new TextObject("{=CqmoyrHH}You can assign a companion with {REQUIRED_SOLDIERS} men, they will be enough too. Both ways works fine for us. I promise if you or your men manage to deliver the herd safely, I will pay you {REWARD}{GOLD_ICON}. So what do you say?[if:convo_nonchalant]");
 				textObject.SetTextVariable("REQUIRED_SOLDIERS", GetTotalAlternativeSolutionNeededMenCount());
 				textObject.SetTextVariable("REWARD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -166,7 +166,7 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 				textObject.SetTextVariable("SETTLEMENT_TARGET", _targetSettlement.Name);
 				textObject.SetTextVariable("NEEDED_MEN_COUNT", AlternativeSolutionSentTroops.TotalManCount - 1);
 				textObject.SetTextVariable("RETURN_DAYS", GetTotalAlternativeSolutionDurationInDays());
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				textObject.SetTextVariable("REWARD_AMOUNT", RewardGold);
 				return textObject;
 			}
@@ -311,10 +311,11 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 			return IssueFrequency.VeryCommon;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			flag = PreconditionFlags.None;
 			relationHero = null;
+			requiredGold = 0;
 			skill = null;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -373,7 +374,7 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 				textObject.SetTextVariable("TARGET_SETTLEMENT", _targetSettlement.EncyclopediaLinkWithName);
 				textObject.SetTextVariable("HERD_TYPE_TO_DELIVER", _herdTypeToDeliver.Name);
 				textObject.SetTextVariable("REWARD_AMOUNT", _rewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -385,7 +386,7 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 				TextObject textObject = new TextObject("{=6IKKFH3A}You have received a message and a large purse from {QUEST_GIVER.LINK}. The missive reads: ”The herd is safe. Thank you, and please accept these {REWARD}{GOLD_ICON} with our gratitude.”.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("REWARD", _rewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -396,7 +397,7 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 			{
 				TextObject textObject = new TextObject("{=hhrRnSvr}You failed to deliver the herd in time, as {QUEST_GIVER.LINK} has asked of you. The shepherds and the herd left you.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -407,7 +408,7 @@ public class HeadmanNeedsToDeliverAHerdIssueBehavior : CampaignBehaviorBase
 			{
 				TextObject textObject = new TextObject("{=MjwNHtQd}You rejected to deliver the herd, as {QUEST_GIVER.LINK} has asked of you. The shepherds have left you.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}

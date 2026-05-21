@@ -12,6 +12,10 @@ public static class TraitLevelingHelper
 {
 	private const int LordExecutedHonorPenalty = -1000;
 
+	private const int TradeAgreementBrokenPenalty = -1000;
+
+	private const int AllianceBrokenHonorPenalty = -1000;
+
 	private const int TroopsSacrificedValorPenalty = -30;
 
 	private const int VillageRaidedMercyPenalty = -30;
@@ -42,8 +46,11 @@ public static class TraitLevelingHelper
 		float strengthRatio = mapEvent.GetMapEventSide(PlayerEncounter.Current.PlayerSide).StrengthRatio;
 		if (strengthRatio > 9f)
 		{
-			int xpValue = (int)(MBMath.Map(strengthRatio, 9f, 10f, 5f, 20f) * contribution);
-			AddPlayerTraitXPAndLogEntry(DefaultTraits.Valor, xpValue, ActionNotes.BattleValor, null);
+			int num = (int)(MBMath.Map(strengthRatio, 9f, 10f, 5f, 20f) * contribution);
+			if (num > 0)
+			{
+				AddPlayerTraitXPAndLogEntry(DefaultTraits.Valor, num, ActionNotes.BattleValor, null);
+			}
 		}
 	}
 
@@ -55,6 +62,11 @@ public static class TraitLevelingHelper
 	public static void OnLordExecuted()
 	{
 		AddPlayerTraitXPAndLogEntry(DefaultTraits.Honor, -1000, ActionNotes.SacrificedTroops, null);
+	}
+
+	public static void OnTradeAgreementBroken()
+	{
+		AddPlayerTraitXPAndLogEntry(DefaultTraits.Honor, -1000, ActionNotes.DishonestBusinessQuarrel, null);
 	}
 
 	public static void OnVillageRaided()
@@ -136,6 +148,11 @@ public static class TraitLevelingHelper
 	public static void OnIncidentResolved(TraitObject trait, int xpValue)
 	{
 		AddPlayerTraitXPAndLogEntry(trait, xpValue, ActionNotes.DefaultNote, Hero.MainHero);
+	}
+
+	public static void OnAllianceBrokenThroughHostility()
+	{
+		AddPlayerTraitXPAndLogEntry(DefaultTraits.Honor, -1000, ActionNotes.DishonestBusinessQuarrel, null);
 	}
 
 	private static void AddPlayerTraitXPAndLogEntry(TraitObject trait, int xpValue, ActionNotes context, Hero referenceHero)

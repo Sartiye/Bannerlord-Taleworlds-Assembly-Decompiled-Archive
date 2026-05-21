@@ -229,7 +229,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_3.MarginRight = 330f;
 		_widget_3.MarginTop = 220f;
 		_widget_3.MarginBottom = 180f;
-		_widget_3.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_3.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_3_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_3_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_3_0.Sprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
@@ -286,7 +286,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_3_0_0_0_5_0_0.ClipContents = true;
 		_widget_3_0_0_0_5_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_3_0_0_0_5_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_3_0_0_0_5_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_3_0_0_0_5_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_3_0_0_0_5_1.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_3_0_0_0_5_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_3_0_0_0_5_1.SuggestedWidth = 8f;
@@ -314,14 +314,14 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_3_0_0_0_5_1_1.Brush = base.Context.GetBrush("FaceGen.Scrollbar.Handle");
 		_widget_3_0_0_0_6.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_3_0_0_0_6.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_3_0_0_0_6.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_3_0_0_0_6.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_3_0_0_0_6.MarginRight = 25f;
 		_widget_3_0_0_0_6.MarginLeft = 25f;
 		_widget_3_0_0_0_6.MarginBottom = 5f;
 		_widget_3_0_0_0_6.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_3_0_0_0_6_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_3_0_0_0_6_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_3_0_0_0_6_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_3_0_0_0_6_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_3_0_0_0_6_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_3_0_0_0_6_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_3_0_0_0_6_0_0.IncludeChildren = true;

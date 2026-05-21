@@ -5,8 +5,6 @@ namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets.Multiplayer.Lobby;
 
 public class MultiplayerLobbyAfterBattlePopupWidget : Widget
 {
-	private bool _isStarted;
-
 	private bool _isFinished;
 
 	private float _timePassed;
@@ -172,11 +170,6 @@ public class MultiplayerLobbyAfterBattlePopupWidget : Widget
 				_isFinished = true;
 				ClickToContinueTextWidget.IsVisible = true;
 			}
-			if (_isStarted && _timePassed >= AnimationDelay)
-			{
-				_isStarted = false;
-				ExperiencePanel.StartAnimation();
-			}
 		}
 	}
 
@@ -186,11 +179,11 @@ public class MultiplayerLobbyAfterBattlePopupWidget : Widget
 		{
 			(child as MultiplayerLobbyBattleRewardWidget).StartPreAnimation();
 		}
-		_isStarted = true;
 		_isFinished = false;
 		_timePassed = 0f;
 		_currentRewardIndex = 0;
 		ClickToContinueTextWidget.IsVisible = false;
+		ExperiencePanel.StartAnimation(AnimationDelay);
 	}
 
 	private void Reset()

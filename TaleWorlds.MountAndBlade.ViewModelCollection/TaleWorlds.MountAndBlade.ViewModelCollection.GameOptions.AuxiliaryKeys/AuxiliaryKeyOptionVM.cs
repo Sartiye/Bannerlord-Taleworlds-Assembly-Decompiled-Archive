@@ -11,12 +11,15 @@ public class AuxiliaryKeyOptionVM : KeyOptionVM
 {
 	private readonly Action<AuxiliaryKeyOptionVM, InputKey> _onKeySet;
 
+	private readonly Func<AuxiliaryKeyOptionVM, string> _getExtraInformation;
+
 	public HotKey CurrentHotKey { get; private set; }
 
-	public AuxiliaryKeyOptionVM(HotKey hotKey, Action<KeyOptionVM> onKeybindRequest, Action<AuxiliaryKeyOptionVM, InputKey> onKeySet)
+	public AuxiliaryKeyOptionVM(HotKey hotKey, Action<KeyOptionVM> onKeybindRequest, Action<AuxiliaryKeyOptionVM, InputKey> onKeySet, Func<AuxiliaryKeyOptionVM, string> getExtraInformation)
 		: base(hotKey.GroupId, hotKey.Id, onKeybindRequest)
 	{
 		_onKeySet = onKeySet;
+		_getExtraInformation = getExtraInformation;
 		CurrentHotKey = hotKey;
 		base.Key = (TaleWorlds.InputSystem.Input.IsGamepadActive ? CurrentHotKey.Keys.FirstOrDefault((Key x) => x.IsControllerInput) : CurrentHotKey.Keys.FirstOrDefault((Key x) => !x.IsControllerInput));
 		if (base.Key == null)
@@ -42,7 +45,7 @@ public class AuxiliaryKeyOptionVM : KeyOptionVM
 			variable = text2.ToString();
 		}
 		GameTextManager globalTextManager = Module.CurrentModule.GlobalTextManager;
-		base.OptionValueText = globalTextManager.FindText("str_game_key_text", base.CurrentKey.ToString().ToLower()).ToString();
+		base.OptionValueText = globalTextManager.GetHotKeyGameTextFromKeyID(base.CurrentKey.ToString().ToLower()).ToString();
 		string text3 = base.OptionValueText;
 		foreach (HotKey.Modifiers item in new List<HotKey.Modifiers>
 		{
@@ -54,7 +57,7 @@ public class AuxiliaryKeyOptionVM : KeyOptionVM
 			if (CurrentHotKey.HasModifier(item))
 			{
 				MBTextManager.SetTextVariable("KEY", text3);
-				MBTextManager.SetTextVariable("MODIFIER", globalTextManager.FindText("str_game_key_text", "any" + item.ToString().ToLower()).ToString());
+				MBTextManager.SetTextVariable("MODIFIER", globalTextManager.GetHotKeyGameTextFromKeyID("any" + item.ToString().ToLower()).ToString());
 				text3 = globalTextManager.FindText("str_hot_key_with_modifier").ToString();
 			}
 		}
@@ -63,6 +66,7 @@ public class AuxiliaryKeyOptionVM : KeyOptionVM
 		textObject.SetTextVariable("STR2", variable);
 		textObject.SetTextVariable("newline", "\n \n");
 		base.Description = textObject.ToString();
+		base.ExtraInformationText = _getExtraInformation?.Invoke(this);
 	}
 
 	private void ExecuteKeybindRequest()
@@ -84,6 +88,7 @@ public class AuxiliaryKeyOptionVM : KeyOptionVM
 			base.Key = new Key(InputKey.Invalid);
 		}
 		base.CurrentKey = new Key(base.Key.InputKey);
+		UpdateIsChanged();
 		RefreshValues();
 	}
 
@@ -92,8 +97,13 @@ public class AuxiliaryKeyOptionVM : KeyOptionVM
 		base.Key.ChangeKey(base.CurrentKey.InputKey);
 	}
 
-	internal override bool IsChanged()
+	internal override void UpdateIsChanged()
 	{
-		return base.CurrentKey != base.Key;
+		base.IsChanged = base.CurrentKey != base.Key;
+	}
+
+	public override void ExecuteRevert()
+	{
+		Set(base.Key.InputKey);
 	}
 }

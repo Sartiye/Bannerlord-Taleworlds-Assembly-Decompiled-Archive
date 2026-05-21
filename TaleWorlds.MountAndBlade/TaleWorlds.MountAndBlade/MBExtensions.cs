@@ -111,8 +111,7 @@ public static class MBExtensions
 
 	private static void CollectScriptComponentsIncludingChildrenAux<T>(WeakGameEntity entity, MBList<T> list) where T : ScriptComponentBehavior
 	{
-		IEnumerable<T> scriptComponents = entity.GetScriptComponents<T>();
-		list.AddRange(scriptComponents);
+		list.AddRange(entity.GetScriptComponents<T>());
 		foreach (WeakGameEntity child in entity.GetChildren())
 		{
 			CollectScriptComponentsIncludingChildrenAux(child, list);
@@ -158,8 +157,7 @@ public static class MBExtensions
 		{
 			if (child.HasTag(tag))
 			{
-				IEnumerable<T> scriptComponents = child.GetScriptComponents<T>();
-				list.AddRange(scriptComponents);
+				list.AddRange(child.GetScriptComponents<T>());
 			}
 			if (child.ChildCount > 0)
 			{
@@ -249,34 +247,6 @@ public static class MBExtensions
 			}
 		}
 		return null;
-	}
-
-	public static bool HasParentOfType(this GameEntity e, Type t)
-	{
-		do
-		{
-			e = e.Parent;
-			if (e.GetScriptComponents().Any((ScriptComponentBehavior sc) => sc.GetType() == t))
-			{
-				return true;
-			}
-		}
-		while (e != null);
-		return false;
-	}
-
-	public static bool HasParentOfType(this WeakGameEntity e, Type t)
-	{
-		do
-		{
-			e = e.Parent;
-			if (e.GetScriptComponents().Any((ScriptComponentBehavior sc) => sc.GetType() == t))
-			{
-				return true;
-			}
-		}
-		while (e.IsValid);
-		return false;
 	}
 
 	public static TSource ElementAtOrValue<TSource>(this IEnumerable<TSource> source, int index, TSource value)

@@ -2,6 +2,7 @@ using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 
@@ -284,7 +285,7 @@ public static class NavigationHelper
 		}
 		if (result.ToVec2() == Vec2.Invalid)
 		{
-			Debug.FailedAssert("Point should not be invalid!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "FindPointInsideArea", 9728);
+			Debug.FailedAssert("Point should not be invalid!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "FindPointInsideArea", 9855);
 			return FindPointInsideArea(minBorders, maxBorders, navigationCapability);
 		}
 		return result;
@@ -304,5 +305,21 @@ public static class NavigationHelper
 			vec *= MBRandom.RandomFloatRanged(min, max);
 		}
 		return center + vec;
+	}
+
+	public static void GetInteractionDataForMainParty(Settlement settlement, out bool canNavigate, out MobileParty.NavigationType bestNavigationType, out bool isTargetingPort)
+	{
+		CampaignVec2 vec;
+		if (MobileParty.MainParty.IsCurrentlyAtSea && settlement.HasPort)
+		{
+			isTargetingPort = true;
+			vec = settlement.PortPosition;
+		}
+		else
+		{
+			isTargetingPort = false;
+			vec = settlement.GatePosition;
+		}
+		canNavigate = CanPlayerNavigateToPosition(vec, out bestNavigationType);
 	}
 }

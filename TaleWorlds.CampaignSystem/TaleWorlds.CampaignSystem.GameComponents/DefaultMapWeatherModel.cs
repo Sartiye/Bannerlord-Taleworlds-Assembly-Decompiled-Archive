@@ -127,6 +127,7 @@ public class DefaultMapWeatherModel : MapWeatherModel
 		Campaign.Current.Models.MapWeatherModel.UpdateWeatherForPosition(position, CampaignTime.Now);
 		GetSeasonRainAndSnowDataForOpeningMission(position.ToVec2(), out var selectedSeason, out var isRaining, out var rainValue, out var snowFallDensity);
 		string selectedAtmosphereId = GetSelectedAtmosphereId(selectedSeason, isRaining, snowFallDensity, rainValue);
+		TerrainType terrainTypeAtPosition = Campaign.Current.MapSceneWrapper.GetTerrainTypeAtPosition(in position);
 		AtmosphereInfo result = default(AtmosphereInfo);
 		result.Seed = (uint)CampaignTime.Now.ToSeconds;
 		result.SunInfo.Altitude = sunPosition.Altitude;
@@ -155,7 +156,8 @@ public class DefaultMapWeatherModel : MapWeatherModel
 		result.NauticalInfo.WindVector = Campaign.Current.Models.MapWeatherModel.GetWindForPosition(position);
 		result.NauticalInfo.CanUseLowAltitudeAtmosphere = 0;
 		result.NauticalInfo.UseSceneWindDirection = 1;
-		result.NauticalInfo.IsRiverBattle = ((Campaign.Current.MapSceneWrapper.GetTerrainTypeAtPosition(in position) == TerrainType.River) ? 1 : 0);
+		result.NauticalInfo.IsRiverBattle = ((terrainTypeAtPosition == TerrainType.River) ? 1 : 0);
+		result.NauticalInfo.UsesNavalSimulatedWater = ((terrainTypeAtPosition == TerrainType.River || terrainTypeAtPosition == TerrainType.Water || terrainTypeAtPosition == TerrainType.OpenSea || terrainTypeAtPosition == TerrainType.CoastalSea) ? 1 : 0);
 		result.AreaInfo.Temperature = temperature;
 		result.AreaInfo.Humidity = humidity;
 		result.PostProInfo.MinExposure = MBMath.Lerp(-3f, -2f, GetExposureCoefficientBetweenDayNight());

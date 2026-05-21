@@ -13,13 +13,13 @@ public class RebuildPlayerClanQuest : StoryModeQuestBase
 {
 	private const int GoldGoal = 2000;
 
-	private const int PartySizeGoal = 20;
-
 	private const int ClanTierRenownGoal = 50;
 
 	private const int RenownReward = 25;
 
 	private const int HiredCompanionGoal = 1;
+
+	private bool _finishQuest;
 
 	[SaveableField(1)]
 	private JournalLog _goldGoalLog;
@@ -33,7 +33,7 @@ public class RebuildPlayerClanQuest : StoryModeQuestBase
 	[SaveableField(4)]
 	private JournalLog _hireCompanionGoalLog;
 
-	private bool _finishQuest;
+	private static int _partySizeGoal => Campaign.Current.Models.BanditDensityModel.GetMinimumTroopCountForHideoutMission(MobileParty.MainParty, isAssault: false);
 
 	private TextObject _startQuestLogText => new TextObject("{=IITkXnnU}Calradia is a land full of peril - but also opportunities. To face the challenges that await, you will need to build up your clan.{newline}Your brother told you that there are many ways to go about this but that none forego coin. Trade would be one means to this end, fighting and selling off captured bandits in town another. Whatever path you choose to pursue, travelling alone would make you easy pickings for whomever came across your trail.{newline}You know that you can recruit men to follow you from the notables of villages and towns, though they may ask you for a favor or two of their own before they allow you access to their more valued fighters.{newline}Naturally, you may also find more unique characters in the taverns of Calradia. However, these tend to favor more established clans.");
 
@@ -44,7 +44,7 @@ public class RebuildPlayerClanQuest : StoryModeQuestBase
 		get
 		{
 			TextObject textObject = new TextObject("{=b6hQWKHe}Grow your party to {PARTY_SIZE} men");
-			textObject.SetTextVariable("PARTY_SIZE", 20);
+			textObject.SetTextVariable("PARTY_SIZE", _partySizeGoal);
 			return textObject;
 		}
 	}
@@ -84,7 +84,7 @@ public class RebuildPlayerClanQuest : StoryModeQuestBase
 	{
 		AddLog(_startQuestLogText, hideInformation: true);
 		_goldGoalLog = AddDiscreteLog(_goldGoalLogText, new TextObject("{=hYgmzZJX}Denars"), Hero.MainHero.Gold, 2000, null, hideInformation: true);
-		_partySizeGoalLog = AddDiscreteLog(_partySizeGoalLogText, new TextObject("{=DO4PE3Oo}Current Party Size"), 1, 20, null, hideInformation: true);
+		_partySizeGoalLog = AddDiscreteLog(_partySizeGoalLogText, new TextObject("{=DO4PE3Oo}Current Party Size"), 1, _partySizeGoal, null, hideInformation: true);
 		_clanTierGoalLog = AddDiscreteLog(_clanTierGoalLogText, new TextObject("{=aZxHIra4}Renown"), (int)Clan.PlayerClan.Renown, 50, null, hideInformation: true);
 		_hireCompanionGoalLog = AddDiscreteLog(_hireCompanionGoalLogText, new TextObject("{=VLD5416o}Companion Hired"), 0, 1, null, hideInformation: true);
 	}
@@ -142,10 +142,10 @@ public class RebuildPlayerClanQuest : StoryModeQuestBase
 	private void UpdateProgresses()
 	{
 		_goldGoalLog.UpdateCurrentProgress((Hero.MainHero.Gold > 2000) ? 2000 : Hero.MainHero.Gold);
-		_partySizeGoalLog.UpdateCurrentProgress((PartyBase.MainParty.MemberRoster.TotalManCount > 20) ? 20 : PartyBase.MainParty.MemberRoster.TotalManCount);
+		_partySizeGoalLog.UpdateCurrentProgress((PartyBase.MainParty.MemberRoster.TotalManCount > _partySizeGoal) ? _partySizeGoal : PartyBase.MainParty.MemberRoster.TotalManCount);
 		_clanTierGoalLog.UpdateCurrentProgress((Clan.PlayerClan.Renown > 50f) ? 50 : ((int)Clan.PlayerClan.Renown));
 		_hireCompanionGoalLog.UpdateCurrentProgress((Clan.PlayerClan.Companions.Count > 1) ? 1 : Clan.PlayerClan.Companions.Count);
-		if (_goldGoalLog.CurrentProgress >= 2000 && _partySizeGoalLog.CurrentProgress >= 20 && _clanTierGoalLog.CurrentProgress >= 50 && _hireCompanionGoalLog.CurrentProgress >= 1 && !_finishQuest)
+		if (_goldGoalLog.CurrentProgress >= 2000 && _partySizeGoalLog.CurrentProgress >= _partySizeGoal && _clanTierGoalLog.CurrentProgress >= 50 && _hireCompanionGoalLog.CurrentProgress >= 1 && !_finishQuest)
 		{
 			_finishQuest = true;
 			CompleteQuestWithSuccess();

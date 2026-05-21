@@ -2,12 +2,12 @@ namespace TaleWorlds.MountAndBlade.MissionSpawnHandlers;
 
 public class CustomMissionSpawnHandler : MissionLogic
 {
-	protected MissionAgentSpawnLogic _missionAgentSpawnLogic;
+	protected DefaultBattleMissionAgentSpawnLogic _missionAgentSpawnLogic;
 
 	public override void OnBehaviorInitialize()
 	{
 		base.OnBehaviorInitialize();
-		_missionAgentSpawnLogic = base.Mission.GetMissionBehavior<MissionAgentSpawnLogic>();
+		_missionAgentSpawnLogic = base.Mission.GetMissionBehavior<DefaultBattleMissionAgentSpawnLogic>();
 	}
 
 	protected static MissionSpawnSettings CreateCustomBattleWaveSpawnSettings()

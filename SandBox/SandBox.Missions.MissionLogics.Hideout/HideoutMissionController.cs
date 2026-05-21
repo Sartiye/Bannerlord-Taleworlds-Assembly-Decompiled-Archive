@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SandBox.Conversation.MissionLogics;
 using SandBox.Missions.AgentBehaviors;
+using SandBox.Missions.MissionLogics.Hideout.Objectives;
 using SandBox.Objects.AnimationPoints;
 using SandBox.Objects.AreaMarkers;
 using SandBox.Objects.Usables;
@@ -14,6 +15,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
+using TaleWorlds.MountAndBlade.Missions.MissionLogics;
 
 namespace SandBox.Missions.MissionLogics.Hideout;
 
@@ -59,7 +61,7 @@ public class HideoutMissionController : MissionLogic, IMissionAgentSpawnLogic, I
 			{
 				if (BattleSideEnum.Attacker == _side)
 				{
-					Mission.Current.SpawnTroop(list2[i], isPlayerSide: true, hasFormation: true, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: true, wieldInitialWeapons: true, forceDismounted: true, null, null);
+					Mission.Current.SpawnTroop(list2[i], isPlayerSide: true, hasFormation: true, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: true, wieldInitialWeapons: true, null, null);
 					_numberOfSpawnedTroops++;
 				}
 				else
@@ -98,7 +100,7 @@ public class HideoutMissionController : MissionLogic, IMissionAgentSpawnLogic, I
 					{
 						MatrixFrame globalFrame = standingPoint.GameEntity.GetGlobalFrame();
 						globalFrame.rotation.OrthonormalizeAccordingToForwardAndKeepUpAsZAxis();
-						Agent agent = Mission.Current.SpawnTroop(list2[i], isPlayerSide: false, hasFormation: false, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: false, wieldInitialWeapons: false, forceDismounted: false, globalFrame.origin, globalFrame.rotation.f.AsVec2.Normalized(), "_hideout_bandit");
+						Agent agent = Mission.Current.SpawnTroop(list2[i], isPlayerSide: false, hasFormation: false, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: false, wieldInitialWeapons: false, globalFrame.origin, globalFrame.rotation.f.AsVec2.Normalized(), "_hideout_bandit");
 						InitializeBanditAgent(agent, standingPoint, flag, defenderAgentObjects);
 						_numberOfSpawnedTroops++;
 						int groupId = ((AnimationPoint)standingPoint).GroupId;
@@ -143,7 +145,8 @@ public class HideoutMissionController : MissionLogic, IMissionAgentSpawnLogic, I
 				IAgentOriginBase agentOriginBase = list.Find((IAgentOriginBase t) => t.Troop == overriddenHideoutBossCharacterObject);
 				MatrixFrame matrixFrame = spawnFrames.FirstOrDefault();
 				matrixFrame.rotation.OrthonormalizeAccordingToForwardAndKeepUpAsZAxis();
-				Agent agent = Mission.Current.SpawnTroop(agentOriginBase, isPlayerSide: false, hasFormation: false, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: false, wieldInitialWeapons: false, forceDismounted: false, matrixFrame.origin, matrixFrame.rotation.f.AsVec2.Normalized(), "_hideout_bandit");
+				Agent agent = Mission.Current.SpawnTroop(agentOriginBase, isPlayerSide: false, hasFormation: false, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: false, wieldInitialWeapons: false, matrixFrame.origin, matrixFrame.rotation.f.AsVec2.Normalized(), "_hideout_bandit");
+				_numberOfSpawnedTroops++;
 				AgentFlag agentFlags = agent.GetAgentFlags();
 				if (agentFlags.HasAnyFlag(AgentFlag.CanRetreat))
 				{
@@ -155,7 +158,7 @@ public class HideoutMissionController : MissionLogic, IMissionAgentSpawnLogic, I
 			{
 				MatrixFrame matrixFrame2 = spawnFrames.FirstOrDefault();
 				matrixFrame2.rotation.OrthonormalizeAccordingToForwardAndKeepUpAsZAxis();
-				Agent agent2 = Mission.Current.SpawnTroop(list[i], isPlayerSide: false, hasFormation: false, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: false, wieldInitialWeapons: false, forceDismounted: false, matrixFrame2.origin, matrixFrame2.rotation.f.AsVec2.Normalized(), "_hideout_bandit");
+				Agent agent2 = Mission.Current.SpawnTroop(list[i], isPlayerSide: false, hasFormation: false, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: false, wieldInitialWeapons: false, matrixFrame2.origin, matrixFrame2.rotation.f.AsVec2.Normalized(), "_hideout_bandit");
 				AgentFlag agentFlags2 = agent2.GetAgentFlags();
 				if (agentFlags2.HasAnyFlag(AgentFlag.CanRetreat))
 				{
@@ -179,7 +182,7 @@ public class HideoutMissionController : MissionLogic, IMissionAgentSpawnLogic, I
 
 		private void InitializeBanditAgent(Agent agent, StandingPoint spawnPoint, bool isPatrolling, Dictionary<Agent, UsedObject> defenderAgentObjects)
 		{
-			UsableMachine usableMachine = (isPatrolling ? spawnPoint.GameEntity.Parent.GetScriptComponents<PatrolArea>().FirstOrDefault() : spawnPoint.GameEntity.Parent.GetScriptComponents<UsableMachine>().FirstOrDefault());
+			UsableMachine usableMachine = (isPatrolling ? spawnPoint.GameEntity.Parent.GetFirstScriptOfType<PatrolArea>() : spawnPoint.GameEntity.Parent.GetFirstScriptOfType<UsableMachine>());
 			if (isPatrolling)
 			{
 				((IDetachment)usableMachine).AddAgent(agent, -1, Agent.AIScriptedFrameFlags.None);
@@ -291,8 +294,19 @@ public class HideoutMissionController : MissionLogic, IMissionAgentSpawnLogic, I
 
 	private HideoutCinematicController _cinematicController;
 
+	private MissionObjectiveLogic _missionObjectiveLogic;
+
+	private ClearTheMainCampObjective _clearTheMainCampObjective;
+
+	private DefeatHideoutBossObjective _defeatHideoutBossObjective;
+
+	private readonly List<Agent> _clearObjectiveTargetAgents = new List<Agent>();
+
+	public BattleSideEnum PlayerSide { get; private set; }
+
 	public HideoutMissionController(IMissionTroopSupplier[] suppliers, BattleSideEnum playerSide, int firstPhaseEnemyTroopCount, int firstPhasePlayerSideTroopCount)
 	{
+		PlayerSide = playerSide;
 		_areaMarkers = new List<CommonAreaMarker>();
 		_patrolAreas = new List<PatrolArea>();
 		_defenderAgentObjects = new Dictionary<Agent, UsedObject>();
@@ -322,8 +336,14 @@ public class HideoutMissionController : MissionLogic, IMissionAgentSpawnLogic, I
 		_battleEndLogic.ChangeCanCheckForEndCondition(canCheckForEndCondition: false);
 		_agentVictoryLogic = base.Mission.GetMissionBehavior<AgentVictoryLogic>();
 		_cinematicController = base.Mission.GetMissionBehavior<HideoutCinematicController>();
+		_missionObjectiveLogic = base.Mission.GetMissionBehavior<MissionObjectiveLogic>();
 		base.Mission.IsMainAgentObjectInteractionEnabled = false;
 		_cinematicController = base.Mission.GetMissionBehavior<HideoutCinematicController>();
+		foreach (StealthAreaUsePoint item in base.Mission.MissionObjects.FindAllWithType<StealthAreaUsePoint>())
+		{
+			item.DisableStealthAreaUsePoint();
+		}
+		base.Mission.GetAgentTroopClass_Override += GetHideoutMissionTroopClass;
 	}
 
 	public override void OnObjectStoppedBeingUsed(Agent userAgent, UsableMissionObject usedObject)
@@ -395,6 +415,10 @@ public class HideoutMissionController : MissionLogic, IMissionAgentSpawnLogic, I
 
 	public override void OnAgentRemoved(Agent affectedAgent, Agent affectorAgent, AgentState agentState, KillingBlow blow)
 	{
+		if (_clearObjectiveTargetAgents.Contains(affectedAgent))
+		{
+			_clearObjectiveTargetAgents.Remove(affectedAgent);
+		}
 		if (_hideoutMissionState == HideoutMissionState.BossFightWithDuel)
 		{
 			foreach (Agent agent in base.Mission.Agents)
@@ -412,6 +436,11 @@ public class HideoutMissionController : MissionLogic, IMissionAgentSpawnLogic, I
 			affectedAgent.Formation = null;
 			base.Mission.PlayerTeam.PlayerOrderController.SetOrder(OrderType.Retreat);
 		}
+	}
+
+	public override void OnMissionStateFinalized()
+	{
+		base.Mission.GetAgentTroopClass_Override -= GetHideoutMissionTroopClass;
 	}
 
 	public void SetOverriddenHideoutBossCharacterObject(CharacterObject characterObject)
@@ -442,7 +471,7 @@ public class HideoutMissionController : MissionLogic, IMissionAgentSpawnLogic, I
 			{
 				if (_missionSides[i].NumberOfTroopsNotSupplied <= _firstPhaseEnemyTroopCount)
 				{
-					Debug.FailedAssert("_missionSides[i].NumberOfTroopsNotSupplied <= _firstPhaseEnemyTroopCount", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\Missions\\MissionLogics\\Hideout\\HideoutMissionController.cs", "InitializeMission", 542);
+					Debug.FailedAssert("_missionSides[i].NumberOfTroopsNotSupplied <= _firstPhaseEnemyTroopCount", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\Missions\\MissionLogics\\Hideout\\HideoutMissionController.cs", "InitializeMission", 569);
 					_firstPhaseEnemyTroopCount = (int)((float)_missionSides[i].NumberOfTroopsNotSupplied * 0.7f);
 				}
 				spawnCount = ((_hideoutMissionState == HideoutMissionState.InitialFightBeforeBossFight) ? _firstPhaseEnemyTroopCount : _missionSides[i].NumberOfTroopsNotSupplied);
@@ -450,6 +479,12 @@ public class HideoutMissionController : MissionLogic, IMissionAgentSpawnLogic, I
 			_missionSides[i].SpawnTroops(_areaMarkers, _patrolAreas, _defenderAgentObjects, spawnCount);
 		}
 		Mission.Current.OnDeploymentFinished();
+		foreach (Agent activeAgent in base.Mission.PlayerEnemyTeam.ActiveAgents)
+		{
+			_clearObjectiveTargetAgents.Add(activeAgent);
+		}
+		_clearTheMainCampObjective = new ClearTheMainCampObjective(base.Mission, _clearObjectiveTargetAgents);
+		_missionObjectiveLogic.StartObjective(_clearTheMainCampObjective);
 	}
 
 	private void UsedObjectTick(float dt)
@@ -497,6 +532,7 @@ public class HideoutMissionController : MissionLogic, IMissionAgentSpawnLogic, I
 			}
 			_battleEndLogic.ChangeCanCheckForEndCondition(canCheckForEndCondition: true);
 			_battleResolved = true;
+			_missionObjectiveLogic.CompleteCurrentObjective();
 		}
 		else
 		{
@@ -515,6 +551,7 @@ public class HideoutMissionController : MissionLogic, IMissionAgentSpawnLogic, I
 				else if (_firstPhaseEndTimer.Check(base.Mission.CurrentTime))
 				{
 					_cinematicController.StartCinematic(OnInitialFadeOutOver, OnCutSceneOver);
+					_missionObjectiveLogic.CompleteCurrentObjective();
 				}
 			}
 			else
@@ -526,6 +563,7 @@ public class HideoutMissionController : MissionLogic, IMissionAgentSpawnLogic, I
 				_battleEndLogic.ChangeCanCheckForEndCondition(canCheckForEndCondition: true);
 				MapEvent.PlayerMapEvent.SetOverrideWinner(BattleSideEnum.Attacker);
 				_battleResolved = true;
+				_missionObjectiveLogic.CompleteCurrentObjective();
 			}
 		}
 	}
@@ -545,7 +583,7 @@ public class HideoutMissionController : MissionLogic, IMissionAgentSpawnLogic, I
 		return _missionSides[(int)side].TroopSpawningActive;
 	}
 
-	public float GetReinforcementInterval()
+	public float GetReinforcementInterval(BattleSideEnum battleSide = BattleSideEnum.None)
 	{
 		return 0f;
 	}
@@ -697,6 +735,11 @@ public class HideoutMissionController : MissionLogic, IMissionAgentSpawnLogic, I
 		}
 	}
 
+	private FormationClass GetHideoutMissionTroopClass(BattleSideEnum battleSide, BasicCharacterObject agentCharacter)
+	{
+		return agentCharacter.GetFormationClass().DismountedClass();
+	}
+
 	public static void StartBossFightDuelMode()
 	{
 		(Mission.Current?.GetMissionBehavior<HideoutMissionController>())?.StartBossFightDuelModeInternal();
@@ -724,6 +767,8 @@ public class HideoutMissionController : MissionLogic, IMissionAgentSpawnLogic, I
 		}
 		_bossAgent.SetWatchState(Agent.WatchState.Alarmed);
 		_hideoutMissionState = HideoutMissionState.BossFightWithDuel;
+		_defeatHideoutBossObjective = new DefeatHideoutBossObjective(base.Mission, isDuel: true);
+		_missionObjectiveLogic.StartObjective(_defeatHideoutBossObjective);
 	}
 
 	public static void StartBossFightBattleMode()
@@ -745,6 +790,8 @@ public class HideoutMissionController : MissionLogic, IMissionAgentSpawnLogic, I
 				item.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
 			}
 		}
+		_defeatHideoutBossObjective = new DefeatHideoutBossObjective(base.Mission, isDuel: false);
+		_missionObjectiveLogic.StartObjective(_defeatHideoutBossObjective);
 	}
 
 	public IEnumerable<IAgentOriginBase> GetAllTroopsForSide(BattleSideEnum side)

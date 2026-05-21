@@ -177,15 +177,7 @@ public class NavigatableGridWidget : GridWidget
 	{
 		if (propertyName == "IsVisible")
 		{
-			Widget widget = (Widget)child;
-			if (!value)
-			{
-				widget.GamepadNavigationIndex = -1;
-			}
-			else
-			{
-				SetNavigationIndexForChild(widget);
-			}
+			_areIndicesDirty = true;
 		}
 	}
 
@@ -208,7 +200,12 @@ public class NavigatableGridWidget : GridWidget
 
 	private void SetNavigationIndexForChild(Widget widget)
 	{
-		int num = MinIndex + widget.GetSiblingIndex() * StepSize;
+		if (!widget.IsVisible)
+		{
+			widget.GamepadNavigationIndex = -1;
+			return;
+		}
+		int num = MinIndex + widget.GetVisibleSiblingIndex() * StepSize;
 		if (num <= MaxIndex)
 		{
 			widget.GamepadNavigationIndex = num;

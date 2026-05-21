@@ -183,12 +183,50 @@ internal class ContainerSaveData
 		foreach (ObjectSaveData childStruct in _childStructs)
 		{
 			TypeDefinition structDefinition = Context.DefinitionContext.GetStructDefinition(childStruct.Type);
-			if (structDefinition == null || !(structDefinition is StructDefinition) || !(childStruct.Target is ISavedStruct savedStruct) || !savedStruct.IsDefault())
+			if (ShouldSaveStruct(structDefinition, childStruct))
 			{
 				num += childStruct.GetDataSize() - 8;
 			}
 		}
 		return num;
+	}
+
+	private bool ShouldSaveStruct(TypeDefinition structDefinition, ObjectSaveData objectSaveData)
+	{
+		if (structDefinition == null || !(structDefinition is StructDefinition) || !(objectSaveData.Target is ISavedStruct savedStruct) || !savedStruct.IsDefault())
+		{
+			return true;
+		}
+		ContainerSaveId containerSaveId = (ContainerSaveId)_typeDefinition.SaveId;
+		if (_containerType != ContainerType.Dictionary)
+		{
+			return containerSaveId.KeyId != structDefinition.SaveId;
+		}
+		SaveId keyId = containerSaveId.KeyId;
+		SaveId valueId = containerSaveId.ValueId;
+		if (IsKey(objectSaveData))
+		{
+			return keyId != structDefinition.SaveId;
+		}
+		return valueId != structDefinition.SaveId;
+	}
+
+	private bool IsKey(ObjectSaveData objectSaveData)
+	{
+		for (int i = 0; i < _elementCount; i++)
+		{
+			ElementSaveData elementSaveData = _keys[i];
+			ElementSaveData elementSaveData2 = _values[i];
+			if (elementSaveData != null && objectSaveData.ObjectId == elementSaveData.ElementIndex)
+			{
+				return true;
+			}
+			if (elementSaveData2 != null && objectSaveData.ObjectId == elementSaveData2.ElementIndex)
+			{
+				return false;
+			}
+		}
+		return false;
 	}
 
 	private int GetMemberEntrySize()
@@ -202,7 +240,7 @@ internal class ContainerSaveData
 		foreach (ObjectSaveData childStruct in _childStructs)
 		{
 			TypeDefinition structDefinition = Context.DefinitionContext.GetStructDefinition(childStruct.Type);
-			if (structDefinition == null || !(structDefinition is StructDefinition) || !(childStruct.Target is ISavedStruct savedStruct) || !savedStruct.IsDefault())
+			if (ShouldSaveStruct(structDefinition, childStruct))
 			{
 				num += childStruct.GetEntryCount();
 			}
@@ -216,7 +254,7 @@ internal class ContainerSaveData
 		foreach (ObjectSaveData childStruct in _childStructs)
 		{
 			TypeDefinition structDefinition = Context.DefinitionContext.GetStructDefinition(childStruct.Type);
-			if (structDefinition == null || !(structDefinition is StructDefinition) || !(childStruct.Target is ISavedStruct savedStruct) || !savedStruct.IsDefault())
+			if (ShouldSaveStruct(structDefinition, childStruct))
 			{
 				num += childStruct.GetFolderCount();
 			}
@@ -234,7 +272,7 @@ internal class ContainerSaveData
 		foreach (ObjectSaveData childStruct in _childStructs)
 		{
 			TypeDefinition structDefinition = Context.DefinitionContext.GetStructDefinition(childStruct.Type);
-			if (structDefinition == null || !(structDefinition is StructDefinition) || !(childStruct.Target is ISavedStruct savedStruct) || !savedStruct.IsDefault())
+			if (ShouldSaveStruct(structDefinition, childStruct))
 			{
 				childStruct.SaveDataFolder(writer, 0, ref folderId);
 			}
@@ -257,7 +295,7 @@ internal class ContainerSaveData
 		foreach (ObjectSaveData childStruct in _childStructs)
 		{
 			TypeDefinition structDefinition = Context.DefinitionContext.GetStructDefinition(childStruct.Type);
-			if (structDefinition == null || !(structDefinition is StructDefinition) || !(childStruct.Target is ISavedStruct savedStruct) || !savedStruct.IsDefault())
+			if (ShouldSaveStruct(structDefinition, childStruct))
 			{
 				childStruct.SaveTo(writer, ref folderId);
 			}
@@ -287,7 +325,7 @@ internal class ContainerSaveData
 		foreach (ObjectSaveData childStruct in _childStructs)
 		{
 			TypeDefinition structDefinition = Context.DefinitionContext.GetStructDefinition(childStruct.Type);
-			if (structDefinition == null || !(structDefinition is StructDefinition) || !(childStruct.Target is ISavedStruct savedStruct) || !savedStruct.IsDefault())
+			if (ShouldSaveStruct(structDefinition, childStruct))
 			{
 				childStruct.SaveTo(saveEntryFolder, archiveContext);
 			}

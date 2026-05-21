@@ -1,6 +1,6 @@
-using System.Collections.Generic;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
@@ -29,7 +29,7 @@ public abstract class ArmyManagementCalculationModel : MBGameModel<ArmyManagemen
 
 	public abstract float DailyBeingAtArmyInfluenceAward(MobileParty armyMemberParty);
 
-	public abstract List<MobileParty> GetMobilePartiesToCallToArmy(MobileParty leaderParty);
+	public abstract bool CanLordCreateArmy(MobileParty leaderParty, out MBList<MobileParty> possibleArmyMembers);
 
 	public abstract int CalculateTotalInfluenceCost(Army army, float percentage);
 

@@ -3351,17 +3351,17 @@ public static class CampaignCheats
 	{
 		Func<string, string, CheatTextControl, bool> func = delegate(string requestedIdLocal, string idToCompare, CheatTextControl cheatTextFlag)
 		{
-			if (cheatTextFlag.HasFlag(CheatTextControl.RemoveEmptySpace))
+			if (cheatTextFlag.HasAnyFlag(CheatTextControl.RemoveEmptySpace))
 			{
 				requestedIdLocal = requestedIdLocal.Replace(" ", "");
 				idToCompare = idToCompare.Replace(" ", "");
 			}
-			if (cheatTextFlag.HasFlag(CheatTextControl.IgnoreCase))
+			if (cheatTextFlag.HasAnyFlag(CheatTextControl.IgnoreCase))
 			{
 				requestedIdLocal = requestedIdLocal.ToLower();
 				idToCompare = idToCompare.ToLower();
 			}
-			return idToCompare.Equals(requestedIdLocal) || (cheatTextFlag.HasFlag(CheatTextControl.ContainId) && idToCompare.Contains(requestedIdLocal));
+			return idToCompare.Equals(requestedIdLocal) || (cheatTextFlag.HasAnyFlag(CheatTextControl.ContainId) && idToCompare.Contains(requestedIdLocal));
 		};
 		obj = null;
 		errorMessage = string.Empty;
@@ -3448,9 +3448,9 @@ public static class CampaignCheats
 		return null;
 	}
 
-	public static bool IsPartySuitableToUseCheat(PartyBase party)
+	public static bool IsPartySuitableToUseCheat(PartyBase party, bool ignoreMapEvents = false)
 	{
-		if (party.MapEvent == null && party.SiegeEvent == null && party.IsActive)
+		if ((party.MapEvent == null || ignoreMapEvents) && party.SiegeEvent == null && party.IsActive)
 		{
 			if (party.LeaderHero != null)
 			{

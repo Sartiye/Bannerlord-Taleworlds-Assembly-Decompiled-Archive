@@ -657,9 +657,9 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 						weakGameEntity = item2;
 						continue;
 					}
-					LadderQueueManager? ladderQueueManager = item2.GetScriptComponents<LadderQueueManager>().FirstOrDefault();
-					ladderQueueManager.Initialize(-1, MatrixFrame.Identity, Vec3.Zero, BattleSideEnum.None, int.MaxValue, 1f, 5f, 5f, 5f, 0f, blockUsage: false, 1f, 0f, 0f, doesManageMultipleIDs: false, -1, -1, int.MaxValue, int.MaxValue);
-					ladderQueueManager.DeactivateImmediate();
+					LadderQueueManager firstScriptOfType = item2.GetFirstScriptOfType<LadderQueueManager>();
+					firstScriptOfType.Initialize(-1, MatrixFrame.Identity, Vec3.Zero, BattleSideEnum.None, int.MaxValue, 1f, 5f, 5f, 5f, 0f, blockUsage: false, 1f, 0f, 0f, doesManageMultipleIDs: false, -1, -1, int.MaxValue, int.MaxValue);
+					firstScriptOfType.DeactivateImmediate();
 				}
 				int num2 = 0;
 				int num3 = 1;
@@ -675,14 +675,14 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 						break;
 					}
 				}
-				LadderQueueManager ladderQueueManager2 = weakGameEntity.GetScriptComponents<LadderQueueManager>().FirstOrDefault();
-				if (ladderQueueManager2 != null)
+				LadderQueueManager firstScriptOfType2 = weakGameEntity.GetFirstScriptOfType<LadderQueueManager>();
+				if (firstScriptOfType2 != null)
 				{
 					MatrixFrame identity = MatrixFrame.Identity;
 					identity.rotation.RotateAboutSide(System.MathF.PI / 2f);
 					identity.rotation.RotateAboutForward(System.MathF.PI / 8f);
-					ladderQueueManager2.Initialize(DynamicNavmeshIdStart + 5, identity, new Vec3(0f, 0f, 1f), BattleSideEnum.Attacker, list3.Count * 2, System.MathF.PI / 4f, 2f, 1f, 4f, 3f, blockUsage: false, 0.8f, (float)num2 * 2f / 5f, 5f, list3.Count > 1, DynamicNavmeshIdStart + 6, DynamicNavmeshIdStart + 7, num2 * TaleWorlds.Library.MathF.Round((float)list3.Count * 0.666f), list3.Count + 1);
-					_queueManagers.Add(ladderQueueManager2);
+					firstScriptOfType2.Initialize(DynamicNavmeshIdStart + 5, identity, new Vec3(0f, 0f, 1f), BattleSideEnum.Attacker, list3.Count * 2, System.MathF.PI / 4f, 2f, 1f, 4f, 3f, blockUsage: false, 0.8f, (float)num2 * 2f / 5f, 5f, list3.Count > 1, DynamicNavmeshIdStart + 6, DynamicNavmeshIdStart + 7, num2 * TaleWorlds.Library.MathF.Round((float)list3.Count * 0.666f), list3.Count + 1);
+					_queueManagers.Add(firstScriptOfType2);
 				}
 				base.GameEntity.Scene.MarkFacesWithIdAsLadder(5, isLadder: true);
 				base.GameEntity.Scene.MarkFacesWithIdAsLadder(6, isLadder: true);
@@ -691,15 +691,15 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 			else
 			{
 				_hasLadders = false;
-				LadderQueueManager firstScriptOfType = CleanState.GetFirstScriptOfType<LadderQueueManager>();
-				if (firstScriptOfType != null)
+				LadderQueueManager firstScriptOfType3 = CleanState.GetFirstScriptOfType<LadderQueueManager>();
+				if (firstScriptOfType3 != null)
 				{
 					MatrixFrame identity2 = MatrixFrame.Identity;
 					identity2.origin.y += 4f;
 					identity2.rotation.RotateAboutSide(-System.MathF.PI / 2f);
 					identity2.rotation.RotateAboutUp(System.MathF.PI);
-					firstScriptOfType.Initialize(DynamicNavmeshIdStart + 2, identity2, new Vec3(0f, -1f), BattleSideEnum.Attacker, 15, System.MathF.PI / 4f, 2f, 1f, 3f, 1f, blockUsage: false, 0.8f, 4f, 5f, doesManageMultipleIDs: false, -2, -2, int.MaxValue, 15);
-					_queueManagers.Add(firstScriptOfType);
+					firstScriptOfType3.Initialize(DynamicNavmeshIdStart + 2, identity2, new Vec3(0f, -1f), BattleSideEnum.Attacker, 15, System.MathF.PI / 4f, 2f, 1f, 3f, 1f, blockUsage: false, 0.8f, 4f, 5f, doesManageMultipleIDs: false, -2, -2, int.MaxValue, 15);
+					_queueManagers.Add(firstScriptOfType3);
 				}
 			}
 		}
@@ -857,7 +857,7 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 			}
 			break;
 		default:
-			Debug.FailedAssert("Invalid gate state.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\SiegeTower.cs", "OnTick", 961);
+			Debug.FailedAssert("Invalid gate state.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\SiegeTower.cs", "OnTick", 960);
 			break;
 		case GateState.Open:
 			break;

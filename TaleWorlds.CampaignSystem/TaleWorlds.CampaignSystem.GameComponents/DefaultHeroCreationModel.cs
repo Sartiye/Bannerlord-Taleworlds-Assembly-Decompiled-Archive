@@ -325,17 +325,16 @@ public class DefaultHeroCreationModel : HeroCreationModel
 
 	public override Equipment GetCivilianEquipment(Hero hero)
 	{
-		if (hero.Mother != null)
+		if (hero.Age < (float)Campaign.Current.Models.AgeModel.HeroComesOfAge)
 		{
-			return Campaign.Current.Models.EquipmentSelectionModel.GetEquipmentRostersForDeliveredOffspring(hero).GetRandomElementInefficiently().GetCivilianEquipments()
-				.GetRandomElementInefficiently();
+			return Campaign.Current.Models.EquipmentSelectionModel.GetEquipmentForDeliveredOffspring(hero);
 		}
 		return hero.CivilianEquipment;
 	}
 
 	public override Equipment GetBattleEquipment(Hero hero)
 	{
-		if (hero.Mother != null)
+		if (hero.Age < (float)Campaign.Current.Models.AgeModel.HeroComesOfAge)
 		{
 			Equipment equipment = new Equipment(Equipment.EquipmentType.Battle);
 			equipment.FillFrom(hero.CivilianEquipment, useSourceEquipmentType: false);
@@ -423,7 +422,7 @@ public class DefaultHeroCreationModel : HeroCreationModel
 		int num3 = list.Sum(((SkillObject, int) x) => x.Item2);
 		if (num3 == 0)
 		{
-			Debug.FailedAssert("Neither parent has any skills!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultHeroCreationModel.cs", "GetInheritedSkillsForHero", 513);
+			Debug.FailedAssert("Neither parent has any skills!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultHeroCreationModel.cs", "GetInheritedSkillsForHero", 512);
 			return new List<(SkillObject, int)>();
 		}
 		float num4 = (float)(112 * num) / (float)num3;

@@ -264,8 +264,9 @@ public class ItemTableau
 		_tableauScene.SetName("ItemTableau");
 		_tableauScene.DisableStaticShadows(value: true);
 		_tableauScene.SetAtmosphereWithName("character_menu_a");
+		Vec3 color = new Vec3(2.15f, 2.2f, 2.25f) * 2.25f;
 		Vec3 direction = new Vec3(1f, -1f, -1f);
-		_tableauScene.SetSunDirection(ref direction);
+		_tableauScene.SetSunLight(ref color, ref direction);
 		_tableauScene.SetClothSimulationState(state: false);
 		ResetCamera();
 		_initialized = true;
@@ -648,7 +649,9 @@ public class ItemTableau
 		{
 			float horizontalFov = _camera.HorizontalFov;
 			horizontalFov += _curZoomSpeed;
-			horizontalFov = MBMath.ClampFloat(horizontalFov, 0.1f, 2f);
+			float minValue = 0.61086524f;
+			float maxValue = System.MathF.PI * 13f / 36f;
+			horizontalFov = MBMath.ClampFloat(horizontalFov, minValue, maxValue);
 			SetCamFovHorizontal(horizontalFov);
 			if (dt > 0f)
 			{

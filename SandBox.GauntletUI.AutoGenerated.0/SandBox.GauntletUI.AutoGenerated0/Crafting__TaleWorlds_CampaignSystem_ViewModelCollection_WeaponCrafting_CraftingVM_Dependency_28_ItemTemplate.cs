@@ -216,12 +216,12 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_0_1.MarginBottom = 2f;
 		_widget_0_1.MarginLeft = 2f;
 		_widget_0_1.MarginRight = 2f;
-		_widget_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_1.UpdateChildrenStates = true;
 		_widget_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1_0.MarginTop = 7f;
-		_widget_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_1_0.UpdateChildrenStates = true;
 		_widget_0_1_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1_0_0.HeightSizePolicy = SizePolicy.Fixed;
@@ -281,7 +281,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_0_1_2_0_0.ClipContents = true;
 		_widget_0_1_2_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1_2_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_1_2_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1_2_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_1_2_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1_2_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1_2_0_1.Brush.FontSize = 20;
@@ -331,7 +331,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_0_2.SuggestedHeight = 50f;
 		_widget_0_2.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_0_2.MarginBottom = 10f;
-		_widget_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_2_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_2_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_2_0.SuggestedHeight = 16f;

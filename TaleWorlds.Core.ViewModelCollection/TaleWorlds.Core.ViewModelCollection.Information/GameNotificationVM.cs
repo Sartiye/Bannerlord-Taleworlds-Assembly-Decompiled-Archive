@@ -10,7 +10,7 @@ public class GameNotificationVM : ViewModel
 {
 	private readonly List<GameNotificationItemVM> _items;
 
-	private const float MinimumDisplayTimeInSeconds = 1f;
+	private const float MinimumDisplayTimeInSeconds = 0.6f;
 
 	private const float ExtraDisplayTimeInSeconds = 1f;
 
@@ -20,17 +20,19 @@ public class GameNotificationVM : ViewModel
 
 	private int _notificationId;
 
-	private float _totalTime;
-
-	private float _timer;
+	private float _currentNotificationDurationInSeconds;
 
 	private bool _isPaused;
+
+	private bool _mustFadeOutCurrentNotification;
+
+	private float _currentNotificationFadeOutDelayInSeconds;
 
 	private float CurrentNotificationOnScreenTime
 	{
 		get
 		{
-			float num = 1f;
+			float num = 0.6f;
 			num += (float)CurrentNotification.ExtraTimeInMs / 1000f;
 			int numberOfWords = GetNumberOfWords(CurrentNotification.GameNotificationText);
 			if (numberOfWords > 4)
@@ -99,35 +101,18 @@ public class GameNotificationVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public float TotalTime
+	public float CurrentNotificationDurationInSeconds
 	{
 		get
 		{
-			return _totalTime;
+			return _currentNotificationDurationInSeconds;
 		}
 		set
 		{
-			if (value != _totalTime)
+			if (value != _currentNotificationDurationInSeconds)
 			{
-				_totalTime = value;
-				OnPropertyChangedWithValue(value, "TotalTime");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public float Timer
-	{
-		get
-		{
-			return _timer;
-		}
-		set
-		{
-			if (value != _timer)
-			{
-				_timer = value;
-				OnPropertyChangedWithValue(value, "Timer");
+				_currentNotificationDurationInSeconds = value;
+				OnPropertyChangedWithValue(value, "CurrentNotificationDurationInSeconds");
 			}
 		}
 	}
@@ -149,28 +134,61 @@ public class GameNotificationVM : ViewModel
 		}
 	}
 
+	[DataSourceProperty]
+	public bool MustFadeOutCurrentNotification
+	{
+		get
+		{
+			return _mustFadeOutCurrentNotification;
+		}
+		set
+		{
+			if (value != _mustFadeOutCurrentNotification)
+			{
+				_mustFadeOutCurrentNotification = value;
+				OnPropertyChangedWithValue(value, "MustFadeOutCurrentNotification");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float CurrentNotificationFadeOutDelayInSeconds
+	{
+		get
+		{
+			return _currentNotificationFadeOutDelayInSeconds;
+		}
+		set
+		{
+			if (value != _currentNotificationFadeOutDelayInSeconds)
+			{
+				_currentNotificationFadeOutDelayInSeconds = value;
+				OnPropertyChangedWithValue(value, "CurrentNotificationFadeOutDelayInSeconds");
+			}
+		}
+	}
+
 	public event Action<GameNotificationItemVM> CurrentNotificationChanged;
 
 	public void FadeOutCurrentNotification(bool useExtraDisplayTime = false)
 	{
 		if (GotNotification)
 		{
-			Timer = TotalTime - 0.2f;
+			MustFadeOutCurrentNotification = true;
 			if (useExtraDisplayTime)
 			{
-				Timer -= (float)CurrentNotification.ExtraTimeInMs / 1000f;
+				CurrentNotificationFadeOutDelayInSeconds = (float)CurrentNotification.ExtraTimeInMs / 1000f;
 			}
 		}
 	}
 
 	public void SkipCurrentNotification()
 	{
-		Timer = 0f;
 		if (_items.Count > 0)
 		{
 			CurrentNotification = _items[0];
 			_items.RemoveAt(0);
-			TotalTime = CurrentNotificationOnScreenTime;
+			CurrentNotificationDurationInSeconds = CurrentNotificationOnScreenTime;
 		}
 		else
 		{
@@ -189,30 +207,6 @@ public class GameNotificationVM : ViewModel
 	{
 		_items.Clear();
 		GotNotification = false;
-		Timer = CurrentNotificationOnScreenTime * 2f;
-	}
-
-	public void Tick(float dt)
-	{
-		if (IsPaused)
-		{
-			return;
-		}
-		Timer += dt;
-		if (GotNotification && Timer >= CurrentNotificationOnScreenTime)
-		{
-			Timer = 0f;
-			if (_items.Count > 0)
-			{
-				CurrentNotification = _items[0];
-				_items.RemoveAt(0);
-				TotalTime = CurrentNotificationOnScreenTime;
-			}
-			else
-			{
-				GotNotification = false;
-			}
-		}
 	}
 
 	public MBInformationManager.DialogNotificationHandle AddDialogNotification(TextObject text, int extraTimeInMs, BasicCharacterObject announcerCharacter, Equipment equipment, MBInformationManager.NotificationPriority priority, string dialogSoundPath)
@@ -234,9 +228,8 @@ public class GameNotificationVM : ViewModel
 		else
 		{
 			CurrentNotification = gameNotificationItemVM;
-			TotalTime = CurrentNotificationOnScreenTime;
+			CurrentNotificationDurationInSeconds = CurrentNotificationOnScreenTime;
 			GotNotification = true;
-			Timer = 0f;
 		}
 		return gameNotificationItemVM.Handle;
 	}
@@ -307,7 +300,7 @@ public class GameNotificationVM : ViewModel
 	{
 		if (string.IsNullOrEmpty(notificationText))
 		{
-			Debug.FailedAssert("Quick information message is empty", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core.ViewModelCollection\\Information\\GameNotificationVM.cs", "AddGameNotification", 216);
+			Debug.FailedAssert("Quick information message is empty", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core.ViewModelCollection\\Information\\GameNotificationVM.cs", "AddGameNotification", 183);
 		}
 		GameNotificationItemVM gameNotificationItemVM = new GameNotificationItemVM(notificationText, extraTimeInMs, announcerCharacter, equipment, soundId, 0, isDialog: false, null);
 		if ((!GotNotification || CurrentNotification.GameNotificationText != notificationText) && !_items.Any((GameNotificationItemVM i) => i.GameNotificationText == notificationText))
@@ -318,9 +311,8 @@ public class GameNotificationVM : ViewModel
 				return;
 			}
 			CurrentNotification = gameNotificationItemVM;
-			TotalTime = CurrentNotificationOnScreenTime;
+			CurrentNotificationDurationInSeconds = CurrentNotificationOnScreenTime;
 			GotNotification = true;
-			Timer = 0f;
 		}
 	}
 

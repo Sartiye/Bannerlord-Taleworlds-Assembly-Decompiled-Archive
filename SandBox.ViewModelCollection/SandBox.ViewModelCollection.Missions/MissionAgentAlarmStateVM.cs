@@ -132,27 +132,22 @@ public class MissionAgentAlarmStateVM : ViewModel
 			{
 				missionAgentAlarmTargetVM.IsStealthModeEnabled = true;
 				missionAgentAlarmTargetVM.IsMainAgentInVisibilityRange = SandBoxUIHelper.IsAgentInVisibilityRangeApproximate(missionAgentAlarmTargetVM.TargetAgent, Agent.Main);
-				Vec3 origin = _camera.Frame.origin;
-				Vec3 eyeGlobalPosition = missionAgentAlarmTargetVM.TargetAgent.GetEyeGlobalPosition();
-				Mission current = Mission.Current;
-				missionAgentAlarmTargetVM.IsInVision = ((current != null) ? new bool?(!current.Scene.RayCastForClosestEntityOrTerrain(origin, eyeGlobalPosition, out var _, 0.035f)) : null) ?? false;
+				missionAgentAlarmTargetVM.IsInVision = true;
 				missionAgentAlarmTargetVM.IsSuspected = missionAgentAlarmTargetVM.AlarmProgress > 0;
 				missionAgentAlarmTargetVM.UpdateScreenPosition(_camera);
 				missionAgentAlarmTargetVM.UpdateValues();
+				continue;
 			}
-			else
+			missionAgentAlarmTargetVM.IsStealthModeEnabled = isStealthModeEnabled;
+			DisguiseMissionLogic.ShadowingAgentOffenseInfo agentOffenseInfo = _disguiseMissionLogic.GetAgentOffenseInfo(missionAgentAlarmTargetVM.TargetAgent);
+			if (agentOffenseInfo != null)
 			{
-				missionAgentAlarmTargetVM.IsStealthModeEnabled = isStealthModeEnabled;
-				DisguiseMissionLogic.ShadowingAgentOffenseInfo agentOffenseInfo = _disguiseMissionLogic.GetAgentOffenseInfo(missionAgentAlarmTargetVM.TargetAgent);
-				if (agentOffenseInfo != null)
-				{
-					missionAgentAlarmTargetVM.IsMainAgentInVisibilityRange = SandBoxUIHelper.IsAgentInVisibilityRangeApproximate(missionAgentAlarmTargetVM.TargetAgent, Agent.Main);
-					missionAgentAlarmTargetVM.IsInVision = agentOffenseInfo.CanPlayerCameraSeeTheAgent;
-					missionAgentAlarmTargetVM.IsSuspected = missionAgentAlarmTargetVM.AlarmProgress > 0;
-				}
-				missionAgentAlarmTargetVM.UpdateScreenPosition(_camera);
-				missionAgentAlarmTargetVM.UpdateValues();
+				missionAgentAlarmTargetVM.IsMainAgentInVisibilityRange = SandBoxUIHelper.IsAgentInVisibilityRangeApproximate(missionAgentAlarmTargetVM.TargetAgent, Agent.Main);
+				missionAgentAlarmTargetVM.IsInVision = agentOffenseInfo.CanPlayerCameraSeeTheAgent;
+				missionAgentAlarmTargetVM.IsSuspected = missionAgentAlarmTargetVM.AlarmProgress > 0;
 			}
+			missionAgentAlarmTargetVM.UpdateScreenPosition(_camera);
+			missionAgentAlarmTargetVM.UpdateValues();
 		}
 	}
 

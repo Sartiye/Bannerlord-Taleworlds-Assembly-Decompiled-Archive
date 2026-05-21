@@ -7,6 +7,8 @@ namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultBanditDensityModel : BanditDensityModel
 {
+	private const int MinimumTroopCountForHideoutMission = 25;
+
 	private Clan _deserterClan;
 
 	public override int NumberOfMinimumBanditPartiesInAHideoutToInfestIt => 2;
@@ -21,11 +23,11 @@ public class DefaultBanditDensityModel : BanditDensityModel
 
 	public override int NumberOfMinimumBanditTroopsInHideoutMission => 10;
 
-	public override int NumberOfMaximumTroopCountForFirstFightInHideout => MathF.Floor(9f * (2f + Campaign.Current.PlayerProgress));
+	public override int NumberOfMaximumTroopCountForFirstFightInHideout => MathF.Floor(11f * (2f + Campaign.Current.PlayerProgress));
 
 	public override int NumberOfMaximumTroopCountForBossFightInHideout => MathF.Floor(1f + 5f * (1f + Campaign.Current.PlayerProgress));
 
-	public override float SpawnPercentageForFirstFightInHideoutMission => 0.75f;
+	public override float SpawnPercentageForFirstFightInHideoutMission => 0.8f;
 
 	private Clan DeserterClan
 	{
@@ -43,7 +45,7 @@ public class DefaultBanditDensityModel : BanditDensityModel
 	{
 		if (!isAssault)
 		{
-			return 20;
+			return 25;
 		}
 		return 8;
 	}

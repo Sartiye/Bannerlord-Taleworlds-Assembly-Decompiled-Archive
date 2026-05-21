@@ -5,6 +5,7 @@ using SandBox.ViewModelCollection.Nameplate.NameplateNotifications.SettlementNot
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.CampaignSystem.Siege;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
@@ -27,8 +28,9 @@ public class SettlementNameplateVM : NameplateVM
 	public enum RelationType
 	{
 		Neutral,
-		Ally,
-		Enemy
+		SameFaction,
+		Enemy,
+		Ally
 	}
 
 	public enum IssueTypes
@@ -107,6 +109,8 @@ public class SettlementNameplateVM : NameplateVM
 
 	private bool _bindHasPort;
 
+	private int _bindPortLevel;
+
 	private List<Clan> _rebelliousClans;
 
 	private string _name;
@@ -128,6 +132,8 @@ public class SettlementNameplateVM : NameplateVM
 	private bool _isInRange;
 
 	private bool _hasPort;
+
+	private int _portLevel;
 
 	private int _mapEventVisualType;
 
@@ -365,6 +371,22 @@ public class SettlementNameplateVM : NameplateVM
 		}
 	}
 
+	public int PortLevel
+	{
+		get
+		{
+			return _portLevel;
+		}
+		set
+		{
+			if (value != _portLevel)
+			{
+				_portLevel = value;
+				OnPropertyChangedWithValue(value, "PortLevel");
+			}
+		}
+	}
+
 	public int SettlementType
 	{
 		get
@@ -472,7 +494,28 @@ public class SettlementNameplateVM : NameplateVM
 		{
 			_bindIsInRange = Settlement.IsInspected;
 		}
+		if (!(_bindIsVisibleOnMap || forceUpdate))
+		{
+			return;
+		}
 		_bindHasPort = Settlement.HasPort;
+		_bindPortLevel = 0;
+		if (!_bindHasPort)
+		{
+			return;
+		}
+		MBList<Building> mBList = Settlement?.Town?.Buildings;
+		if (mBList == null)
+		{
+			return;
+		}
+		for (int i = 0; i < mBList.Count; i++)
+		{
+			if (mBList[i].BuildingType.StringId == "building_shipyard")
+			{
+				_bindPortLevel = mBList[i].CurrentLevel;
+			}
+		}
 	}
 
 	public override void RefreshRelationStatus()
@@ -487,6 +530,10 @@ public class SettlementNameplateVM : NameplateVM
 			else if (DiplomacyHelper.IsSameFactionAndNotEliminated(Settlement.MapFaction, Hero.MainHero.MapFaction))
 			{
 				_bindRelation = 1;
+			}
+			else if (DiplomacyHelper.HasAllianceWithFaction(Settlement.MapFaction, Hero.MainHero.MapFaction))
+			{
+				_bindRelation = 3;
 			}
 		}
 	}
@@ -512,7 +559,7 @@ public class SettlementNameplateVM : NameplateVM
 		base.RefreshTutorialStatus(newTutorialHighlightElementID);
 		if (Settlement?.Party?.Id == null)
 		{
-			Debug.FailedAssert("Settlement party id is null when refreshing tutorial status", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Nameplate\\SettlementNameplateVM.cs", "RefreshTutorialStatus", 249);
+			Debug.FailedAssert("Settlement party id is null when refreshing tutorial status", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Nameplate\\SettlementNameplateVM.cs", "RefreshTutorialStatus", 271);
 		}
 		else
 		{
@@ -654,6 +701,7 @@ public class SettlementNameplateVM : NameplateVM
 		base.IsVisibleOnMap = _bindIsVisibleOnMap;
 		IsInRange = _bindIsInRange;
 		HasPort = _bindHasPort;
+		PortLevel = _bindPortLevel;
 		IsTracked = _bindIsTracked;
 		base.IsTargetedByTutorial = _bindIsTargetedByTutorial;
 		base.DistanceToCamera = _bindDistanceToCamera;

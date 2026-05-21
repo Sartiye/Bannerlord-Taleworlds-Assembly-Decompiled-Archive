@@ -19,6 +19,13 @@ public class SaveContext : ISaveContext
 		public int ObjectSize;
 
 		public int ContainerSize;
+
+		public override string ToString()
+		{
+			float num = (float)(HeaderSize + StringSize + ObjectSize + ContainerSize) / 1048576f;
+			_ = $"Total size: {num:##.00} MB";
+			return $"[SaveDataSizeRecord] Header size: {HeaderSize}, String Size: {StringSize}, Object Size: {ObjectSize}, Container Size: {ContainerSize}.\nTotal Size: {num}";
+		}
 	}
 
 	public struct SaveStatistics
@@ -117,13 +124,12 @@ public class SaveContext : ISaveContext
 		_locker = new object();
 	}
 
-	private SaveDataSizeRecord CollectSaveDatas()
+	private void CollectSaveDatas()
 	{
-		SaveDataSizeRecord record = default(SaveDataSizeRecord);
-		record.HeaderSize = GetConfigEntrySize();
-		record.StringSize = GetStringFolderSize();
-		record.ObjectSize = 0;
-		record.ContainerSize = 0;
+		SizeRecord.HeaderSize = GetConfigEntrySize();
+		SizeRecord.StringSize = GetStringFolderSize();
+		SizeRecord.ObjectSize = 0;
+		SizeRecord.ContainerSize = 0;
 		using (new PerformanceTestBlock("SaveContext::CollectSaveDataForObject::Objects"))
 		{
 			if (!EnableSaveStatistics)
@@ -132,7 +138,7 @@ public class SaveContext : ISaveContext
 				{
 					for (int l = startInclusive; l < endExclusive; l++)
 					{
-						CollectSaveDataForObject(l, ref record);
+						CollectSaveDataForObject(l, ref SizeRecord);
 					}
 				});
 			}
@@ -140,7 +146,7 @@ public class SaveContext : ISaveContext
 			{
 				for (int i = 0; i < _childObjects.Count; i++)
 				{
-					CollectSaveDataForObject(i, ref record);
+					CollectSaveDataForObject(i, ref SizeRecord);
 				}
 			}
 		}
@@ -152,7 +158,7 @@ public class SaveContext : ISaveContext
 				{
 					for (int k = startInclusive; k < endExclusive; k++)
 					{
-						CollectSaveDataForContainer(k, ref record);
+						CollectSaveDataForContainer(k, ref SizeRecord);
 					}
 				});
 			}
@@ -160,11 +166,10 @@ public class SaveContext : ISaveContext
 			{
 				for (int j = 0; j < _childContainers.Count; j++)
 				{
-					CollectSaveDataForContainer(j, ref record);
+					CollectSaveDataForContainer(j, ref SizeRecord);
 				}
 			}
 		}
-		return record;
 	}
 
 	private void CollectObjects()
@@ -203,7 +208,7 @@ public class SaveContext : ISaveContext
 		{
 			string message = "Cant find definition for " + type.FullName;
 			Debug.Print(message, 0, Debug.DebugColor.Red);
-			Debug.FailedAssert(message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\SaveContext.cs", "CollectContainerObjects", 217);
+			Debug.FailedAssert(message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\SaveContext.cs", "CollectContainerObjects", 222);
 		}
 		ContainerSaveData.GetChildObjects(this, containerDefinition, containerType, parent, _temporaryCollectedObjects);
 		for (int i = 0; i < _temporaryCollectedObjects.Count; i++)
@@ -277,7 +282,7 @@ public class SaveContext : ISaveContext
 		if (!_idsOfChildObjects.TryGetValue(target, out var value))
 		{
 			Debug.Print($"SAVE ERROR. Cant find {target} with type {target.GetType()}");
-			Debug.FailedAssert("SAVE ERROR. Cant find target object on save", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\SaveContext.cs", "GetObjectId", 305);
+			Debug.FailedAssert("SAVE ERROR. Cant find target object on save", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\SaveContext.cs", "GetObjectId", 310);
 		}
 		return value;
 	}
@@ -337,13 +342,15 @@ public class SaveContext : ISaveContext
 				CollectObjects();
 				_objectSaveDataList = new ObjectSaveData[_childObjects.Count];
 				_containerSaveDataList = new ContainerSaveData[_childContainers.Count];
-				SizeRecord = CollectSaveDatas();
+				SizeRecord = default(SaveDataSizeRecord);
+				CollectSaveDatas();
 				byte[][] objectData = WriteObjects();
 				byte[][] containerData = WriteContainers();
 				new List<int>();
 				byte[] header = WriteHeaders(_objectSaveDataList, _containerSaveDataList, SizeRecord.HeaderSize, _strings.Count);
 				byte[] strings = WriteAllStrings(_strings, SizeRecord.StringSize);
 				SaveData = new GameData(header, strings, objectData, containerData);
+				Debug.Print(SizeRecord.ToString());
 			}
 			return true;
 		}
@@ -498,6 +505,7 @@ public class SaveContext : ISaveContext
 		containerSaveData.CollectStrings();
 		_containerSaveDataList[id] = containerSaveData;
 		Interlocked.Add(ref headerSize.HeaderSize, containerSaveData.GetHeaderSize());
+		Interlocked.Add(ref headerSize.ContainerSize, containerSaveData.GetDataSize());
 	}
 
 	private void SaveSingleObject(byte[][] objectData, int id)

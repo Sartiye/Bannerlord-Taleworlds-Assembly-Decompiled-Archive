@@ -172,6 +172,11 @@ public class SoundEvent
 		return EngineApplicationInterface.ISoundEvent.IsPaused(_soundId);
 	}
 
+	public bool IsStopped()
+	{
+		return EngineApplicationInterface.ISoundEvent.IsStopped(_soundId);
+	}
+
 	public static SoundEvent CreateEventFromSoundBuffer(string eventId, byte[] soundData, Scene scene, bool is3d, bool isBlocking)
 	{
 		return new SoundEvent(EngineApplicationInterface.ISoundEvent.CreateEventFromSoundBuffer(eventId, soundData, (scene != null) ? scene.Pointer : UIntPtr.Zero, is3d, isBlocking));

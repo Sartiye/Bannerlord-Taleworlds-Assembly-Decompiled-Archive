@@ -182,15 +182,25 @@ public class TradeAgreementDecision : KingdomDecision
 		}
 	}
 
-	public override float DetermineSupport(Clan clan, DecisionOutcome possibleOutcome)
+	public float CalculateSupport(Clan clan, out TextObject hint)
 	{
-		TextObject explanation;
-		float scoreOfStartingTradeAgreement = Campaign.Current.Models.TradeAgreementModel.GetScoreOfStartingTradeAgreement(base.Kingdom, TargetKingdom, clan, out explanation);
+		return DetermineSupport(clan, new TradeAgreementDecisionOutcome(shouldStart: true, base.Kingdom, TargetKingdom), includeExplanations: true, out hint);
+	}
+
+	private float DetermineSupport(Clan clan, DecisionOutcome possibleOutcome, bool includeExplanations, out TextObject hint)
+	{
+		float scoreOfStartingTradeAgreement = Campaign.Current.Models.TradeAgreementModel.GetScoreOfStartingTradeAgreement(base.Kingdom, TargetKingdom, clan, out hint, includeExplanations);
 		if (((TradeAgreementDecisionOutcome)possibleOutcome).ShouldTradeAgreementStart)
 		{
 			return scoreOfStartingTradeAgreement;
 		}
 		return 100f - scoreOfStartingTradeAgreement;
+	}
+
+	public override float DetermineSupport(Clan clan, DecisionOutcome possibleOutcome)
+	{
+		TextObject hint;
+		return DetermineSupport(clan, possibleOutcome, includeExplanations: false, out hint);
 	}
 
 	public override TextObject GetChooseDescription()
@@ -241,11 +251,6 @@ public class TradeAgreementDecision : KingdomDecision
 	public override bool CanMakeDecision(out TextObject reason, bool includeReason = false)
 	{
 		return Campaign.Current.Models.TradeAgreementModel.CanMakeTradeAgreement(base.Kingdom, TargetKingdom, checkOtherSideTradeSupport: true, out reason, includeReason);
-	}
-
-	public float CalculateSupport(Clan clan)
-	{
-		return DetermineSupport(clan, new TradeAgreementDecisionOutcome(shouldStart: true, base.Kingdom, TargetKingdom));
 	}
 
 	public override DecisionOutcome GetQueriedDecisionOutcome(MBReadOnlyList<DecisionOutcome> possibleOutcomes)

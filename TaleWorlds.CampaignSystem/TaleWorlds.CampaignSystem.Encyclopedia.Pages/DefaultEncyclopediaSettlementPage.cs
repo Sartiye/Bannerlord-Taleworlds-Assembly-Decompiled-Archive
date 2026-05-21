@@ -332,8 +332,10 @@ public class DefaultEncyclopediaSettlementPage : EncyclopediaPage
 		list.Add(new EncyclopediaFilterGroup(filters, new TextObject("{=zMMqgxb1}Type")));
 		List<EncyclopediaFilterItem> list2 = new List<EncyclopediaFilterItem>();
 		foreach (CultureObject culture in (from x in Game.Current.ObjectManager.GetObjectTypeList<CultureObject>()
-			orderby !x.IsMainCulture descending
-			select x).ThenBy((CultureObject f) => f.Name.ToString()).ToList())
+			where x.IsMainCulture
+			select x into f
+			orderby f.Name.ToString()
+			select f).ToList())
 		{
 			if (culture.StringId != "neutral_culture" && culture.CanHaveSettlement)
 			{

@@ -406,11 +406,15 @@ public class ClanMemberRolesCampaignBehavior : CampaignBehaviorBase, IMissionPla
 		{
 			return true;
 		}
+		LocationCharacter locationCharacter = LocationComplex.Current.FindCharacter(targetAgent);
+		if (locationCharacter == null)
+		{
+			return true;
+		}
 		DailyBehaviorGroup behaviorGroup = targetAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
 		FollowAgentBehavior followAgentBehavior = behaviorGroup.AddBehavior<FollowAgentBehavior>();
 		behaviorGroup.SetScriptedBehavior<FollowAgentBehavior>();
 		followAgentBehavior.SetTargetAgent(Agent.Main);
-		LocationCharacter locationCharacter = LocationComplex.Current.FindCharacter(targetAgent);
 		if (!IsFollowingPlayer(locationCharacter.Character.HeroObject))
 		{
 			_isFollowingPlayer.Add(locationCharacter.Character.HeroObject);

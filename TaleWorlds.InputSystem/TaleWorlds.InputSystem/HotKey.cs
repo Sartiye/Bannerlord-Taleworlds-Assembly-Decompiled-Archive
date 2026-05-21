@@ -266,10 +266,10 @@ public class HotKey
 	public override string ToString()
 	{
 		string result = "";
-		bool flag = Input.IsControllerConnected && !Input.IsMouseActive;
+		bool isGamepadActive = Input.IsGamepadActive;
 		for (int i = 0; i < Keys.Count; i++)
 		{
-			if ((!flag && !Keys[i].IsControllerInput) || (flag && Keys[i].IsControllerInput))
+			if ((!isGamepadActive && !Keys[i].IsControllerInput) || (isGamepadActive && Keys[i].IsControllerInput))
 			{
 				return Keys[i].ToString();
 			}

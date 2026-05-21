@@ -61,7 +61,7 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 		base.HeightSizePolicy = SizePolicy.CoverChildren;
 		base.MarginLeft = 5f;
 		base.MarginRight = 5f;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		base.HorizontalAlignment = HorizontalAlignment.Center;
 		base.VerticalAlignment = VerticalAlignment.Top;
 		_widget_0.DoNotPassEventsToChildren = true;

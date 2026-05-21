@@ -38,9 +38,4 @@ public class SiegeAmbushEventComponent : MapEventComponent
 		Campaign.Current.MapEventManager.OnMapEventCreated(mapEvent);
 		return siegeAmbushEventComponent;
 	}
-
-	protected override void OnFinalize()
-	{
-		base.MapEvent.ApplyRenownAndInfluenceChanges();
-	}
 }

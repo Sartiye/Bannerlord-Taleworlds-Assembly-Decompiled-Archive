@@ -27,7 +27,7 @@ public class PartyRolesCampaignBehavior : CampaignBehaviorBase
 	{
 		if (victim.Clan == Clan.PlayerClan)
 		{
-			RemovePartyRoleIfExist(victim);
+			RemoveAllPartyRolesOfHeroIfExist(victim);
 		}
 	}
 
@@ -35,7 +35,7 @@ public class PartyRolesCampaignBehavior : CampaignBehaviorBase
 	{
 		if (prisoner.Clan == Clan.PlayerClan)
 		{
-			RemovePartyRoleIfExist(prisoner);
+			RemoveAllPartyRolesOfHeroIfExist(prisoner);
 		}
 	}
 
@@ -43,7 +43,7 @@ public class PartyRolesCampaignBehavior : CampaignBehaviorBase
 	{
 		if (newGovernor?.Clan == Clan.PlayerClan)
 		{
-			RemovePartyRoleIfExist(newGovernor);
+			RemoveAllPartyRolesOfHeroIfExist(newGovernor);
 		}
 	}
 
@@ -57,21 +57,21 @@ public class PartyRolesCampaignBehavior : CampaignBehaviorBase
 		{
 			if (item.Character.IsHero)
 			{
-				RemovePartyRoleIfExist(item.Character.HeroObject);
+				RemoveAllPartyRolesOfHeroIfExist(item.Character.HeroObject);
 			}
 		}
 	}
 
 	private void OnCompanionRemoved(Hero companion, RemoveCompanionAction.RemoveCompanionDetail detail)
 	{
-		RemovePartyRoleIfExist(companion);
+		RemoveAllPartyRolesOfHeroIfExist(companion);
 	}
 
 	private void OnHeroGetsBusy(Hero hero, HeroGetsBusyReasons heroGetsBusyReason)
 	{
 		if (hero.Clan == Clan.PlayerClan)
 		{
-			RemovePartyRoleIfExist(hero);
+			RemoveAllPartyRolesOfHeroIfExist(hero);
 		}
 	}
 
@@ -79,18 +79,15 @@ public class PartyRolesCampaignBehavior : CampaignBehaviorBase
 	{
 		if (oldClan == Clan.PlayerClan)
 		{
-			RemovePartyRoleIfExist(hero);
+			RemoveAllPartyRolesOfHeroIfExist(hero);
 		}
 	}
 
-	private void RemovePartyRoleIfExist(Hero hero)
+	private void RemoveAllPartyRolesOfHeroIfExist(Hero hero)
 	{
 		foreach (WarPartyComponent warPartyComponent in Clan.PlayerClan.WarPartyComponents)
 		{
-			if (warPartyComponent.MobileParty.GetHeroPartyRole(hero) != 0)
-			{
-				warPartyComponent.MobileParty.RemoveHeroPartyRole(hero);
-			}
+			warPartyComponent.MobileParty.RemoveAllPartyRolesOfHero(hero);
 		}
 	}
 }

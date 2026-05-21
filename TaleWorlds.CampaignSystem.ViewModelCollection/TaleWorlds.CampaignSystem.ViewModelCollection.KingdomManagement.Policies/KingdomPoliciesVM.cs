@@ -522,11 +522,11 @@ public class KingdomPoliciesVM : KingdomCategoryVM
 				DoneHint.HintText = disabledReason2;
 				if (IsPolicyActive(policy.Policy))
 				{
-					ProposeActionExplanationText = GameTexts.FindText("str_policy_propose_again_action_explanation").SetTextVariable("SUPPORT", CalculateLikelihood(policy.Policy)).ToString();
+					ProposeActionExplanationText = GameTexts.FindText("str_policy_propose_again_action_explanation").SetTextVariable("SUPPORT", GetSupportText(policy.Policy)).ToString();
 				}
 				else
 				{
-					ProposeActionExplanationText = GameTexts.FindText("str_policy_propose_action_explanation").SetTextVariable("SUPPORT", CalculateLikelihood(policy.Policy)).ToString();
+					ProposeActionExplanationText = GameTexts.FindText("str_policy_propose_action_explanation").SetTextVariable("SUPPORT", GetSupportText(policy.Policy)).ToString();
 				}
 				ProposeOrDisavowText = ((_playerKingdom.Clans.Count > 1) ? GameTexts.FindText("str_policy_propose").ToString() : GameTexts.FindText("str_policy_enact").ToString());
 				base.NotificationCount = Clan.PlayerClan.Kingdom.UnresolvedDecisions.Count((KingdomDecision d) => !d.ShouldBeCancelled());
@@ -616,6 +616,14 @@ public class KingdomPoliciesVM : KingdomCategoryVM
 
 	private static int CalculateLikelihood(PolicyObject policy)
 	{
-		return TaleWorlds.Library.MathF.Round(new KingdomElection(new KingdomPolicyDecision(Clan.PlayerClan, policy, Clan.PlayerClan.Kingdom.ActivePolicies.Contains(policy))).GetLikelihoodForSponsor(Clan.PlayerClan) * 100f);
+		KingdomElection kingdomElection = new KingdomElection(new KingdomPolicyDecision(Clan.PlayerClan, policy, Clan.PlayerClan.Kingdom.ActivePolicies.Contains(policy)));
+		kingdomElection.SetupResultWithoutPlayerSupport();
+		return TaleWorlds.Library.MathF.Round(kingdomElection.GetWinChanceForSponsor(Clan.PlayerClan) * 100f);
+	}
+
+	private static TextObject GetSupportText(PolicyObject policy)
+	{
+		KingdomPolicyDecision decision = new KingdomPolicyDecision(Clan.PlayerClan, policy, Clan.PlayerClan.Kingdom.ActivePolicies.Contains(policy));
+		return GameTexts.FindText("str_decision_outcome_support_status", KingdomElection.GetElectionOutcomeSupport(decision, Clan.PlayerClan).ToString());
 	}
 }

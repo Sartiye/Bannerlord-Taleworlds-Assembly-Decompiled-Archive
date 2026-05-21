@@ -353,15 +353,15 @@ public class SPInventoryVM : ViewModel
 
 	private bool _playerEquipmentCountWarned;
 
+	private string _noSaddleText;
+
 	private string _mainPartyLandCapacityText;
 
 	private string _mainPartySeaCapacityText;
 
-	private string _noSaddleText;
+	private bool _isMainPartyLandCapacityWarned;
 
 	private string _leftSearchText = "";
-
-	private bool _isMainPartyLandCapacityWarned;
 
 	private bool _isMainPartySeaCapacityWarned;
 
@@ -3238,7 +3238,7 @@ public class SPInventoryVM : ViewModel
 		SetSellAllHint();
 		if (_usageType == InventoryScreenHelper.InventoryMode.Loot || _usageType == InventoryScreenHelper.InventoryMode.Stash)
 		{
-			SellHint = new HintViewModel(GameTexts.FindText("str_inventory_give"));
+			SellHint = new HintViewModel(GameTexts.FindText("str_give"));
 		}
 		else if (_usageType == InventoryScreenHelper.InventoryMode.Default)
 		{
@@ -3475,7 +3475,7 @@ public class SPInventoryVM : ViewModel
 	private void ProcessEquipItem(ItemVM draggedItem)
 	{
 		SPItemVM sPItemVM = draggedItem as SPItemVM;
-		if ((sPItemVM.IsCivilianItem || _equipmentMode != 0) && (sPItemVM.IsStealthItem || _equipmentMode != EquipmentModes.Stealth) && (sPItemVM.IsTransferable || _currentCharacter.IsPlayerCharacter))
+		if (sPItemVM.IsTransferable || _currentCharacter.IsPlayerCharacter)
 		{
 			IsRefreshed = false;
 			EquipEquipment(sPItemVM);
@@ -3516,7 +3516,7 @@ public class SPInventoryVM : ViewModel
 		}
 		if (TransactionCount == 0)
 		{
-			Debug.FailedAssert("Transaction count should not be zero", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\SPInventoryVM.cs", "ProcessBuyItem", 640);
+			Debug.FailedAssert("Transaction count should not be zero", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\SPInventoryVM.cs", "ProcessBuyItem", 634);
 			return;
 		}
 		IsRefreshed = false;
@@ -3555,7 +3555,7 @@ public class SPInventoryVM : ViewModel
 		}
 		if (TransactionCount == 0)
 		{
-			Debug.FailedAssert("Transaction count should not be zero", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\SPInventoryVM.cs", "ProcessSellItem", 690);
+			Debug.FailedAssert("Transaction count should not be zero", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\SPInventoryVM.cs", "ProcessSellItem", 684);
 			return;
 		}
 		IsRefreshed = false;
@@ -3877,12 +3877,12 @@ public class SPInventoryVM : ViewModel
 				SPItemVM sPItemVM2 = null;
 				if (transferCommandResult.ResultSide == InventoryLogic.InventorySide.OtherInventory)
 				{
-					newItem = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItemBasedOnSkills(transferCommandResult.EffectedItemRosterElement), _usageType, transferCommandResult.EffectedItemRosterElement, InventoryLogic.InventorySide.OtherInventory, _inventoryLogic.GetCostOfItemRosterElement(transferCommandResult.EffectedItemRosterElement, transferCommandResult.ResultSide), null);
+					newItem = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItem(transferCommandResult.EffectedItemRosterElement), _usageType, transferCommandResult.EffectedItemRosterElement, InventoryLogic.InventorySide.OtherInventory, _inventoryLogic.GetCostOfItemRosterElement(transferCommandResult.EffectedItemRosterElement, transferCommandResult.ResultSide), null);
 					sPItemVM2 = RightItemListVM.FirstOrDefault((SPItemVM x) => x.ItemRosterElement.EquipmentElement.IsEqualTo(newItem.ItemRosterElement.EquipmentElement));
 				}
 				else
 				{
-					newItem = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItemBasedOnSkills(transferCommandResult.EffectedItemRosterElement), _usageType, transferCommandResult.EffectedItemRosterElement, InventoryLogic.InventorySide.PlayerInventory, _inventoryLogic.GetCostOfItemRosterElement(transferCommandResult.EffectedItemRosterElement, transferCommandResult.ResultSide), null);
+					newItem = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItem(transferCommandResult.EffectedItemRosterElement), _usageType, transferCommandResult.EffectedItemRosterElement, InventoryLogic.InventorySide.PlayerInventory, _inventoryLogic.GetCostOfItemRosterElement(transferCommandResult.EffectedItemRosterElement, transferCommandResult.ResultSide), null);
 					sPItemVM2 = LeftItemListVM.FirstOrDefault((SPItemVM x) => x.ItemRosterElement.EquipmentElement.IsEqualTo(newItem.ItemRosterElement.EquipmentElement));
 				}
 				UpdateFilteredStatusOfItem(newItem);
@@ -3902,7 +3902,7 @@ public class SPInventoryVM : ViewModel
 				SPItemVM sPItemVM3 = null;
 				if (transferCommandResult.FinalNumber > 0)
 				{
-					sPItemVM3 = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItemBasedOnSkills(transferCommandResult.EffectedItemRosterElement), _usageType, transferCommandResult.EffectedItemRosterElement, transferCommandResult.ResultSide, _inventoryLogic.GetCostOfItemRosterElement(transferCommandResult.EffectedItemRosterElement, transferCommandResult.ResultSide), transferCommandResult.EffectedEquipmentIndex);
+					sPItemVM3 = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItem(transferCommandResult.EffectedItemRosterElement), _usageType, transferCommandResult.EffectedItemRosterElement, transferCommandResult.ResultSide, _inventoryLogic.GetCostOfItemRosterElement(transferCommandResult.EffectedItemRosterElement, transferCommandResult.ResultSide), transferCommandResult.EffectedEquipmentIndex);
 					sPItemVM3.IsNew = true;
 				}
 				UpdateEquipment(transferCommandResult.ResultSideEquipment, sPItemVM3, transferCommandResult.EffectedEquipmentIndex);
@@ -4032,6 +4032,20 @@ public class SPInventoryVM : ViewModel
 		{
 			return false;
 		}
+		if (!itemVM.IsStealthItem && _equipmentMode == EquipmentModes.Stealth)
+		{
+			TextObject textObject = new TextObject("{=*}{ITEM_NAME} cannot be equipped with stealth equipment.");
+			textObject.SetTextVariable("ITEM_NAME", itemVM.ItemRosterElement.EquipmentElement.GetModifiedItemName());
+			MBInformationManager.AddQuickInformation(textObject);
+			return false;
+		}
+		if (!itemVM.IsCivilianItem && _equipmentMode == EquipmentModes.Civilian)
+		{
+			TextObject textObject2 = new TextObject("{=*}{ITEM_NAME} cannot be equipped with civilian equipment.");
+			textObject2.SetTextVariable("ITEM_NAME", itemVM.ItemRosterElement.EquipmentElement.GetModifiedItemName());
+			MBInformationManager.AddQuickInformation(textObject2);
+			return false;
+		}
 		if (!_currentCharacter.IsPlayerCharacter && (itemVM == null || !itemVM.IsTransferable))
 		{
 			return false;
@@ -4077,18 +4091,9 @@ public class SPInventoryVM : ViewModel
 		{
 			return false;
 		}
-		if (!CanCharacterUseItemBasedOnSkills(itemVM.ItemRosterElement))
+		if (!CanCharacterUseItem(itemVM.ItemRosterElement, out var reason))
 		{
-			TextObject textObject = new TextObject("{=rgqA29b8}You don't have enough {SKILL_NAME} skill to equip this item");
-			textObject.SetTextVariable("SKILL_NAME", itemVM.ItemRosterElement.EquipmentElement.Item.RelevantSkill.Name);
-			MBInformationManager.AddQuickInformation(textObject);
-			return false;
-		}
-		if (!CanCharacterUserItemBasedOnUsability(itemVM.ItemRosterElement))
-		{
-			TextObject textObject2 = new TextObject("{=ITKb4cKv}{ITEM_NAME} is not equippable.");
-			textObject2.SetTextVariable("ITEM_NAME", itemVM.ItemRosterElement.EquipmentElement.GetModifiedItemName());
-			MBInformationManager.AddQuickInformation(textObject2);
+			MBInformationManager.AddQuickInformation(reason);
 			return false;
 		}
 		if (!Equipment.IsItemFitsToSlot((EquipmentIndex)TargetEquipmentIndex, itemVM.ItemRosterElement.EquipmentElement.Item))
@@ -4112,18 +4117,14 @@ public class SPInventoryVM : ViewModel
 		return true;
 	}
 
-	private bool CanCharacterUserItemBasedOnUsability(ItemRosterElement itemRosterElement)
+	private bool CanCharacterUseItem(ItemRosterElement itemRosterElement, out TextObject reason)
 	{
-		if (itemRosterElement.EquipmentElement.Item.HasHorseComponent && !itemRosterElement.EquipmentElement.Item.HorseComponent.IsRideable)
-		{
-			return false;
-		}
-		return true;
+		return CharacterHelper.CanUseItem(_currentCharacter, itemRosterElement.EquipmentElement, out reason);
 	}
 
-	private bool CanCharacterUseItemBasedOnSkills(ItemRosterElement itemRosterElement)
+	private bool CanCharacterUseItem(ItemRosterElement itemRosterElement)
 	{
-		return CharacterHelper.CanUseItemBasedOnSkill(_currentCharacter, itemRosterElement.EquipmentElement);
+		return CharacterHelper.CanUseItem(_currentCharacter, itemRosterElement.EquipmentElement);
 	}
 
 	private void EquipEquipment(SPItemVM itemVM)
@@ -4377,6 +4378,7 @@ public class SPInventoryVM : ViewModel
 	{
 		UpdateCharacterEquipment();
 		UpdateCharacterArmorValues();
+		UpdateCharacterArmorColor();
 		RefreshCharacterTotalWeight();
 		RefreshCharacterCanUseItem();
 		CurrentCharacterName = _currentCharacter.Name.ToString();
@@ -4389,7 +4391,7 @@ public class SPInventoryVM : ViewModel
 		SPItemVM sPItemVM = null;
 		if (!itemRosterElement.IsEmpty)
 		{
-			sPItemVM = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItemBasedOnSkills(itemRosterElement), _usageType, itemRosterElement, equipmentToInventorySide, _inventoryLogic.GetCostOfItemRosterElement(itemRosterElement, equipmentToInventorySide), equipmentIndex);
+			sPItemVM = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItem(itemRosterElement), _usageType, itemRosterElement, equipmentToInventorySide, _inventoryLogic.GetCostOfItemRosterElement(itemRosterElement, equipmentToInventorySide), equipmentIndex);
 		}
 		else
 		{
@@ -4416,6 +4418,20 @@ public class SPInventoryVM : ViewModel
 		MainCharacter.SetEquipment(ActiveEquipment);
 	}
 
+	private void UpdateCharacterArmorColor()
+	{
+		if (ActiveEquipment.IsStealth)
+		{
+			MainCharacter.ArmorColor1 = 4279111698u;
+			MainCharacter.ArmorColor2 = 4279111698u;
+		}
+		else
+		{
+			MainCharacter.ArmorColor1 = _currentCharacter.HeroObject.MapFaction?.Color ?? 0;
+			MainCharacter.ArmorColor2 = _currentCharacter.HeroObject.MapFaction?.Color2 ?? 0;
+		}
+	}
+
 	private void UpdateCharacterArmorValues()
 	{
 		Equipment.EquipmentType equipmentType = ChangeIntoEquipmentType(GetEquipmentToInventorySide(_equipmentMode));
@@ -4437,7 +4453,7 @@ public class SPInventoryVM : ViewModel
 		case InventoryLogic.InventorySide.StealthEquipment:
 			return Equipment.EquipmentType.Stealth;
 		default:
-			Debug.FailedAssert("Cannot change InventoryLogic EquipmentMode to EquiptmentType", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\SPInventoryVM.cs", "ChangeIntoEquipmentType", 1891);
+			Debug.FailedAssert("Cannot change InventoryLogic EquipmentMode to EquiptmentType", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\SPInventoryVM.cs", "ChangeIntoEquipmentType", 1906);
 			return Equipment.EquipmentType.Invalid;
 		}
 	}
@@ -4453,11 +4469,11 @@ public class SPInventoryVM : ViewModel
 	{
 		for (int i = 0; i < RightItemListVM.Count; i++)
 		{
-			RightItemListVM[i].CanCharacterUseItem = CanCharacterUseItemBasedOnSkills(RightItemListVM[i].ItemRosterElement);
+			RightItemListVM[i].CanCharacterUseItem = CanCharacterUseItem(RightItemListVM[i].ItemRosterElement);
 		}
 		for (int j = 0; j < LeftItemListVM.Count; j++)
 		{
-			LeftItemListVM[j].CanCharacterUseItem = CanCharacterUseItemBasedOnSkills(LeftItemListVM[j].ItemRosterElement);
+			LeftItemListVM[j].CanCharacterUseItem = CanCharacterUseItem(LeftItemListVM[j].ItemRosterElement);
 		}
 	}
 
@@ -4500,7 +4516,7 @@ public class SPInventoryVM : ViewModel
 			if (j < array.Length)
 			{
 				ItemRosterElement itemRosterElement = array[j];
-				SPItemVM sPItemVM = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItemBasedOnSkills(itemRosterElement), _usageType, itemRosterElement, InventoryLogic.InventorySide.PlayerInventory, _inventoryLogic.GetCostOfItemRosterElement(itemRosterElement, InventoryLogic.InventorySide.PlayerInventory), null);
+				SPItemVM sPItemVM = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItem(itemRosterElement), _usageType, itemRosterElement, InventoryLogic.InventorySide.PlayerInventory, _inventoryLogic.GetCostOfItemRosterElement(itemRosterElement, InventoryLogic.InventorySide.PlayerInventory), null);
 				UpdateFilteredStatusOfItem(sPItemVM);
 				sPItemVM.IsLocked = sPItemVM.InventorySide == InventoryLogic.InventorySide.PlayerInventory && IsItemLocked(itemRosterElement);
 				RightItemListVM.Add(sPItemVM);
@@ -4508,7 +4524,7 @@ public class SPInventoryVM : ViewModel
 			if (j < array2.Length)
 			{
 				ItemRosterElement itemRosterElement2 = array2[j];
-				SPItemVM sPItemVM2 = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItemBasedOnSkills(itemRosterElement2), _usageType, itemRosterElement2, InventoryLogic.InventorySide.OtherInventory, _inventoryLogic.GetCostOfItemRosterElement(itemRosterElement2, InventoryLogic.InventorySide.OtherInventory), null);
+				SPItemVM sPItemVM2 = new SPItemVM(_inventoryLogic, MainCharacter.IsFemale, CanCharacterUseItem(itemRosterElement2), _usageType, itemRosterElement2, InventoryLogic.InventorySide.OtherInventory, _inventoryLogic.GetCostOfItemRosterElement(itemRosterElement2, InventoryLogic.InventorySide.OtherInventory), null);
 				UpdateFilteredStatusOfItem(sPItemVM2);
 				sPItemVM2.IsLocked = sPItemVM2.InventorySide == InventoryLogic.InventorySide.PlayerInventory && IsItemLocked(itemRosterElement2);
 				LeftItemListVM.Add(sPItemVM2);
@@ -4918,12 +4934,38 @@ public class SPInventoryVM : ViewModel
 		CurrentFocusedItem = null;
 	}
 
-	public void ExecuteResetAndCompleteTranstactions()
+	public void ExecuteResetAndCompleteTranstactionsWithoutInquiry()
+	{
+		ExecuteResetAndCompleteTranstactions();
+	}
+
+	public void ExecuteResetAndCompleteTranstactions(bool showCancelInquiry = false)
 	{
 		ExecuteRemoveZeroCounts();
 		if ((InventoryScreenHelper.GetActiveInventoryState()?.InventoryMode ?? InventoryScreenHelper.InventoryMode.Default) == InventoryScreenHelper.InventoryMode.Loot)
 		{
-			InformationManager.ShowInquiry(new InquiryData("", GameTexts.FindText("str_leaving_loot_behind").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), delegate
+			if (_inventoryLogic.IsThereAnyChanges())
+			{
+				InformationManager.ShowInquiry(new InquiryData("", GameTexts.FindText("str_cancelling_changes").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), delegate
+				{
+					InventoryScreenHelper.CloseScreen(fromCancel: true);
+				}, null));
+			}
+			else if (_inventoryLogic.GetElementsInInitialRoster(InventoryLogic.InventorySide.OtherInventory).Any())
+			{
+				InformationManager.ShowInquiry(new InquiryData("", GameTexts.FindText("str_leaving_loot_behind").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), delegate
+				{
+					InventoryScreenHelper.CloseScreen(fromCancel: true);
+				}, null));
+			}
+			else
+			{
+				InventoryScreenHelper.CloseScreen(fromCancel: true);
+			}
+		}
+		else if (showCancelInquiry && _inventoryLogic.IsThereAnyChanges())
+		{
+			InformationManager.ShowInquiry(new InquiryData("", GameTexts.FindText("str_cancelling_changes").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), delegate
 			{
 				InventoryScreenHelper.CloseScreen(fromCancel: true);
 			}, null));
@@ -4937,9 +4979,23 @@ public class SPInventoryVM : ViewModel
 	public void ExecuteCompleteTranstactions()
 	{
 		ExecuteRemoveZeroCounts();
-		if ((InventoryScreenHelper.GetActiveInventoryState()?.InventoryMode ?? InventoryScreenHelper.InventoryMode.Default) == InventoryScreenHelper.InventoryMode.Loot && !_inventoryLogic.IsThereAnyChanges() && _inventoryLogic.GetElementsInInitialRoster(InventoryLogic.InventorySide.OtherInventory).Any())
+		if ((InventoryScreenHelper.GetActiveInventoryState()?.InventoryMode ?? InventoryScreenHelper.InventoryMode.Default) == InventoryScreenHelper.InventoryMode.Loot && !PlayerEquipmentCountWarned && _inventoryLogic.GetElementCountOnSide(InventoryLogic.InventorySide.OtherInventory) > 0)
 		{
 			InformationManager.ShowInquiry(new InquiryData("", GameTexts.FindText("str_leaving_loot_behind").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), HandleDone, null));
+		}
+		else if (_inventoryLogic.IsThereAnyChanges() && (PlayerEquipmentCountWarned || OtherEquipmentCountWarned))
+		{
+			GameTexts.SetVariable("newline", "\n");
+			string text = string.Empty;
+			if (PlayerEquipmentCountWarned)
+			{
+				text = GameTexts.FindText("str_inventory_over_limit").ToString();
+			}
+			else if (OtherEquipmentCountWarned)
+			{
+				text = GameTexts.FindText("str_inventory_other_party_over_limit").ToString();
+			}
+			InformationManager.ShowInquiry(new InquiryData(new TextObject("{=uJro3Bua}Over Limit").ToString(), text, isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), HandleDone, null));
 		}
 		else
 		{

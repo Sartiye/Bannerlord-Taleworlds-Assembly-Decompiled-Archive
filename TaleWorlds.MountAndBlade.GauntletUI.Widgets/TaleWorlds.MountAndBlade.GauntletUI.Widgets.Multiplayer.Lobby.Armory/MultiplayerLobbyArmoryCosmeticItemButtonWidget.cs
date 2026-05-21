@@ -130,13 +130,13 @@ public class MultiplayerLobbyArmoryCosmeticItemButtonWidget : ButtonWidget
 	protected override void OnUpdate(float dt)
 	{
 		base.OnUpdate(dt);
-		if (base.EventManager.HoveredView == this && Input.IsKeyPressed(InputKey.ControllerRUp))
+		if (base.EventManager.HoveredWidget == this && Input.IsKeyPressed(InputKey.ControllerRUp))
 		{
 			OnMouseAlternatePressed();
 		}
-		else if (base.EventManager.HoveredView == this && Input.IsKeyReleased(InputKey.ControllerRUp))
+		else if (base.EventManager.HoveredWidget == this && Input.IsKeyReleased(InputKey.ControllerRUp))
 		{
-			OnMouseAlternateReleased();
+			OnMouseAlternateReleased(isFromInput: true);
 		}
 	}
 

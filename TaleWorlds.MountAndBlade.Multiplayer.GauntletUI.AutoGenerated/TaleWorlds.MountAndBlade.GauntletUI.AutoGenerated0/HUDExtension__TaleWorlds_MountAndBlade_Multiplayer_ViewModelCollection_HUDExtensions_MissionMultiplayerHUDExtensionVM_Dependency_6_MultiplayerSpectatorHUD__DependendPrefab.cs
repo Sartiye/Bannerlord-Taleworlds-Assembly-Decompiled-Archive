@@ -150,7 +150,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 		base.Color = new Color(0f, 0f, 0f, 0.4980392f);
 		_widget_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0.HorizontalAlignment = HorizontalAlignment.Center;

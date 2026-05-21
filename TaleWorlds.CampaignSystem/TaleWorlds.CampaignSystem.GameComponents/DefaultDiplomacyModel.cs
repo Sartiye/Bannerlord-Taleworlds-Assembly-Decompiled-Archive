@@ -4,6 +4,7 @@ using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.BarterSystem;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Extensions;
@@ -46,10 +47,6 @@ public class DefaultDiplomacyModel : DiplomacyModel
 
 	private const float ClanRichnessEffectMultiplier = 0.15f;
 
-	private const float FirstDegreeNeighborScore = 1f;
-
-	private const float SecondDegreeNeighborScore = 0.2f;
-
 	private const float MaxBenefitValue = 10000000f;
 
 	private const float MeaningfulBenefitValue = 2000000f;
@@ -74,11 +71,9 @@ public class DefaultDiplomacyModel : DiplomacyModel
 
 	public override int MaxNeutralRelationLimit => 50;
 
-	public override int MinNeutralRelationLimit => -25;
+	public override int MinNeutralRelationLimit => -50;
 
-	public override float WarDeclarationScorePenaltyAgainstAllies => 0.4f;
-
-	public override float WarDeclarationScoreBonusAgainstEnemiesOfAllies => 0.3f;
+	public override float WarDeclarationScorePenaltyAgainstTradePartners => 0.7f;
 
 	public override float GetStrengthThresholdForNonMutualWarsToBeIgnoredToJoinKingdom(Kingdom kingdomToJoin)
 	{
@@ -276,7 +271,7 @@ public class DefaultDiplomacyModel : DiplomacyModel
 		}
 		float num7 = clan.CalculateTotalSettlementBaseValue();
 		float num8 = clan.CalculateTotalSettlementValueForFaction(kingdom);
-		int commanderLimit = clan.CommanderLimit;
+		int warPartyLimit = clan.WarPartyLimit;
 		float num9 = 0f;
 		float num10 = 0f;
 		if (!clan.IsMinorFaction)
@@ -291,13 +286,13 @@ public class DefaultDiplomacyModel : DiplomacyModel
 			{
 				if (!clan3.IsUnderMercenaryService && clan3 != clan)
 				{
-					num12 += clan3.CommanderLimit;
+					num12 += clan3.WarPartyLimit;
 				}
 			}
-			num9 = num11 / (float)(num12 + commanderLimit);
+			num9 = num11 / (float)(num12 + warPartyLimit);
 			num10 = 0f - (float)(num12 * num12) * 100f + 10000f;
 		}
-		float num13 = num9 * TaleWorlds.Library.MathF.Sqrt(commanderLimit) * 0.15f * 0.2f;
+		float num13 = num9 * TaleWorlds.Library.MathF.Sqrt(warPartyLimit) * 0.15f * 0.2f;
 		num13 *= num5 * num6;
 		num13 += (clan.MapFaction.IsAtWarWith(kingdom) ? (num8 - num7) : 0f);
 		num13 += num10;
@@ -325,7 +320,7 @@ public class DefaultDiplomacyModel : DiplomacyModel
 		float num6 = 1f + ((kingdom.Culture == clan.Culture) ? 0.15f : ((kingdom.Leader == Hero.MainHero) ? 0f : (-0.15f)));
 		float num7 = clan.CalculateTotalSettlementBaseValue();
 		float num8 = clan.CalculateTotalSettlementValueForFaction(kingdom);
-		int commanderLimit = clan.CommanderLimit;
+		int warPartyLimit = clan.WarPartyLimit;
 		float num9 = 0f;
 		if (!clan.IsMinorFaction)
 		{
@@ -339,10 +334,10 @@ public class DefaultDiplomacyModel : DiplomacyModel
 			{
 				if (!clan3.IsUnderMercenaryService && clan3 != clan)
 				{
-					num11 += clan3.CommanderLimit;
+					num11 += clan3.WarPartyLimit;
 				}
 			}
-			num9 = num10 / (float)(num11 + commanderLimit);
+			num9 = num10 / (float)(num11 + warPartyLimit);
 		}
 		float num12 = HeroHelper.CalculateReliabilityConstant(clan.Leader);
 		float b = (float)(CampaignTime.Now - clan.LastFactionChangeTime).ToDays;
@@ -362,7 +357,7 @@ public class DefaultDiplomacyModel : DiplomacyModel
 		}
 		float num16 = -70000f - (float)num15 * 10000f - (float)num14 * 30000f;
 		num16 /= 0.15f;
-		float num17 = (0f - num9) * TaleWorlds.Library.MathF.Sqrt(commanderLimit) * 0.15f * 0.2f + num16 * num12 + (0f - num13);
+		float num17 = (0f - num9) * TaleWorlds.Library.MathF.Sqrt(warPartyLimit) * 0.15f * 0.2f + num16 * num12 + (0f - num13);
 		num17 *= num5 * num6;
 		num17 = ((!(num5 < 1f) || !(num7 - num8 < 0f)) ? (num17 + (num7 - num8)) : (num17 + num5 * (num7 - num8)));
 		if (num5 < 1f)
@@ -380,8 +375,8 @@ public class DefaultDiplomacyModel : DiplomacyModel
 	{
 		float num = TaleWorlds.Library.MathF.Min(2f, TaleWorlds.Library.MathF.Max(0.33f, 1f + 0.02f * (float)FactionManager.GetRelationBetweenClans(kingdom.RulingClan, clan)));
 		float num2 = 1f + ((kingdom.Culture == clan.Culture) ? 1f : 0f);
-		int commanderLimit = clan.CommanderLimit;
-		float num3 = (clan.CurrentTotalStrength + 150f * (float)commanderLimit) * 20f;
+		int warPartyLimit = clan.WarPartyLimit;
+		float num3 = (clan.CurrentTotalStrength + 150f * (float)warPartyLimit) * 20f;
 		float powerRatioToEnemies = FactionHelper.GetPowerRatioToEnemies(kingdom);
 		float num4 = HeroHelper.CalculateReliabilityConstant(clan.Leader);
 		float num5 = 1f / TaleWorlds.Library.MathF.Max(0.4f, TaleWorlds.Library.MathF.Min(2.5f, TaleWorlds.Library.MathF.Sqrt(powerRatioToEnemies)));
@@ -393,8 +388,8 @@ public class DefaultDiplomacyModel : DiplomacyModel
 	{
 		float num = TaleWorlds.Library.MathF.Min(2f, TaleWorlds.Library.MathF.Max(0.33f, 1f + 0.02f * (float)FactionManager.GetRelationBetweenClans(kingdom.RulingClan, clan)));
 		float num2 = 1f + ((kingdom.Culture == clan.Culture) ? 1f : 0.5f);
-		int commanderLimit = clan.CommanderLimit;
-		float num3 = (clan.CurrentTotalStrength + 150f * (float)commanderLimit) * 20f;
+		int warPartyLimit = clan.WarPartyLimit;
+		float num3 = (clan.CurrentTotalStrength + 150f * (float)warPartyLimit) * 20f;
 		float num4 = clan.CalculateTotalSettlementValueForFaction(kingdom);
 		return 10f - 1f * num3 * num2 * num - num4;
 	}
@@ -402,7 +397,7 @@ public class DefaultDiplomacyModel : DiplomacyModel
 	public override float GetScoreOfMercenaryToJoinKingdom(Clan mercenaryClan, Kingdom kingdom)
 	{
 		int num = ((mercenaryClan.Kingdom == kingdom) ? mercenaryClan.MercenaryAwardMultiplier : Campaign.Current.Models.MinorFactionsModel.GetMercenaryAwardFactorToJoinKingdom(mercenaryClan, kingdom));
-		float num2 = mercenaryClan.CurrentTotalStrength + (float)mercenaryClan.CommanderLimit * 50f;
+		float num2 = mercenaryClan.CurrentTotalStrength + (float)mercenaryClan.WarPartyLimit * 50f;
 		int mercenaryAwardFactorToJoinKingdom = Campaign.Current.Models.MinorFactionsModel.GetMercenaryAwardFactorToJoinKingdom(mercenaryClan, kingdom, neededAmountForClanToJoinCalculation: true);
 		if (kingdom.Leader == Hero.MainHero)
 		{
@@ -422,7 +417,7 @@ public class DefaultDiplomacyModel : DiplomacyModel
 		int num = 0;
 		foreach (Clan clan in kingdom.Clans)
 		{
-			num += clan.CommanderLimit;
+			num += clan.WarPartyLimit;
 		}
 		int num2 = ((num < 12) ? ((12 - num) * 100) : 0);
 		int count = kingdom.Settlements.Count;
@@ -456,7 +451,9 @@ public class DefaultDiplomacyModel : DiplomacyModel
 		riskScore = ApplyWarProgressToRiskScore(factionDeclaresPeace, factionDeclaredPeace, riskScore);
 		benefitScore *= GetWarScale(factionDeclaresPeace, factionDeclaredPeace);
 		float relationScore = GetRelationScore(factionDeclaresPeace, factionDeclaredPeace, evaluatingClan);
-		return (GetSameCultureTownScore(factionDeclaresPeace, factionDeclaredPeace) + benefitScore * exposureScoreToOtherFaction - riskScore + relationScore) * -1f;
+		float sameCultureTownScore = GetSameCultureTownScore(factionDeclaresPeace, factionDeclaredPeace);
+		float allianceFactorForDeclaringPeace = Campaign.Current.Models.AllianceModel.GetAllianceFactorForDeclaringPeace(factionDeclaresPeace, factionDeclaredPeace);
+		return (sameCultureTownScore + benefitScore * exposureScoreToOtherFaction - riskScore * allianceFactorForDeclaringPeace + relationScore) * -1f;
 	}
 
 	public override float GetScoreOfDeclaringPeace(IFaction factionDeclaresPeace, IFaction factionDeclaredPeace)
@@ -470,7 +467,8 @@ public class DefaultDiplomacyModel : DiplomacyModel
 		GetBenefitAndRiskScoreForPeace(factionDeclaresPeace, factionDeclaredPeace, factionDeclaresPeace.Leader.Clan, out var benefitScore, out var riskScore);
 		riskScore = ApplyWarProgressToRiskScore(factionDeclaresPeace, factionDeclaredPeace, riskScore);
 		benefitScore *= GetWarScale(factionDeclaresPeace, factionDeclaredPeace);
-		return (GetSameCultureTownScore(factionDeclaresPeace, factionDeclaredPeace) + benefitScore * exposureScoreToOtherFaction - riskScore) * -1f;
+		float allianceFactorForDeclaringPeace = Campaign.Current.Models.AllianceModel.GetAllianceFactorForDeclaringPeace(factionDeclaresPeace, factionDeclaredPeace);
+		return (GetSameCultureTownScore(factionDeclaresPeace, factionDeclaredPeace) + benefitScore * exposureScoreToOtherFaction - riskScore * allianceFactorForDeclaringPeace) * -1f;
 	}
 
 	private TextObject GetReasonForDeclaringPeace(IFaction factionDeclaresPeace, IFaction factionDeclaredPeace, Clan evaluatingClan)
@@ -578,34 +576,28 @@ public class DefaultDiplomacyModel : DiplomacyModel
 		GetBenefitAndRiskScoreForWar(factionDeclaresWar, factionDeclaredWar, evaluatingClan, out var benefitScore, out var riskScore);
 		float relationScore = GetRelationScore(factionDeclaresWar, factionDeclaredWar, evaluatingClan);
 		float sameCultureTownScore = GetSameCultureTownScore(factionDeclaresWar, factionDeclaredWar);
-		float allianceFactor = GetAllianceFactor(factionDeclaresWar, factionDeclaredWar);
-		return sameCultureTownScore + benefitScore * exposureScoreToOtherFaction * allianceFactor - riskScore + relationScore;
+		float allianceFactorForDeclaringWar = Campaign.Current.Models.AllianceModel.GetAllianceFactorForDeclaringWar(factionDeclaresWar, factionDeclaredWar);
+		float tradeAgreementFactor = GetTradeAgreementFactor(factionDeclaresWar, factionDeclaredWar);
+		return sameCultureTownScore + benefitScore * exposureScoreToOtherFaction * allianceFactorForDeclaringWar * tradeAgreementFactor - riskScore + relationScore;
 	}
 
-	private static float GetAllianceFactor(IFaction factionDeclaresWar, IFaction factionDeclaredWar)
+	private static float GetTradeAgreementFactor(IFaction factionDeclaresWar, IFaction factionDeclaredWar)
 	{
+		float num = 1f;
 		if (factionDeclaresWar.IsKingdomFaction && factionDeclaredWar.IsKingdomFaction)
 		{
-			bool flag = false;
-			float num = 1f;
-			Kingdom obj = (Kingdom)factionDeclaresWar;
-			Kingdom kingdom = (Kingdom)factionDeclaredWar;
-			foreach (Kingdom alliedKingdom in obj.AlliedKingdoms)
+			Kingdom kingdom = (Kingdom)factionDeclaresWar;
+			Kingdom kingdom2 = (Kingdom)factionDeclaredWar;
+			if (!kingdom2.IsAllyWith(kingdom))
 			{
-				if (alliedKingdom == kingdom)
+				ITradeAgreementsCampaignBehavior campaignBehavior = Campaign.Current.GetCampaignBehavior<ITradeAgreementsCampaignBehavior>();
+				if (campaignBehavior != null && campaignBehavior.HasTradeAgreement(kingdom, kingdom2, out var _))
 				{
-					num *= 1f - Campaign.Current.Models.DiplomacyModel.WarDeclarationScorePenaltyAgainstAllies;
-					break;
-				}
-				if (!flag && alliedKingdom.IsAtWarWith(kingdom))
-				{
-					num *= 1f + Campaign.Current.Models.DiplomacyModel.WarDeclarationScoreBonusAgainstEnemiesOfAllies;
-					flag = true;
+					num *= Campaign.Current.Models.DiplomacyModel.WarDeclarationScorePenaltyAgainstTradePartners;
 				}
 			}
-			return num;
 		}
-		return 1f;
+		return num;
 	}
 
 	private TextObject GetReasonForDeclaringWar(IFaction factionDeclaresWar, IFaction factionDeclaredWar, Clan evaluatingClan)
@@ -1220,23 +1212,7 @@ public class DefaultDiplomacyModel : DiplomacyModel
 				}
 			}
 		}
-		HashSet<Settlement> hashSet2 = new HashSet<Settlement>();
-		foreach (Settlement item in hashSet)
-		{
-			foreach (Settlement neighborFortification2 in item.Town.GetNeighborFortifications(MobileParty.NavigationType.All))
-			{
-				if (neighborFortification2.MapFaction != factionDeclaresWar && !hashSet.Contains(neighborFortification2) && !hashSet2.Contains(neighborFortification2))
-				{
-					if (neighborFortification2.MapFaction == factionDeclaredWar)
-					{
-						num2 += 0.2f;
-					}
-					num += 0.2f;
-					hashSet2.Add(neighborFortification2);
-				}
-			}
-		}
-		if (num2 < 0.2f)
+		if (num2 < 1f)
 		{
 			return float.MinValue;
 		}

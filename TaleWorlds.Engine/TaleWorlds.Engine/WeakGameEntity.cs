@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.Engine;
@@ -28,8 +27,6 @@ public struct WeakGameEntity
 	public float Mass => EngineApplicationInterface.IGameEntity.GetMass(Pointer);
 
 	public Vec3 CenterOfMass => EngineApplicationInterface.IGameEntity.GetCenterOfMass(Pointer);
-
-	private int ScriptCount => EngineApplicationInterface.IGameEntity.GetScriptComponentCount(Pointer);
 
 	public Vec3 GlobalPosition => GetGlobalFrame().origin;
 
@@ -395,6 +392,11 @@ public struct WeakGameEntity
 		EngineApplicationInterface.IGameEntity.CallScriptCallbacks(Pointer, registerScriptComponents);
 	}
 
+	public int GetScriptCount()
+	{
+		return EngineApplicationInterface.IGameEntity.GetScriptComponentCount(Pointer);
+	}
+
 	public bool IsGhostObject()
 	{
 		return EngineApplicationInterface.IGameEntity.IsGhostObject(Pointer);
@@ -415,7 +417,7 @@ public struct WeakGameEntity
 		EngineApplicationInterface.IGameEntity.SetEntityEnvMapVisibility(Pointer, value);
 	}
 
-	internal ScriptComponentBehavior GetScriptAtIndex(int index)
+	public ScriptComponentBehavior GetScriptAtIndex(int index)
 	{
 		return EngineApplicationInterface.IGameEntity.GetScriptComponentAtIndex(Pointer, index);
 	}
@@ -442,7 +444,7 @@ public struct WeakGameEntity
 
 	public IEnumerable<ScriptComponentBehavior> GetScriptComponents()
 	{
-		int count = ScriptCount;
+		int count = GetScriptCount();
 		for (int i = 0; i < count; i++)
 		{
 			yield return GetScriptAtIndex(i);
@@ -451,7 +453,7 @@ public struct WeakGameEntity
 
 	public IEnumerable<T> GetScriptComponents<T>() where T : ScriptComponentBehavior
 	{
-		int count = ScriptCount;
+		int count = GetScriptCount();
 		for (int i = 0; i < count; i++)
 		{
 			if (GetScriptAtIndex(i) is T val)
@@ -463,7 +465,7 @@ public struct WeakGameEntity
 
 	public bool HasScriptOfType<T>() where T : ScriptComponentBehavior
 	{
-		int scriptCount = ScriptCount;
+		int scriptCount = GetScriptCount();
 		for (int i = 0; i < scriptCount; i++)
 		{
 			if (GetScriptAtIndex(i) is T)
@@ -474,9 +476,17 @@ public struct WeakGameEntity
 		return false;
 	}
 
-	public bool HasScriptOfType(Type t)
+	public bool HasScriptWithInterfaceOfType<T>()
 	{
-		return GetScriptComponents().Any((ScriptComponentBehavior sc) => sc.GetType().IsAssignableFrom(t));
+		int scriptCount = GetScriptCount();
+		for (int i = 0; i < scriptCount; i++)
+		{
+			if (GetScriptAtIndex(i) is T)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public T GetFirstScriptOfTypeInFamily<T>() where T : ScriptComponentBehavior
@@ -508,7 +518,20 @@ public struct WeakGameEntity
 
 	public T GetFirstScriptOfType<T>() where T : ScriptComponentBehavior
 	{
-		int scriptCount = ScriptCount;
+		int scriptCount = GetScriptCount();
+		for (int i = 0; i < scriptCount; i++)
+		{
+			if (GetScriptAtIndex(i) is T result)
+			{
+				return result;
+			}
+		}
+		return null;
+	}
+
+	public T GetFirstScriptWithInterfaceOfType<T>() where T : class
+	{
+		int scriptCount = GetScriptCount();
 		for (int i = 0; i < scriptCount; i++)
 		{
 			if (GetScriptAtIndex(i) is T result)
@@ -521,7 +544,7 @@ public struct WeakGameEntity
 
 	public T GetFirstScriptOfTypeRecursive<T>() where T : ScriptComponentBehavior
 	{
-		int scriptCount = ScriptCount;
+		int scriptCount = GetScriptCount();
 		for (int i = 0; i < scriptCount; i++)
 		{
 			if (GetScriptAtIndex(i) is T result)
@@ -553,9 +576,23 @@ public struct WeakGameEntity
 		return Invalid;
 	}
 
+	public int GetScriptCountOfType<T>() where T : ScriptComponentBehavior
+	{
+		int scriptCount = GetScriptCount();
+		int num = 0;
+		for (int i = 0; i < scriptCount; i++)
+		{
+			if (GetScriptAtIndex(i) is T)
+			{
+				num++;
+			}
+		}
+		return num;
+	}
+
 	public int GetScriptCountOfTypeRecursive<T>() where T : ScriptComponentBehavior
 	{
-		int scriptCount = ScriptCount;
+		int scriptCount = GetScriptCount();
 		int num = 0;
 		for (int i = 0; i < scriptCount; i++)
 		{

@@ -158,7 +158,7 @@ public class BannerTableauWidget : TextureWidget
 	{
 	}
 
-	protected override void OnMouseReleased()
+	protected override void OnMouseReleased(bool isFromInput)
 	{
 	}
 

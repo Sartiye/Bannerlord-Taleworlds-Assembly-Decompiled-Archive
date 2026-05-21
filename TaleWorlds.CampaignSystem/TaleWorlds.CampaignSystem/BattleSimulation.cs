@@ -133,8 +133,7 @@ public class BattleSimulation : IBattleObserver
 	public void OnPlayerRetreat()
 	{
 		_isPlayerRetreated = true;
-		_mapEvent.AttackerSide.CommitXpGains();
-		_mapEvent.DefenderSide.CommitXpGains();
+		_mapEvent.CommitXpGains();
 		OnFinished();
 	}
 
@@ -146,7 +145,7 @@ public class BattleSimulation : IBattleObserver
 		}
 		if (PlayerEncounter.Current == null)
 		{
-			Debug.FailedAssert("PlayerEncounter.Current == null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\BattleSimulation.cs", "Tick", 160);
+			Debug.FailedAssert("PlayerEncounter.Current == null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\BattleSimulation.cs", "Tick", 158);
 			IsSimulationFinished = true;
 			return;
 		}

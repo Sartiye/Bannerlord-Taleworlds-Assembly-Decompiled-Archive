@@ -32,7 +32,7 @@ public static class MultiplayerPracticeMissions
 			DecalAtlasGroup = 2
 		}, (Mission missionController) => new MissionBehavior[26]
 		{
-			new MissionAgentSpawnLogic(troopSuppliers, playerSide, Mission.BattleSizeType.Battle),
+			new DefaultBattleMissionAgentSpawnLogic(troopSuppliers, playerSide, Mission.BattleSizeType.Battle),
 			new BattlePowerCalculationLogic(),
 			new CustomBattleAgentLogic(),
 			new BannerBearerLogic(),

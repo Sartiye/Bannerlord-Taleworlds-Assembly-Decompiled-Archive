@@ -54,6 +54,8 @@ public class ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyM
 
 	private Widget _widget_2_1_1_1_0;
 
+	private Widget _widget_2_1_1_1_0_0;
+
 	private ButtonWidget _widget_3;
 
 	private Widget _widget_3_0;
@@ -112,6 +114,8 @@ public class ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyM
 		_widget_2_1_1.AddChild(_widget_2_1_1_1);
 		_widget_2_1_1_1_0 = new Widget(base.Context);
 		_widget_2_1_1_1.AddChild(_widget_2_1_1_1_0);
+		_widget_2_1_1_1_0_0 = new Widget(base.Context);
+		_widget_2_1_1_1_0.AddChild(_widget_2_1_1_1_0_0);
 		_widget_3 = new ButtonWidget(base.Context);
 		_widget.AddChild(_widget_3);
 		_widget_3_0 = new Widget(base.Context);
@@ -194,7 +198,7 @@ public class ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyM
 		_widget_2.MarginRight = 15f;
 		_widget_2.MarginLeft = 15f;
 		_widget_2.IsEnabled = false;
-		_widget_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_2_0.SuggestedHeight = 20f;
@@ -221,12 +225,17 @@ public class ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyM
 		_widget_2_1_1_1.VerticalAlignment = VerticalAlignment.Center;
 		_widget_2_1_1_1_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_1_1_1_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_2_1_1_1_0.SuggestedWidth = 25f;
-		_widget_2_1_1_1_0.SuggestedHeight = 25f;
+		_widget_2_1_1_1_0.SuggestedWidth = 30f;
+		_widget_2_1_1_1_0.SuggestedHeight = 30f;
 		_widget_2_1_1_1_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_2_1_1_1_0.PositionXOffset = -5f;
 		_widget_2_1_1_1_0.PositionYOffset = 3f;
-		_widget_2_1_1_1_0.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Influence@2x");
+		_widget_2_1_1_1_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_2_1_1_1_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_2_1_1_1_0_0.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Influence@2x");
+		_widget_2_1_1_1_0_0.ImageFit.Type = ImageFit.ImageFitTypes.Contain;
+		_widget_2_1_1_1_0_0.ImageFit.VerticalAlignment = ImageFit.ImageVerticalAlignments.Center;
+		_widget_2_1_1_1_0_0.ImageFit.HorizontalAlignment = ImageFit.ImageHorizontalAlignments.Center;
 		_widget_3.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_3.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_3.SuggestedWidth = 40f;

@@ -36,6 +36,11 @@ public class ObjectLoadData
 		return _memberValues.SingleOrDefault((MemberLoadData value) => value.MemberSaveId.LocalSaveId == localSaveId)?.GetDataToUse();
 	}
 
+	public object GetMemberValueBySaveId(int localSaveId, int typeLevel)
+	{
+		return _memberValues.SingleOrDefault((MemberLoadData value) => value.MemberSaveId.LocalSaveId == localSaveId && value.MemberSaveId.TypeLevel == typeLevel)?.GetDataToUse();
+	}
+
 	public object GetMemberValueBySaveId(int localSaveId)
 	{
 		return _memberValues.SingleOrDefault((MemberLoadData value) => value.MemberSaveId.LocalSaveId == localSaveId)?.GetDataToUse();
@@ -54,6 +59,11 @@ public class ObjectLoadData
 	public bool HasMember(int localSaveId)
 	{
 		return _memberValues.Any((MemberLoadData x) => x.MemberSaveId.LocalSaveId == localSaveId);
+	}
+
+	public bool HasMember(int localSaveId, int typeLevel)
+	{
+		return _memberValues.Any((MemberLoadData x) => x.MemberSaveId.LocalSaveId == localSaveId && x.MemberSaveId.TypeLevel == typeLevel);
 	}
 
 	public ObjectLoadData(LoadContext context, int id)

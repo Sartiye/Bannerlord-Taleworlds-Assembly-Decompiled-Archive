@@ -213,7 +213,7 @@ public class DisguiseMissionLogic : MissionLogic, IPlayerInputEffector, IMission
 		result = ContactAlreadySetCommonCondition();
 	}
 
-	private bool ContactAlreadySetCommonCondition()
+	public bool ContactAlreadySetCommonCondition()
 	{
 		if (!_contactSet)
 		{
@@ -755,6 +755,10 @@ public class DisguiseMissionLogic : MissionLogic, IPlayerInputEffector, IMission
 			_agentsToBeRemoved.Add(eventData.Agent);
 		}
 		else if (eventData.LocationCharacter.Character.Occupation == Occupation.Musician || eventData.LocationCharacter.Character.Culture.FemaleDancer == eventData.LocationCharacter.Character)
+		{
+			_agentsToBeRemoved.Add(eventData.Agent);
+		}
+		else if (eventData.LocationCharacter.MemberOfAlley != null && eventData.LocationCharacter.MemberOfAlley.Owner == Hero.MainHero)
 		{
 			_agentsToBeRemoved.Add(eventData.Agent);
 		}

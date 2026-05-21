@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using SandBox.Missions.MissionLogics;
 using SandBox.Objects;
 using TaleWorlds.CampaignSystem;
@@ -9,6 +10,7 @@ using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
+using TaleWorlds.MountAndBlade.Objects;
 
 namespace SandBox.Missions.AgentBehaviors;
 
@@ -17,6 +19,10 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 	public const float SafetyDistance = 15f;
 
 	public const float SafetyDistanceSquared = 225f;
+
+	private const float NearbyDistanceThreshold = 1f;
+
+	private const float NearbyDistanceThresholdSquared = 1f;
 
 	private readonly MissionFightHandler _missionFightHandler;
 
@@ -40,6 +46,8 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 
 	private readonly MBList<GameEntity> _stealthIndoorLightingAreas;
 
+	private readonly MBList<StealthBox> _stealthBoxes;
+
 	private MissionTime _lastAlarmTriggerTime;
 
 	public float AlarmFactor { get; private set; }
@@ -58,6 +66,9 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 		List<GameEntity> entities = new List<GameEntity>();
 		base.OwnerAgent.Mission.Scene.GetAllEntitiesWithScriptComponent<StealthIndoorLightingArea>(ref entities);
 		_stealthIndoorLightingAreas = new MBList<GameEntity>(entities);
+		List<GameEntity> entities2 = new List<GameEntity>();
+		base.OwnerAgent.Mission.Scene.GetAllEntitiesWithScriptComponent<StealthBox>(ref entities2);
+		_stealthBoxes = new MBList<StealthBox>(entities2.Select((GameEntity ge) => ge.GetFirstScriptOfType<StealthBox>()));
 	}
 
 	public void SetCanMoveWhenCautious(bool value)
@@ -73,7 +84,7 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 			if ((!base.OwnerAgent.IsCautious() || flag) && _lastAlarmTriggerTime.ElapsedSeconds > 2f)
 			{
 				float alarmFactor = AlarmFactor;
-				AlarmFactor = Math.Max(0f, AlarmFactor - (base.OwnerAgent.IsPatrollingCautious() ? 0.1f : (_canMoveWhenCautious ? 0.15f : 0.25f)) * dt);
+				AlarmFactor = Math.Max(0f, AlarmFactor - (base.OwnerAgent.IsPatrollingCautious() ? 0.025f : (_canMoveWhenCautious ? 0.125f : 0.08f)) * dt);
 				if (alarmFactor >= 1f && AlarmFactor < 1f)
 				{
 					AlarmFactor = 0.3f;
@@ -81,6 +92,7 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 			}
 			bool hasVisualOnEnemy = false;
 			bool hasVisualOnCorpse = false;
+			bool flag2 = false;
 			if (!DoNotCheckForAlarmFactorIncrease)
 			{
 				Vec3 vec;
@@ -92,64 +104,73 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 				{
 					MatrixFrame frame = base.OwnerAgent.Frame;
 					ref Mat3 rotation = ref frame.rotation;
-					MatrixFrame boneEntitialFrame = base.OwnerAgent.AgentVisuals.GetBoneEntitialFrame(base.OwnerAgent.Monster.HeadLookDirectionBoneIndex, useBoneMapping: true);
+					MatrixFrame boneEntitialFrame = base.OwnerAgent.GetBoneEntitialFrame(base.OwnerAgent.Monster.HeadLookDirectionBoneIndex, useBoneMapping: true);
 					vec = rotation.TransformToParent(in boneEntitialFrame.rotation.f);
 				}
 				Vec3 vb = vec;
-				vb = vb.RotateAboutAnArbitraryVector(Vec3.CrossProduct(Vec3.Up, vb).NormalizedCopy(), 0.2f);
+				WorldPosition worldPosition = base.OwnerAgent.GetWorldPosition();
+				worldPosition.SetVec2(worldPosition.AsVec2 + vb.AsVec2.Normalized() * 1.25f);
+				float num = MBMath.ClampFloat(TaleWorlds.Library.MathF.Tan(worldPosition.GetGroundVec3().z - base.OwnerAgent.Position.z) * 1f, -0.025f, 0.55f);
+				vb = vb.RotateAboutAnArbitraryVector(Vec3.CrossProduct(Vec3.Up, vb).NormalizedCopy(), 0.02f - num);
 				foreach (Agent allAgent in base.OwnerAgent.Mission.AllAgents)
 				{
-					float num = 0f;
 					float num2 = 0f;
+					float num3 = 0f;
 					AgentState state = allAgent.State;
-					bool flag2 = allAgent.AgentVisuals.IsValid();
-					if (state == AgentState.Deleted || state == AgentState.Routed || state == AgentState.None || !flag2)
+					bool flag3 = allAgent.AgentVisuals.IsValid();
+					if (state == AgentState.Deleted || state == AgentState.Routed || state == AgentState.None || !flag3)
 					{
 						continue;
 					}
 					AgentFlag agentFlags = allAgent.GetAgentFlags();
-					bool flag3 = _ignoredAgentsForAlarm.IndexOf(allAgent) >= 0;
-					if (allAgent != base.OwnerAgent && agentFlags.HasAllFlags(AgentFlag.CanAttack | AgentFlag.IsHumanoid) && ((!allAgent.IsActive() && !flag3) || (allAgent.IsActive() && (allAgent.IsAlarmed() || (allAgent.IsPatrollingCautious() && !flag3 && allAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<AlarmedBehaviorGroup>().AlarmFactor > AlarmFactor + 0.1f) || base.OwnerAgent.IsEnemyOf(allAgent)))))
+					bool flag4 = _ignoredAgentsForAlarm.IndexOf(allAgent) >= 0;
+					if (allAgent == base.OwnerAgent || !agentFlags.HasAllFlags(AgentFlag.CanAttack | AgentFlag.IsHumanoid) || ((state == AgentState.Active || flag4) && (state != AgentState.Active || (!allAgent.IsAlarmed() && (!allAgent.IsPatrollingCautious() || flag4 || !(allAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<AlarmedBehaviorGroup>().AlarmFactor > AlarmFactor + 0.1f)) && !base.OwnerAgent.IsEnemyOf(allAgent)))))
 					{
-						if (!DoNotIncreaseAlarmFactorDueToSeeingOrHearingTheEnemy)
+						continue;
+					}
+					if (!DoNotIncreaseAlarmFactorDueToSeeingOrHearingTheEnemy)
+					{
+						int effectiveSkill = MissionGameModels.Current.AgentStatCalculateModel.GetEffectiveSkill(allAgent, DefaultSkills.Roguery);
+						float equipmentStealthBonus = MissionGameModels.Current.AgentStatCalculateModel.GetEquipmentStealthBonus(allAgent);
+						float sneakingNoiseMultiplier = Math.Max(0f, 1f - ((float)effectiveSkill * 0.0001f + equipmentStealthBonus * 0.002f));
+						num2 += GetSoundFactor(allAgent, sneakingNoiseMultiplier);
+					}
+					num3 += GetVisualFactor(vb, allAgent, _stealthIndoorLightingAreas, ref hasVisualOnCorpse, ref hasVisualOnEnemy);
+					float num4 = Math.Min(3f, num2 + num3);
+					if (num4 > 0f && (!hasVisualOnEnemy || !DoNotIncreaseAlarmFactorDueToSeeingOrHearingTheEnemy))
+					{
+						AlarmFactor += num4 * dt * Campaign.Current.Models.DifficultyModel.GetStealthDifficultyMultiplier();
+						if (state == AgentState.Active && allAgent.Position.DistanceSquared(base.OwnerAgent.Position) < 1f)
 						{
-							int effectiveSkill = MissionGameModels.Current.AgentStatCalculateModel.GetEffectiveSkill(allAgent, DefaultSkills.Roguery);
-							float equipmentStealthBonus = MissionGameModels.Current.AgentStatCalculateModel.GetEquipmentStealthBonus(allAgent);
-							float sneakingNoiseMultiplier = Math.Max(0f, 1f - ((float)effectiveSkill * 0.0001f + equipmentStealthBonus * 0.002f));
-							num += GetSoundFactor(allAgent, sneakingNoiseMultiplier);
+							flag2 = true;
 						}
-						num2 += GetVisualFactor(vb, allAgent, _stealthIndoorLightingAreas, ref hasVisualOnCorpse, ref hasVisualOnEnemy);
-						float num3 = num + num2;
-						if (num3 > 0f && (!hasVisualOnEnemy || !DoNotIncreaseAlarmFactorDueToSeeingOrHearingTheEnemy))
-						{
-							AlarmFactor += num3 * dt * Campaign.Current.Models.DifficultyModel.GetStealthDifficultyMultiplier();
-							_lastAlarmTriggerTime = MissionTime.Now;
-						}
-						if (AlarmFactor >= 1f && base.OwnerAgent.IsAlarmStateNormal())
-						{
-							base.OwnerAgent.SetAlarmState(Agent.AIStateFlag.Cautious);
-							WorldPosition lastSuspiciousPosition = allAgent.GetWorldPosition();
-							lastSuspiciousPosition.SetVec2(lastSuspiciousPosition.AsVec2 + (base.OwnerAgent.Position.AsVec2 - lastSuspiciousPosition.AsVec2).Normalized() * 2f);
-							SetAILastSuspiciousPositionHelper(in lastSuspiciousPosition, checkNavMeshForCorrection: true);
-							_lastSuspiciousPositionTimer.Reset();
-						}
-						else if (num3 > 0f && (base.OwnerAgent.IsCautious() || base.OwnerAgent.IsPatrollingCautious()) && _lastSuspiciousPositionTimer.Check(reset: true))
-						{
-							WorldPosition lastSuspiciousPosition2 = allAgent.GetWorldPosition();
-							lastSuspiciousPosition2.SetVec2(lastSuspiciousPosition2.AsVec2 + (base.OwnerAgent.Position.AsVec2 - lastSuspiciousPosition2.AsVec2).Normalized() * 2f);
-							SetAILastSuspiciousPositionHelper(in lastSuspiciousPosition2, checkNavMeshForCorrection: true);
-						}
-						if (num2 > 0f && base.OwnerAgent.IsPatrollingCautious() && (!allAgent.IsActive() || (!allAgent.IsEnemyOf(base.OwnerAgent) && !allAgent.IsAlarmed())))
-						{
-							_ignoredAgentsForAlarm.Add(allAgent);
-						}
+						_lastAlarmTriggerTime = MissionTime.Now;
+					}
+					if (AlarmFactor >= 1f && base.OwnerAgent.IsAlarmStateNormal())
+					{
+						base.OwnerAgent.SetAlarmState(Agent.AIStateFlag.Cautious);
+						WorldPosition lastSuspiciousPosition = allAgent.GetWorldPosition();
+						lastSuspiciousPosition.SetVec2(lastSuspiciousPosition.AsVec2 + (base.OwnerAgent.Position.AsVec2 - lastSuspiciousPosition.AsVec2).Normalized() * (((base.OwnerAgent.Position.AsVec2 - lastSuspiciousPosition.AsVec2).LengthSquared < 25f) ? 0f : 2f));
+						SetAILastSuspiciousPositionHelper(in lastSuspiciousPosition, checkNavMeshForCorrection: true);
+						_lastSuspiciousPositionTimer.Reset();
+					}
+					else if (num4 > 0f && (base.OwnerAgent.IsCautious() || base.OwnerAgent.IsPatrollingCautious()) && _lastSuspiciousPositionTimer.Check(reset: true))
+					{
+						WorldPosition lastSuspiciousPosition2 = allAgent.GetWorldPosition();
+						lastSuspiciousPosition2.SetVec2(lastSuspiciousPosition2.AsVec2 + (base.OwnerAgent.Position.AsVec2 - lastSuspiciousPosition2.AsVec2).Normalized() * (((base.OwnerAgent.Position.AsVec2 - lastSuspiciousPosition2.AsVec2).LengthSquared < 25f) ? 0f : 2f));
+						SetAILastSuspiciousPositionHelper(in lastSuspiciousPosition2, checkNavMeshForCorrection: true);
+					}
+					if (num3 > 0f && base.OwnerAgent.IsPatrollingCautious() && (!allAgent.IsActive() || (!allAgent.IsEnemyOf(base.OwnerAgent) && !allAgent.IsAlarmed())))
+					{
+						_ignoredAgentsForAlarm.Add(allAgent);
 					}
 				}
 			}
-			if (AlarmFactor >= 2f && hasVisualOnEnemy)
+			if ((AlarmFactor >= 2f && (hasVisualOnEnemy || flag2)) || (AlarmFactor >= 1f && hasVisualOnEnemy && flag2))
 			{
 				base.OwnerAgent.SetAlarmState(Agent.AIStateFlag.Alarmed);
-				_alarmYellTimer.Set(-3f);
+				_alarmYellTimer.Set(-9f);
+				AlarmFactor = 2f;
 			}
 			else if (_canMoveWhenCautious && AlarmFactor >= 2f && base.OwnerAgent.IsCautious() && hasVisualOnCorpse)
 			{
@@ -159,12 +180,12 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 			{
 				base.OwnerAgent.SetAlarmState(Agent.AIStateFlag.None);
 			}
-			for (int num4 = _ignoredAgentsForAlarm.Count - 1; num4 >= 0; num4--)
+			for (int num5 = _ignoredAgentsForAlarm.Count - 1; num5 >= 0; num5--)
 			{
-				Agent agent = _ignoredAgentsForAlarm[num4];
+				Agent agent = _ignoredAgentsForAlarm[num5];
 				if (agent.IsActive() && (agent.IsAlarmStateNormal() || agent.IsAlarmed()))
 				{
-					_ignoredAgentsForAlarm.RemoveAt(num4);
+					_ignoredAgentsForAlarm.RemoveAt(num5);
 				}
 			}
 			AlarmFactor = Math.Min(AlarmFactor, 2f);
@@ -196,7 +217,7 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 		if (currentAgent.Velocity.LengthSquared > 0.010000001f)
 		{
 			float num = (currentAgent.Position + new Vec3(0f, 0f, currentAgent.GetEyeGlobalHeight()) - (base.OwnerAgent.Position + new Vec3(0f, 0f, currentAgent.GetEyeGlobalHeight()))).Normalize();
-			float num2 = 200f * Math.Min(1f, currentAgent.AverageVelocity.Length / currentAgent.GetMaximumForwardUnlimitedSpeed());
+			float num2 = 125f * Math.Min(1f, currentAgent.AverageVelocity.Length / currentAgent.GetMaximumForwardUnlimitedSpeed());
 			bool flag = false;
 			if (currentAgent.Mission.Scene.GetWaterLevelAtPosition(currentAgent.Position.AsVec2, !GameNetwork.IsMultiplayer, checkWaterBodyEntities: true) > currentAgent.Position.z)
 			{
@@ -207,9 +228,9 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 					num2 *= 4f;
 				}
 			}
-			if (currentAgent.HasMount)
+			if (currentAgent.HasMount || num <= currentAgent.CollisionCapsule.Radius * 2.5f)
 			{
-				num2 *= 2f;
+				num2 *= 12f;
 			}
 			else if (currentAgent.State == AgentState.Active && currentAgent.AgentVisuals.IsValid())
 			{
@@ -219,16 +240,16 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 					num2 *= 0.7f;
 					break;
 				case HumanWalkingMovementMode.CrouchRunning:
-					num2 *= (flag ? 0.6f : 0.1f);
+					num2 *= (flag ? 0.45f : 0.25f);
 					break;
 				case HumanWalkingMovementMode.CrouchWalking:
-					num2 *= (flag ? 0.2f : 0f);
+					num2 *= (flag ? 0.1f : 0f);
 					break;
 				}
 			}
 			num2 *= sneakingNoiseMultiplier;
 			num2 /= 20f + num * num * 2.5f;
-			if (num2 > 0.25f)
+			if (num2 > 0.125f)
 			{
 				return num2;
 			}
@@ -240,18 +261,20 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 	{
 		Vec3 vec = currentAgent.Position + new Vec3(0f, 0f, currentAgent.GetEyeGlobalHeight()) - (base.OwnerAgent.Position + new Vec3(0f, 0f, currentAgent.GetEyeGlobalHeight()));
 		float num = 0f;
-		if (Vec3.DotProduct(vec, usedGlobalLookDirection) > 0f)
+		float num2 = Vec3.DotProduct(vec, usedGlobalLookDirection);
+		bool flag = vec.LengthSquared < 1f;
+		if (num2 > 0f && (flag || !IsAgentCoveredByAStealthBox(currentAgent)))
 		{
 			float distance = vec.Normalize();
 			bool currentAgentHasSpeed = currentAgent.Velocity.LengthSquared > 0.010000001f;
 			float equipmentStealthBonus = MissionGameModels.Current.AgentStatCalculateModel.GetEquipmentStealthBonus(currentAgent);
 			float visualStrength = GetVisualStrength(vec, usedGlobalLookDirection, currentAgent, currentAgentHasSpeed, distance, equipmentStealthBonus);
-			if (visualStrength > 0.1f)
+			if (visualStrength > 0.001f)
 			{
 				bool isDayTime = base.OwnerAgent.Mission.Scene.IsDayTime;
 				Vec3 position = currentAgent.Position;
 				float ambientLightStrength = (isDayTime ? 0.7f : 0.2f);
-				float sunMoonLightStrength = (isDayTime ? 1f : 0.3f);
+				float sunMoonLightStrength = (isDayTime ? 1f : 0.15f);
 				foreach (GameEntity stealthIndoorLightingArea in stealthIndoorLightingAreas)
 				{
 					StealthIndoorLightingArea firstScriptOfType = stealthIndoorLightingArea.GetFirstScriptOfType<StealthIndoorLightingArea>();
@@ -264,7 +287,7 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 				}
 				float visualStrengthOfAgentVisual = base.OwnerAgent.AgentVisuals.GetVisualStrengthOfAgentVisual(currentAgent.AgentVisuals, base.OwnerAgent.Mission, ambientLightStrength, sunMoonLightStrength, base.OwnerAgent.Index);
 				visualStrength *= visualStrengthOfAgentVisual;
-				if (visualStrength > 0.35f)
+				if (visualStrength > 0.3f)
 				{
 					num += visualStrength;
 					if (!currentAgent.IsActive())
@@ -287,8 +310,8 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 
 	private float GetVisualStrength(Vec3 positionDifferenceDirection, Vec3 usedGlobalLookDirection, Agent currentAgent, bool currentAgentHasSpeed, float distance, float equipmentStealthBonus)
 	{
-		float num = 1.0995574f;
-		float num2 = System.MathF.PI / 4f;
+		float num = System.MathF.PI * 19f / 40f;
+		float num2 = System.MathF.PI * 57f / 200f;
 		Vec3 s = usedGlobalLookDirection.CrossProductWithUp().NormalizedCopy();
 		Mat3 mat = new Mat3(in s, in usedGlobalLookDirection, in Vec3.Up);
 		mat.u = Vec3.CrossProduct(mat.s, mat.f);
@@ -297,29 +320,23 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 		float num3 = TaleWorlds.Library.MathF.Acos(MBMath.ClampFloat(vec.y, 0f, 1f));
 		TaleWorlds.Library.MathF.SinCos(a, out var sa, out var ca);
 		float num4 = num * num2 / TaleWorlds.Library.MathF.Sqrt(num * num * sa * sa + num2 * num2 * ca * ca);
-		float num5 = ((num3 >= num4) ? 0f : Math.Min(1f, 0.25f + (num4 - num3) / num4));
-		float num6 = 2f;
+		float num5 = ((num3 >= num4) ? 0f : Math.Min(1f, 0.025f + (num4 - num3) / num4));
 		num5 *= num5;
-		if (currentAgent.HasMount || distance <= currentAgent.CollisionCapsule.Radius * 5f)
+		if (currentAgent.HasMount || distance <= currentAgent.CollisionCapsule.Radius * 6.5f)
 		{
-			num5 *= 6.5f;
+			num5 *= 15f;
 		}
 		else if (currentAgent.AgentVisuals.IsValid() && currentAgent.CrouchMode)
 		{
-			num5 *= 0.45f;
-			num6 = 5f;
+			num5 *= (currentAgentHasSpeed ? 0.9f : 0.8f);
 		}
-		if (!currentAgentHasSpeed)
+		if (currentAgent.State != AgentState.Active || currentAgent.IsAlarmed())
 		{
-			num5 *= 0.85f;
+			num5 *= 1.45f;
 		}
-		else if (currentAgent.State != AgentState.Active)
-		{
-			num5 *= 0.85f;
-		}
-		float num7 = Math.Max(0f, 1f - equipmentStealthBonus * 0.0025f);
-		num5 *= 750f * num7;
-		return num5 / (10f + distance * distance / num6);
+		float num6 = Math.Max(0f, 1f - equipmentStealthBonus * 0.0025f);
+		num5 *= 575f * num6;
+		return num5 / (5f + distance * distance * 1.1f);
 	}
 
 	public void ResetAlarmFactor()
@@ -594,5 +611,33 @@ public class AlarmedBehaviorGroup : AgentBehaviorGroup
 
 	public override void ForceThink(float inSeconds)
 	{
+	}
+
+	private bool IsAgentCoveredByAStealthBox(Agent agent)
+	{
+		ItemObject item = agent.WieldedOffhandWeapon.Item;
+		if (item != null && item.ItemFlags.HasAnyFlag(ItemFlags.HasToBeHeldUp))
+		{
+			return false;
+		}
+		foreach (StealthBox stealthBox in _stealthBoxes)
+		{
+			if (stealthBox.IsAgentInside(agent) && (stealthBox.CoversStandingAgents || agent.CrouchMode || !agent.IsActive()))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public override void ConversationTick()
+	{
+		foreach (AgentBehavior behavior in Behaviors)
+		{
+			if (behavior.IsActive)
+			{
+				behavior.ConversationTick();
+			}
+		}
 	}
 }

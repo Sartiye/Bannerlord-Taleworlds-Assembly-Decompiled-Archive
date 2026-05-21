@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
-using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ImageIdentifiers;
@@ -45,18 +44,6 @@ public class AcceptCallToWarAgreementDecision : KingdomDecision
 
 		public override TextObject GetDecisionDescription()
 		{
-			if (base.SponsorClan != null && Kingdom != null && CallingKingdom != null && KingdomToCallToWarAgainst != null && base.SponsorClan != Clan.PlayerClan)
-			{
-				TextObject reason = TextObject.GetEmpty();
-				if (ShouldAcceptCallToWar)
-				{
-					Campaign.Current.Models.AllianceModel.GetScoreOfJoiningWar(Kingdom, CallingKingdom, KingdomToCallToWarAgainst, base.SponsorClan, out reason);
-				}
-				if (!reason.IsEmpty())
-				{
-					return reason;
-				}
-			}
 			if (ShouldAcceptCallToWar)
 			{
 				TextObject textObject = new TextObject("{=h9bWTLgK}It is time to join our allies, the {KINGDOM_NAME}, in their war.");
@@ -153,7 +140,7 @@ public class AcceptCallToWarAgreementDecision : KingdomDecision
 
 	public override TextObject GetGeneralTitle()
 	{
-		TextObject textObject = new TextObject("{=syGyjjKE}Answer the call of the {CALLING_KINGDOM}, and declare war on the {KINGDOM_TO_CALL_TO_WAR_AGAINST}.");
+		TextObject textObject = new TextObject("{=syGyjjKE}Answer the call of the {CALLING_KINGDOM}, and declare war on the {KINGDOM_TO_CALL_TO_WAR_AGAINST}");
 		textObject.SetTextVariable("CALLING_KINGDOM", CallingKingdom.InformalName);
 		textObject.SetTextVariable("KINGDOM_TO_CALL_TO_WAR_AGAINST", KingdomToCallToWarAgainst.InformalName);
 		return textObject;
@@ -165,7 +152,7 @@ public class AcceptCallToWarAgreementDecision : KingdomDecision
 		textObject.SetTextVariable("CALLING_KINGDOM", CallingKingdom.InformalName);
 		textObject.SetTextVariable("KINGDOM_TO_CALL_TO_WAR_AGAINST", KingdomToCallToWarAgainst.InformalName);
 		textObject.SetTextVariable("CALL_TO_WAR_PAYMENT", CallToWarCost);
-		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		return textObject;
 	}
 
@@ -175,7 +162,7 @@ public class AcceptCallToWarAgreementDecision : KingdomDecision
 		textObject.SetTextVariable("CALLING_KINGDOM", CallingKingdom.InformalName);
 		textObject.SetTextVariable("KINGDOM_TO_CALL_TO_WAR_AGAINST", KingdomToCallToWarAgainst.InformalName);
 		textObject.SetTextVariable("CALL_TO_WAR_PAYMENT", CallToWarCost);
-		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		return textObject;
 	}
 
@@ -186,7 +173,7 @@ public class AcceptCallToWarAgreementDecision : KingdomDecision
 		textObject.SetTextVariable("CALLING_KINGDOM", CallingKingdom.InformalName);
 		textObject.SetTextVariable("KINGDOM_TO_CALL_TO_WAR_AGAINST", KingdomToCallToWarAgainst.InformalName);
 		textObject.SetTextVariable("CALL_TO_WAR_PAYMENT", CallToWarCost);
-		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		return textObject;
 	}
 
@@ -198,7 +185,7 @@ public class AcceptCallToWarAgreementDecision : KingdomDecision
 		textObject.SetTextVariable("KINGDOM_TO_CALL_TO_WAR_AGAINST", KingdomToCallToWarAgainst.InformalName);
 		textObject.SetTextVariable("CALL_TO_WAR_PAYMENT", CallToWarCost);
 		textObject.SetTextVariable("CALLING_KINGDOM", CallingKingdom.Name);
-		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		return textObject;
 	}
 
@@ -239,6 +226,10 @@ public class AcceptCallToWarAgreementDecision : KingdomDecision
 		if (((AcceptCallToWarAgreementDecisionOutcome)chosenOutcome).ShouldAcceptCallToWar)
 		{
 			AllianceCampaignBehavior.StartCallToWarAgreement(CallingKingdom, base.Kingdom, KingdomToCallToWarAgainst, CallToWarCost);
+		}
+		else
+		{
+			AllianceCampaignBehavior.DenyCallToWarAgreement(CallingKingdom, base.Kingdom);
 		}
 	}
 
@@ -287,12 +278,9 @@ public class AcceptCallToWarAgreementDecision : KingdomDecision
 		float scoreOfJoiningWar = Campaign.Current.Models.AllianceModel.GetScoreOfJoiningWar(CallingKingdom, base.Kingdom, KingdomToCallToWarAgainst, clan, out reason);
 		if (obj.ShouldAcceptCallToWar)
 		{
-			float num = (float)clan.Leader.GetTraitLevel(DefaultTraits.Valor) * 2.5f + (float)clan.Leader.GetTraitLevel(DefaultTraits.Calculating) * 2.5f;
-			return scoreOfJoiningWar + num;
+			return scoreOfJoiningWar;
 		}
-		float num2 = 0f - scoreOfJoiningWar;
-		float num3 = 0f - (float)clan.Leader.GetTraitLevel(DefaultTraits.Valor) * 2.5f - (float)clan.Leader.GetTraitLevel(DefaultTraits.Calculating) * 2.5f;
-		return num2 + num3;
+		return 0f - scoreOfJoiningWar;
 	}
 
 	public override bool CanMakeDecision(out TextObject reason, bool includeReason = false)

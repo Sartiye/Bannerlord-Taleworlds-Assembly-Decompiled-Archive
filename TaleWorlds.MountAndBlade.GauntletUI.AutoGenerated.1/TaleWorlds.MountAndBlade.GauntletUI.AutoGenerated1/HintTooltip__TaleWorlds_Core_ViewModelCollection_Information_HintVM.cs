@@ -65,7 +65,7 @@ public class HintTooltip__TaleWorlds_Core_ViewModelCollection_Information_HintVM
 		_widget_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_0.SuggestedHeight = 12f;

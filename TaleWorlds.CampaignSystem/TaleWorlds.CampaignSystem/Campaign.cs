@@ -691,6 +691,7 @@ public class Campaign : GameType
 		base.ObjectManager.AfterLoad();
 		CampaignObjectManager.AfterLoad();
 		CharacterRelationManager.AfterLoad();
+		FactionManager.AfterLoad();
 		CampaignEventDispatcher.Instance.OnGameEarlyLoaded(starter);
 		CampaignEventDispatcher.Instance.OnGameLoaded(starter);
 		InitializeForSavedGame();
@@ -1507,7 +1508,7 @@ public class Campaign : GameType
 	private void InitializeCampaignObjectsOnAfterLoad()
 	{
 		CampaignObjectManager.InitializeOnLoad();
-		FactionManager.AfterLoad();
+		FactionManager.PreAfterLoad();
 		List<PerkObject> collection = AllPerks.Where((PerkObject x) => !x.IsTrash).ToList();
 		AllPerks = new MBReadOnlyList<PerkObject>(collection);
 		LogEntryHistory.OnAfterLoad();
@@ -1786,7 +1787,7 @@ public class Campaign : GameType
 			else
 			{
 				CampaignVec2 campaignPosition = Hero.MainHero.GetCampaignPosition();
-				position = ((campaignPosition.IsValid() && campaignPosition != CampaignVec2.Zero) ? campaignPosition : HeroHelper.FindASuitableSettlementToTeleportForHero(Hero.MainHero).GatePosition);
+				position = ((campaignPosition.IsValid() && campaignPosition != CampaignVec2.Zero) ? campaignPosition : SettlementHelper.GetBestSettlementToSpawnAround(Hero.MainHero).GatePosition);
 				MainParty.IsActive = true;
 				MainParty.MemberRoster.AddToCounts(Hero.MainHero.CharacterObject, 1, insertAtFront: true);
 			}

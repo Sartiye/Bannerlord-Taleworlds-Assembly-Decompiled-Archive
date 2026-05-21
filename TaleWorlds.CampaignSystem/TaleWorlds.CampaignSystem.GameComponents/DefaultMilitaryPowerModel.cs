@@ -178,6 +178,7 @@ public class DefaultMilitaryPowerModel : MilitaryPowerModel
 			powerFlags |= PowerFlags.RiverCrossing;
 			break;
 		case MapEvent.PowerCalculationContext.Village:
+		case MapEvent.PowerCalculationContext.NavalRaid:
 			powerFlags |= PowerFlags.Village;
 			break;
 		case MapEvent.PowerCalculationContext.Siege:
@@ -243,7 +244,12 @@ public class DefaultMilitaryPowerModel : MilitaryPowerModel
 	public override float GetDefaultTroopPower(CharacterObject troop)
 	{
 		int num = (troop.IsHero ? (troop.HeroObject.Level / 4 + 1) : troop.Tier);
-		return (float)((2 + num) * (10 + num)) * 0.02f * (troop.IsHero ? 1.5f : (troop.IsMounted ? 1.2f : 1f));
+		float num2 = (float)((2 + num) * (10 + num)) * 0.02f;
+		if (troop.IsHero)
+		{
+			num2 *= 1.5f;
+		}
+		return num2;
 	}
 
 	public override float GetContextModifier(Ship ship, BattleSideEnum battleSideEnum, MapEvent.PowerCalculationContext context)

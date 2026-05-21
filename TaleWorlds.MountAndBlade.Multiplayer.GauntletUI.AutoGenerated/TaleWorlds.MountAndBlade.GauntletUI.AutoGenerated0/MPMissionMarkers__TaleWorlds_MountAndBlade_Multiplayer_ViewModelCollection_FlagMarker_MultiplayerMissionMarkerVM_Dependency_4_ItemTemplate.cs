@@ -37,7 +37,7 @@ public class MPMissionMarkers__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCol
 	{
 		base.WidthSizePolicy = SizePolicy.CoverChildren;
 		base.HeightSizePolicy = SizePolicy.CoverChildren;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0.SuggestedWidth = 40f;

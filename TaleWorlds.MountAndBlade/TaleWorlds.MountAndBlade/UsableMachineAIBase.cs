@@ -40,7 +40,7 @@ public abstract class UsableMachineAIBase
 		foreach (StandingPoint standingPoint in UsableMachine.StandingPoints)
 		{
 			Agent userAgent = standingPoint.UserAgent;
-			if ((agentToCompareTo == null || userAgent == agentToCompareTo) && userAgent != null && (formationToCompareTo == null || (userAgent != null && userAgent.IsAIControlled && userAgent.Formation == formationToCompareTo)) && (HasActionCompleted || (potentialUsersTeam != null && UsableMachine.IsDisabledForBattleSideAI(potentialUsersTeam.Side)) || userAgent.IsRunningAway))
+			if ((agentToCompareTo == null || userAgent == agentToCompareTo) && userAgent != null && userAgent.IsAIControlled && (formationToCompareTo == null || userAgent.Formation == formationToCompareTo) && (HasActionCompleted || (potentialUsersTeam != null && UsableMachine.IsDisabledForBattleSideAI(potentialUsersTeam.Side)) || userAgent.IsRunningAway))
 			{
 				HandleAgentStopUsingStandingPoint(userAgent, standingPoint);
 			}

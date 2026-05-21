@@ -648,7 +648,7 @@ public class BannerBearerLogic : MissionLogic
 	{
 		base.OnBehaviorInitialize();
 		MissionGameModels.Current.BattleBannerBearersModel.InitializeModel(this);
-		AgentSpawnLogic = base.Mission.GetMissionBehavior<MissionAgentSpawnLogic>();
+		AgentSpawnLogic = base.Mission.GetMissionBehavior<DefaultBattleMissionAgentSpawnLogic>();
 		base.Mission.OnItemPickUp += OnItemPickup;
 		base.Mission.OnItemDrop += OnItemDrop;
 		_initialSpawnEquipments.Clear();
@@ -761,11 +761,11 @@ public class BannerBearerLogic : MissionLogic
 		this.OnBannerBearerAgentUpdated?.Invoke(agent, willBecomeBannerBearer);
 	}
 
-	public Agent SpawnBannerBearer(IAgentOriginBase troopOrigin, bool isPlayerSide, Formation formation, bool spawnWithHorse, bool isReinforcement, int formationTroopCount, int formationTroopIndex, bool isAlarmed, bool wieldInitialWeapons, bool forceDismounted, Vec3? initialPosition, Vec2? initialDirection, string specialActionSetSuffix = null, bool useTroopClassForSpawn = false)
+	public Agent SpawnBannerBearer(IAgentOriginBase troopOrigin, bool isPlayerSide, Formation formation, bool spawnWithHorse, bool isReinforcement, int formationTroopCount, int formationTroopIndex, bool isAlarmed, bool wieldInitialWeapons, Vec3? initialPosition, Vec2? initialDirection, string specialActionSetSuffix = null, bool useTroopClassForSpawn = false)
 	{
 		FormationBannerController formationControllerFromFormation = GetFormationControllerFromFormation(formation);
 		ItemObject bannerItem = formationControllerFromFormation.BannerItem;
-		Agent agent = base.Mission.SpawnTroop(troopOrigin, isPlayerSide, hasFormation: true, spawnWithHorse, isReinforcement, formationTroopCount, formationTroopIndex, isAlarmed, wieldInitialWeapons, forceDismounted, initialPosition, initialDirection, specialActionSetSuffix, bannerItem, formationControllerFromFormation.Formation.FormationIndex, useTroopClassForSpawn);
+		Agent agent = base.Mission.SpawnTroop(troopOrigin, isPlayerSide, hasFormation: true, spawnWithHorse, isReinforcement, formationTroopCount, formationTroopIndex, isAlarmed, wieldInitialWeapons, initialPosition, initialDirection, specialActionSetSuffix, bannerItem, formationControllerFromFormation.Formation.FormationIndex, useTroopClassForSpawn);
 		agent.ForceUpdateCachedAndFormationValues(updateOnlyMovement: false, arrangementChangeAllowed: false);
 		GameEntity gameEntity = GameEntity.CreateFromWeakEntity(agent.GetWeaponEntityFromEquipmentSlot(EquipmentIndex.ExtraWeaponSlot));
 		AddBannerEntity(formationControllerFromFormation, gameEntity);

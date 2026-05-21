@@ -210,7 +210,7 @@ public class PartyNameplate__SandBox_ViewModelCollection_Nameplate_PartyNameplat
 		_widget_1_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_1_0.MarginRight = 10f;
 		_widget_1_0.ClipContents = false;
-		_widget_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0_0.HorizontalAlignment = HorizontalAlignment.Center;

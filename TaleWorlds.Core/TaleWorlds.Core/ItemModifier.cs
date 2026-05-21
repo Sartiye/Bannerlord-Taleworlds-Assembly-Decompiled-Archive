@@ -76,6 +76,15 @@ public sealed class ItemModifier : MBObjectBase
 		MBObjectManager.Instance.ReadObjectReferenceFromXml<ItemModifierGroup>("modifier_group", node)?.AddItemModifier(this);
 	}
 
+	public bool IsBeneficial()
+	{
+		if (Damage <= 0 && Speed <= 0 && MissileSpeed <= 0 && Armor <= 0 && HitPoints <= 0)
+		{
+			return StackCount > 0;
+		}
+		return true;
+	}
+
 	private ItemQuality ReadItemQuality(XmlNode node)
 	{
 		switch (XmlHelper.ReadString(node, "quality"))

@@ -9,6 +9,7 @@ using TaleWorlds.CampaignSystem.AgentOrigins;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Conversation;
 using TaleWorlds.CampaignSystem.Encounters;
+using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Issues;
 using TaleWorlds.CampaignSystem.Party;
@@ -74,6 +75,17 @@ public class RivalGangMovingInIssueBehavior : CampaignBehaviorBase
 		private const int PreparationDurationInDays = 2;
 
 		public override AlternativeSolutionScaleFlag AlternativeSolutionScaleFlags => AlternativeSolutionScaleFlag.Casualties | AlternativeSolutionScaleFlag.FailureRisk;
+
+		public override TextObject IssueAlternativeSolutionSuccessLog
+		{
+			get
+			{
+				TextObject textObject = new TextObject("{=pzvQ1DkE}Your companion has defeated the rival gang and protected the interests of {QUEST_GIVER.LINK} in {SETTLEMENT}.");
+				textObject.SetCharacterProperties("QUEST_GIVER", base.IssueOwner.CharacterObject);
+				textObject.SetTextVariable("SETTLEMENT", base.IssueOwner.CurrentSettlement.Name);
+				return textObject;
+			}
+		}
 
 		[SaveableProperty(207)]
 		public Hero RivalGangLeader { get; private set; }
@@ -273,10 +285,11 @@ public class RivalGangMovingInIssueBehavior : CampaignBehaviorBase
 			return IssueFrequency.Common;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			flag = PreconditionFlags.None;
 			relationHero = null;
+			requiredGold = 0;
 			skill = null;
 			if (Hero.MainHero.IsWounded)
 			{
@@ -449,7 +462,7 @@ public class RivalGangMovingInIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=aXMg9M7t}You decided to stay out of the fight. {?QUEST_GIVER.GENDER}She{?}He{\\?} will certainly lose to the rival gang without your help.");
+				TextObject textObject = new TextObject("{=aXMg9M7t}You didn't respond to the messenger {QUEST_GIVER.LINK} sent you. {?QUEST_GIVER.GENDER}She{?}He{\\?} will certainly lose to the rival gang without your help.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				return textObject;
 			}
@@ -751,7 +764,7 @@ public class RivalGangMovingInIssueBehavior : CampaignBehaviorBase
 			CharacterObject characterObject = ((difficultyRange == 1) ? CharacterObject.All.FirstOrDefault((CharacterObject t) => t.StringId == "looter") : ((difficultyRange != 10) ? CharacterObject.All.FirstOrDefault((CharacterObject t) => t.StringId == "mercenary_" + (difficultyRange - 1)) : CharacterObject.All.FirstOrDefault((CharacterObject t) => t.StringId == "mercenary_8")));
 			if (characterObject == null)
 			{
-				Debug.FailedAssert("Can't find troop in rival gang leader quest", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\Issues\\RivalGangMovingInIssueBehavior.cs", "GetTroopTypeTemplateForDifficulty", 791);
+				Debug.FailedAssert("Can't find troop in rival gang leader quest", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\Issues\\RivalGangMovingInIssueBehavior.cs", "GetTroopTypeTemplateForDifficulty", 806);
 				characterObject = CharacterObject.All.First((CharacterObject t) => t.IsBasicTroop && t.IsSoldier);
 			}
 			return characterObject;
@@ -879,6 +892,10 @@ public class RivalGangMovingInIssueBehavior : CampaignBehaviorBase
 					num2 -= _sentTroops.Count((CharacterObject t) => t == playerTroop.Character) - elementCopyAtIndex.Number;
 					num3 += elementCopyAtIndex.WoundedNumber;
 					num4 += elementCopyAtIndex.Xp;
+				}
+				else if (_sentTroops.Contains(playerTroop.Character))
+				{
+					num2 -= _sentTroops.Count((CharacterObject t) => t == playerTroop.Character);
 				}
 				PartyBase.MainParty.MemberRoster.AddToCounts(playerTroop.Character, num2, insertAtFront: false, num3, num4);
 			}

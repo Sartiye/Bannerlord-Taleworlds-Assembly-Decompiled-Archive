@@ -632,7 +632,7 @@ public class SpawnedItemEntity : UsableMissionObject
 		return false;
 	}
 
-	protected internal override void OnPhysicsCollision(ref PhysicsContact contact, WeakGameEntity entity0, WeakGameEntity entity1, bool isFirstShape)
+	protected internal override void OnPhysicsCollision(ref PhysicsContact contact, WeakGameEntity entity0, WeakGameEntity entity1)
 	{
 		if (GameNetwork.IsDedicatedServer || contact.NumberOfContactPairs <= 0)
 		{
@@ -665,7 +665,7 @@ public class SpawnedItemEntity : UsableMissionObject
 				num3++;
 				break;
 			default:
-				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Usables\\SpawnedItemEntity.cs", "OnPhysicsCollision", 803);
+				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Usables\\SpawnedItemEntity.cs", "OnPhysicsCollision", 804);
 				break;
 			}
 		}

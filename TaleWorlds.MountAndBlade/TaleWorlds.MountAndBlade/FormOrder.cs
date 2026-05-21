@@ -207,18 +207,20 @@ public struct FormOrder
 
 	private int GetRankVerticalFormFileCount(IFormation formation)
 	{
+		int arrangementAspectRatio = ColumnFormation.ArrangementAspectRatio;
+		int countOfUnitsWithoutLooseDetachedOnes = (formation as Formation).CountOfUnitsWithoutLooseDetachedOnes;
 		switch (OrderEnum)
 		{
 		case FormOrderEnum.Wide:
-			return 3;
+			return TaleWorlds.Library.MathF.Max(TaleWorlds.Library.MathF.Round(TaleWorlds.Library.MathF.Sqrt((float)countOfUnitsWithoutLooseDetachedOnes / ((float)arrangementAspectRatio * 1f))), 1);
 		case FormOrderEnum.Wider:
-			return 5;
+			return TaleWorlds.Library.MathF.Max(TaleWorlds.Library.MathF.Round(TaleWorlds.Library.MathF.Sqrt((float)countOfUnitsWithoutLooseDetachedOnes / ((float)arrangementAspectRatio * 0.5f))), 1);
 		case FormOrderEnum.Deep:
-			return 1;
+			return TaleWorlds.Library.MathF.Max(TaleWorlds.Library.MathF.Round(TaleWorlds.Library.MathF.Sqrt((float)countOfUnitsWithoutLooseDetachedOnes / ((float)arrangementAspectRatio * 2f))), 1);
 		case FormOrderEnum.Custom:
 			return TaleWorlds.Library.MathF.Floor((_customFlankWidth + formation.Interval) / (formation.UnitDiameter + formation.Interval));
 		default:
-			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\FormOrder.cs", "GetRankVerticalFormFileCount", 271);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\FormOrder.cs", "GetRankVerticalFormFileCount", 274);
 			return 1;
 		}
 	}

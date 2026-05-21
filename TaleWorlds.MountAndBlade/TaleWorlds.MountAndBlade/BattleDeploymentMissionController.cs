@@ -1,3 +1,4 @@
+using System;
 using TaleWorlds.Core;
 using TaleWorlds.MountAndBlade.Missions.Handlers;
 
@@ -5,7 +6,7 @@ namespace TaleWorlds.MountAndBlade;
 
 public class BattleDeploymentMissionController : DeploymentMissionController
 {
-	protected MissionAgentSpawnLogic MissionAgentSpawnLogic;
+	protected DefaultBattleMissionAgentSpawnLogic MissionAgentSpawnLogic;
 
 	private BattleDeploymentHandler _battleDeploymentHandler;
 
@@ -18,7 +19,7 @@ public class BattleDeploymentMissionController : DeploymentMissionController
 	{
 		base.OnBehaviorInitialize();
 		_battleDeploymentHandler = base.Mission.GetMissionBehavior<BattleDeploymentHandler>();
-		MissionAgentSpawnLogic = base.Mission.GetMissionBehavior<MissionAgentSpawnLogic>();
+		MissionAgentSpawnLogic = base.Mission.GetMissionBehavior<DefaultBattleMissionAgentSpawnLogic>();
 	}
 
 	public override void OnRemoveBehavior()
@@ -45,6 +46,17 @@ public class BattleDeploymentMissionController : DeploymentMissionController
 	protected override void OnSetupTeamsFinished()
 	{
 		base.Mission.IsTeleportingAgents = true;
+		foreach (Team team in base.Mission.Teams)
+		{
+			if (team.GeneralAgent != null)
+			{
+				base.Mission.GetFormationSpawnFrame(team, FormationClass.NumberOfRegularFormations, isReinforcement: false, out var spawnPosition, out var spawnDirection);
+				if (spawnPosition.GetNavMesh() != UIntPtr.Zero && spawnPosition.IsValid)
+				{
+					team.GeneralAgent.TrySetFormationFrame(in spawnPosition, in spawnDirection);
+				}
+			}
+		}
 	}
 
 	protected override void BeforeDeploymentFinished()

@@ -225,7 +225,7 @@ public class DefaultBuildingTypes
 		_buildingSettlementMason.Initialize(new TextObject("{=R7ssoDHW}Mason"), new TextObject("{=hqUPvnaj}Increase bricks per day, increasing building and repair speed."), new int[3] { 2400, 3000, 4800 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[2]
 		{
 			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.ConstructionPerDay, BuildingEffectIncrementType.Add, 3f, 6f, 9f),
-			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.WallRepairSpeed, BuildingEffectIncrementType.AddFactor, 0.05f, 0.15f, 0.3f)
+			new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>(BuildingEffectEnum.WallRepairSpeed, BuildingEffectIncrementType.AddFactor, 0.1f, 0.2f, 0.3f)
 		}, isMilitaryProject: false, 0f);
 		_buildingSettlementWaterworks.Initialize(new TextObject("{=DA0y7B3S}Waterworks"), new TextObject("{=SfbwSASh}Waterways and sanitation, decrease food consumption."), new int[3] { 1800, 3600, 5400 }, new Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[1]
 		{

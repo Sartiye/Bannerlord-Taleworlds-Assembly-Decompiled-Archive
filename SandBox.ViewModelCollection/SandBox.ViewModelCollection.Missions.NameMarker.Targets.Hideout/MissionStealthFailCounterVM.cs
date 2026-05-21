@@ -89,9 +89,9 @@ public class MissionStealthFailCounterVM : ViewModel
 		_countDownTextObject = new TextObject("{=pY8lnL11}Mission will fail in: {SEC}");
 	}
 
-	public void UpdateFailCounter(float failCounterElapsedTime, float failCounterMaxTime)
+	public void UpdateFailCounter(float failCounterElapsedTime, float failCounterMaxTime, bool isStealthFailCounterMissionLogicActive)
 	{
-		IsCounterActive = !BannerlordConfig.HideBattleUI && !MBCommon.IsPaused && failCounterElapsedTime > 0f;
+		IsCounterActive = !BannerlordConfig.HideBattleUI && !MBCommon.IsPaused && isStealthFailCounterMissionLogicActive && failCounterElapsedTime > 0f;
 		FailCounterMaxTime = failCounterMaxTime;
 		if (IsCounterActive)
 		{

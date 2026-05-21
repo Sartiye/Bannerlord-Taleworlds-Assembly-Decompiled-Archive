@@ -47,30 +47,16 @@ public sealed class ManagedParameters : IManagedParametersInitializer
 	private void LoadFromXml(XmlNode doc)
 	{
 		Debug.Print("loading managed_core_parameters.xml");
-		if (doc.ChildNodes.Count <= 1)
+		if (doc.ChildNodes.Count < 1)
 		{
 			throw new TWXmlLoadException("Incorrect XML document format.");
 		}
-		if (doc.ChildNodes[1].Name != "base")
-		{
-			throw new TWXmlLoadException("Incorrect XML document format.");
-		}
-		if (doc.ChildNodes[1].ChildNodes[0].Name != "managed_core_parameters")
-		{
-			throw new TWXmlLoadException("Incorrect XML document format.");
-		}
-		XmlNode xmlNode = null;
-		if (doc.ChildNodes[1].ChildNodes[0].Name == "managed_core_parameters")
-		{
-			xmlNode = doc.ChildNodes[1].ChildNodes[0].ChildNodes[0];
-		}
-		while (xmlNode != null)
+		for (XmlNode xmlNode = (doc.SelectSingleNode(".//managed_core_parameters") ?? throw new TWXmlLoadException("Incorrect XML document format.")).ChildNodes[0]; xmlNode != null; xmlNode = xmlNode.NextSibling)
 		{
 			if (xmlNode.Name == "managed_core_parameter" && xmlNode.NodeType != XmlNodeType.Comment && Enum.TryParse<ManagedParametersEnum>(xmlNode.Attributes["id"].Value, ignoreCase: true, out var result))
 			{
 				_managedParametersArray[(int)result] = float.Parse(xmlNode.Attributes["value"].Value);
 			}
-			xmlNode = xmlNode.NextSibling;
 		}
 	}
 

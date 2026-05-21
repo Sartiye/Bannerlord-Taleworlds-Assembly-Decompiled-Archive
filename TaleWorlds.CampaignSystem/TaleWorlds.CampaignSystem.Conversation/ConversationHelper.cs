@@ -129,7 +129,7 @@ public static class ConversationHelper
 		}
 		else if (baseHero.Children.Contains(queriedHero))
 		{
-			textObject = ((!(queriedHero.Age > (float)Campaign.Current.Models.AgeModel.HeroComesOfAge)) ? (queriedHero.IsFemale ? GameTexts.FindText("str_female_child") : GameTexts.FindText("str_male_child")) : (queriedHero.IsFemale ? GameTexts.FindText("str_daughter") : GameTexts.FindText("str_son")));
+			textObject = (queriedHero.IsFemale ? GameTexts.FindText("str_daughter") : GameTexts.FindText("str_son"));
 		}
 		else if (baseHero.Spouse?.Father == queriedHero)
 		{
@@ -206,7 +206,7 @@ public static class ConversationHelper
 		}
 		if (textObject == null)
 		{
-			Debug.FailedAssert("GENERIC - UNSPECIFIED RELATION in clan", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Conversation\\ConversationHelper.cs", "GetHeroRelationToHeroTextShort", 275);
+			Debug.FailedAssert("GENERIC - UNSPECIFIED RELATION in clan", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Conversation\\ConversationHelper.cs", "GetHeroRelationToHeroTextShort", 268);
 			textObject = GameTexts.FindText("str_relative_of_player");
 		}
 		else if (queriedHero != null)

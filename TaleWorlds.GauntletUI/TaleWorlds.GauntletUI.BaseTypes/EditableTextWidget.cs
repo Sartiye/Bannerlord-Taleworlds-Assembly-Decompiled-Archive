@@ -713,9 +713,9 @@ public class EditableTextWidget : BrushWidget
 		_editableText.HighlightEnd = false;
 	}
 
-	protected internal override void OnMouseReleased()
+	protected internal override void OnMouseReleased(bool isFromInput)
 	{
-		base.OnMouseReleased();
+		base.OnMouseReleased(isFromInput);
 		_mouseState = MouseState.Up;
 		_editableText.HighlightEnd = true;
 	}

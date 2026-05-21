@@ -418,12 +418,12 @@ public class SceneWidget : TextureWidget
 		widget.IsVisible = !widget.ReadOnlyBrush.GlobalAlphaFactor.ApproximatelyEqualsTo(0f, 0.01f);
 	}
 
-	protected override void OnMouseReleased()
+	protected override void OnMouseReleased(bool isFromInput)
 	{
-		base.OnMouseReleased();
+		base.OnMouseReleased(isFromInput);
 		ref Rectangle2D areaRectangle = ref base.EventManager.AreaRectangle;
 		Vector2 point = base.EventManager.MousePosition;
-		if (areaRectangle.IsPointInside(in point) && _isClickToContinueActive)
+		if (areaRectangle.IsPointInside(in point) && _isClickToContinueActive && isFromInput)
 		{
 			EventFired("Close");
 			ResetStates();

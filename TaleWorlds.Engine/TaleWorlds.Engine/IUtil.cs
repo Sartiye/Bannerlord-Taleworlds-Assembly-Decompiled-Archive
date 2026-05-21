@@ -318,8 +318,8 @@ internal interface IUtil
 	[EngineMethod("get_application_name", false, null, false)]
 	string GetApplicationName();
 
-	[EngineMethod("open_naval_dlc_purchase_page", false, null, false)]
-	void OpenNavalDlcPurchasePage();
+	[EngineMethod("open_console_store_page", false, null, false)]
+	void OpenConsoleStorePage(string productId);
 
 	[EngineMethod("set_window_title", false, null, false)]
 	void SetWindowTitle(string title);
@@ -383,6 +383,9 @@ internal interface IUtil
 
 	[EngineMethod("managed_parallel_for_without_render_thread", false, null, false)]
 	void ManagedParallelForWithoutRenderThread(int fromInclusive, int toExclusive, long curKey, int grainSize);
+
+	[EngineMethod("managed_parallel_for_without_render_thread_dt", false, null, false)]
+	void ManagedParallelForWithoutRenderThreadDt(int fromInclusive, int toExclusive, long curKey, int grainSize);
 
 	[EngineMethod("get_main_thread_id", false, null, false)]
 	ulong GetMainThreadId();

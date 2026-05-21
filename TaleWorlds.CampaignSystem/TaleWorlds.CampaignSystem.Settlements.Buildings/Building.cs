@@ -117,7 +117,7 @@ public class Building
 	public int GetConstructionCost()
 	{
 		float num = 1f;
-		if (Town.Settlement.OwnerClan.Kingdom != null && Town.Settlement.OwnerClan.Kingdom.ActivePolicies.Contains(DefaultPolicies.CastleCharters))
+		if (Town.Settlement.IsCastle && Town.Settlement.OwnerClan.Kingdom != null && Town.Settlement.OwnerClan.Kingdom.ActivePolicies.Contains(DefaultPolicies.CastleCharters))
 		{
 			num = 0.8f;
 		}

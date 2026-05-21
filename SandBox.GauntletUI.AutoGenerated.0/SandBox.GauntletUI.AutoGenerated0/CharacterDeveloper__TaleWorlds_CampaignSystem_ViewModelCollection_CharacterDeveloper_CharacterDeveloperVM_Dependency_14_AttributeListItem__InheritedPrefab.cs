@@ -40,7 +40,7 @@ public class CharacterDeveloper__TaleWorlds_CampaignSystem_ViewModelCollection_C
 		base.WidthSizePolicy = SizePolicy.Fixed;
 		base.HeightSizePolicy = SizePolicy.Fixed;
 		base.SuggestedWidth = 59f;
-		base.SuggestedHeight = 124f;
+		base.SuggestedHeight = 106.268f;
 		base.VerticalAlignment = VerticalAlignment.Top;
 		base.Brush = base.Context.GetBrush("CharacterDeveloper.AttributeButtonBackground");
 		base.UpdateChildrenStates = false;

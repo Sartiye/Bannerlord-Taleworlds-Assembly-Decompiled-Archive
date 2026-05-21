@@ -432,6 +432,8 @@ public readonly struct ActionIndexCache : IEquatable<ActionIndexCache>
 
 	public static readonly ActionIndexCache act_escape_jump = Create("act_escape_jump");
 
+	public static readonly ActionIndexCache act_raid_jump = Create("act_raid_jump_1");
+
 	public int Index { get; }
 
 	public static ActionIndexCache Create(string actName)

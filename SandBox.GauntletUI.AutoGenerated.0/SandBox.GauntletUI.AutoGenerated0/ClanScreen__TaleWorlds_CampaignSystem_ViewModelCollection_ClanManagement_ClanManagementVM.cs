@@ -484,7 +484,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		_widget_1_3.MarginLeft = 12f;
 		_widget_1_3.MarginRight = 20f;
 		_widget_1_3.IsEnabled = false;
-		_widget_1_3.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_3.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_3.MaxHeight = 645f;
 		_widget_1_3_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_3_0.HeightSizePolicy = SizePolicy.CoverChildren;
@@ -800,7 +800,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		_widget_4_0_7.VerticalAlignment = VerticalAlignment.Center;
 		_widget_4_0_7.MarginRight = 40f;
 		_widget_4_0_7.MarginTop = 50f;
-		_widget_4_0_7.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_4_0_7.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_4_0_7_0.DoNotAcceptEvents = true;
 		_widget_4_0_7_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_4_0_7_0.HeightSizePolicy = SizePolicy.CoverChildren;

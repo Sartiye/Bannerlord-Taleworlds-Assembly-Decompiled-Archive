@@ -18,7 +18,7 @@ public sealed class ScoreboardHotKeyCategory : GameKeyContext
 	public const string MenuShowContextMenu = "MenuShowContextMenu";
 
 	public ScoreboardHotKeyCategory()
-		: base("ScoreboardHotKeyCategory", 110)
+		: base("ScoreboardHotKeyCategory", 116)
 	{
 		RegisterHotKeys();
 		RegisterGameKeys();

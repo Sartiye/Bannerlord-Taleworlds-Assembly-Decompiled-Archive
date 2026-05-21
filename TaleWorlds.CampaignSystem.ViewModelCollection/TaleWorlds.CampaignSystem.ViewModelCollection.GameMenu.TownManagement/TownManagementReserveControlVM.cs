@@ -2,6 +2,7 @@ using System;
 using Helpers;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -28,6 +29,8 @@ public class TownManagementReserveControlVM : ViewModel
 	private string _reserveBonusText;
 
 	private string _currentReserveText;
+
+	private HintViewModel _addGoldToReserveHint;
 
 	[DataSourceProperty]
 	public bool IsEnabled
@@ -149,6 +152,23 @@ public class TownManagementReserveControlVM : ViewModel
 		}
 	}
 
+	[DataSourceProperty]
+	public HintViewModel AddGoldToReserveHint
+	{
+		get
+		{
+			return _addGoldToReserveHint;
+		}
+		set
+		{
+			if (value != _addGoldToReserveHint)
+			{
+				_addGoldToReserveHint = value;
+				OnPropertyChangedWithValue(value, "AddGoldToReserveHint");
+			}
+		}
+	}
+
 	public TownManagementReserveControlVM(Settlement settlement, Action onReserveUpdated)
 	{
 		_settlement = settlement;
@@ -158,6 +178,7 @@ public class TownManagementReserveControlVM : ViewModel
 			CurrentReserveAmount = Settlement.CurrentSettlement.Town.BoostBuildingProcess;
 			CurrentGivenAmount = 0;
 			MaxReserveAmount = TaleWorlds.Library.MathF.Min(Hero.MainHero.Gold, 10000);
+			AddGoldToReserveHint = new HintViewModel(new TextObject("{=TeZ3QzN6}Add gold to the reserve"));
 		}
 		RefreshValues();
 	}
@@ -168,7 +189,7 @@ public class TownManagementReserveControlVM : ViewModel
 		if (_settlement?.Town != null)
 		{
 			ReserveText = new TextObject("{=2ckyCKR7}Reserve").ToString();
-			GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+			GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 			UpdateReserveText();
 		}
 	}
@@ -186,7 +207,7 @@ public class TownManagementReserveControlVM : ViewModel
 		IsEnabled = false;
 		BuildingHelper.BoostBuildingProcessWithGold(CurrentReserveAmount + CurrentGivenAmount, Settlement.CurrentSettlement.Town);
 		CurrentGivenAmount = 0;
-		GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		UpdateReserveText();
 		MaxReserveAmount = TaleWorlds.Library.MathF.Min(Hero.MainHero.Gold, 10000);
 		CurrentReserveAmount = Settlement.CurrentSettlement.Town.BoostBuildingProcess;

@@ -36,7 +36,7 @@ public static class PartyScreenHelper
 		{
 			return result;
 		}
-		Debug.FailedAssert("GetActivePartyState requested but the active state is not PartyState!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetActivePartyState", 7436);
+		Debug.FailedAssert("GetActivePartyState requested but the active state is not PartyState!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetActivePartyState", 7553);
 		return null;
 	}
 
@@ -94,7 +94,7 @@ public static class PartyScreenHelper
 		PartyScreenLogic partyScreenLogic = activePartyState?.PartyScreenLogic;
 		if (partyScreenLogic == null)
 		{
-			Debug.FailedAssert("Trying to close party screen when it's already closed!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "ClosePartyPresentation", 7503);
+			Debug.FailedAssert("Trying to close party screen when it's already closed!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "ClosePartyPresentation", 7620);
 			return;
 		}
 		bool flag = true;
@@ -234,6 +234,22 @@ public static class PartyScreenHelper
 		partyScreenLogic.Initialize(initializationData);
 		partyState.PartyScreenLogic = partyScreenLogic;
 		Game.Current.GameStateManager.PushState(partyState);
+	}
+
+	public static void OpenScreenAsManagePlayerClanPartyClosed(PartyBase leftOwnerParty, TroopRoster leftMemberRoster, TroopRoster leftPrisonRoster, PartyBase rightOwnerParty, TroopRoster rightMemberRoster, TroopRoster rightPrisonRoster, bool fromCancel)
+	{
+		if (leftOwnerParty.MemberRoster.TotalManCount > 0)
+		{
+			return;
+		}
+		if (leftOwnerParty.Ships.Count > 0)
+		{
+			for (int num = leftOwnerParty.Ships.Count - 1; num >= 0; num--)
+			{
+				ChangeShipOwnerAction.ApplyByTransferring(rightOwnerParty, leftOwnerParty.Ships[num]);
+			}
+		}
+		DestroyPartyAction.Apply(null, leftOwnerParty.MobileParty);
 	}
 
 	public static void OpenScreenAsReceiveTroops(TroopRoster leftMemberParty, TextObject leftPartyName, PartyScreenClosedDelegate partyScreenClosedDelegate = null)

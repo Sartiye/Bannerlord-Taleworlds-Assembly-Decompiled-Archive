@@ -1,4 +1,5 @@
 using System;
+using Helpers;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Information;
@@ -115,8 +116,11 @@ public class KingdomTruceItemVM : KingdomDiplomacyItemVM
 
 	protected override void OnSelect()
 	{
-		UpdateDiplomacyProperties();
-		_onSelection(this);
+		if (!base.IsSelected)
+		{
+			UpdateDiplomacyProperties();
+			_onSelection(this);
+		}
 	}
 
 	protected override void UpdateDiplomacyProperties()
@@ -133,20 +137,29 @@ public class KingdomTruceItemVM : KingdomDiplomacyItemVM
 		}
 		if (Faction1.IsKingdomFaction && Faction2.IsKingdomFaction)
 		{
-			HasTradeAgreement = Campaign.Current.GetCampaignBehavior<ITradeAgreementsCampaignBehavior>()?.HasTradeAgreement(Faction1 as Kingdom, Faction2 as Kingdom) ?? false;
-			HasAlliance = Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>()?.IsAllyWithKingdom(Faction1 as Kingdom, Faction2 as Kingdom) ?? false;
+			ITradeAgreementsCampaignBehavior campaignBehavior = Campaign.Current.GetCampaignBehavior<ITradeAgreementsCampaignBehavior>();
+			TradeAgreementsCampaignBehavior.TradeAgreement tradeAgreement = default(TradeAgreementsCampaignBehavior.TradeAgreement);
+			HasTradeAgreement = campaignBehavior?.HasTradeAgreement(Faction1 as Kingdom, Faction2 as Kingdom, out tradeAgreement) ?? false;
+			HasAlliance = DiplomacyHelper.HasAllianceWithFaction(Faction1, Faction2);
 			if (HasTradeAgreement)
 			{
-				int num = TaleWorlds.Library.MathF.Ceiling(Campaign.Current.GetCampaignBehavior<ITradeAgreementsCampaignBehavior>().GetTradeAgreementEndDate(Faction1 as Kingdom, Faction2 as Kingdom).RemainingDaysFromNow);
+				int num = TaleWorlds.Library.MathF.Ceiling(tradeAgreement.EndTime.RemainingDaysFromNow);
 				TradeAgreementEndTimeStr = new TextObject("{=6ayEZQE1}Expires in {DAYS} {?DAYS > 1}days{?}day{\\?}.").SetTextVariable("DAYS", num.ToString()).ToString();
+				int kingdom1GoldGainedTotal = tradeAgreement.Kingdom1GoldGainedTotal;
+				int kingdom2GoldGainedTotal = tradeAgreement.Kingdom2GoldGainedTotal;
+				if (kingdom1GoldGainedTotal > 0 || kingdom2GoldGainedTotal > 0)
+				{
+					base.Stats.Add(new KingdomWarComparableStatVM(TaleWorlds.Library.MathF.Max((tradeAgreement.Kingdom1 == Faction1) ? kingdom1GoldGainedTotal : kingdom2GoldGainedTotal, 0), TaleWorlds.Library.MathF.Max((tradeAgreement.Kingdom1 == Faction2) ? kingdom1GoldGainedTotal : kingdom2GoldGainedTotal, 0), GameTexts.FindText("str_comparison_trade_gold_gained"), _faction1Color, _faction2Color, 10000));
+				}
 			}
 			else
 			{
 				TradeAgreementEndTimeStr = null;
 			}
-			if (HasAlliance)
+			IAllianceCampaignBehavior campaignBehavior2 = Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>();
+			if (HasAlliance && campaignBehavior2 != null)
 			{
-				int num2 = TaleWorlds.Library.MathF.Ceiling(Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>().GetAllianceEndDate(Faction1 as Kingdom, Faction2 as Kingdom).RemainingDaysFromNow);
+				int num2 = TaleWorlds.Library.MathF.Ceiling(campaignBehavior2.GetAllianceEndDate(Faction1 as Kingdom, Faction2 as Kingdom).RemainingDaysFromNow);
 				AllianceEndTimeStr = new TextObject("{=6ayEZQE1}Expires in {DAYS} {?DAYS > 1}days{?}day{\\?}.").SetTextVariable("DAYS", num2.ToString()).ToString();
 			}
 			else

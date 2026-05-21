@@ -529,6 +529,11 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void ManagedParallelForWithoutRenderThreadDtDelegate(int fromInclusive, int toExclusive, long curKey, int grainSize);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void OnLoadingWindowDisabledDelegate();
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -539,7 +544,7 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void OpenNavalDlcPurchasePageDelegate();
+	public delegate void OpenConsoleStorePageDelegate(byte[] productId);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -965,11 +970,13 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 
 	public static ManagedParallelForWithoutRenderThreadDelegate call_ManagedParallelForWithoutRenderThreadDelegate;
 
+	public static ManagedParallelForWithoutRenderThreadDtDelegate call_ManagedParallelForWithoutRenderThreadDtDelegate;
+
 	public static OnLoadingWindowDisabledDelegate call_OnLoadingWindowDisabledDelegate;
 
 	public static OnLoadingWindowEnabledDelegate call_OnLoadingWindowEnabledDelegate;
 
-	public static OpenNavalDlcPurchasePageDelegate call_OpenNavalDlcPurchasePageDelegate;
+	public static OpenConsoleStorePageDelegate call_OpenConsoleStorePageDelegate;
 
 	public static OpenOnscreenKeyboardDelegate call_OpenOnscreenKeyboardDelegate;
 
@@ -1972,6 +1979,11 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 		call_ManagedParallelForWithoutRenderThreadDelegate(fromInclusive, toExclusive, curKey, grainSize);
 	}
 
+	public void ManagedParallelForWithoutRenderThreadDt(int fromInclusive, int toExclusive, long curKey, int grainSize)
+	{
+		call_ManagedParallelForWithoutRenderThreadDtDelegate(fromInclusive, toExclusive, curKey, grainSize);
+	}
+
 	public void OnLoadingWindowDisabled()
 	{
 		call_OnLoadingWindowDisabledDelegate();
@@ -1982,9 +1994,17 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 		call_OnLoadingWindowEnabledDelegate();
 	}
 
-	public void OpenNavalDlcPurchasePage()
+	public void OpenConsoleStorePage(string productId)
 	{
-		call_OpenNavalDlcPurchasePageDelegate();
+		byte[] array = null;
+		if (productId != null)
+		{
+			int byteCount = _utf8.GetByteCount(productId);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(productId, 0, productId.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		call_OpenConsoleStorePageDelegate(array);
 	}
 
 	public void OpenOnscreenKeyboard(string initialText, string descriptionText, int maxLength, int keyboardTypeEnum)

@@ -20,7 +20,7 @@ public class MusicBattleMissionView : MissionView, IMusicHandler
 
 	private BattleState _battleState;
 
-	private MissionAgentSpawnLogic _missionAgentSpawnLogic;
+	private DefaultBattleMissionAgentSpawnLogic _missionAgentSpawnLogic;
 
 	private int[] _startingTroopCounts;
 
@@ -44,7 +44,7 @@ public class MusicBattleMissionView : MissionView, IMusicHandler
 	public override void OnBehaviorInitialize()
 	{
 		base.OnBehaviorInitialize();
-		_missionAgentSpawnLogic = Mission.Current.GetMissionBehavior<MissionAgentSpawnLogic>();
+		_missionAgentSpawnLogic = Mission.Current.GetMissionBehavior<DefaultBattleMissionAgentSpawnLogic>();
 		MBMusicManager.Current.DeactivateCurrentMode();
 		MBMusicManager.Current.ActivateBattleMode();
 		MBMusicManager.Current.OnBattleMusicHandlerInit(this);

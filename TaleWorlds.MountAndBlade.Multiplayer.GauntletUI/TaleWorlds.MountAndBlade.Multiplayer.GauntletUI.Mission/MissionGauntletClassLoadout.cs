@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using TaleWorlds.Engine.GauntletUI;
+using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.Multiplayer.View.MissionViews;
 using TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.ClassLoadout;
 using TaleWorlds.MountAndBlade.View;
@@ -127,6 +128,10 @@ public class MissionGauntletClassLoadout : MissionView
 
 	private void CreateView()
 	{
+		if (_dataSource != null)
+		{
+			Debug.FailedAssert("MissionGauntletClassLoadout datasource is already created!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.GauntletUI\\Mission\\MissionGauntletClassLoadout.cs", "CreateView", 135);
+		}
 		MissionMultiplayerGameModeBaseClient missionBehavior = base.Mission.GetMissionBehavior<MissionMultiplayerGameModeBaseClient>();
 		_dataSource = new MultiplayerClassLoadoutVM(missionBehavior, OnRefreshSelection, _lastSelectedHeroClass);
 		_gauntletLayer = new GauntletLayer("MultiplayerClassLoadout", ViewOrderPriority);

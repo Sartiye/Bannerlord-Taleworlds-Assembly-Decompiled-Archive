@@ -494,6 +494,9 @@ public class SettlementNameplateWidget : Widget, IComparable<SettlementNameplate
 			case 2:
 				NameplateItem.Color = Color.ConvertStringToColor("#870707FF");
 				break;
+			case 3:
+				NameplateItem.Color = Color.ConvertStringToColor("#2986CCFF");
+				break;
 			}
 		}
 	}
@@ -510,7 +513,7 @@ public class SettlementNameplateWidget : Widget, IComparable<SettlementNameplate
 		ListPanel eventsListPanel = _eventsListPanel;
 		if (nameplateItem == null || textWidget == null || maskedTextureWidget == null || gridWidget == null || widget == null || widget2 == null || widget3 == null || eventsListPanel == null)
 		{
-			Debug.FailedAssert("Related widget null on UpdateNameplateTransparencyAndBrightness!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Nameplate\\SettlementNameplateWidget.cs", "UpdateNameplateTransparencyAndBrightness", 299);
+			Debug.FailedAssert("Related widget null on UpdateNameplateTransparencyAndBrightness!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Nameplate\\SettlementNameplateWidget.cs", "UpdateNameplateTransparencyAndBrightness", 302);
 			return;
 		}
 		widget2.IsVisible = HasPort;

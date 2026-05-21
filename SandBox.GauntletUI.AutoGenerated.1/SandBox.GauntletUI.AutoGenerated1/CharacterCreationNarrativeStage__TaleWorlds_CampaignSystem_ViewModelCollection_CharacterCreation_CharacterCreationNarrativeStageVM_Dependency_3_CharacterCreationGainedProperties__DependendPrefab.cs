@@ -63,7 +63,7 @@ public class CharacterCreationNarrativeStage__TaleWorlds_CampaignSystem_ViewMode
 		base.VerticalAlignment = VerticalAlignment.Center;
 		base.MarginLeft = 20f;
 		base.DoNotUseCustomScaleAndChildren = true;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0.ScopeID = "GainedPropertiesScope";
 		_widget_0.ScopeParent = _widget_1;
 		_widget_0.ScopeMovements = GamepadNavigationTypes.Horizontal;
@@ -71,7 +71,7 @@ public class CharacterCreationNarrativeStage__TaleWorlds_CampaignSystem_ViewMode
 		_widget_0.AlternateMovementStepSize = 3;
 		_widget_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1.StepSize = 100;
 		_widget_2.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2.HeightSizePolicy = SizePolicy.Fixed;

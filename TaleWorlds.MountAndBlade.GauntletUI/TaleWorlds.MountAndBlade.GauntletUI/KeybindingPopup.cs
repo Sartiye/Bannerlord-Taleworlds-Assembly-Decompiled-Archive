@@ -33,7 +33,11 @@ public class KeybindingPopup
 		{
 			return;
 		}
-		if (!_isActiveFirstFrame)
+		if (Input.IsGamepadActive)
+		{
+			OnToggle(isActive: false);
+		}
+		else if (!_isActiveFirstFrame)
 		{
 			InputKey firstKeyReleasedInRange = (InputKey)Input.GetFirstKeyReleasedInRange(0);
 			if (firstKeyReleasedInRange != InputKey.Invalid)
@@ -61,7 +65,10 @@ public class KeybindingPopup
 			_gauntletLayer.IsFocusLayer = true;
 			_gauntletLayer.InputRestrictions.SetInputRestrictions();
 			ScreenManager.SetSuspendLayer(_gauntletLayer, isSuspended: false);
-			_dataSource = new KeybindingPopupVM();
+			_dataSource = new KeybindingPopupVM(delegate
+			{
+				OnToggle(isActive: false);
+			});
 			_movie = _gauntletLayer.LoadMovie("KeybindingPopup", _dataSource);
 			_targetScreen.AddLayer(_gauntletLayer);
 			_isActiveFirstFrame = true;

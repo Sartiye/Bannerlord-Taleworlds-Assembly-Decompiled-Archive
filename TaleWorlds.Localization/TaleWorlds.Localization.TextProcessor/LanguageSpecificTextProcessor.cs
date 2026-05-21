@@ -7,9 +7,22 @@ namespace TaleWorlds.Localization.TextProcessor;
 
 public abstract class LanguageSpecificTextProcessor
 {
-	private List<int> _lowerMarkers = new List<int>();
+	[ThreadStatic]
+	private static List<int> _lowerMarkers;
 
 	public abstract CultureInfo CultureInfoForLanguage { get; }
+
+	private static List<int> LowerMarkers
+	{
+		get
+		{
+			if (_lowerMarkers == null)
+			{
+				_lowerMarkers = new List<int>();
+			}
+			return _lowerMarkers;
+		}
+	}
 
 	public abstract void ProcessToken(string sourceText, ref int cursorPos, string token, StringBuilder outputString);
 
@@ -38,6 +51,8 @@ public abstract class LanguageSpecificTextProcessor
 		{
 			return text;
 		}
+		List<int> lowerMarkers = _lowerMarkers;
+		_lowerMarkers = null;
 		StringBuilder stringBuilder = new StringBuilder();
 		int i2 = 0;
 		while (i2 < text.Length)
@@ -55,6 +70,7 @@ public abstract class LanguageSpecificTextProcessor
 			}
 		}
 		ProcessLowerCaseMarkers(stringBuilder);
+		_lowerMarkers = lowerMarkers;
 		return stringBuilder.ToString();
 	}
 
@@ -90,7 +106,7 @@ public abstract class LanguageSpecificTextProcessor
 		}
 		else if (c == '%' && token.Length == 2)
 		{
-			_lowerMarkers.Add(outputString.Length - 1);
+			LowerMarkers.Add(outputString.Length - 1);
 		}
 		else
 		{
@@ -100,16 +116,16 @@ public abstract class LanguageSpecificTextProcessor
 
 	private void ProcessLowerCaseMarkers(StringBuilder stringBuilder)
 	{
-		if (_lowerMarkers.Count <= 0)
+		if (LowerMarkers.Count <= 0)
 		{
 			return;
 		}
-		for (int i = 0; i < _lowerMarkers.Count; i += 2)
+		for (int i = 0; i < LowerMarkers.Count; i += 2)
 		{
-			int num = _lowerMarkers[i];
-			if (i + 1 < _lowerMarkers.Count)
+			int num = LowerMarkers[i];
+			if (i + 1 < LowerMarkers.Count)
 			{
-				int num2 = _lowerMarkers[i + 1];
+				int num2 = LowerMarkers[i + 1];
 				if (num != num2)
 				{
 					if (num > stringBuilder.Length)
@@ -134,7 +150,7 @@ public abstract class LanguageSpecificTextProcessor
 				}
 			}
 		}
-		_lowerMarkers.Clear();
+		LowerMarkers.Clear();
 	}
 
 	private static int FindNextLetter(string sourceText, int cursorPos)

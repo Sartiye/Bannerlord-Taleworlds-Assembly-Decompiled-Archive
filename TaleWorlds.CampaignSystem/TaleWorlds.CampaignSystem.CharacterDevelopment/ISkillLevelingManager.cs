@@ -64,7 +64,7 @@ public interface ISkillLevelingManager
 
 	void OnTravelOnHorse(Hero hero, float speed);
 
-	void OnTravelOnWater(Hero hero, float speed);
+	void OnTravelOnWater(MobileParty party, float speed);
 
 	void OnHeroHealedWhileWaiting(Hero hero, int healingAmount);
 
@@ -107,4 +107,6 @@ public interface ISkillLevelingManager
 	void OnShipRepaired(Ship ship, float repairedHitPoints);
 
 	void OnHideoutMissionEnd(bool isSucceeded);
+
+	void OnHideoutClearedAsGhost();
 }

@@ -185,10 +185,11 @@ public class LandLordNeedsManualLaborersIssueBehavior : CampaignBehaviorBase
 			return false;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flags, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flags, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			flags = PreconditionFlags.None;
 			relationHero = null;
+			requiredGold = 0;
 			skill = null;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -257,7 +258,7 @@ public class LandLordNeedsManualLaborersIssueBehavior : CampaignBehaviorBase
 		[SaveableField(9)]
 		private bool _playerReachedMaximumAmount;
 
-		private float questPrisonerValueMultiplier = 5f;
+		private const float _questPrisonerValueMultiplier = 5f;
 
 		[SaveableField(7)]
 		private JournalLog _questProgressLogTest;
@@ -444,7 +445,7 @@ public class LandLordNeedsManualLaborersIssueBehavior : CampaignBehaviorBase
 			AddTrackedObject(base.QuestGiver.CurrentSettlement);
 			TextObject textObject = new TextObject("{=N4eLGduQ}Delivered Prisoners ({TOTAL_REWARD}{GOLD_ICON})");
 			textObject.SetTextVariable("TOTAL_REWARD", _rewardGold);
-			textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+			textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 			_questProgressLogTest = AddDiscreteLog(QuestStartedLogText, textObject, _deliveredPrisonerCount, _requestedPrisonerCount);
 		}
 
@@ -596,7 +597,7 @@ public class LandLordNeedsManualLaborersIssueBehavior : CampaignBehaviorBase
 		{
 			foreach (TroopRosterElement item in leftPrisonRoster.GetTroopRoster())
 			{
-				_rewardGold += (int)((float)(Campaign.Current.Models.RansomValueCalculationModel.PrisonerRansomValue(item.Character, Hero.MainHero) * item.Number) * questPrisonerValueMultiplier);
+				_rewardGold += (int)((float)(Campaign.Current.Models.RansomValueCalculationModel.PrisonerRansomValue(item.Character, Hero.MainHero) * item.Number) * 5f);
 			}
 			int deliveredPrisonerCount = _deliveredPrisonerCount;
 			_deliveredPrisonerCount += releasedPrisonerRoster.Count();

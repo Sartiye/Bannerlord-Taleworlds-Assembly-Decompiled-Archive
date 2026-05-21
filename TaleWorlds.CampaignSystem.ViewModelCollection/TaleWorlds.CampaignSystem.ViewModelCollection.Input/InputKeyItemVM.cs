@@ -80,15 +80,22 @@ public class InputKeyItemVM : ViewModel
 	private InputKeyItemVM()
 	{
 		TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged = (Action)Delegate.Combine(TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged, new Action(OnGamepadActiveStateChanged));
+		HotKeyManager.OnKeybindsChanged += OnKeybindsChanged;
 	}
 
 	public override void OnFinalize()
 	{
 		base.OnFinalize();
 		TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged = (Action)Delegate.Remove(TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged, new Action(OnGamepadActiveStateChanged));
+		HotKeyManager.OnKeybindsChanged -= OnKeybindsChanged;
 	}
 
 	private void OnGamepadActiveStateChanged()
+	{
+		ForceRefresh();
+	}
+
+	private void OnKeybindsChanged()
 	{
 		ForceRefresh();
 	}
@@ -108,6 +115,8 @@ public class InputKeyItemVM : ViewModel
 	private void ForceRefresh()
 	{
 		UpdateVisibility();
+		KeyID = string.Empty;
+		KeyName = string.Empty;
 		if (_forcedID != null)
 		{
 			KeyID = _forcedID;

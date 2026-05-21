@@ -69,6 +69,8 @@ public class SkillVM : ViewModel
 
 	private string _descriptionText;
 
+	private string _attributesText;
+
 	private int _level = -1;
 
 	private int _maxLevel;
@@ -142,6 +144,23 @@ public class SkillVM : ViewModel
 			{
 				_howToLearnTitle = value;
 				OnPropertyChangedWithValue(value, "HowToLearnTitle");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string AttributesText
+	{
+		get
+		{
+			return _attributesText;
+		}
+		set
+		{
+			if (value != _attributesText)
+			{
+				_attributesText = value;
+				OnPropertyChangedWithValue(value, "AttributesText");
 			}
 		}
 	}
@@ -650,6 +669,7 @@ public class SkillVM : ViewModel
 		HowToLearnTitle = GameTexts.FindText("str_how_to_learn").ToString();
 		DescriptionText = Skill.Description.ToString();
 		NameText = Skill.Name.ToString();
+		AttributesText = GameTexts.GameTextHelper.MergeTextObjectsWithComma(Skill.Attributes.Select((CharacterAttribute x) => x.Abbreviation).ToList(), includeAnd: false).ToString();
 		InitializeValues();
 		RefreshWithCurrentValues();
 		SkillEffects.ApplyActionOnAllItems(delegate(BindingListStringItem x)
@@ -824,7 +844,7 @@ public class SkillVM : ViewModel
 		}
 		else
 		{
-			Debug.FailedAssert("Couldn't find Focus encyclopedia page", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CharacterDeveloper\\SkillVM.cs", "ExecuteShowFocusConcept", 252);
+			Debug.FailedAssert("Couldn't find Focus encyclopedia page", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CharacterDeveloper\\SkillVM.cs", "ExecuteShowFocusConcept", 253);
 		}
 	}
 
@@ -836,7 +856,7 @@ public class SkillVM : ViewModel
 		}
 		else
 		{
-			Debug.FailedAssert("Couldn't find Focus encyclopedia page", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CharacterDeveloper\\SkillVM.cs", "ExecuteShowSkillConcept", 264);
+			Debug.FailedAssert("Couldn't find Focus encyclopedia page", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CharacterDeveloper\\SkillVM.cs", "ExecuteShowSkillConcept", 265);
 		}
 	}
 
@@ -875,7 +895,7 @@ public class SkillVM : ViewModel
 		_onStartPerkSelection(perk);
 		if (perk.AlternativeType != 0)
 		{
-			Perks.SingleOrDefault((PerkVM p) => p.Perk == perk.Perk.AlternativePerk).IsInSelection = true;
+			Perks.SingleOrDefault((PerkVM p) => p.Perk == perk.Perk.AlternativePerk);
 		}
 	}
 
@@ -883,7 +903,7 @@ public class SkillVM : ViewModel
 	{
 		if (perk.AlternativeType != 0)
 		{
-			Perks.SingleOrDefault((PerkVM p) => p.Perk == perk.Perk.AlternativePerk).IsInSelection = false;
+			Perks.SingleOrDefault((PerkVM p) => p.Perk == perk.Perk.AlternativePerk);
 		}
 	}
 }

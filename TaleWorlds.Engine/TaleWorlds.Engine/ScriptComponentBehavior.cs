@@ -197,7 +197,7 @@ public abstract class ScriptComponentBehavior : DotNetObject
 		return TickRequirement.None;
 	}
 
-	protected internal virtual bool CanPhysicsCollideBetweenTwoEntities(WeakGameEntity myEntity, WeakGameEntity otherEntity)
+	protected internal virtual bool CanPhysicsCollideBetweenTwoEntities(WeakGameEntity myEntity, BodyFlags myEntityBodyFlags, WeakGameEntity otherEntity, BodyFlags otherEntityBodyFlags)
 	{
 		return true;
 	}
@@ -312,12 +312,12 @@ public abstract class ScriptComponentBehavior : DotNetObject
 	}
 
 	[EngineCallback(null, false)]
-	protected internal void OnPhysicsCollisionAux(ref PhysicsContact contact, UIntPtr entity0, UIntPtr entity1, bool isFirstShape)
+	protected internal void OnPhysicsCollisionAux(ref PhysicsContact contact, UIntPtr entity0, UIntPtr entity1)
 	{
-		OnPhysicsCollision(ref contact, new WeakGameEntity(entity0), new WeakGameEntity(entity1), isFirstShape);
+		OnPhysicsCollision(ref contact, new WeakGameEntity(entity0), new WeakGameEntity(entity1));
 	}
 
-	protected internal virtual void OnPhysicsCollision(ref PhysicsContact contact, WeakGameEntity entity0, WeakGameEntity entity1, bool isFirstShape)
+	protected internal virtual void OnPhysicsCollision(ref PhysicsContact contact, WeakGameEntity entity0, WeakGameEntity entity1)
 	{
 	}
 

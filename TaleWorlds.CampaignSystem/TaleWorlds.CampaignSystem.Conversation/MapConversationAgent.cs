@@ -41,4 +41,8 @@ public class MapConversationAgent : IAgent
 	public void SetAsConversationAgent(bool set)
 	{
 	}
+
+	public void OnConversationStarted()
+	{
+	}
 }

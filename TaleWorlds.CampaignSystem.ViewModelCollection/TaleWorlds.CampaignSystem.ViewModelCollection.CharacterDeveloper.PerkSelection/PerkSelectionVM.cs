@@ -85,15 +85,23 @@ public class PerkSelectionVM : ViewModel
 		{
 			AvailablePerks.Add(new PerkSelectionItemVM(perk.Perk.AlternativePerk, OnSelectPerk));
 		}
-		perk.IsInSelection = true;
 		IsActive = true;
+		OnSelectPerk(perk);
+	}
+
+	private void OnSelectPerk(PerkVM selectedPerk)
+	{
+		_selectedPerks.Add(selectedPerk.Perk);
+		_refreshPerksOf(selectedPerk.Perk.Skill);
+		IsActive = false;
+		Game.Current.EventManager.TriggerEvent(new PerkSelectedByPlayerEvent(selectedPerk.Perk));
+		_onPerkSelection?.Invoke();
 	}
 
 	private void OnSelectPerk(PerkSelectionItemVM selectedPerk)
 	{
 		_selectedPerks.Add(selectedPerk.Perk);
 		_refreshPerksOf(selectedPerk.Perk.Skill);
-		_currentInitialPerk.IsInSelection = false;
 		IsActive = false;
 		Game.Current.EventManager.TriggerEvent(new PerkSelectedByPlayerEvent(selectedPerk.Perk));
 		_onPerkSelection?.Invoke();
@@ -131,6 +139,5 @@ public class PerkSelectionVM : ViewModel
 	{
 		IsActive = false;
 		_refreshPerksOf(_currentInitialPerk.Perk.Skill);
-		_currentInitialPerk.IsInSelection = false;
 	}
 }

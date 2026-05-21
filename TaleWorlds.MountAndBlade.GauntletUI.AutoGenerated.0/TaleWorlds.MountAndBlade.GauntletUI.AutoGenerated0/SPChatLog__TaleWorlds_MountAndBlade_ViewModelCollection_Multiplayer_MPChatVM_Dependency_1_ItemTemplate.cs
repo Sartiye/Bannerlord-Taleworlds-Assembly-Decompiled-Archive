@@ -77,7 +77,7 @@ public class SPChatLog__TaleWorlds_MountAndBlade_ViewModelCollection_Multiplayer
 		_widget_1.MarginLeft = 5f;
 		_widget_1.MarginRight = 5f;
 		_widget_1.ClipContents = false;
-		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 	}
 
 	public void DestroyDataSource()

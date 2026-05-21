@@ -118,7 +118,7 @@ public class EncyclopediaItemList__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_2_0_2.Brush = base.Context.GetBrush("SPOptions.CollapserLine");
 		_widget_3.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_3.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_3.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
+		_widget_3.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
 		_widget_3.MarginTop = 40f;
 		_widget_3.DoNotAcceptEvents = true;
 		_widget_3.MarginLeft = 5f;

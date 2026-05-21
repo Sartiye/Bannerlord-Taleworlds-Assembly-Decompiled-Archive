@@ -117,6 +117,8 @@ public class ArmyManagementVM : ViewModel
 
 	private bool _canDisbandArmy;
 
+	private bool _canConfirm;
+
 	private bool _canAffordInfluenceCost;
 
 	private string _moraleText;
@@ -448,6 +450,23 @@ public class ArmyManagementVM : ViewModel
 			{
 				_canDisbandArmy = value;
 				OnPropertyChangedWithValue(value, "CanDisbandArmy");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool CanConfirm
+	{
+		get
+		{
+			return _canConfirm;
+		}
+		set
+		{
+			if (value != _canConfirm)
+			{
+				_canConfirm = value;
+				OnPropertyChangedWithValue(value, "CanConfirm");
 			}
 		}
 	}
@@ -965,6 +984,7 @@ public class ArmyManagementVM : ViewModel
 		DisbandArmyHint = new HintViewModel();
 		DoneHint = new HintViewModel();
 		TutorialNotification = new ElementNotificationVM();
+		CanConfirm = false;
 		CanAffordInfluenceCost = true;
 		PlayerHasArmy = MobileParty.MainParty.Army != null;
 		foreach (MobileParty item in MobileParty.All)
@@ -1099,6 +1119,31 @@ public class ArmyManagementVM : ViewModel
 		OnRefresh();
 	}
 
+	private void UpdateCanConfirm()
+	{
+		if (!CanAffordInfluenceCost)
+		{
+			CanConfirm = false;
+			DoneHint.HintText = GameTexts.FindText("str_warning_you_dont_have_enough_influence").CopyTextObject();
+		}
+		else if (PartiesInCart.Count == 1 && PartiesInCart[0].IsMainHero)
+		{
+			CanConfirm = CanDisbandArmy;
+			if (!CanConfirm)
+			{
+				DoneHint.HintText = new TextObject("{=aUq1M6Wa}You need more than 1 party to create an army");
+			}
+		}
+		else
+		{
+			CanConfirm = true;
+		}
+		if (CanConfirm)
+		{
+			DoneHint.HintText = TextObject.GetEmpty();
+		}
+	}
+
 	private void ApplyCohesionChange()
 	{
 		if (MobileParty.MainParty.Army != null)
@@ -1173,10 +1218,11 @@ public class ArmyManagementVM : ViewModel
 		}
 		MoraleText = num3.ToString();
 		FoodText = TaleWorlds.Library.MathF.Round(num4, 1).ToString();
-		UpdateTooltips();
 		PartiesInCart.Sort(_itemComparer);
 		CanDisbandArmy = GetCanDisbandArmyWithReason(out var disabledReason);
 		DisbandArmyHint.HintText = disabledReason;
+		UpdateCanConfirm();
+		UpdateTooltips();
 	}
 
 	private bool GetCanDisbandArmyWithReason(out TextObject disabledReason)
@@ -1231,7 +1277,6 @@ public class ArmyManagementVM : ViewModel
 			GameTexts.SetVariable("reg1", (int)MobileParty.MainParty.Morale);
 			MoraleHint.HintText = GameTexts.FindText("str_morale_reg1");
 		}
-		DoneHint.HintText = new TextObject("{=!}" + (CanAffordInfluenceCost ? null : _playerDoesntHaveEnoughInfluenceStr));
 		MBTextManager.SetTextVariable("newline", "\n");
 		MBTextManager.SetTextVariable("DAILY_FOOD_CONSUMPTION", MobileParty.MainParty.FoodChange);
 		FoodHint.HintText = GameTexts.FindText("str_food_consumption_tooltip");
@@ -1241,6 +1286,11 @@ public class ArmyManagementVM : ViewModel
 	{
 		if (!CanAffordInfluenceCost)
 		{
+			return;
+		}
+		if (PartiesInCart.Count == 1 && PartiesInCart[0].IsMainHero)
+		{
+			ExecuteDisbandArmy();
 			return;
 		}
 		if (NewCohesion > Cohesion)

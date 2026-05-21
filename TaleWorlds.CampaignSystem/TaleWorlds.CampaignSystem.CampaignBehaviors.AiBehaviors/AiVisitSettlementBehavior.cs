@@ -62,6 +62,8 @@ public class AiVisitSettlementBehavior : CampaignBehaviorBase
 
 	private readonly List<SettlementNavigationData> _settlementsNavigationData = new List<SettlementNavigationData>();
 
+	private readonly Dictionary<Settlement, int> _numberOfAlliedMobilePartiesTargetingSettlement = new Dictionary<Settlement, int>();
+
 	private IDisbandPartyCampaignBehavior _disbandPartyCampaignBehavior;
 
 	private static float SearchForNeutralSettlementRadiusAsDays => 0.5f;
@@ -84,11 +86,48 @@ public class AiVisitSettlementBehavior : CampaignBehaviorBase
 	{
 		CampaignEvents.AiHourlyTickEvent.AddNonSerializedListener(this, AiHourlyTick);
 		CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
+		CampaignEvents.OnNewGameCreatedEvent.AddNonSerializedListener(this, OnNewGameCreated);
+		CampaignEvents.HourlyTickEvent.AddNonSerializedListener(this, OnHourlyTick);
+		CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(this, OnGameLoaded);
 	}
 
 	private void OnSessionLaunched(CampaignGameStarter campaignGameStarter)
 	{
 		_disbandPartyCampaignBehavior = Campaign.Current.GetCampaignBehavior<IDisbandPartyCampaignBehavior>();
+	}
+
+	private void OnNewGameCreated(CampaignGameStarter obj)
+	{
+		RefreshTheTargetingSettlementDictionary();
+	}
+
+	private void OnGameLoaded(CampaignGameStarter campaignGameStarter)
+	{
+		RefreshTheTargetingSettlementDictionary();
+	}
+
+	private void OnHourlyTick()
+	{
+		RefreshTheTargetingSettlementDictionary();
+	}
+
+	private void RefreshTheTargetingSettlementDictionary()
+	{
+		foreach (Settlement item in Settlement.All)
+		{
+			if (item.IsFortification || item.IsVillage)
+			{
+				_numberOfAlliedMobilePartiesTargetingSettlement[item] = 0;
+			}
+		}
+		foreach (MobileParty allLordParty in MobileParty.AllLordParties)
+		{
+			if ((allLordParty.Army == null || allLordParty.AttachedTo == null || allLordParty.Army.LeaderParty == allLordParty) && allLordParty.TargetSettlement != null && allLordParty.CurrentSettlement != allLordParty.TargetSettlement && allLordParty.TargetSettlement.MapFaction == allLordParty.MapFaction)
+			{
+				int num = allLordParty.Army?.LeaderPartyAndAttachedPartiesCount ?? 1;
+				_numberOfAlliedMobilePartiesTargetingSettlement[allLordParty.TargetSettlement] += num;
+			}
+		}
 	}
 
 	public override void SyncData(IDataStore dataStore)
@@ -239,8 +278,7 @@ public class AiVisitSettlementBehavior : CampaignBehaviorBase
 						float num29 = 1f;
 						if (!settlement.IsCastle && item < 1f && mobileParty.GetAvailableWageBudget() > 0)
 						{
-							num27 = settlement.NumberOfLordPartiesAt;
-							num28 = settlement.NumberOfLordPartiesTargeting;
+							num28 = _numberOfAlliedMobilePartiesTargetingSettlement[settlement];
 							if (currentSettlementOfMobilePartyForAICalculation == settlement)
 							{
 								num27 -= mobileParty.Army?.LeaderPartyAndAttachedPartiesCount ?? 1;
@@ -351,13 +389,13 @@ public class AiVisitSettlementBehavior : CampaignBehaviorBase
 						}
 						num13 *= num43 * num19 * num35 * num37 * num36 * num39 * num41 * num40 * num42 * num38 * num44;
 					}
-					goto IL_0bfe;
+					goto IL_0bfb;
 				}
 			}
 			float visitingNearbySettlementScore2 = CalculateMergeScoreForDisbandingParty(mobileParty, settlement, distance);
 			AddBehaviorTupleWithScore(p, settlement, visitingNearbySettlementScore2, bestNavigationType, isFromPort, isTargetingPortBetter);
-			goto IL_0bfe;
-			IL_0bfe:
+			goto IL_0bfb;
+			IL_0bfb:
 			if (num13 > 0.025f)
 			{
 				AddBehaviorTupleWithScore(p, settlement, num13, bestNavigationType, isFromPort, isTargetingPortBetter);
@@ -736,7 +774,7 @@ public class AiVisitSettlementBehavior : CampaignBehaviorBase
 		{
 			AiHelper.GetBestNavigationTypeAndAdjustedDistanceOfSettlementForMobileParty(mobileParty, settlement, isTargetingPort: false, out bestNavigationType, out bestNavigationDistance, out isFromPort2);
 		}
-		if (mobileParty.HasNavalNavigationCapability && settlement.HasPort)
+		if (mobileParty.HasNavalNavigationCapability && settlement.HasPort && settlement.IsFortification)
 		{
 			AiHelper.GetBestNavigationTypeAndAdjustedDistanceOfSettlementForMobileParty(mobileParty, settlement, isTargetingPort: true, out var bestNavigationType2, out var bestNavigationDistance2, out var isFromPort3);
 			if (bestNavigationDistance2 < bestNavigationDistance)

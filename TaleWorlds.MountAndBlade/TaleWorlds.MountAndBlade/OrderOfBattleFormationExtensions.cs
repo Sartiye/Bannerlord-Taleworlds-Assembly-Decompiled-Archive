@@ -9,7 +9,19 @@ public static class OrderOfBattleFormationExtensions
 {
 	public static void Refresh(this Formation formation)
 	{
-		formation?.SetMovementOrder(formation.GetReadonlyMovementOrderReference());
+		if (formation != null)
+		{
+			MovementOrder readonlyMovementOrderReference = formation.GetReadonlyMovementOrderReference();
+			if (readonlyMovementOrderReference.OrderEnum == MovementOrder.MovementOrderEnum.Stop)
+			{
+				OrderController.TryCancelStopOrder(formation);
+			}
+			formation.ApplyActionOnEachUnit(delegate(Agent u)
+			{
+				u.ForceUpdateCachedAndFormationValues(updateOnlyMovement: true, arrangementChangeAllowed: false);
+			});
+			formation.SetMovementOrder(readonlyMovementOrderReference);
+		}
 	}
 
 	public static DeploymentFormationClass GetOrderOfBattleFormationClass(this FormationClass formationClass)

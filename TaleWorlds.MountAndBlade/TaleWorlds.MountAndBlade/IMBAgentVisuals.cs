@@ -51,7 +51,7 @@ internal interface IMBAgentVisuals
 	void StartRhubarbRecord(UIntPtr agentVisualsId, string path, int soundId);
 
 	[EngineMethod("clear_visual_components", false, null, false)]
-	void ClearVisualComponents(UIntPtr agentVisualsId, bool removeSkeleton);
+	void ClearVisualComponents(UIntPtr agentVisualsId, bool removeSkeleton, bool removeLabel);
 
 	[EngineMethod("lazy_update_agent_renderer_data", false, null, false)]
 	void LazyUpdateAgentRendererData(UIntPtr agentVisualsId);
@@ -164,7 +164,7 @@ internal interface IMBAgentVisuals
 	[EngineMethod("get_global_stable_neck_point", false, null, false)]
 	Vec3 GetGlobalStableNeckPoint(UIntPtr agentVisualsPtr, bool isHumanoid);
 
-	[EngineMethod("get_bone_entitial_frame", false, null, false)]
+	[EngineMethod("get_quick_bone_entitial_frame", false, null, false)]
 	void GetBoneEntitialFrame(UIntPtr agentVisualsPtr, sbyte bone, bool useBoneMapping, ref MatrixFrame outFrame);
 
 	[EngineMethod("set_attached_position_for_rope_entity_after_animation_post_integrate", false, null, false)]

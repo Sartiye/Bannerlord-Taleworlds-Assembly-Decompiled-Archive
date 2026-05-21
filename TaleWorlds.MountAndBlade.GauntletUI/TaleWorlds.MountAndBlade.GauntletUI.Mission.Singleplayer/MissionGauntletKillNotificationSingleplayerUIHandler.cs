@@ -119,9 +119,9 @@ public class MissionGauntletKillNotificationSingleplayerUIHandler : MissionBattl
 
 	private void OnCombatLogManagerOnPrintCombatLog(CombatLogData logData)
 	{
-		if (_isPersonalFeedEnabled && !logData.IsVictimAgentMine && (logData.IsAttackerAgentMine || logData.IsAttackerAgentRiderAgentMine) && logData.TotalDamage > 0 && (!logData.IsFatalDamage || (logData.IsEntityToEntityCollisionDamage && logData.IsSpecialDamage)))
+		if (_isPersonalFeedEnabled && (logData.IsAttackerAgentMine || logData.IsAttackerAgentRiderAgentMine) && logData.TotalDamage > 0 && (!logData.IsFatalDamage || (logData.IsEntityToEntityCollisionDamage && logData.IsSpecialDamage)))
 		{
-			_dataSource.OnPersonalDamage(logData.TotalDamage, logData.IsVictimAgentMount, logData.IsFriendlyFire, logData.VictimAgentName);
+			_dataSource.OnPersonalDamage(logData.TotalDamage, logData.IsVictimAgentMount, logData.IsFriendlyFire || logData.IsVictimAgentMine, logData.VictimAgentName);
 		}
 	}
 

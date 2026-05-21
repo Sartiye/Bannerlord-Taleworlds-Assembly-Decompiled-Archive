@@ -227,7 +227,7 @@ public class DefaultSettlementLoyaltyModel : SettlementLoyaltyModel
 		{
 			explainedNumber.Add(0.5f, DefaultPolicies.TrialByJury.Name);
 		}
-		if (kingdom.ActivePolicies.Contains(DefaultPolicies.ImperialTowns))
+		if (town.IsTown && kingdom.ActivePolicies.Contains(DefaultPolicies.ImperialTowns))
 		{
 			if (kingdom.RulingClan == town.Settlement.OwnerClan)
 			{

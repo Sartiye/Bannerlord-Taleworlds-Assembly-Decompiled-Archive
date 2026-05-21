@@ -1,5 +1,6 @@
 using SandBox.Missions.MissionLogics.Hideout;
 using SandBox.Objects.Cinematics;
+using SandBox.Objects.Usables;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
@@ -39,8 +40,6 @@ public class MissionHideoutAmbushCinematicView : MissionView
 
 	private HideoutAmbushMissionController _hideoutAmbushMissionController;
 
-	private MissionCameraFadeView _missionCameraFadeView;
-
 	private HideoutAmbushCinematicState _currentHideoutAmbushCinematicState;
 
 	private Timer _timer;
@@ -55,7 +54,6 @@ public class MissionHideoutAmbushCinematicView : MissionView
 		_cameraEntity = base.Mission.Scene.FindEntityWithTag("hideout_ambush_cutscene_camera");
 		_arrowPath = base.Mission.Scene.FindEntityWithTag("hideout_ambush_cutscene_arrow_path");
 		_hideoutAmbushMissionController = base.Mission.GetMissionBehavior<HideoutAmbushMissionController>();
-		_missionCameraFadeView = base.Mission.GetMissionBehavior<MissionCameraFadeView>();
 		Vec3 dofParams = Vec3.Invalid;
 		_camera = Camera.CreateCamera();
 		_cameraEntity.GetCameraParamsFromCameraScript(_camera, ref dofParams);
@@ -80,11 +78,11 @@ public class MissionHideoutAmbushCinematicView : MissionView
 			break;
 		}
 		case HideoutAmbushCinematicState.FirstFadeOut:
-			_missionCameraFadeView.BeginFadeOutAndIn(0.5f, 0.5f, 0.5f);
+			ScreenFadeController.BeginFadeOutAndIn();
 			_currentHideoutAmbushCinematicState = HideoutAmbushCinematicState.ChangeToCustomCamera;
 			break;
 		case HideoutAmbushCinematicState.ChangeToCustomCamera:
-			if (_missionCameraFadeView.FadeState == MissionCameraFadeView.CameraFadeState.Black)
+			if (ScreenFadeController.IsFadedOut)
 			{
 				base.MissionScreen.CustomCamera = _camera;
 				Agent.Main.AgentVisuals.SetVisible(value: false);
@@ -92,7 +90,7 @@ public class MissionHideoutAmbushCinematicView : MissionView
 			}
 			break;
 		case HideoutAmbushCinematicState.FirstFadeIn:
-			if (_missionCameraFadeView.FadeState == MissionCameraFadeView.CameraFadeState.White)
+			if (!ScreenFadeController.IsFadeActive)
 			{
 				_currentHideoutAmbushCinematicState = HideoutAmbushCinematicState.SendArrow;
 			}
@@ -112,11 +110,11 @@ public class MissionHideoutAmbushCinematicView : MissionView
 			}
 			break;
 		case HideoutAmbushCinematicState.SecondFadeOut:
-			_missionCameraFadeView.BeginFadeOutAndIn(0.5f, 0.5f, 0.5f);
+			ScreenFadeController.BeginFadeOutAndIn();
 			_currentHideoutAmbushCinematicState = HideoutAmbushCinematicState.ChangeBackToDefaultCamera;
 			break;
 		case HideoutAmbushCinematicState.ChangeBackToDefaultCamera:
-			if (_missionCameraFadeView.FadeState == MissionCameraFadeView.CameraFadeState.Black)
+			if (ScreenFadeController.IsFadedOut)
 			{
 				base.MissionScreen.CustomCamera = null;
 				Agent.Main.AgentVisuals.SetVisible(value: true);
@@ -124,7 +122,7 @@ public class MissionHideoutAmbushCinematicView : MissionView
 			}
 			break;
 		case HideoutAmbushCinematicState.SecondFadeIn:
-			if (_missionCameraFadeView.FadeState == MissionCameraFadeView.CameraFadeState.White)
+			if (!ScreenFadeController.IsFadeActive)
 			{
 				_currentHideoutAmbushCinematicState = HideoutAmbushCinematicState.Ending;
 			}
@@ -134,6 +132,19 @@ public class MissionHideoutAmbushCinematicView : MissionView
 			_hideoutAmbushMissionController.OnAgentsShouldBeEnabled();
 			_currentHideoutAmbushCinematicState = HideoutAmbushCinematicState.Ended;
 			break;
+		}
+	}
+
+	public override void OnObjectUsed(Agent userAgent, UsableMissionObject usedObject)
+	{
+		base.OnObjectUsed(userAgent, usedObject);
+		if (userAgent == Agent.Main && usedObject is StealthAreaUsePoint)
+		{
+			MissionAgentAlarmStateView missionBehavior = base.Mission.GetMissionBehavior<MissionAgentAlarmStateView>();
+			if (missionBehavior != null && missionBehavior.IsReady())
+			{
+				missionBehavior.SuspendView();
+			}
 		}
 	}
 }

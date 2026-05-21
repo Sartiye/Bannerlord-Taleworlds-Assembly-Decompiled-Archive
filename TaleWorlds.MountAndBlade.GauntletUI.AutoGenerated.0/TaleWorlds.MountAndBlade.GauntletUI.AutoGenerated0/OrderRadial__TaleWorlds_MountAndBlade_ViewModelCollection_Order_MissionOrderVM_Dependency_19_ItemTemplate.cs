@@ -42,7 +42,7 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 		base.WidthSizePolicy = SizePolicy.StretchToParent;
 		base.HeightSizePolicy = SizePolicy.CoverChildren;
 		base.HorizontalAlignment = HorizontalAlignment.Center;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0.SuggestedWidth = 41f;

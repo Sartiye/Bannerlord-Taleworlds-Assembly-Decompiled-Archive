@@ -4,6 +4,7 @@ using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.LinQuick;
@@ -20,7 +21,9 @@ public class DefaultMobilePartyAIModel : MobilePartyAIModel
 
 	public override float HideoutPatrolDistanceAsDays => 0.5f;
 
-	public override float FortificationPatrolDistanceAsDays => 0.3f;
+	public override float FortificationPatrolDistanceAsDays => 0.5f;
+
+	public override float FortificationPortPatrolDistanceAsDays => 0f;
 
 	public override float VillagePatrolDistanceAsDays => 0.25f;
 
@@ -37,7 +40,7 @@ public class DefaultMobilePartyAIModel : MobilePartyAIModel
 		bool num = targetParty != MobileParty.MainParty || !MobileParty.MainParty.ShouldBeIgnored;
 		bool flag = targetParty != MobileParty.MainParty || party.Ai.DoNotAttackMainPartyUntil.IsPast;
 		bool flag2 = party.IsCurrentlyAtSea == targetParty.IsCurrentlyAtSea;
-		bool flag3 = party.CurrentSettlement != null && party.CurrentSettlement.HasPort && party.HasNavalNavigationCapability;
+		bool flag3 = party.CurrentSettlement != null && party.CurrentSettlement.IsFortification && party.CurrentSettlement.HasPort && party.HasNavalNavigationCapability;
 		if (num && flag && (flag2 || flag3))
 		{
 			return MobilePartyHelper.CanPartyAttackWithCurrentMorale(party);
@@ -67,24 +70,19 @@ public class DefaultMobilePartyAIModel : MobilePartyAIModel
 		float num = 0f;
 		if (mobileParty.TargetSettlement != null)
 		{
-			if (mobileParty.TargetSettlement.IsHideout)
-			{
-				num = Campaign.Current.Models.MobilePartyAIModel.HideoutPatrolDistanceAsDays * mobileParty._lastCalculatedSpeed * (float)CampaignTime.HoursInDay;
-			}
-			if (mobileParty.TargetSettlement.IsFortification)
-			{
-				num = Campaign.Current.Models.MobilePartyAIModel.FortificationPatrolDistanceAsDays * mobileParty._lastCalculatedSpeed * (float)CampaignTime.HoursInDay;
-			}
-			if (mobileParty.TargetSettlement.IsVillage)
-			{
-				num = Campaign.Current.Models.MobilePartyAIModel.VillagePatrolDistanceAsDays * mobileParty._lastCalculatedSpeed * (float)CampaignTime.HoursInDay;
-			}
+			num = GetPatrolRadiusInternal(mobileParty.TargetSettlement, mobileParty._lastCalculatedSpeed, !patrolPoint.IsOnLand);
 			if (mobileParty.IsPatrolParty)
 			{
 				num *= 0.5f;
 			}
 		}
 		return num;
+	}
+
+	public override float GetSettlementNearbyThreatAndAllyCheckRadius(Settlement settlement, bool isPort)
+	{
+		float num = (isPort ? Campaign.Current.EstimatedAverageLordPartyNavalSpeed : Campaign.Current.EstimatedAverageLordPartySpeed);
+		return GetPatrolRadiusInternal(settlement, num * 1.3f, isPort);
 	}
 
 	public override bool ShouldPartyCheckInitiativeBehavior(MobileParty mobileParty)
@@ -186,7 +184,7 @@ public class DefaultMobilePartyAIModel : MobilePartyAIModel
 				mobileParty2 = MobileParty.FindNextLocatable(ref data);
 				continue;
 			}
-			if (mobileParty2.MapEvent != null && (mobileParty2.MapEvent.IsBlockade || mobileParty2.MapEvent.IsBlockadeSallyOut) && !mobileParty.IsCurrentlyAtSea)
+			if (mobileParty2.SiegeEvent != null && mobileParty.DefaultBehavior == AiBehavior.DefendSettlement && mobileParty.TargetSettlement == mobileParty2.SiegeEvent.BesiegedSettlement && mobileParty2.MapEvent != null && mobileParty2.MapEvent.IsBlockade && !mobileParty.IsCurrentlyAtSea)
 			{
 				mobileParty2 = MobileParty.FindNextLocatable(ref data);
 				continue;
@@ -463,20 +461,25 @@ public class DefaultMobilePartyAIModel : MobilePartyAIModel
 			float initiativeDistanceForAttack = GetInitiativeDistanceForAttack(mobileParty, enemyParty, num);
 			float num5 = 1f;
 			float num6 = ((mobileParty.IsBandit && mobileParty.HasNavalNavigationCapability) ? 10f : 5f);
-			if (length < Campaign.Current.Models.EncounterModel.NeededMaximumDistanceForEncounteringMobileParty * num6 || (mobileParty.Army != null && mobileParty.Army.LeaderParty == mobileParty && enemyParty.Army != null && enemyParty.Army.LeaderParty == enemyParty && initiativeDistanceForAttack * 2f > length))
+			if (mobileParty.IsCurrentlyAtSea && mobileParty.Army != null && mobileParty.Army.LeaderParty == mobileParty)
+			{
+				num6 *= 0.5f;
+			}
+			float num7 = (mobileParty.IsCurrentlyAtSea ? Campaign.Current.Models.EncounterModel.NeededMaximumNavalDistanceForEncounteringMobileParty : Campaign.Current.Models.EncounterModel.NeededMaximumLandDistanceForEncounteringMobileParty);
+			if (length < num7 * num6 || (mobileParty.Army != null && mobileParty.Army.LeaderParty == mobileParty && enemyParty.Army != null && enemyParty.Army.LeaderParty == enemyParty && initiativeDistanceForAttack * 2f > length))
 			{
 				num5 = 100f;
 			}
 			else if (enemyParty.IsMoving && enemyParty.SiegeEvent == null && enemyParty.MapEvent == null)
 			{
-				float num7 = mobileParty.LastCalculatedBaseSpeed - enemyParty.LastCalculatedBaseSpeed;
-				if (num7 > 0.01f)
+				float num8 = mobileParty.LastCalculatedBaseSpeed - enemyParty.LastCalculatedBaseSpeed;
+				if (num8 > 0.01f)
 				{
-					float num8 = initiativeDistanceForAttack / num7;
-					float num9 = (float)CampaignTime.HoursInDay * 0.75f;
-					if (num8 < num9)
+					float num9 = initiativeDistanceForAttack / num8;
+					float num10 = (float)CampaignTime.HoursInDay * 0.75f;
+					if (num9 < num10)
 					{
-						num5 = num9 / num8;
+						num5 = num10 / num9;
 					}
 				}
 				else
@@ -484,21 +487,21 @@ public class DefaultMobilePartyAIModel : MobilePartyAIModel
 					num5 = 0f;
 				}
 			}
-			float num10 = ((enemyParty.IsLordParty && enemyParty.LeaderHero != null && enemyParty.LeaderHero.IsLord) ? 1f : mobileParty.Ai.AttackInitiative);
+			float num11 = ((enemyParty.IsLordParty && enemyParty.LeaderHero != null && enemyParty.LeaderHero.IsLord) ? 1f : mobileParty.Ai.AttackInitiative);
 			if ((double)mobileParty.Aggressiveness < 0.01)
 			{
 				maxAggressiveness = mobileParty.Aggressiveness;
 			}
-			float num11 = ((enemyParty.MapEvent != null && maxAggressiveness > 0.1f) ? TaleWorlds.Library.MathF.Max(1f + (enemyParty.MapEvent.IsSallyOut ? 0.3f : 0f), maxAggressiveness) : maxAggressiveness);
-			float num12 = ((mobileParty.DefaultBehavior == AiBehavior.DefendSettlement && ((enemyParty.BesiegedSettlement != null && mobileParty.Ai.AiBehaviorPartyBase == enemyParty.BesiegedSettlement.Party) || (enemyParty.MapEvent != null && enemyParty.MapEvent.MapEventSettlement != null && mobileParty.Ai.AiBehaviorPartyBase == enemyParty.MapEvent.MapEventSettlement.Party))) ? 1.1f : 1f);
-			float num13 = 1f;
+			float num12 = ((enemyParty.MapEvent != null && maxAggressiveness > 0.1f) ? TaleWorlds.Library.MathF.Max(1f + (enemyParty.MapEvent.IsSallyOut ? 0.3f : 0f), maxAggressiveness) : maxAggressiveness);
+			float num13 = ((mobileParty.DefaultBehavior == AiBehavior.DefendSettlement && ((enemyParty.BesiegedSettlement != null && mobileParty.Ai.AiBehaviorPartyBase == enemyParty.BesiegedSettlement.Party) || (enemyParty.MapEvent != null && enemyParty.MapEvent.MapEventSettlement != null && mobileParty.Ai.AiBehaviorPartyBase == enemyParty.MapEvent.MapEventSettlement.Party))) ? 1.1f : 1f);
+			float num14 = 1f;
 			if (mobileParty.IsLordParty && mobileParty.DefaultBehavior == AiBehavior.PatrolAroundPoint && num3 * 0.8f > num4)
 			{
 				MobileParty.NavigationType navigationType = ((!mobileParty.HasNavalNavigationCapability) ? MobileParty.NavigationType.Default : MobileParty.NavigationType.All);
-				num13 += 0.2f * (Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(navigationType) * 0.5f) / mobileParty.AiBehaviorTarget.Distance(mobileParty.Position);
+				num14 += 0.2f * (Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(navigationType) * 0.5f) / mobileParty.AiBehaviorTarget.Distance(mobileParty.Position);
 			}
-			float num14 = ((enemyParty.MapEvent != null && enemyParty.MapEventSide.OtherSide.Parties.ContainsQ((MapEventParty x) => x.Party.IsMobile && x.Party.MapFaction == mobileParty.MapFaction)) ? 1.2f : 1f);
-			attackScore = 1.06f * num12 * num3 * num2 * num5 * num11 * num13 * num10 * num14;
+			float num15 = ((enemyParty.MapEvent != null && enemyParty.MapEventSide.OtherSide.Parties.ContainsQ((MapEventParty x) => x.Party.IsMobile && x.Party.MapFaction == mobileParty.MapFaction)) ? 1.2f : 1f);
+			attackScore = 1.06f * num13 * num3 * num2 * num5 * num12 * num14 * num11 * num15;
 		}
 		if (!(attackScore < 1f))
 		{
@@ -514,21 +517,21 @@ public class DefaultMobilePartyAIModel : MobilePartyAIModel
 		}
 		if (Campaign.Current.Models.MobilePartyAIModel.ShouldConsiderAvoiding(mobileParty, enemyParty))
 		{
-			float num15 = ((mobileParty.IsCaravan || mobileParty.IsVillager) ? 0.9f : ((enemyParty.IsGarrison || enemyParty.IsMilitia || enemyParty.CurrentSettlement != null) ? 0.4f : 0.7f));
-			float num16 = num * num15;
+			float num16 = ((mobileParty.IsCaravan || mobileParty.IsVillager) ? 0.9f : ((enemyParty.IsGarrison || enemyParty.IsMilitia || enemyParty.CurrentSettlement != null) ? 0.4f : 0.7f));
+			float num17 = num * num16;
 			if (enemyParty.MapEvent != null || enemyParty.BesiegedSettlement != null || (mobileParty.DefaultBehavior == AiBehavior.EngageParty && mobileParty.TargetParty == enemyParty) || (mobileParty.DefaultBehavior == AiBehavior.GoAroundParty && mobileParty.TargetParty == enemyParty))
 			{
-				num16 = num * 0.6f;
+				num17 = num * 0.6f;
 			}
-			num16 *= (1f + mobileParty.Ai.AvoidInitiative) / 2f;
-			float num17 = 1f;
-			if (length < num16 * 4f)
+			num17 *= (1f + mobileParty.Ai.AvoidInitiative) / 2f;
+			float num18 = 1f;
+			if (length < num17 * 4f)
 			{
-				float num18 = length / (num16 + 1E-05f);
-				num17 = 4f - num18;
+				float num19 = length / (num17 + 1E-05f);
+				num18 = 4f - num19;
 			}
-			float num19 = ((enemyParty.IsLordParty && enemyParty.LeaderHero != null && enemyParty.LeaderHero.IsLord) ? 1f : mobileParty.Ai.AvoidInitiative);
-			avoidScore = 0.9433963f * num19 * num17 * ((num2 > 0.01f) ? 1f : 0f) * num4;
+			float num20 = ((enemyParty.IsLordParty && enemyParty.LeaderHero != null && enemyParty.LeaderHero.IsLord) ? 1f : mobileParty.Ai.AvoidInitiative);
+			avoidScore = 0.9433963f * num20 * num18 * ((num2 > 0.01f) ? 1f : 0f) * num4;
 		}
 	}
 
@@ -575,6 +578,23 @@ public class DefaultMobilePartyAIModel : MobilePartyAIModel
 		if (DiplomacyHelper.IsSameFactionAndNotEliminated(mobileParty.MapFaction, otherParty.MapFaction))
 		{
 			return -1f;
+		}
+		return 0f;
+	}
+
+	private float GetPatrolRadiusInternal(Settlement settlement, float speed, bool isPort)
+	{
+		if (settlement.IsHideout)
+		{
+			return Campaign.Current.Models.MobilePartyAIModel.HideoutPatrolDistanceAsDays * speed * (float)CampaignTime.HoursInDay;
+		}
+		if (settlement.IsFortification)
+		{
+			return (isPort ? Campaign.Current.Models.MobilePartyAIModel.FortificationPortPatrolDistanceAsDays : Campaign.Current.Models.MobilePartyAIModel.FortificationPatrolDistanceAsDays) * speed * (float)CampaignTime.HoursInDay;
+		}
+		if (settlement.IsVillage)
+		{
+			return Campaign.Current.Models.MobilePartyAIModel.VillagePatrolDistanceAsDays * speed * (float)CampaignTime.HoursInDay;
 		}
 		return 0f;
 	}

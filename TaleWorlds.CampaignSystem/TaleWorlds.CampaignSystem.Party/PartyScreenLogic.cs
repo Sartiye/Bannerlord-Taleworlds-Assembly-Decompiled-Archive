@@ -1036,8 +1036,10 @@ public class PartyScreenLogic
 		TroopSortType activeSortTypeForSide = GetActiveSortTypeForSide(side);
 		if (activeSortTypeForSide != 0)
 		{
-			TroopRoster roster2 = GetRoster(side, command.Type);
+			TroopRoster roster2 = GetRoster(side, TroopType.Member);
+			TroopRoster roster3 = GetRoster(side, TroopType.Prisoner);
 			SortRoster(roster2, activeSortTypeForSide);
+			SortRoster(roster3, activeSortTypeForSide);
 		}
 		UpdateDelegate?.Invoke(command);
 		this.Update?.Invoke(command);
@@ -1159,14 +1161,14 @@ public class PartyScreenLogic
 	{
 		if (roster.Count != list.Count)
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Roster count is not synced with the list count", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyScreenLogic.cs", "EnsureRosterIsSyncedWithList", 1079);
+			TaleWorlds.Library.Debug.FailedAssert("Roster count is not synced with the list count", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyScreenLogic.cs", "EnsureRosterIsSyncedWithList", 1081);
 			return;
 		}
 		for (int i = 0; i < roster.Count; i++)
 		{
 			if (roster.GetCharacterAtIndex(i).StringId != list[i].Character.StringId)
 			{
-				TaleWorlds.Library.Debug.FailedAssert("Roster is not synced with the list at index: " + i, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyScreenLogic.cs", "EnsureRosterIsSyncedWithList", 1089);
+				TaleWorlds.Library.Debug.FailedAssert("Roster is not synced with the list at index: " + i, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyScreenLogic.cs", "EnsureRosterIsSyncedWithList", 1091);
 				break;
 			}
 		}
@@ -1515,7 +1517,7 @@ public class PartyScreenLogic
 		}
 		if (numOfItemsLeftToRemove > 0)
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Couldn't find enough upgrade req items in the inventory.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyScreenLogic.cs", "RemoveItemFromItemRoster", 1507);
+			TaleWorlds.Library.Debug.FailedAssert("Couldn't find enough upgrade req items in the inventory.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyScreenLogic.cs", "RemoveItemFromItemRoster", 1509);
 		}
 		return list;
 	}

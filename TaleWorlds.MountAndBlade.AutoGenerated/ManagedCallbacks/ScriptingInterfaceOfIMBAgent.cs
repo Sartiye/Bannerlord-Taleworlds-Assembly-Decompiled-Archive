@@ -268,6 +268,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void GetBoneEntitialFrameDelegate(UIntPtr agentPointer, sbyte boneIndex, [MarshalAs(UnmanagedType.U1)] bool useBoneMapping, ref MatrixFrame outFrame);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate MatrixFrame GetBoneEntitialFrameAtAnimationProgressDelegate(UIntPtr agentPointer, sbyte boneIndex, int animationIndex, float progress);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -1368,6 +1373,8 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 
 	public static GetBodyRotationConstraintDelegate call_GetBodyRotationConstraintDelegate;
 
+	public static GetBoneEntitialFrameDelegate call_GetBoneEntitialFrameDelegate;
+
 	public static GetBoneEntitialFrameAtAnimationProgressDelegate call_GetBoneEntitialFrameAtAnimationProgressDelegate;
 
 	public static GetChestGlobalPositionDelegate call_GetChestGlobalPositionDelegate;
@@ -2049,6 +2056,11 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	public Vec3 GetBodyRotationConstraint(UIntPtr agentPointer, int channelIndex)
 	{
 		return call_GetBodyRotationConstraintDelegate(agentPointer, channelIndex);
+	}
+
+	public void GetBoneEntitialFrame(UIntPtr agentPointer, sbyte boneIndex, bool useBoneMapping, ref MatrixFrame outFrame)
+	{
+		call_GetBoneEntitialFrameDelegate(agentPointer, boneIndex, useBoneMapping, ref outFrame);
 	}
 
 	public MatrixFrame GetBoneEntitialFrameAtAnimationProgress(UIntPtr agentPointer, sbyte boneIndex, int animationIndex, float progress)

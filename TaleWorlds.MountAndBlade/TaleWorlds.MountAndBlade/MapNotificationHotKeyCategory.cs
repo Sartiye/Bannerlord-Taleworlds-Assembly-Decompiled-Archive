@@ -9,7 +9,7 @@ public sealed class MapNotificationHotKeyCategory : GameKeyContext
 	public const string RemoveNotification = "RemoveNotification";
 
 	public MapNotificationHotKeyCategory()
-		: base("MapNotificationHotKeyCategory", 110)
+		: base("MapNotificationHotKeyCategory", 116)
 	{
 		RegisterHotKeys();
 	}

@@ -93,12 +93,12 @@ public class DefaultDeploymentPlan
 
 	public static DefaultDeploymentPlan CreateInitialPlan(Mission mission, Team team)
 	{
-		return new DefaultDeploymentPlan(mission, team, isReinforcement: false, SpawnPathData.Invalid);
+		return new DefaultDeploymentPlan(mission, team, isReinforcement: false, null);
 	}
 
 	public static DefaultDeploymentPlan CreateReinforcementPlan(Mission mission, Team team)
 	{
-		return new DefaultDeploymentPlan(mission, team, isReinforcement: true, SpawnPathData.Invalid);
+		return new DefaultDeploymentPlan(mission, team, isReinforcement: true, null);
 	}
 
 	public static DefaultDeploymentPlan CreateReinforcementPlanWithSpawnPath(Mission mission, Team team, SpawnPathData spawnPathData)
@@ -140,40 +140,7 @@ public class DefaultDeploymentPlan
 		_spawnWithHorses = value;
 	}
 
-	public void ClearAddedTroops()
-	{
-		for (int i = 0; i < 11; i++)
-		{
-			_formationFootTroopCounts[i] = 0;
-			_formationMountedTroopCounts[i] = 0;
-		}
-	}
-
-	public void ClearPlan()
-	{
-		DefaultFormationDeploymentPlan[] formationPlans = _formationPlans;
-		for (int i = 0; i < formationPlans.Length; i++)
-		{
-			formationPlans[i].Clear();
-		}
-		SortedList<FormationDeploymentOrder, DefaultFormationDeploymentPlan>[] deploymentFlanks = _deploymentFlanks;
-		for (int i = 0; i < deploymentFlanks.Length; i++)
-		{
-			deploymentFlanks[i].Clear();
-		}
-		IsPlanMade = false;
-	}
-
-	public void AddTroops(FormationClass formationClass, int footTroopCount, int mountedTroopCount)
-	{
-		if (footTroopCount + mountedTroopCount > 0 && formationClass < FormationClass.NumberOfAllFormationsWithUnset)
-		{
-			_formationFootTroopCounts[(int)formationClass] += footTroopCount;
-			_formationMountedTroopCounts[(int)formationClass] += mountedTroopCount;
-		}
-	}
-
-	public void PlanBattleDeployment(FormationSceneSpawnEntry[,] formationSceneSpawnEntries, float spawnPathOffset = 0f, float targetOffset = 0f)
+	public void MakeDeploymentPlan(float spawnPathOffset = 0f, float targetOffset = 0f, FormationSceneSpawnEntry[,] formationSceneSpawnEntries = null)
 	{
 		SpawnPathOffset = spawnPathOffset;
 		TargetOffset = targetOffset;
@@ -193,6 +160,39 @@ public class DefaultDeploymentPlan
 		ComputeMeanPosition();
 	}
 
+	public void ClearPlan()
+	{
+		DefaultFormationDeploymentPlan[] formationPlans = _formationPlans;
+		for (int i = 0; i < formationPlans.Length; i++)
+		{
+			formationPlans[i].Clear();
+		}
+		SortedList<FormationDeploymentOrder, DefaultFormationDeploymentPlan>[] deploymentFlanks = _deploymentFlanks;
+		for (int i = 0; i < deploymentFlanks.Length; i++)
+		{
+			deploymentFlanks[i].Clear();
+		}
+		IsPlanMade = false;
+	}
+
+	public void ClearAddedTroops()
+	{
+		for (int i = 0; i < 11; i++)
+		{
+			_formationFootTroopCounts[i] = 0;
+			_formationMountedTroopCounts[i] = 0;
+		}
+	}
+
+	public void AddTroops(FormationClass formationClass, int footTroopCount, int mountedTroopCount)
+	{
+		if (footTroopCount + mountedTroopCount > 0 && formationClass < FormationClass.NumberOfAllFormationsWithUnset)
+		{
+			_formationFootTroopCounts[(int)formationClass] += footTroopCount;
+			_formationMountedTroopCounts[(int)formationClass] += mountedTroopCount;
+		}
+	}
+
 	public DefaultFormationDeploymentPlan GetFormationPlan(FormationClass fClass)
 	{
 		return _formationPlans[(int)fClass];
@@ -205,6 +205,21 @@ public class DefaultDeploymentPlan
 		{
 			frame = formationPlan.GetFrame();
 			return true;
+		}
+		frame = MatrixFrame.Identity;
+		return false;
+	}
+
+	public bool GetFirstValidFormationDeploymentFrame(out MatrixFrame frame)
+	{
+		DefaultFormationDeploymentPlan[] formationPlans = _formationPlans;
+		foreach (DefaultFormationDeploymentPlan defaultFormationDeploymentPlan in formationPlans)
+		{
+			if (defaultFormationDeploymentPlan.HasFrame())
+			{
+				frame = defaultFormationDeploymentPlan.GetFrame();
+				return true;
+			}
 		}
 		frame = MatrixFrame.Identity;
 		return false;
@@ -286,37 +301,35 @@ public class DefaultDeploymentPlan
 		return new WorldFrame(globalFrame.rotation, origin);
 	}
 
-	public (float, float) GetFormationSpawnWidthAndDepth(FormationClass formationNo, int troopCount, bool hasMountedTroops, bool considerCavalryAsInfantry = false)
-	{
-		bool flag = !considerCavalryAsInfantry && hasMountedTroops;
-		float defaultUnitDiameter = Formation.GetDefaultUnitDiameter(flag);
-		int unitSpacingOf = ArrangementOrder.GetUnitSpacingOf(ArrangementOrder.ArrangementOrderEnum.Line);
-		float num = (flag ? Formation.CavalryInterval(unitSpacingOf) : Formation.InfantryInterval(unitSpacingOf));
-		float num2 = (flag ? Formation.CavalryDistance(unitSpacingOf) : Formation.InfantryDistance(unitSpacingOf));
-		float num3 = (float)TaleWorlds.Library.MathF.Max(0, troopCount - 1) * (num + defaultUnitDiameter) + defaultUnitDiameter;
-		float num4 = (flag ? 18f : 9f);
-		int b = (int)(num3 / TaleWorlds.Library.MathF.Sqrt(num4 * (float)troopCount + 1f));
-		b = TaleWorlds.Library.MathF.Max(1, b);
-		float num5 = (float)troopCount / (float)b;
-		float item = TaleWorlds.Library.MathF.Max(0f, num5 - 1f) * (num + defaultUnitDiameter) + defaultUnitDiameter;
-		float item2 = (float)(b - 1) * (num2 + defaultUnitDiameter) + defaultUnitDiameter;
-		return (item, item2);
-	}
-
 	private void PlanFieldBattleDeploymentFromSpawnPath(float pathOffset, float targetOffset)
 	{
+		bool teamPlanHasAnyFootTroops = FootTroopCount > 0;
 		for (int i = 0; i < _formationPlans.Length; i++)
 		{
-			int num = _formationFootTroopCounts[i] + _formationMountedTroopCounts[i];
-			DefaultFormationDeploymentPlan defaultFormationDeploymentPlan = _formationPlans[i];
-			FormationDeploymentFlank defaultFlank = defaultFormationDeploymentPlan.GetDefaultFlank(num, FootTroopCount, _spawnWithHorses);
 			FormationClass formationClass = (FormationClass)i;
-			int offset = ((num <= 0 && formationClass != FormationClass.NumberOfRegularFormations) ? 1 : 0);
-			FormationDeploymentOrder flankDeploymentOrder = defaultFormationDeploymentPlan.GetFlankDeploymentOrder(offset);
-			_deploymentFlanks[(int)defaultFlank].Add(flankDeploymentOrder, defaultFormationDeploymentPlan);
+			int num = _formationFootTroopCounts[i] + _formationMountedTroopCounts[i];
+			if (num > 0 || (!IsReinforcement && (formationClass == FormationClass.NumberOfRegularFormations || formationClass == FormationClass.Bodyguard)))
+			{
+				DefaultFormationDeploymentPlan defaultFormationDeploymentPlan = _formationPlans[i];
+				FormationDeploymentFlank defaultFlank = defaultFormationDeploymentPlan.GetDefaultFlank(num, teamPlanHasAnyFootTroops, _spawnWithHorses);
+				int offset = ((num <= 0 && formationClass != FormationClass.NumberOfRegularFormations) ? 1 : 0);
+				FormationDeploymentOrder flankDeploymentOrder = defaultFormationDeploymentPlan.GetFlankDeploymentOrder(offset);
+				_deploymentFlanks[(int)defaultFlank].Add(flankDeploymentOrder, defaultFormationDeploymentPlan);
+			}
 		}
 		float horizontalCenterOffset = ComputeHorizontalCenterOffset();
-		((!IsReinforcement) ? _mission.GetInitialSpawnPathData(Team.Side) : SpawnPathData).GetSpawnPathFrameFacingTarget(pathOffset, targetOffset, useTangentDirection: false, out var spawnPathPosition, out var spawnPathDirection, decideDirectionDynamically: true);
+		SpawnPathData initialSpawnPathData = _mission.GetInitialSpawnPathData(Team.Side);
+		Vec2 spawnPathPosition;
+		Vec2 spawnPathDirection;
+		if (IsReinforcement)
+		{
+			spawnPathPosition = SpawnPathData.GetSpawnFrame(SpawnPathData.GetBaseOffset(), searchNearestValidFrame: true, SpawnPathData.SearchDirection.Forward).origin.AsVec2;
+			spawnPathDirection = (initialSpawnPathData.GetSpawnFrame(0f).origin.AsVec2 - spawnPathPosition).Normalized();
+		}
+		else
+		{
+			initialSpawnPathData.GetSpawnPathFrameFacingTarget(pathOffset, targetOffset, useTangentDirection: false, out spawnPathPosition, out spawnPathDirection, decideDirectionDynamically: true);
+		}
 		DeployFlanks(spawnPathPosition, spawnPathDirection, horizontalCenterOffset);
 		SortedList<FormationDeploymentOrder, DefaultFormationDeploymentPlan>[] deploymentFlanks = _deploymentFlanks;
 		for (int j = 0; j < deploymentFlanks.Length; j++)
@@ -391,10 +404,8 @@ public class DefaultDeploymentPlan
 
 	private void PlanFormationDimensions()
 	{
-		List<(int, DefaultFormationDeploymentPlan)> list = new List<(int, DefaultFormationDeploymentPlan)>();
 		for (int i = 0; i < _formationPlans.Length; i++)
 		{
-			FormationClass formationClass = (FormationClass)i;
 			int num = _formationFootTroopCounts[i];
 			int num2 = _formationMountedTroopCounts[i];
 			int num3 = num + num2;
@@ -405,21 +416,6 @@ public class DefaultDeploymentPlan
 				var (width, depth) = GetFormationSpawnWidthAndDepth(defaultFormationDeploymentPlan.Class, num3, hasMountedTroops, !_spawnWithHorses);
 				defaultFormationDeploymentPlan.SetPlannedDimensions(width, depth);
 				defaultFormationDeploymentPlan.SetPlannedTroopCount(num, num2);
-			}
-			else if (formationClass.IsRegularFormationClass())
-			{
-				list.Add((i, defaultFormationDeploymentPlan));
-			}
-		}
-		foreach (var item3 in list)
-		{
-			int item = item3.Item1;
-			DefaultFormationDeploymentPlan item2 = item3.Item2;
-			FormationClass formationClass2 = ((FormationClass)item).DefaultClass();
-			DefaultFormationDeploymentPlan defaultFormationDeploymentPlan2 = _formationPlans[(int)formationClass2];
-			if (defaultFormationDeploymentPlan2.HasDimensions)
-			{
-				item2.SetPlannedDimensions(defaultFormationDeploymentPlan2.PlannedWidth, defaultFormationDeploymentPlan2.PlannedDepth);
 			}
 		}
 	}
@@ -552,5 +548,22 @@ public class DefaultDeploymentPlan
 			spawnDepths[spawnEntity] = value + num2;
 		}
 		return value;
+	}
+
+	public static (float, float) GetFormationSpawnWidthAndDepth(FormationClass formationNo, int troopCount, bool hasMountedTroops, bool considerCavalryAsInfantry = false)
+	{
+		bool flag = !considerCavalryAsInfantry && hasMountedTroops;
+		float defaultUnitDiameter = Formation.GetDefaultUnitDiameter(flag);
+		int unitSpacingOf = ArrangementOrder.GetUnitSpacingOf(ArrangementOrder.ArrangementOrderEnum.Line);
+		float num = (flag ? Formation.CavalryInterval(unitSpacingOf) : Formation.InfantryInterval(unitSpacingOf));
+		float num2 = (flag ? Formation.CavalryDistance(unitSpacingOf) : Formation.InfantryDistance(unitSpacingOf));
+		float num3 = (float)TaleWorlds.Library.MathF.Max(0, troopCount - 1) * (num + defaultUnitDiameter) + defaultUnitDiameter;
+		float num4 = (flag ? 18f : 9f);
+		int b = (int)(num3 / TaleWorlds.Library.MathF.Sqrt(num4 * (float)troopCount + 1f));
+		b = TaleWorlds.Library.MathF.Max(1, b);
+		float num5 = (float)troopCount / (float)b;
+		float item = TaleWorlds.Library.MathF.Max(0f, num5 - 1f) * (num + defaultUnitDiameter) + defaultUnitDiameter;
+		float item2 = (float)(b - 1) * (num2 + defaultUnitDiameter) + defaultUnitDiameter;
+		return (item, item2);
 	}
 }

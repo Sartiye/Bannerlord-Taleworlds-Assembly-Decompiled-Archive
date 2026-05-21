@@ -104,7 +104,7 @@ public class JoinKingdomAsClanBarterable : Barterable
 		}
 		bool flag = base.OriginalOwner.Clan.IsMinorFaction && base.OriginalOwner.Clan != Clan.PlayerClan;
 		Kingdom kingdom = base.OriginalOwner.Clan.Kingdom;
-		if (base.OriginalOwner.Clan.Kingdom != null)
+		if (!IsDefecting && base.OriginalOwner.Clan.Kingdom != null)
 		{
 			if (flag)
 			{

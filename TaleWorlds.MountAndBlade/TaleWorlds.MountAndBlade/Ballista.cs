@@ -272,8 +272,9 @@ public class Ballista : RangedSiegeWeapon, ISpawnable
 			ActionIndexCache currentAction = base.PilotAgent.GetCurrentAction(1);
 			if (currentAction == _pickUpAmmoEndAnimationActionIndex || currentAction == _placeAmmoStartAnimationActionIndex)
 			{
-				MatrixFrame m = base.PilotAgent.AgentVisuals.GetBoneEntitialFrame(base.PilotAgent.Monster.MainHandItemBoneIndex, useBoneMapping: false);
-				m = base.PilotAgent.AgentVisuals.GetGlobalFrame().TransformToParent(in m);
+				MatrixFrame frame = base.PilotAgent.Frame;
+				MatrixFrame m = base.PilotAgent.GetBoneEntitialFrame(base.PilotAgent.Monster.MainHandItemBoneIndex, useBoneMapping: false);
+				m = frame.TransformToParent(in m);
 				base.Projectile.GameEntity.SetGlobalFrame(in m);
 			}
 			else
@@ -299,6 +300,14 @@ public class Ballista : RangedSiegeWeapon, ISpawnable
 			bool value = false;
 			if (base.PilotAgent != null)
 			{
+				if (!HasAmmo)
+				{
+					if (base.PilotAgent.Controller == AgentControllerType.AI)
+					{
+						base.PilotAgent.StopUsingGameObjectMT();
+					}
+					return;
+				}
 				ActionIndexCache currentAction2 = base.PilotAgent.GetCurrentAction(1);
 				FinalReloadSpeed = MissionGameModels.Current.MissionSiegeEngineCalculationModel.CalculateReloadSpeed(base.PilotAgent, BaseReloadSpeed);
 				base.PilotAgent.SetCurrentActionSpeed(1, FinalReloadSpeed);

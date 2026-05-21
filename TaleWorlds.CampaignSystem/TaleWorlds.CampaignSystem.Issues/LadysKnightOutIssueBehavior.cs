@@ -203,10 +203,11 @@ public class LadysKnightOutIssueBehavior : CampaignBehaviorBase
 			return IssueFrequency.Common;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			skill = null;
 			relationHero = null;
+			requiredGold = 0;
 			flag = PreconditionFlags.None;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{

@@ -24,6 +24,8 @@ public class StealthPatrolPointMissionLogic : MissionLogic, IMissionAgentSpawnLo
 
 	private CheckpointMissionLogic _checkpointMissionLogic;
 
+	public BattleSideEnum PlayerSide => BattleSideEnum.None;
+
 	public StealthPatrolPointMissionLogic()
 	{
 		_spawnedEnemyAgentsOnPatrolPoints = new Dictionary<Agent, GameEntity>();
@@ -226,7 +228,7 @@ public class StealthPatrolPointMissionLogic : MissionLogic, IMissionAgentSpawnLo
 		}
 	}
 
-	public float GetReinforcementInterval()
+	public float GetReinforcementInterval(BattleSideEnum battleSide = BattleSideEnum.None)
 	{
 		return 0f;
 	}

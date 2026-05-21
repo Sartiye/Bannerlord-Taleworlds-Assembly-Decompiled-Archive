@@ -2,21 +2,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using SandBox.Conversation.MissionLogics;
+using SandBox.Missions.MissionLogics.Hideout.Objectives;
 using SandBox.Objects.AreaMarkers;
 using SandBox.Objects.Usables;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.AgentOrigins;
-using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
-using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Locations;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
+using TaleWorlds.MountAndBlade.Missions.MissionLogics;
 
 namespace SandBox.Missions.MissionLogics.Hideout;
 
@@ -69,7 +69,9 @@ public class HideoutAmbushMissionController : MissionLogic
 
 	private List<IAgentOriginBase> _allEnemyTroops;
 
-	private List<IAgentOriginBase> _priorAllyTroops;
+	private List<IAgentOriginBase> _playerPriorTroops;
+
+	private List<IAgentOriginBase> _allEnemyTroopTypesCache;
 
 	private List<StealthAreaMissionLogic.StealthAreaData> _stealthAreaData;
 
@@ -81,6 +83,8 @@ public class HideoutAmbushMissionController : MissionLogic
 
 	private int _remainingSentryCount;
 
+	private bool _isClearedAsGhost = true;
+
 	private BattleAgentLogic _battleAgentLogic;
 
 	private BattleEndLogic _battleEndLogic;
@@ -89,53 +93,60 @@ public class HideoutAmbushMissionController : MissionLogic
 
 	private StealthAreaMissionLogic _stealthAreaMissionLogic;
 
+	private MissionObjectiveLogic _missionObjectiveLogic;
+
 	private Agent _bossAgent;
 
 	private Team _enemyTeam;
 
 	private CharacterObject _overriddenHideoutBossCharacterObject;
 
+	private IAgentOriginBase _overriddenHideoutBossAgentOrigin;
+
+	private int _playerTroopCount;
+
+	private LocateTheMainCampObjective _locateTheMainCampObjective;
+
+	private ClearTheMainCampObjective _clearTheMainCampObjective;
+
+	private DefeatHideoutBossObjective _defeatHideoutBossObjective;
+
+	private readonly List<Agent> _clearObjectiveTargetAgents = new List<Agent>();
+
+	private IMissionTroopSupplier[] _suppliers;
+
 	public bool IsReadyForCallTroopsCinematic => _currentHideoutMissionState == HideoutMissionState.CallTroopsCutSceneState;
 
-	public HideoutAmbushMissionController(BattleSideEnum playerSide, FlattenedTroopRoster priorAllyTroops)
+	public HideoutAmbushMissionController(IMissionTroopSupplier[] suppliers, BattleSideEnum playerSide, int playerTroopCount)
 	{
 		_playerSide = playerSide;
-		_allEnemyTroops = new List<IAgentOriginBase>();
-		_priorAllyTroops = new List<IAgentOriginBase>();
+		_playerTroopCount = playerTroopCount;
 		_stealthAreaData = new List<StealthAreaMissionLogic.StealthAreaData>();
 		_waitTimerToChangeStealthModeIntoBattle = null;
 		_currentHideoutMissionState = HideoutMissionState.NotDecided;
 		_overriddenHideoutBossCharacterObject = null;
-		InitializeTroops(priorAllyTroops);
-		_initialHideoutPopulation = _allEnemyTroops.Count;
-		Campaign.Current.CampaignBehaviorManager.GetBehavior<IHideoutCampaignBehavior>();
+		_suppliers = suppliers;
+		IMissionTroopSupplier missionTroopSupplier = _suppliers[(int)_playerSide.GetOppositeSide()];
+		_initialHideoutPopulation = missionTroopSupplier.NumTroopsNotSupplied;
 	}
 
-	private void InitializeTroops(FlattenedTroopRoster priorAllyTroops)
+	public override void OnBehaviorInitialize()
 	{
-		foreach (FlattenedTroopRosterElement priorAllyTroop in priorAllyTroops)
+		base.OnBehaviorInitialize();
+		_battleAgentLogic = base.Mission.GetMissionBehavior<BattleAgentLogic>();
+		_battleEndLogic = base.Mission.GetMissionBehavior<BattleEndLogic>();
+		_battleEndLogic.ChangeCanCheckForEndCondition(canCheckForEndCondition: false);
+		_stealthAreaMissionLogic = base.Mission.GetMissionBehavior<StealthAreaMissionLogic>();
+		StealthAreaMissionLogic stealthAreaMissionLogic = _stealthAreaMissionLogic;
+		stealthAreaMissionLogic.SpawnReinforcementAllyTroopsEvent = (StealthAreaMissionLogic.SpawnReinforcementAllyTroopsDelegate)Delegate.Combine(stealthAreaMissionLogic.SpawnReinforcementAllyTroopsEvent, new StealthAreaMissionLogic.SpawnReinforcementAllyTroopsDelegate(SpawnReinforcementAllyTroops));
+		_missionObjectiveLogic = base.Mission.GetMissionBehavior<MissionObjectiveLogic>();
+		_hideoutAmbushBossFightCinematicController = base.Mission.GetMissionBehavior<HideoutAmbushBossFightCinematicController>();
+		foreach (StealthAreaUsePoint item in base.Mission.ActiveMissionObjects.FindAllWithType<StealthAreaUsePoint>())
 		{
-			if (priorAllyTroop.Troop != CharacterObject.PlayerCharacter)
-			{
-				_priorAllyTroops.Add(new PartyAgentOrigin(PartyBase.MainParty, priorAllyTroop.Troop, -1, priorAllyTroop.Descriptor));
-			}
+			_stealthAreaData.Add(new StealthAreaMissionLogic.StealthAreaData(item));
 		}
-		foreach (PartyBase involvedParty in MapEvent.PlayerMapEvent.InvolvedParties)
-		{
-			if (involvedParty.Side == _playerSide)
-			{
-				continue;
-			}
-			foreach (TroopRosterElement item in involvedParty.MemberRoster.GetTroopRoster())
-			{
-				int num = item.Number - item.WoundedNumber;
-				for (int i = 0; i < num; i++)
-				{
-					_allEnemyTroops.Add(new PartyAgentOrigin(involvedParty, item.Character));
-				}
-			}
-		}
-		_allEnemyTroops.Shuffle();
+		Game.Current.EventManager.RegisterEvent<OnStealthMissionCounterFailedEvent>(OnStealthMissionCounterFailed);
+		base.Mission.GetAgentTroopClass_Override += GetHideoutAmbushMissionTroopClass;
 	}
 
 	public override void OnCreated()
@@ -148,10 +159,11 @@ public class HideoutAmbushMissionController : MissionLogic
 	public override void AfterStart()
 	{
 		base.AfterStart();
+		InitializeTroops();
 		SandBoxHelpers.MissionHelper.SpawnPlayer(civilianEquipment: false, noHorses: true);
 		Mission.Current.GetMissionBehavior<MissionAgentHandler>().SpawnLocationCharacters();
-		Agent.Main.SetClothingColor1(4281281067u);
-		Agent.Main.SetClothingColor2(4281281067u);
+		Agent.Main.SetClothingColor1(4279111698u);
+		Agent.Main.SetClothingColor2(4279111698u);
 		Agent.Main.UpdateSpawnEquipmentAndRefreshVisuals(Hero.MainHero.StealthEquipment);
 		foreach (StealthAreaMissionLogic.StealthAreaData stealthAreaDatum in _stealthAreaData)
 		{
@@ -162,171 +174,15 @@ public class HideoutAmbushMissionController : MissionLogic
 			}
 		}
 		Mission.Current.GetMissionBehavior<StealthFailCounterMissionLogic>().FailCounterSeconds = 15f;
+		_locateTheMainCampObjective = new LocateTheMainCampObjective(base.Mission);
+		_missionObjectiveLogic.StartObjective(_locateTheMainCampObjective);
 	}
 
-	public override void OnBehaviorInitialize()
+	public override void OnRemoveBehavior()
 	{
-		base.OnBehaviorInitialize();
-		_battleAgentLogic = base.Mission.GetMissionBehavior<BattleAgentLogic>();
-		_battleEndLogic = base.Mission.GetMissionBehavior<BattleEndLogic>();
-		_battleEndLogic.ChangeCanCheckForEndCondition(canCheckForEndCondition: false);
-		_stealthAreaMissionLogic = base.Mission.GetMissionBehavior<StealthAreaMissionLogic>();
-		_stealthAreaMissionLogic.GetReinforcementAllyTroops = GetReinforcementAllyTroops;
-		_hideoutAmbushBossFightCinematicController = base.Mission.GetMissionBehavior<HideoutAmbushBossFightCinematicController>();
-		foreach (StealthAreaUsePoint item in base.Mission.ActiveMissionObjects.FindAllWithType<StealthAreaUsePoint>())
-		{
-			_stealthAreaData.Add(new StealthAreaMissionLogic.StealthAreaData(item));
-		}
-		Game.Current.EventManager.RegisterEvent<OnStealthMissionCounterFailedEvent>(OnStealthMissionCounterFailed);
-	}
-
-	private List<IAgentOriginBase> GetReinforcementAllyTroops(StealthAreaMissionLogic.StealthAreaData triggeredStealthAreaData, StealthAreaMarker stealthAreaMarker)
-	{
-		int count = triggeredStealthAreaData.StealthAreaMarkers.Count;
-		StealthAreaMarker[] array = triggeredStealthAreaData.StealthAreaMarkers.Keys.ToArray();
-		List<IAgentOriginBase> list = new List<IAgentOriginBase>();
-		for (int i = 0; i < _priorAllyTroops.Count; i++)
-		{
-			if (array[i % count] == stealthAreaMarker)
-			{
-				list.Add(_priorAllyTroops[i]);
-			}
-		}
-		return list;
-	}
-
-	public override void OnObjectUsed(Agent userAgent, UsableMissionObject usedObject)
-	{
-		if (!(usedObject is StealthAreaUsePoint))
-		{
-			return;
-		}
-		StealthAreaMissionLogic.StealthAreaData stealthAreaData = null;
-		foreach (StealthAreaMissionLogic.StealthAreaData stealthAreaDatum in _stealthAreaData)
-		{
-			if (stealthAreaDatum.StealthAreaUsePoint == usedObject)
-			{
-				stealthAreaData = stealthAreaDatum;
-				break;
-			}
-		}
-		if (stealthAreaData != null)
-		{
-			_currentHideoutMissionState = HideoutMissionState.CallTroopsCutSceneState;
-			_waitTimerToChangeStealthModeIntoBattle = new Timer(base.Mission.CurrentTime, 10f);
-		}
-	}
-
-	public void SetOverriddenHideoutBossCharacterObject(CharacterObject characterObject)
-	{
-		_overriddenHideoutBossCharacterObject = characterObject;
-	}
-
-	private IAgentOriginBase GetOneEnemyTroopToSpawnInFirstPhase()
-	{
-		IAgentOriginBase agentOriginBase = null;
-		foreach (IAgentOriginBase allEnemyTroop in _allEnemyTroops)
-		{
-			CharacterObject characterObject = (CharacterObject)allEnemyTroop.Troop;
-			if (!characterObject.IsHero && characterObject.Culture.BanditBoss != allEnemyTroop.Troop && characterObject != _overriddenHideoutBossCharacterObject)
-			{
-				agentOriginBase = allEnemyTroop;
-				break;
-			}
-		}
-		CharacterObject characterObject2 = (CharacterObject)agentOriginBase.Troop;
-		PartyBase party = ((PartyAgentOrigin)agentOriginBase).Party;
-		party.AddMember(characterObject2, 1);
-		return new PartyAgentOrigin(party, characterObject2);
-	}
-
-	public void SpawnRemainingTroopsForBossFight(List<MatrixFrame> spawnFrames)
-	{
-		int num = (int)TaleWorlds.Library.MathF.Clamp(_initialHideoutPopulation / 2, 4f, 20f);
-		_allEnemyTroops = _allEnemyTroops.OrderByDescending((IAgentOriginBase x) => x.Troop.IsHero).ToList();
-		if (_overriddenHideoutBossCharacterObject != null)
-		{
-			IAgentOriginBase agentOriginBase = _allEnemyTroops.Find((IAgentOriginBase t) => t.Troop == _overriddenHideoutBossCharacterObject);
-			MatrixFrame matrixFrame = spawnFrames.FirstOrDefault();
-			matrixFrame.rotation.OrthonormalizeAccordingToForwardAndKeepUpAsZAxis();
-			Agent agent = Mission.Current.SpawnTroop(agentOriginBase, isPlayerSide: false, hasFormation: false, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: false, wieldInitialWeapons: false, forceDismounted: false, matrixFrame.origin, matrixFrame.rotation.f.AsVec2.Normalized(), "_hideout_bandit");
-			AgentFlag agentFlags = agent.GetAgentFlags();
-			if (agentFlags.HasAnyFlag(AgentFlag.CanRetreat))
-			{
-				agent.SetAgentFlags(agentFlags & ~AgentFlag.CanRetreat);
-			}
-			_allEnemyTroops.Remove(agentOriginBase);
-		}
-		foreach (IAgentOriginBase allEnemyTroop in _allEnemyTroops)
-		{
-			MatrixFrame matrixFrame2 = spawnFrames.FirstOrDefault();
-			matrixFrame2.rotation.OrthonormalizeAccordingToForwardAndKeepUpAsZAxis();
-			Agent agent2 = Mission.Current.SpawnTroop(allEnemyTroop, isPlayerSide: false, hasFormation: false, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: false, wieldInitialWeapons: false, forceDismounted: false, matrixFrame2.origin, matrixFrame2.rotation.f.AsVec2.Normalized(), "_hideout_bandit");
-			AgentFlag agentFlags2 = agent2.GetAgentFlags();
-			if (agentFlags2.HasAnyFlag(AgentFlag.CanRetreat))
-			{
-				agent2.SetAgentFlags(agentFlags2 & ~AgentFlag.CanRetreat);
-			}
-			num--;
-			if (num <= 0)
-			{
-				break;
-			}
-		}
-		foreach (Formation item in Mission.Current.AttackerTeam.FormationsIncludingEmpty)
-		{
-			if (item.CountOfUnits > 0)
-			{
-				item.SetMovementOrder(MovementOrder.MovementOrderMove(item.CachedMedianPosition));
-			}
-			item.SetFiringOrder(FiringOrder.FiringOrderHoldYourFire);
-			if (Mission.Current.AttackerTeam == Mission.Current.PlayerTeam)
-			{
-				item.PlayerOwner = Mission.Current.MainAgent;
-			}
-		}
-	}
-
-	private void SpawnAllyAgent(IAgentOriginBase troopOrigin, GameEntity spawnPoint, Vec3 position)
-	{
-		MatrixFrame globalFrame = spawnPoint.GetGlobalFrame();
-		Agent agent = Mission.Current.SpawnTroop(troopOrigin, isPlayerSide: true, hasFormation: false, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: true, wieldInitialWeapons: true, forceDismounted: true, globalFrame.origin, globalFrame.rotation.f.AsVec2.Normalized());
-		WorldPosition position2 = new WorldPosition(spawnPoint.Scene, position);
-		agent.SetScriptedPosition(ref position2, addHumanLikeDelay: true, Agent.AIScriptedFrameFlags.NoAttack | Agent.AIScriptedFrameFlags.Crouch);
-	}
-
-	private void LocationCharactersAreReadyToSpawn(Dictionary<string, int> unusedUsablePointCount)
-	{
-		Location locationWithId = Settlement.CurrentSettlement.LocationComplex.GetLocationWithId("hideout_center");
-		int value = 0;
-		if (unusedUsablePointCount.TryGetValue("stealth_agent_forced", out value))
-		{
-			locationWithId.AddLocationCharacters(CreateForcedSentry, Settlement.CurrentSettlement.Culture, LocationCharacter.CharacterRelations.Enemy, value);
-		}
-		if (unusedUsablePointCount.TryGetValue("stealth_agent", out value))
-		{
-			int num = _initialHideoutPopulation / 8;
-			if (num >= 1)
-			{
-				locationWithId.AddLocationCharacters(CreateSentry, Settlement.CurrentSettlement.Culture, LocationCharacter.CharacterRelations.Enemy, Math.Min(num, value));
-			}
-		}
-	}
-
-	private LocationCharacter CreateForcedSentry(CultureObject culture, LocationCharacter.CharacterRelations relation)
-	{
-		IAgentOriginBase oneEnemyTroopToSpawnInFirstPhase = GetOneEnemyTroopToSpawnInFirstPhase();
-		CharacterObject characterObject = (CharacterObject)oneEnemyTroopToSpawnInFirstPhase.Troop;
-		Campaign.Current.Models.AgeModel.GetAgeLimitForLocation(characterObject, out var minimumAge, out var maximumAge);
-		return new LocationCharacter(new AgentData(oneEnemyTroopToSpawnInFirstPhase).Monster(TaleWorlds.Core.FaceGen.GetMonsterWithSuffix(characterObject.Race, "_settlement_slow")).Age(MBRandom.RandomInt(minimumAge, maximumAge)), SandBoxManager.Instance.AgentBehaviorManager.AddStealthAgentBehaviors, "stealth_agent_forced", fixedLocation: true, relation, null, useCivilianEquipment: false, isFixedCharacter: false, null, isHidden: false, isVisualTracked: false, overrideBodyProperties: true, null, forceSpawnOnSpecialTargetTag: true);
-	}
-
-	private LocationCharacter CreateSentry(CultureObject culture, LocationCharacter.CharacterRelations relation)
-	{
-		IAgentOriginBase oneEnemyTroopToSpawnInFirstPhase = GetOneEnemyTroopToSpawnInFirstPhase();
-		CharacterObject characterObject = (CharacterObject)oneEnemyTroopToSpawnInFirstPhase.Troop;
-		Campaign.Current.Models.AgeModel.GetAgeLimitForLocation(characterObject, out var minimumAge, out var maximumAge);
-		return new LocationCharacter(new AgentData(oneEnemyTroopToSpawnInFirstPhase).Monster(TaleWorlds.Core.FaceGen.GetMonsterWithSuffix(characterObject.Race, "_settlement_slow")).Age(MBRandom.RandomInt(minimumAge, maximumAge)), SandBoxManager.Instance.AgentBehaviorManager.AddStealthAgentBehaviors, "stealth_agent", fixedLocation: true, relation, null, useCivilianEquipment: false);
+		base.OnRemoveBehavior();
+		StealthAreaMissionLogic stealthAreaMissionLogic = _stealthAreaMissionLogic;
+		stealthAreaMissionLogic.SpawnReinforcementAllyTroopsEvent = (StealthAreaMissionLogic.SpawnReinforcementAllyTroopsDelegate)Delegate.Remove(stealthAreaMissionLogic.SpawnReinforcementAllyTroopsEvent, new StealthAreaMissionLogic.SpawnReinforcementAllyTroopsDelegate(SpawnReinforcementAllyTroops));
 	}
 
 	public override void OnMissionTick(float dt)
@@ -334,13 +190,17 @@ public class HideoutAmbushMissionController : MissionLogic
 		base.OnMissionTick(dt);
 		if (_waitTimerToChangeStealthModeIntoBattle != null && _waitTimerToChangeStealthModeIntoBattle.Check(base.Mission.CurrentTime))
 		{
-			ChangeHideoutMissionModeToBattle();
-			_waitTimerToChangeStealthModeIntoBattle = null;
+			Agent main = Agent.Main;
+			if (main != null && main.IsActive())
+			{
+				ChangeHideoutMissionModeToBattle();
+				_waitTimerToChangeStealthModeIntoBattle = null;
+			}
 		}
 		if (!_isMissionInitialized)
 		{
-			Agent main = Agent.Main;
-			if (main != null && main.IsActive())
+			Agent main2 = Agent.Main;
+			if (main2 != null && main2.IsActive())
 			{
 				InitializeMission();
 				_isMissionInitialized = true;
@@ -369,38 +229,6 @@ public class HideoutAmbushMissionController : MissionLogic
 		}
 	}
 
-	private void InitializeMission()
-	{
-		base.Mission.GetMissionBehavior<MissionConversationLogic>().DisableStartConversation(isDisabled: true);
-		base.Mission.SetMissionMode(MissionMode.Stealth, atStart: true);
-		_currentHideoutMissionState = HideoutMissionState.StealthState;
-		base.Mission.DeploymentPlan.MakeDefaultDeploymentPlans();
-	}
-
-	private void ChangeHideoutMissionModeToBattle()
-	{
-		_currentHideoutMissionState = HideoutMissionState.BattleBeforeBossFight;
-		Mission.Current.SetMissionMode(MissionMode.Battle, atStart: false);
-		foreach (Agent activeAgent in Mission.Current.PlayerTeam.ActiveAgents)
-		{
-			if (!activeAgent.IsMainAgent)
-			{
-				activeAgent.ClearTargetFrame();
-				activeAgent.DisableScriptedMovement();
-			}
-		}
-		base.Mission.PlayerTeam.PlayerOrderController.SelectAllFormations();
-		base.Mission.PlayerTeam.PlayerOrderController.SetOrder(OrderType.Charge);
-		base.Mission.PlayerEnemyTeam.MasterOrderController.SelectAllFormations();
-		base.Mission.PlayerEnemyTeam.MasterOrderController.SetOrder(OrderType.Charge);
-		foreach (Agent activeAgent2 in base.Mission.PlayerEnemyTeam.ActiveAgents)
-		{
-			activeAgent2.SetAlarmState(Agent.AIStateFlag.Alarmed);
-		}
-		Vec3 position = Agent.Main.Position;
-		SoundManager.StartOneShotEvent("event:/ui/mission/horns/attack", in position);
-	}
-
 	public override void OnAgentBuild(Agent agent, Banner banner)
 	{
 		if (_currentHideoutMissionState >= HideoutMissionState.CutSceneBeforeBossFight || !agent.IsHuman || agent.Team != Mission.Current.PlayerEnemyTeam)
@@ -420,8 +248,24 @@ public class HideoutAmbushMissionController : MissionLogic
 		}
 	}
 
+	public override void OnAgentAlarmedStateChanged(Agent agent, Agent.AIStateFlag flag)
+	{
+		if (agent.IsAlarmed() && _currentHideoutMissionState == HideoutMissionState.StealthState)
+		{
+			_isClearedAsGhost = false;
+		}
+	}
+
 	public override void OnAgentRemoved(Agent affectedAgent, Agent affectorAgent, AgentState agentState, KillingBlow blow)
 	{
+		if (_clearObjectiveTargetAgents.Contains(affectedAgent))
+		{
+			_clearObjectiveTargetAgents.Remove(affectedAgent);
+		}
+		if (_currentHideoutMissionState == HideoutMissionState.StealthState)
+		{
+			_isClearedAsGhost = false;
+		}
 		if (affectorAgent != null && affectorAgent.IsMainAgent)
 		{
 			_remainingSentryCount = 0;
@@ -456,61 +300,80 @@ public class HideoutAmbushMissionController : MissionLogic
 		}
 	}
 
-	public void OnStealthMissionCounterFailed(OnStealthMissionCounterFailedEvent obj)
+	protected override void OnEndMission()
 	{
-		Campaign.Current.GameMenuManager.SetNextMenu("hideout_after_found_by_sentries");
+		CampaignEventDispatcher.Instance.RemoveListeners(this);
+		int num = 0;
+		if (_currentHideoutMissionState == HideoutMissionState.BossFightWithDuel)
+		{
+			if (Agent.Main == null || !Agent.Main.IsActive())
+			{
+				num = _duelPhaseAllyAgents?.Count ?? 0;
+			}
+			else if (_bossAgent == null || !_bossAgent.IsActive())
+			{
+				PlayerEncounter.EnemySurrender = true;
+			}
+		}
+		if (!PlayerEncounter.EnemySurrender && num <= 0 && MobileParty.MainParty.MemberRoster.TotalHealthyCount <= 0 && MapEvent.PlayerMapEvent.BattleState == BattleState.None)
+		{
+			MapEvent.PlayerMapEvent.SetOverrideWinner(base.Mission.PlayerEnemyTeam.Side);
+		}
+		Game.Current.EventManager.UnregisterEvent<OnStealthMissionCounterFailedEvent>(OnStealthMissionCounterFailed);
 	}
 
-	private void CheckBattleResolved()
+	public override void OnMissionStateFinalized()
 	{
-		if (_currentHideoutMissionState == HideoutMissionState.NotDecided || _currentHideoutMissionState == HideoutMissionState.CutSceneBeforeBossFight || _currentHideoutMissionState == HideoutMissionState.ConversationBetweenLeaders)
+		base.Mission.GetAgentTroopClass_Override -= GetHideoutAmbushMissionTroopClass;
+	}
+
+	public override void OnObjectUsed(Agent userAgent, UsableMissionObject usedObject)
+	{
+		if (!(usedObject is StealthAreaUsePoint))
 		{
 			return;
 		}
-		if (IsSideDepleted(base.Mission.PlayerTeam.Side))
+		StealthAreaMissionLogic.StealthAreaData stealthAreaData = null;
+		foreach (StealthAreaMissionLogic.StealthAreaData stealthAreaDatum in _stealthAreaData)
 		{
-			if (_currentHideoutMissionState == HideoutMissionState.BossFightWithDuel)
+			if (stealthAreaDatum.StealthAreaUsePoint == usedObject)
 			{
-				OnDuelOver(base.Mission.PlayerEnemyTeam.Side);
+				stealthAreaData = stealthAreaDatum;
+				break;
 			}
+		}
+		if (stealthAreaData != null)
+		{
+			_currentHideoutMissionState = HideoutMissionState.CallTroopsCutSceneState;
+			_waitTimerToChangeStealthModeIntoBattle = new Timer(base.Mission.CurrentTime, 10f);
+			_missionObjectiveLogic.CompleteCurrentObjective();
+		}
+		List<Agent> list = new List<Agent>();
+		foreach (StealthAreaMissionLogic.StealthAreaData stealthAreaDatum2 in _stealthAreaData)
+		{
+			foreach (KeyValuePair<StealthAreaMarker, List<Agent>> stealthAreaMarker in stealthAreaDatum2.StealthAreaMarkers)
+			{
+				list.AddRange(stealthAreaMarker.Value);
+			}
+		}
+		foreach (Agent item in list)
+		{
+			item.FadeOut(hideInstantly: true, hideMount: true);
+			_remainingSentryCount--;
+		}
+		if (_isClearedAsGhost)
+		{
+			Campaign.Current.SkillLevelingManager.OnHideoutClearedAsGhost();
+		}
+	}
+
+	public void OnStealthMissionCounterFailed(OnStealthMissionCounterFailedEvent obj)
+	{
+		if (!_battleResolved)
+		{
 			Campaign.Current.SkillLevelingManager.OnHideoutMissionEnd(isSucceeded: false);
-			_battleEndLogic.ChangeCanCheckForEndCondition(canCheckForEndCondition: true);
-			_battleResolved = true;
 		}
-		else
-		{
-			if (!IsSideDepleted(base.Mission.PlayerEnemyTeam.Side))
-			{
-				return;
-			}
-			if (_currentHideoutMissionState == HideoutMissionState.BattleBeforeBossFight || _currentHideoutMissionState == HideoutMissionState.StealthState)
-			{
-				Agent main = Agent.Main;
-				if (main != null && main.IsActive())
-				{
-					if (_firstPhaseEndTimer == null)
-					{
-						_firstPhaseEndTimer = new Timer(base.Mission.CurrentTime, 4f);
-						Mission.Current.SetMissionMode(MissionMode.CutScene, atStart: false);
-					}
-					else if (_firstPhaseEndTimer.Check(base.Mission.CurrentTime))
-					{
-						_hideoutAmbushBossFightCinematicController.StartCinematic(OnInitialFadeOutOver, OnCutSceneOver);
-					}
-				}
-			}
-			else
-			{
-				if (_currentHideoutMissionState == HideoutMissionState.BossFightWithDuel)
-				{
-					OnDuelOver(base.Mission.PlayerTeam.Side);
-				}
-				Campaign.Current.SkillLevelingManager.OnHideoutMissionEnd(isSucceeded: true);
-				_battleEndLogic.ChangeCanCheckForEndCondition(canCheckForEndCondition: true);
-				MapEvent.PlayerMapEvent.SetOverrideWinner(base.Mission.PlayerTeam.Side);
-				_battleResolved = true;
-			}
-		}
+		Campaign.Current.GameMenuManager.SetNextMenu("hideout_after_found_by_sentries");
 	}
 
 	public bool IsSideDepleted(BattleSideEnum side)
@@ -540,6 +403,11 @@ public class HideoutAmbushMissionController : MissionLogic
 		return flag;
 	}
 
+	public void SetOverriddenHideoutBossCharacterObject(CharacterObject characterObject)
+	{
+		_overriddenHideoutBossCharacterObject = characterObject;
+	}
+
 	public void OnAgentsShouldBeEnabled()
 	{
 		foreach (Agent agent in Mission.Current.Agents)
@@ -551,33 +419,258 @@ public class HideoutAmbushMissionController : MissionLogic
 		}
 	}
 
-	protected override void OnEndMission()
+	public static void StartBossFightDuelMode()
 	{
-		CampaignEventDispatcher.Instance.RemoveListeners(this);
-		int num = 0;
-		if (_currentHideoutMissionState == HideoutMissionState.BossFightWithDuel)
+		(Mission.Current?.GetMissionBehavior<HideoutAmbushMissionController>())?.StartBossFightDuelModeInternal();
+	}
+
+	public static void StartBossFightBattleMode()
+	{
+		(Mission.Current?.GetMissionBehavior<HideoutAmbushMissionController>())?.StartBossFightBattleModeInternal();
+	}
+
+	private IAgentOriginBase GetOneEnemyTroopToSpawnInFirstPhase()
+	{
+		IAgentOriginBase agentOriginBase = null;
+		if (_allEnemyTroops.Count > 0)
 		{
-			if (Agent.Main == null || !Agent.Main.IsActive())
+			agentOriginBase = _allEnemyTroops.GetRandomElement();
+			_allEnemyTroops.Remove(agentOriginBase);
+		}
+		else
+		{
+			agentOriginBase = GetNewRandomEnemyTroop();
+		}
+		return agentOriginBase;
+	}
+
+	private IAgentOriginBase GetNewRandomEnemyTroop()
+	{
+		IAgentOriginBase randomElement = _allEnemyTroopTypesCache.GetRandomElement();
+		return new PartyAgentOrigin(characterObject: (CharacterObject)randomElement.Troop, partyBase: ((PartyGroupAgentOrigin)randomElement).Party, rank: -1, uniqueNo: default(UniqueTroopDescriptor), alwaysWounded: false, isInvincible: true);
+	}
+
+	private void SpawnRemainingTroopsForBossFight(List<MatrixFrame> spawnFrames, int spawnCount)
+	{
+		int count = _allEnemyTroops.Count;
+		for (int i = 0; i < spawnCount - count; i++)
+		{
+			_allEnemyTroops.Add(GetNewRandomEnemyTroop());
+		}
+		if (_overriddenHideoutBossAgentOrigin != null)
+		{
+			MatrixFrame matrixFrame = spawnFrames.FirstOrDefault();
+			matrixFrame.rotation.OrthonormalizeAccordingToForwardAndKeepUpAsZAxis();
+			Agent agent = Mission.Current.SpawnTroop(_overriddenHideoutBossAgentOrigin, isPlayerSide: false, hasFormation: false, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: false, wieldInitialWeapons: false, matrixFrame.origin, matrixFrame.rotation.f.AsVec2.Normalized(), "_hideout_bandit");
+			AgentFlag agentFlags = agent.GetAgentFlags();
+			if (agentFlags.HasAnyFlag(AgentFlag.CanRetreat))
 			{
-				num = _duelPhaseAllyAgents?.Count ?? 0;
-			}
-			else if (_bossAgent == null || !_bossAgent.IsActive())
-			{
-				PlayerEncounter.EnemySurrender = true;
+				agent.SetAgentFlags(agentFlags & ~AgentFlag.CanRetreat);
 			}
 		}
-		if (!PlayerEncounter.EnemySurrender && num <= 0 && MobileParty.MainParty.MemberRoster.TotalHealthyCount <= 0 && MapEvent.PlayerMapEvent.BattleState == BattleState.None)
+		for (int j = 0; j < _allEnemyTroops.Count; j++)
 		{
-			MapEvent.PlayerMapEvent.SetOverrideWinner(base.Mission.PlayerEnemyTeam.Side);
+			MatrixFrame matrixFrame2 = spawnFrames.FirstOrDefault();
+			matrixFrame2.rotation.OrthonormalizeAccordingToForwardAndKeepUpAsZAxis();
+			Agent agent2 = Mission.Current.SpawnTroop(_allEnemyTroops[j], isPlayerSide: false, hasFormation: false, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: false, wieldInitialWeapons: false, matrixFrame2.origin, matrixFrame2.rotation.f.AsVec2.Normalized(), "_hideout_bandit");
+			AgentFlag agentFlags2 = agent2.GetAgentFlags();
+			if (agentFlags2.HasAnyFlag(AgentFlag.CanRetreat))
+			{
+				agent2.SetAgentFlags(agentFlags2 & ~AgentFlag.CanRetreat);
+			}
 		}
-		Game.Current.EventManager.UnregisterEvent<OnStealthMissionCounterFailedEvent>(OnStealthMissionCounterFailed);
+		foreach (Formation item in Mission.Current.AttackerTeam.FormationsIncludingEmpty)
+		{
+			if (item.CountOfUnits > 0)
+			{
+				item.SetMovementOrder(MovementOrder.MovementOrderMove(item.CachedMedianPosition));
+			}
+			item.SetFiringOrder(FiringOrder.FiringOrderHoldYourFire);
+			if (Mission.Current.AttackerTeam == Mission.Current.PlayerTeam)
+			{
+				item.PlayerOwner = Mission.Current.MainAgent;
+			}
+		}
+	}
+
+	private Agent SpawnAllyAgent(IAgentOriginBase character, GameEntity spawnPoint, Vec3 position)
+	{
+		MatrixFrame globalFrame = spawnPoint.GetGlobalFrame();
+		Agent agent = Mission.Current.SpawnTroop(character, isPlayerSide: true, hasFormation: false, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: true, wieldInitialWeapons: true, globalFrame.origin, globalFrame.rotation.f.AsVec2.Normalized());
+		WorldPosition position2 = new WorldPosition(position: Mission.Current.GetRandomPositionAroundPoint(position, 0f, 2f, nearFirst: true), scene: spawnPoint.Scene);
+		agent.SetScriptedPosition(ref position2, addHumanLikeDelay: true, Agent.AIScriptedFrameFlags.NoAttack | Agent.AIScriptedFrameFlags.Crouch);
+		return agent;
+	}
+
+	private void LocationCharactersAreReadyToSpawn(Dictionary<string, int> unusedUsablePointCount)
+	{
+		Location locationWithId = Settlement.CurrentSettlement.LocationComplex.GetLocationWithId("hideout_center");
+		if (unusedUsablePointCount.TryGetValue("stealth_agent_forced", out var value))
+		{
+			locationWithId.AddLocationCharacters(CreateForcedSentry, Settlement.CurrentSettlement.Culture, LocationCharacter.CharacterRelations.Enemy, value);
+		}
+		if (unusedUsablePointCount.TryGetValue("stealth_agent", out value))
+		{
+			int num = _initialHideoutPopulation / 8;
+			if (num >= 1)
+			{
+				locationWithId.AddLocationCharacters(CreateSentry, Settlement.CurrentSettlement.Culture, LocationCharacter.CharacterRelations.Enemy, Math.Min(num, value));
+			}
+		}
+	}
+
+	private LocationCharacter CreateForcedSentry(CultureObject culture, LocationCharacter.CharacterRelations relation)
+	{
+		IAgentOriginBase oneEnemyTroopToSpawnInFirstPhase = GetOneEnemyTroopToSpawnInFirstPhase();
+		CharacterObject characterObject = (CharacterObject)oneEnemyTroopToSpawnInFirstPhase.Troop;
+		Campaign.Current.Models.AgeModel.GetAgeLimitForLocation(characterObject, out var minimumAge, out var maximumAge);
+		return new LocationCharacter(new AgentData(oneEnemyTroopToSpawnInFirstPhase).Monster(TaleWorlds.Core.FaceGen.GetMonsterWithSuffix(characterObject.Race, "_settlement_slow")).Age(MBRandom.RandomInt(minimumAge, maximumAge)), SandBoxManager.Instance.AgentBehaviorManager.AddStealthAgentBehaviors, "stealth_agent_forced", fixedLocation: true, relation, null, useCivilianEquipment: false, isFixedCharacter: false, null, isHidden: false, isVisualTracked: false, overrideBodyProperties: true, null, forceSpawnOnSpecialTargetTag: true);
+	}
+
+	private LocationCharacter CreateSentry(CultureObject culture, LocationCharacter.CharacterRelations relation)
+	{
+		IAgentOriginBase oneEnemyTroopToSpawnInFirstPhase = GetOneEnemyTroopToSpawnInFirstPhase();
+		CharacterObject characterObject = (CharacterObject)oneEnemyTroopToSpawnInFirstPhase.Troop;
+		Campaign.Current.Models.AgeModel.GetAgeLimitForLocation(characterObject, out var minimumAge, out var maximumAge);
+		return new LocationCharacter(new AgentData(oneEnemyTroopToSpawnInFirstPhase).Monster(TaleWorlds.Core.FaceGen.GetMonsterWithSuffix(characterObject.Race, "_settlement_slow")).Age(MBRandom.RandomInt(minimumAge, maximumAge)), SandBoxManager.Instance.AgentBehaviorManager.AddStealthAgentBehaviors, "stealth_agent", fixedLocation: true, relation, null, useCivilianEquipment: false);
+	}
+
+	private void InitializeMission()
+	{
+		base.Mission.GetMissionBehavior<MissionConversationLogic>().DisableStartConversation(isDisabled: true);
+		base.Mission.SetMissionMode(MissionMode.Stealth, atStart: true);
+		_currentHideoutMissionState = HideoutMissionState.StealthState;
+		base.Mission.DeploymentPlan.MakeDefaultDeploymentPlans();
+		List<GameEntity> entities = new List<GameEntity>();
+		Mission.Current.Scene.GetAllEntitiesWithScriptComponent<Chair>(ref entities);
+		foreach (GameEntity item in entities)
+		{
+			foreach (StandingPoint standingPoint in item.GetFirstScriptOfType<Chair>().StandingPoints)
+			{
+				standingPoint.IsDisabledForPlayers = true;
+			}
+		}
+	}
+
+	private void ChangeHideoutMissionModeToBattle()
+	{
+		_currentHideoutMissionState = HideoutMissionState.BattleBeforeBossFight;
+		Mission.Current.SetMissionMode(MissionMode.Battle, atStart: false);
+		foreach (Agent activeAgent in Mission.Current.PlayerTeam.ActiveAgents)
+		{
+			if (!activeAgent.IsMainAgent)
+			{
+				activeAgent.ClearTargetFrame();
+				activeAgent.DisableScriptedMovement();
+			}
+		}
+		base.Mission.PlayerTeam.PlayerOrderController.SelectAllFormations();
+		base.Mission.PlayerTeam.PlayerOrderController.SetOrder(OrderType.Charge);
+		base.Mission.PlayerEnemyTeam.MasterOrderController.SelectAllFormations();
+		base.Mission.PlayerEnemyTeam.MasterOrderController.SetOrder(OrderType.Charge);
+		foreach (Agent activeAgent2 in base.Mission.PlayerEnemyTeam.ActiveAgents)
+		{
+			activeAgent2.SetAlarmState(Agent.AIStateFlag.Alarmed);
+			_clearObjectiveTargetAgents.Add(activeAgent2);
+		}
+		Vec3 position = Agent.Main.Position;
+		SoundManager.StartOneShotEvent("event:/ui/mission/horns/attack", in position);
+		_clearTheMainCampObjective = new ClearTheMainCampObjective(base.Mission, _clearObjectiveTargetAgents);
+		_missionObjectiveLogic.StartObjective(_clearTheMainCampObjective);
+	}
+
+	private void CheckBattleResolved()
+	{
+		if (_currentHideoutMissionState == HideoutMissionState.NotDecided || _currentHideoutMissionState == HideoutMissionState.CutSceneBeforeBossFight || _currentHideoutMissionState == HideoutMissionState.ConversationBetweenLeaders)
+		{
+			return;
+		}
+		if (IsSideDepleted(base.Mission.PlayerTeam.Side))
+		{
+			if (_currentHideoutMissionState == HideoutMissionState.BossFightWithDuel)
+			{
+				OnDuelOver(base.Mission.PlayerEnemyTeam.Side);
+			}
+			Campaign.Current.SkillLevelingManager.OnHideoutMissionEnd(isSucceeded: false);
+			_battleEndLogic.ChangeCanCheckForEndCondition(canCheckForEndCondition: true);
+			_battleResolved = true;
+			_missionObjectiveLogic.CompleteCurrentObjective();
+		}
+		else
+		{
+			if (!IsSideDepleted(base.Mission.PlayerEnemyTeam.Side))
+			{
+				return;
+			}
+			if (_currentHideoutMissionState == HideoutMissionState.BattleBeforeBossFight || _currentHideoutMissionState == HideoutMissionState.StealthState)
+			{
+				Agent main = Agent.Main;
+				if (main != null && main.IsActive())
+				{
+					if (_firstPhaseEndTimer == null)
+					{
+						_firstPhaseEndTimer = new Timer(base.Mission.CurrentTime, 4f);
+						Mission.Current.SetMissionMode(MissionMode.CutScene, atStart: false);
+					}
+					else if (_firstPhaseEndTimer.Check(base.Mission.CurrentTime))
+					{
+						_hideoutAmbushBossFightCinematicController.StartCinematic(OnInitialFadeOutOver, OnCutSceneOver);
+						_missionObjectiveLogic.CompleteCurrentObjective();
+					}
+				}
+			}
+			else
+			{
+				if (_currentHideoutMissionState == HideoutMissionState.BossFightWithDuel)
+				{
+					OnDuelOver(base.Mission.PlayerTeam.Side);
+				}
+				Campaign.Current.SkillLevelingManager.OnHideoutMissionEnd(isSucceeded: true);
+				_battleEndLogic.ChangeCanCheckForEndCondition(canCheckForEndCondition: true);
+				MapEvent.PlayerMapEvent.SetOverrideWinner(base.Mission.PlayerTeam.Side);
+				_battleResolved = true;
+				_missionObjectiveLogic.CompleteCurrentObjective();
+			}
+		}
+	}
+
+	private void InitializeTroops()
+	{
+		if (_overriddenHideoutBossCharacterObject == null)
+		{
+			_overriddenHideoutBossCharacterObject = Settlement.CurrentSettlement.Culture.BanditBoss;
+		}
+		IMissionTroopSupplier obj = _suppliers[(int)_playerSide.GetOppositeSide()];
+		IEnumerable<IAgentOriginBase> source = obj.SupplyTroops(obj.NumTroopsNotSupplied);
+		_overriddenHideoutBossAgentOrigin = source.FirstOrDefault((IAgentOriginBase x) => x.Troop == _overriddenHideoutBossCharacterObject);
+		_allEnemyTroops = source.Where((IAgentOriginBase x) => !x.Troop.IsHero && x.Troop is CharacterObject characterObject && characterObject.Culture.BanditBoss != characterObject && characterObject != _overriddenHideoutBossCharacterObject).ToList();
+		_playerPriorTroops = _suppliers[(int)_playerSide].SupplyTroops(_playerTroopCount).ToList();
+		_allEnemyTroopTypesCache = TaleWorlds.Core.Extensions.DistinctBy(_allEnemyTroops, (IAgentOriginBase x) => x.Troop).ToList();
+	}
+
+	private MBList<Agent> SpawnReinforcementAllyTroops(StealthAreaMissionLogic.StealthAreaData triggeredStealthAreaData, StealthAreaMarker stealthAreaMarker)
+	{
+		int count = triggeredStealthAreaData.StealthAreaMarkers.Count;
+		StealthAreaMarker[] array = triggeredStealthAreaData.StealthAreaMarkers.Keys.ToArray();
+		MBList<Agent> mBList = new MBList<Agent>();
+		for (int i = 0; i < _playerPriorTroops.Count; i++)
+		{
+			if (array[i % count] == stealthAreaMarker)
+			{
+				IAgentOriginBase character = _playerPriorTroops[i];
+				Agent item = SpawnAllyAgent(character, stealthAreaMarker.ReinforcementAllyGroupSpawnPoint, stealthAreaMarker.WaitPoint.GlobalPosition);
+				mBList.Add(item);
+			}
+		}
+		return mBList;
 	}
 
 	private void SpawnBossAndBodyguards()
 	{
 		MatrixFrame identity = MatrixFrame.Identity;
 		identity.origin = Agent.Main.Position + Agent.Main.LookDirection * -3f;
-		SpawnRemainingTroopsForBossFight(new List<MatrixFrame> { identity });
+		int spawnCount = (int)TaleWorlds.Library.MathF.Clamp(_initialHideoutPopulation / 2, 4f, 20f);
+		SpawnRemainingTroopsForBossFight(new List<MatrixFrame> { identity }, spawnCount);
 		_bossAgent = SelectBossAgent();
 		_bossAgent.WieldInitialWeapons();
 		foreach (Agent activeAgent in base.Mission.PlayerEnemyTeam.ActiveAgents)
@@ -692,11 +785,6 @@ public class HideoutAmbushMissionController : MissionLogic
 		}
 	}
 
-	public static void StartBossFightDuelMode()
-	{
-		(Mission.Current?.GetMissionBehavior<HideoutAmbushMissionController>())?.StartBossFightDuelModeInternal();
-	}
-
 	private void StartBossFightDuelModeInternal()
 	{
 		base.Mission.GetMissionBehavior<MissionConversationLogic>().DisableStartConversation(isDisabled: true);
@@ -719,11 +807,8 @@ public class HideoutAmbushMissionController : MissionLogic
 		}
 		_bossAgent.SetAlarmState(Agent.AIStateFlag.Alarmed);
 		_currentHideoutMissionState = HideoutMissionState.BossFightWithDuel;
-	}
-
-	public static void StartBossFightBattleMode()
-	{
-		(Mission.Current?.GetMissionBehavior<HideoutAmbushMissionController>())?.StartBossFightBattleModeInternal();
+		_defeatHideoutBossObjective = new DefeatHideoutBossObjective(base.Mission, isDuel: true);
+		_missionObjectiveLogic.StartObjective(_defeatHideoutBossObjective);
 	}
 
 	private void StartBossFightBattleModeInternal()
@@ -739,6 +824,8 @@ public class HideoutAmbushMissionController : MissionLogic
 		base.Mission.PlayerTeam.PlayerOrderController.SetOrder(OrderType.Charge);
 		base.Mission.PlayerEnemyTeam.MasterOrderController.SelectAllFormations();
 		base.Mission.PlayerEnemyTeam.MasterOrderController.SetOrder(OrderType.Charge);
+		_defeatHideoutBossObjective = new DefeatHideoutBossObjective(base.Mission, isDuel: false);
+		_missionObjectiveLogic.StartObjective(_defeatHideoutBossObjective);
 	}
 
 	private void KillAllSentries()
@@ -755,6 +842,11 @@ public class HideoutAmbushMissionController : MissionLogic
 		{
 			base.Mission.KillAgentCheat(item);
 		}
+	}
+
+	private FormationClass GetHideoutAmbushMissionTroopClass(BattleSideEnum battleSide, BasicCharacterObject agentCharacter)
+	{
+		return agentCharacter.GetFormationClass().DismountedClass();
 	}
 
 	[CommandLineFunctionality.CommandLineArgumentFunction("kill_all_sentries", "mission")]

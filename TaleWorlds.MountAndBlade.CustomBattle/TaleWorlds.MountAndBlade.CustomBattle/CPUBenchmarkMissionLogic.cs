@@ -83,7 +83,7 @@ public class CPUBenchmarkMissionLogic : MissionLogic
 
 	private float _cameraPassedDistanceOnPath;
 
-	private MissionAgentSpawnLogic _missionAgentSpawnLogic;
+	private DefaultBattleMissionAgentSpawnLogic _missionAgentSpawnLogic;
 
 	private bool _formationsSetUp;
 
@@ -134,7 +134,7 @@ public class CPUBenchmarkMissionLogic : MissionLogic
 	{
 		base.OnBehaviorInitialize();
 		Utilities.EnableSingleGPUQueryPerFrame();
-		_missionAgentSpawnLogic = base.Mission.GetMissionBehavior<MissionAgentSpawnLogic>();
+		_missionAgentSpawnLogic = base.Mission.GetMissionBehavior<DefaultBattleMissionAgentSpawnLogic>();
 		_paths = base.Mission.Scene.GetPathsWithNamePrefix("CameraPath");
 		_targets = base.Mission.Scene.GetPathsWithNamePrefix("CameraTarget");
 		Array.Sort(_paths, (Path x, Path y) => x.GetName().CompareTo(y.GetName()));
@@ -793,7 +793,7 @@ public class CPUBenchmarkMissionLogic : MissionLogic
 			}, (Mission missionController) => new MissionBehavior[10]
 			{
 				new MissionCombatantsLogic(null, playerParty, enemyParty, playerParty, Mission.MissionTeamAITypeEnum.FieldBattle, isPlayerSergeant: false),
-				new MissionAgentSpawnLogic(troopSuppliers, BattleSideEnum.Attacker, Mission.BattleSizeType.Battle),
+				new DefaultBattleMissionAgentSpawnLogic(troopSuppliers, BattleSideEnum.Attacker, Mission.BattleSizeType.Battle),
 				new BattlePowerCalculationLogic(),
 				new CPUBenchmarkMissionSpawnHandler(enemyParty, playerParty),
 				new CPUBenchmarkMissionLogic(attackerInfCount, attackerRangedCount, attackerCavCount, defenderInfCount, defenderCavCount),

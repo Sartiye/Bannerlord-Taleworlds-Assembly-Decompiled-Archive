@@ -163,7 +163,10 @@ public class DefaultLogsCampaignBehavior : CampaignBehaviorBase
 
 	private void OnAlleyOwnerChanged(Alley alley, Hero newOwner, Hero oldOwner)
 	{
-		LogEntry.AddLogEntry(new ChangeAlleyOwnerLogEntry(alley, newOwner, oldOwner));
+		if (Campaign.Current.GameStarted)
+		{
+			LogEntry.AddLogEntry(new ChangeAlleyOwnerLogEntry(alley, newOwner, oldOwner));
+		}
 	}
 
 	private void OnHeroesMarried(Hero marriedHero, Hero marriedTo, bool showNotification)

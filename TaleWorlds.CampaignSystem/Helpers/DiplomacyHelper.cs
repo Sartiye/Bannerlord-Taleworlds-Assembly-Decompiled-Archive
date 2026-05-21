@@ -90,4 +90,15 @@ public static class DiplomacyHelper
 		explanation = null;
 		return false;
 	}
+
+	public static bool HasAllianceWithFaction(IFaction faction1, IFaction faction2)
+	{
+		if (faction1 == null || faction2 == null || faction1 == faction2 || faction1.IsEliminated || faction2.IsEliminated || !faction1.IsKingdomFaction || !faction2.IsKingdomFaction)
+		{
+			return false;
+		}
+		Kingdom obj = (Kingdom)faction1;
+		Kingdom other = (Kingdom)faction2;
+		return obj.IsAllyWith(other);
+	}
 }

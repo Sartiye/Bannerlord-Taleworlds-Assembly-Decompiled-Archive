@@ -426,7 +426,7 @@ public static class TooltipRefresherCollection
 		{
 			GameTexts.SetVariable("LEFT", GameTexts.FindText("str_wage"));
 			GameTexts.SetVariable("STR1", characterObject.TroopWage);
-			GameTexts.SetVariable("STR2", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+			GameTexts.SetVariable("STR2", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 			GameTexts.SetVariable("RIGHT", GameTexts.FindText("str_STR1_space_STR2"));
 			propertyBasedTooltipVM.AddProperty("", GameTexts.FindText("str_LEFT_colon_RIGHT_wSpaceAfterColon").ToString());
 		}
@@ -708,7 +708,7 @@ public static class TooltipRefresherCollection
 		IEnumerable<(ItemCategory, int)> enumerable2 = workshop.WorkshopType.Productions.SelectMany((WorkshopType.Production p) => p.Outputs).Distinct(itemCategoryDistinctComparer);
 		if (enumerable.Any())
 		{
-			propertyBasedTooltipVM.AddProperty(new TextObject("{=XCz81XYm}Inputs").ToString(), " ");
+			propertyBasedTooltipVM.AddProperty(new TextObject("{=omXaC1am}Material").ToString(), " ");
 			propertyBasedTooltipVM.AddProperty("", "", 0, TooltipProperty.TooltipPropertyFlags.DefaultSeperator);
 			foreach (var item in enumerable)
 			{
@@ -720,7 +720,7 @@ public static class TooltipRefresherCollection
 		{
 			return;
 		}
-		propertyBasedTooltipVM.AddProperty(new TextObject("{=ErnykQEH}Outputs").ToString(), " ");
+		propertyBasedTooltipVM.AddProperty(new TextObject("{=bGyrPe8c}Production").ToString(), " ");
 		propertyBasedTooltipVM.AddProperty("", "", 0, TooltipProperty.TooltipPropertyFlags.DefaultSeperator);
 		foreach (var item2 in enumerable2)
 		{
@@ -732,7 +732,7 @@ public static class TooltipRefresherCollection
 	{
 		int num = (int)args[0];
 		List<MobileParty> list = new List<MobileParty> { MobileParty.MainParty };
-		List<MobileParty> list2 = new List<MobileParty> { Campaign.Current.ConversationManager.ConversationParty };
+		List<MobileParty> list2 = new List<MobileParty> { PlayerEncounter.EncounteredParty.MobileParty };
 		PlayerEncounter.Current.FindAllNpcPartiesWhoWillJoinEvent(list, list2);
 		List<MobileParty> parties = null;
 		if (num == 0)
@@ -931,6 +931,15 @@ public static class TooltipRefresherCollection
 					text2 = settlement.LocationComplex.GetScene("village_center", upgradeLevel);
 				}
 				propertyBasedTooltipVM.AddProperty("", text + " (" + text2 + ")", 0, TooltipProperty.TooltipPropertyFlags.Title);
+			}
+			if (settlement.IsFortification)
+			{
+				propertyBasedTooltipVM.AddProperty("", "", 0, TooltipProperty.TooltipPropertyFlags.RundownSeperator);
+				string text3 = "[DEBUG WALL DATA]\n";
+				text3 = text3 + "Current wall level: " + settlement.Town.GetWallLevel() + "\n";
+				text3 = text3 + "Current wall hp: " + settlement.SettlementTotalWallHitPoints + "\n";
+				text3 = text3 + "Max wall hp: " + settlement.MaxWallHitPoints + "\n";
+				propertyBasedTooltipVM.AddProperty("", text3, 0, TooltipProperty.TooltipPropertyFlags.Title);
 			}
 		}
 		else

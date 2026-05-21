@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Conversation;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements.Locations;
 using TaleWorlds.Core;
@@ -36,9 +37,9 @@ public class CampaignMissionManager : CampaignMission.ICampaignMissionManager
 		return SandBoxMissions.OpenCaravanBattleMission(rec, isCaravan);
 	}
 
-	IMission CampaignMission.ICampaignMissionManager.OpenBattleMission(string scene, bool usesTownDecalAtlas)
+	IMission CampaignMission.ICampaignMissionManager.OpenBattleMission(string scene, bool usesTownDecalAtlas, string sceneLevels)
 	{
-		return SandBoxMissions.OpenBattleMission(scene, usesTownDecalAtlas);
+		return SandBoxMissions.OpenBattleMission(scene, usesTownDecalAtlas, sceneLevels);
 	}
 
 	IMission CampaignMission.ICampaignMissionManager.OpenAlleyFightMission(string scene, int upgradeLevel, Location location, TroopRoster playerSideTroops, TroopRoster rivalSideTroops)
@@ -119,6 +120,11 @@ public class CampaignMissionManager : CampaignMission.ICampaignMissionManager
 	public IMission OpenDisguiseMission(string scene, bool willSetUpContact, string sceneLevels, Location fromLocation)
 	{
 		return SandBoxMissions.OpenDisguiseMission(scene, willSetUpContact, fromLocation, sceneLevels);
+	}
+
+	public IMission OpenNavalRaidMission(TroopRoster navalRaidTroops, BattleSideEnum navalSide, List<Ship> allShips)
+	{
+		return null;
 	}
 
 	public IMission OpenNavalBattleMission(MissionInitializerRecord rec)

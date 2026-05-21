@@ -464,6 +464,18 @@ public struct MissionWeapon
 		return false;
 	}
 
+	public bool HasAnyUsageWithItemUsageSetFlags(ItemObject.ItemUsageSetFlags flags)
+	{
+		foreach (WeaponComponentData weapon in _weapons)
+		{
+			if (MBItem.GetItemUsageSetFlags(weapon.ItemUsage).HasAllFlags(flags))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public void GatherInformationFromWeapon(out bool weaponHasMelee, out bool weaponHasShield, out bool weaponHasPolearm, out bool weaponHasNonConsumableRanged, out bool weaponHasThrown, out WeaponClass rangedAmmoClass)
 	{
 		weaponHasMelee = false;

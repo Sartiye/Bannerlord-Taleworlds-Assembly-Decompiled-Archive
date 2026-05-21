@@ -29,12 +29,15 @@ public static class MountVisualCreator
 		}
 	}
 
-	public static List<MetaMesh> AddMountMesh(MBAgentVisuals agentVisual, ItemObject mountItem, ItemObject harnessItem, string mountCreationKeyStr, Agent agent = null)
+	public static MountVisualCreationOutput AddMountMesh(MBAgentVisuals agentVisual, ItemObject mountItem, ItemObject harnessItem, string mountCreationKeyStr, Agent agent = null)
 	{
-		List<MetaMesh> list = new List<MetaMesh>();
+		MetaMesh metaMesh = null;
+		MetaMesh metaMesh2 = null;
+		MetaMesh metaMesh3 = null;
+		MetaMesh metaMesh4 = null;
 		HorseComponent horseComponent = mountItem.HorseComponent;
 		uint maneMeshMultiplier = uint.MaxValue;
-		MetaMesh multiMesh = mountItem.GetMultiMesh(isFemale: false, hasGloves: false, needBatchedVersion: true);
+		metaMesh2 = mountItem.GetMultiMesh(isFemale: false, useSlimVersion: false, needBatchedVersion: true);
 		MountCreationKey mountCreationKey = null;
 		if (string.IsNullOrEmpty(mountCreationKeyStr))
 		{
@@ -43,18 +46,17 @@ public static class MountVisualCreator
 		mountCreationKey = MountCreationKey.FromString(mountCreationKeyStr);
 		if (mountItem.ItemType == ItemObject.ItemTypeEnum.Horse)
 		{
-			SetHorseColors(multiMesh, mountCreationKey);
+			SetHorseColors(metaMesh2, mountCreationKey);
 		}
 		if (horseComponent.HorseMaterialNames != null && horseComponent.HorseMaterialNames.Count > 0)
 		{
-			SetMaterialProperties(mountItem, multiMesh, mountCreationKey, ref maneMeshMultiplier);
+			SetMaterialProperties(mountItem, metaMesh2, mountCreationKey, ref maneMeshMultiplier);
 		}
 		int nondeterministicRandomInt = MBRandom.NondeterministicRandomInt;
 		SetVoiceDefinition(agent, nondeterministicRandomInt);
-		MetaMesh metaMesh = null;
 		if (harnessItem != null)
 		{
-			metaMesh = harnessItem.GetMultiMesh(isFemale: false, hasGloves: false, needBatchedVersion: true);
+			metaMesh4 = harnessItem.GetMultiMesh(isFemale: false, useSlimVersion: false, needBatchedVersion: true);
 		}
 		foreach (KeyValuePair<string, bool> additionalMeshesName in horseComponent.AdditionalMeshesNameList)
 		{
@@ -65,12 +67,11 @@ public static class MountVisualCreator
 			string text = additionalMeshesName.Key;
 			if (harnessItem == null || !additionalMeshesName.Value)
 			{
-				MetaMesh copy = MetaMesh.GetCopy(text);
+				metaMesh = MetaMesh.GetCopy(text);
 				if (maneMeshMultiplier != uint.MaxValue)
 				{
-					copy.SetFactor1Linear(maneMeshMultiplier);
+					metaMesh.SetFactor1Linear(maneMeshMultiplier);
 				}
-				list.Add(copy);
 				continue;
 			}
 			ArmorComponent armorComponent = harnessItem.ArmorComponent;
@@ -81,53 +82,39 @@ public static class MountVisualCreator
 				{
 					text = text + "_" + harnessItem?.ArmorComponent?.ManeCoverType;
 				}
-				MetaMesh copy2 = MetaMesh.GetCopy(text);
+				metaMesh = MetaMesh.GetCopy(text);
 				if (maneMeshMultiplier != uint.MaxValue)
 				{
-					copy2.SetFactor1Linear(maneMeshMultiplier);
+					metaMesh.SetFactor1Linear(maneMeshMultiplier);
 				}
-				list.Add(copy2);
 			}
 		}
-		if (multiMesh != null)
+		if (metaMesh2 != null && harnessItem != null && harnessItem.ArmorComponent?.TailCoverType == ArmorComponent.HorseTailCoverTypes.All)
 		{
-			if (harnessItem != null && harnessItem.ArmorComponent?.TailCoverType == ArmorComponent.HorseTailCoverTypes.All)
-			{
-				multiMesh.RemoveMeshesWithTag("horse_tail");
-			}
-			list.Add(multiMesh);
+			metaMesh2.RemoveMeshesWithTag("horse_tail");
 		}
-		if (metaMesh != null)
+		if (metaMesh4 != null)
 		{
 			if (agentVisual != null)
 			{
-				MetaMesh metaMesh2 = null;
+				MetaMesh metaMesh5 = null;
 				if (NativeConfig.CharacterDetail > 2 && harnessItem.ArmorComponent != null)
 				{
-					metaMesh2 = MetaMesh.GetCopy(harnessItem.ArmorComponent.ReinsRopeMesh, showErrors: false, mayReturnNull: true);
+					metaMesh5 = MetaMesh.GetCopy(harnessItem.ArmorComponent.ReinsRopeMesh, showErrors: false, mayReturnNull: true);
 				}
-				MetaMesh copy3 = MetaMesh.GetCopy(harnessItem.ArmorComponent?.ReinsMesh, showErrors: false, mayReturnNull: true);
-				if (metaMesh2 != null && copy3 != null)
+				metaMesh3 = MetaMesh.GetCopy(harnessItem.ArmorComponent?.ReinsMesh, showErrors: false, mayReturnNull: true);
+				if (metaMesh5 != null && metaMesh3 != null)
 				{
-					agentVisual.AddHorseReinsClothMesh(copy3, metaMesh2);
-					metaMesh2.ManualInvalidate();
-				}
-				if (copy3 != null)
-				{
-					list.Add(copy3);
+					agentVisual.AddHorseReinsClothMesh(metaMesh3, metaMesh5);
+					metaMesh5.ManualInvalidate();
 				}
 			}
 			else if (harnessItem.ArmorComponent != null)
 			{
-				MetaMesh copy4 = MetaMesh.GetCopy(harnessItem.ArmorComponent.ReinsMesh, showErrors: true, mayReturnNull: true);
-				if (copy4 != null)
-				{
-					list.Add(copy4);
-				}
+				metaMesh3 = MetaMesh.GetCopy(harnessItem.ArmorComponent.ReinsMesh, showErrors: true, mayReturnNull: true);
 			}
-			list.Add(metaMesh);
 		}
-		return list;
+		return new MountVisualCreationOutput(metaMesh, metaMesh2, metaMesh3, metaMesh4);
 	}
 
 	public static void SetHorseColors(MetaMesh horseMesh, MountCreationKey mountCreationKey)
@@ -162,25 +149,52 @@ public static class MountVisualCreator
 		}
 	}
 
+	public static void AddMountMeshToEntity(GameEntity gameEntity, ItemObject mountItem, ItemObject harnessItem, string mountCreationKeyStr, out MountVisualCreationOutput mountVisualCreationOutput, Agent agent = null)
+	{
+		mountVisualCreationOutput = AddMountMesh(null, mountItem, harnessItem, mountCreationKeyStr, agent);
+		AddMultiMeshToSkeleton(mountVisualCreationOutput.HorseManeMesh, gameEntity);
+		AddMultiMeshToSkeleton(mountVisualCreationOutput.MountMesh, gameEntity);
+		AddMultiMeshToSkeleton(mountVisualCreationOutput.ReinMesh, gameEntity);
+		AddMultiMeshToSkeleton(mountVisualCreationOutput.MountHarnessMesh, gameEntity);
+	}
+
 	public static void AddMountMeshToEntity(GameEntity gameEntity, ItemObject mountItem, ItemObject harnessItem, string mountCreationKeyStr, Agent agent = null)
 	{
-		foreach (MetaMesh item in AddMountMesh(null, mountItem, harnessItem, mountCreationKeyStr, agent))
-		{
-			gameEntity.AddMultiMeshToSkeleton(item);
-			item.ManualInvalidate();
-		}
+		AddMountMeshToEntity(gameEntity, mountItem, harnessItem, mountCreationKeyStr, out var _, agent);
 	}
 
 	public static void AddMountMeshToAgentVisual(MBAgentVisuals agentVisual, ItemObject mountItem, ItemObject harnessItem, string mountCreationKeyStr, Agent agent = null)
 	{
-		foreach (MetaMesh item in AddMountMesh(agentVisual, mountItem, harnessItem, mountCreationKeyStr, agent))
+		MountVisualCreationOutput mountVisualCreationOutput = AddMountMesh(agentVisual, mountItem, harnessItem, mountCreationKeyStr, agent);
+		AddMultiMeshToAgentVisual(mountVisualCreationOutput.HorseManeMesh, agentVisual);
+		AddMultiMeshToAgentVisual(mountVisualCreationOutput.MountMesh, agentVisual);
+		AddMultiMeshToAgentVisual(mountVisualCreationOutput.ReinMesh, agentVisual);
+		AddMultiMeshToAgentVisual(mountVisualCreationOutput.MountHarnessMesh, agentVisual);
+		if (agent != null && harnessItem != null && harnessItem.IsUsingTeamColor && mountVisualCreationOutput.MountHarnessMesh != null)
 		{
-			agentVisual.AddMultiMesh(item, BodyMeshTypes.Invalid);
-			item.ManualInvalidate();
+			AgentVisuals.AddTeamColorToMesh(mountVisualCreationOutput.MountHarnessMesh, agent.ClothingColor1, agent.ClothingColor2);
 		}
 		if (mountItem.HorseComponent?.SkeletonScale != null)
 		{
 			agentVisual.ApplySkeletonScale(mountItem.HorseComponent.SkeletonScale.MountSitBoneScale, mountItem.HorseComponent.SkeletonScale.MountRadiusAdder, mountItem.HorseComponent.SkeletonScale.BoneIndices, mountItem.HorseComponent.SkeletonScale.Scales);
+		}
+	}
+
+	private static void AddMultiMeshToAgentVisual(MetaMesh metaMesh, MBAgentVisuals agentVisual)
+	{
+		if (metaMesh != null)
+		{
+			agentVisual.AddMultiMesh(metaMesh, BodyMeshTypes.Invalid);
+			metaMesh.ManualInvalidate();
+		}
+	}
+
+	private static void AddMultiMeshToSkeleton(MetaMesh metaMesh, GameEntity gameEntity)
+	{
+		if (metaMesh != null)
+		{
+			gameEntity.AddMultiMeshToSkeleton(metaMesh);
+			metaMesh.ManualInvalidate();
 		}
 	}
 }

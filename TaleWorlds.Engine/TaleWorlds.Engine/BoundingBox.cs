@@ -260,11 +260,11 @@ public struct BoundingBox
 
 	public bool PointInsideBox(Vec3 point, float epsilon)
 	{
-		if (point.x + epsilon <= max.x && point.x - epsilon >= min.x && point.y + epsilon <= max.y && point.y - epsilon >= min.y)
+		if (point.x - epsilon <= max.x && point.x + epsilon >= min.x && point.y - epsilon <= max.y && point.y + epsilon >= min.y)
 		{
-			if (point.z + epsilon <= max.z)
+			if (point.z - epsilon <= max.z)
 			{
-				return point.z - epsilon >= min.z;
+				return point.z + epsilon >= min.z;
 			}
 			return false;
 		}

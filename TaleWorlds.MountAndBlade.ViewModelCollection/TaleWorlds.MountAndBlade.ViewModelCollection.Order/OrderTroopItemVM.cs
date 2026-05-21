@@ -354,12 +354,6 @@ public class OrderTroopItemVM : OrderSubjectVM
 		Morale = getMorale(formation);
 		base.UnderAttackOfType = 0;
 		base.BehaviorType = 0;
-		if (TaleWorlds.InputSystem.Input.IsControllerConnected)
-		{
-			_ = !TaleWorlds.InputSystem.Input.IsMouseActive;
-		}
-		else
-			_ = 0;
 		UpdateSelectionKeyInfo();
 		UpdateVisuals();
 		Formation.OnUnitCountChanged += FormationOnOnUnitCountChanged;

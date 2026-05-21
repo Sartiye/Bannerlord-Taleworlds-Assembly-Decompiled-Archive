@@ -336,7 +336,7 @@ public class WorkshopsCampaignBehavior : CampaignBehaviorBase, IWorkshopWarehous
 
 	protected void InitializeGameMenus(CampaignGameStarter campaignGameStarter)
 	{
-		campaignGameStarter.AddGameMenuOption("town", "manage_warehouse", "{=LK4kNZkb}Enter the warehouse", warehouse_manage_on_condition, warehouse_manage_on_consequence, isLeave: false, 8);
+		campaignGameStarter.AddGameMenuOption("town", "manage_warehouse", "{=LK4kNZkb}Enter the warehouse", warehouse_manage_on_condition, warehouse_manage_on_consequence, isLeave: false, 7);
 		campaignGameStarter.AddPlayerLine("workshop_worker_manage_warehouse", "player_options", "warehouse", "{=mBnoWa8R}I would like to access the Warehouse.", null, null);
 		campaignGameStarter.AddDialogLine("workshop_worker_manage_warehouse_answer", "warehouse", "player_options", "{=Y4LhmAdi}Sure, boss. Go ahead.", null, warehouse_manage_on_consequence);
 	}
@@ -581,7 +581,7 @@ public class WorkshopsCampaignBehavior : CampaignBehaviorBase, IWorkshopWarehous
 		return num;
 	}
 
-	private bool TickOneProductionCycleForPlayerWorkshop(WorkshopType.Production production, Workshop workshop)
+	private bool TickOneProductionCycleForPlayerWorkshop(WorkshopType.Production production, Workshop workshop, bool effectCapital)
 	{
 		bool flag = false;
 		int inputMaterialCost = 0;
@@ -608,7 +608,6 @@ public class WorkshopsCampaignBehavior : CampaignBehaviorBase, IWorkshopWarehous
 		{
 			int income;
 			List<EquipmentElement> itemsToProduce = GetItemsToProduce(production, workshop, out income);
-			bool effectCapital = !production.Inputs.Any(((ItemCategory, int) x) => !x.Item1.IsTradeGood) && !production.Outputs.Any(((ItemCategory, int) x) => !x.Item1.IsTradeGood);
 			float num = dataOfWorkshop.StockProductionInWarehouseRatio;
 			bool allOutputsWillBeSentToWarehouse = num.ApproximatelyEqualsTo(1f);
 			if (CanPlayerWorkshopProduceThisCycle(production, workshop, inputMaterialCost, income, effectCapital, allOutputsWillBeSentToWarehouse))
@@ -748,7 +747,7 @@ public class WorkshopsCampaignBehavior : CampaignBehaviorBase, IWorkshopWarehous
 		}
 	}
 
-	private bool TickOneProductionCycleForNotableWorkshop(WorkshopType.Production production, Workshop workshop)
+	private bool TickOneProductionCycleForNotableWorkshop(WorkshopType.Production production, Workshop workshop, bool effectCapital)
 	{
 		Town town = workshop.Settlement.Town;
 		int inputMaterialCost = 0;
@@ -758,7 +757,6 @@ public class WorkshopsCampaignBehavior : CampaignBehaviorBase, IWorkshopWarehous
 		}
 		int income;
 		List<EquipmentElement> itemsToProduce = GetItemsToProduce(production, workshop, out income);
-		bool effectCapital = !production.Inputs.Any(((ItemCategory, int) x) => !x.Item1.IsTradeGood) && !production.Outputs.Any(((ItemCategory, int) x) => !x.Item1.IsTradeGood);
 		if (CanNotableWorkshopProduceThisCycle(production, workshop, inputMaterialCost, income, effectCapital))
 		{
 			foreach (var input in production.Inputs)
@@ -836,7 +834,7 @@ public class WorkshopsCampaignBehavior : CampaignBehaviorBase, IWorkshopWarehous
 				}
 				else
 				{
-					Debug.FailedAssert("Workshop produces empty items", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\WorkshopsCampaignBehavior.cs", "GetItemsToProduce", 918);
+					Debug.FailedAssert("Workshop produces empty items", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\WorkshopsCampaignBehavior.cs", "GetItemsToProduce", 916);
 				}
 			}
 		}
@@ -1403,8 +1401,10 @@ public class WorkshopsCampaignBehavior : CampaignBehaviorBase, IWorkshopWarehous
 				bool flag2 = true;
 				while (flag2 && num >= 1f)
 				{
-					flag2 = ((workshop.Owner == Hero.MainHero) ? TickOneProductionCycleForPlayerWorkshop(workshopType.Productions[i], workshop) : TickOneProductionCycleForNotableWorkshop(workshopType.Productions[i], workshop));
-					if (flag2)
+					WorkshopType.Production production = workshopType.Productions[i];
+					bool flag3 = !production.Inputs.Any(((ItemCategory, int) x) => !x.Item1.IsTradeGood) && !production.Outputs.Any(((ItemCategory, int) x) => !x.Item1.IsTradeGood);
+					flag2 = ((workshop.Owner == Hero.MainHero) ? TickOneProductionCycleForPlayerWorkshop(production, workshop, flag3) : TickOneProductionCycleForNotableWorkshop(production, workshop, flag3));
+					if (flag2 && flag3)
 					{
 						flag = true;
 					}

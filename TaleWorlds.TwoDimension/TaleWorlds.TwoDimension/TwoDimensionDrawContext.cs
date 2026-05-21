@@ -126,7 +126,7 @@ public class TwoDimensionDrawContext
 	{
 		if (_drawData.Count > 32)
 		{
-			TWParallel.For(0, _drawData.Count, UpdateVisualMatricesAux);
+			TWParallel.ForWithoutRenderThread(0, _drawData.Count, UpdateVisualMatricesAux);
 		}
 		else
 		{

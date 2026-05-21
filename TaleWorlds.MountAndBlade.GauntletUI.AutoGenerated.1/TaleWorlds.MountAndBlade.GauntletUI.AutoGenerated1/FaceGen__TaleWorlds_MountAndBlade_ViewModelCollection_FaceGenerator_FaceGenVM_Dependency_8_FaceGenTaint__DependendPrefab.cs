@@ -62,7 +62,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 	{
 		base.WidthSizePolicy = SizePolicy.StretchToParent;
 		base.HeightSizePolicy = SizePolicy.StretchToParent;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0.ScopeID = "TaintColorScope";
 		_widget_0.ScopeParent = _widget_1;
 		_widget_0.ScopeMovements = GamepadNavigationTypes.Horizontal;

@@ -4,6 +4,7 @@ using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Encounters;
+using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.LogEntries;
 using TaleWorlds.CampaignSystem.MapEvents;
@@ -12,6 +13,7 @@ using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
@@ -73,7 +75,7 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 			{
 				GameMenu.ActivateGameMenu("village_player_raid_ended");
 			}
-			else if (MobileParty.MainParty.IsActive && !Hero.MainHero.IsPrisoner)
+			else if (MobileParty.MainParty.IsActive && !Hero.MainHero.IsPrisoner && !mapEvent.EndedByRetreat)
 			{
 				GameMenu.ActivateGameMenu("village_raid_ended_leaded_by_someone_else");
 			}
@@ -87,7 +89,7 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 
 	private void AddGameMenus(CampaignGameStarter campaignGameSystemStarter)
 	{
-		campaignGameSystemStarter.AddGameMenuOption("village", "hostile_action", "{=GM3tAYMr}Take a hostile action", game_menu_village_hostile_action_on_condition, game_menu_village_hostile_action_on_consequence, isLeave: false, 2);
+		campaignGameSystemStarter.AddGameMenuOption("village", "hostile_action", "{=GM3tAYMr}Take a hostile action", game_menu_village_hostile_action_on_condition, game_menu_village_hostile_action_on_consequence, isLeave: false, 1);
 		campaignGameSystemStarter.AddGameMenu("village_hostile_action", "{=YVNZaVCA}What action do you have in mind?", game_menu_village_hostile_menu_on_init, GameMenu.MenuOverlayType.SettlementWithBoth);
 		campaignGameSystemStarter.AddGameMenuOption("village_hostile_action", "raid_village", "{=CTi0ml5F}Raid the village", game_menu_village_hostile_action_raid_village_on_condition, game_menu_village_hostile_action_raid_village_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("village_hostile_action", "force_peasants_to_give_volunteers", "{=RL8z99Dt}Force notables to give you recruits", game_menu_village_hostile_action_force_volunteers_condition, game_menu_village_hostile_action_force_volunteers_on_consequence);
@@ -97,6 +99,8 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		campaignGameSystemStarter.AddGameMenuOption("raiding_village", "raiding_village_end", "{=M7CcfbIx}End Raiding", wait_menu_end_raiding_on_condition, wait_menu_end_raiding_on_consequence, isLeave: true);
 		campaignGameSystemStarter.AddGameMenuOption("raiding_village", "leave_army", "{=hSdJ0UUv}Leave Army", wait_menu_end_raiding_at_army_by_leaving_on_condition, wait_menu_end_raiding_at_army_by_leaving_on_consequence, isLeave: true);
 		campaignGameSystemStarter.AddGameMenuOption("raiding_village", "abandon_army", "{=0vnegjxf}Abandon Army", wait_menu_end_raiding_at_army_by_abandoning_on_condition, wait_menu_end_raiding_at_army_by_abandoning_on_consequence, isLeave: true);
+		campaignGameSystemStarter.AddGameMenu("raid_occupied", "{=!}{RAID_OCCUPPIED_TEXT}", raid_occupied_on_init);
+		campaignGameSystemStarter.AddGameMenuOption("raid_occupied", "raid_occuppied_continue", "{=*}Continue", raid_occupied_on_condition, raid_occupied_on_consequence, isLeave: true);
 		campaignGameSystemStarter.AddGameMenu("raid_village_no_resist_warn_player", "{=!}{RAID_WARN_PLAYER_EXPLANATION}", game_menu_raid_warn_player_on_init);
 		campaignGameSystemStarter.AddGameMenuOption("raid_village_no_resist_warn_player", "raid_village_warn_continue", "{=DM6luo3c}Continue", game_menu_village_hostile_action_raid_village_warn_continue_on_condition, game_menu_village_hostile_action_raid_village_warn_continue_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("raid_village_no_resist_warn_player", "raid_village_warn_leave", "{=sP9ohQTs}Forget it", hostile_action_common_back_on_condition, game_menu_village_hostile_action_warn_leave_on_consequence, isLeave: true);
@@ -116,6 +120,47 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		campaignGameSystemStarter.AddGameMenuOption("village_player_raid_ended", "continue", "{=DM6luo3c}Continue", hostile_action_common_continue_on_condition, village_player_raid_ended_on_consequence, isLeave: true);
 		campaignGameSystemStarter.AddGameMenu("village_raid_ended_leaded_by_someone_else", "{=m1rzHfxI}{VILLAGE_ENCOUNTER_RESULT}", village_raid_ended_leaded_by_someone_else_on_init);
 		campaignGameSystemStarter.AddGameMenuOption("village_raid_ended_leaded_by_someone_else", "continue", "{=DM6luo3c}Continue", hostile_action_common_continue_on_condition, village_raid_ended_leaded_by_someone_else_on_consequence, isLeave: true);
+	}
+
+	private static void raid_occupied_on_init(MenuCallbackArgs args)
+	{
+		string encounterCultureBackgroundMesh = MenuHelper.GetEncounterCultureBackgroundMesh(PlayerEncounter.EncounteredParty.MapFaction.Culture);
+		args.MenuContext.SetBackgroundMeshName(encounterCultureBackgroundMesh);
+		TextObject textObject = new TextObject("{=*}This village is being raided by {HERO.NAME}.");
+		MobileParty mobileParty = null;
+		if (PlayerEncounter.Current != null && PlayerEncounter.Current.EncounterSettlementAux != null && PlayerEncounter.Current.EncounterSettlementAux.LastAttackerParty != null)
+		{
+			mobileParty = PlayerEncounter.Current.EncounterSettlementAux.LastAttackerParty;
+		}
+		else if (PlayerEncounter.EncounteredBattle != null && PlayerEncounter.EncounteredBattle.IsRaid)
+		{
+			mobileParty = PlayerEncounter.EncounteredBattle.AttackerSide.LeaderParty.MobileParty;
+		}
+		if (mobileParty == null)
+		{
+			mobileParty = PlayerEncounter.EncounteredParty.MobileParty;
+		}
+		if (mobileParty != null && mobileParty.LeaderHero != null)
+		{
+			textObject.SetCharacterProperties("HERO", mobileParty.LeaderHero.CharacterObject);
+		}
+		else
+		{
+			textObject.SetTextVariable("HERO", new TextObject("{=*}hostile forces"));
+		}
+		MBTextManager.SetTextVariable("RAID_OCCUPPIED_TEXT", textObject);
+	}
+
+	private static bool raid_occupied_on_condition(MenuCallbackArgs args)
+	{
+		args.optionLeaveType = GameMenuOption.LeaveType.Leave;
+		return true;
+	}
+
+	private static void raid_occupied_on_consequence(MenuCallbackArgs args)
+	{
+		PlayerEncounter.Finish();
+		MobileParty.MainParty.SetMoveModeHold();
 	}
 
 	private static bool wait_menu_end_raiding_at_army_by_leaving_on_condition(MenuCallbackArgs args)
@@ -139,13 +184,28 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		}
 		else if (Settlement.CurrentSettlement.SettlementHitPoints <= 0f)
 		{
-			Debug.FailedAssert("This case should not be possible, check here", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "game_menu_village_hostile_menu_on_init", 183);
+			Debug.FailedAssert("This case should not be possible, check here", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "game_menu_village_hostile_menu_on_init", 236);
 		}
 	}
 
 	private static bool game_menu_village_hostile_action_on_condition(MenuCallbackArgs args)
 	{
 		Village village = Settlement.CurrentSettlement.Village;
+		if (MobileParty.MainParty.IsCurrentlyAtSea)
+		{
+			int minimumNumberOfMenForAttackingVillageViaScene = Campaign.Current.Models.EncounterModel.MinimumNumberOfMenForAttackingVillageViaScene;
+			if (MobileParty.MainParty.MemberRoster.TotalHealthyCount < minimumNumberOfMenForAttackingVillageViaScene)
+			{
+				args.IsEnabled = false;
+				args.Tooltip = new TextObject("{=*}You should at least have {NUMBER} healthy men in your party to take a hostile action.");
+				args.Tooltip.SetTextVariable("NUMBER", minimumNumberOfMenForAttackingVillageViaScene);
+			}
+			else if (!ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().AnyQ())
+			{
+				args.IsEnabled = false;
+				args.Tooltip = new TextObject("{=*}You don't have any shallow draft ship.");
+			}
+		}
 		args.optionLeaveType = GameMenuOption.LeaveType.Submenu;
 		if ((MobileParty.MainParty.Army == null || MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty) && village != null)
 		{
@@ -196,7 +256,7 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		if (_villageLastHostileActionTimeDictionary.TryGetValue(Settlement.CurrentSettlement.StringId, out var value) && value.ElapsedDaysUntilNow <= 10f)
 		{
 			args.IsEnabled = false;
-			args.Tooltip = new TextObject("{=mvhyI8Hb}You have already done hostile action in this village recently.");
+			args.Tooltip = new TextObject("{=q5OOjkXe}You have already taken hostile action against this village recently.");
 		}
 		else if (_villageLastHostileActionTimeDictionary.ContainsKey(Settlement.CurrentSettlement.StringId))
 		{
@@ -236,7 +296,7 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 			if (_villageLastHostileActionTimeDictionary[Settlement.CurrentSettlement.StringId].ElapsedDaysUntilNow <= 10f)
 			{
 				args.IsEnabled = false;
-				args.Tooltip = new TextObject("{=mvhyI8Hb}You have already done hostile action in this village recently.");
+				args.Tooltip = new TextObject("{=q5OOjkXe}You have already taken hostile action against this village recently.");
 			}
 			else
 			{
@@ -283,7 +343,7 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		}
 		else
 		{
-			Debug.FailedAssert("Party is in raid but mapevent is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "village_raid_game_menu_init", 334);
+			Debug.FailedAssert("Party is in raid but mapevent is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "village_raid_game_menu_init", 404);
 		}
 	}
 
@@ -299,14 +359,14 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 			MBTextManager.SetTextVariable("SETTLEMENT_NAME", PlayerEncounter.Battle.MapEventSettlement.Name);
 			return true;
 		}
-		Debug.FailedAssert("Party is in raid but mapevent is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "wait_menu_start_raiding_on_condition", 351);
+		Debug.FailedAssert("Party is in raid but mapevent is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "wait_menu_start_raiding_on_condition", 421);
 		return false;
 	}
 
 	private static void game_menu_raid_warn_player_on_init(MenuCallbackArgs args)
 	{
 		SetHostileActionWarnPlayerInitBackground(args);
-		TextObject textObject = new TextObject("{=Hhq7nq9U}Villagers gathering around to defend their land.{DETAILED_HOSTILE_EXPLANATION}");
+		TextObject textObject = new TextObject("{=Hhq7nq9U}Villagers gathering around to defend their land. {DETAILED_HOSTILE_EXPLANATION}");
 		textObject.SetTextVariable("DETAILED_HOSTILE_EXPLANATION", GetHostileActionGenericWarnExplanation());
 		MBTextManager.SetTextVariable("RAID_WARN_PLAYER_EXPLANATION", textObject);
 	}
@@ -342,48 +402,55 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		}
 		if (_raidedVillage != null)
 		{
-			if (!_raidedVillage.Settlement.SettlementHitPoints.ApproximatelyEqualsTo(0f) && _raiderPartyMapFaction != null && !_raiderPartyMapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
+			if (MobileParty.MainParty.MapEvent == null || MobileParty.MainParty.Army != null || MobileParty.MainParty.MapEvent.AttackerSide.LeaderParty == PartyBase.MainParty || MobileParty.MainParty.MapEvent.DefenderSide.LeaderParty == PartyBase.MainParty)
 			{
-				if (MobileParty.MainParty.Army == null || MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty)
+				if (!_raidedVillage.Settlement.SettlementHitPoints.ApproximatelyEqualsTo(0f) && _raiderPartyMapFaction != null && !_raiderPartyMapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
 				{
-					MBTextManager.SetTextVariable("VILLAGE_ENCOUNTER_RESULT", new TextObject("{=ZJOikvf4}You called off your raid on the village."));
-				}
-				else
-				{
-					MBTextManager.SetTextVariable("VILLAGE_ENCOUNTER_RESULT", new TextObject("{=VYKc665f}The army leader called off the raid on the village."));
-				}
-			}
-			else if (MobileParty.MainParty.Army == null && _raiderPartyMapFaction != null)
-			{
-				if (!_raiderPartyMapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
-				{
-					MBTextManager.SetTextVariable("VILLAGE_ENCOUNTER_RESULT", new TextObject("{=MEuuuOiF}The village was successfully raided with your help."));
-				}
-				else
-				{
-					MBTextManager.SetTextVariable("VILLAGE_ENCOUNTER_RESULT", new TextObject("{=sHy7VHbw}The village was successfully saved with your help."));
-				}
-			}
-			else if (MobileParty.MainParty.Army != null && _raidedVillage.Settlement.MapFaction != null)
-			{
-				if (_raidedVillage.Settlement.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
-				{
-					if (MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty)
+					if (MobileParty.MainParty.Army == null || MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty)
 					{
-						MBTextManager.SetTextVariable("VILLAGE_ENCOUNTER_RESULT", new TextObject("{=jaiwriZc}The village was successfully raided by the army you are leading."));
+						MBTextManager.SetTextVariable("VILLAGE_ENCOUNTER_RESULT", new TextObject("{=ZJOikvf4}You called off your raid on the village."));
 					}
 					else
 					{
-						MBTextManager.SetTextVariable("VILLAGE_ENCOUNTER_RESULT", new TextObject("{=zzRJ7jqR}The village was successfully raided by the army you are following."));
+						MBTextManager.SetTextVariable("VILLAGE_ENCOUNTER_RESULT", new TextObject("{=VYKc665f}The army leader called off the raid on the village."));
 					}
 				}
-				else if (MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty)
+				else if (MobileParty.MainParty.Army == null && _raiderPartyMapFaction != null)
 				{
-					MBTextManager.SetTextVariable("VILLAGE_ENCOUNTER_RESULT", new TextObject("{=XzDDwHbc}The village is saved by the army you are leading."));
+					if (!_raiderPartyMapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
+					{
+						MBTextManager.SetTextVariable("VILLAGE_ENCOUNTER_RESULT", new TextObject("{=MEuuuOiF}The village was successfully raided with your help."));
+					}
+					else
+					{
+						MBTextManager.SetTextVariable("VILLAGE_ENCOUNTER_RESULT", new TextObject("{=sHy7VHbw}The village was successfully saved with your help."));
+					}
 				}
 				else
 				{
-					MBTextManager.SetTextVariable("VILLAGE_ENCOUNTER_RESULT", new TextObject("{=ibiQdZLf}The village is saved by the army you are following."));
+					if (MobileParty.MainParty.Army == null || _raidedVillage.Settlement.MapFaction == null)
+					{
+						return;
+					}
+					if (_raidedVillage.Settlement.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
+					{
+						if (MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty)
+						{
+							MBTextManager.SetTextVariable("VILLAGE_ENCOUNTER_RESULT", new TextObject("{=jaiwriZc}The village was successfully raided by the army you are leading."));
+						}
+						else
+						{
+							MBTextManager.SetTextVariable("VILLAGE_ENCOUNTER_RESULT", new TextObject("{=zzRJ7jqR}The village was successfully raided by the army you are following."));
+						}
+					}
+					else if (MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty)
+					{
+						MBTextManager.SetTextVariable("VILLAGE_ENCOUNTER_RESULT", new TextObject("{=XzDDwHbc}The village is saved by the army you are leading."));
+					}
+					else
+					{
+						MBTextManager.SetTextVariable("VILLAGE_ENCOUNTER_RESULT", new TextObject("{=ibiQdZLf}The village is saved by the army you are following."));
+					}
 				}
 			}
 			else
@@ -435,7 +502,7 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		}
 		else
 		{
-			Debug.FailedAssert("Party is in raid but mapEvent is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "wait_menu_raiding_village_on_tick", 507);
+			Debug.FailedAssert("Party is in raid but mapEvent is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "wait_menu_raiding_village_on_tick", 585);
 		}
 	}
 
@@ -568,6 +635,7 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 	{
 		PlayerEncounter.LeaveSettlement();
 		PlayerEncounter.Finish();
+		MobileParty.MainParty.SetMoveModeHold();
 		Campaign.Current.SaveHandler.SignalAutoSave();
 	}
 
@@ -603,7 +671,7 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		TextObject textObject;
 		if (Clan.PlayerClan.IsUnderMercenaryService)
 		{
-			textObject = new TextObject("{=d6KbdIWg} As a result of your hostile intent towards a neutral village, the {MERCENARY_KINGDOM} ends its contract with you, and the {KINGDOM} declares war on you.");
+			textObject = new TextObject("{=d6KbdIWg}As a result of your hostile intent towards a neutral village, the {MERCENARY_KINGDOM} ends its contract with you, and the {KINGDOM} declares war on you.");
 			textObject.SetTextVariable("MERCENARY_KINGDOM", Clan.PlayerClan.Kingdom.EncyclopediaTitle);
 		}
 		else

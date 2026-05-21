@@ -1,5 +1,6 @@
 using System.Linq;
 using Helpers;
+using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -36,7 +37,7 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 		}
 		else
 		{
-			Debug.FailedAssert("Invalid type of settlement", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultSettlementAccessModel.cs", "CanMainHeroEnterSettlement", 41);
+			Debug.FailedAssert("Invalid type of settlement", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultSettlementAccessModel.cs", "CanMainHeroEnterSettlement", 42);
 			accessDetails = new AccessDetails
 			{
 				AccessLevel = AccessLevel.FullAccess,
@@ -173,7 +174,7 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 			result = false;
 			break;
 		default:
-			Debug.FailedAssert("invalid location which is not supported by DefaultSettlementAccessModel", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultSettlementAccessModel.cs", "CanMainHeroAccessLocation", 206);
+			Debug.FailedAssert("invalid location which is not supported by DefaultSettlementAccessModel", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultSettlementAccessModel.cs", "CanMainHeroAccessLocation", 207);
 			break;
 		}
 		return result;
@@ -236,7 +237,7 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 		case SettlementAction.WalkAroundTheArena:
 			return CanMainHeroEnterArena(settlement, out disableOption, out disabledText);
 		default:
-			Debug.FailedAssert("Invalid Settlement Action", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultSettlementAccessModel.cs", "CanMainHeroDoSettlementAction", 275);
+			Debug.FailedAssert("Invalid Settlement Action", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultSettlementAccessModel.cs", "CanMainHeroDoSettlementAction", 276);
 			disableOption = false;
 			disabledText = null;
 			return true;
@@ -430,6 +431,16 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 	{
 		disabledText = null;
 		disableOption = false;
+		if (settlement.IsVillage && settlement.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
+		{
+			disabledText = new TextObject("{=nHlqkdUC}You cannot recruit troops from a hostile village.");
+			disableOption = true;
+			return false;
+		}
+		if (Settlement.CurrentSettlement.IsVillage)
+		{
+			return Settlement.CurrentSettlement.Village.VillageState == Village.VillageStates.Normal;
+		}
 		return true;
 	}
 
@@ -477,10 +488,39 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 
 	private bool CanMainHeroTrade(Settlement settlement, out bool disableOption, out TextObject disabledText)
 	{
-		if (Campaign.Current.IsMainHeroDisguised)
+		if (settlement.IsVillage)
+		{
+			Village village = Settlement.CurrentSettlement.Village;
+			if (village.VillageState == Village.VillageStates.BeingRaided)
+			{
+				disabledText = null;
+				disableOption = false;
+				return false;
+			}
+			bool flag = settlement.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction);
+			TextObject textObject = new TextObject("{=vYHVlydb}You cannot trade with a hostile village.");
+			if (village.VillageState == Village.VillageStates.Normal && village.Owner.ItemRoster.Count > 0)
+			{
+				disableOption = flag;
+				disabledText = (disableOption ? textObject : null);
+				return !disableOption;
+			}
+			if (village.Gold > 0)
+			{
+				disableOption = flag;
+				disabledText = (disableOption ? textObject : new TextObject("{=FbowXAC0}There are no available products right now."));
+				return false;
+			}
+			disableOption = flag;
+			disabledText = (disableOption ? textObject : new TextObject("{=bmfo7CaO}Village shop is not available right now."));
+			return false;
+		}
+		if (Campaign.Current.IsMainHeroDisguised && !Hero.MainHero.GetPerkValue(DefaultPerks.Roguery.SmugglerConnections))
 		{
 			disableOption = true;
-			disabledText = new TextObject("{=shU7OlQT}You cannot trade while in disguise.");
+			TextObject textObject2 = new TextObject("{=HVUHHuVA}{PERK_NAME} perk required to trade while in disguise.");
+			textObject2.SetTextVariable("PERK_NAME", DefaultPerks.Roguery.SmugglerConnections.Name);
+			disabledText = textObject2;
 			return false;
 		}
 		disableOption = false;
@@ -495,18 +535,29 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 		if (Campaign.Current.IsMainHeroDisguised)
 		{
 			disableOption = true;
-			disabledText = new TextObject("{=dN5Qc9vN}You cannot wait in town while disguised.");
+			disabledText = new TextObject("{=dN5Qc9vN}You cannot wait in town while in disguise.");
 			return false;
 		}
-		if (settlement.IsVillage && settlement.Party.MapEvent != null)
+		if (settlement.IsVillage)
+		{
+			if (settlement.Party.MapEvent != null)
+			{
+				disableOption = true;
+				disabledText = new TextObject("{=dN5Qc7vN}You cannot wait in village while it is being raided.");
+				return false;
+			}
+			if (settlement.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
+			{
+				disableOption = true;
+				disabledText = new TextObject("{=*}You cannot wait in a hostile village.");
+				return false;
+			}
+		}
+		if (MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty != MobileParty.MainParty)
 		{
 			disableOption = true;
-			disabledText = new TextObject("{=dN5Qc7vN}You cannot wait in village while it is being raided.");
+			disabledText = new TextObject("{=tjsld7WT}You cannot wait in town while you're a member of an army.");
 			return false;
-		}
-		if (MobileParty.MainParty.Army != null)
-		{
-			return MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty;
 		}
 		return true;
 	}

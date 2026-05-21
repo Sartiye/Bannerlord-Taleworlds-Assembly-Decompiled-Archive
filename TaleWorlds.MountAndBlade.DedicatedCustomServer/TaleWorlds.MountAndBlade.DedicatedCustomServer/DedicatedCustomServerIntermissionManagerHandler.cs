@@ -8,7 +8,6 @@ using TaleWorlds.Library;
 using TaleWorlds.ModuleManager;
 using TaleWorlds.MountAndBlade.Diamond;
 using TaleWorlds.MountAndBlade.ListedServer;
-using TaleWorlds.PlayerServices;
 
 namespace TaleWorlds.MountAndBlade.DedicatedCustomServer;
 
@@ -102,7 +101,6 @@ public class DedicatedCustomServerIntermissionManagerHandler : IServerSideInterm
 	{
 		if (DedicatedCustomGameServer != null && DedicatedCustomGameServer.IsIdle)
 		{
-			GameLogger?.Log(new GameLog(GameLogType.GameEnd, PlayerId.Empty, MBCommon.GetTotalMissionTime()));
 			DedicatedCustomGameServer.FinishAsIdle(GetUnsentGameLogs());
 		}
 		if (_diamondClientApplication != null)
@@ -113,13 +111,11 @@ public class DedicatedCustomServerIntermissionManagerHandler : IServerSideInterm
 
 	void IServerSideIntermissionManagerHandler.OnShutDownAfterMission()
 	{
-		GameLogger?.Log(new GameLog(GameLogType.GameEnd, PlayerId.Empty, MBCommon.GetTotalMissionTime()));
 		DedicatedCustomGameServer.FinishGame(GetUnsentGameLogs());
 	}
 
 	void IServerSideIntermissionManagerHandler.OnBeforeStartingNextBattle()
 	{
-		GameLogger?.Log(new GameLog(GameLogType.BattleStart, PlayerId.Empty, MBCommon.GetTotalMissionTime()));
 		DedicatedCustomGameServer?.BeforeStartingNextBattle(GetUnsentGameLogs());
 	}
 

@@ -279,9 +279,10 @@ public class PhotoModeVM : ViewModel
 		Keys.Add(InputKeyItemVM.CreateFromHotKeyWithForcedName(hotkey, forcedName, isConsoleOnly: false));
 	}
 
-	public void AddCustomKey(string keyID, TextObject forcedName)
+	public void AddConsoleTakePictureKey(string keyID, TextObject forcedName)
 	{
-		Keys.Add(InputKeyItemVM.CreateFromForcedID(keyID, forcedName, isConsoleOnly: false));
+		_takePictureKey = InputKeyItemVM.CreateFromForcedID(keyID, forcedName, isConsoleOnly: false);
+		Keys.Add(_takePictureKey);
 	}
 
 	public override void OnFinalize()

@@ -12,8 +12,6 @@ public static class CompressionBasic
 
 	public const float MinPositionForCompression = -100f;
 
-	public const int MaxPeerCount = 511;
-
 	public static CompressionInfo.Integer PingValueCompressionInfo;
 
 	public static CompressionInfo.Integer LossValueCompressionInfo;
@@ -53,8 +51,6 @@ public static class CompressionBasic
 	public static CompressionInfo.Float RadianCompressionInfo;
 
 	public static CompressionInfo.Float HighResRadianCompressionInfo;
-
-	public static CompressionInfo.Float UltResRadianCompressionInfo;
 
 	public static CompressionInfo.Float ScaleCompressionInfo;
 
@@ -188,7 +184,6 @@ public static class CompressionBasic
 		LowResRadianCompressionInfo = new CompressionInfo.Float(-3.1515927f, 3.1515927f, 8);
 		RadianCompressionInfo = new CompressionInfo.Float(-3.1515927f, 3.1515927f, 10);
 		HighResRadianCompressionInfo = new CompressionInfo.Float(-3.1515927f, 3.1515927f, 13);
-		UltResRadianCompressionInfo = new CompressionInfo.Float(-3.1515927f, 3.1515927f, 30);
 		ScaleCompressionInfo = new CompressionInfo.Float(-0.001f, 10, 0.01f);
 		LowResQuaternionCompressionInfo = new CompressionInfo.Float(-0.7071068f, 0.7071068f, 6);
 		OmittedQuaternionComponentIndexCompressionInfo = new CompressionInfo.Integer(0, 3, maximumValueGiven: true);

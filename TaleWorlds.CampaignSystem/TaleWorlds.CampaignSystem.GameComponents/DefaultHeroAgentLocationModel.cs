@@ -27,6 +27,12 @@ public class DefaultHeroAgentLocationModel : HeroAgentLocationModel
 		{
 			return null;
 		}
+		IAlleyCampaignBehavior campaignBehavior = Campaign.Current.GetCampaignBehavior<IAlleyCampaignBehavior>();
+		if (campaignBehavior != null && campaignBehavior.IsHeroAlleyLeaderOfAnyPlayerAlley(hero))
+		{
+			heroLocationDetail = HeroLocationDetail.Wanderer;
+			return settlement.LocationComplex.GetLocationWithId("alley");
+		}
 		int heroComesOfAge = Campaign.Current.Models.AgeModel.HeroComesOfAge;
 		bool flag = hero.GovernorOf != null && hero.GovernorOf == settlement.Town;
 		if (settlement.IsFortification)
@@ -97,11 +103,6 @@ public class DefaultHeroAgentLocationModel : HeroAgentLocationModel
 			}
 			if (settlement.IsTown)
 			{
-				IAlleyCampaignBehavior campaignBehavior = Campaign.Current.GetCampaignBehavior<IAlleyCampaignBehavior>();
-				if (campaignBehavior != null && campaignBehavior.IsHeroAlleyLeaderOfAnyPlayerAlley(hero))
-				{
-					return settlement.LocationComplex.GetLocationWithId("alley");
-				}
 				return settlement.LocationComplex.GetLocationWithId("tavern");
 			}
 			return settlement.LocationComplex.GetLocationWithId("village_center");

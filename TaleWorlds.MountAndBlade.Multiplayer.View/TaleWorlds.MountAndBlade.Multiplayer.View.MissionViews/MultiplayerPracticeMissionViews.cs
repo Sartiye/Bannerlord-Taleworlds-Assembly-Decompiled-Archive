@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TaleWorlds.MountAndBlade.Missions.BattleScore;
 using TaleWorlds.MountAndBlade.View;
 using TaleWorlds.MountAndBlade.View.MissionViews;
 using TaleWorlds.MountAndBlade.View.MissionViews.Order;
@@ -18,7 +19,7 @@ public static class MultiplayerPracticeMissionViews
 		{
 			MultiplayerViewCreator.CreateMissionMultiplayerPracticeEscapeMenu(),
 			ViewCreator.CreateMissionAgentLabelUIHandler(mission),
-			ViewCreator.CreateMissionBattleScoreUIHandler(mission, new CustomBattleScoreboardVM()),
+			ViewCreator.CreateMissionBattleScoreUIHandler(mission, new CustomBattleScoreboardVM(new CustomBattleScoreContext(mission))),
 			ViewCreator.CreateOptionsUIHandler(),
 			ViewCreator.CreateMissionMainAgentEquipDropView(mission)
 		};

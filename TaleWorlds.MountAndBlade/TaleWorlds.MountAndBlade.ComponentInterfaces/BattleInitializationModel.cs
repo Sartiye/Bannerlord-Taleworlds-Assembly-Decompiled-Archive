@@ -13,6 +13,8 @@ public abstract class BattleInitializationModel : MBGameModel<BattleInitializati
 
 	private bool _isInitialized;
 
+	public static bool BypassPlayerDeployment { get; private set; }
+
 	public abstract List<FormationClass> GetAllAvailableTroopTypes();
 
 	protected abstract bool CanPlayerSideDeployWithOrderOfBattleAux();
@@ -21,7 +23,7 @@ public abstract class BattleInitializationModel : MBGameModel<BattleInitializati
 	{
 		if (!_isCanPlayerSideDeployWithOOBCached)
 		{
-			_canPlayerSideDeployWithOOB = CanPlayerSideDeployWithOrderOfBattleAux();
+			_canPlayerSideDeployWithOOB = !BypassPlayerDeployment && CanPlayerSideDeployWithOrderOfBattleAux();
 			_isCanPlayerSideDeployWithOOBCached = true;
 		}
 		return _canPlayerSideDeployWithOOB;
@@ -36,5 +38,15 @@ public abstract class BattleInitializationModel : MBGameModel<BattleInitializati
 	public void FinalizeModel()
 	{
 		_isInitialized = false;
+	}
+
+	public static void SetBypassPlayerDeployment(bool value)
+	{
+		BattleInitializationModel battleInitializationModel = MissionGameModels.Current?.BattleInitializationModel;
+		if (battleInitializationModel != null && BypassPlayerDeployment != value)
+		{
+			battleInitializationModel._isCanPlayerSideDeployWithOOBCached = false;
+		}
+		BypassPlayerDeployment = value;
 	}
 }

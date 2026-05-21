@@ -147,7 +147,7 @@ public class RansomOfferCampaignBehavior : CampaignBehaviorBase
 		TextObject textObject = ((captorClanOfPrisoner == Clan.PlayerClan) ? RansomPanelDescriptionPlayerHeldPrisonerText : RansomPanelDescriptionNpcHeldPrisonerText);
 		textObject.SetTextVariable("CLAN_NAME", clan.Name);
 		textObject.SetTextVariable("GOLD_AMOUNT", ransomPrice);
-		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		StringHelpers.SetCharacterProperties("CAPTIVE_HERO", captiveHero.CharacterObject, textObject);
 		Campaign.Current.TimeControlMode = CampaignTimeControlMode.Stop;
 		InformationManager.ShowInquiry(new InquiryData(RansomPanelTitleText.ToString(), textObject.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, RansomPanelAffirmativeText.ToString(), RansomPanelNegativeText.ToString(), delegate

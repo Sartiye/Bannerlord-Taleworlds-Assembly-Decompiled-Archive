@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
-using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ImageIdentifiers;
@@ -45,18 +44,6 @@ public class ProposeCallToWarAgreementDecision : KingdomDecision
 
 		public override TextObject GetDecisionDescription()
 		{
-			if (base.SponsorClan != null && Kingdom != null && CalledKingdom != null && KingdomToCallToWarAgainst != null && base.SponsorClan != Clan.PlayerClan)
-			{
-				TextObject reason = TextObject.GetEmpty();
-				if (ShouldCallToWar)
-				{
-					Campaign.Current.Models.AllianceModel.GetScoreOfCallingToWar(Kingdom, CalledKingdom, KingdomToCallToWarAgainst, base.SponsorClan, out reason);
-				}
-				if (!reason.IsEmpty())
-				{
-					return reason;
-				}
-			}
 			if (ShouldCallToWar)
 			{
 				TextObject textObject = new TextObject("{=dEsIQDo3}It is time to call our ally the {CALLED_KINGDOM} to war!");
@@ -165,7 +152,7 @@ public class ProposeCallToWarAgreementDecision : KingdomDecision
 		textObject.SetTextVariable("CALLED_KINGDOM", CalledKingdom.InformalName);
 		textObject.SetTextVariable("KINGDOM_TO_CALL_TO_WAR_AGAINST", KingdomToCallToWarAgainst.InformalName);
 		textObject.SetTextVariable("CALL_TO_WAR_COST", CallToWarCost);
-		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		return textObject;
 	}
 
@@ -177,7 +164,7 @@ public class ProposeCallToWarAgreementDecision : KingdomDecision
 		textObject.SetTextVariable("CALLED_KINGDOM", CalledKingdom.InformalName);
 		textObject.SetTextVariable("KINGDOM_TO_CALL_TO_WAR_AGAINST", KingdomToCallToWarAgainst.InformalName);
 		textObject.SetTextVariable("CALL_TO_WAR_COST", CallToWarCost);
-		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		return textObject;
 	}
 
@@ -188,7 +175,7 @@ public class ProposeCallToWarAgreementDecision : KingdomDecision
 		textObject.SetTextVariable("CALLED_KINGDOM", CalledKingdom.InformalName);
 		textObject.SetTextVariable("KINGDOM_TO_CALL_TO_WAR_AGAINST", KingdomToCallToWarAgainst.InformalName);
 		textObject.SetTextVariable("CALL_TO_WAR_COST", CallToWarCost);
-		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		return textObject;
 	}
 
@@ -200,7 +187,7 @@ public class ProposeCallToWarAgreementDecision : KingdomDecision
 		textObject.SetTextVariable("KINGDOM_NAME", CalledKingdom.InformalName);
 		textObject.SetTextVariable("KINGDOM_TO_CALL_TO_WAR_AGAINST", KingdomToCallToWarAgainst.InformalName);
 		textObject.SetTextVariable("CALL_TO_WAR_COST", CallToWarCost);
-		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		return textObject;
 	}
 
@@ -302,12 +289,9 @@ public class ProposeCallToWarAgreementDecision : KingdomDecision
 		float scoreOfCallingToWar = Campaign.Current.Models.AllianceModel.GetScoreOfCallingToWar(base.Kingdom, CalledKingdom, KingdomToCallToWarAgainst, clan, out reason);
 		if (obj.ShouldCallToWar)
 		{
-			float num = 0f - (float)clan.Leader.GetTraitLevel(DefaultTraits.Valor) * 2.5f + (float)clan.Leader.GetTraitLevel(DefaultTraits.Calculating) * 2.5f;
-			return scoreOfCallingToWar + num;
+			return scoreOfCallingToWar;
 		}
-		float num2 = 0f - scoreOfCallingToWar;
-		float num3 = (float)clan.Leader.GetTraitLevel(DefaultTraits.Valor) * 2.5f - (float)clan.Leader.GetTraitLevel(DefaultTraits.Calculating) * 2.5f;
-		return num2 + num3;
+		return 0f - scoreOfCallingToWar;
 	}
 
 	public override bool CanMakeDecision(out TextObject reason, bool includeReason = false)

@@ -115,7 +115,7 @@ public sealed class CharacterCreationContent
 		{
 			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, goldToAdd, disableNotification: true);
 		}
-		Hero.MainHero.HeroDeveloper.SetInitialLevel(1);
+		Hero.MainHero.HeroDeveloper.ResetTotalXpForPlayerCharacter();
 	}
 
 	public void SetMainClanBanner(Banner banner)

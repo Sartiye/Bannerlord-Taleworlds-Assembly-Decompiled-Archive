@@ -114,18 +114,14 @@ public sealed class Game : IGameStateManagerOwner
 
 	public IBannerVisual CreateBannerVisual(Banner banner)
 	{
-		if (BannerVisualCreator == null)
-		{
-			return null;
-		}
-		return BannerVisualCreator.CreateBannerVisual(banner);
+		return BannerVisualCreator?.CreateBannerVisual(banner);
 	}
 
 	public Equipment GetDefaultEquipmentWithName(string equipmentName)
 	{
 		if (!_defaultEquipments.ContainsKey(equipmentName))
 		{
-			Debug.FailedAssert("Equipment with name \"" + equipmentName + "\" could not be found.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\Game.cs", "GetDefaultEquipmentWithName", 128);
+			Debug.FailedAssert("Equipment with name \"" + equipmentName + "\" could not be found.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\Game.cs", "GetDefaultEquipmentWithName", 125);
 			return null;
 		}
 		return _defaultEquipments[equipmentName].Clone();

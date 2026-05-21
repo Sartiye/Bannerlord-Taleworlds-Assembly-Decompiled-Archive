@@ -340,7 +340,7 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 		_widget_4_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_4_0_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_4_0_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_4_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_4_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_4_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_4_0_0_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_4_0_0_0.SuggestedHeight = 60f;
@@ -486,7 +486,7 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 		_widget_4_0_0_1_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_4_0_0_1_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_4_0_0_1_0_0_1.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_4_0_0_1_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_4_0_0_1_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_4_0_0_1_1.SetAttributes();
 		_widget_4_0_0_1_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_4_0_0_1_1.HorizontalAlignment = HorizontalAlignment.Right;
@@ -511,7 +511,7 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 		_widget_4_0_0_2_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_4_0_0_2_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_4_0_0_2_0_0_0.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_4_0_0_2_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_4_0_0_2_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_4_0_0_2_1.SetAttributes();
 		_widget_4_0_0_2_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_4_0_0_2_1.HorizontalAlignment = HorizontalAlignment.Right;

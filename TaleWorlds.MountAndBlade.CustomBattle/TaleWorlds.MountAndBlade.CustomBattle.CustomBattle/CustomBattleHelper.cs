@@ -162,7 +162,7 @@ public static class CustomBattleHelper
 		return siegeWeaponType;
 	}
 
-	public static CustomBattleData PrepareBattleData(BasicCharacterObject playerCharacter, BasicCharacterObject playerSideGeneralCharacter, CustomBattleCombatant playerParty, CustomBattleCombatant enemyParty, CustomBattlePlayerSide playerSide, CustomBattlePlayerType battlePlayerType, string gameTypeStringId, string scene, string season, float timeOfDay, List<MissionSiegeWeapon> attackerMachines, List<MissionSiegeWeapon> defenderMachines, float[] wallHitPointsPercentages, int sceneLevel, bool isSallyOut)
+	public static CustomBattleData PrepareBattleData(BasicCharacterObject playerCharacter, BasicCharacterObject playerSideGeneralCharacter, CustomBattleCombatant playerParty, CustomBattleCombatant enemyParty, CustomBattlePlayerSide playerSide, CustomBattlePlayerType battlePlayerType, string gameTypeStringId, string scene, string season, float timeOfDay, List<MissionSiegeWeapon> attackerMachines, List<MissionSiegeWeapon> defenderMachines, float[] wallHitPointsPercentages, int sceneUpgradeLevel, bool isSallyOut, string forcedSceneLevel)
 	{
 		bool isPlayerAttacker = playerSide == CustomBattlePlayerSide.Attacker;
 		bool isPlayerGeneral = battlePlayerType == CustomBattlePlayerType.Commander;
@@ -175,7 +175,7 @@ public static class CustomBattleHelper
 		result.IsPlayerGeneral = isPlayerGeneral;
 		result.PlayerSideGeneralCharacter = playerSideGeneralCharacter;
 		result.SeasonId = season;
-		result.SceneLevel = "";
+		result.SceneLevel = forcedSceneLevel;
 		result.TimeOfDay = timeOfDay;
 		if (result.GameTypeStringId == "Siege")
 		{
@@ -184,7 +184,7 @@ public static class CustomBattleHelper
 			result.WallHitpointPercentages = wallHitPointsPercentages;
 			result.HasAnySiegeTower = attackerMachines.Exists((MissionSiegeWeapon mm) => mm.Type == DefaultSiegeEngineTypes.SiegeTower);
 			result.IsPlayerAttacker = isPlayerAttacker;
-			result.SceneUpgradeLevel = sceneLevel;
+			result.SceneUpgradeLevel = sceneUpgradeLevel;
 			result.IsSallyOut = isSallyOut;
 			result.IsReliefAttack = false;
 		}

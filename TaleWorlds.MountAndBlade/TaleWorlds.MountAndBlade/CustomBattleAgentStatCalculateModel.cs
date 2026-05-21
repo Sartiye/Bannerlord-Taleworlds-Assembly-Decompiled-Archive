@@ -20,7 +20,6 @@ public class CustomBattleAgentStatCalculateModel : AgentStatCalculateModel
 	public override void InitializeAgentStats(Agent agent, Equipment spawnEquipment, AgentDrivenProperties agentDrivenProperties, AgentBuildData agentBuildData)
 	{
 		agentDrivenProperties.ArmorEncumbrance = spawnEquipment.GetTotalWeightOfArmor(agent.IsHuman);
-		agentDrivenProperties.AiShooterErrorWoRangeUpdate = 0f;
 		if (agent.IsHuman)
 		{
 			agentDrivenProperties.ArmorHead = spawnEquipment.GetHeadArmorSum();
@@ -163,6 +162,16 @@ public class CustomBattleAgentStatCalculateModel : AgentStatCalculateModel
 		return float.MaxValue;
 	}
 
+	public override float GetWeaponInaccuracy(Agent agent, WeaponComponentData weapon, int weaponSkill)
+	{
+		if (weapon == null || !weapon.IsRangedWeapon || weapon.RelevantSkill != DefaultSkills.Throwing || weapon.WeaponClass != WeaponClass.Sling)
+		{
+			return base.GetWeaponInaccuracy(agent, weapon, weaponSkill);
+		}
+		float num = TaleWorlds.Library.MathF.Max(0.2f, 1f - 0.007f * (float)weaponSkill);
+		return (100f - (float)weapon.Accuracy) * 0.001f * num;
+	}
+
 	public override float GetBreatheHoldMaxDuration(Agent agent, float baseBreatheHoldMaxDuration)
 	{
 		return baseBreatheHoldMaxDuration;
@@ -197,7 +206,7 @@ public class CustomBattleAgentStatCalculateModel : AgentStatCalculateModel
 			ItemObject item2 = equipment[offhandWieldedItemIndex].Item;
 			num += 1.5f * item2.Weight;
 		}
-		agentDrivenProperties.AiShooterErrorWoRangeUpdate = 0f;
+		agentDrivenProperties.WeaponExternalAccelerationAccuracyPenalty = 0f;
 		agentDrivenProperties.WeaponsEncumbrance = num;
 		WeaponComponentData weaponComponentData = ((primaryWieldedItemIndex != EquipmentIndex.None) ? equipment[primaryWieldedItemIndex].CurrentUsageItem : null);
 		ItemObject primaryItem = ((primaryWieldedItemIndex != EquipmentIndex.None) ? equipment[primaryWieldedItemIndex].Item : null);
@@ -210,6 +219,7 @@ public class CustomBattleAgentStatCalculateModel : AgentStatCalculateModel
 		agentDrivenProperties.ReloadSpeed = 0.93f + 0.0007f * (float)GetSkillValueForItem(agent, primaryItem);
 		agentDrivenProperties.MissileSpeedMultiplier = 1f;
 		agentDrivenProperties.ReloadMovementPenaltyFactor = 1f;
+		agentDrivenProperties.DamageMultiplierBonus = 0f;
 		SetAllWeaponInaccuracy(agent, agentDrivenProperties, (int)primaryWieldedItemIndex, weaponComponentData);
 		int effectiveSkill = GetEffectiveSkill(agent, DefaultSkills.Athletics);
 		int effectiveSkill2 = GetEffectiveSkill(agent, DefaultSkills.Riding);
@@ -252,7 +262,7 @@ public class CustomBattleAgentStatCalculateModel : AgentStatCalculateModel
 					}
 					else
 					{
-						float value3 = ((float)thrustSpeed - 89f) / 13f;
+						float value3 = ((float)thrustSpeed - 91f) / 14f;
 						value3 = MBMath.ClampFloat(value3, 0f, 1f);
 						agentDrivenProperties.WeaponMaxMovementAccuracyPenalty *= 0.5f;
 						agentDrivenProperties.WeaponMaxUnsteadyAccuracyPenalty *= 1.5f * MBMath.Lerp(1.5f, 0.8f, value3);
@@ -263,7 +273,9 @@ public class CustomBattleAgentStatCalculateModel : AgentStatCalculateModel
 					agentDrivenProperties.WeaponMaxMovementAccuracyPenalty *= 2.5f;
 					agentDrivenProperties.WeaponMaxUnsteadyAccuracyPenalty *= 1.2f;
 				}
-				if (weaponComponentData2.WeaponClass == WeaponClass.Bow)
+				switch (weaponComponentData2.WeaponClass)
+				{
+				case WeaponClass.Bow:
 				{
 					agentDrivenProperties.WeaponBestAccuracyWaitTime = 0.3f + (95.75f - (float)thrustSpeed) * 0.005f;
 					float value4 = ((float)thrustSpeed - 45f) / 90f;
@@ -275,27 +287,28 @@ public class CustomBattleAgentStatCalculateModel : AgentStatCalculateModel
 					}
 					agentDrivenProperties.WeaponUnsteadyEndTime = 2f + agentDrivenProperties.WeaponUnsteadyBeginTime;
 					agentDrivenProperties.WeaponRotationalAccuracyPenaltyInRadians = 0.1f;
+					break;
 				}
-				else if (weaponComponentData2.WeaponClass == WeaponClass.Javelin || weaponComponentData2.WeaponClass == WeaponClass.ThrowingAxe || weaponComponentData2.WeaponClass == WeaponClass.ThrowingKnife)
-				{
+				case WeaponClass.ThrowingAxe:
+				case WeaponClass.ThrowingKnife:
+				case WeaponClass.Javelin:
 					agentDrivenProperties.WeaponBestAccuracyWaitTime = 0.2f + (89f - (float)thrustSpeed) * 0.009f;
 					agentDrivenProperties.WeaponUnsteadyBeginTime = 2.5f + (float)effectiveSkillForWeapon * 0.01f;
 					agentDrivenProperties.WeaponUnsteadyEndTime = 10f + agentDrivenProperties.WeaponUnsteadyBeginTime;
 					agentDrivenProperties.WeaponRotationalAccuracyPenaltyInRadians = 0.025f;
-				}
-				else if (weaponComponentData2.WeaponClass == WeaponClass.Sling)
-				{
+					break;
+				case WeaponClass.Sling:
 					agentDrivenProperties.WeaponBestAccuracyWaitTime = 2.6f + (89f - (float)thrustSpeed) * 0.12f;
 					agentDrivenProperties.WeaponUnsteadyBeginTime = 3f + (float)effectiveSkillForWeapon * 0.064f;
 					agentDrivenProperties.WeaponUnsteadyEndTime = 22f + agentDrivenProperties.WeaponUnsteadyBeginTime;
 					agentDrivenProperties.WeaponRotationalAccuracyPenaltyInRadians = 0.2f;
-				}
-				else
-				{
+					break;
+				default:
 					agentDrivenProperties.WeaponBestAccuracyWaitTime = 0.1f;
 					agentDrivenProperties.WeaponUnsteadyBeginTime = 0f;
 					agentDrivenProperties.WeaponUnsteadyEndTime = 0f;
 					agentDrivenProperties.WeaponRotationalAccuracyPenaltyInRadians = 0.1f;
+					break;
 				}
 			}
 			else if (weaponComponentData2.WeaponFlags.HasAllFlags(WeaponFlags.WideGrip))

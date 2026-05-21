@@ -62,7 +62,7 @@ public class AiPartyThinkBehavior : CampaignBehaviorBase
 		{
 			num = 6;
 		}
-		if (mobileParty.Ai.HourCounter % num == 0 && mobileParty != MobileParty.MainParty && (mobileParty.MapEvent == null || (mobileParty.Party == mobileParty.MapEvent.AttackerSide.LeaderParty && (mobileParty.MapEvent.IsRaid || mobileParty.MapEvent.IsSiegeAssault))))
+		if (mobileParty.Ai.HourCounter % num == 0 && mobileParty != MobileParty.MainParty && (mobileParty.MapEvent == null || (mobileParty.Party == mobileParty.MapEvent.AttackerSide.LeaderParty && ((mobileParty.MapEvent.IsRaid && !mobileParty.IsCurrentlyAtSea) || mobileParty.MapEvent.IsSiegeAssault))))
 		{
 			mobileParty.Ai.HourCounter = 0;
 			AiBehavior aiBehavior = ((!flag) ? AiBehavior.None : mobileParty.Army.LeaderParty.DefaultBehavior);
@@ -169,7 +169,7 @@ public class AiPartyThinkBehavior : CampaignBehaviorBase
 						{
 							if (mobileParty.MapEvent == null || !mobileParty.MapEvent.IsRaid || mobileParty.MapEvent.MapEventSettlement != aIBehaviorData.Party)
 							{
-								SetPartyAiAction.GetActionForRaidingSettlement(mobileParty, (Settlement)aIBehaviorData.Party, aIBehaviorData.NavigationType, aIBehaviorData.IsFromPort);
+								SetPartyAiAction.GetActionForRaidingSettlement(mobileParty, (Settlement)aIBehaviorData.Party, aIBehaviorData.NavigationType, aIBehaviorData.IsFromPort, aIBehaviorData.IsTargetingPort);
 							}
 						}
 						else if (aIBehaviorData.AiBehavior == AiBehavior.BesiegeSettlement)

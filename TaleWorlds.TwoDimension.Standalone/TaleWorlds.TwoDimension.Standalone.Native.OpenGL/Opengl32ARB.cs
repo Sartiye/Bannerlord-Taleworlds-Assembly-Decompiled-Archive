@@ -198,7 +198,8 @@ internal static class Opengl32ARB
 		{
 			return Marshal.GetDelegateForFunctionPointer(intPtr, typeof(T)) as T;
 		}
-		throw new OpenGlLoadException("Could not load OpenGL function " + name + ". Please make sure the OpenGL driver, for the gpu that game runs on, is verified and up to date.");
+		StandaloneApplicationUtility.TerminateWithMessageBox("Graphics driver error", "Could not load OpenGL function: " + name + ". Please make sure the OpenGL driver for the gpu that game runs on is verified and up to date.");
+		return null;
 	}
 
 	public static void ShaderSource(int shader, string shaderSource)
@@ -240,7 +241,7 @@ internal static class Opengl32ARB
 		return GetUniformLocationInternal(program, array);
 	}
 
-	public static void UniformMatrix4fv(int location, int count, bool isTranspose, Matrix4x4 matrix)
+	public static void UniformMatrix4fv(int location, int count, bool isTranspose, in Matrix4x4 matrix)
 	{
 		float[] matrix2 = new float[16]
 		{

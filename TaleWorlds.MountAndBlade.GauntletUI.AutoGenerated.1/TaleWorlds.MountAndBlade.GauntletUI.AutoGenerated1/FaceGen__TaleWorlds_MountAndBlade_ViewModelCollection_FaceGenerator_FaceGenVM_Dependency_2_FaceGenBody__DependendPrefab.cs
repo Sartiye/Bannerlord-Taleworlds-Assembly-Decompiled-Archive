@@ -218,11 +218,11 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 		_widget_0_0.ClipContents = true;
 		_widget_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0_0.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0_0.MarginTop = 25f;
 		_widget_0_0_0_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
@@ -294,7 +294,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 		_widget_0_0_0_4.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0_4.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0_4.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_0_0_0_4.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0_4.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0_4.MarginTop = 35f;
 		_widget_0_0_0_4_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0_4_0.HeightSizePolicy = SizePolicy.CoverChildren;
@@ -382,7 +382,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 		_widget_0_0_0_10.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0_0_0_10.PositionXOffset = 10f;
 		_widget_0_0_0_10.PositionYOffset = -128f;
-		_widget_0_0_0_10.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0_10.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0_10.UpdateChildrenStates = true;
 		_widget_0_0_0_10.MinIndex = 5;
 		_widget_0_0_0_10.MaxIndex = 50;

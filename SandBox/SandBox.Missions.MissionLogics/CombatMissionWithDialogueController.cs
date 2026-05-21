@@ -26,6 +26,8 @@ public class CombatMissionWithDialogueController : MissionLogic, IMissionAgentSp
 
 	private readonly IMissionTroopSupplier[] _troopSuppliers;
 
+	public BattleSideEnum PlayerSide => BattleSideEnum.None;
+
 	public CombatMissionWithDialogueController(IMissionTroopSupplier[] suppliers, BasicCharacterObject characterToTalkTo)
 	{
 		_troopSuppliers = suppliers;
@@ -136,7 +138,7 @@ public class CombatMissionWithDialogueController : MissionLogic, IMissionAgentSp
 		{
 			foreach (IAgentOriginBase item in troopSuppliers[i].SupplyTroops(25).ToList())
 			{
-				Agent agent = Mission.Current.SpawnTroop(item, item.BattleCombatant.Side == BattleSideEnum.Attacker, hasFormation: false, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: false, wieldInitialWeapons: true, forceDismounted: true, null, null);
+				Agent agent = Mission.Current.SpawnTroop(item, item.BattleCombatant.Side == BattleSideEnum.Attacker, hasFormation: false, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: false, wieldInitialWeapons: true, null, null);
 				_numSpawnedTroops++;
 				if (!agent.IsMainAgent)
 				{
@@ -179,7 +181,7 @@ public class CombatMissionWithDialogueController : MissionLogic, IMissionAgentSp
 		return false;
 	}
 
-	public float GetReinforcementInterval()
+	public float GetReinforcementInterval(BattleSideEnum battleSide = BattleSideEnum.None)
 	{
 		return 0f;
 	}

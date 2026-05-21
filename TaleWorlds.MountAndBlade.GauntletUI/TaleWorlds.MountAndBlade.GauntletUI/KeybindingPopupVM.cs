@@ -1,3 +1,4 @@
+using System;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -6,6 +7,8 @@ namespace TaleWorlds.MountAndBlade.GauntletUI;
 
 public class KeybindingPopupVM : ViewModel
 {
+	private readonly Action _onCancel;
+
 	private string _pressKeyText;
 
 	private string _cancelText;
@@ -44,8 +47,9 @@ public class KeybindingPopupVM : ViewModel
 		}
 	}
 
-	public KeybindingPopupVM()
+	public KeybindingPopupVM(Action onCancel)
 	{
+		_onCancel = onCancel;
 		RefreshValues();
 	}
 
@@ -56,5 +60,10 @@ public class KeybindingPopupVM : ViewModel
 		TextObject textObject = new TextObject("{=5U8vXv4E}Press {KEY} to cancel");
 		textObject.SetTextVariable("KEY", HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Exit").ToString());
 		CancelText = textObject.ToString();
+	}
+
+	public void ExecuteCancel()
+	{
+		_onCancel?.Invoke();
 	}
 }

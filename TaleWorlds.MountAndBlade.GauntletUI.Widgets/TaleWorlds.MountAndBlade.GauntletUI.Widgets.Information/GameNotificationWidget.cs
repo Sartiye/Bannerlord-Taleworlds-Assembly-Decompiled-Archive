@@ -8,19 +8,27 @@ public class GameNotificationWidget : BrushWidget
 {
 	private bool _textWidgetAlignmentDirty = true;
 
+	private float _notificationElapsedTimeInSeconds;
+
 	private int _notificationId;
 
 	private RichTextWidget _textWidget;
 
 	private ImageIdentifierWidget _announcerImageIdentifier;
 
-	private float _totalTime;
+	private float _notificationDurationInSeconds;
 
-	private float _totalDt;
+	private bool _isPaused;
 
-	public float RampUpInSeconds { get; set; }
+	private bool _mustFadeOutCurrentNotification;
 
-	public float RampDownInSeconds { get; set; }
+	private float _notificationFadeOutDelayInSeconds;
+
+	public float RampUpInSeconds { get; set; } = 0.2f;
+
+
+	public float RampDownInSeconds { get; set; } = 0.2f;
+
 
 	public ImageIdentifierWidget AnnouncerImageIdentifier
 	{
@@ -51,21 +59,22 @@ public class GameNotificationWidget : BrushWidget
 				_notificationId = value;
 				OnPropertyChanged(value, "NotificationId");
 				_textWidgetAlignmentDirty = true;
+				_notificationElapsedTimeInSeconds = 0f;
 			}
 		}
 	}
 
-	public float TotalTime
+	public float NotificationDurationInSeconds
 	{
 		get
 		{
-			return _totalTime;
+			return _notificationDurationInSeconds;
 		}
 		set
 		{
-			if (_totalTime != value)
+			if (_notificationDurationInSeconds != value)
 			{
-				_totalTime = value;
+				_notificationDurationInSeconds = value;
 			}
 		}
 	}
@@ -86,18 +95,50 @@ public class GameNotificationWidget : BrushWidget
 		}
 	}
 
-	public float TotalDt
+	public bool IsPaused
 	{
 		get
 		{
-			return _totalDt;
+			return _isPaused;
 		}
 		set
 		{
-			if (_totalDt != value)
+			if (_isPaused != value)
 			{
-				_totalDt = value;
-				OnPropertyChanged(value, "TotalDt");
+				_isPaused = value;
+				OnPropertyChanged(value, "IsPaused");
+			}
+		}
+	}
+
+	public bool MustFadeOutCurrentNotification
+	{
+		get
+		{
+			return _mustFadeOutCurrentNotification;
+		}
+		set
+		{
+			if (_mustFadeOutCurrentNotification != value)
+			{
+				_mustFadeOutCurrentNotification = value;
+				OnPropertyChanged(value, "MustFadeOutCurrentNotification");
+			}
+		}
+	}
+
+	public float NotificationFadeOutDelayInSeconds
+	{
+		get
+		{
+			return _notificationFadeOutDelayInSeconds;
+		}
+		set
+		{
+			if (_notificationFadeOutDelayInSeconds != value)
+			{
+				_notificationFadeOutDelayInSeconds = value;
+				OnPropertyChanged(value, "NotificationFadeOutDelayInSeconds");
 			}
 		}
 	}
@@ -110,7 +151,7 @@ public class GameNotificationWidget : BrushWidget
 	protected override void OnLateUpdate(float dt)
 	{
 		base.OnLateUpdate(dt);
-		if (_textWidgetAlignmentDirty)
+		if (base.IsVisible && _textWidgetAlignmentDirty)
 		{
 			ImageIdentifierWidget announcerImageIdentifier = AnnouncerImageIdentifier;
 			if (announcerImageIdentifier != null && announcerImageIdentifier.IsVisible)
@@ -121,22 +162,35 @@ public class GameNotificationWidget : BrushWidget
 			{
 				TextWidget.Brush.TextHorizontalAlignment = TextHorizontalAlignment.Center;
 			}
+			_textWidgetAlignmentDirty = false;
 		}
-		if (base.IsVisible && TotalTime > 0f && TotalDt <= TotalTime)
+		if (base.IsVisible && !IsPaused)
 		{
-			if (TotalDt <= RampUpInSeconds)
+			_notificationElapsedTimeInSeconds += dt;
+			if (MustFadeOutCurrentNotification)
 			{
-				float alphaFactor = Mathf.Lerp(0f, 1f, TotalDt / RampUpInSeconds);
+				_notificationElapsedTimeInSeconds = RampUpInSeconds + NotificationDurationInSeconds - NotificationFadeOutDelayInSeconds;
+				MustFadeOutCurrentNotification = false;
+				NotificationFadeOutDelayInSeconds = 0f;
+			}
+			if (_notificationElapsedTimeInSeconds <= RampUpInSeconds)
+			{
+				float alphaFactor = Mathf.Lerp(0f, 1f, _notificationElapsedTimeInSeconds / RampUpInSeconds);
 				this.SetGlobalAlphaRecursively(alphaFactor);
 			}
-			else if (TotalDt < TotalTime - RampDownInSeconds)
+			else if (_notificationElapsedTimeInSeconds <= RampUpInSeconds + NotificationDurationInSeconds)
 			{
 				this.SetGlobalAlphaRecursively(1f);
 			}
+			else if (_notificationElapsedTimeInSeconds < RampUpInSeconds + NotificationDurationInSeconds + RampDownInSeconds)
+			{
+				float alphaFactor2 = Mathf.Lerp(1f, 0f, (_notificationElapsedTimeInSeconds - RampUpInSeconds - NotificationDurationInSeconds) / RampDownInSeconds);
+				this.SetGlobalAlphaRecursively(alphaFactor2);
+			}
 			else
 			{
-				float alphaFactor2 = Mathf.Lerp(1f, 0f, 1f - (TotalTime - TotalDt) / RampDownInSeconds);
-				this.SetGlobalAlphaRecursively(alphaFactor2);
+				this.SetGlobalAlphaRecursively(0f);
+				EventFired("NotificationFinished");
 			}
 		}
 	}

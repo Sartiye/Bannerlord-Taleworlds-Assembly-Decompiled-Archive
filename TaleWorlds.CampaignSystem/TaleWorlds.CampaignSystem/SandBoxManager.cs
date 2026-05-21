@@ -261,6 +261,7 @@ public class SandBoxManager : GameHandler
 		gameStarter.AddModel(new DefaultCampaignShipDamageModel());
 		gameStarter.AddModel(new DefaultShipCostModel());
 		gameStarter.AddModel(new DefaultCampaignShipParametersModel());
+		gameStarter.AddModel(new DefaultClanMemberPartyRoleModel());
 		gameStarter.AddModel(new DefaultPartySizeLimitModel());
 		gameStarter.AddModel(new DefaultPartyShipLimitModel());
 		gameStarter.AddModel(new DefaultPartyWageModel());
@@ -410,7 +411,7 @@ public class SandBoxManager : GameHandler
 					objectType.InitializeHeroCharacterOnAfterLoad();
 					continue;
 				}
-				Debug.FailedAssert("saved a characterobject but not its heroobject", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\SandBoxManager.cs", "InitializeCharactersAfterLoad", 484);
+				Debug.FailedAssert("saved a characterobject but not its heroobject", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\SandBoxManager.cs", "InitializeCharactersAfterLoad", 485);
 				list.Add(objectType);
 			}
 		}

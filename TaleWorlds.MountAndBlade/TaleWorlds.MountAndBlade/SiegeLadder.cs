@@ -658,7 +658,7 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 		{
 			return float.MinValue;
 		}
-		_usableStandingPoints.Clear();
+		UsableStandingPoints.Clear();
 		bool flag = false;
 		bool flag2 = false;
 		for (int i = 0; i < base.StandingPoints.Count; i++)
@@ -672,7 +672,7 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 			{
 				if (!flag2)
 				{
-					_usableStandingPoints.Clear();
+					UsableStandingPoints.Clear();
 				}
 				flag2 = true;
 			}
@@ -681,9 +681,9 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 				continue;
 			}
 			flag = true;
-			_usableStandingPoints.Add((i, standingPoint));
+			UsableStandingPoints.Add((i, standingPoint));
 		}
-		_areUsableStandingPointsVacant = flag2;
+		AreUsableStandingPointsVacant = flag2;
 		if (!flag)
 		{
 			return float.MinValue;
@@ -692,7 +692,7 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 		{
 			return 1f;
 		}
-		if (!_isDetachmentRecentlyEvaluated)
+		if (!base.IsDetachmentRecentlyEvaluated)
 		{
 			return 0.1f;
 		}

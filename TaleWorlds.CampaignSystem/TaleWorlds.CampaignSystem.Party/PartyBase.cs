@@ -301,7 +301,7 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 			}
 			if (value != null && IsMobile && MapEvent != null && MapEvent.DefenderSide.LeaderParty == this)
 			{
-				Debug.FailedAssert($"Double MapEvent For {Name}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyBase.cs", "MapEventSide", 257);
+				Debug.FailedAssert($"Double MapEvent For {Name}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyBase.cs", "MapEventSide", 246);
 			}
 			if (_mapEventSide != null)
 			{
@@ -316,7 +316,7 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 			{
 				return;
 			}
-			if (IsActive)
+			if (IsActive && MobileParty.IsTransitionInProgress)
 			{
 				MobileParty.CancelNavigationTransition();
 			}
@@ -591,21 +591,6 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 		SetVisualAsDirty();
 	}
 
-	public void SetCustomBanner(Banner banner)
-	{
-		CustomBanner = banner;
-		SetVisualAsDirty();
-	}
-
-	int IBattleCombatant.GetTacticsSkillAmount()
-	{
-		if (LeaderHero != null)
-		{
-			return LeaderHero.GetSkillValue(DefaultSkills.Tactics);
-		}
-		return 0;
-	}
-
 	CampaignVec2 IInteractablePoint.GetInteractionPosition(MobileParty interactingParty)
 	{
 		if (IsMobile)
@@ -637,7 +622,7 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 		if (flag)
 		{
 			GetEncounterTargetPoint(dt, mobileParty, out var targetPoint, out var neededMaximumDistanceForEncountering);
-			float length = (mobileParty.Position - targetPoint).Length;
+			float length = (mobileParty.Position.ToVec2() - targetPoint.ToVec2()).Length;
 			flag = (mobileParty.BesiegedSettlement != null && mobileParty.BesiegedSettlement == mobileParty.TargetSettlement) || length < neededMaximumDistanceForEncountering;
 		}
 		return flag;
@@ -658,21 +643,24 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 	private static void GetEncounterTargetPoint(float dt, MobileParty mobileParty, out CampaignVec2 targetPoint, out float neededMaximumDistanceForEncountering)
 	{
 		EncounterModel encounterModel = Campaign.Current.Models.EncounterModel;
+		float num = (mobileParty.IsCurrentlyAtSea ? encounterModel.NeededMaximumNavalDistanceForEncounteringMobileParty : encounterModel.NeededMaximumLandDistanceForEncounteringMobileParty);
 		if (mobileParty.Army != null)
 		{
-			neededMaximumDistanceForEncountering = TaleWorlds.Library.MathF.Clamp(encounterModel.NeededMaximumDistanceForEncounteringMobileParty * TaleWorlds.Library.MathF.Sqrt(mobileParty.Army.LeaderParty.AttachedParties.Count + 1), TaleWorlds.Library.MathF.Max(encounterModel.NeededMaximumDistanceForEncounteringMobileParty, dt * Campaign.Current.EstimatedMaximumLordPartySpeedExceptPlayer), TaleWorlds.Library.MathF.Max(encounterModel.MaximumAllowedDistanceForEncounteringMobilePartyInArmy, dt * (Campaign.Current.EstimatedMaximumLordPartySpeedExceptPlayer + 0.01f)));
+			float a = (mobileParty.IsCurrentlyAtSea ? encounterModel.MaximumAllowedNavalDistanceForEncounteringMobilePartyInArmy : encounterModel.MaximumAllowedLandDistanceForEncounteringMobilePartyInArmy);
+			neededMaximumDistanceForEncountering = TaleWorlds.Library.MathF.Clamp(num * TaleWorlds.Library.MathF.Sqrt(mobileParty.Army.LeaderParty.AttachedParties.Count + 1), TaleWorlds.Library.MathF.Max(num, dt * Campaign.Current.EstimatedMaximumLordPartySpeedExceptPlayer), TaleWorlds.Library.MathF.Max(a, dt * (Campaign.Current.EstimatedMaximumLordPartySpeedExceptPlayer + 0.01f)));
 		}
 		else
 		{
-			neededMaximumDistanceForEncountering = TaleWorlds.Library.MathF.Max(encounterModel.NeededMaximumDistanceForEncounteringMobileParty, dt * Campaign.Current.EstimatedMaximumLordPartySpeedExceptPlayer);
+			neededMaximumDistanceForEncountering = TaleWorlds.Library.MathF.Max(num, dt * Campaign.Current.EstimatedMaximumLordPartySpeedExceptPlayer);
 		}
 		if (mobileParty.IsCurrentlyEngagingSettlement)
 		{
-			targetPoint = (mobileParty.IsTargetingPort ? mobileParty.ShortTermTargetSettlement.PortPosition : mobileParty.ShortTermTargetSettlement.GatePosition);
-			neededMaximumDistanceForEncountering = (mobileParty.ShortTermTargetSettlement.IsTown ? encounterModel.NeededMaximumDistanceForEncounteringTown : encounterModel.NeededMaximumDistanceForEncounteringVillage);
+			Settlement shortTermTargetSettlement = mobileParty.ShortTermTargetSettlement;
+			targetPoint = (mobileParty.IsTargetingPort ? shortTermTargetSettlement.PortPosition : shortTermTargetSettlement.GatePosition);
+			neededMaximumDistanceForEncountering = (shortTermTargetSettlement.IsTown ? encounterModel.NeededMaximumDistanceForEncounteringTown : encounterModel.NeededMaximumDistanceForEncounteringVillage);
 			if (mobileParty.IsTargetingPort)
 			{
-				SiegeEvent siegeEvent = mobileParty.ShortTermTargetSettlement.SiegeEvent;
+				SiegeEvent siegeEvent = shortTermTargetSettlement.SiegeEvent;
 				if (siegeEvent != null && siegeEvent.IsBlockadeActive)
 				{
 					neededMaximumDistanceForEncountering = encounterModel.NeededMaximumDistanceForEncounteringBlockade;
@@ -691,6 +679,30 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 		{
 			targetPoint = mobileParty.Ai.AiBehaviorInteractable.GetInteractionPosition(mobileParty);
 		}
+	}
+
+	public void SetCustomBanner(Banner banner)
+	{
+		CustomBanner = banner;
+		SetVisualAsDirty();
+	}
+
+	public bool IsUnderPlayersCommand(BattleSideEnum playerSide)
+	{
+		if (playerSide != Side)
+		{
+			return false;
+		}
+		return IsPartyUnderPlayerCommand(this);
+	}
+
+	int IBattleCombatant.GetTacticsSkillAmount()
+	{
+		if (LeaderHero != null)
+		{
+			return LeaderHero.GetSkillValue(DefaultSkills.Tactics);
+		}
+		return 0;
 	}
 
 	internal void AfterLoad()
@@ -785,7 +797,7 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 	{
 		if (tier < 0)
 		{
-			Debug.FailedAssert("Requested men count for negative tier.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyBase.cs", "GetNumberOfHealthyMenOfTier", 631);
+			Debug.FailedAssert("Requested men count for negative tier.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyBase.cs", "GetNumberOfHealthyMenOfTier", 652);
 			return 0;
 		}
 		bool flag = false;
@@ -1047,6 +1059,7 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 	private static void CalculateVisibilityAndInspected(Vec2 fromPosition, IMapPoint mapPoint, out bool isVisible, out bool isInspected, float mainPartySeeingRange = 0f)
 	{
 		isInspected = false;
+		isVisible = false;
 		MobileParty mobileParty = mapPoint as MobileParty;
 		if (mobileParty?.Army != null && mobileParty.Army.LeaderParty.AttachedParties.IndexOf(mobileParty) >= 0)
 		{
@@ -1058,42 +1071,39 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 			isVisible = true;
 			return;
 		}
-		float num = CalculateVisibilityRangeOfMapPoint(fromPosition, mapPoint, mainPartySeeingRange);
-		isVisible = num > 1f && mapPoint.IsActive;
-		if (isVisible)
+		if (mobileParty != null && mobileParty.MapEvent != null && mobileParty.MapEvent.IsRaid && mobileParty.MapEvent.MapEventSettlement.IsInspected)
 		{
-			if (mapPoint.IsInspected)
+			isVisible = true;
+			return;
+		}
+		float num = CalculateVisibilityRangeOfMapPoint(fromPosition, mapPoint, mainPartySeeingRange);
+		if (num < 1f)
+		{
+			float partySpottingRatioForMainPartySeeingRange = Campaign.Current.Models.MapVisibilityModel.GetPartySpottingRatioForMainPartySeeingRange(mobileParty);
+			isVisible = mapPoint.IsActive && num <= partySpottingRatioForMainPartySeeingRange;
+			if (isVisible)
 			{
 				isInspected = true;
-			}
-			else
-			{
-				isInspected = 1f / num < Campaign.Current.Models.MapVisibilityModel.GetPartyRelativeInspectionRange(mapPoint);
 			}
 		}
 	}
 
 	private static bool CalculateSettlementInspected(Vec2 fromPosition, IMapPoint mapPoint, float mainPartySeeingRange = 0f)
 	{
-		return 1f / CalculateVisibilityRangeOfMapPoint(fromPosition, mapPoint, mainPartySeeingRange) < Campaign.Current.Models.MapVisibilityModel.GetPartyRelativeInspectionRange(mapPoint);
+		float num = 1.5f;
+		return CalculateVisibilityRangeOfMapPoint(fromPosition, mapPoint, mainPartySeeingRange) <= num;
 	}
 
 	private static float CalculateVisibilityRangeOfMapPoint(Vec2 fromPosition, IMapPoint mapPoint, float mainPartySeeingRange)
 	{
 		MobileParty mainParty = MobileParty.MainParty;
-		float lengthSquared = (fromPosition - mapPoint.Position.ToVec2()).LengthSquared;
+		Vec2 vec = fromPosition - mapPoint.Position.ToVec2();
 		float num = mainPartySeeingRange;
 		if (mainPartySeeingRange == 0f)
 		{
 			num = mainParty.SeeingRange;
 		}
-		float num2 = num * num / lengthSquared;
-		float num3 = 0.25f;
-		if (mapPoint is MobileParty party)
-		{
-			num3 = Campaign.Current.Models.MapVisibilityModel.GetPartySpottingDifficulty(mainParty, party);
-		}
-		return num2 / num3;
+		return vec.Length / num;
 	}
 
 	public void SetAsCameraFollowParty()

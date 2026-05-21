@@ -25,17 +25,17 @@ public class CharacterDeveloperHeroItemVM : ViewModel
 
 	private HeroViewModel _heroCharacter;
 
-	private int _skillPointsRequiredForCurrentLevel;
+	private int _xpRequiredForNextLevel;
 
-	private int _skillPointsRequiredForNextLevel;
-
-	private int _currentTotalSkill;
+	private int _currentTotalXp;
 
 	private int _levelProgressPercentage;
 
 	private int _unspentCharacterPoints;
 
 	private int _unspentAttributePoints;
+
+	private string _currentCharacterLevelLbl;
 
 	private string _levelProgressText;
 
@@ -51,7 +51,7 @@ public class CharacterDeveloperHeroItemVM : ViewModel
 
 	private CharacterAttributeItemVM _currentInspectedAttribute;
 
-	private string _heroLevelText;
+	private string _heroNextLevelText;
 
 	private string _focusPointsText;
 
@@ -210,6 +210,23 @@ public class CharacterDeveloperHeroItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public string CurrentCharacterLevelLbl
+	{
+		get
+		{
+			return _currentCharacterLevelLbl;
+		}
+		set
+		{
+			if (value != _currentCharacterLevelLbl)
+			{
+				_currentCharacterLevelLbl = value;
+				OnPropertyChangedWithValue(value, "CurrentCharacterLevelLbl");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public string LevelProgressText
 	{
 		get
@@ -278,52 +295,35 @@ public class CharacterDeveloperHeroItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public int CurrentTotalSkill
+	public int CurrentTotalXp
 	{
 		get
 		{
-			return _currentTotalSkill;
+			return _currentTotalXp;
 		}
 		set
 		{
-			if (value != _currentTotalSkill)
+			if (value != _currentTotalXp)
 			{
-				_currentTotalSkill = value;
-				OnPropertyChangedWithValue(value, "CurrentTotalSkill");
+				_currentTotalXp = value;
+				OnPropertyChangedWithValue(value, "CurrentTotalXp");
 			}
 		}
 	}
 
 	[DataSourceProperty]
-	public int SkillPointsRequiredForCurrentLevel
+	public int XpRequiredForNextLevel
 	{
 		get
 		{
-			return _skillPointsRequiredForCurrentLevel;
+			return _xpRequiredForNextLevel;
 		}
 		set
 		{
-			if (value != _skillPointsRequiredForCurrentLevel)
+			if (value != _xpRequiredForNextLevel)
 			{
-				_skillPointsRequiredForCurrentLevel = value;
-				OnPropertyChangedWithValue(value, "SkillPointsRequiredForCurrentLevel");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public int SkillPointsRequiredForNextLevel
-	{
-		get
-		{
-			return _skillPointsRequiredForNextLevel;
-		}
-		set
-		{
-			if (value != _skillPointsRequiredForNextLevel)
-			{
-				_skillPointsRequiredForNextLevel = value;
-				OnPropertyChangedWithValue(value, "SkillPointsRequiredForNextLevel");
+				_xpRequiredForNextLevel = value;
+				OnPropertyChangedWithValue(value, "XpRequiredForNextLevel");
 			}
 		}
 	}
@@ -414,18 +414,18 @@ public class CharacterDeveloperHeroItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public string HeroLevelText
+	public string HeroNextLevelText
 	{
 		get
 		{
-			return _heroLevelText;
+			return _heroNextLevelText;
 		}
 		set
 		{
-			if (value != _heroLevelText)
+			if (value != _heroNextLevelText)
 			{
-				_heroLevelText = value;
-				OnPropertyChangedWithValue(value, "HeroLevelText");
+				_heroNextLevelText = value;
+				OnPropertyChangedWithValue(value, "HeroNextLevelText");
 			}
 		}
 	}
@@ -467,8 +467,8 @@ public class CharacterDeveloperHeroItemVM : ViewModel
 		base.RefreshValues();
 		StringHelpers.SetCharacterProperties("HERO", Hero.CharacterObject);
 		HeroNameText = Hero.CharacterObject.Name.ToString();
-		MBTextManager.SetTextVariable("LEVEL", Hero.CharacterObject.Level);
-		HeroLevelText = GameTexts.FindText("str_level_with_value").ToString();
+		MBTextManager.SetTextVariable("LEVEL", Hero.CharacterObject.Level + 1);
+		HeroNextLevelText = GameTexts.FindText("str_level_with_value").ToString();
 		HeroInfoText = GameTexts.FindText("str_hero_name_level").ToString();
 		FocusPointsText = GameTexts.FindText("str_focus_points").ToString();
 		InitializeCharacter();
@@ -519,7 +519,7 @@ public class CharacterDeveloperHeroItemVM : ViewModel
 			GameTexts.SetVariable("SETTLEMENT_NAME", Hero.GovernorOf.Name.ToString());
 			CharacterStats.Add(new StringPairItemVM(GameTexts.FindText("str_governor_of_label").ToString(), ""));
 		}
-		if (MobileParty.MainParty.GetHeroPartyRole(Hero) != 0)
+		if (MobileParty.MainParty.GetHeroPartyRoles(Hero).Count > 0)
 		{
 			CharacterStats.Add(new StringPairItemVM(CampaignUIHelper.GetHeroClanRoleText(Hero, Clan.PlayerClan), ""));
 		}
@@ -553,18 +553,19 @@ public class CharacterDeveloperHeroItemVM : ViewModel
 
 	public void RefreshCharacterValues()
 	{
-		CurrentTotalSkill = HeroDeveloper.TotalXp - HeroDeveloper.GetXpRequiredForLevel(Hero.CharacterObject.Level);
-		SkillPointsRequiredForNextLevel = HeroDeveloper.GetXpRequiredForLevel(Hero.CharacterObject.Level + 1) - HeroDeveloper.GetXpRequiredForLevel(Hero.CharacterObject.Level);
-		GameTexts.SetVariable("CURRENTAMOUNT", CurrentTotalSkill);
-		GameTexts.SetVariable("TARGETAMOUNT", SkillPointsRequiredForNextLevel);
+		CurrentCharacterLevelLbl = Hero.Level.ToString();
+		CurrentTotalXp = HeroDeveloper.TotalXp;
+		XpRequiredForNextLevel = Campaign.Current.Models.CharacterDevelopmentModel.SkillsRequiredForLevel(Hero.Level + 1);
+		GameTexts.SetVariable("CURRENTAMOUNT", CurrentTotalXp);
+		GameTexts.SetVariable("TARGETAMOUNT", XpRequiredForNextLevel);
 		LevelProgressText = GameTexts.FindText("str_character_skillpoint_progress").ToString();
 		GameTexts.SetVariable("newline", "\n");
-		GameTexts.SetVariable("CURRENT_SKILL_POINTS", CurrentTotalSkill);
+		GameTexts.SetVariable("CURRENT_SKILL_POINTS", CurrentTotalXp);
 		GameTexts.SetVariable("STR1", GameTexts.FindText("str_total_skill_points"));
-		GameTexts.SetVariable("NEXT_SKILL_POINTS", SkillPointsRequiredForNextLevel);
+		GameTexts.SetVariable("NEXT_SKILL_POINTS", XpRequiredForNextLevel);
 		GameTexts.SetVariable("STR2", GameTexts.FindText("str_next_level_at"));
 		string content = GameTexts.FindText("str_string_newline_string").ToString();
-		GameTexts.SetVariable("SKILL_LEVEL_FOR_LEVEL_UP", SkillPointsRequiredForNextLevel - CurrentTotalSkill);
+		GameTexts.SetVariable("SKILL_LEVEL_FOR_LEVEL_UP", XpRequiredForNextLevel - CurrentTotalXp);
 		GameTexts.SetVariable("STR1", content);
 		GameTexts.SetVariable("STR2", GameTexts.FindText("str_how_to_level_up_character"));
 		string text = GameTexts.FindText("str_string_newline_string").ToString();

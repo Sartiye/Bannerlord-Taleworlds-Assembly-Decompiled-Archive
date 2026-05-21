@@ -26,6 +26,11 @@ public class DefaultTroopSupplierProbabilityModel : TroopSupplierProbabilityMode
 			List<KeyValuePair<int, FlattenedTroopRosterElement>> list2 = new List<KeyValuePair<int, FlattenedTroopRosterElement>>();
 			List<KeyValuePair<int, FlattenedTroopRosterElement>> list3 = new List<KeyValuePair<int, FlattenedTroopRosterElement>>();
 			List<KeyValuePair<int, FlattenedTroopRosterElement>> list4 = new List<KeyValuePair<int, FlattenedTroopRosterElement>>();
+			int[] array = new int[8];
+			for (int i = 0; i < 8; i++)
+			{
+				array[i] = 0;
+			}
 			int num = 0;
 			foreach (FlattenedTroopRosterElement troop in battleParty.Troops)
 			{
@@ -35,7 +40,7 @@ public class DefaultTroopSupplierProbabilityModel : TroopSupplierProbabilityMode
 					switch (unitSpawnPrioritizations)
 					{
 					case UnitSpawnPrioritizations.Default:
-						key = num;
+						key = -num;
 						break;
 					case UnitSpawnPrioritizations.HighLevel:
 						key = troop.Troop.Level;
@@ -43,6 +48,13 @@ public class DefaultTroopSupplierProbabilityModel : TroopSupplierProbabilityMode
 					case UnitSpawnPrioritizations.LowLevel:
 						key = -troop.Troop.Level;
 						break;
+					case UnitSpawnPrioritizations.Homogeneous:
+					{
+						int formationClass = (int)troop.Troop.GetFormationClass();
+						key = -array[formationClass];
+						array[formationClass]++;
+						break;
+					}
 					}
 					bool isHero = troop.Troop.IsHero;
 					if (isHero && troop.Troop.IsPlayerCharacter)
@@ -63,6 +75,7 @@ public class DefaultTroopSupplierProbabilityModel : TroopSupplierProbabilityMode
 					}
 					if (flag2)
 					{
+						priorityTroops.Remove(priorityTroops.FindIndexOfCharacter(troop.Troop));
 						if (isHero)
 						{
 							list3.Add(new KeyValuePair<int, FlattenedTroopRosterElement>(key, troop));
@@ -83,25 +96,35 @@ public class DefaultTroopSupplierProbabilityModel : TroopSupplierProbabilityMode
 				}
 				num++;
 			}
+			if (unitSpawnPrioritizations == UnitSpawnPrioritizations.Homogeneous)
+			{
+				for (int j = 0; j < list.Count; j++)
+				{
+					KeyValuePair<int, FlattenedTroopRosterElement> keyValuePair = list[j];
+					int formationClass2 = (int)keyValuePair.Value.Troop.GetFormationClass();
+					int key2 = keyValuePair.Key * list.Count / array[formationClass2];
+					list[j] = new KeyValuePair<int, FlattenedTroopRosterElement>(key2, keyValuePair.Value);
+				}
+			}
 			list3 = list3.OrderByQ((KeyValuePair<int, FlattenedTroopRosterElement> x) => x.Key).ToList();
 			list4 = list4.OrderByQ((KeyValuePair<int, FlattenedTroopRosterElement> x) => x.Key).ToList();
 			list2 = list2.OrderByQ((KeyValuePair<int, FlattenedTroopRosterElement> x) => x.Key).ToList();
 			list = list.OrderByQ((KeyValuePair<int, FlattenedTroopRosterElement> x) => x.Key).ToList();
-			for (int i = 0; i < list3.Count; i++)
+			for (int k = 0; k < list3.Count; k++)
 			{
-				priorityList.Add((list3[i].Value, battleParty, 3f + (float)(i + 1) / (float)list3.Count));
+				priorityList.Add((list3[k].Value, battleParty, 3f + (float)(k + 1) / (float)list3.Count));
 			}
-			for (int j = 0; j < list4.Count; j++)
+			for (int l = 0; l < list4.Count; l++)
 			{
-				priorityList.Add((list4[j].Value, battleParty, 2f + (float)(j + 1) / (float)list4.Count));
+				priorityList.Add((list4[l].Value, battleParty, 2f + (float)(l + 1) / (float)list4.Count));
 			}
-			for (int k = 0; k < list2.Count; k++)
+			for (int m = 0; m < list2.Count; m++)
 			{
-				priorityList.Add((list2[k].Value, battleParty, 1f + (float)(k + 1) / (float)list2.Count));
+				priorityList.Add((list2[m].Value, battleParty, 1f + (float)(m + 1) / (float)list2.Count));
 			}
-			for (int l = 0; l < list.Count; l++)
+			for (int n = 0; n < list.Count; n++)
 			{
-				priorityList.Add((list[l].Value, battleParty, (float)(l + 1) / (float)list.Count));
+				priorityList.Add((list[n].Value, battleParty, (float)(n + 1) / (float)list.Count));
 			}
 			return;
 		}

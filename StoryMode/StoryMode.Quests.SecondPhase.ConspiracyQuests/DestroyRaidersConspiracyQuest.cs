@@ -247,22 +247,49 @@ public class DestroyRaidersConspiracyQuest : ConspiracyQuestBase
 	private Settlement DetermineTargetSettlement()
 	{
 		Settlement settlement = null;
+		Settlement centralSettlement = StoryModeHeroes.ImperialMentor.HomeSettlement;
 		if (!Clan.PlayerClan.Settlements.IsEmpty())
 		{
-			settlement = Clan.PlayerClan.Settlements.GetRandomElementWithPredicate((Settlement t) => t.IsTown || t.IsCastle);
+			settlement = Clan.PlayerClan.Settlements.GetRandomElementWithPredicate(delegate(Settlement t)
+			{
+				if (t.IsTown || t.IsCastle)
+				{
+					MapDistanceModel mapDistanceModel3 = Campaign.Current.Models.MapDistanceModel;
+					CampaignVec2 fromPoint3 = t.GatePosition;
+					CampaignVec2 toPoint3 = centralSettlement.GatePosition;
+					return mapDistanceModel3.PathExistBetweenPoints(in fromPoint3, in toPoint3, MobileParty.NavigationType.Default);
+				}
+				return false;
+			});
 		}
 		else
 		{
 			MBList<Settlement> mBList = StoryModeManager.Current.MainStoryLine.PlayerSupportedKingdom.Settlements.Where((Settlement t) => t.IsTown || t.IsCastle).ToMBList();
 			if (!mBList.IsEmpty())
 			{
-				settlement = mBList.GetRandomElement();
+				settlement = mBList.GetRandomElementWithPredicate(delegate(Settlement t)
+				{
+					MapDistanceModel mapDistanceModel2 = Campaign.Current.Models.MapDistanceModel;
+					CampaignVec2 fromPoint2 = t.GatePosition;
+					CampaignVec2 toPoint2 = centralSettlement.GatePosition;
+					return mapDistanceModel2.PathExistBetweenPoints(in fromPoint2, in toPoint2, MobileParty.NavigationType.Default);
+				});
 			}
 		}
 		if (settlement == null)
 		{
-			Debug.FailedAssert("Destroy raiders conspiracy quest settlement is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Quests\\SecondPhase\\ConspiracyQuests\\DestroyRaidersConspiracyQuest.cs", "DetermineTargetSettlement", 304);
-			settlement = Settlement.All.GetRandomElementWithPredicate((Settlement t) => t.IsTown || t.IsCastle);
+			Debug.FailedAssert("Destroy raiders conspiracy quest settlement is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Quests\\SecondPhase\\ConspiracyQuests\\DestroyRaidersConspiracyQuest.cs", "DetermineTargetSettlement", 306);
+			settlement = Settlement.All.GetRandomElementWithPredicate(delegate(Settlement t)
+			{
+				if (t.IsTown || t.IsCastle)
+				{
+					MapDistanceModel mapDistanceModel = Campaign.Current.Models.MapDistanceModel;
+					CampaignVec2 fromPoint = t.GatePosition;
+					CampaignVec2 toPoint = centralSettlement.GatePosition;
+					return mapDistanceModel.PathExistBetweenPoints(in fromPoint, in toPoint, MobileParty.NavigationType.Default);
+				}
+				return false;
+			});
 		}
 		return settlement;
 	}
@@ -279,7 +306,14 @@ public class DestroyRaidersConspiracyQuest : ConspiracyQuestBase
 	private List<Settlement> DetermineClosestHideouts()
 	{
 		MapDistanceModel model = Campaign.Current.Models.MapDistanceModel;
-		List<Settlement> list = (from x in Hideout.All
+		Settlement centralSettlement = StoryModeHeroes.ImperialMentor.HomeSettlement;
+		List<Settlement> list = (from x in Hideout.All.Where(delegate(Hideout t)
+			{
+				MapDistanceModel mapDistanceModel = Campaign.Current.Models.MapDistanceModel;
+				CampaignVec2 fromPoint = t.Settlement.GatePosition;
+				CampaignVec2 toPoint = centralSettlement.GatePosition;
+				return mapDistanceModel.PathExistBetweenPoints(in fromPoint, in toPoint, MobileParty.NavigationType.Default);
+			})
 			select x.Settlement into t
 			orderby model.GetDistance(_targetSettlement, t, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default)
 			select t).Take(3).ToList();
@@ -419,7 +453,7 @@ public class DestroyRaidersConspiracyQuest : ConspiracyQuestBase
 	{
 		if (prisoner.Clan != Clan.PlayerClan && capturer.IsMobile && (_regularRaiderParties.Contains(capturer.MobileParty) || _specialRaiderParty == capturer.MobileParty))
 		{
-			Debug.FailedAssert("Hero has been taken prisoner by conspiracy raider party", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Quests\\SecondPhase\\ConspiracyQuests\\DestroyRaidersConspiracyQuest.cs", "OnHeroTakenPrisoner", 530);
+			Debug.FailedAssert("Hero has been taken prisoner by conspiracy raider party", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Quests\\SecondPhase\\ConspiracyQuests\\DestroyRaidersConspiracyQuest.cs", "OnHeroTakenPrisoner", 533);
 			EndCaptivityAction.ApplyByEscape(prisoner);
 		}
 	}

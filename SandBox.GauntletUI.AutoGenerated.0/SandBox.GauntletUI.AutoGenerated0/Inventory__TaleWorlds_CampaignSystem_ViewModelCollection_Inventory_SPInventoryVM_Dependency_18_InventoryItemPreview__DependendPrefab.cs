@@ -25,9 +25,9 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 
 	private BrushWidget _widget_4;
 
-	private TextWidget _widget_4_0;
+	private ItemTableauWidget _widget_4_0;
 
-	private ItemTableauWidget _widget_4_1;
+	private TextWidget _widget_4_1;
 
 	private ButtonWidget _widget_5;
 
@@ -53,9 +53,9 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget.AddChild(_widget_3);
 		_widget_4 = new BrushWidget(base.Context);
 		_widget.AddChild(_widget_4);
-		_widget_4_0 = new TextWidget(base.Context);
+		_widget_4_0 = new ItemTableauWidget(base.Context);
 		_widget_4.AddChild(_widget_4_0);
-		_widget_4_1 = new ItemTableauWidget(base.Context);
+		_widget_4_1 = new TextWidget(base.Context);
 		_widget_4.AddChild(_widget_4_1);
 		_widget_5 = new ButtonWidget(base.Context);
 		_widget.AddChild(_widget_5);
@@ -96,19 +96,20 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget_4.VerticalAlignment = VerticalAlignment.Top;
 		_widget_4.MarginTop = 100f;
 		_widget_4.Brush = base.Context.GetBrush("Frame1Brush");
-		_widget_4_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_0.MarginTop = 27f;
+		_widget_4.Brush.ColorFactor = 1.5f;
+		_widget_4_0.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_4_0.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_4_0.SuggestedWidth = 750f;
+		_widget_4_0.SuggestedHeight = 750f;
+		_widget_4_0.MarginTop = 15f;
 		_widget_4_0.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_4_0.Brush = base.Context.GetBrush("InventoryButtonTextBrush");
-		_widget_4_0.Brush.FontSize = 36;
-		_widget_4_0.Brush.TextHorizontalAlignment = TextHorizontalAlignment.Center;
-		_widget_4_1.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_4_1.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4_1.SuggestedWidth = 750f;
-		_widget_4_1.SuggestedHeight = 750f;
-		_widget_4_1.MarginTop = 15f;
+		_widget_4_1.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_4_1.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_4_1.MarginTop = 27f;
 		_widget_4_1.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_4_1.Brush = base.Context.GetBrush("InventoryButtonTextBrush");
+		_widget_4_1.Brush.FontSize = 36;
+		_widget_4_1.Brush.TextHorizontalAlignment = TextHorizontalAlignment.Center;
 		_widget_5.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_5.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_5.SuggestedWidth = 84f;
@@ -143,15 +144,15 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 			_widget.uintPropertyChanged -= uintPropertyChangedListenerOf_widget;
 			_widget.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget;
 			_widget_3.EventFire -= EventListenerOf_widget_3;
-			_widget_4_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0;
+			_widget_4_1.PropertyChanged -= PropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_1;
 			_widget_5.EventFire -= EventListenerOf_widget_5;
 			if (_datasource_Root_ItemTableau != null)
 			{
@@ -164,15 +165,15 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 				_datasource_Root_ItemTableau.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ItemTableau;
 				_datasource_Root_ItemTableau.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ItemTableau;
 				_datasource_Root_ItemTableau.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ItemTableau;
-				_widget_4_1.PropertyChanged -= PropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_1;
+				_widget_4_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0;
 				_datasource_Root_ItemTableau = null;
 			}
 			_datasource_Root = null;
@@ -253,59 +254,6 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_4_0(string propertyName)
-	{
-		if (propertyName == "Text")
-		{
-			_datasource_Root.ItemName = _widget_4_0.Text;
-		}
-	}
-
 	private void PropertyChangedListenerOf_widget_4_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
 		HandleWidgetPropertyChangeOf_widget_4_1(propertyName);
@@ -353,16 +301,69 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 
 	private void HandleWidgetPropertyChangeOf_widget_4_1(string propertyName)
 	{
+		if (propertyName == "Text")
+		{
+			_datasource_Root.ItemName = _widget_4_1.Text;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4_0(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4_0(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4_0(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4_0(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4_0(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4_0(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4_0(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4_0(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_4_0(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_4_0(string propertyName)
+	{
 		switch (propertyName)
 		{
 		case "ItemModifierId":
-			_datasource_Root_ItemTableau.ItemModifierId = _widget_4_1.ItemModifierId;
+			_datasource_Root_ItemTableau.ItemModifierId = _widget_4_0.ItemModifierId;
 			break;
 		case "StringId":
-			_datasource_Root_ItemTableau.StringId = _widget_4_1.StringId;
+			_datasource_Root_ItemTableau.StringId = _widget_4_0.StringId;
 			break;
 		case "BannerCode":
-			_datasource_Root_ItemTableau.BannerCode = _widget_4_1.BannerCode;
+			_datasource_Root_ItemTableau.BannerCode = _widget_4_0.BannerCode;
 			break;
 		}
 	}
@@ -423,7 +424,7 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 			_widget.IsPreviewOpen = _datasource_Root.IsSelected;
 			break;
 		case "ItemName":
-			_widget_4_0.Text = _datasource_Root.ItemName;
+			_widget_4_1.Text = _datasource_Root.ItemName;
 			break;
 		}
 	}
@@ -478,13 +479,13 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		switch (propertyName)
 		{
 		case "ItemModifierId":
-			_widget_4_1.ItemModifierId = _datasource_Root_ItemTableau.ItemModifierId;
+			_widget_4_0.ItemModifierId = _datasource_Root_ItemTableau.ItemModifierId;
 			break;
 		case "StringId":
-			_widget_4_1.StringId = _datasource_Root_ItemTableau.StringId;
+			_widget_4_0.StringId = _datasource_Root_ItemTableau.StringId;
 			break;
 		case "BannerCode":
-			_widget_4_1.BannerCode = _datasource_Root_ItemTableau.BannerCode;
+			_widget_4_0.BannerCode = _datasource_Root_ItemTableau.BannerCode;
 			break;
 		}
 	}
@@ -512,15 +513,15 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 			_widget.uintPropertyChanged -= uintPropertyChangedListenerOf_widget;
 			_widget.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget;
 			_widget_3.EventFire -= EventListenerOf_widget_3;
-			_widget_4_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0;
+			_widget_4_1.PropertyChanged -= PropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_1;
 			_widget_5.EventFire -= EventListenerOf_widget_5;
 			if (_datasource_Root_ItemTableau != null)
 			{
@@ -533,15 +534,15 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 				_datasource_Root_ItemTableau.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ItemTableau;
 				_datasource_Root_ItemTableau.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ItemTableau;
 				_datasource_Root_ItemTableau.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ItemTableau;
-				_widget_4_1.PropertyChanged -= PropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_1;
+				_widget_4_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0;
 				_datasource_Root_ItemTableau = null;
 			}
 			_datasource_Root = null;
@@ -569,16 +570,16 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 			_widget.uintPropertyChanged += uintPropertyChangedListenerOf_widget;
 			_widget.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget;
 			_widget_3.EventFire += EventListenerOf_widget_3;
-			_widget_4_0.Text = _datasource_Root.ItemName;
-			_widget_4_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0;
-			_widget_4_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0;
+			_widget_4_1.Text = _datasource_Root.ItemName;
+			_widget_4_1.PropertyChanged += PropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.intPropertyChanged += intPropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_1;
+			_widget_4_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_1;
 			_widget_5.EventFire += EventListenerOf_widget_5;
 			_datasource_Root_ItemTableau = _datasource_Root.ItemTableau;
 			if (_datasource_Root_ItemTableau != null)
@@ -592,18 +593,18 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 				_datasource_Root_ItemTableau.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ItemTableau;
 				_datasource_Root_ItemTableau.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ItemTableau;
 				_datasource_Root_ItemTableau.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ItemTableau;
-				_widget_4_1.ItemModifierId = _datasource_Root_ItemTableau.ItemModifierId;
-				_widget_4_1.StringId = _datasource_Root_ItemTableau.StringId;
-				_widget_4_1.BannerCode = _datasource_Root_ItemTableau.BannerCode;
-				_widget_4_1.PropertyChanged += PropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.intPropertyChanged += intPropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_1;
-				_widget_4_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_1;
+				_widget_4_0.ItemModifierId = _datasource_Root_ItemTableau.ItemModifierId;
+				_widget_4_0.StringId = _datasource_Root_ItemTableau.StringId;
+				_widget_4_0.BannerCode = _datasource_Root_ItemTableau.BannerCode;
+				_widget_4_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0;
+				_widget_4_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0;
 			}
 		}
 	}
@@ -621,15 +622,15 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 			_datasource_Root_ItemTableau.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ItemTableau;
 			_datasource_Root_ItemTableau.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ItemTableau;
 			_datasource_Root_ItemTableau.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ItemTableau;
-			_widget_4_1.PropertyChanged -= PropertyChangedListenerOf_widget_4_1;
-			_widget_4_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_1;
-			_widget_4_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_1;
-			_widget_4_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_1;
-			_widget_4_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_1;
-			_widget_4_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_1;
-			_widget_4_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_1;
-			_widget_4_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_1;
-			_widget_4_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_1;
+			_widget_4_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0;
+			_widget_4_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0;
+			_widget_4_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0;
+			_widget_4_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0;
+			_widget_4_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0;
+			_widget_4_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0;
+			_widget_4_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0;
+			_widget_4_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0;
+			_widget_4_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0;
 			_datasource_Root_ItemTableau = null;
 		}
 		_datasource_Root_ItemTableau = newDataSource;
@@ -645,18 +646,18 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 			_datasource_Root_ItemTableau.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ItemTableau;
 			_datasource_Root_ItemTableau.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ItemTableau;
 			_datasource_Root_ItemTableau.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ItemTableau;
-			_widget_4_1.ItemModifierId = _datasource_Root_ItemTableau.ItemModifierId;
-			_widget_4_1.StringId = _datasource_Root_ItemTableau.StringId;
-			_widget_4_1.BannerCode = _datasource_Root_ItemTableau.BannerCode;
-			_widget_4_1.PropertyChanged += PropertyChangedListenerOf_widget_4_1;
-			_widget_4_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_1;
-			_widget_4_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_1;
-			_widget_4_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_1;
-			_widget_4_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_1;
-			_widget_4_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_1;
-			_widget_4_1.intPropertyChanged += intPropertyChangedListenerOf_widget_4_1;
-			_widget_4_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_1;
-			_widget_4_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_1;
+			_widget_4_0.ItemModifierId = _datasource_Root_ItemTableau.ItemModifierId;
+			_widget_4_0.StringId = _datasource_Root_ItemTableau.StringId;
+			_widget_4_0.BannerCode = _datasource_Root_ItemTableau.BannerCode;
+			_widget_4_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0;
+			_widget_4_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0;
+			_widget_4_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0;
+			_widget_4_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0;
+			_widget_4_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0;
+			_widget_4_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0;
+			_widget_4_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0;
+			_widget_4_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0;
+			_widget_4_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0;
 		}
 	}
 }

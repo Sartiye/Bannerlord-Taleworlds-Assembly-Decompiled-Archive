@@ -5,6 +5,7 @@ using Helpers;
 using StoryMode.StoryModeObjects;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Conversation;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.MapEvents;
@@ -101,50 +102,131 @@ public class DisruptSupplyLinesConspiracyQuest : ConspiracyQuestBase
 		: base(questId, questGiver)
 	{
 		_questStartTime = CampaignTime.Now;
-		_caravanTargetSettlements = new Settlement[7];
-		_caravanTargetSettlements[0] = GetQuestFromSettlement();
+		List<Settlement> list = new List<Settlement> { GetQuestFromSettlement() };
 		for (int i = 1; i <= 6; i++)
 		{
-			_caravanTargetSettlements[i] = GetNextSettlement(_caravanTargetSettlements[i - 1]);
+			list.Add(GetNextSettlement(list));
+		}
+		_caravanTargetSettlements = new Settlement[list.Count];
+		for (int j = 0; j < list.Count; j++)
+		{
+			_caravanTargetSettlements[j] = list[j];
 		}
 		AddTrackedObject(QuestFromSettlement);
 	}
 
 	private Settlement GetQuestFromSettlement()
 	{
-		Settlement settlement = SettlementHelper.FindRandomSettlement((Settlement s) => s.IsTown && s.MapFaction != Clan.PlayerClan.MapFaction && IsSettlementCultureSuitable(s) && ((!StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine) ? (!StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom)) : StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom)));
+		Settlement centralSettlement = StoryModeHeroes.ImperialMentor.HomeSettlement;
+		Settlement settlement = SettlementHelper.FindRandomSettlement(delegate(Settlement s)
+		{
+			if (s.IsTown && s.MapFaction != Clan.PlayerClan.MapFaction)
+			{
+				MapDistanceModel mapDistanceModel3 = Campaign.Current.Models.MapDistanceModel;
+				CampaignVec2 fromPoint3 = s.GatePosition;
+				CampaignVec2 toPoint3 = centralSettlement.GatePosition;
+				if (mapDistanceModel3.PathExistBetweenPoints(in fromPoint3, in toPoint3, MobileParty.NavigationType.Default))
+				{
+					if (!StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine)
+					{
+						return !StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom);
+					}
+					return StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom);
+				}
+			}
+			return false;
+		});
 		if (settlement == null)
 		{
-			settlement = SettlementHelper.FindRandomSettlement((Settlement s) => s.IsTown && IsSettlementCultureSuitable(s) && ((!StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine) ? (!StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom)) : StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom)));
+			settlement = SettlementHelper.FindRandomSettlement(delegate(Settlement s)
+			{
+				if (s.IsTown)
+				{
+					MapDistanceModel mapDistanceModel2 = Campaign.Current.Models.MapDistanceModel;
+					CampaignVec2 fromPoint2 = s.GatePosition;
+					CampaignVec2 toPoint2 = centralSettlement.GatePosition;
+					if (mapDistanceModel2.PathExistBetweenPoints(in fromPoint2, in toPoint2, MobileParty.NavigationType.Default))
+					{
+						if (!StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine)
+						{
+							return !StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom);
+						}
+						return StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom);
+					}
+				}
+				return false;
+			});
 		}
 		if (settlement == null)
 		{
-			settlement = SettlementHelper.FindRandomSettlement((Settlement s) => s.IsTown && IsSettlementCultureSuitable(s));
+			settlement = SettlementHelper.FindRandomSettlement(delegate(Settlement s)
+			{
+				if (s.IsTown)
+				{
+					MapDistanceModel mapDistanceModel = Campaign.Current.Models.MapDistanceModel;
+					CampaignVec2 fromPoint = s.GatePosition;
+					CampaignVec2 toPoint = centralSettlement.GatePosition;
+					return mapDistanceModel.PathExistBetweenPoints(in fromPoint, in toPoint, MobileParty.NavigationType.Default);
+				}
+				return false;
+			});
 		}
 		return settlement;
 	}
 
-	private Settlement GetNextSettlement(Settlement settlement)
+	private Settlement GetNextSettlement(List<Settlement> caravanTargetSettlements)
 	{
-		Settlement settlement2 = SettlementHelper.FindNearestTownToSettlement(settlement, MobileParty.NavigationType.Default, (Settlement s) => !_caravanTargetSettlements.Contains(s) && s.MapFaction != Clan.PlayerClan.MapFaction && IsSettlementCultureSuitable(s) && (StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine ? StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom) : (!StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom))) && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) > 100f && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) < 500f)?.Settlement;
+		Settlement centralSettlement = StoryModeHeroes.ImperialMentor.HomeSettlement;
+		Settlement settlement = caravanTargetSettlements.Last();
+		Settlement settlement2 = SettlementHelper.FindNearestTownToSettlement(settlement, MobileParty.NavigationType.Default, delegate(Settlement s)
+		{
+			if (!caravanTargetSettlements.Contains(s) && s.MapFaction != Clan.PlayerClan.MapFaction)
+			{
+				MapDistanceModel mapDistanceModel3 = Campaign.Current.Models.MapDistanceModel;
+				CampaignVec2 fromPoint3 = s.GatePosition;
+				CampaignVec2 toPoint3 = centralSettlement.GatePosition;
+				if (mapDistanceModel3.PathExistBetweenPoints(in fromPoint3, in toPoint3, MobileParty.NavigationType.Default) && (StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine ? StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom) : (!StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom))) && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) > 100f)
+				{
+					return Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) < 500f;
+				}
+			}
+			return false;
+		})?.Settlement;
 		if (settlement2 == null)
 		{
-			settlement2 = SettlementHelper.FindRandomSettlement((Settlement s) => !_caravanTargetSettlements.Contains(s) && s.IsTown && s.MapFaction != Clan.PlayerClan.MapFaction && IsSettlementCultureSuitable(s) && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) > 100f && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) < 500f);
+			settlement2 = SettlementHelper.FindRandomSettlement(delegate(Settlement s)
+			{
+				if (!caravanTargetSettlements.Contains(s) && s.IsTown && s.MapFaction != Clan.PlayerClan.MapFaction)
+				{
+					MapDistanceModel mapDistanceModel2 = Campaign.Current.Models.MapDistanceModel;
+					CampaignVec2 fromPoint2 = s.GatePosition;
+					CampaignVec2 toPoint2 = centralSettlement.GatePosition;
+					if (mapDistanceModel2.PathExistBetweenPoints(in fromPoint2, in toPoint2, MobileParty.NavigationType.Default) && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) > 100f)
+					{
+						return Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) < 500f;
+					}
+				}
+				return false;
+			});
 		}
 		if (settlement2 == null)
 		{
-			settlement2 = SettlementHelper.FindRandomSettlement((Settlement s) => !_caravanTargetSettlements.Contains(s) && s.IsTown && IsSettlementCultureSuitable(s) && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) > 100f && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) < 500f);
+			settlement2 = SettlementHelper.FindRandomSettlement(delegate(Settlement s)
+			{
+				if (!caravanTargetSettlements.Contains(s) && s.IsTown)
+				{
+					MapDistanceModel mapDistanceModel = Campaign.Current.Models.MapDistanceModel;
+					CampaignVec2 fromPoint = s.GatePosition;
+					CampaignVec2 toPoint = centralSettlement.GatePosition;
+					if (mapDistanceModel.PathExistBetweenPoints(in fromPoint, in toPoint, MobileParty.NavigationType.Default) && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) > 100f)
+					{
+						return Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) < 500f;
+					}
+				}
+				return false;
+			});
 		}
 		return settlement2;
-	}
-
-	private bool IsSettlementCultureSuitable(Settlement settlement)
-	{
-		if (settlement.Culture != StoryModeData.KhuzaitKingdom.Culture && settlement.Culture != StoryModeData.ImperialCulture && settlement.Culture != StoryModeData.BattaniaKingdom.Culture && settlement.Culture != StoryModeData.SturgiaKingdom.Culture && settlement.Culture != StoryModeData.VlandiaKingdom.Culture)
-		{
-			return settlement.Culture == StoryModeData.AseraiKingdom.Culture;
-		}
-		return true;
 	}
 
 	protected override void InitializeQuestOnGameLoad()

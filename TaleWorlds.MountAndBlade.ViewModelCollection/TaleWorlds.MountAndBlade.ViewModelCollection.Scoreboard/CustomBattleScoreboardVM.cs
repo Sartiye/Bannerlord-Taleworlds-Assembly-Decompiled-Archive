@@ -1,5 +1,6 @@
 using System;
 using TaleWorlds.Core;
+using TaleWorlds.MountAndBlade.Missions.BattleScore;
 using TaleWorlds.MountAndBlade.Source.Missions.Handlers;
 
 namespace TaleWorlds.MountAndBlade.ViewModelCollection.Scoreboard;
@@ -14,6 +15,11 @@ public class CustomBattleScoreboardVM : ScoreboardBaseVM, IBattleObserver
 
 	private float _moraleUpdateTimer = 1f;
 
+	public CustomBattleScoreboardVM(BattleScoreContext scoreboardContext)
+		: base(scoreboardContext)
+	{
+	}
+
 	public override void Initialize(IMissionScreen missionScreen, Mission mission, Action releaseSimulationSources, Action<bool> onToggle)
 	{
 		base.Initialize(missionScreen, mission, releaseSimulationSources, onToggle);
@@ -25,8 +31,8 @@ public class CustomBattleScoreboardVM : ScoreboardBaseVM, IBattleObserver
 		if (_missionCombatantsLogic != null)
 		{
 			PlayerSide = _missionCombatantsLogic.PlayerSide;
-			base.Defenders = new SPScoreboardSideVM(GameTexts.FindText("str_battle_result_side", "defender"), _missionCombatantsLogic.GetBannerForSide(BattleSideEnum.Defender), isSimulation: false);
-			base.Attackers = new SPScoreboardSideVM(GameTexts.FindText("str_battle_result_side", "attacker"), _missionCombatantsLogic.GetBannerForSide(BattleSideEnum.Attacker), isSimulation: false);
+			base.Attackers = new SPScoreboardSideVM(GameTexts.FindText("str_battle_result_side", "attacker"), ScoreboardContext.GetAttackerBanner(), isSimulation: false, PlayerSide == BattleSideEnum.Attacker);
+			base.Defenders = new SPScoreboardSideVM(GameTexts.FindText("str_battle_result_side", "defender"), ScoreboardContext.GetDefenderBanner(), isSimulation: false, PlayerSide == BattleSideEnum.Defender);
 		}
 		PlayerSide = Mission.Current.PlayerTeam.Side;
 		missionBehavior?.SetObserver(this);

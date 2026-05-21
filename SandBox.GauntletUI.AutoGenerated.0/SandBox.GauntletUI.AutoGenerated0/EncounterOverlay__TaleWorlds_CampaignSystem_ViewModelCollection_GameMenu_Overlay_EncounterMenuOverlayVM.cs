@@ -195,13 +195,13 @@ public class EncounterOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Gam
 
 	private MBBindingList<GameMenuPartyItemVM> _datasource_Root_DefenderPartyList;
 
-	private HintViewModel _datasource_Root_AttackerTroopNumHint;
+	private BasicTooltipViewModel _datasource_Root_AttackerTroopNumHint;
 
-	private HintViewModel _datasource_Root_AttackerShipNumHint;
+	private BasicTooltipViewModel _datasource_Root_AttackerShipNumHint;
 
-	private HintViewModel _datasource_Root_DefenderTroopNumHint;
+	private BasicTooltipViewModel _datasource_Root_DefenderTroopNumHint;
 
-	private HintViewModel _datasource_Root_DefenderShipNumHint;
+	private BasicTooltipViewModel _datasource_Root_DefenderShipNumHint;
 
 	private BannerImageIdentifierVM _datasource_Root_AttackerPartyBanner;
 
@@ -412,7 +412,7 @@ public class EncounterOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Gam
 		_widget_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0.VerticalAlignment = VerticalAlignment.Top;
-		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -761,7 +761,7 @@ public class EncounterOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Gam
 		_widget_1_2_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_2_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_1_2_0.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_1_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_2_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_2_0_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1_2_0_0.SuggestedWidth = 100f;
@@ -813,7 +813,7 @@ public class EncounterOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Gam
 		_widget_1_3_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_3_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_1_3_0.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_1_3_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_3_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_3_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_3_0_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1_3_0_0.SuggestedWidth = 100f;
@@ -4676,7 +4676,7 @@ public class EncounterOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Gam
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_AttackerTroopNumHint(HintViewModel newDataSource)
+	private void RefreshDataSource_datasource_Root_AttackerTroopNumHint(BasicTooltipViewModel newDataSource)
 	{
 		if (_datasource_Root_AttackerTroopNumHint != null)
 		{
@@ -4709,7 +4709,7 @@ public class EncounterOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Gam
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_AttackerShipNumHint(HintViewModel newDataSource)
+	private void RefreshDataSource_datasource_Root_AttackerShipNumHint(BasicTooltipViewModel newDataSource)
 	{
 		if (_datasource_Root_AttackerShipNumHint != null)
 		{
@@ -4742,7 +4742,7 @@ public class EncounterOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Gam
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_DefenderTroopNumHint(HintViewModel newDataSource)
+	private void RefreshDataSource_datasource_Root_DefenderTroopNumHint(BasicTooltipViewModel newDataSource)
 	{
 		if (_datasource_Root_DefenderTroopNumHint != null)
 		{
@@ -4775,7 +4775,7 @@ public class EncounterOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Gam
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_DefenderShipNumHint(HintViewModel newDataSource)
+	private void RefreshDataSource_datasource_Root_DefenderShipNumHint(BasicTooltipViewModel newDataSource)
 	{
 		if (_datasource_Root_DefenderShipNumHint != null)
 		{

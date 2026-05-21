@@ -219,7 +219,7 @@ public class GauntletInventoryScreen : ScreenBase, IInventoryStateHandler, IGame
 		else
 		{
 			UISoundsHelper.PlayUISound("event:/ui/default");
-			_dataSource.ExecuteResetAndCompleteTranstactions();
+			_dataSource.ExecuteResetAndCompleteTranstactions(showCancelInquiry: true);
 		}
 	}
 

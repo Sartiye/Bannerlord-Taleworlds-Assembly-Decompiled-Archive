@@ -729,9 +729,9 @@ public static class Utilities
 		return EngineApplicationInterface.IUtil.GetApplicationName();
 	}
 
-	public static void OpenNavalDlcPurchasePage()
+	public static void OpenConsoleStorePage(string productId)
 	{
-		EngineApplicationInterface.IUtil.OpenNavalDlcPurchasePage();
+		EngineApplicationInterface.IUtil.OpenConsoleStorePage(productId);
 	}
 
 	public static void SetWindowTitle(string title)
@@ -886,9 +886,19 @@ public static class Utilities
 		EngineApplicationInterface.IUtil.ManagedParallelFor(startIndex, endIndex, curKey, grainSize);
 	}
 
+	public static void ParallelForWithDt(int startIndex, int endIndex, long curKey, int grainSize)
+	{
+		EngineApplicationInterface.IUtil.ManagedParallelForWithDt(startIndex, endIndex, curKey, grainSize);
+	}
+
 	public static void ParallelForWithoutRenderThread(int startIndex, int endIndex, long curKey, int grainSize)
 	{
 		EngineApplicationInterface.IUtil.ManagedParallelForWithoutRenderThread(startIndex, endIndex, curKey, grainSize);
+	}
+
+	public static void ParallelForWithoutRenderThreadDt(int startIndex, int endIndex, long curKey, int grainSize)
+	{
+		EngineApplicationInterface.IUtil.ManagedParallelForWithoutRenderThreadDt(startIndex, endIndex, curKey, grainSize);
 	}
 
 	public static void ClearShaderMemory()
@@ -899,11 +909,6 @@ public static class Utilities
 	public static void RegisterMeshForGPUMorph(string metaMeshName)
 	{
 		EngineApplicationInterface.IUtil.RegisterMeshForGPUMorph(metaMeshName);
-	}
-
-	public static void ParallelForWithDt(int startIndex, int endIndex, long curKey, int grainSize)
-	{
-		EngineApplicationInterface.IUtil.ManagedParallelForWithDt(startIndex, endIndex, curKey, grainSize);
 	}
 
 	public static ulong GetMainThreadId()

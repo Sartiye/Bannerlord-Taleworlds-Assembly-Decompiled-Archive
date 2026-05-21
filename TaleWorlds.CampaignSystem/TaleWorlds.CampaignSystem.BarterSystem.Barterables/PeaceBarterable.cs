@@ -30,7 +30,7 @@ public class PeaceBarterable : Barterable
 	}
 
 	public PeaceBarterable(Hero owner, IFaction peaceOfferingFaction, IFaction offeredFaction, CampaignTime duration)
-		: base(owner, null)
+		: base(owner, owner.PartyBelongedTo?.Party)
 	{
 		Duration = duration;
 		PeaceOfferingFaction = peaceOfferingFaction;
@@ -38,7 +38,7 @@ public class PeaceBarterable : Barterable
 	}
 
 	public PeaceBarterable(IFaction peaceOfferingFaction, IFaction offeredFaction, CampaignTime duration)
-		: base(peaceOfferingFaction.Leader, null)
+		: base(peaceOfferingFaction.Leader, peaceOfferingFaction.Leader?.PartyBelongedTo?.Party)
 	{
 		Duration = duration;
 		PeaceOfferingFaction = peaceOfferingFaction;
@@ -116,7 +116,7 @@ public class PeaceBarterable : Barterable
 		LocatableSearchData<MobileParty> data = Campaign.Current.MobilePartyLocator.StartFindingLocatablesAroundPosition(MobileParty.MainParty.Position.ToVec2(), 5f);
 		for (MobileParty mobileParty = Campaign.Current.MobilePartyLocator.FindNextLocatable(ref data); mobileParty != null; mobileParty = Campaign.Current.MobilePartyLocator.FindNextLocatable(ref data))
 		{
-			if (!mobileParty.IsMainParty && mobileParty.MapFaction == base.OriginalOwner.MapFaction && (mobileParty.TargetParty == MobileParty.MainParty || mobileParty.Ai.AiBehaviorPartyBase == PartyBase.MainParty))
+			if (!mobileParty.IsMainParty && mobileParty.MapFaction == base.OriginalOwner.MapFaction && (mobileParty.TargetParty == MobileParty.MainParty || mobileParty.Ai.AiBehaviorPartyBase == PartyBase.MainParty || mobileParty.TargetSettlement == MobileParty.MainParty.TargetSettlement))
 			{
 				mobileParty.SetMoveModeHold();
 			}

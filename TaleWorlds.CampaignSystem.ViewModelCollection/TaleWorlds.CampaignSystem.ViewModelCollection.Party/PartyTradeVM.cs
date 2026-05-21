@@ -2,6 +2,7 @@ using System;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.Party;
@@ -39,6 +40,10 @@ public class PartyTradeVM : ViewModel
 	private bool _isThisStockIncreasable;
 
 	private bool _isOtherStockIncreasable;
+
+	private HintViewModel _takeHint;
+
+	private HintViewModel _giveHint;
 
 	[DataSourceProperty]
 	public bool IsTransfarable
@@ -211,6 +216,40 @@ public class PartyTradeVM : ViewModel
 		}
 	}
 
+	[DataSourceProperty]
+	public HintViewModel TakeHint
+	{
+		get
+		{
+			return _takeHint;
+		}
+		set
+		{
+			if (value != _takeHint)
+			{
+				_takeHint = value;
+				OnPropertyChangedWithValue(value, "TakeHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public HintViewModel GiveHint
+	{
+		get
+		{
+			return _giveHint;
+		}
+		set
+		{
+			if (value != _giveHint)
+			{
+				_giveHint = value;
+				OnPropertyChangedWithValue(value, "GiveHint");
+			}
+		}
+	}
+
 	public static event Action RemoveZeroCounts;
 
 	public PartyTradeVM(PartyScreenLogic partyScreenLogic, TroopRosterElement troopRoster, PartyScreenLogic.PartyRosterSide side, bool isTransfarable, bool isPrisoner, Action<int, bool> onApplyTransaction)
@@ -222,6 +261,8 @@ public class PartyTradeVM : ViewModel
 		_otherSide = ((side != PartyScreenLogic.PartyRosterSide.Right) ? PartyScreenLogic.PartyRosterSide.Right : PartyScreenLogic.PartyRosterSide.Left);
 		IsTransfarable = isTransfarable;
 		_isPrisoner = isPrisoner;
+		TakeHint = new HintViewModel(GameTexts.FindText("str_take"));
+		GiveHint = new HintViewModel(GameTexts.FindText("str_give"));
 		UpdateTroopData(troopRoster, side);
 		RefreshValues();
 	}
@@ -237,7 +278,7 @@ public class PartyTradeVM : ViewModel
 	{
 		if (side != 0 && side != PartyScreenLogic.PartyRosterSide.Right)
 		{
-			Debug.FailedAssert("Troop has to be either from left or right side", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyTradeVM.cs", "UpdateTroopData", 50);
+			Debug.FailedAssert("Troop has to be either from left or right side", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyTradeVM.cs", "UpdateTroopData", 54);
 			return;
 		}
 		TroopRosterElement? troopRosterElement = null;

@@ -16,5 +16,7 @@ public enum PartyRole
 	PartyMember,
 	Personal,
 	Captain,
+	FirstMate,
+	Navigator,
 	NumberOfPartyRoles
 }

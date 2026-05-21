@@ -11,7 +11,7 @@ namespace SandBox.Objects.AnimationPoints;
 
 public class AnimationPoint : StandingPoint
 {
-	public struct ItemForBone
+	public class ItemForBone
 	{
 		public HumanBone HumanBone;
 
@@ -910,8 +910,7 @@ public class AnimationPoint : StandingPoint
 			}
 			else
 			{
-				sbyte realBoneIndex = base.UserAgent.AgentVisuals.GetRealBoneIndex(itemsForBone.HumanBone);
-				base.UserAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.SetPrefabVisibility(realBoneIndex, itemsForBone.ItemPrefabName, isVisible: true);
+				SetAgentItemVisibility(itemsForBone, isVisible: true);
 			}
 		}
 	}
@@ -920,14 +919,13 @@ public class AnimationPoint : StandingPoint
 	{
 		_pointRotation = base.UserAgent.Frame.rotation.f;
 		_pointRotation.Normalize();
-		if (KeepOldVisibility)
+		if (!KeepOldVisibility)
 		{
 			return;
 		}
 		foreach (ItemForBone itemsForBone in _itemsForBones)
 		{
-			ItemForBone current = itemsForBone;
-			current.OldVisibility = current.IsVisible;
+			itemsForBone.OldVisibility = itemsForBone.IsVisible;
 		}
 		SetAgentItemsVisibility(isVisible: false);
 	}
@@ -937,6 +935,10 @@ public class AnimationPoint : StandingPoint
 		base.UserAgent.ResetLookAgent();
 		base.UserAgent.LookDirection = _pointRotation;
 		base.UserAgent.SetActionChannel(0, in LoopStartActionCode, ignorePriority: false, (AnimFlags)0uL);
+		if (!KeepOldVisibility)
+		{
+			return;
+		}
 		foreach (ItemForBone itemsForBone in _itemsForBones)
 		{
 			if (itemsForBone.OldVisibility)
@@ -954,10 +956,7 @@ public class AnimationPoint : StandingPoint
 		}
 		foreach (ItemForBone itemsForBone in _itemsForBones)
 		{
-			sbyte realBoneIndex = base.UserAgent.AgentVisuals.GetRealBoneIndex(itemsForBone.HumanBone);
-			base.UserAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.SetPrefabVisibility(realBoneIndex, itemsForBone.ItemPrefabName, isVisible);
-			ItemForBone itemForBone = itemsForBone;
-			itemForBone.IsVisible = isVisible;
+			SetAgentItemVisibility(itemsForBone, isVisible);
 		}
 	}
 

@@ -79,7 +79,7 @@ public class GangLeaderNeedsWeaponsIssueQuestBehavior : CampaignBehaviorBase
 				TextObject textObject = new TextObject("{=xBaL3RM4}Well, as you know we're not farmers or artisans. I need {NEEDED_AMOUNT} {.%}{NEEDED_TYPE}{.%}. Don't mind the quality, just buy the weapons. Bring them to me and {REWARD_GOLD}{GOLD_ICON} is yours. Got it?[if:convo_bored]");
 				textObject.SetTextVariable("NEEDED_AMOUNT", RequestedWeaponAmount);
 				textObject.SetTextVariable("REWARD_GOLD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				textObject.SetTextVariable("NEEDED_TYPE", GetNeededClassTextObject(RequestedWeaponClass));
 				return textObject;
 			}
@@ -93,7 +93,7 @@ public class GangLeaderNeedsWeaponsIssueQuestBehavior : CampaignBehaviorBase
 				textObject.SetTextVariable("COMPANION_NEED_GOLD_AMOUNT", CompanionGoldNeedForAlternativeSolution);
 				textObject.SetTextVariable("ITEM_TYPE", GetNeededClassTextObject(RequestedWeaponClass));
 				textObject.SetTextVariable("ALTERNATIVE_TROOP_AMOUNT", GetTotalAlternativeSolutionNeededMenCount());
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -126,7 +126,7 @@ public class GangLeaderNeedsWeaponsIssueQuestBehavior : CampaignBehaviorBase
 				textObject.SetTextVariable("NEEDED_AMOUNT", RequestedWeaponAmount);
 				textObject.SetTextVariable("NEEDED_TYPE", GetNeededClassTextObject(RequestedWeaponClass));
 				textObject.SetTextVariable("REWARD_GOLD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -270,10 +270,11 @@ public class GangLeaderNeedsWeaponsIssueQuestBehavior : CampaignBehaviorBase
 			return IssueFrequency.Common;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			flag = PreconditionFlags.None;
 			skill = null;
+			requiredGold = 0;
 			relationHero = null;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -380,7 +381,7 @@ public class GangLeaderNeedsWeaponsIssueQuestBehavior : CampaignBehaviorBase
 				textObject.SetTextVariable("NEEDED_AMOUNT", _requestedWeaponAmount);
 				textObject.SetTextVariable("NEEDED_TYPE", GetNeededClassTextObject(_requestedWeaponClass));
 				textObject.SetTextVariable("REWARD_GOLD", _rewardGold);
-				GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -674,7 +675,6 @@ public class GangLeaderNeedsWeaponsIssueQuestBehavior : CampaignBehaviorBase
 			{
 				EnterSettlementAction.ApplyForParty(_guardsParty, base.QuestGiver.CurrentSettlement);
 				_guardsParty.IsVisible = false;
-				_guardsParty.IsActive = false;
 			}
 		}
 
@@ -767,7 +767,7 @@ public class GangLeaderNeedsWeaponsIssueQuestBehavior : CampaignBehaviorBase
 			TextObject text5 = new TextObject("{=tGFgar0U}Fine. We won't enter at all, then. Good bye.");
 			TextObject textObject = new TextObject("{=Qb7N6txQ}Mmm. For {BRIBE_COST}{GOLD_ICON} denars, I could be persuaded that this is just harmless scrap metal...[if:convo_mocking_aristocratic][ib:confident]");
 			textObject.SetTextVariable("BRIBE_COST", _bribeGold);
-			textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+			textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 			DialogFlow dialogFlow = DialogFlow.CreateDialogFlow("start", 125).NpcLine(npcText).Condition(DialogStartCondition)
 				.Consequence(delegate
 				{

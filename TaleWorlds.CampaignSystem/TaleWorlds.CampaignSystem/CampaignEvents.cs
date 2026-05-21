@@ -44,6 +44,8 @@ public class CampaignEvents : CampaignEventReceiver
 
 	private readonly MbEvent<Hero, bool> _onHeroCreated = new MbEvent<Hero, bool>();
 
+	private readonly MbEvent<Hero, Hero.CharacterStates> _onHeroActivatedEvent = new MbEvent<Hero, Hero.CharacterStates>();
+
 	private readonly MbEvent<Hero, Occupation> _heroOccupationChangedEvent = new MbEvent<Hero, Occupation>();
 
 	private readonly MbEvent<Hero> _onHeroWounded = new MbEvent<Hero>();
@@ -448,7 +450,7 @@ public class CampaignEvents : CampaignEventReceiver
 
 	private readonly MbEvent<BattleSideEnum, ForceSuppliesEventComponent> _forceSuppliesCompletedEvent = new MbEvent<BattleSideEnum, ForceSuppliesEventComponent>();
 
-	private readonly MbEvent<BattleSideEnum, HideoutEventComponent> _hideoutBattleCompletedEvent = new MbEvent<BattleSideEnum, HideoutEventComponent>();
+	private readonly MbEvent<BattleSideEnum, HideoutEventComponent, HideoutEventComponent.HideoutBattleEndState> _hideoutBattleCompletedEvent = new MbEvent<BattleSideEnum, HideoutEventComponent, HideoutEventComponent.HideoutBattleEndState>();
 
 	private readonly MbEvent<Clan> _onClanDestroyedEvent = new MbEvent<Clan>();
 
@@ -467,6 +469,8 @@ public class CampaignEvents : CampaignEventReceiver
 	private readonly MbEvent _onSaveStartedEvent = new MbEvent();
 
 	private readonly MbEvent<bool, string> _onSaveOverEvent = new MbEvent<bool, string>();
+
+	private readonly MbEvent<List<KeyValuePair<string, string>>> _collectMetadataEntriesEvent = new MbEvent<List<KeyValuePair<string, string>>>();
 
 	private readonly MbEvent<FlattenedTroopRoster> _onPrisonerTakenEvent = new MbEvent<FlattenedTroopRoster>();
 
@@ -597,6 +601,8 @@ public class CampaignEvents : CampaignEventReceiver
 	public static IMbEvent OnCharacterCreationIsOverEvent => Instance._onCharacterCreationIsOverEvent;
 
 	public static IMbEvent<Hero, bool> HeroCreated => Instance._onHeroCreated;
+
+	public static IMbEvent<Hero, Hero.CharacterStates> OnHeroActivatedEvent => Instance._onHeroActivatedEvent;
 
 	public static IMbEvent<Hero, Occupation> HeroOccupationChangedEvent => Instance._heroOccupationChangedEvent;
 
@@ -998,7 +1004,7 @@ public class CampaignEvents : CampaignEventReceiver
 
 	public static IMbEvent<BattleSideEnum, ForceSuppliesEventComponent> ForceSuppliesCompletedEvent => Instance._forceSuppliesCompletedEvent;
 
-	public static MbEvent<BattleSideEnum, HideoutEventComponent> OnHideoutBattleCompletedEvent => Instance._hideoutBattleCompletedEvent;
+	public static MbEvent<BattleSideEnum, HideoutEventComponent, HideoutEventComponent.HideoutBattleEndState> OnHideoutBattleCompletedEvent => Instance._hideoutBattleCompletedEvent;
 
 	public static IMbEvent<Clan> OnClanDestroyedEvent => Instance._onClanDestroyedEvent;
 
@@ -1017,6 +1023,8 @@ public class CampaignEvents : CampaignEventReceiver
 	public static IMbEvent OnSaveStartedEvent => Instance._onSaveStartedEvent;
 
 	public static IMbEvent<bool, string> OnSaveOverEvent => Instance._onSaveOverEvent;
+
+	public static IMbEvent<List<KeyValuePair<string, string>>> CollectMetadataEntriesEvent => Instance._collectMetadataEntriesEvent;
 
 	public static IMbEvent<FlattenedTroopRoster> OnPrisonerTakenEvent => Instance._onPrisonerTakenEvent;
 
@@ -1353,6 +1361,7 @@ public class CampaignEvents : CampaignEventReceiver
 		_onHeroGetsBusy.ClearListeners(obj);
 		_onSaveStartedEvent.ClearListeners(obj);
 		_onSaveOverEvent.ClearListeners(obj);
+		_collectMetadataEntriesEvent.ClearListeners(obj);
 		_onPlayerBodyPropertiesChangedEvent.ClearListeners(obj);
 		_rulingClanChanged.ClearListeners(obj);
 		_onCollectLootItems.ClearListeners(obj);
@@ -1408,6 +1417,7 @@ public class CampaignEvents : CampaignEventReceiver
 		_onAllianceEndedEvent.ClearListeners(obj);
 		_onCallToWarAgreementStartedEvent.ClearListeners(obj);
 		_onCallToWarAgreementEndedEvent.ClearListeners(obj);
+		_onHeroActivatedEvent.ClearListeners(obj);
 	}
 
 	public override void OnPlayerBodyPropertiesChanged()
@@ -1443,6 +1453,11 @@ public class CampaignEvents : CampaignEventReceiver
 	public override void OnHeroCreated(Hero hero, bool isBornNaturally = false)
 	{
 		_onHeroCreated.Invoke(hero, isBornNaturally);
+	}
+
+	public override void OnHeroActivated(Hero hero, Hero.CharacterStates previousState)
+	{
+		_onHeroActivatedEvent.Invoke(hero, previousState);
 	}
 
 	public override void OnHeroOccupationChanged(Hero hero, Occupation oldOccupation)
@@ -1745,9 +1760,9 @@ public class CampaignEvents : CampaignEventReceiver
 		Instance._characterDefeated.Invoke(winner, loser);
 	}
 
-	public override void OnRulingClanChanged(Kingdom kingdom, Clan newRulingClan)
+	public override void OnRulingClanChanged(Kingdom kingdom, Clan oldRulingClan)
 	{
-		Instance._rulingClanChanged.Invoke(kingdom, newRulingClan);
+		Instance._rulingClanChanged.Invoke(kingdom, oldRulingClan);
 	}
 
 	public override void OnHeroPrisonerTaken(PartyBase capturer, Hero prisoner)
@@ -2458,9 +2473,9 @@ public class CampaignEvents : CampaignEventReceiver
 		Instance._forceSuppliesCompletedEvent.Invoke(winnerSide, forceSuppliesEvent);
 	}
 
-	public override void OnHideoutBattleCompleted(BattleSideEnum winnerSide, HideoutEventComponent hideoutEventComponent)
+	public override void OnHideoutBattleCompleted(BattleSideEnum winnerSide, HideoutEventComponent hideoutEventComponent, HideoutEventComponent.HideoutBattleEndState battleEndState)
 	{
-		Instance._hideoutBattleCompletedEvent.Invoke(winnerSide, hideoutEventComponent);
+		Instance._hideoutBattleCompletedEvent.Invoke(winnerSide, hideoutEventComponent, battleEndState);
 	}
 
 	public override void OnClanDestroyed(Clan destroyedClan)
@@ -2506,6 +2521,11 @@ public class CampaignEvents : CampaignEventReceiver
 	public override void OnSaveOver(bool isSuccessful, string saveName)
 	{
 		Instance._onSaveOverEvent.Invoke(isSuccessful, saveName);
+	}
+
+	public override void CollectMetadataEntries(List<KeyValuePair<string, string>> pairs)
+	{
+		Instance._collectMetadataEntriesEvent.Invoke(pairs);
 	}
 
 	public override void OnPrisonerTaken(FlattenedTroopRoster roster)

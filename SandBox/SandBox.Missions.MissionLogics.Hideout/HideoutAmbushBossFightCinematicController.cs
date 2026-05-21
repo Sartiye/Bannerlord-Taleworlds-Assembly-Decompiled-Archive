@@ -522,9 +522,17 @@ public class HideoutAmbushBossFightCinematicController : MissionLogic
 
 	public int GetSpineTroopCount(int totalTroopCount)
 	{
+		if (totalTroopCount <= 0)
+		{
+			return 1;
+		}
 		int num = -totalTroopCount;
-		int num2 = (int)((-2f + TaleWorlds.Library.MathF.Sqrt(4 - 4 * num)) / 2f);
-		return num2 * num2 + 2 * num2;
+		int num2 = TaleWorlds.Library.MathF.Ceiling((-2f + TaleWorlds.Library.MathF.Sqrt(4 - 4 * num)) / 2f);
+		if (num2 < 1)
+		{
+			num2 = 1;
+		}
+		return num2;
 	}
 
 	public void GetBanditFrames(out List<MatrixFrame> initialFrames, out List<MatrixFrame> targetFrames, MatrixFrame initialBossFrame, MatrixFrame targetBossFrame, int agentCount, float agentOffsetAngle)

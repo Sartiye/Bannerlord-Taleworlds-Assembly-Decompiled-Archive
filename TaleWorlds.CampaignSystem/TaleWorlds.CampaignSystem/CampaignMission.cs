@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem.Conversation;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements.Locations;
 using TaleWorlds.Core;
@@ -22,7 +23,9 @@ public static class CampaignMission
 
 		IMission OpenCaravanBattleMission(MissionInitializerRecord rec, bool isCaravan);
 
-		IMission OpenBattleMission(string scene, bool usesTownDecalAtlas);
+		IMission OpenBattleMission(string scene, bool usesTownDecalAtlas, string sceneLevels);
+
+		IMission OpenNavalRaidMission(TroopRoster navalRaidTroops, BattleSideEnum navalSide, List<Ship> allShips);
 
 		IMission OpenNavalBattleMission(MissionInitializerRecord rec);
 
@@ -63,9 +66,14 @@ public static class CampaignMission
 
 	public static ICampaignMission Current { get; set; }
 
-	public static IMission OpenBattleMission(string scene, bool usesTownDecalAtlas)
+	public static IMission OpenBattleMission(string scene, bool usesTownDecalAtlas, string sceneLevels = "")
 	{
-		return Campaign.Current.CampaignMissionManager.OpenBattleMission(scene, usesTownDecalAtlas);
+		return Campaign.Current.CampaignMissionManager.OpenBattleMission(scene, usesTownDecalAtlas, sceneLevels);
+	}
+
+	public static IMission OpenNavalRaidMission(TroopRoster attackerSideTroops, BattleSideEnum navalSide, List<Ship> allShips)
+	{
+		return Campaign.Current.CampaignMissionManager.OpenNavalRaidMission(attackerSideTroops, navalSide, allShips);
 	}
 
 	public static IMission OpenAlleyFightMission(string scene, int upgradeLevel, Location location, TroopRoster playerSideTroops, TroopRoster rivalSideTroops)

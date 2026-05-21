@@ -15,4 +15,6 @@ public static class GameKeyMainCategories
 	public static string PhotoModeCategory = "PhotoModeCategory";
 
 	public static string PollCategory = "PollCategory";
+
+	public static string ShipControlsCategory = "ShipControlsCategory";
 }

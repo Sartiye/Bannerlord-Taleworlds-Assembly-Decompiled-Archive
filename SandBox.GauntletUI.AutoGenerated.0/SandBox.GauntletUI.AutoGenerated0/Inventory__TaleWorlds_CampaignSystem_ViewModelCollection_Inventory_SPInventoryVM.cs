@@ -1090,7 +1090,7 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget_1_0_2.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0_2.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0_2.MarginTop = 75f;
-		_widget_1_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_0_2_0.SetAttributes();
 		_widget_1_0_2_1.UpdateChildrenStates = true;
 		_widget_1_0_2_1.WidthSizePolicy = SizePolicy.Fixed;
@@ -1371,14 +1371,15 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget_1_1_0_4_1_1_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_0_4_1_1_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_1_0_4_1_1_0_0_0_0.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_1_1_0_4_1_1_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1_0_4_1_1_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_1_0_4_1_1_0_1.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_1_0_4_1_1_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_0_4_1_1_0_1.SuggestedWidth = 8f;
 		_widget_1_1_0_4_1_1_0_1.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_1_1_0_4_1_1_0_1.VerticalAlignment = VerticalAlignment.Center;
-		_widget_1_1_0_4_1_1_0_1.MarginTop = 15f;
-		_widget_1_1_0_4_1_1_0_1.MarginBottom = 15f;
+		_widget_1_1_0_4_1_1_0_1.MarginTop = 7f;
+		_widget_1_1_0_4_1_1_0_1.MarginBottom = 18f;
+		_widget_1_1_0_4_1_1_0_1.MarginRight = 12f;
 		_widget_1_1_0_4_1_1_0_1.AlignmentAxis = AlignmentAxis.Vertical;
 		_widget_1_1_0_4_1_1_0_1.Handle = _widget_1_1_0_4_1_1_0_1_1;
 		_widget_1_1_0_4_1_1_0_1.IsVisible = false;
@@ -1652,7 +1653,7 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget_1_1_2.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_1_1_2.MarginBottom = 155f;
 		_widget_1_1_2.UpdateChildrenStates = true;
-		_widget_1_1_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
+		_widget_1_1_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
 		_widget_1_1_2_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_1_2_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_1_2_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -1854,7 +1855,7 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget_1_2_1_2_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_2_1_2_1.VerticalAlignment = VerticalAlignment.Center;
 		_widget_1_2_1_2_1.MarginLeft = 10f;
-		_widget_1_2_1_2_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_2_1_2_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_2_1_2_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_2_1_2_1_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1_2_1_2_1_0.SuggestedHeight = 30f;
@@ -2010,7 +2011,7 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget_1_2_2.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_2_2.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_2_2.MarginTop = 75f;
-		_widget_1_2_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_2_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_2_2_0.SetAttributes();
 		_widget_1_2_2_1.UpdateChildrenStates = true;
 		_widget_1_2_2_1.WidthSizePolicy = SizePolicy.Fixed;

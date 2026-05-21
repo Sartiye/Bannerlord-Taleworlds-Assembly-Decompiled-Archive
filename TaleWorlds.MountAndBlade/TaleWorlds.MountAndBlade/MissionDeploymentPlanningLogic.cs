@@ -67,7 +67,12 @@ public abstract class MissionDeploymentPlanningLogic : MissionLogic, IMissionDep
 		throw new NotImplementedException();
 	}
 
-	public virtual bool SupportsNavmesh()
+	public virtual void UpdateReinforcementPlan(Team team)
+	{
+		throw new NotImplementedException();
+	}
+
+	public virtual bool SupportsNavmesh(Team team)
 	{
 		throw new NotImplementedException();
 	}

@@ -530,10 +530,10 @@ public class BarterScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Barter_
 		_widget_0_0_0_0.IsDefaultNavigationScope = true;
 		_widget_0_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0_1_0.MarginTop = 2f;
 		_widget_0_0_0_1_0.MinIndex = 0;
 		_widget_0_0_0_1_0.MaxIndex = 1000;
@@ -544,7 +544,7 @@ public class BarterScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Barter_
 		_widget_0_0_0_1_1.GamepadNavigationIndex = 1001;
 		_widget_0_0_0_1_2.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0_1_2.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0_0_1_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0_1_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0_1_2.MarginTop = 2f;
 		_widget_0_0_0_1_2.MinIndex = 1002;
 		_widget_0_0_0_1_2.MaxIndex = 2000;
@@ -555,7 +555,7 @@ public class BarterScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Barter_
 		_widget_0_0_0_1_3.GamepadNavigationIndex = 2001;
 		_widget_0_0_0_1_4.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0_1_4.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0_0_1_4.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0_1_4.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0_1_4.MarginTop = 2f;
 		_widget_0_0_0_1_4.MinIndex = 2002;
 		_widget_0_0_0_1_4.MaxIndex = 3000;
@@ -566,7 +566,7 @@ public class BarterScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Barter_
 		_widget_0_0_0_1_5.GamepadNavigationIndex = 3001;
 		_widget_0_0_0_1_6.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0_1_6.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0_0_1_6.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0_1_6.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0_1_6.MarginTop = 2f;
 		_widget_0_0_0_1_6.MinIndex = 3002;
 		_widget_0_0_0_1_6.MaxIndex = 4000;
@@ -579,7 +579,7 @@ public class BarterScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Barter_
 		_widget_0_0_0_1_8.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0_1_8.MarginLeft = 3f;
 		_widget_0_0_0_1_8.MarginTop = 2f;
-		_widget_0_0_0_1_8.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0_1_8.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0_1_8.MinIndex = 4002;
 		_widget_0_0_0_1_8.MaxIndex = 5000;
 		_widget_0_0_0_1_9.SetAttributes();
@@ -589,7 +589,7 @@ public class BarterScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Barter_
 		_widget_0_0_0_1_9.GamepadNavigationIndex = 5001;
 		_widget_0_0_0_1_10.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0_1_10.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0_0_1_10.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0_1_10.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0_1_10.MarginTop = 2f;
 		_widget_0_0_0_1_10.MinIndex = 5002;
 		_widget_0_0_0_1_10.MaxIndex = 5003;
@@ -740,7 +740,7 @@ public class BarterScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Barter_
 		_widget_1_1_0_0_0_0.RightNavigationScope = "AutoOfferScope";
 		_widget_1_1_0_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_0_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_1_0_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1_0_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_1_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_0_0_1.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1_1_0_0_1.SuggestedHeight = 57f;
@@ -781,7 +781,7 @@ public class BarterScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Barter_
 		_widget_1_2_0_0_0_0.RightNavigationScope = "RightItemsScope";
 		_widget_1_2_0_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_2_0_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_2_0_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_2_0_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_2_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_2_0_0_1.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1_2_0_0_1.SuggestedHeight = 25f;
@@ -861,12 +861,12 @@ public class BarterScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Barter_
 		_widget_2_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0_1.MarginLeft = 2f;
-		_widget_2_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_0_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0_1_0.MarginLeft = 3f;
 		_widget_2_0_0_1_0.MarginTop = 2f;
-		_widget_2_0_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_0_1_0.MinIndex = 0;
 		_widget_2_0_0_1_0.MaxIndex = 1000;
 		_widget_2_0_0_1_1.SetAttributes();
@@ -878,7 +878,7 @@ public class BarterScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Barter_
 		_widget_2_0_0_1_2.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0_1_2.MarginLeft = 3f;
 		_widget_2_0_0_1_2.MarginTop = 2f;
-		_widget_2_0_0_1_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_0_1_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_0_1_2.MinIndex = 1002;
 		_widget_2_0_0_1_2.MaxIndex = 2000;
 		_widget_2_0_0_1_3.SetAttributes();
@@ -890,7 +890,7 @@ public class BarterScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Barter_
 		_widget_2_0_0_1_4.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0_1_4.MarginLeft = 3f;
 		_widget_2_0_0_1_4.MarginTop = 2f;
-		_widget_2_0_0_1_4.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_0_1_4.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_0_1_4.MinIndex = 2002;
 		_widget_2_0_0_1_4.MaxIndex = 3000;
 		_widget_2_0_0_1_5.SetAttributes();
@@ -902,7 +902,7 @@ public class BarterScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Barter_
 		_widget_2_0_0_1_6.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0_1_6.MarginLeft = 3f;
 		_widget_2_0_0_1_6.MarginTop = 2f;
-		_widget_2_0_0_1_6.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_0_1_6.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_0_1_6.MinIndex = 3002;
 		_widget_2_0_0_1_6.MaxIndex = 4000;
 		_widget_2_0_0_1_7.SetAttributes();
@@ -914,7 +914,7 @@ public class BarterScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Barter_
 		_widget_2_0_0_1_8.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0_1_8.MarginLeft = 3f;
 		_widget_2_0_0_1_8.MarginTop = 2f;
-		_widget_2_0_0_1_8.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_0_1_8.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_0_1_8.MinIndex = 4002;
 		_widget_2_0_0_1_8.MaxIndex = 5000;
 		_widget_2_0_0_1_9.SetAttributes();
@@ -926,7 +926,7 @@ public class BarterScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Barter_
 		_widget_2_0_0_1_10.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0_1_10.MarginLeft = 3f;
 		_widget_2_0_0_1_10.MarginTop = 2f;
-		_widget_2_0_0_1_10.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_0_1_10.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_0_1_10.MinIndex = 5002;
 		_widget_2_0_0_1_10.MaxIndex = 6000;
 		_widget_2_1.SetAttributes();

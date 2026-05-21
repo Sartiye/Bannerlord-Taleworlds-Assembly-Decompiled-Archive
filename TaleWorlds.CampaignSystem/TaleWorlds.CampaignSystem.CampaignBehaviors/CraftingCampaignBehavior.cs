@@ -38,7 +38,6 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 			ConstructContainerDefinition(typeof(Dictionary<ItemObject, CraftedItemInitializationData>));
 			ConstructContainerDefinition(typeof(Dictionary<Hero, HeroCraftingRecord>));
 			ConstructContainerDefinition(typeof(Dictionary<Town, CraftingOrderSlots>));
-			ConstructContainerDefinition(typeof(List<CraftingOrder>));
 		}
 	}
 
@@ -1215,7 +1214,7 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 		}
 		else
 		{
-			Debug.FailedAssert("Trying to cancel a custom order that doesn't exist.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\CraftingCampaignBehavior.cs", "CancelCustomOrder", 1408);
+			Debug.FailedAssert("Trying to cancel a custom order that doesn't exist.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\CraftingCampaignBehavior.cs", "CancelCustomOrder", 1406);
 		}
 	}
 

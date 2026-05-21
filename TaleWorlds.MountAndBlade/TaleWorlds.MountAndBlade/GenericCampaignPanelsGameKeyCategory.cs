@@ -34,7 +34,7 @@ public sealed class GenericCampaignPanelsGameKeyCategory : GameKeyContext
 	public static GenericCampaignPanelsGameKeyCategory Current { get; private set; }
 
 	public GenericCampaignPanelsGameKeyCategory(string categoryId = "GenericCampaignPanelsGameKeyCategory")
-		: base(categoryId, 110)
+		: base(categoryId, 116)
 	{
 		Current = this;
 		RegisterHotKeys();

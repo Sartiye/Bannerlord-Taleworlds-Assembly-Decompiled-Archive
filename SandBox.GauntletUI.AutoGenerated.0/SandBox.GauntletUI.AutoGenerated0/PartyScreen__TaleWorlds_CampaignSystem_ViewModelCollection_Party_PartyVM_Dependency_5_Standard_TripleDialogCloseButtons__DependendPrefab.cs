@@ -383,7 +383,7 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 	{
 		if (commandName == "Click")
 		{
-			_datasource_Root.ExecuteCancel();
+			_datasource_Root.ExecuteCancelWithoutInquiry();
 		}
 	}
 

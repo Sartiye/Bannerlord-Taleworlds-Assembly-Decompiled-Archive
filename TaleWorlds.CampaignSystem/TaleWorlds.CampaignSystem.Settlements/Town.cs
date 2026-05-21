@@ -646,11 +646,10 @@ public class Town : Fief
 		{
 			float num2 = base.Settlement.SettlementWallSectionHitPointsRatioList[i];
 			float num3 = MathF.Min(1f - num2, num);
-			base.Settlement.SetWallSectionHitPointsRatioAtIndex(i, num2 + num3);
-			num -= num3;
-			if (num3 <= 0f)
+			if (!(num3 <= 0f))
 			{
-				break;
+				base.Settlement.SetWallSectionHitPointsRatioAtIndex(i, num2 + num3);
+				num -= num3;
 			}
 		}
 	}

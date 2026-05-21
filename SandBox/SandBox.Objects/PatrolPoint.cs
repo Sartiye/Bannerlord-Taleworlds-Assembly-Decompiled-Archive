@@ -92,8 +92,7 @@ public class PatrolPoint : StandingPoint
 		{
 			sbyte realBoneIndex = base.UserAgent.AgentVisuals.GetRealBoneIndex(itemsForBone.HumanBone);
 			base.UserAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.SetPrefabVisibility(realBoneIndex, itemsForBone.ItemPrefabName, isVisible);
-			AnimationPoint.ItemForBone itemForBone = itemsForBone;
-			itemForBone.IsVisible = isVisible;
+			itemsForBone.IsVisible = isVisible;
 		}
 	}
 

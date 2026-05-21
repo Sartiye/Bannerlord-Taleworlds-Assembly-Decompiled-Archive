@@ -196,7 +196,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 	private void OnSessionLaunched(CampaignGameStarter campaignGameStarter)
 	{
 		StringHelpers.SetCharacterProperties("PLAYER", Hero.MainHero.CharacterObject);
-		MBTextManager.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		MBTextManager.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		AddDialogs(campaignGameStarter);
 	}
 
@@ -257,12 +257,12 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 	{
 		starter.AddPlayerLine("ally_thanks_meet", "ally_thanks_meet", "ally_thanks_meet_2", "{=O4KI2lgT}My name is {PLAYER.NAME}.", null, null);
 		starter.AddDialogLine("ally_thanks_meet_after_helping_in_battle_2", "ally_thanks_meet_2", "close_window", "{=jgbVweOs}{GRATITUDE_SENTENCE}[if:convo_calm_friendly]", null, conversation_ally_thanks_meet_after_helping_in_battle_2_on_consequence);
+		starter.AddPlayerLine("talk_lord_defeat_to_lord_capture", "defeated_lord_answer", "defeat_lord_answer_1", "{=g5G8AJ5n}You are my prisoner now.", null, null);
 		starter.AddPlayerLine("talk_lord_defeat_to_lord_capture_and_kill", "defeated_lord_answer", "defeat_lord_answer_0", "{=2LHa01Q9}Do not expect mercy. Off with your head!", null, null);
 		starter.AddDialogLine("talk_lord_defeat_to_lord_capture_and_kill_lord_answer", "defeat_lord_answer_0", "talk_lord_defeat_to_lord_capture_and_kill_lord_answer_1", "{=bFgUxv3T}That is an outrage! You can't treat your prisoners this way! All the other lords will hate your guts for it. And my family will never forget this!", null, null);
 		starter.AddDialogLine("talk_lord_defeat_to_lord_capture_and_kill_lord_answer_continue", "talk_lord_defeat_to_lord_capture_and_kill_lord_answer_1", "talk_lord_defeat_to_lord_capture_and_kill_lord_answer_2", "{=LV6VL5Us}Besides, you can earn good money if you just ransom me.", null, null);
 		starter.AddPlayerLine("talk_lord_defeat_to_lord_capture_and_kill_player_answer_1", "talk_lord_defeat_to_lord_capture_and_kill_lord_answer_2", "close_window", "{=RKTuRJXo}Fine then. You are my prisoner now. ", null, conversation_talk_lord_defeat_to_lord_capture_on_consequence);
 		starter.AddPlayerLine("talk_lord_defeat_to_lord_capture_and_kill_player_answer_2", "talk_lord_defeat_to_lord_capture_and_kill_lord_answer_2", "close_window", "{=ufahRPOl}I care not. Prepare to die!", null, conversation_talk_lord_defeat_to_lord_capture_and_kill_on_consequence);
-		starter.AddPlayerLine("talk_lord_defeat_to_lord_capture", "defeated_lord_answer", "defeat_lord_answer_1", "{=g5G8AJ5n}You are my prisoner now.", null, null);
 		starter.AddPlayerLine("talk_lord_defeat_to_lord_release_noncom", "defeated_lord_answer", "defeat_lord_answer_2", "{=SFWNy76G}As you are not a warrior, you are free to go.", conversation_talk_lord_release_noncombatant_on_condition, conversation_talk_lord_defeat_to_lord_release_on_consequence);
 		starter.AddPlayerLine("talk_lord_defeat_to_lord_release", "defeated_lord_answer", "defeat_lord_answer_2", "{=vHKkVkAF}You have fought well. You are free to go.", conversation_talk_lord_release_combatant_on_condition, conversation_talk_lord_defeat_to_lord_release_on_consequence);
 		starter.AddPlayerLine("talk_lord_freed_to_lord_capture", "freed_lord_answer", "freed_lord_answer_1", "{=l2hijFNU}You're not going anywhere, friend. You're my prisoner now.", null, conversation_talk_lord_freed_to_lord_capture_on_consequence);
@@ -1239,7 +1239,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 	{
 		if (Hero.OneToOneConversationHero.Spouse == Hero.MainHero || Hero.OneToOneConversationHero.Siblings.Contains(Hero.MainHero) || Hero.OneToOneConversationHero.Children.Contains(Hero.MainHero) || Hero.MainHero.Children.Contains(Hero.OneToOneConversationHero))
 		{
-			Debug.FailedAssert("player has not met with a family member", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\LordConversationsCampaignBehavior.cs", "conversations_automeet_close_relatives", 2512);
+			Debug.FailedAssert("player has not met with a family member", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\LordConversationsCampaignBehavior.cs", "conversations_automeet_close_relatives", 2511);
 			Hero.OneToOneConversationHero.SetHasMet();
 		}
 	}
@@ -2016,7 +2016,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 	private bool conversation_companion_hire_on_condition()
 	{
 		GameTexts.SetVariable("STR1", Campaign.Current.Models.CompanionHiringPriceCalculationModel.GetCompanionHiringPrice(Hero.OneToOneConversationHero));
-		GameTexts.SetVariable("STR2", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		GameTexts.SetVariable("STR2", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		MBTextManager.SetTextVariable("GOLD_AMOUNT", GameTexts.FindText("str_STR1_STR2"));
 		if (Hero.MainHero.Gold > Campaign.Current.Models.CompanionHiringPriceCalculationModel.GetCompanionHiringPrice(Hero.OneToOneConversationHero))
 		{
@@ -2544,7 +2544,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		int mercenaryAwardFactorToJoinKingdom = Campaign.Current.Models.MinorFactionsModel.GetMercenaryAwardFactorToJoinKingdom(Hero.OneToOneConversationHero.Clan, (Kingdom)Hero.MainHero.MapFaction, neededAmountForClanToJoinCalculation: true);
 		explanation = new TextObject("{=r3GvpY5n}Mercenaries receive influence like vassals for fighting, but it is exchanged at the end of each day for denars at the rate of {GOLD_AMOUNT}{GOLD_ICON} per influence point.");
 		explanation.SetTextVariable("GOLD_AMOUNT", mercenaryAwardFactorToJoinKingdom);
-		explanation.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		explanation.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		return true;
 	}
 
@@ -2624,7 +2624,7 @@ public class LordConversationsCampaignBehavior : CampaignBehaviorBase
 		if (Hero.OneToOneConversationHero != null && Hero.OneToOneConversationHero.PartyBelongedTo != null && Hero.OneToOneConversationHero.PartyBelongedTo.IsLordParty && Hero.OneToOneConversationHero.PartyBelongedTo.LeaderHero == Hero.OneToOneConversationHero && Hero.OneToOneConversationHero.PartyBelongedTo.MapEvent == null && Hero.OneToOneConversationHero.PartyBelongedTo.SiegeEvent == null && Hero.OneToOneConversationHero.PartyBelongedTo.Army == null && MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty && Hero.OneToOneConversationHero.MapFaction == Hero.MainHero.MapFaction && Hero.OneToOneConversationHero.MapFaction.Leader != Hero.OneToOneConversationHero)
 		{
 			MBTextManager.SetTextVariable("INFLUENCE_COST", Campaign.Current.Models.ArmyManagementCalculationModel.CalculatePartyInfluenceCost(MobileParty.MainParty, Hero.OneToOneConversationHero.PartyBelongedTo));
-			MBTextManager.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"7\">");
+			MBTextManager.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"5\">");
 			return true;
 		}
 		return false;

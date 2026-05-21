@@ -12,12 +12,15 @@ using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Siege;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultArmyManagementCalculationModel : ArmyManagementCalculationModel
 {
+	private const float MinimumInfluenceNeededToCreateArmy = 100f;
+
 	private readonly TextObject _numberOfPartiesText = GameTexts.FindText("str_number_of_parties");
 
 	private readonly TextObject _numberOfStarvingPartiesText = GameTexts.FindText("str_number_of_starving_parties");
@@ -113,96 +116,82 @@ public class DefaultArmyManagementCalculationModel : ArmyManagementCalculationMo
 		return (int)(0.65f * num3 * num4 * num7 * num6 * num5 * num8 * num9 * num10 * (float)AverageCallToArmyCost);
 	}
 
-	public override List<MobileParty> GetMobilePartiesToCallToArmy(MobileParty leaderParty)
+	public override bool CanLordCreateArmy(MobileParty mobileParty, out MBList<MobileParty> possibleArmyMembers)
 	{
-		List<MobileParty> list = new List<MobileParty>();
-		bool flag = false;
-		bool flag2 = false;
-		if (leaderParty.LeaderHero != null)
+		possibleArmyMembers = new MBList<MobileParty>();
+		Kingdom kingdom = mobileParty.MapFaction as Kingdom;
+		if (!mobileParty.IsCurrentlyAtSea && mobileParty.LeaderHero.Clan.Influence > 100f && !mobileParty.LeaderHero.Clan.IsUnderMercenaryService && (float)mobileParty.GetNumDaysForFoodToLast() > Campaign.Current.Models.MobilePartyAIModel.NeededFoodsInDaysThresholdForSiege && kingdom.FactionsAtWarWith.AnyQ((IFaction x) => x.Fiefs.Any()) && mobileParty.PartySizeRatio > Campaign.Current.Models.ArmyManagementCalculationModel.AIMobilePartySizeRatioToCallToArmy && (mobileParty.LeaderHero.Clan.Leader == mobileParty.LeaderHero || (mobileParty.LeaderHero.Clan.Leader.PartyBelongedTo == null && mobileParty.LeaderHero.Clan.WarPartyComponents != null && mobileParty.LeaderHero.Clan.WarPartyComponents.FirstOrDefault() == mobileParty.WarPartyComponent)))
 		{
-			foreach (Settlement settlement in leaderParty.MapFaction.Settlements)
+			GetInfluenceBudgetWhileCreatingArmy(mobileParty);
+			List<(MobileParty, float, int)> list = new List<(MobileParty, float, int)>();
+			foreach (WarPartyComponent warPartyComponent in mobileParty.MapFaction.WarPartyComponents)
 			{
-				if (settlement.IsFortification && settlement.SiegeEvent != null)
+				MobileParty mobileParty2 = warPartyComponent.MobileParty;
+				Hero leaderHero = mobileParty2.LeaderHero;
+				if (!mobileParty2.IsLordParty || mobileParty2.Army != null || mobileParty2 == mobileParty || leaderHero == null || mobileParty2.IsMainParty || leaderHero == leaderHero.MapFaction.Leader || mobileParty2.Ai.DoNotMakeNewDecisions || mobileParty2.CurrentSettlement?.SiegeEvent != null || mobileParty2.IsDisbanding || !((float)mobileParty2.GetNumDaysForFoodToLast() > Campaign.Current.Models.ArmyManagementCalculationModel.MinimumNeededFoodInDaysToCallToArmy) || !(mobileParty2.PartySizeRatio > Campaign.Current.Models.ArmyManagementCalculationModel.AIMobilePartySizeRatioToCallToArmy) || !leaderHero.CanLeadParty() || mobileParty2.IsInRaftState || mobileParty2.MapEvent != null || mobileParty2.BesiegedSettlement != null)
 				{
-					flag = true;
-					if (settlement.OwnerClan == leaderParty.LeaderHero.Clan)
+					continue;
+				}
+				IDisbandPartyCampaignBehavior campaignBehavior = Campaign.Current.GetCampaignBehavior<IDisbandPartyCampaignBehavior>();
+				if (campaignBehavior != null && campaignBehavior.IsPartyWaitingForDisband(mobileParty2))
+				{
+					continue;
+				}
+				float maximumDistanceToCallToArmy = Campaign.Current.Models.ArmyManagementCalculationModel.MaximumDistanceToCallToArmy;
+				if (!(DistanceHelper.GetDistanceBetweenMobilePartyToMobileParty(mobileParty2, mobileParty, mobileParty2.NavigationCapability, out var _) < maximumDistanceToCallToArmy))
+				{
+					continue;
+				}
+				bool flag = false;
+				foreach (var item2 in list)
+				{
+					if (item2.Item1 == mobileParty2)
 					{
-						flag2 = true;
+						flag = true;
+						break;
 					}
 				}
-			}
-		}
-		int b = ((leaderParty.MapFaction.IsKingdomFaction && (Kingdom)leaderParty.MapFaction != null) ? ((Kingdom)leaderParty.MapFaction).Armies.Count : 0);
-		float num = (1.5f - (float)MathF.Min(2, b) * 0.05f - ((Hero.MainHero.MapFaction == leaderParty.MapFaction) ? 0.05f : 0f)) * (1f - 0.5f * MathF.Sqrt(MathF.Min(leaderParty.LeaderHero.Clan.Influence, 900f)) * (1f / 30f));
-		num *= (flag2 ? 1.25f : 1f);
-		num *= (flag ? 1.125f : 1f);
-		num *= leaderParty.LeaderHero.RandomFloat(0.85f, 1f);
-		float num2 = MathF.Min(leaderParty.LeaderHero.Clan.Influence, 900f) * MathF.Min(1f, num);
-		List<(MobileParty, float)> list2 = new List<(MobileParty, float)>();
-		foreach (WarPartyComponent warPartyComponent in leaderParty.MapFaction.WarPartyComponents)
-		{
-			MobileParty mobileParty = warPartyComponent.MobileParty;
-			Hero leaderHero = mobileParty.LeaderHero;
-			if (!mobileParty.IsLordParty || mobileParty.Army != null || mobileParty == leaderParty || leaderHero == null || mobileParty.IsMainParty || leaderHero == leaderHero.MapFaction.Leader || mobileParty.Ai.DoNotMakeNewDecisions || mobileParty.CurrentSettlement?.SiegeEvent != null || mobileParty.IsDisbanding || !((float)mobileParty.GetNumDaysForFoodToLast() > Campaign.Current.Models.ArmyManagementCalculationModel.MinimumNeededFoodInDaysToCallToArmy) || !(mobileParty.PartySizeRatio > Campaign.Current.Models.ArmyManagementCalculationModel.AIMobilePartySizeRatioToCallToArmy) || !leaderHero.CanLeadParty() || mobileParty.IsInRaftState || mobileParty.MapEvent != null || mobileParty.BesiegedSettlement != null)
-			{
-				continue;
-			}
-			IDisbandPartyCampaignBehavior campaignBehavior = Campaign.Current.GetCampaignBehavior<IDisbandPartyCampaignBehavior>();
-			if (campaignBehavior != null && campaignBehavior.IsPartyWaitingForDisband(mobileParty))
-			{
-				continue;
-			}
-			float maximumDistanceToCallToArmy = Campaign.Current.Models.ArmyManagementCalculationModel.MaximumDistanceToCallToArmy;
-			if (!(DistanceHelper.GetDistanceBetweenMobilePartyToMobileParty(mobileParty, leaderParty, mobileParty.NavigationCapability, out var _) < maximumDistanceToCallToArmy))
-			{
-				continue;
-			}
-			bool flag3 = false;
-			foreach (var item3 in list2)
-			{
-				if (item3.Item1 == mobileParty)
+				if (!flag)
 				{
-					flag3 = true;
-					break;
+					int num = Campaign.Current.Models.ArmyManagementCalculationModel.CalculatePartyInfluenceCost(mobileParty, mobileParty2);
+					float estimatedStrength = mobileParty2.Party.EstimatedStrength;
+					float num2 = 1f - (float)mobileParty2.Party.MemberRoster.TotalWounded / (float)mobileParty2.Party.MemberRoster.TotalManCount;
+					float item = estimatedStrength / ((float)num + 0.1f) * num2;
+					list.Add((mobileParty2, item, num));
 				}
 			}
-			if (!flag3)
+			list = list.OrderByQ(((MobileParty, float, int) x) => x.Item2).ToListQ();
+			int count = kingdom.WarPartyComponents.Count;
+			int num3 = kingdom.Armies.SumQ((Army x) => x.Parties.Count);
+			int num4 = MathF.Ceiling((float)count * 0.7f - (float)num3);
+			if (num4 > 0)
 			{
-				int num3 = Campaign.Current.Models.ArmyManagementCalculationModel.CalculatePartyInfluenceCost(leaderParty, mobileParty);
-				float estimatedStrength = mobileParty.Party.EstimatedStrength;
-				float num4 = 1f - (float)mobileParty.Party.MemberRoster.TotalWounded / (float)mobileParty.Party.MemberRoster.TotalManCount;
-				float item = estimatedStrength / ((float)num3 + 0.1f) * num4;
-				list2.Add((mobileParty, item));
-			}
-		}
-		int num6;
-		do
-		{
-			float num5 = 0.01f;
-			num6 = -1;
-			for (int i = 0; i < list2.Count; i++)
-			{
-				(MobileParty, float) tuple = list2[i];
-				if (tuple.Item2 > num5)
+				if (num4 < list.Count)
 				{
-					num6 = i;
-					num5 = tuple.Item2;
+					list.RemoveRange(num4, list.Count - num4);
 				}
-			}
-			if (num6 >= 0)
-			{
-				MobileParty item2 = list2[num6].Item1;
-				int num7 = Campaign.Current.Models.ArmyManagementCalculationModel.CalculatePartyInfluenceCost(leaderParty, item2);
-				list2[num6] = (item2, 0f);
-				if (num2 > (float)num7)
+				possibleArmyMembers = list.SelectQ(((MobileParty, float, int) x) => x.Item1).ToMBList();
+				if (possibleArmyMembers.AnyQ())
 				{
-					num2 -= (float)num7;
-					list.Add(item2);
+					if (kingdom.Settlements.Count == 0)
+					{
+						return true;
+					}
+					float num5 = mobileParty.Party.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.Siege);
+					foreach (MobileParty possibleArmyMember in possibleArmyMembers)
+					{
+						num5 += possibleArmyMember.Party.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.Siege);
+					}
+					if (num5 < 1000f)
+					{
+						possibleArmyMembers.Clear();
+						return false;
+					}
+					return true;
 				}
 			}
 		}
-		while (num6 >= 0);
-		return list;
+		return false;
 	}
 
 	public override int CalculateTotalInfluenceCost(Army army, float percentage)
@@ -225,7 +214,7 @@ public class DefaultArmyManagementCalculationModel : ArmyManagementCalculationMo
 		ExplainedNumber explainedNumber = new ExplainedNumber(num);
 		if (army.LeaderParty.MapFaction.IsKingdomFaction && ((Kingdom)army.LeaderParty.MapFaction).ActivePolicies.Contains(DefaultPolicies.RoyalCommissions))
 		{
-			explainedNumber.AddFactor(-0.3f);
+			explainedNumber.AddFactor(-0.3f, DefaultPolicies.RoyalCommissions.Name);
 		}
 		if (army.LeaderParty.LeaderHero.GetPerkValue(DefaultPerks.Tactics.Encirclement))
 		{
@@ -316,6 +305,11 @@ public class DefaultArmyManagementCalculationModel : ArmyManagementCalculationMo
 		return CalculateTotalInfluenceCostInternal(army, percentageToBoost);
 	}
 
+	private float GetInfluenceBudgetWhileCreatingArmy(MobileParty mobileParty)
+	{
+		return mobileParty.LeaderHero.Clan.Influence * 0.7f;
+	}
+
 	public override int GetPartyRelation(Hero hero)
 	{
 		if (hero == null)
@@ -341,7 +335,7 @@ public class DefaultArmyManagementCalculationModel : ArmyManagementCalculationMo
 			disabledReason = new TextObject("{=aRhQzJca}Mercenaries cannot create or manage armies.");
 			return false;
 		}
-		if (MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty != MobileParty.MainParty)
+		if (MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty)
 		{
 			disabledReason = new TextObject("{=NAA4pajB}You need to leave your current army to create a new one.");
 			return false;

@@ -20,6 +20,8 @@ public class PerkSelectionBarWidget : Widget
 
 	private Widget _seperatorContainer;
 
+	private Widget _learningLimitIndicatorWidget;
+
 	private TextWidget _percentageIndicatorTextWidget;
 
 	private int _maxLevel;
@@ -88,6 +90,22 @@ public class PerkSelectionBarWidget : Widget
 			{
 				_seperatorContainer = value;
 				OnPropertyChanged(value, "SeperatorContainer");
+			}
+		}
+	}
+
+	public Widget LearningLimitIndicatorWidget
+	{
+		get
+		{
+			return _learningLimitIndicatorWidget;
+		}
+		set
+		{
+			if (_learningLimitIndicatorWidget != value)
+			{
+				_learningLimitIndicatorWidget = value;
+				OnPropertyChanged(value, "LearningLimitIndicatorWidget");
 			}
 		}
 	}
@@ -231,6 +249,10 @@ public class PerkSelectionBarWidget : Widget
 				FullLearningRateClip.SuggestedWidth = ((num2 >= 0f) ? num2 : 0f);
 				FullLearningRateClip.PositionXOffset = PercentageIndicatorWidget.PositionXOffset + PercentageIndicatorWidget.Size.X / 2f * base._inverseScaleToUse;
 				FullLearningRateClipInnerContent.PositionXOffset = 0f - FullLearningRateClip.PositionXOffset;
+				if (LearningLimitIndicatorWidget != null)
+				{
+					LearningLimitIndicatorWidget.PositionXOffset = FullLearningRateClip.PositionXOffset + FullLearningRateClip.SuggestedWidth - LearningLimitIndicatorWidget.Size.X * base._inverseScaleToUse / 2f;
+				}
 			}
 			ProgressClip.SuggestedWidth = num + PercentageIndicatorWidget.Size.X / 2f * base._inverseScaleToUse;
 		}

@@ -147,7 +147,7 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		_widget_0.PositionXOffset = 30f;
 		_widget_0.VerticalAlignment = VerticalAlignment.Top;
 		_widget_0.PositionYOffset = -20f;
-		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0.MarginTop = 40f;
@@ -181,7 +181,7 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		_widget_1.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_1.VerticalAlignment = VerticalAlignment.Top;
 		_widget_1.PositionYOffset = -20f;
-		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1_0.SuggestedHeight = 65f;

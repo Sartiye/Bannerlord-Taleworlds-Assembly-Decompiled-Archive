@@ -83,7 +83,7 @@ public abstract class DeploymentHandler : MissionLogic
 		_areDeploymentPointsInitialized = true;
 	}
 
-	internal static void OrderController_OnOrderIssued_Aux(OrderType orderType, MBReadOnlyList<Formation> appliedFormations, OrderController orderController = null, params object[] delegateParams)
+	public static void OrderController_OnOrderIssued_Aux(OrderType orderType, MBReadOnlyList<Formation> appliedFormations, OrderController orderController = null, params object[] delegateParams)
 	{
 		bool flag = false;
 		foreach (Formation appliedFormation in appliedFormations)
@@ -99,7 +99,7 @@ public abstract class DeploymentHandler : MissionLogic
 			switch (orderType)
 			{
 			case OrderType.None:
-				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DeploymentHandler.cs", "OrderController_OnOrderIssued_Aux", 152);
+				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DeploymentHandler.cs", "OrderController_OnOrderIssued_Aux", 158);
 				break;
 			case OrderType.Move:
 			case OrderType.MoveToLineSegment:
@@ -160,10 +160,10 @@ public abstract class DeploymentHandler : MissionLogic
 				ForceUpdateFormationParams();
 				break;
 			case OrderType.PointDefence:
-				Debug.FailedAssert("will be removed", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DeploymentHandler.cs", "OrderController_OnOrderIssued_Aux", 224);
+				Debug.FailedAssert("will be removed", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DeploymentHandler.cs", "OrderController_OnOrderIssued_Aux", 230);
 				break;
 			default:
-				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DeploymentHandler.cs", "OrderController_OnOrderIssued_Aux", 227);
+				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DeploymentHandler.cs", "OrderController_OnOrderIssued_Aux", 233);
 				break;
 			case OrderType.CohesionHigh:
 			case OrderType.CohesionMedium:
@@ -190,16 +190,23 @@ public abstract class DeploymentHandler : MissionLogic
 			{
 				if (appliedFormation3.CountOfUnits > 0 && (orderController == null || orderController.FormationUpdateEnabledAfterSetOrder))
 				{
+					MovementOrder readonlyMovementOrderReference = appliedFormation3.GetReadonlyMovementOrderReference();
 					bool flag2 = false;
 					if (appliedFormation3.IsPlayerTroopInFormation)
 					{
-						flag2 = appliedFormation3.GetReadonlyMovementOrderReference().OrderEnum == MovementOrder.MovementOrderEnum.Follow;
+						flag2 = readonlyMovementOrderReference.OrderEnum == MovementOrder.MovementOrderEnum.Follow;
 					}
+					bool num = readonlyMovementOrderReference.OrderEnum == MovementOrder.MovementOrderEnum.Stop;
+					OrderController.TryCancelStopOrder(appliedFormation3);
 					appliedFormation3.ApplyActionOnEachUnit(delegate(Agent agent)
 					{
 						agent.ForceUpdateCachedAndFormationValues(updateOnlyMovement: true, arrangementChangeAllowed: false);
 					}, flag2 ? Mission.Current.MainAgent : null);
 					appliedFormation3.SetHasPendingUnitPositions(hasPendingUnitPositions: false);
+					if (num)
+					{
+						appliedFormation3.SetMovementOrder(MovementOrder.MovementOrderStop);
+					}
 				}
 			}
 		}

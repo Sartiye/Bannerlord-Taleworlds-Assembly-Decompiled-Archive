@@ -307,7 +307,7 @@ public class EncyclopediaUnitPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0_1.MarginTop = 10f;
-		_widget_0_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0_1_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -328,13 +328,13 @@ public class EncyclopediaUnitPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0_0_1_2_0.ScopeMovements = GamepadNavigationTypes.Vertical;
 		_widget_0_0_0_1_2_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0_1_2_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0_0_1_2_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0_1_2_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0_1_2_2.ScopeID = "EncyclopediaUnitRightEquipmentListScope";
 		_widget_0_0_0_1_2_2.ScopeParent = _widget_0_0_0_1_2_3;
 		_widget_0_0_0_1_2_2.ScopeMovements = GamepadNavigationTypes.Vertical;
 		_widget_0_0_0_1_2_3.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0_1_2_3.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0_0_1_2_3.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0_1_2_3.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0_2.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_0_2.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0_2.SuggestedWidth = 2f;

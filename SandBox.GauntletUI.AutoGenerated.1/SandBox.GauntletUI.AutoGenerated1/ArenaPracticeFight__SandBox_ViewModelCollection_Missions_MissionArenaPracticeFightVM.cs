@@ -57,7 +57,7 @@ public class ArenaPracticeFight__SandBox_ViewModelCollection_Missions_MissionAre
 		_widget_0.VerticalAlignment = VerticalAlignment.Top;
 		_widget_0.Sprite = base.Context.SpriteData.GetSprite("conversation_frame_canvas_9");
 		_widget_0.Color = new Color(0f, 0f, 0f, 13f / 15f);
-		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0.MarginLeft = 5f;

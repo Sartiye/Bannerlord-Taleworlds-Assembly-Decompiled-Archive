@@ -17,9 +17,9 @@ public class FormationMarkerListPanel : ListPanel
 
 	private bool _isTargetingAFormation;
 
-	private bool _isActive = true;
-
 	public bool _showDistanceTexts;
+
+	private bool _isActive = true;
 
 	private int _teamType;
 
@@ -75,23 +75,6 @@ public class FormationMarkerListPanel : ListPanel
 	}
 
 	[DataSourceProperty]
-	public bool IsActive
-	{
-		get
-		{
-			return _isActive;
-		}
-		set
-		{
-			if (_isActive != value)
-			{
-				_isActive = value;
-				OnPropertyChanged(value, "IsActive");
-			}
-		}
-	}
-
-	[DataSourceProperty]
 	public bool IsTargetingAFormation
 	{
 		get
@@ -104,6 +87,23 @@ public class FormationMarkerListPanel : ListPanel
 			{
 				_isTargetingAFormation = value;
 				OnPropertyChanged(value, "IsTargetingAFormation");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsActive
+	{
+		get
+		{
+			return _isActive;
+		}
+		set
+		{
+			if (_isActive != value)
+			{
+				_isActive = value;
+				OnPropertyChanged(value, "IsActive");
 			}
 		}
 	}

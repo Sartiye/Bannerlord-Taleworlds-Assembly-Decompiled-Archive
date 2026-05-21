@@ -73,6 +73,10 @@ public class MissionGauntletCrosshair : MissionBattleUIBaseView
 		{
 			return;
 		}
+		if (base.IsViewSuspended != _layer.IsActive)
+		{
+			ScreenManager.SetSuspendLayer(_layer, base.IsViewSuspended);
+		}
 		_dataSource.IsVisible = GetShouldCrosshairBeVisible();
 		bool flag = true;
 		bool isTargetInvalid = false;

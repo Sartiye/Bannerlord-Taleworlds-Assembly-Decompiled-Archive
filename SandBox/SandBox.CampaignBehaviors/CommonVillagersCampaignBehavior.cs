@@ -848,14 +848,6 @@ public class CommonVillagersCampaignBehavior : CampaignBehaviorBase
 		}
 		Hero leader = Settlement.CurrentSettlement.OwnerClan.Leader;
 		Hero leader2 = Settlement.CurrentSettlement.MapFaction.Leader;
-		int num5 = 0;
-		foreach (Hero notable in Settlement.CurrentSettlement.Notables)
-		{
-			if (HeroHelper.DefaultRelation(notable, leader) < -10)
-			{
-				num5++;
-			}
-		}
 		if (leader.GetTraitLevel(DefaultTraits.Honor) > 0 && prosperityLevel >= SettlementComponent.ProsperityLevel.Low)
 		{
 			TextObject textObject2 = new TextObject("{=ztiax0Sn}Say what you will about {?OWNER.GENDER}lady{?}lord{\\?} {OWNER.LINK}... {?OWNER.GENDER}She{?}He{\\?}'ll give the lowest wretch in the realm a fair hearing in {?OWNER.GENDER}her{?}his{\\?} court. Can't deny that.");
@@ -929,21 +921,21 @@ public class CommonVillagersCampaignBehavior : CampaignBehaviorBase
 				conversationScraps.Add(comment);
 			}
 		}
-		int num6 = 0;
+		int num5 = 0;
 		foreach (MobileParty allBanditParty in MobileParty.AllBanditParties)
 		{
 			if (DistanceHelper.FindClosestDistanceFromMobilePartyToSettlement(navCapabilities: (!allBanditParty.IsCurrentlyAtSea) ? MobileParty.NavigationType.Default : MobileParty.NavigationType.Naval, fromMobileParty: allBanditParty, toSettlement: Settlement.CurrentSettlement) < Campaign.Current.Models.EncounterModel.GetEncounterJoiningRadius * 5f)
 			{
-				num6++;
+				num5++;
 			}
 		}
-		if (num6 > 1 && Settlement.CurrentSettlement.IsTown && Settlement.CurrentSettlement.Town.Security < 50f)
+		if (num5 > 1 && Settlement.CurrentSettlement.IsTown && Settlement.CurrentSettlement.Town.Security < 50f)
 		{
 			TextObject textObject10 = new TextObject("{=NPhnQgQS}There's bandits lurking just beyond the walls these days. What about the taxes we pay, I ask you? Why aren't {?OWNER.GENDER}Lady{?}Lord{\\?} {OWNER.LINK}'s men doing their jobs?");
 			leader.SetPropertiesToTextObject(textObject10, "OWNER");
 			conversationScraps.Add(textObject10);
 		}
-		if (num6 > 1 && Settlement.CurrentSettlement.IsVillage && Settlement.CurrentSettlement.Village.TradeBound != null && Settlement.CurrentSettlement.Village.TradeBound.Town.Security < 50f)
+		if (num5 > 1 && Settlement.CurrentSettlement.IsVillage && Settlement.CurrentSettlement.Village.TradeBound != null && Settlement.CurrentSettlement.Village.TradeBound.Town.Security < 50f)
 		{
 			TextObject textObject11 = new TextObject("{=64p9ULVu}There's bandits lurking just beyond the outermost fields, I hear. What about the taxes we pay, I ask you? Why aren't {?OWNER.GENDER}Lady{?}Lord{\\?} {OWNER.LINK}'s men doing their jobs?");
 			leader.SetPropertiesToTextObject(textObject11, "OWNER");
@@ -961,8 +953,8 @@ public class CommonVillagersCampaignBehavior : CampaignBehaviorBase
 			if (TaleWorlds.Library.MathF.Abs(traitLevel) + TaleWorlds.Library.MathF.Abs(traitLevel2) + TaleWorlds.Library.MathF.Abs(traitLevel3) + TaleWorlds.Library.MathF.Abs(traitLevel5) + TaleWorlds.Library.MathF.Abs(traitLevel4) >= 2)
 			{
 				TextObject textObject12 = new TextObject("{=Rvt11UBE}{BASIC_EVAL} {REPUTATION}");
-				int num7 = traitLevel + traitLevel5 + traitLevel3;
-				TextObject textObject13 = ((!character.IsLord) ? new TextObject("{=CkaSSJz1}{NOTABLE.LINK}...") : ((num7 > 0) ? new TextObject("{=9Box0Yj7}The {?NOTABLE.GENDER}lady{?}lord{\\?} {NOTABLE.LINK}... We're blessed.") : ((num7 != 0 && traitLevel < 0) ? new TextObject("{=aEL2S1PZ}Heavens protect us from the {?NOTABLE.GENDER}lady{?}lord{\\?} {NOTABLE.LINK}...") : new TextObject("{=DgxVa0OP}The {?NOTABLE.GENDER}lady{?}lord{\\?} {NOTABLE.LINK}..."))));
+				int num6 = traitLevel + traitLevel5 + traitLevel3;
+				TextObject textObject13 = ((!character.IsLord) ? new TextObject("{=CkaSSJz1}{NOTABLE.LINK}...") : ((num6 > 0) ? new TextObject("{=9Box0Yj7}The {?NOTABLE.GENDER}lady{?}lord{\\?} {NOTABLE.LINK}... We're blessed.") : ((num6 != 0 && traitLevel < 0) ? new TextObject("{=aEL2S1PZ}Heavens protect us from the {?NOTABLE.GENDER}lady{?}lord{\\?} {NOTABLE.LINK}...") : new TextObject("{=DgxVa0OP}The {?NOTABLE.GENDER}lady{?}lord{\\?} {NOTABLE.LINK}..."))));
 				character.SetPropertiesToTextObject(textObject13, "NOTABLE");
 				character.SetPropertiesToTextObject(textObject12, "NOTABLE");
 				textObject12.SetTextVariable("BASIC_EVAL", textObject13);
@@ -971,7 +963,6 @@ public class CommonVillagersCampaignBehavior : CampaignBehaviorBase
 				textObject12.SetTextVariable("REPUTATION", textObject14.ToString());
 				conversationScraps.Add(textObject12);
 			}
-			int num8 = HeroHelper.DefaultRelation(character, leader);
 			if (character.IsGangLeader && character.GetTraitLevel(DefaultTraits.Mercy) < 0)
 			{
 				TextObject textObject15 = new TextObject("{=Xqx0uZva}I told that silly {RANDOM_RELATIVE} of mine. I told him. I said, 'You take money from {NOTABLE.LINK}, {?NOTABLE.GENDER}she{?}he{\\?}'ll want back double. And if you value the bones in your hands, you'll pay.' I told him, I did.");
@@ -1057,16 +1048,17 @@ public class CommonVillagersCampaignBehavior : CampaignBehaviorBase
 					}
 				}
 			}
+			int relation = character.GetRelation(leader);
 			if (character.IsHeadman || character.IsArtisan)
 			{
-				if (prosperityLevel <= SettlementComponent.ProsperityLevel.Low && num8 >= 10)
+				if (prosperityLevel <= SettlementComponent.ProsperityLevel.Low && relation >= 10)
 				{
 					TextObject textObject26 = new TextObject("{=ko2Nb5im}I know times are hard, but {NOTABLE.LINK} says {?OWNER.GENDER}lady{?}lord{\\?} {OWNER.LINK} is doing what {?OWNER.GENDER}she{?}he{\\?} can, and I trust {NOTABLE.FIRSTNAME}.");
 					character.SetPropertiesToTextObject(textObject26, "NOTABLE");
 					leader.SetPropertiesToTextObject(textObject26, "OWNER");
 					conversationScraps.Add(textObject26);
 				}
-				if (prosperityLevel >= SettlementComponent.ProsperityLevel.High && num8 >= 10)
+				if (prosperityLevel >= SettlementComponent.ProsperityLevel.High && relation >= 10)
 				{
 					TextObject textObject27 = new TextObject("{=CdRtnwwX}Things are good, and {NOTABLE.LINK} says we should credit this to the wisdom of {?OWNER.GENDER}lady{?}lord{\\?} {OWNER.LINK}.");
 					character.SetPropertiesToTextObject(textObject27, "NOTABLE");
@@ -1091,13 +1083,13 @@ public class CommonVillagersCampaignBehavior : CampaignBehaviorBase
 					character.SetPropertiesToTextObject(textObject30, "NOTABLE");
 					conversationScraps.Add(textObject30);
 				}
-				if (leader.GetTraitLevel(DefaultTraits.Honor) >= 0 && num8 > 0 && Settlement.CurrentSettlement.IsTown && !flag)
+				if (leader.GetTraitLevel(DefaultTraits.Honor) >= 0 && relation > 0 && Settlement.CurrentSettlement.IsTown && !flag)
 				{
 					TextObject textObject31 = new TextObject("{=NOb4GcOT}{NOTABLE.LINK} says we must trust in the wisdom of the authorities, so long as they follow the laws of the Heavens.");
 					character.SetPropertiesToTextObject(textObject31, "NOTABLE");
 					conversationScraps.Add(textObject31);
 				}
-				if (num8 < -10 && Settlement.CurrentSettlement.IsTown && !flag)
+				if (relation < -10 && Settlement.CurrentSettlement.IsTown && !flag)
 				{
 					TextObject textObject32 = new TextObject("{=LaBQQ7ue}{NOTABLE.LINK} says that a fish rots from the head. Well, look around this place. I think we know what he's getting at.");
 					character.SetPropertiesToTextObject(textObject32, "NOTABLE");
@@ -1123,13 +1115,13 @@ public class CommonVillagersCampaignBehavior : CampaignBehaviorBase
 					character.SetPropertiesToTextObject(textObject35, "NOTABLE");
 					conversationScraps.Add(textObject35);
 				}
-				if (leader.GetTraitLevel(DefaultTraits.Honor) >= 0 && num8 > 0 && Settlement.CurrentSettlement.IsTown && !flag)
+				if (leader.GetTraitLevel(DefaultTraits.Honor) >= 0 && relation > 0 && Settlement.CurrentSettlement.IsTown && !flag)
 				{
 					TextObject textObject36 = new TextObject("{=NOb4GcOT}{NOTABLE.LINK} says we must trust in the wisdom of the authorities, so long as they follow the laws of the Heavens.");
 					character.SetPropertiesToTextObject(textObject36, "NOTABLE");
 					conversationScraps.Add(textObject36);
 				}
-				if (num8 < -10 && Settlement.CurrentSettlement.IsTown && !flag)
+				if (relation < -10 && Settlement.CurrentSettlement.IsTown && !flag)
 				{
 					TextObject textObject37 = new TextObject("{=LaBQQ7ue}{NOTABLE.LINK} says that a fish rots from the head. Well, look around this place. I think we know what he's getting at.");
 					character.SetPropertiesToTextObject(textObject37, "NOTABLE");

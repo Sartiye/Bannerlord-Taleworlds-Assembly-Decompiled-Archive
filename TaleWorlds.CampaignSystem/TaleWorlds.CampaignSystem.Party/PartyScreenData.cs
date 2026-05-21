@@ -205,23 +205,23 @@ public class PartyScreenData : IEnumerable<(TroopRosterElement, bool)>, IEnumera
 		}
 	}
 
-	private List<Tuple<Hero, PartyRole>> GetPartyHeroesWithPerks(TroopRoster roster)
+	private List<Tuple<Hero, List<PartyRole>>> GetPartyHeroesWithPerks(TroopRoster roster)
 	{
 		MobileParty mobileParty = roster?.OwnerParty?.MobileParty;
 		if (mobileParty == null)
 		{
 			return null;
 		}
-		List<Tuple<Hero, PartyRole>> list = new List<Tuple<Hero, PartyRole>>();
+		List<Tuple<Hero, List<PartyRole>>> list = new List<Tuple<Hero, List<PartyRole>>>();
 		for (int i = 0; i < roster.Count; i++)
 		{
 			Hero hero = roster.GetCharacterAtIndex(i)?.HeroObject;
 			if (hero != null)
 			{
-				PartyRole heroPartyRole = mobileParty.GetHeroPartyRole(hero);
-				if (heroPartyRole != 0)
+				List<PartyRole> heroPartyRoles = mobileParty.GetHeroPartyRoles(hero);
+				if (heroPartyRoles.Count > 0)
 				{
-					list.Add(new Tuple<Hero, PartyRole>(hero, heroPartyRole));
+					list.Add(new Tuple<Hero, List<PartyRole>>(hero, heroPartyRoles));
 				}
 			}
 		}
@@ -230,8 +230,8 @@ public class PartyScreenData : IEnumerable<(TroopRosterElement, bool)>, IEnumera
 
 	public void ResetUsing(PartyScreenData partyScreenData)
 	{
-		List<Tuple<Hero, PartyRole>> partyHeroesWithPerks = GetPartyHeroesWithPerks(LeftMemberRoster);
-		List<Tuple<Hero, PartyRole>> partyHeroesWithPerks2 = GetPartyHeroesWithPerks(RightMemberRoster);
+		List<Tuple<Hero, List<PartyRole>>> partyHeroesWithPerks = GetPartyHeroesWithPerks(LeftMemberRoster);
+		List<Tuple<Hero, List<PartyRole>>> partyHeroesWithPerks2 = GetPartyHeroesWithPerks(RightMemberRoster);
 		RightMemberRoster.Clear();
 		RightMemberRoster.RemoveZeroCounts();
 		for (int i = 0; i < partyScreenData.RightMemberRoster.Count; i++)
@@ -290,14 +290,21 @@ public class PartyScreenData : IEnumerable<(TroopRosterElement, bool)>, IEnumera
 		{
 			for (int n = 0; n < partyHeroesWithPerks.Count; n++)
 			{
-				LeftParty.MobileParty.SetHeroPartyRole(partyHeroesWithPerks[n].Item1, partyHeroesWithPerks[n].Item2);
+				foreach (PartyRole item in partyHeroesWithPerks[n].Item2)
+				{
+					LeftParty.MobileParty.SetHeroPartyRole(partyHeroesWithPerks[n].Item1, item);
+				}
 			}
 		}
-		if (partyHeroesWithPerks2 != null && RightParty?.MobileParty != null)
+		if (partyHeroesWithPerks2 == null || RightParty?.MobileParty == null)
 		{
-			for (int num = 0; num < partyHeroesWithPerks2.Count; num++)
+			return;
+		}
+		for (int num = 0; num < partyHeroesWithPerks2.Count; num++)
+		{
+			foreach (PartyRole item2 in partyHeroesWithPerks2[num].Item2)
 			{
-				RightParty.MobileParty.SetHeroPartyRole(partyHeroesWithPerks2[num].Item1, partyHeroesWithPerks2[num].Item2);
+				RightParty.MobileParty.SetHeroPartyRole(partyHeroesWithPerks2[num].Item1, item2);
 			}
 		}
 	}

@@ -149,9 +149,9 @@ public static class SkillLevelingManager
 		Instance.OnTravelOnHorse(hero, speed);
 	}
 
-	public static void OnTravelOnWater(Hero hero, float speed)
+	public static void OnTravelOnWater(MobileParty party, float speed)
 	{
-		Instance.OnTravelOnWater(hero, speed);
+		Instance.OnTravelOnWater(party, speed);
 	}
 
 	public static void OnAIPartiesTravel(Hero hero, bool isCaravanParty, TerrainType currentTerrainType)

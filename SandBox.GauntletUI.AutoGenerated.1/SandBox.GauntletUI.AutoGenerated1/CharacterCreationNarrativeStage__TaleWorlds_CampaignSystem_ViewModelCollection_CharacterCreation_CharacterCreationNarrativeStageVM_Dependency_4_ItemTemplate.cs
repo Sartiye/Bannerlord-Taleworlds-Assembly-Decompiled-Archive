@@ -80,7 +80,7 @@ public class CharacterCreationNarrativeStage__TaleWorlds_CampaignSystem_ViewMode
 	{
 		base.WidthSizePolicy = SizePolicy.CoverChildren;
 		base.HeightSizePolicy = SizePolicy.CoverChildren;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		base.MarginTop = 5f;
 		base.MarginBottom = 5f;
 		base.DoNotUseCustomScaleAndChildren = true;

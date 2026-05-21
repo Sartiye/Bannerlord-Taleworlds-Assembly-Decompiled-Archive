@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Library;
 
@@ -5,6 +6,13 @@ namespace StoryMode;
 
 public static class StoryModeData
 {
+	private static HashSet<string> _conspiracyTroops = new HashSet<string>
+	{
+		"conspiracy_commander_antiempire", "conspiracy_wilder", "conspiracy_warmonger", "conspiracy_berserker", "conspiracy_hellion", "conspiracy_guardsman", "conspiracy_guardian", "conspiracy_raider", "conspiracy_battlerider", "conspiracy_trained_bowman",
+		"conspiracy_longbowman", "conspiracy_kern", "conspiracy_horse_archer", "conspiracy_mounted_master_archer", "conspiracy_trained_spearman", "conspiracy_spearmaster", "conspiracy_knight_trainee", "conspiracy_knight", "conspiracy_fighter", "conspiracy_veteran_fighter",
+		"conspiracy_noble_horseman", "conspiracy_mounted_fighter", "conspiracy_trained_crossbowman", "conspiracy_warworn_crossbowman", "conspiracy_trained_huntsman", "conspiracy_hunt_leader", "conspiracy_mounted_huntsman", "conspiracy_packmaster", "anti_imperial_conspiracy_boss", "imperial_conspiracy_boss"
+	};
+
 	public static CampaignTime StorylineQuestHideoutHiddenDuration = CampaignTime.Hours(12f);
 
 	private static Kingdom _northernEmpireKingdom;
@@ -41,7 +49,7 @@ public static class StoryModeData
 					return item;
 				}
 			}
-			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\StoryModeData.cs", "NorthernEmpireKingdom", 51);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\StoryModeData.cs", "NorthernEmpireKingdom", 74);
 			return null;
 		}
 	}
@@ -62,7 +70,7 @@ public static class StoryModeData
 					return item;
 				}
 			}
-			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\StoryModeData.cs", "WesternEmpireKingdom", 76);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\StoryModeData.cs", "WesternEmpireKingdom", 99);
 			return null;
 		}
 	}
@@ -83,7 +91,7 @@ public static class StoryModeData
 					return item;
 				}
 			}
-			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\StoryModeData.cs", "SouthernEmpireKingdom", 101);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\StoryModeData.cs", "SouthernEmpireKingdom", 124);
 			return null;
 		}
 	}
@@ -104,7 +112,7 @@ public static class StoryModeData
 					return item;
 				}
 			}
-			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\StoryModeData.cs", "SturgiaKingdom", 126);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\StoryModeData.cs", "SturgiaKingdom", 149);
 			return null;
 		}
 	}
@@ -125,7 +133,7 @@ public static class StoryModeData
 					return item;
 				}
 			}
-			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\StoryModeData.cs", "AseraiKingdom", 151);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\StoryModeData.cs", "AseraiKingdom", 174);
 			return null;
 		}
 	}
@@ -146,7 +154,7 @@ public static class StoryModeData
 					return item;
 				}
 			}
-			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\StoryModeData.cs", "VlandiaKingdom", 177);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\StoryModeData.cs", "VlandiaKingdom", 200);
 			return null;
 		}
 	}
@@ -167,7 +175,7 @@ public static class StoryModeData
 					return item;
 				}
 			}
-			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\StoryModeData.cs", "BattaniaKingdom", 204);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\StoryModeData.cs", "BattaniaKingdom", 227);
 			return null;
 		}
 	}
@@ -188,9 +196,23 @@ public static class StoryModeData
 					return item;
 				}
 			}
-			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\StoryModeData.cs", "KhuzaitKingdom", 230);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\StoryModeData.cs", "KhuzaitKingdom", 253);
 			return null;
 		}
+	}
+
+	public static bool IsKingdomImperial(Kingdom kingdomToCheck)
+	{
+		if (kingdomToCheck != null)
+		{
+			return kingdomToCheck.Culture == ImperialCulture;
+		}
+		return false;
+	}
+
+	public static bool IsConspiracyTroop(CharacterObject troop)
+	{
+		return _conspiracyTroops.Contains(troop.StringId);
 	}
 
 	public static void OnGameEnd()
@@ -203,14 +225,5 @@ public static class StoryModeData
 		_vlandiaKingdom = null;
 		_battaniaKingdom = null;
 		_khuzaitKingdom = null;
-	}
-
-	public static bool IsKingdomImperial(Kingdom kingdomToCheck)
-	{
-		if (kingdomToCheck != null)
-		{
-			return kingdomToCheck.Culture == ImperialCulture;
-		}
-		return false;
 	}
 }

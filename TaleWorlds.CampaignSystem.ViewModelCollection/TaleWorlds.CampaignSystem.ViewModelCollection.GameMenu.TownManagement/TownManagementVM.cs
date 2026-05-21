@@ -593,6 +593,10 @@ public class TownManagementVM : ViewModel
 		{
 			CurrentGovernorTooltip = new BasicTooltipViewModel(() => CampaignUIHelper.GetHeroGovernorEffectsTooltip(CurrentGovernor.Hero, _settlement));
 		}
+		else
+		{
+			CurrentGovernorTooltip = new BasicTooltipViewModel(() => GetAssignGovernorTooltip());
+		}
 		UpdateGovernorSelectionProperties();
 		RefreshCurrentDevelopment();
 		RefreshTownManagementStats();
@@ -718,7 +722,7 @@ public class TownManagementVM : ViewModel
 			else
 			{
 				ChangeGovernorAction.RemoveGovernorOfIfExists(_settlement.Town);
-				CurrentGovernorTooltip = new BasicTooltipViewModel();
+				CurrentGovernorTooltip = new BasicTooltipViewModel(() => GetAssignGovernorTooltip());
 			}
 		}
 		UpdateGovernorSelectionProperties();
@@ -765,6 +769,11 @@ public class TownManagementVM : ViewModel
 	{
 		base.OnFinalize();
 		DoneInputKey.OnFinalize();
+	}
+
+	private string GetAssignGovernorTooltip()
+	{
+		return GameTexts.FindText("str_clan_assign_governor").ToString();
 	}
 
 	public void SetDoneInputKey(HotKey hotKey)

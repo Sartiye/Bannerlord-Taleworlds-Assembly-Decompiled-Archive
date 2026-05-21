@@ -452,8 +452,7 @@ public class MapCameraView : MapView
 				}
 				CurrentCameraFollowMode = CameraFollowMode.FollowParty;
 				CampaignVec2 campaignVec = mainParty.Position + new Vec2(num4, num5);
-				NavigationHelper.CanPlayerNavigateToPosition(campaignVec, out var navigationType);
-				if (navigationType != 0 && navigationType != MobileParty.NavigationType.All)
+				if (NavigationHelper.CanPlayerNavigateToPosition(campaignVec, out var _))
 				{
 					mainParty.SetMoveGoToPoint(campaignVec, mainParty.NavigationCapability);
 					Campaign.Current.TimeControlMode = CampaignTimeControlMode.StoppablePlay;
@@ -724,19 +723,44 @@ public class MapCameraView : MapView
 		_cameraElevation = TaleWorlds.Library.MathF.Min(CalculateCameraElevation(cameraDistance) + AdditionalElevation, System.MathF.PI * 99f / 200f);
 		if (CurrentCameraFollowMode == CameraFollowMode.FollowParty && cameraFollowParty != null && cameraFollowParty.IsValid)
 		{
-			CampaignVec2 point = new CampaignVec2(Vec2.Zero, cameraFollowParty.IsMobile && cameraFollowParty.MobileParty.IsCurrentlyAtSea);
+			bool flag2 = false;
+			Vec2 pos;
 			if (cameraFollowParty.IsMobile)
 			{
-				Settlement settlement = cameraFollowParty.MobileParty.CurrentSettlement ?? cameraFollowParty.MobileParty.BesiegedSettlement;
-				point = ((settlement == null) ? cameraFollowParty.Position : ((settlement.SiegeEvent == null) ? cameraFollowParty.MobileParty.CurrentSettlement.Position : ((!settlement.HasPort || !settlement.SiegeEvent.IsBlockadeActive) ? settlement.GatePosition : new CampaignVec2(settlement.PortPosition.ToVec2() * 0.25f + settlement.GatePosition.ToVec2() * 0.75f, isOnLand: true))));
+				Settlement settlement = cameraFollowParty.MobileParty.CurrentSettlement ?? cameraFollowParty.MobileParty.BesiegedSettlement ?? cameraFollowParty.MapEvent?.MapEventSettlement;
+				if (settlement != null && cameraFollowParty.MobileParty.IsMainParty)
+				{
+					pos = settlement.Position.ToVec2();
+					if (settlement.HasPort)
+					{
+						pos += settlement.PortPosition.ToVec2();
+						if (settlement.IsUnderSiege)
+						{
+							pos += settlement.SiegeEvent.BesiegerCamp.LeaderParty.Position.ToVec2();
+							pos /= 3f;
+						}
+						else
+						{
+							pos *= 0.5f;
+						}
+					}
+				}
+				else
+				{
+					pos = ((cameraFollowParty.MapEvent != null) ? cameraFollowParty.MapEvent.Position.ToVec2() : cameraFollowParty.Position.ToVec2());
+				}
+				flag2 = !cameraFollowParty.MobileParty.IsCurrentlyAtSea;
 			}
 			else
 			{
-				point = cameraFollowParty.Position;
+				pos = cameraFollowParty.Position.ToVec2();
+				flag2 = true;
 			}
 			float height = 0f;
-			Campaign.Current.MapSceneWrapper.GetHeightAtPoint(in point, ref height);
-			IdealCameraTarget = new Vec3(point.X, point.Y, height + 1f);
+			IMapScene mapSceneWrapper = Campaign.Current.MapSceneWrapper;
+			CampaignVec2 point = new CampaignVec2(pos, flag2);
+			mapSceneWrapper.GetHeightAtPoint(in point, ref height);
+			IdealCameraTarget = new Vec3(pos.X, pos.Y, height + 1f);
 		}
 		return result;
 	}

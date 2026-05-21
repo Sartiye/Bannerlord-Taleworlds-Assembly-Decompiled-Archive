@@ -210,7 +210,7 @@ public class TheSpyPartyIssueQuestBehavior : CampaignBehaviorBase
 				TextObject textObject = new TextObject("{=YIxpNP4k}You received a message from {ISSUE_GIVER.LINK}. \"Thank you for killing the spy. Please accept these {REWARD_GOLD}{GOLD_ICON} denars with our gratitude.\"");
 				StringHelpers.SetCharacterProperties("ISSUE_GIVER", base.IssueOwner.CharacterObject, textObject);
 				textObject.SetTextVariable("REWARD_GOLD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -305,10 +305,11 @@ public class TheSpyPartyIssueQuestBehavior : CampaignBehaviorBase
 			return IssueFrequency.Rare;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			flag = PreconditionFlags.None;
 			relationHero = null;
+			requiredGold = 0;
 			skill = null;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -420,7 +421,7 @@ public class TheSpyPartyIssueQuestBehavior : CampaignBehaviorBase
 				TextObject textObject = new TextObject("{=YIxpNP4k}You received a message from {QUEST_GIVER.LINK}. \"Thank you for killing the spy. Please accept these {REWARD_GOLD}{GOLD_ICON} denars with our gratitude.\"");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("REWARD_GOLD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}

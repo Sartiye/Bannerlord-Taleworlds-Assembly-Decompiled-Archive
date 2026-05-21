@@ -1,4 +1,3 @@
-using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.Core;
@@ -8,107 +7,84 @@ namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultEquipmentSelectionModel : EquipmentSelectionModel
 {
-	public override MBList<MBEquipmentRoster> GetEquipmentRostersForHeroComeOfAge(Hero hero, bool isCivilian)
+	public override Equipment GetEquipmentForHeroComeOfAge(Hero hero, Equipment.EquipmentType equipmentType)
 	{
-		MBList<MBEquipmentRoster> mBList = new MBList<MBEquipmentRoster>();
-		bool flag = !hero.IsNoncombatant;
+		EquipmentCategories customFlags = EquipmentCategories.IsLordTemplate;
+		return GetSuitableEquipmentSet(hero, customFlags, equipmentType);
+	}
+
+	public override Equipment GetEquipmentForHeroReachesTeenAge(Hero hero)
+	{
+		EquipmentCategories customFlags = EquipmentCategories.IsLordTemplate | EquipmentCategories.IsTeenagerEquipmentTemplate;
+		return GetSuitableEquipmentSet(hero, customFlags, Equipment.EquipmentType.Civilian);
+	}
+
+	public override Equipment GetEquipmentForDeliveredOffspring(Hero hero)
+	{
+		EquipmentCategories customFlags = EquipmentCategories.IsLordTemplate | EquipmentCategories.IsChildEquipmentTemplate;
+		return GetSuitableEquipmentSet(hero, customFlags, Equipment.EquipmentType.Civilian);
+	}
+
+	public override Equipment GetEquipmentForCompanionWhenTurningToLord(Hero companionHero, Equipment.EquipmentType equipmentType)
+	{
+		EquipmentCategories customFlags = EquipmentCategories.IsLordTemplate;
+		return GetSuitableEquipmentSet(companionHero, customFlags, equipmentType);
+	}
+
+	public override Equipment GetEquipmentForInitialChildrenGeneration(Hero hero)
+	{
+		bool num = hero.Age < (float)Campaign.Current.Models.AgeModel.BecomeTeenagerAge;
+		EquipmentCategories equipmentCategories = EquipmentCategories.IsLordTemplate;
+		equipmentCategories = ((!num) ? (equipmentCategories | EquipmentCategories.IsTeenagerEquipmentTemplate) : (equipmentCategories | EquipmentCategories.IsChildEquipmentTemplate));
+		return GetSuitableEquipmentSet(hero, equipmentCategories, Equipment.EquipmentType.Civilian);
+	}
+
+	public override (Equipment, Equipment) GetEquipmentsForChangingRuler(Hero newRuler, Hero oldRuler, Equipment.EquipmentType equipmentType)
+	{
+		Equipment item = null;
+		Equipment item2 = null;
+		if (newRuler != Hero.MainHero)
+		{
+			item = GetSuitableEquipmentSet(newRuler, EquipmentCategories.IsKingdomRulerTemplate, equipmentType);
+		}
+		if (oldRuler != null && oldRuler.IsActive && oldRuler != Hero.MainHero)
+		{
+			item2 = GetSuitableEquipmentSet(oldRuler, EquipmentCategories.IsLordTemplate, equipmentType);
+		}
+		return (item, item2);
+	}
+
+	private Equipment GetSuitableEquipmentSet(Hero hero, EquipmentCategories customFlags, Equipment.EquipmentType equipmentType)
+	{
+		MBList<Equipment> mBList = new MBList<Equipment>();
+		if (hero.IsFemale)
+		{
+			customFlags |= EquipmentCategories.IsFemaleTemplate;
+		}
 		foreach (MBEquipmentRoster item in MBEquipmentRosterExtensions.All)
 		{
-			if (!IsRosterAppropriateForHeroAsTemplate(item, hero, shouldMatchGender: true, EquipmentFlags.IsNobleTemplate))
+			if (!IsRosterAppropriateForHeroAsTemplate(item, hero.Culture, customFlags))
 			{
 				continue;
 			}
-			if (isCivilian)
+			foreach (Equipment allEquipment in item.AllEquipments)
 			{
-				if (flag)
+				if (allEquipment.ItemEquipmentType == equipmentType)
 				{
-					if (item.HasEquipmentFlags(EquipmentFlags.IsCombatantTemplate | EquipmentFlags.IsCivilianTemplate))
-					{
-						mBList.Add(item);
-					}
+					mBList.Add(allEquipment);
 				}
-				else if (item.HasEquipmentFlags(EquipmentFlags.IsNoncombatantTemplate))
-				{
-					mBList.Add(item);
-				}
-			}
-			else if (item.HasEquipmentFlags(EquipmentFlags.IsMediumTemplate))
-			{
-				mBList.Add(item);
 			}
 		}
-		return mBList;
+		return mBList.GetRandomElement();
 	}
 
-	public override MBList<MBEquipmentRoster> GetEquipmentRostersForHeroReachesTeenAge(Hero hero)
-	{
-		EquipmentFlags suitableFlags = EquipmentFlags.IsNobleTemplate | EquipmentFlags.IsTeenagerEquipmentTemplate;
-		MBList<MBEquipmentRoster> roster = new MBList<MBEquipmentRoster>();
-		AddEquipmentsToRoster(hero, suitableFlags, ref roster, shouldMatchGender: true);
-		return roster;
-	}
-
-	public override MBList<MBEquipmentRoster> GetEquipmentRostersForInitialChildrenGeneration(Hero hero)
-	{
-		bool flag = hero.Age < (float)Campaign.Current.Models.AgeModel.BecomeTeenagerAge;
-		EquipmentFlags suitableFlags = EquipmentFlags.IsNobleTemplate | (flag ? EquipmentFlags.IsChildEquipmentTemplate : EquipmentFlags.IsTeenagerEquipmentTemplate);
-		MBList<MBEquipmentRoster> roster = new MBList<MBEquipmentRoster>();
-		AddEquipmentsToRoster(hero, suitableFlags, ref roster, shouldMatchGender: true);
-		return roster;
-	}
-
-	public override MBList<MBEquipmentRoster> GetEquipmentRostersForDeliveredOffspring(Hero hero)
-	{
-		EquipmentFlags suitableFlags = EquipmentFlags.IsNobleTemplate | EquipmentFlags.IsChildEquipmentTemplate;
-		MBList<MBEquipmentRoster> roster = new MBList<MBEquipmentRoster>();
-		AddEquipmentsToRoster(hero, suitableFlags, ref roster, shouldMatchGender: true);
-		return roster;
-	}
-
-	public override MBList<MBEquipmentRoster> GetEquipmentRostersForCompanion(Hero hero, bool isCivilian)
-	{
-		EquipmentFlags suitableFlags = (isCivilian ? (EquipmentFlags.IsCivilianTemplate | EquipmentFlags.IsNobleTemplate) : (EquipmentFlags.IsNobleTemplate | EquipmentFlags.IsMediumTemplate));
-		MBList<MBEquipmentRoster> roster = new MBList<MBEquipmentRoster>();
-		AddEquipmentsToRoster(hero, suitableFlags, ref roster, isCivilian);
-		return roster;
-	}
-
-	private bool IsRosterAppropriateForHeroAsTemplate(MBEquipmentRoster equipmentRoster, Hero hero, bool shouldMatchGender, EquipmentFlags customFlags = EquipmentFlags.None)
+	private bool IsRosterAppropriateForHeroAsTemplate(MBEquipmentRoster equipmentRoster, CultureObject culture, EquipmentCategories customFlags)
 	{
 		bool result = false;
-		if (equipmentRoster.IsEquipmentTemplate() && (!shouldMatchGender || equipmentRoster.HasEquipmentFlags(EquipmentFlags.IsFemaleTemplate) == hero.IsFemale) && equipmentRoster.EquipmentCulture == hero.Culture && (customFlags == EquipmentFlags.None || equipmentRoster.HasEquipmentFlags(customFlags)))
+		if (equipmentRoster.EquipmentCulture == culture && equipmentRoster.EquipmentCategories == customFlags)
 		{
-			bool num = equipmentRoster.HasEquipmentFlags(EquipmentFlags.IsNomadTemplate) || equipmentRoster.HasEquipmentFlags(EquipmentFlags.IsWoodlandTemplate);
-			bool flag = !hero.IsChild && (equipmentRoster.HasEquipmentFlags(EquipmentFlags.IsChildEquipmentTemplate) || equipmentRoster.HasEquipmentFlags(EquipmentFlags.IsTeenagerEquipmentTemplate));
-			if (!num && !flag)
-			{
-				result = true;
-			}
+			result = true;
 		}
 		return result;
-	}
-
-	private bool IsHeroCombatant(Hero hero)
-	{
-		if (hero.IsFemale && hero.Clan != Hero.MainHero.Clan && (hero.Mother == null || hero.Mother.IsNoncombatant))
-		{
-			if (hero.RandomIntWithSeed(17u, 0, 1) == 0)
-			{
-				return hero.GetTraitLevel(DefaultTraits.Valor) == 1;
-			}
-			return false;
-		}
-		return true;
-	}
-
-	private void AddEquipmentsToRoster(Hero hero, EquipmentFlags suitableFlags, ref MBList<MBEquipmentRoster> roster, bool shouldMatchGender)
-	{
-		foreach (MBEquipmentRoster item in MBEquipmentRosterExtensions.All)
-		{
-			if (IsRosterAppropriateForHeroAsTemplate(item, hero, shouldMatchGender, suitableFlags))
-			{
-				roster.Add(item);
-			}
-		}
 	}
 }

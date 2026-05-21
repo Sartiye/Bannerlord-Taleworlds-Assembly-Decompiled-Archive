@@ -262,9 +262,16 @@ public class IncidentEffect
 	{
 		return new IncidentEffect(() => true, delegate
 		{
-			Hero.MainHero.AddSkillXp(skill, amount);
+			ExplainedNumber explainedNumber2 = Campaign.Current.Models.CharacterDevelopmentModel.CalculateLearningRate(Hero.MainHero.CharacterAttributes, Hero.MainHero.HeroDeveloper.GetFocus(skill), Hero.MainHero.GetSkillValue(skill), skill);
+			bool flag = explainedNumber2.ResultNumber >= 1f;
+			Hero.MainHero.HeroDeveloper.AddSkillXp(skill, amount, flag);
+			float num3 = amount;
+			if (flag)
+			{
+				num3 *= explainedNumber2.ResultNumber;
+			}
 			TextObject textObject2 = new TextObject("{=ySoK6FLl}{?AMOUNT > 0}Gained{?}Lost{\\?} {ABS(AMOUNT)} {SKILL} XP.");
-			textObject2.SetTextVariable("AMOUNT", TaleWorlds.Library.MathF.Round(amount));
+			textObject2.SetTextVariable("AMOUNT", TaleWorlds.Library.MathF.Round(num3));
 			textObject2.SetTextVariable("SKILL", skill.Name);
 			return new List<TextObject> { textObject2 };
 		}, delegate(IncidentEffect effect)
@@ -279,7 +286,14 @@ public class IncidentEffect
 				textObject = new TextObject("{=ZucFKCqy}{CHANCE}% chance of +{AMOUNT} XP {SKILL}");
 				textObject.SetTextVariable("CHANCE", TaleWorlds.Library.MathF.Round(effect._chanceToOccur * 100f));
 			}
-			textObject.SetTextVariable("AMOUNT", TaleWorlds.Library.MathF.Round(amount));
+			ExplainedNumber explainedNumber = Campaign.Current.Models.CharacterDevelopmentModel.CalculateLearningRate(Hero.MainHero.CharacterAttributes, Hero.MainHero.HeroDeveloper.GetFocus(skill), Hero.MainHero.GetSkillValue(skill), skill);
+			bool num = explainedNumber.ResultNumber >= 1f;
+			float num2 = amount;
+			if (num)
+			{
+				num2 *= explainedNumber.ResultNumber;
+			}
+			textObject.SetTextVariable("AMOUNT", TaleWorlds.Library.MathF.Round(num2));
 			textObject.SetTextVariable("SKILL", skill.Name);
 			return new List<TextObject> { textObject };
 		});

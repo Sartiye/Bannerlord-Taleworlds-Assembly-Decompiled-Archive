@@ -463,7 +463,7 @@ public abstract class SiegeWeapon : UsableMachine, ITargetable
 		int userCountIncludingInStruckAction = base.UserCountIncludingInStruckAction;
 		if (userCountIncludingInStruckAction == 0)
 		{
-			return 0.1f;
+			return 0f;
 		}
 		return 0.7f + 0.3f * (float)userCountIncludingInStruckAction / (float)MaxUserCount;
 	}

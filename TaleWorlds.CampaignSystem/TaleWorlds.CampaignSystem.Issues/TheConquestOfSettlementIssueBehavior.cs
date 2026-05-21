@@ -144,10 +144,11 @@ public class TheConquestOfSettlementIssueBehavior : CampaignBehaviorBase
 			return IssueFrequency.VeryCommon;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flags, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flags, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			relationHero = null;
 			skill = null;
+			requiredGold = 0;
 			flags = PreconditionFlags.None;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -282,7 +283,7 @@ public class TheConquestOfSettlementIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=diUtbbaH}{TARGET_SETTLEMENT} is taken by {NEW_OWNER_FACTION}. Your agreement with {QUEST_GIVER.LINK} is no longer valid.");
+				TextObject textObject = new TextObject("{=diUtbbaH}{TARGET_SETTLEMENT} is taken by the {NEW_OWNER_FACTION}. Your agreement with {QUEST_GIVER.LINK} is no longer valid.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("TARGET_SETTLEMENT", _targetSettlement.Name);
 				return textObject;
@@ -314,7 +315,7 @@ public class TheConquestOfSettlementIssueBehavior : CampaignBehaviorBase
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=8iVkBa6D}{TARGET_SETTLEMENT_OWNER.LINK} has defected to {FACTION_NAME} along with {TARGET_SETTLEMENT}. Your agreement with {QUEST_GIVER.LINK} is moot.");
+				TextObject textObject = new TextObject("{=8iVkBa6D}{TARGET_SETTLEMENT_OWNER.LINK} has defected to the {FACTION_NAME} along with {TARGET_SETTLEMENT}. Your agreement with {QUEST_GIVER.LINK} is moot.");
 				StringHelpers.SetCharacterProperties("TARGET_SETTLEMENT_OWNER", _targetSettlement.OwnerClan.Leader.CharacterObject, textObject);
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("TARGET_SETTLEMENT", _targetSettlement.Name);
@@ -424,7 +425,7 @@ public class TheConquestOfSettlementIssueBehavior : CampaignBehaviorBase
 				{
 					QuestSuccess(2);
 				}
-				else if (newOwner.MapFaction != base.QuestGiver.MapFaction && !newOwner.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
+				else if (newOwner.MapFaction != oldOwner.MapFaction && newOwner.MapFaction != base.QuestGiver.MapFaction && !newOwner.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
 				{
 					TextObject targetSettlementTakenByAnotherFaction = TargetSettlementTakenByAnotherFaction;
 					targetSettlementTakenByAnotherFaction.SetTextVariable("NEW_OWNER_FACTION", newOwner.MapFaction.EncyclopediaLinkWithName);
@@ -509,14 +510,29 @@ public class TheConquestOfSettlementIssueBehavior : CampaignBehaviorBase
 			}
 			else if (clan.Settlements.Contains(_targetSettlement))
 			{
-				if (newKingdom == base.QuestGiver.MapFaction)
+				switch (detail)
 				{
-					QuestSuccess(1);
-					return;
+				case ChangeKingdomAction.ChangeKingdomActionDetail.JoinKingdomByDefection:
+				{
+					if (newKingdom == base.QuestGiver.MapFaction)
+					{
+						QuestSuccess(1);
+						break;
+					}
+					TextObject defectedToAnotherFaction = DefectedToAnotherFaction;
+					defectedToAnotherFaction.SetTextVariable("FACTION_NAME", newKingdom.EncyclopediaLinkWithName);
+					CompleteQuestWithCancel(defectedToAnotherFaction);
+					break;
 				}
-				TextObject defectedToAnotherFaction = DefectedToAnotherFaction;
-				defectedToAnotherFaction.SetTextVariable("FACTION_NAME", newKingdom.EncyclopediaLinkWithName);
-				CompleteQuestWithCancel(defectedToAnotherFaction);
+				case ChangeKingdomAction.ChangeKingdomActionDetail.LeaveKingdom:
+				case ChangeKingdomAction.ChangeKingdomActionDetail.LeaveWithRebellion:
+				case ChangeKingdomAction.ChangeKingdomActionDetail.LeaveAsMercenary:
+					if (!base.QuestGiver.MapFaction.IsAtWarWith(clan.MapFaction))
+					{
+						CompleteQuestWithCancel(NoLongerEnemy);
+					}
+					break;
+				}
 			}
 			else if (base.QuestGiver.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
 			{

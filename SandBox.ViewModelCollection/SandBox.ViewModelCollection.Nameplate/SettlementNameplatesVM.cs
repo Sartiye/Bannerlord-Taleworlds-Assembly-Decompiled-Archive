@@ -108,6 +108,8 @@ public class SettlementNameplatesVM : ViewModel
 		CampaignEvents.OnSiegeEventStartedEvent.AddNonSerializedListener(this, OnSiegeEventStartedOnSettlement);
 		CampaignEvents.OnSiegeEventEndedEvent.AddNonSerializedListener(this, OnSiegeEventEndedOnSettlement);
 		CampaignEvents.RebelliousClanDisbandedAtSettlement.AddNonSerializedListener(this, OnRebelliousClanDisbandedAtSettlement);
+		CampaignEvents.OnAllianceStartedEvent.AddNonSerializedListener(this, OnAllianceStarted);
+		CampaignEvents.OnAllianceEndedEvent.AddNonSerializedListener(this, OnAllianceEnded);
 		UpdateNameplateAuxMTPredicate = UpdateNameplateAuxMT;
 	}
 
@@ -168,7 +170,7 @@ public class SettlementNameplatesVM : ViewModel
 			}
 			else
 			{
-				Debug.FailedAssert("A seetlement which is IsRetreat doesn't have a retirement component.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Nameplate\\SettlementNameplatesVM.cs", "Initialize", 118);
+				Debug.FailedAssert("A seetlement which is IsRetreat doesn't have a retirement component.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Nameplate\\SettlementNameplatesVM.cs", "Initialize", 120);
 			}
 		}
 		for (int i = 0; i < _allNameplates.Count; i++)
@@ -342,6 +344,24 @@ public class SettlementNameplatesVM : ViewModel
 				value.RefreshDynamicProperties(forceUpdate: true);
 				value.RefreshRelationStatus();
 			}
+		}
+	}
+
+	private void OnAllianceEnded(Kingdom kingdom1, Kingdom kingdom2)
+	{
+		OnAllianceStateChanged(kingdom1, kingdom2);
+	}
+
+	private void OnAllianceStarted(Kingdom kingdom1, Kingdom kingdom2)
+	{
+		OnAllianceStateChanged(kingdom1, kingdom2);
+	}
+
+	private void OnAllianceStateChanged(Kingdom kingdom1, Kingdom kingdom2)
+	{
+		if (kingdom1 == Hero.MainHero.MapFaction || kingdom2 == Hero.MainHero.MapFaction)
+		{
+			RefreshRelationsOfNameplates();
 		}
 	}
 

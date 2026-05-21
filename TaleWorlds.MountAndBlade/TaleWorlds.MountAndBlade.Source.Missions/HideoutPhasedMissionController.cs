@@ -58,7 +58,7 @@ public class HideoutPhasedMissionController : MissionLogic
 	public override void AfterStart()
 	{
 		base.AfterStart();
-		MissionAgentSpawnLogic missionBehavior = base.Mission.GetMissionBehavior<MissionAgentSpawnLogic>();
+		DefaultBattleMissionAgentSpawnLogic missionBehavior = base.Mission.GetMissionBehavior<DefaultBattleMissionAgentSpawnLogic>();
 		if (missionBehavior != null && IsPhasingInitialized)
 		{
 			missionBehavior.AddPhaseChangeAction(BattleSideEnum.Defender, OnPhaseChanged);

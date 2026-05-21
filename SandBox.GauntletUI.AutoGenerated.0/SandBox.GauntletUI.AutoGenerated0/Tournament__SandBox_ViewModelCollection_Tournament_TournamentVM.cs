@@ -707,7 +707,7 @@ public class Tournament__SandBox_ViewModelCollection_Tournament_TournamentVM : T
 		_widget_0_4_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0_4_0.MarginTop = 10f;
 		_widget_0_4_0.MarginRight = 25f;
-		_widget_0_4_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_4_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_4_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_4_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_4_0_0_0.VisualDefinition = CreateVisualDefinitionBannerContainer();
@@ -828,7 +828,7 @@ public class Tournament__SandBox_ViewModelCollection_Tournament_TournamentVM : T
 		_widget_0_4_0_0_3_0_0.SuggestedHeight = 470f;
 		_widget_0_4_0_0_3_0_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0_4_0_0_3_0_0.MarginTop = 35f;
-		_widget_0_4_0_0_3_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_4_0_0_3_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_4_0_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_4_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_4_0_1.HorizontalAlignment = HorizontalAlignment.Center;
@@ -867,7 +867,7 @@ public class Tournament__SandBox_ViewModelCollection_Tournament_TournamentVM : T
 		_widget_0_6_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_6_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_6_0_0.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_0_6_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_6_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_6_0_0.MarginTop = 12f;
 		_widget_0_6_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_6_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
@@ -900,7 +900,7 @@ public class Tournament__SandBox_ViewModelCollection_Tournament_TournamentVM : T
 		_widget_0_6_1.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_0_6_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_6_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_6_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_6_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_6_1_0.Sprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
 		_widget_0_6_1_0.Color = new Color(0f, 0f, 0f);
 		_widget_0_6_1_0.AlphaFactor = 0.3f;
@@ -1088,12 +1088,12 @@ public class Tournament__SandBox_ViewModelCollection_Tournament_TournamentVM : T
 		_widget_1_1_0_0.Sprite = base.Context.SpriteData.GetSprite("StdAssets\\Popup\\canvas");
 		_widget_1_1_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_1_1.MarginLeft = 15f;
 		_widget_1_1_1.MarginRight = 15f;
 		_widget_1_1_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_1_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_1_1_0.MarginBottom = 5f;
 		_widget_1_1_1_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_1_0_0.HeightSizePolicy = SizePolicy.CoverChildren;

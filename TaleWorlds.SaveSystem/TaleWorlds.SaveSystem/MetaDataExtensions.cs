@@ -13,4 +13,14 @@ public static class MetaDataExtensions
 		}
 		return ApplicationVersion.FromString(text);
 	}
+
+	public static ApplicationVersion GetNewGameVersion(this MetaData metaData)
+	{
+		string text = metaData?["NewGameVersion"];
+		if (string.IsNullOrEmpty(text))
+		{
+			return ApplicationVersion.Empty;
+		}
+		return ApplicationVersion.FromString(text);
+	}
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
@@ -7,6 +8,7 @@ using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.GameState;
 using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.MapEvents;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -14,6 +16,7 @@ using TaleWorlds.CampaignSystem.Settlements.Locations;
 using TaleWorlds.CampaignSystem.Siege;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 
 namespace Helpers;
@@ -222,6 +225,29 @@ public static class MenuHelper
 			string battleSceneForMapPatch = Campaign.Current.Models.SceneModel.GetBattleSceneForMapPatch(mapPatchAtPosition, isNavalEncounter);
 			args.Tooltip = new TextObject("{=!}[DEV] Scene: (" + battleSceneForMapPatch + ")");
 		}
+		if (MobileParty.MainParty.IsCurrentlyAtSea)
+		{
+			MapEvent encounteredBattle = PlayerEncounter.EncounteredBattle;
+			if (encounteredBattle != null && encounteredBattle.MapEventSettlement?.IsVillage == true)
+			{
+				MapEvent encounteredBattle2 = PlayerEncounter.EncounteredBattle;
+				if (encounteredBattle2 != null && encounteredBattle2.IsRaid)
+				{
+					int minimumNumberOfMenForAttackingVillageViaScene = Campaign.Current.Models.EncounterModel.MinimumNumberOfMenForAttackingVillageViaScene;
+					if (MobileParty.MainParty.MemberRoster.TotalHealthyCount < minimumNumberOfMenForAttackingVillageViaScene)
+					{
+						args.IsEnabled = false;
+						args.Tooltip = new TextObject("{=*}You should at least have {NUMBER} healthy men in your party to take a hostile action.");
+						args.Tooltip.SetTextVariable("NUMBER", minimumNumberOfMenForAttackingVillageViaScene);
+					}
+					else if (!ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().AnyQ())
+					{
+						args.IsEnabled = false;
+						args.Tooltip = new TextObject("{=*}You don't have any shallow draft ship.");
+					}
+				}
+			}
+		}
 		return flag;
 	}
 
@@ -246,11 +272,7 @@ public static class MenuHelper
 		{
 			if (mapEventSettlement.IsFortification)
 			{
-				if (battle.IsRaid)
-				{
-					PlayerEncounter.StartVillageBattleMission();
-				}
-				else if (battle.IsSiegeAmbush)
+				if (battle.IsSiegeAmbush)
 				{
 					PlayerEncounter.StartSiegeAmbushMission();
 				}
@@ -270,7 +292,7 @@ public static class MenuHelper
 						if (PlayerSiege.BesiegedSettlement != null && PlayerSiege.BesiegedSettlement.CurrentSiegeState == Settlement.SiegeState.InTheLordsHall)
 						{
 							FlattenedTroopRoster priorityListForLordsHallFightMission = Campaign.Current.Models.SiegeLordsHallFightModel.GetPriorityListForLordsHallFightMission(MapEvent.PlayerMapEvent, BattleSideEnum.Defender, Campaign.Current.Models.SiegeLordsHallFightModel.MaxDefenderSideTroopCount);
-							int num = MathF.Max(1, MathF.Min(Campaign.Current.Models.SiegeLordsHallFightModel.MaxAttackerSideTroopCount, MathF.Round((float)priorityListForLordsHallFightMission.Troops.Count() * Campaign.Current.Models.SiegeLordsHallFightModel.AttackerDefenderTroopCountRatio)));
+							int num = TaleWorlds.Library.MathF.Max(1, TaleWorlds.Library.MathF.Min(Campaign.Current.Models.SiegeLordsHallFightModel.MaxAttackerSideTroopCount, TaleWorlds.Library.MathF.Round((float)priorityListForLordsHallFightMission.Troops.Count() * Campaign.Current.Models.SiegeLordsHallFightModel.AttackerDefenderTroopCountRatio)));
 							TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
 							MobileParty mobileParty = ((MobileParty.MainParty.Army != null) ? MobileParty.MainParty.Army.LeaderParty : MobileParty.MainParty);
 							troopRoster.Add(mobileParty.MemberRoster);
@@ -283,7 +305,7 @@ public static class MenuHelper
 							flattenedTroopRoster.RemoveIf((FlattenedTroopRosterElement x) => x.IsWounded);
 							troopRoster2.Add(MobilePartyHelper.GetStrongestAndPriorTroops(flattenedTroopRoster, num, includePlayer: true));
 							int minSelectableTroopCount = 1;
-							args.MenuContext.OpenTroopSelection(troopRoster, troopRoster2, (CharacterObject character) => !character.IsPlayerCharacter, LordsHallTroopRosterManageDone, num, minSelectableTroopCount);
+							args.MenuContext.OpenTroopSelection(troopRoster, troopRoster2, null, (CharacterObject character) => !character.IsPlayerCharacter, LordsHallTroopRosterManageDone, num, minSelectableTroopCount);
 						}
 						else
 						{
@@ -294,7 +316,51 @@ public static class MenuHelper
 			}
 			else if (mapEventSettlement.IsVillage)
 			{
-				PlayerEncounter.StartVillageBattleMission();
+				MapEventHelper.GetRaidContext(battle, out var raiderSide, out var raiderHasSeaPresence, out var raiderHasLandPresence, out var villageFactionSideHasSeaPresence, out var villageFactionSideHasLandPresence, out var wasEverInLootingPhase);
+				BattleSideEnum otherSide = battle.GetOtherSide(raiderSide);
+				if (!wasEverInLootingPhase)
+				{
+					if (raiderHasSeaPresence)
+					{
+						StartSeaRaidMission(battle, raiderSide, args);
+					}
+					else
+					{
+						PlayerEncounter.StartVillageBattleMission();
+					}
+				}
+				else if (villageFactionSideHasSeaPresence)
+				{
+					if (raiderHasSeaPresence && !raiderHasLandPresence && !villageFactionSideHasLandPresence)
+					{
+						IMapScene mapSceneWrapper = Campaign.Current.MapSceneWrapper;
+						CampaignVec2 position = MobileParty.MainParty.Position;
+						MapPatchData mapPatchAtPosition = mapSceneWrapper.GetMapPatchAtPosition(in position);
+						string battleSceneForMapPatch = Campaign.Current.Models.SceneModel.GetBattleSceneForMapPatch(mapPatchAtPosition, isNavalEncounter: true);
+						MissionInitializerRecord rec = new MissionInitializerRecord(battleSceneForMapPatch);
+						TerrainType faceTerrainType = Campaign.Current.MapSceneWrapper.GetFaceTerrainType(MobileParty.MainParty.CurrentNavigationFace);
+						rec.TerrainType = (int)faceTerrainType;
+						rec.DamageToFriendsMultiplier = Campaign.Current.Models.DifficultyModel.GetPlayerTroopsReceivedDamageMultiplier();
+						rec.DamageFromPlayerToFriendsMultiplier = Campaign.Current.Models.DifficultyModel.GetPlayerTroopsReceivedDamageMultiplier();
+						rec.NeedsRandomTerrain = false;
+						rec.PlayingInCampaignMode = true;
+						rec.RandomTerrainSeed = MBRandom.RandomInt(10000);
+						rec.AtmosphereOnCampaign = Campaign.Current.Models.MapWeatherModel.GetAtmosphereModel(MobileParty.MainParty.Position);
+						rec.SceneHasMapPatch = true;
+						rec.DecalAtlasGroup = 2;
+						rec.PatchCoordinates = mapPatchAtPosition.normalizedCoordinates;
+						rec.PatchEncounterDir = (battle.AttackerSide.LeaderParty.Position.ToVec2() - battle.DefenderSide.LeaderParty.Position.ToVec2()).Normalized();
+						CampaignMission.OpenNavalBattleMission(rec);
+					}
+					else
+					{
+						StartSeaRaidMission(battle, otherSide, args);
+					}
+				}
+				else
+				{
+					PlayerEncounter.StartVillageBattleMission();
+				}
 			}
 			else if (mapEventSettlement.IsHideout)
 			{
@@ -304,40 +370,76 @@ public static class MenuHelper
 		else
 		{
 			bool flag = PlayerEncounter.IsNavalEncounter();
-			IMapScene mapSceneWrapper = Campaign.Current.MapSceneWrapper;
+			IMapScene mapSceneWrapper2 = Campaign.Current.MapSceneWrapper;
 			CampaignVec2 position = MobileParty.MainParty.Position;
-			MapPatchData mapPatchAtPosition = mapSceneWrapper.GetMapPatchAtPosition(in position);
-			string battleSceneForMapPatch = Campaign.Current.Models.SceneModel.GetBattleSceneForMapPatch(mapPatchAtPosition, flag);
-			MissionInitializerRecord rec = new MissionInitializerRecord(battleSceneForMapPatch);
-			TerrainType faceTerrainType = Campaign.Current.MapSceneWrapper.GetFaceTerrainType(MobileParty.MainParty.CurrentNavigationFace);
-			rec.TerrainType = (int)faceTerrainType;
-			rec.DamageToFriendsMultiplier = Campaign.Current.Models.DifficultyModel.GetPlayerTroopsReceivedDamageMultiplier();
-			rec.DamageFromPlayerToFriendsMultiplier = Campaign.Current.Models.DifficultyModel.GetPlayerTroopsReceivedDamageMultiplier();
-			rec.NeedsRandomTerrain = false;
-			rec.PlayingInCampaignMode = true;
-			rec.RandomTerrainSeed = MBRandom.RandomInt(10000);
-			rec.AtmosphereOnCampaign = Campaign.Current.Models.MapWeatherModel.GetAtmosphereModel(MobileParty.MainParty.Position);
-			rec.SceneHasMapPatch = true;
-			rec.DecalAtlasGroup = 2;
-			rec.PatchCoordinates = mapPatchAtPosition.normalizedCoordinates;
-			rec.PatchEncounterDir = (battle.AttackerSide.LeaderParty.Position.ToVec2() - battle.DefenderSide.LeaderParty.Position.ToVec2()).Normalized();
+			MapPatchData mapPatchAtPosition2 = mapSceneWrapper2.GetMapPatchAtPosition(in position);
+			string battleSceneForMapPatch2 = Campaign.Current.Models.SceneModel.GetBattleSceneForMapPatch(mapPatchAtPosition2, flag);
+			MissionInitializerRecord rec2 = new MissionInitializerRecord(battleSceneForMapPatch2);
+			TerrainType faceTerrainType2 = Campaign.Current.MapSceneWrapper.GetFaceTerrainType(MobileParty.MainParty.CurrentNavigationFace);
+			rec2.TerrainType = (int)faceTerrainType2;
+			rec2.DamageToFriendsMultiplier = Campaign.Current.Models.DifficultyModel.GetPlayerTroopsReceivedDamageMultiplier();
+			rec2.DamageFromPlayerToFriendsMultiplier = Campaign.Current.Models.DifficultyModel.GetPlayerTroopsReceivedDamageMultiplier();
+			rec2.NeedsRandomTerrain = false;
+			rec2.PlayingInCampaignMode = true;
+			rec2.RandomTerrainSeed = MBRandom.RandomInt(10000);
+			rec2.AtmosphereOnCampaign = Campaign.Current.Models.MapWeatherModel.GetAtmosphereModel(MobileParty.MainParty.Position);
+			rec2.SceneHasMapPatch = true;
+			rec2.DecalAtlasGroup = 2;
+			rec2.PatchCoordinates = mapPatchAtPosition2.normalizedCoordinates;
+			rec2.PatchEncounterDir = (battle.AttackerSide.LeaderParty.Position.ToVec2() - battle.DefenderSide.LeaderParty.Position.ToVec2()).Normalized();
 			bool flag2 = MapEvent.PlayerMapEvent.PartiesOnSide(BattleSideEnum.Defender).Any((MapEventParty involvedParty) => involvedParty.Party.IsMobile && (involvedParty.Party.MobileParty.IsCaravan || (involvedParty.Party.Owner != null && involvedParty.Party.Owner.IsMerchant)));
 			bool flag3 = MapEvent.PlayerMapEvent.MapEventSettlement == null && MapEvent.PlayerMapEvent.PartiesOnSide(BattleSideEnum.Defender).Any((MapEventParty involvedParty) => involvedParty.Party.IsMobile && involvedParty.Party.MobileParty.IsVillager);
 			if (flag)
 			{
-				CampaignMission.OpenNavalBattleMission(rec);
+				CampaignMission.OpenNavalBattleMission(rec2);
 			}
 			else if (flag2 || flag3)
 			{
-				CampaignMission.OpenCaravanBattleMission(rec, flag2);
+				CampaignMission.OpenCaravanBattleMission(rec2, flag2);
 			}
 			else
 			{
-				CampaignMission.OpenBattleMission(rec);
+				CampaignMission.OpenBattleMission(rec2);
 			}
 		}
 		PlayerEncounter.StartAttackMission();
 		MapEvent.PlayerMapEvent.BeginWait();
+	}
+
+	private static void StartSeaRaidMission(MapEvent mapEvent, BattleSideEnum navalSide, MenuCallbackArgs args)
+	{
+		bool num = mapEvent.PlayerSide == navalSide;
+		List<MapEventParty> navalParties = mapEvent.PartiesOnSide(navalSide).ToList();
+		List<Ship> selectedShips = (from x in navalParties.SelectMany((MapEventParty x) => x.Ships)
+			where x.ShipHull.CanNavigateShallowWater
+			orderby x.ShipHull.MainDeckCrewCapacity descending
+			select x).Take(3).ToList();
+		int maxSelectableTroopCount = selectedShips.Sum((Ship x) => x.ShipHull.MainDeckCrewCapacity);
+		TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
+		if (num)
+		{
+			TroopRoster strongestAndPriorTroops = MobilePartyHelper.GetStrongestAndPriorTroops(MobileParty.MainParty, Math.Min(maxSelectableTroopCount, MobileParty.MainParty.MemberRoster.TotalHealthyCount), includePlayer: true);
+			args.MenuContext.OpenTroopSelection(MobileParty.MainParty.MemberRoster, strongestAndPriorTroops, selectedShips, (CharacterObject character) => !character.IsPlayerCharacter, delegate(TroopRoster troops)
+			{
+				int count = maxSelectableTroopCount - troops.TotalHealthyCount;
+				navalParties.RemoveAll((MapEventParty x) => x.Party == PartyBase.MainParty);
+				foreach (FlattenedTroopRosterElement item in (from x in navalParties.SelectMany((MapEventParty x) => x.Troops)
+					orderby x.Troop.GetBattlePower() descending
+					select x).Take(count))
+				{
+					troops.AddToCounts(item.Troop, 1);
+				}
+				CampaignMission.OpenNavalRaidMission(troops, navalSide, selectedShips);
+			}, maxSelectableTroopCount, Campaign.Current.Models.EncounterModel.MinimumNumberOfMenForAttackingVillageViaScene, isNavalRaid: true);
+			return;
+		}
+		foreach (FlattenedTroopRosterElement item2 in (from x in navalParties.SelectMany((MapEventParty x) => x.Troops)
+			orderby x.Troop.GetBattlePower() descending
+			select x).Take(maxSelectableTroopCount))
+		{
+			troopRoster.AddToCounts(item2.Troop, 1);
+		}
+		CampaignMission.OpenNavalRaidMission(troopRoster, navalSide, selectedShips);
 	}
 
 	private static void LordsHallTroopRosterManageDone(TroopRoster selectedTroops)
@@ -419,6 +521,29 @@ public static class MenuHelper
 						args.Tooltip = TooltipHelper.GetSendTroopsPowerContextTooltipForMapEvent();
 					}
 				}
+				if (MobileParty.MainParty.IsCurrentlyAtSea)
+				{
+					MapEvent encounteredBattle = PlayerEncounter.EncounteredBattle;
+					if (encounteredBattle != null && encounteredBattle.MapEventSettlement?.IsVillage == true)
+					{
+						MapEvent encounteredBattle2 = PlayerEncounter.EncounteredBattle;
+						if (encounteredBattle2 != null && encounteredBattle2.IsRaid)
+						{
+							int minimumNumberOfMenForAttackingVillageViaScene = Campaign.Current.Models.EncounterModel.MinimumNumberOfMenForAttackingVillageViaScene;
+							if (MobileParty.MainParty.MemberRoster.TotalHealthyCount < minimumNumberOfMenForAttackingVillageViaScene)
+							{
+								args.IsEnabled = false;
+								args.Tooltip = new TextObject("{=*}You should at least have {NUMBER} healthy men in your party to take a hostile action.");
+								args.Tooltip.SetTextVariable("NUMBER", minimumNumberOfMenForAttackingVillageViaScene);
+							}
+							else if (!ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().AnyQ())
+							{
+								args.IsEnabled = false;
+								args.Tooltip = new TextObject("{=*}You don't have any shallow draft ship.");
+							}
+						}
+					}
+				}
 				return true;
 			}
 		}
@@ -471,7 +596,7 @@ public static class MenuHelper
 		Settlement currentSettlement = MobileParty.MainParty.CurrentSettlement;
 		MapEvent mapEvent = ((PlayerEncounter.Battle != null) ? PlayerEncounter.Battle : PlayerEncounter.EncounteredBattle);
 		int numberOfInvolvedMen = mapEvent.GetNumberOfInvolvedMen(PartyBase.MainParty.Side);
-		PlayerEncounter.Finish(MobileParty.MainParty.CurrentSettlement?.SiegeEvent == null || MobileParty.MainParty.CurrentSettlement?.MapFaction != MobileParty.MainParty.MapFaction);
+		PlayerEncounter.Finish(currentSettlement == null && (MobileParty.MainParty.CurrentSettlement?.SiegeEvent == null || MobileParty.MainParty.CurrentSettlement?.MapFaction != MobileParty.MainParty.MapFaction));
 		if (MobileParty.MainParty.BesiegerCamp != null)
 		{
 			MobileParty.MainParty.BesiegerCamp = null;
@@ -491,11 +616,12 @@ public static class MenuHelper
 	{
 		if (string.IsNullOrEmpty(encounterCulture?.EncounterBackgroundMesh))
 		{
-			Debug.FailedAssert("Background mesh is invalid for current encounter", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetEncounterCultureBackgroundMesh", 665);
+			Debug.FailedAssert("Background mesh is invalid for current encounter", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetEncounterCultureBackgroundMesh", 814);
 			return string.Empty;
 		}
 		string text = encounterCulture.EncounterBackgroundMesh;
-		if (PlayerEncounter.IsNavalEncounter())
+		MapEvent obj = PlayerEncounter.Battle ?? PlayerEncounter.EncounteredBattle;
+		if (obj != null && obj.IsNavalMapEvent)
 		{
 			text += "_naval";
 		}

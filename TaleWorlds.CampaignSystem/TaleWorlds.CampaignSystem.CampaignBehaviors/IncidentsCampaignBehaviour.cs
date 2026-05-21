@@ -989,7 +989,7 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 		{
 			IncidentEffect.TraitChange(DefaultTraits.Generosity, 100),
 			IncidentEffect.TraitChange(DefaultTraits.Valor, 100),
-			IncidentEffect.MoraleChange(-10f)
+			IncidentEffect.MoraleChange(10f)
 		});
 		Incident incident34 = RegisterIncident("incident_local_hero", "{=lfYEujfb}Local Hero", "{=9ab6HwCS}As you prepare to leave the village, the elder approaches you. His nephew is to be married, and it would be a great honor if a warrior of your renown would bless the couple. Your men suppress grins and jostle each other, and you know they are looking forward to the chance to get royally drunk.", IncidentTrigger.LeavingVillage, IncidentType.TroopSettlementRelation, CampaignTime.Days(60f), (TextObject description) => Hero.MainHero.Clan.Renown >= 500f && PartyBase.MainParty.MemberRoster.TotalRegulars >= 5);
 		incident34.AddOption("{=Huu4DySE}Accept the invitation and let the men have their fun", new List<IncidentEffect>
@@ -2968,8 +2968,9 @@ public class IncidentsCampaignBehaviour : CampaignBehaviorBase, INonReadyObjectH
 			IncidentEffect.TraitChange(DefaultTraits.Valor, 100),
 			IncidentEffect.TraitChange(DefaultTraits.Generosity, -100),
 			IncidentEffect.MoraleChange(-20f),
-			IncidentEffect.WoundTroopsRandomly((TroopRosterElement x) => x.Character.IsMounted, () => 2).WithChance(0.5f),
-			IncidentEffect.DemoteTroopsRandomlyWithPredicate((TroopRosterElement x) => x.Character.IsMounted, (CharacterObject x) => !x.IsMounted, 1).WithChance(0.5f)
+			IncidentEffect.WoundTroopsRandomly((TroopRosterElement x) => x.Character.IsMounted, () => Math.Min(MobileParty.MainParty.RandomIntWithSeed((uint)_activeIncidentSeed, 1, 6), (from x in MobileParty.MainParty.MemberRoster.GetTroopRoster()
+				where x.Character.IsMounted
+				select x).Sum((TroopRosterElement x) => x.Number))).WithChance(0.5f)
 		});
 		incident98.AddOption("{=BxpJKMYq}Dispel the spirits in the approved orthodox Calradian way, by loudly calling on Heaven to ward off the ghosts of Below.", new List<IncidentEffect>
 		{

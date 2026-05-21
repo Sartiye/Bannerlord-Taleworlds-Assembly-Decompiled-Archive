@@ -14,7 +14,7 @@ public class ChoosingSkillFocusStep1Tutorial : TutorialItemBase
 	public ChoosingSkillFocusStep1Tutorial()
 	{
 		base.Placement = TutorialItemVM.ItemPlacements.Right;
-		base.HighlightedVisualElementID = "CharacterButton";
+		base.HighlightedVisualElementID = "character_developer";
 		base.MouseRequired = true;
 	}
 

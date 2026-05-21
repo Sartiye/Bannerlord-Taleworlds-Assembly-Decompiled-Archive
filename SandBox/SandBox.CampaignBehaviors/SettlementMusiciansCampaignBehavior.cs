@@ -22,7 +22,7 @@ public class SettlementMusiciansCampaignBehavior : CampaignBehaviorBase
 
 	private void OnMissionStarted(IMission mission)
 	{
-		if (!(mission is Mission mission2) || CampaignMission.Current == null || PlayerEncounter.LocationEncounter == null || PlayerEncounter.LocationEncounter.Settlement == null || CampaignMission.Current.Location == null || Campaign.Current.IsMainHeroDisguised)
+		if (!(mission is Mission mission2) || CampaignMission.Current == null || PlayerEncounter.LocationEncounter == null || PlayerEncounter.LocationEncounter.Settlement == null || CampaignMission.Current.Location == null || (Campaign.Current.IsMainHeroDisguised && !(CampaignMission.Current.Location.StringId != "center")))
 		{
 			return;
 		}

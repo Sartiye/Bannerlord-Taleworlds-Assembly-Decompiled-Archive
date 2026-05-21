@@ -362,7 +362,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 		_widget_1.MarginRight = 640f;
 		_widget_1.MarginTop = 200f;
 		_widget_1.Sprite = base.Context.SpriteData.GetSprite("General\\CharacterCreation\\character_creation_panel_extension");
-		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1.MinIndex = 0;
 		_widget_1.MaxIndex = 999;
 		_widget_1.DoNotUseCustomScaleAndChildren = true;

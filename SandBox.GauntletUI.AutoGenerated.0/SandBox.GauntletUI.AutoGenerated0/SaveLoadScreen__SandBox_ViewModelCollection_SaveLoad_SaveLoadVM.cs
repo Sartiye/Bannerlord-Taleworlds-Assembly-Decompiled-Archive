@@ -447,7 +447,7 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM : W
 		_widget_1_0_3_0_1.ClipContents = true;
 		_widget_1_0_3_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0_3_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_0_3_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_0_3_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_0_3_0_1_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_0_3_0_1_0_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1_0_3_0_1_0_0.SuggestedWidth = 569f;
@@ -468,7 +468,7 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM : W
 		_widget_1_0_3_0_1_0_0_2.IsEnabled = false;
 		_widget_1_0_3_0_1_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0_3_0_1_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_0_3_0_1_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_0_3_0_1_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_0_3_0_1_0_1.MinIndex = 1;
 		_widget_1_0_3_0_1_0_1.StepSize = 1000;
 		_widget_1_0_3_1.WidthSizePolicy = SizePolicy.Fixed;
@@ -605,7 +605,7 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM : W
 		_widget_1_1_3.VisualDefinition = CreateVisualDefinitionBottomPanel();
 		_widget_1_1_3.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_1_3.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_1_3.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1_3.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_1_3.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_1_1_3.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_1_1_3.MarginRight = 250f;
@@ -633,8 +633,8 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM : W
 		_widget_1_1_3_1.Sprite = base.Context.SpriteData.GetSprite("StdAssets\\tabbar_long");
 		_widget_1_1_3_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_3_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_1_3_1_0.MarginLeft = 150f;
-		_widget_1_1_3_1_0.MarginRight = 150f;
+		_widget_1_1_3_1_0.MarginLeft = 120f;
+		_widget_1_1_3_1_0.MarginRight = 120f;
 		_widget_1_1_3_1_0.StackLayout.LayoutMethod = LayoutMethod.HorizontalCentered;
 		_widget_1_1_4.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_1_4.HeightSizePolicy = SizePolicy.StretchToParent;
@@ -643,7 +643,7 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM : W
 		_widget_1_1_4.MarginTop = 15f;
 		_widget_1_1_4.MarginBottom = 15f;
 		_widget_1_1_4.DoNotAcceptEvents = true;
-		_widget_1_1_4.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1_4.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_1_4_0.VisualDefinition = CreateVisualDefinitionRightPanel();
 		_widget_1_1_4_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_4_0.HeightSizePolicy = SizePolicy.StretchToParent;
@@ -653,11 +653,11 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM : W
 		_widget_1_1_4_0.DoNotAcceptEvents = true;
 		_widget_1_1_4_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_4_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_1_4_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1_4_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_1_4_0_0.DoNotAcceptEvents = true;
 		_widget_1_1_4_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_4_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_1_4_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1_4_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_1_4_0_0_0.DoNotAcceptEvents = true;
 		_widget_1_1_4_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_4_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
@@ -681,10 +681,10 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM : W
 		_widget_1_1_4_0_0_1_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_1_4_0_0_1_0_0_0.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_1_1_4_0_0_1_0_0_0.VerticalAlignment = VerticalAlignment.Top;
-		_widget_1_1_4_0_0_1_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1_4_0_0_1_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_1_4_0_0_1_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_4_0_0_1_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_1_4_0_0_1_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1_4_0_0_1_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_1_4_0_0_1_0_0_0_0.MarginRight = 20f;
 		_widget_1_1_4_0_0_1_1.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_1_4_0_0_1_1.HeightSizePolicy = SizePolicy.StretchToParent;

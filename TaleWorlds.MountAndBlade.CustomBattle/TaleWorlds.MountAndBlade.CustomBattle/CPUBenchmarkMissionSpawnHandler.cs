@@ -4,7 +4,7 @@ namespace TaleWorlds.MountAndBlade.CustomBattle;
 
 public class CPUBenchmarkMissionSpawnHandler : MissionLogic
 {
-	private MissionAgentSpawnLogic _missionAgentSpawnLogic;
+	private DefaultBattleMissionAgentSpawnLogic _missionAgentSpawnLogic;
 
 	private CustomBattleCombatant _defenderParty;
 
@@ -23,7 +23,7 @@ public class CPUBenchmarkMissionSpawnHandler : MissionLogic
 	public override void OnBehaviorInitialize()
 	{
 		base.OnBehaviorInitialize();
-		_missionAgentSpawnLogic = base.Mission.GetMissionBehavior<MissionAgentSpawnLogic>();
+		_missionAgentSpawnLogic = base.Mission.GetMissionBehavior<DefaultBattleMissionAgentSpawnLogic>();
 	}
 
 	public override void AfterStart()

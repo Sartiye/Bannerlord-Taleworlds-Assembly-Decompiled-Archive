@@ -159,7 +159,7 @@ public class LauncherModsVM : ViewModel
 		{
 			UserModData userModData = _userData.GetUserModData(isMultiplayer, item3.Id);
 			bool flag = false;
-			flag = ((!_userDataManager.HasUserData() || userModData == null) ? (item3.IsRequiredOfficial || item3.IsDefault) : (userModData.IsSelected || userModData.IsUpdatedToBeDefault(item3)));
+			flag = ((!_userDataManager.HasUserData() || userModData == null) ? (item3.IsRequiredOfficial || item3.IsDefault) : (item3.IsRequiredOfficial || userModData.IsSelected || userModData.IsUpdatedToBeDefault(item3)));
 			item3.IsSelected = item3.IsNative || (flag && AreAllDependenciesOfModulePresent(item3));
 			LauncherModuleVM item = new LauncherModuleVM(item3, ChangeLoadingOrderOf, ChangeIsSelectedOf, AreAllDependenciesOfModulePresent, GetSubModuleVerifyData);
 			Modules.Add(item);

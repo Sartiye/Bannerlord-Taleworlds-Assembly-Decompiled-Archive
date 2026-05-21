@@ -58,6 +58,12 @@ public struct PhysicsContact
 
 	public readonly IntPtr body1;
 
+	[CustomEngineStructMemberData("body_0_flags")]
+	public readonly BodyFlags body0Flags;
+
+	[CustomEngineStructMemberData("body_1_flags")]
+	public readonly BodyFlags body1Flags;
+
 	public readonly int NumberOfContactPairs;
 
 	public PhysicsContactPair this[int index] => index switch

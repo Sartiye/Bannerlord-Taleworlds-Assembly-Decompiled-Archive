@@ -236,8 +236,7 @@ public class DynamicObjectAnimationPoint : StandingPoint
 		}
 		foreach (AnimationPoint.ItemForBone itemsForBone in _itemsForBones)
 		{
-			AnimationPoint.ItemForBone current = itemsForBone;
-			current.OldVisibility = current.IsVisible;
+			itemsForBone.OldVisibility = itemsForBone.IsVisible;
 		}
 		SetAgentItemsVisibility(isVisible: false);
 	}

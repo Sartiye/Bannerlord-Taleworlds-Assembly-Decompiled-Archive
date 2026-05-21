@@ -55,45 +55,9 @@ public static class MobilePartyHelper
 		}
 		else
 		{
-			Debug.FailedAssert("Cant find a position to spawn mobile party.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "CreateNewClanMobileParty", 3688);
+			Debug.FailedAssert("Cant find a position to spawn mobile party.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "CreateNewClanMobileParty", 3698);
 		}
 		return SpawnLordParty(hero, position, Campaign.Current.Models.EncounterModel.GetEncounterJoiningRadius * 2f);
-	}
-
-	public static bool IsHeroAssignableForScoutInParty(Hero hero, MobileParty party)
-	{
-		if (hero.PartyBelongedTo == party && hero != party.GetRoleHolder(PartyRole.Scout))
-		{
-			return hero.GetSkillValue(DefaultSkills.Scouting) >= 0;
-		}
-		return false;
-	}
-
-	public static bool IsHeroAssignableForEngineerInParty(Hero hero, MobileParty party)
-	{
-		if (hero.PartyBelongedTo == party && hero != party.GetRoleHolder(PartyRole.Engineer))
-		{
-			return hero.GetSkillValue(DefaultSkills.Engineering) >= 0;
-		}
-		return false;
-	}
-
-	public static bool IsHeroAssignableForSurgeonInParty(Hero hero, MobileParty party)
-	{
-		if (hero.PartyBelongedTo == party && hero != party.GetRoleHolder(PartyRole.Surgeon))
-		{
-			return hero.GetSkillValue(DefaultSkills.Medicine) >= 0;
-		}
-		return false;
-	}
-
-	public static bool IsHeroAssignableForQuartermasterInParty(Hero hero, MobileParty party)
-	{
-		if (hero.PartyBelongedTo == party && hero != party.GetRoleHolder(PartyRole.Quartermaster))
-		{
-			return hero.GetSkillValue(DefaultSkills.Trade) >= 0;
-		}
-		return false;
 	}
 
 	public static Hero GetHeroWithHighestSkill(MobileParty party, SkillObject skill)
@@ -223,7 +187,7 @@ public static class MobilePartyHelper
 		gainableMaxXp = 0;
 		if (character.UpgradeTargets == null)
 		{
-			Debug.FailedAssert("Upgrade target is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "CanTroopGainXp", 3861);
+			Debug.FailedAssert("Upgrade target is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "CanTroopGainXp", 3843);
 			return false;
 		}
 		bool result = false;

@@ -140,10 +140,11 @@ public class RaidAnEnemyTerritoryIssueBehavior : CampaignBehaviorBase
 			return IssueFrequency.VeryCommon;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			flag = PreconditionFlags.None;
 			relationHero = null;
+			requiredGold = 0;
 			skill = null;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -207,7 +208,7 @@ public class RaidAnEnemyTerritoryIssueBehavior : CampaignBehaviorBase
 				textObject.SetTextVariable("NUMBER_OF_TARGET_VILLAGE", 3);
 				textObject.SetTextVariable("ENEMYFACTION_INFORMALNAME", _enemyKingdom.InformalName);
 				textObject.SetTextVariable("EXTRA_REWARD", 3000);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				textObject.SetTextVariable("REWARD_GOLD", 15000);
 				return textObject;
 			}

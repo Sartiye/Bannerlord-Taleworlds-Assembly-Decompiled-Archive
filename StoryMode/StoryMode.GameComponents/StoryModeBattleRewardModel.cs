@@ -18,19 +18,19 @@ public class StoryModeBattleRewardModel : BattleRewardModel
 		return base.BaseModel.CalculateGoldLossAfterDefeat(partyLeaderHero);
 	}
 
-	public override ExplainedNumber CalculateInfluenceGain(PartyBase party, float influenceValueOfBattle, float contributionShare)
+	public override ExplainedNumber CalculateInfluenceGain(PartyBase winnerParty, float influenceValueOfBattleForWinnerSide, float contributionShareOfWinnerParty, float influenceMultiplierForWinnerSide, bool includeDescriptions)
 	{
-		return base.BaseModel.CalculateInfluenceGain(party, influenceValueOfBattle, contributionShare);
+		return base.BaseModel.CalculateInfluenceGain(winnerParty, influenceValueOfBattleForWinnerSide, contributionShareOfWinnerParty, influenceMultiplierForWinnerSide, includeDescriptions);
 	}
 
-	public override ExplainedNumber CalculateMoraleChangeOnRoundVictory(PartyBase party, MapEventSide partySide, BattleSideEnum roundWinner)
+	public override float CalculateMoraleChangeOnRoundVictory(PartyBase party, MapEventSide partySide, BattleSideEnum roundWinner)
 	{
 		return base.BaseModel.CalculateMoraleChangeOnRoundVictory(party, partySide, roundWinner);
 	}
 
-	public override ExplainedNumber CalculateMoraleGainVictory(PartyBase party, float renownValueOfBattle, float contributionShare, MapEvent battle)
+	public override ExplainedNumber CalculateMoraleGainVictory(PartyBase winnerParty, float renownValueOfBattleForWinnerSide, float contributionShareOfWinnerParty, bool includeDescriptions)
 	{
-		return base.BaseModel.CalculateMoraleGainVictory(party, renownValueOfBattle, contributionShare, battle);
+		return base.BaseModel.CalculateMoraleGainVictory(winnerParty, renownValueOfBattleForWinnerSide, contributionShareOfWinnerParty, includeDescriptions);
 	}
 
 	public override int CalculatePlunderedGoldAmountFromDefeatedParty(PartyBase defeatedParty)
@@ -38,13 +38,13 @@ public class StoryModeBattleRewardModel : BattleRewardModel
 		return base.BaseModel.CalculatePlunderedGoldAmountFromDefeatedParty(defeatedParty);
 	}
 
-	public override ExplainedNumber CalculateRenownGain(PartyBase party, float renownValueOfBattle, float contributionShare)
+	public override ExplainedNumber CalculateRenownGain(PartyBase winnerParty, float renownValueOfBattleForWinnerSide, float contributionShareOfWinnerParty, float renownMultiplierForWinnerSide, bool includeDescriptions)
 	{
-		if (TutorialPhase.Instance != null && !TutorialPhase.Instance.IsCompleted && party == PartyBase.MainParty)
+		if (TutorialPhase.Instance != null && !TutorialPhase.Instance.IsCompleted && winnerParty == PartyBase.MainParty)
 		{
 			return default(ExplainedNumber);
 		}
-		return base.BaseModel.CalculateRenownGain(party, renownValueOfBattle, contributionShare);
+		return base.BaseModel.CalculateRenownGain(winnerParty, renownValueOfBattleForWinnerSide, contributionShareOfWinnerParty, renownMultiplierForWinnerSide, includeDescriptions);
 	}
 
 	public override float CalculateShipDamageAfterDefeat(Ship ship)
@@ -102,13 +102,24 @@ public class StoryModeBattleRewardModel : BattleRewardModel
 		return base.BaseModel.GetLootItemChancesForWinnerParties(winnerParties, defeatedParty);
 	}
 
-	public override MBReadOnlyList<KeyValuePair<MapEventParty, float>> GetLootMemberChancesForWinnerParties(MBReadOnlyList<MapEventParty> winnerParties)
+	public override void GetCaptureMemberChancesForWinnerParties(MapEvent endedMapEvent, MBReadOnlyList<MapEventParty> winnerParties, out MBList<KeyValuePair<MapEventParty, float>> woundedMemberChances, out MBList<KeyValuePair<MapEventParty, float>> healthyMemberChances)
 	{
-		return base.BaseModel.GetLootMemberChancesForWinnerParties(winnerParties);
+		base.BaseModel.GetCaptureMemberChancesForWinnerParties(endedMapEvent, winnerParties, out woundedMemberChances, out healthyMemberChances);
 	}
 
 	public override MBReadOnlyList<KeyValuePair<MapEventParty, float>> GetLootPrisonerChances(MBReadOnlyList<MapEventParty> winnerParties, TroopRosterElement prisonerElement)
 	{
+		if (StoryModeData.IsConspiracyTroop(prisonerElement.Character))
+		{
+			MBList<KeyValuePair<MapEventParty, float>> mBList = new MBList<KeyValuePair<MapEventParty, float>>();
+			{
+				foreach (MapEventParty winnerParty in winnerParties)
+				{
+					mBList.Add(new KeyValuePair<MapEventParty, float>(winnerParty, 0f));
+				}
+				return mBList;
+			}
+		}
 		return base.BaseModel.GetLootPrisonerChances(winnerParties, prisonerElement);
 	}
 
@@ -135,5 +146,14 @@ public class StoryModeBattleRewardModel : BattleRewardModel
 	public override MBReadOnlyList<MapEventParty> GetWinnerPartiesThatCanPlunderGoldFromShips(MBReadOnlyList<MapEventParty> winnerParties)
 	{
 		return base.BaseModel.GetWinnerPartiesThatCanPlunderGoldFromShips(winnerParties);
+	}
+
+	public override bool CanTroopBeTakenPrisoner(CharacterObject troop)
+	{
+		if (StoryModeData.IsConspiracyTroop(troop))
+		{
+			return false;
+		}
+		return base.BaseModel.CanTroopBeTakenPrisoner(troop);
 	}
 }

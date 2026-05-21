@@ -14,7 +14,7 @@ public class ChoosingPerkUpgradesStep1Tutorial : TutorialItemBase
 	public ChoosingPerkUpgradesStep1Tutorial()
 	{
 		base.Placement = TutorialItemVM.ItemPlacements.Right;
-		base.HighlightedVisualElementID = "CharacterButton";
+		base.HighlightedVisualElementID = "character_developer";
 		base.MouseRequired = true;
 	}
 

@@ -61,6 +61,4 @@ public interface IMapStateHandler
 	void OnSiegeEngineClick(MatrixFrame siegeEngineFrame);
 
 	void OnGameLoadFinished();
-
-	void OnFadeInAndOut(float fadeOutTime, float blackTime, float fadeInTime);
 }

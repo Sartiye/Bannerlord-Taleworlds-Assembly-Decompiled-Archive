@@ -27,6 +27,8 @@ public class WhileEnteringSettlementBattleMissionController : MissionLogic, IMis
 
 	private readonly IMissionTroopSupplier[] _troopSuppliers;
 
+	public BattleSideEnum PlayerSide => BattleSideEnum.None;
+
 	public WhileEnteringSettlementBattleMissionController(IMissionTroopSupplier[] suppliers, int numberOfMaxTroopForPlayer, int numberOfMaxTroopForEnemy)
 	{
 		_troopSuppliers = suppliers;
@@ -80,7 +82,8 @@ public class WhileEnteringSettlementBattleMissionController : MissionLogic, IMis
 						worldFrame.Origin.SetVec2(base.Mission.GetRandomPositionAroundPoint(worldFrame.Origin.GetNavMeshVec3(), 0f, 2.5f).AsVec2);
 					}
 					worldFrame.Rotation.OrthonormalizeAccordingToForwardAndKeepUpAsZAxis();
-					base.Mission.SpawnTroop(item, flag, hasFormation: false, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: true, wieldInitialWeapons: false, forceDismounted: false, worldFrame.Origin.GetGroundVec3(), worldFrame.Rotation.f.AsVec2).Defensiveness = 1f;
+					bool spawnWithHorse = (item.Troop.IsPlayerCharacter ? true : false);
+					base.Mission.SpawnTroop(item, flag, hasFormation: false, spawnWithHorse, isReinforcement: false, 0, 0, isAlarmed: true, wieldInitialWeapons: false, worldFrame.Origin.GetGroundVec3(), worldFrame.Rotation.f.AsVec2).Defensiveness = 1f;
 					if (flag)
 					{
 						_playerSideSpawnedTroopCount++;
@@ -107,7 +110,7 @@ public class WhileEnteringSettlementBattleMissionController : MissionLogic, IMis
 		return false;
 	}
 
-	public float GetReinforcementInterval()
+	public float GetReinforcementInterval(BattleSideEnum side = BattleSideEnum.None)
 	{
 		return 0f;
 	}

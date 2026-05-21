@@ -32,7 +32,7 @@ public class DefaultMapTrackModel : MapTrackModel
 
 	public override bool CanPartyLeaveTrack(MobileParty mobileParty)
 	{
-		if (mobileParty.SiegeEvent == null && mobileParty.MapEvent == null && !mobileParty.IsCurrentlyAtSea && !mobileParty.IsGarrison && !mobileParty.IsMilitia && !mobileParty.IsBanditBossParty && !mobileParty.IsMainParty)
+		if (mobileParty.SiegeEvent == null && mobileParty.MapEvent == null && mobileParty.IsActive && !mobileParty.IsCurrentlyAtSea && !mobileParty.IsGarrison && !mobileParty.IsMilitia && !mobileParty.IsBanditBossParty && !mobileParty.IsMainParty)
 		{
 			return mobileParty.AttachedTo == null;
 		}

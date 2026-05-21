@@ -14,6 +14,8 @@ public class SettlementNameplatePartyMarkerItemVM : ViewModel
 
 	private bool _isDefault;
 
+	private bool _isBandit;
+
 	public MobileParty Party { get; private set; }
 
 	public int SortIndex { get; private set; }
@@ -82,9 +84,26 @@ public class SettlementNameplatePartyMarkerItemVM : ViewModel
 		}
 	}
 
+	public bool IsBandit
+	{
+		get
+		{
+			return _isBandit;
+		}
+		set
+		{
+			if (value != _isBandit)
+			{
+				_isBandit = value;
+				OnPropertyChangedWithValue(value, "IsBandit");
+			}
+		}
+	}
+
 	public SettlementNameplatePartyMarkerItemVM(MobileParty mobileParty)
 	{
 		Party = mobileParty;
+		IsBandit = mobileParty.IsBandit;
 		if (mobileParty.IsCaravan)
 		{
 			IsCaravan = true;

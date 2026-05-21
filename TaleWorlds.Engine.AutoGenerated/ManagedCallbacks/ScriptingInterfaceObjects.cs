@@ -227,7 +227,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_GameEntity_create_empty_physx_shape,
 		enm_IMono_GameEntity_create_empty_without_scene,
 		enm_IMono_GameEntity_create_from_prefab,
-		enm_IMono_GameEntity_create_from_prefab_with_initial_frame,
+		enm_IMono_GameEntity_create_from_prefab_with_initial_frame_and_rest_offset,
 		enm_IMono_GameEntity_create_physx_cooking_instance,
 		enm_IMono_GameEntity_create_variable_rate_physics,
 		enm_IMono_GameEntity_delete_empty_shape,
@@ -448,6 +448,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_GameEntity_set_water_visual_record_frame_and_dt,
 		enm_IMono_GameEntity_swap_physx_shape_in_entity,
 		enm_IMono_GameEntity_update_attached_navigation_mesh_faces,
+		enm_IMono_GameEntity_update_body_rest_offset,
 		enm_IMono_GameEntity_update_global_bounds,
 		enm_IMono_GameEntity_update_hull_water_effect_frames,
 		enm_IMono_GameEntity_update_triad_frame_for_editor,
@@ -994,6 +995,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_Scene_get_water_strength,
 		enm_IMono_Scene_get_flowmap_data,
 		enm_IMono_Scene_get_winter_time_factor,
+		enm_IMono_Scene_handle_current_frame_tick_entities,
 		enm_IMono_Scene_has_decal_renderer,
 		enm_IMono_Scene_has_navmesh_face_unshared_edges,
 		enm_IMono_Scene_has_terrain_heightmap,
@@ -1039,6 +1041,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_Scene_set_active_visibility_levels,
 		enm_IMono_Scene_set_antialiasing_mode,
 		enm_IMono_Scene_set_atmosphere_with_name,
+		enm_IMono_Scene_set_blocker_direction_for_faces_with_id,
 		enm_IMono_Scene_set_bloom,
 		enm_IMono_Scene_set_bloom_amount,
 		enm_IMono_Scene_set_bloom_strength,
@@ -1134,6 +1137,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_Scene_set_upgrade_level,
 		enm_IMono_Scene_set_upgrade_level_visibility,
 		enm_IMono_Scene_set_upgrade_level_visibility_with_mask,
+		enm_IMono_Scene_set_use_advanced_water_rendering,
 		enm_IMono_Scene_set_use_constant_time,
 		enm_IMono_Scene_set_uses_delete_later_system,
 		enm_IMono_Scene_set_vignette_inner_radius,
@@ -1266,6 +1270,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_SoundEvent_get_total_event_count,
 		enm_IMono_SoundEvent_is_paused,
 		enm_IMono_SoundEvent_is_playing,
+		enm_IMono_SoundEvent_is_stopped,
 		enm_IMono_SoundEvent_is_valid,
 		enm_IMono_SoundEvent_pause_event,
 		enm_IMono_SoundEvent_play_extra_event,
@@ -1476,9 +1481,10 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_Util_managed_parallel_for,
 		enm_IMono_Util_managed_parallel_for_with_dt,
 		enm_IMono_Util_managed_parallel_for_without_render_thread,
+		enm_IMono_Util_managed_parallel_for_without_render_thread_dt,
 		enm_IMono_Util_on_loading_window_disabled,
 		enm_IMono_Util_on_loading_window_enabled,
-		enm_IMono_Util_open_naval_dlc_purchase_page,
+		enm_IMono_Util_open_console_store_page,
 		enm_IMono_Util_open_onscreen_keyboard,
 		enm_IMono_Util_output_benchmark_values_to_performance_reporter,
 		enm_IMono_Util_output_performance_reports,
@@ -2385,8 +2391,8 @@ internal static class ScriptingInterfaceObjects
 		case EngineInterfaceGeneratedEnum.enm_IMono_GameEntity_create_from_prefab:
 			ScriptingInterfaceOfIGameEntity.call_CreateFromPrefabDelegate = (ScriptingInterfaceOfIGameEntity.CreateFromPrefabDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIGameEntity.CreateFromPrefabDelegate));
 			break;
-		case EngineInterfaceGeneratedEnum.enm_IMono_GameEntity_create_from_prefab_with_initial_frame:
-			ScriptingInterfaceOfIGameEntity.call_CreateFromPrefabWithInitialFrameDelegate = (ScriptingInterfaceOfIGameEntity.CreateFromPrefabWithInitialFrameDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIGameEntity.CreateFromPrefabWithInitialFrameDelegate));
+		case EngineInterfaceGeneratedEnum.enm_IMono_GameEntity_create_from_prefab_with_initial_frame_and_rest_offset:
+			ScriptingInterfaceOfIGameEntity.call_CreateFromPrefabWithInitialFrameAndRestOffsetDelegate = (ScriptingInterfaceOfIGameEntity.CreateFromPrefabWithInitialFrameAndRestOffsetDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIGameEntity.CreateFromPrefabWithInitialFrameAndRestOffsetDelegate));
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_GameEntity_create_physx_cooking_instance:
 			ScriptingInterfaceOfIGameEntity.call_CreatePhysxCookingInstanceDelegate = (ScriptingInterfaceOfIGameEntity.CreatePhysxCookingInstanceDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIGameEntity.CreatePhysxCookingInstanceDelegate));
@@ -3047,6 +3053,9 @@ internal static class ScriptingInterfaceObjects
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_GameEntity_update_attached_navigation_mesh_faces:
 			ScriptingInterfaceOfIGameEntity.call_UpdateAttachedNavigationMeshFacesDelegate = (ScriptingInterfaceOfIGameEntity.UpdateAttachedNavigationMeshFacesDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIGameEntity.UpdateAttachedNavigationMeshFacesDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_GameEntity_update_body_rest_offset:
+			ScriptingInterfaceOfIGameEntity.call_UpdateBodyRestOffsetDelegate = (ScriptingInterfaceOfIGameEntity.UpdateBodyRestOffsetDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIGameEntity.UpdateBodyRestOffsetDelegate));
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_GameEntity_update_global_bounds:
 			ScriptingInterfaceOfIGameEntity.call_UpdateGlobalBoundsDelegate = (ScriptingInterfaceOfIGameEntity.UpdateGlobalBoundsDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIGameEntity.UpdateGlobalBoundsDelegate));
@@ -4686,6 +4695,9 @@ internal static class ScriptingInterfaceObjects
 		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_get_winter_time_factor:
 			ScriptingInterfaceOfIScene.call_GetWinterTimeFactorDelegate = (ScriptingInterfaceOfIScene.GetWinterTimeFactorDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.GetWinterTimeFactorDelegate));
 			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_handle_current_frame_tick_entities:
+			ScriptingInterfaceOfIScene.call_HandleCurrentFrameTickEntitiesDelegate = (ScriptingInterfaceOfIScene.HandleCurrentFrameTickEntitiesDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.HandleCurrentFrameTickEntitiesDelegate));
+			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_has_decal_renderer:
 			ScriptingInterfaceOfIScene.call_HasDecalRendererDelegate = (ScriptingInterfaceOfIScene.HasDecalRendererDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.HasDecalRendererDelegate));
 			break;
@@ -4820,6 +4832,9 @@ internal static class ScriptingInterfaceObjects
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_set_atmosphere_with_name:
 			ScriptingInterfaceOfIScene.call_SetAtmosphereWithNameDelegate = (ScriptingInterfaceOfIScene.SetAtmosphereWithNameDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.SetAtmosphereWithNameDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_set_blocker_direction_for_faces_with_id:
+			ScriptingInterfaceOfIScene.call_SetBlockerDirectionForFacesWithIdDelegate = (ScriptingInterfaceOfIScene.SetBlockerDirectionForFacesWithIdDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.SetBlockerDirectionForFacesWithIdDelegate));
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_set_bloom:
 			ScriptingInterfaceOfIScene.call_SetBloomDelegate = (ScriptingInterfaceOfIScene.SetBloomDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.SetBloomDelegate));
@@ -5105,6 +5120,9 @@ internal static class ScriptingInterfaceObjects
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_set_upgrade_level_visibility_with_mask:
 			ScriptingInterfaceOfIScene.call_SetUpgradeLevelVisibilityWithMaskDelegate = (ScriptingInterfaceOfIScene.SetUpgradeLevelVisibilityWithMaskDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.SetUpgradeLevelVisibilityWithMaskDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_set_use_advanced_water_rendering:
+			ScriptingInterfaceOfIScene.call_SetUseAdvancedWaterRenderingDelegate = (ScriptingInterfaceOfIScene.SetUseAdvancedWaterRenderingDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.SetUseAdvancedWaterRenderingDelegate));
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_set_use_constant_time:
 			ScriptingInterfaceOfIScene.call_SetUseConstantTimeDelegate = (ScriptingInterfaceOfIScene.SetUseConstantTimeDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.SetUseConstantTimeDelegate));
@@ -5501,6 +5519,9 @@ internal static class ScriptingInterfaceObjects
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_SoundEvent_is_playing:
 			ScriptingInterfaceOfISoundEvent.call_IsPlayingDelegate = (ScriptingInterfaceOfISoundEvent.IsPlayingDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfISoundEvent.IsPlayingDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_SoundEvent_is_stopped:
+			ScriptingInterfaceOfISoundEvent.call_IsStoppedDelegate = (ScriptingInterfaceOfISoundEvent.IsStoppedDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfISoundEvent.IsStoppedDelegate));
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_SoundEvent_is_valid:
 			ScriptingInterfaceOfISoundEvent.call_IsValidDelegate = (ScriptingInterfaceOfISoundEvent.IsValidDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfISoundEvent.IsValidDelegate));
@@ -6132,14 +6153,17 @@ internal static class ScriptingInterfaceObjects
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_managed_parallel_for_without_render_thread:
 			ScriptingInterfaceOfIUtil.call_ManagedParallelForWithoutRenderThreadDelegate = (ScriptingInterfaceOfIUtil.ManagedParallelForWithoutRenderThreadDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.ManagedParallelForWithoutRenderThreadDelegate));
 			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Util_managed_parallel_for_without_render_thread_dt:
+			ScriptingInterfaceOfIUtil.call_ManagedParallelForWithoutRenderThreadDtDelegate = (ScriptingInterfaceOfIUtil.ManagedParallelForWithoutRenderThreadDtDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.ManagedParallelForWithoutRenderThreadDtDelegate));
+			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_on_loading_window_disabled:
 			ScriptingInterfaceOfIUtil.call_OnLoadingWindowDisabledDelegate = (ScriptingInterfaceOfIUtil.OnLoadingWindowDisabledDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.OnLoadingWindowDisabledDelegate));
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_on_loading_window_enabled:
 			ScriptingInterfaceOfIUtil.call_OnLoadingWindowEnabledDelegate = (ScriptingInterfaceOfIUtil.OnLoadingWindowEnabledDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.OnLoadingWindowEnabledDelegate));
 			break;
-		case EngineInterfaceGeneratedEnum.enm_IMono_Util_open_naval_dlc_purchase_page:
-			ScriptingInterfaceOfIUtil.call_OpenNavalDlcPurchasePageDelegate = (ScriptingInterfaceOfIUtil.OpenNavalDlcPurchasePageDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.OpenNavalDlcPurchasePageDelegate));
+		case EngineInterfaceGeneratedEnum.enm_IMono_Util_open_console_store_page:
+			ScriptingInterfaceOfIUtil.call_OpenConsoleStorePageDelegate = (ScriptingInterfaceOfIUtil.OpenConsoleStorePageDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.OpenConsoleStorePageDelegate));
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_open_onscreen_keyboard:
 			ScriptingInterfaceOfIUtil.call_OpenOnscreenKeyboardDelegate = (ScriptingInterfaceOfIUtil.OpenOnscreenKeyboardDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.OpenOnscreenKeyboardDelegate));

@@ -452,7 +452,7 @@ public class MissionAgentLabelView : MissionView
 	{
 		if (!_agentMeshes.TryGetValue(agent, out var value))
 		{
-			Debug.FailedAssert("Trying to update the banner of an agent that isn't present in _agentMeshes!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\MissionViews\\MissionAgentLabelView.cs", "SetBannerHighlightVisibility", 498);
+			Debug.FailedAssert("Trying to update the banner of an agent that isn't present in _agentMeshes!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\MissionViews\\MissionAgentLabelView.cs", "SetBannerHighlightVisibility", 499);
 			return;
 		}
 		float num = (highlightVisibility ? 1f : (-1f));

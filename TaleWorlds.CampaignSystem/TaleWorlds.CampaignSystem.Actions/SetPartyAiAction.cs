@@ -60,7 +60,7 @@ public static class SetPartyAiAction
 				{
 					owner.StartTransitionNextFrameToExitFromPort = true;
 				}
-				owner.SetMoveRaidSettlement(settlement, navigationType);
+				owner.SetMoveRaidSettlement(settlement, navigationType, isTargetingPort);
 				if (owner.Army != null && owner.Army.LeaderParty == owner)
 				{
 					owner.Army.ArmyType = Army.ArmyTypes.Raider;
@@ -158,9 +158,9 @@ public static class SetPartyAiAction
 		ApplyInternal(owner, null, null, position, SetPartyAiActionDetail.PatrolAroundPoint, navigationType, isFromPort, isTargetingPort: false);
 	}
 
-	public static void GetActionForRaidingSettlement(MobileParty owner, Settlement settlement, MobileParty.NavigationType navigationType, bool isFromPort)
+	public static void GetActionForRaidingSettlement(MobileParty owner, Settlement settlement, MobileParty.NavigationType navigationType, bool isFromPort, bool isTargetingPort)
 	{
-		ApplyInternal(owner, settlement, null, CampaignVec2.Zero, SetPartyAiActionDetail.RaidSettlement, navigationType, isFromPort, isTargetingPort: false);
+		ApplyInternal(owner, settlement, null, CampaignVec2.Zero, SetPartyAiActionDetail.RaidSettlement, navigationType, isFromPort, isTargetingPort);
 	}
 
 	public static void GetActionForBesiegingSettlement(MobileParty owner, Settlement settlement, MobileParty.NavigationType navigationType, bool isFromPort)

@@ -57,18 +57,22 @@ public class SPOrderOfBattleVM : OrderOfBattleVM
 				if (formationInfo.FormationClass == DeploymentFormationClass.Infantry)
 				{
 					_allFormations[i].Classes[0].Class = FormationClass.Infantry;
+					_allFormations[i].Classes[1].Class = FormationClass.NumberOfAllFormations;
 				}
 				else if (formationInfo.FormationClass == DeploymentFormationClass.Ranged)
 				{
 					_allFormations[i].Classes[0].Class = FormationClass.Ranged;
+					_allFormations[i].Classes[1].Class = FormationClass.NumberOfAllFormations;
 				}
 				else if (formationInfo.FormationClass == DeploymentFormationClass.Cavalry)
 				{
 					_allFormations[i].Classes[0].Class = FormationClass.Cavalry;
+					_allFormations[i].Classes[1].Class = FormationClass.NumberOfAllFormations;
 				}
 				else if (formationInfo.FormationClass == DeploymentFormationClass.HorseArcher)
 				{
 					_allFormations[i].Classes[0].Class = FormationClass.HorseArcher;
+					_allFormations[i].Classes[1].Class = FormationClass.NumberOfAllFormations;
 				}
 				else if (formationInfo.FormationClass == DeploymentFormationClass.InfantryAndRanged)
 				{

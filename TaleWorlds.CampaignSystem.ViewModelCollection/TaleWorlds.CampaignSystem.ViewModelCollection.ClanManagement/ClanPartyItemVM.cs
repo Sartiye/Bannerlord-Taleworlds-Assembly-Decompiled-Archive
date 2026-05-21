@@ -1240,7 +1240,7 @@ public class ClanPartyItemVM : ViewModel
 				x.OnFinalize();
 			});
 			Roles.Clear();
-			foreach (PartyRole assignablePartyRole in GetAssignablePartyRoles())
+			foreach (PartyRole assignablePartyRole in Campaign.Current.Models.ClanMemberPartyRoleModel.GetAssignablePartyRoles())
 			{
 				Roles.Add(new ClanRoleItemVM(Party.MobileParty, assignablePartyRole, HeroMembers, OnRoleSelectionToggled, OnRoleAssigned));
 			}
@@ -1321,14 +1321,6 @@ public class ClanPartyItemVM : ViewModel
 		{
 			Party.MobileParty.HomeSettlement.Town.GarrisonAutoRecruitmentIsEnabled = value;
 		}
-	}
-
-	private IEnumerable<PartyRole> GetAssignablePartyRoles()
-	{
-		yield return PartyRole.Quartermaster;
-		yield return PartyRole.Scout;
-		yield return PartyRole.Surgeon;
-		yield return PartyRole.Engineer;
 	}
 
 	private void OnRoleSelectionToggled(ClanRoleItemVM role)

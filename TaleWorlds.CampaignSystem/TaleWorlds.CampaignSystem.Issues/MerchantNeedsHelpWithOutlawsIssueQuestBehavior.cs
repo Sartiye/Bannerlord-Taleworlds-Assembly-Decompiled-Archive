@@ -118,7 +118,7 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 				textObject.SetTextVariable("QUEST_SETTLEMENT", base.IssueOwner.CurrentSettlement.EncyclopediaLinkWithName);
 				textObject.SetTextVariable("ALTERNATIVE_COUNT", AlternativeSolutionSentTroops.TotalManCount - 1);
 				textObject.SetTextVariable("GOLD_AMOUNT", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				textObject.SetTextVariable("RETURN_DAYS", GetTotalAlternativeSolutionDurationInDays());
 				return textObject;
 			}
@@ -229,10 +229,11 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 			return IssueFrequency.VeryCommon;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			flag = PreconditionFlags.None;
 			relationHero = null;
+			requiredGold = 0;
 			skill = null;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -338,7 +339,7 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 				textObject.SetTextVariable("TOTAL_COUNT", _totalPartyCount);
 				textObject.SetTextVariable("QUEST_SETTLEMENT", base.QuestGiver.CurrentSettlement.EncyclopediaLinkWithName);
 				textObject.SetTextVariable("AMOUNT", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -351,7 +352,7 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("SETTLEMENT", base.QuestGiver.CurrentSettlement.Name);
 				textObject.SetTextVariable("GOLD_AMOUNT", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -363,7 +364,7 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 				TextObject textObject = new TextObject("{=dSHgU9gD}You have defeated some of the brigands and recruited the rest into your party. {QUEST_GIVER.LINK} is grateful and sends you the {GOLD_AMOUNT}{GOLD_ICON} as promised. ");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("GOLD_AMOUNT", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -375,7 +376,7 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 				TextObject textObject = new TextObject("{=3V5udYJO}You have recruited the brigands into your party. {QUEST_GIVER.LINK} finds your solution acceptable and sends you the {GOLD_AMOUNT}{GOLD_ICON} as promised.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("GOLD_AMOUNT", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -483,7 +484,7 @@ public class MerchantNeedsHelpWithOutlawsIssueQuestBehavior : CampaignBehaviorBa
 			TextObject textObject = new TextObject("{=PQIYPCDn}Very good. I will be waiting for the good news then. Once you return, I'm ready to offer a reward of {REWARD_GOLD}{GOLD_ICON} denars. Just make sure that you defeat at least {TROOP_COUNT} bands no more than a day's ride away from here.[ib:normal][if:convo_bemused]");
 			textObject.SetTextVariable("REWARD_GOLD", RewardGold);
 			textObject.SetTextVariable("TROOP_COUNT", _totalPartyCount);
-			textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+			textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 			OfferDialogFlow = DialogFlow.CreateDialogFlow("issue_classic_quest_start").NpcLine(textObject).Condition(() => Hero.OneToOneConversationHero == base.QuestGiver)
 				.Consequence(QuestAcceptedConsequences)
 				.CloseDialog();

@@ -1,3 +1,5 @@
+using TaleWorlds.Library;
+
 namespace TaleWorlds.Core;
 
 public struct LinearFrictionTerm
@@ -14,6 +16,10 @@ public struct LinearFrictionTerm
 
 	public readonly float Down;
 
+	public static LinearFrictionTerm Invalid => new LinearFrictionTerm(0f, 0f, 0f, 0f, 0f, 0f);
+
+	public static LinearFrictionTerm One => new LinearFrictionTerm(1f, 1f, 1f, 1f, 1f, 1f);
+
 	public bool IsValid
 	{
 		get
@@ -25,10 +31,6 @@ public struct LinearFrictionTerm
 			return false;
 		}
 	}
-
-	public static LinearFrictionTerm Invalid => new LinearFrictionTerm(0f, 0f, 0f, 0f, 0f, 0f);
-
-	public static LinearFrictionTerm One => new LinearFrictionTerm(1f, 1f, 1f, 1f, 1f, 1f);
 
 	public LinearFrictionTerm(float right, float left, float forward, float backward, float up, float down)
 	{
@@ -53,5 +55,14 @@ public struct LinearFrictionTerm
 	public LinearFrictionTerm ElementWiseProduct(LinearFrictionTerm o)
 	{
 		return new LinearFrictionTerm(Right * o.Right, Left * o.Left, Forward * o.Forward, Backward * o.Backward, Up * o.Up, Down * o.Down);
+	}
+
+	public bool NearlyEquals(in LinearFrictionTerm o, float epsilon = 1E-05f)
+	{
+		if (Right.ApproximatelyEqualsTo(o.Right, epsilon) && Left.ApproximatelyEqualsTo(o.Left, epsilon) && Forward.ApproximatelyEqualsTo(o.Forward, epsilon) && Backward.ApproximatelyEqualsTo(o.Backward, epsilon) && Up.ApproximatelyEqualsTo(o.Up, epsilon))
+		{
+			return Down.ApproximatelyEqualsTo(o.Down, epsilon);
+		}
+		return false;
 	}
 }

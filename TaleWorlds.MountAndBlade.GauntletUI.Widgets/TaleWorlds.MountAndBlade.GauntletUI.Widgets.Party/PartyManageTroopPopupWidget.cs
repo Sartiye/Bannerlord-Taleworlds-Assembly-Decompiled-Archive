@@ -77,12 +77,12 @@ public class PartyManageTroopPopupWidget : Widget
 		{
 			return;
 		}
-		Widget hoveredView = base.EventManager.HoveredView;
-		if (hoveredView == null || PrimaryInputKeyVisualParent == null || SecondaryInputKeyVisualParent == null || TertiaryInputKeyVisualParent == null)
+		Widget hoveredWidget = base.EventManager.HoveredWidget;
+		if (hoveredWidget == null || PrimaryInputKeyVisualParent == null || SecondaryInputKeyVisualParent == null || TertiaryInputKeyVisualParent == null)
 		{
 			return;
 		}
-		PartyTroopManagementItemButtonWidget firstParentTupleOfWidget = GetFirstParentTupleOfWidget(hoveredView);
+		PartyTroopManagementItemButtonWidget firstParentTupleOfWidget = GetFirstParentTupleOfWidget(hoveredWidget);
 		if (firstParentTupleOfWidget != null)
 		{
 			Widget actionButtonAtIndex = firstParentTupleOfWidget.GetActionButtonAtIndex(0);

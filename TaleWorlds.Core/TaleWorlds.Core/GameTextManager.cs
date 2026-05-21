@@ -137,7 +137,15 @@ public class GameTextManager
 					list.Add(text);
 				}
 			}
-			list.Add(ModuleHelper.GetModuleFullPath("Native") + "ModuleData/consoles.xml");
+			string text2 = ModuleHelper.GetModuleFullPath("Native") + "ModuleData/consoles.xml";
+			if (File.Exists(text2))
+			{
+				list.Add(text2);
+			}
+			else
+			{
+				Debug.FailedAssert("Cant find Native/consoles.xml", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\GameTextManager.cs", "LoadDefaultTexts", 177);
+			}
 			foreach (string item in list)
 			{
 				Debug.Print("opening " + item);

@@ -22,14 +22,15 @@ public static class PortStateHelper
 		GameStateManager.Current.PushState(gameState);
 	}
 
-	public static void OpenAsLoot(MBReadOnlyList<Ship> lootShips)
+	public static void OpenAsLoot(MBReadOnlyList<Ship> lootShips, Action onEndAction = null)
 	{
-		PortState gameState = GameStateManager.Current.CreateState<PortState>(new object[5]
+		PortState gameState = GameStateManager.Current.CreateState<PortState>(new object[6]
 		{
 			null,
 			PartyBase.MainParty,
 			lootShips,
 			PartyBase.MainParty.Ships,
+			onEndAction,
 			PortScreenModes.LootMode
 		});
 		GameStateManager.Current.PushState(gameState);

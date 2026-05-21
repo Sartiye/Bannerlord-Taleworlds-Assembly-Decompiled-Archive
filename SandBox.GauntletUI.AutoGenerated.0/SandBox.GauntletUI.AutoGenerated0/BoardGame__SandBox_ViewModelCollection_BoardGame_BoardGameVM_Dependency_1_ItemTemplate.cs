@@ -53,7 +53,7 @@ public class BoardGame__SandBox_ViewModelCollection_BoardGame_BoardGameVM_Depend
 		_widget_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0.Brush = base.Context.GetBrush("BoardGame.InstructionsTitle.Text");
-		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1.MarginTop = 50f;

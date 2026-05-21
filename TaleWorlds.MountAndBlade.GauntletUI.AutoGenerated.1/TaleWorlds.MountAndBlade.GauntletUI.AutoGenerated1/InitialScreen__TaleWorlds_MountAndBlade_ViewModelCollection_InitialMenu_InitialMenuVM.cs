@@ -49,19 +49,13 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 
 	private TextWidget _widget_2_0;
 
-	private NavigationScopeTargeter _widget_3;
-
-	private ButtonWidget _widget_4;
-
-	private Widget _widget_4_0;
-
-	private BrushWidget _widget_4_0_0;
-
-	private IconBrushWidget _widget_4_0_1;
+	private InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_2_InitialScreenAnnouncement__DependendPrefab _widget_3;
 
 	private InitialMenuVM _datasource_Root;
 
 	private MBBindingList<InitialMenuOptionVM> _datasource_Root_MenuOptions;
+
+	private InitialMenuAnnouncementVM _datasource_Root_Announcement;
 
 	public InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM(UIContext context)
 		: base(context)
@@ -92,27 +86,6 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		visualDefinition.AddVisualState(new VisualState("Activated")
 		{
 			PositionXOffset = 0f
-		});
-		return visualDefinition;
-	}
-
-	private VisualDefinition CreateVisualDefinitionWarSailsUpsellButton()
-	{
-		VisualDefinition visualDefinition = new VisualDefinition("WarSailsUpsellButton", 0.22f, 0f, AnimationInterpolation.Type.EaseOut, AnimationInterpolation.Function.Quint);
-		visualDefinition.AddVisualState(new VisualState("Default")
-		{
-			SuggestedWidth = 400f,
-			SuggestedHeight = 233f
-		});
-		visualDefinition.AddVisualState(new VisualState("Hovered")
-		{
-			SuggestedWidth = 402f,
-			SuggestedHeight = 235f
-		});
-		visualDefinition.AddVisualState(new VisualState("Pressed")
-		{
-			SuggestedWidth = 398f,
-			SuggestedHeight = 231f
 		});
 		return visualDefinition;
 	}
@@ -154,16 +127,9 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		_widget.AddChild(_widget_2);
 		_widget_2_0 = new TextWidget(base.Context);
 		_widget_2.AddChild(_widget_2_0);
-		_widget_3 = new NavigationScopeTargeter(base.Context);
+		_widget_3 = new InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_2_InitialScreenAnnouncement__DependendPrefab(base.Context);
 		_widget.AddChild(_widget_3);
-		_widget_4 = new ButtonWidget(base.Context);
-		_widget.AddChild(_widget_4);
-		_widget_4_0 = new Widget(base.Context);
-		_widget_4.AddChild(_widget_4_0);
-		_widget_4_0_0 = new BrushWidget(base.Context);
-		_widget_4_0.AddChild(_widget_4_0_0);
-		_widget_4_0_1 = new IconBrushWidget(base.Context);
-		_widget_4_0.AddChild(_widget_4_0_1);
+		_widget_3.CreateWidgets();
 	}
 
 	public void SetIds()
@@ -174,7 +140,7 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		_widget_0_0_3_0_0_1.Id = "MenuItems";
 		_widget_0_0_3_1.Id = "VerticalScrollbar";
 		_widget_0_0_3_1_1.Id = "VerticalScrollbarHandle";
-		_widget_4.Id = "WarSailsUpsellButton";
+		_widget_3.SetIds();
 	}
 
 	public void SetAttributes()
@@ -240,7 +206,7 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		_widget_0_0_3_0_0_1.VerticalAlignment = VerticalAlignment.Top;
 		_widget_0_0_3_0_0_1.MarginLeft = 20f;
 		_widget_0_0_3_0_0_1.MarginRight = 20f;
-		_widget_0_0_3_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_3_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_3_1.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_3_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_3_1.SuggestedWidth = 8f;
@@ -276,7 +242,7 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		_widget_1.Sprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
 		_widget_1.Color = new Color(0f, 0f, 0f, 2f / 3f);
 		_widget_1.AlphaFactor = 0.7f;
-		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0.Brush = base.Context.GetBrush("InitialMenuButtonBrush");
@@ -296,38 +262,11 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		_widget_2_0.MarginRight = 10f;
 		_widget_2_0.MarginTop = 5f;
 		_widget_2_0.MarginBottom = 5f;
-		_widget_3.ScopeID = "WarSailsUpsellButtonScope";
-		_widget_3.ScopeParent = _widget_4;
-		_widget_4.DoNotPassEventsToChildren = true;
-		_widget_4.UpdateChildrenStates = true;
-		_widget_4.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_4.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4.SuggestedWidth = 400f;
-		_widget_4.SuggestedHeight = 233f;
-		_widget_4.HorizontalAlignment = HorizontalAlignment.Left;
-		_widget_4.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_4.MarginLeft = 550f;
-		_widget_4.MarginBottom = 10f;
-		_widget_4.ExtendCursorAreaLeft = -4f;
-		_widget_4.ExtendCursorAreaRight = -4f;
-		_widget_4.ExtendCursorAreaBottom = -4f;
-		_widget_4.ExtendCursorAreaTop = -28f;
-		_widget_4.GamepadNavigationIndex = 0;
-		_widget_4_0.VisualDefinition = CreateVisualDefinitionWarSailsUpsellButton();
-		_widget_4_0.UpdateChildrenStates = true;
-		_widget_4_0.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_4_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4_0.SuggestedWidth = 400f;
-		_widget_4_0.SuggestedHeight = 233f;
-		_widget_4_0.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_4_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_4_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_0.Brush = base.Context.GetBrush("WarSails.Upsell.Button");
-		_widget_4_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_1.Brush = base.Context.GetBrush("WarSails.Upsell.Button");
-		_widget_4_0_1.IconBrush = base.Context.GetBrush("WarSails.Upsell.Button.OutNow");
+		_widget_3.SetAttributes();
+		_widget_3.HorizontalAlignment = HorizontalAlignment.Left;
+		_widget_3.VerticalAlignment = VerticalAlignment.Bottom;
+		_widget_3.MarginLeft = 550f;
+		_widget_3.MarginBottom = 10f;
 	}
 
 	public void RefreshBindingWithChildren()
@@ -406,34 +345,6 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		_widget_2_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_2_0;
 		_widget_2_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2_0;
 		_widget_2_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2_0;
-		_widget_3.PropertyChanged -= PropertyChangedListenerOf_widget_3;
-		_widget_3.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3;
-		_widget_3.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3;
-		_widget_3.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3;
-		_widget_3.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3;
-		_widget_3.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3;
-		_widget_3.intPropertyChanged -= intPropertyChangedListenerOf_widget_3;
-		_widget_3.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3;
-		_widget_3.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3;
-		_widget_4.EventFire -= EventListenerOf_widget_4;
-		_widget_4.PropertyChanged -= PropertyChangedListenerOf_widget_4;
-		_widget_4.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4;
-		_widget_4.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4;
-		_widget_4.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4;
-		_widget_4.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4;
-		_widget_4.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4;
-		_widget_4.intPropertyChanged -= intPropertyChangedListenerOf_widget_4;
-		_widget_4.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4;
-		_widget_4.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4;
-		_widget_4_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_1;
-		_widget_4_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_1;
-		_widget_4_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_1;
-		_widget_4_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_1;
-		_widget_4_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_1;
-		_widget_4_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_1;
-		_widget_4_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_1;
-		_widget_4_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_1;
-		_widget_4_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_1;
 		if (_datasource_Root_MenuOptions != null)
 		{
 			_datasource_Root_MenuOptions.ListChanged -= OnList_datasource_Root_MenuOptionsChanged;
@@ -445,20 +356,26 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 			}
 			_datasource_Root_MenuOptions = null;
 		}
+		if (_datasource_Root_Announcement != null)
+		{
+			_widget_3.DestroyDataSource();
+			_datasource_Root_Announcement.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement = null;
+		}
 		_datasource_Root = null;
 	}
 
 	public void SetDataSource(InitialMenuVM dataSource)
 	{
 		RefreshDataSource_datasource_Root(dataSource);
-	}
-
-	private void EventListenerOf_widget_4(Widget widget, string commandName, object[] args)
-	{
-		if (commandName == "Click")
-		{
-			_datasource_Root.ExecuteNavigateToDLCStorePage();
-		}
 	}
 
 	private void PropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
@@ -779,169 +696,6 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_3(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_3(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_3(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_3(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_3(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_3(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_3(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_3(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_3(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_3(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_3(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_3(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_3(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_3(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_3(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_3(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_3(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_3(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_3(string propertyName)
-	{
-		if (propertyName == "IsScopeEnabled")
-		{
-			_datasource_Root.IsUpsellButtonActive = _widget_3.IsScopeEnabled;
-		}
-	}
-
-	private void PropertyChangedListenerOf_widget_4(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_4(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_4(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_4(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_4(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_4(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_4(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_4(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_4(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_4(string propertyName)
-	{
-		if (propertyName == "IsVisible")
-		{
-			_datasource_Root.IsUpsellButtonVisible = _widget_4.IsVisible;
-		}
-		else if (propertyName == "IsEnabled")
-		{
-			_datasource_Root.IsUpsellButtonActive = _widget_4.IsEnabled;
-		}
-	}
-
-	private void PropertyChangedListenerOf_widget_4_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_1(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_4_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_1(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_4_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_1(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_4_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_1(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_4_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_1(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_4_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_1(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_4_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_1(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_4_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_1(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_4_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_1(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_4_0_1(string propertyName)
-	{
-		if (propertyName == "IconID")
-		{
-			_datasource_Root.CurrentLanguageString = _widget_4_0_1.IconID;
-		}
-	}
-
 	private void ViewModelPropertyChangedListenerOf_datasource_Root(object sender, PropertyChangedEventArgs e)
 	{
 		HandleViewModelPropertyChangeOf_datasource_Root(e.PropertyName);
@@ -994,6 +748,9 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		case "MenuOptions":
 			RefreshDataSource_datasource_Root_MenuOptions(_datasource_Root.MenuOptions);
 			break;
+		case "Announcement":
+			RefreshDataSource_datasource_Root_Announcement(_datasource_Root.Announcement);
+			break;
 		case "IsNavalDLCEnabled":
 			_widget_0_0_1.IsHidden = _datasource_Root.IsNavalDLCEnabled;
 			_widget_0_0_2.IsVisible = _datasource_Root.IsNavalDLCEnabled;
@@ -1010,17 +767,56 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		case "DownloadingText":
 			_widget_2_0.Text = _datasource_Root.DownloadingText;
 			break;
-		case "IsUpsellButtonActive":
-			_widget_3.IsScopeEnabled = _datasource_Root.IsUpsellButtonActive;
-			_widget_4.IsEnabled = _datasource_Root.IsUpsellButtonActive;
-			break;
-		case "IsUpsellButtonVisible":
-			_widget_4.IsVisible = _datasource_Root.IsUpsellButtonVisible;
-			break;
-		case "CurrentLanguageString":
-			_widget_4_0_1.IconID = _datasource_Root.CurrentLanguageString;
-			break;
 		}
+	}
+
+	private void ViewModelPropertyChangedListenerOf_datasource_Root_Announcement(object sender, PropertyChangedEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_Announcement(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Announcement(object sender, PropertyChangedWithValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_Announcement(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Announcement(object sender, PropertyChangedWithBoolValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_Announcement(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Announcement(object sender, PropertyChangedWithIntValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_Announcement(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Announcement(object sender, PropertyChangedWithFloatValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_Announcement(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Announcement(object sender, PropertyChangedWithUIntValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_Announcement(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Announcement(object sender, PropertyChangedWithColorValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_Announcement(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Announcement(object sender, PropertyChangedWithDoubleValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_Announcement(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Announcement(object sender, PropertyChangedWithVec2ValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_Announcement(e.PropertyName);
+	}
+
+	private void HandleViewModelPropertyChangeOf_datasource_Root_Announcement(string propertyName)
+	{
 	}
 
 	public void OnList_datasource_Root_MenuOptionsChanged(object sender, TaleWorlds.Library.ListChangedEventArgs e)
@@ -1146,34 +942,6 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 			_widget_2_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_2_0;
 			_widget_2_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2_0;
 			_widget_2_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2_0;
-			_widget_3.PropertyChanged -= PropertyChangedListenerOf_widget_3;
-			_widget_3.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3;
-			_widget_3.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3;
-			_widget_3.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3;
-			_widget_3.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3;
-			_widget_3.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3;
-			_widget_3.intPropertyChanged -= intPropertyChangedListenerOf_widget_3;
-			_widget_3.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3;
-			_widget_3.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3;
-			_widget_4.EventFire -= EventListenerOf_widget_4;
-			_widget_4.PropertyChanged -= PropertyChangedListenerOf_widget_4;
-			_widget_4.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4;
-			_widget_4.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4;
-			_widget_4.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4;
-			_widget_4.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4;
-			_widget_4.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4;
-			_widget_4.intPropertyChanged -= intPropertyChangedListenerOf_widget_4;
-			_widget_4.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4;
-			_widget_4.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4;
-			_widget_4_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_1;
-			_widget_4_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_1;
-			_widget_4_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_1;
-			_widget_4_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_1;
-			_widget_4_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_1;
-			_widget_4_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_1;
-			_widget_4_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_1;
-			_widget_4_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_1;
-			_widget_4_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_1;
 			if (_datasource_Root_MenuOptions != null)
 			{
 				_datasource_Root_MenuOptions.ListChanged -= OnList_datasource_Root_MenuOptionsChanged;
@@ -1186,6 +954,20 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 					_widget_0_0_3_0_0_1.RemoveChild(child2);
 				}
 				_datasource_Root_MenuOptions = null;
+			}
+			if (_datasource_Root_Announcement != null)
+			{
+				_widget_3.SetDataSource(null);
+				_datasource_Root_Announcement.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Announcement;
+				_datasource_Root_Announcement.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Announcement;
+				_datasource_Root_Announcement.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Announcement;
+				_datasource_Root_Announcement.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Announcement;
+				_datasource_Root_Announcement.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Announcement;
+				_datasource_Root_Announcement.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Announcement;
+				_datasource_Root_Announcement.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Announcement;
+				_datasource_Root_Announcement.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Announcement;
+				_datasource_Root_Announcement.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Announcement;
+				_datasource_Root_Announcement = null;
 			}
 			_datasource_Root = null;
 		}
@@ -1263,38 +1045,6 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 		_widget_2_0.intPropertyChanged += intPropertyChangedListenerOf_widget_2_0;
 		_widget_2_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_2_0;
 		_widget_2_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_2_0;
-		_widget_3.IsScopeEnabled = _datasource_Root.IsUpsellButtonActive;
-		_widget_3.PropertyChanged += PropertyChangedListenerOf_widget_3;
-		_widget_3.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3;
-		_widget_3.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3;
-		_widget_3.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3;
-		_widget_3.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3;
-		_widget_3.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3;
-		_widget_3.intPropertyChanged += intPropertyChangedListenerOf_widget_3;
-		_widget_3.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3;
-		_widget_3.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3;
-		_widget_4.IsVisible = _datasource_Root.IsUpsellButtonVisible;
-		_widget_4.IsEnabled = _datasource_Root.IsUpsellButtonActive;
-		_widget_4.EventFire += EventListenerOf_widget_4;
-		_widget_4.PropertyChanged += PropertyChangedListenerOf_widget_4;
-		_widget_4.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4;
-		_widget_4.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4;
-		_widget_4.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4;
-		_widget_4.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4;
-		_widget_4.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4;
-		_widget_4.intPropertyChanged += intPropertyChangedListenerOf_widget_4;
-		_widget_4.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4;
-		_widget_4.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4;
-		_widget_4_0_1.IconID = _datasource_Root.CurrentLanguageString;
-		_widget_4_0_1.PropertyChanged += PropertyChangedListenerOf_widget_4_0_1;
-		_widget_4_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_1;
-		_widget_4_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_1;
-		_widget_4_0_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_1;
-		_widget_4_0_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_1;
-		_widget_4_0_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_1;
-		_widget_4_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_1;
-		_widget_4_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_1;
-		_widget_4_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_1;
 		_datasource_Root_MenuOptions = _datasource_Root.MenuOptions;
 		if (_datasource_Root_MenuOptions != null)
 		{
@@ -1311,6 +1061,20 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 				initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate.SetAttributes();
 				initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate.SetDataSource(dataSource);
 			}
+		}
+		_datasource_Root_Announcement = _datasource_Root.Announcement;
+		if (_datasource_Root_Announcement != null)
+		{
+			_datasource_Root_Announcement.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Announcement;
+			_widget_3.SetDataSource(_datasource_Root_Announcement);
 		}
 	}
 
@@ -1346,6 +1110,39 @@ public class InitialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Initial
 				initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate.SetAttributes();
 				initialScreen__TaleWorlds_MountAndBlade_ViewModelCollection_InitialMenu_InitialMenuVM_Dependency_1_ItemTemplate.SetDataSource(dataSource);
 			}
+		}
+	}
+
+	private void RefreshDataSource_datasource_Root_Announcement(InitialMenuAnnouncementVM newDataSource)
+	{
+		if (_datasource_Root_Announcement != null)
+		{
+			_widget_3.SetDataSource(null);
+			_datasource_Root_Announcement.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement = null;
+		}
+		_datasource_Root_Announcement = newDataSource;
+		_datasource_Root_Announcement = _datasource_Root.Announcement;
+		if (_datasource_Root_Announcement != null)
+		{
+			_datasource_Root_Announcement.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Announcement;
+			_datasource_Root_Announcement.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Announcement;
+			_widget_3.SetDataSource(_datasource_Root_Announcement);
 		}
 	}
 }

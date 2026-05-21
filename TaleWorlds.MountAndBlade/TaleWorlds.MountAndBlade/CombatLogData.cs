@@ -75,6 +75,10 @@ public struct CombatLogData
 
 	public int ModifiedDamage;
 
+	public int InflictedFireDamage;
+
+	public int ModifiedFireDamage;
+
 	public int ReflectedDamage;
 
 	public float Distance;
@@ -99,11 +103,23 @@ public struct CombatLogData
 	{
 		get
 		{
-			if (TotalDamage <= 0 && !CrushedThrough)
+			if (TotalDamage <= 0 && TotalFireDamage <= 0 && !CrushedThrough)
 			{
 				return Chamber;
 			}
 			return true;
+		}
+	}
+
+	private bool IsSpecialSelfDamage
+	{
+		get
+		{
+			if (IsSpecialDamage)
+			{
+				return IsVictimAgentSameAsAttackerAgent;
+			}
+			return false;
 		}
 	}
 
@@ -145,12 +161,14 @@ public struct CombatLogData
 
 	public int TotalDamage => InflictedDamage + ModifiedDamage;
 
+	public int TotalFireDamage => InflictedFireDamage + ModifiedFireDamage;
+
 	public float AttackProgress { get; internal set; }
 
 	public List<(string, uint)> GetLogString()
 	{
 		_logStringCache.Clear();
-		if (IsValidForPlayer && ManagedOptions.GetConfig(ManagedOptions.ManagedOptionsType.ReportDamage) > 0f)
+		if (IsValidForPlayer && !IsSpecialSelfDamage && ManagedOptions.GetConfig(ManagedOptions.ManagedOptionsType.ReportDamage) > 0f)
 		{
 			if (IsSneakAttack && IsAttackerPlayer)
 			{
@@ -185,6 +203,7 @@ public struct CombatLogData
 			GameTexts.SetVariable("DAMAGE_TYPE", GameTexts.FindText("combat_log_damage_type", damageType.ToString()));
 			MBStringBuilder mBStringBuilder = default(MBStringBuilder);
 			mBStringBuilder.Initialize(16, "GetLogString");
+			TextObject textObject = null;
 			if (IsEntityToEntityCollisionDamage)
 			{
 				if (IsAttackerPlayer)
@@ -227,27 +246,20 @@ public struct CombatLogData
 			}
 			else if (MissionObjectHit != null)
 			{
-				mBStringBuilder.Append(GameTexts.FindText("ui_delivered_number_damage_to_entity"));
 				WeakGameEntity weakGameEntity = MissionObjectHit.GameEntity;
-				TextObject hitObjectName = MissionObjectHit.HitObjectName;
-				while (weakGameEntity != null && TextObject.IsNullOrEmpty(hitObjectName))
+				textObject = MissionObjectHit.HitObjectName;
+				while (weakGameEntity != null && TextObject.IsNullOrEmpty(textObject))
 				{
-					foreach (MissionObject scriptComponent in weakGameEntity.GetScriptComponents<MissionObject>())
+					int scriptCount = weakGameEntity.GetScriptCount();
+					for (int i = 0; i < scriptCount; i++)
 					{
-						if (TextObject.IsNullOrEmpty(hitObjectName) && !TextObject.IsNullOrEmpty(scriptComponent.HitObjectName))
+						if (weakGameEntity.GetScriptAtIndex(i) is MissionObject missionObject && TextObject.IsNullOrEmpty(textObject) && !TextObject.IsNullOrEmpty(missionObject.HitObjectName))
 						{
-							hitObjectName = scriptComponent.HitObjectName;
+							textObject = missionObject.HitObjectName;
 							break;
 						}
 					}
 					weakGameEntity = weakGameEntity.Parent;
-				}
-				if (!TextObject.IsNullOrEmpty(hitObjectName))
-				{
-					GameTexts.SetVariable("OBJECT_NAME", hitObjectName.ToString());
-					mBStringBuilder.Append("<Detail>");
-					mBStringBuilder.Append(GameTexts.FindText("combat_log_detail_entity_name"));
-					mBStringBuilder.Append("</Detail>");
 				}
 			}
 			else if (IsAttackerMount)
@@ -259,6 +271,10 @@ public struct CombatLogData
 			{
 				mBStringBuilder.Append(GameTexts.FindText(IsAttackerPlayer ? "ui_delivered_number_damage" : "ui_received_number_damage"));
 				item = (IsAttackerPlayer ? 4210351871u : 4292917946u);
+			}
+			if (MissionObjectHit != null && TotalDamage > 0)
+			{
+				mBStringBuilder.Append(GameTexts.FindText("ui_delivered_number_damage_to_entity"));
 			}
 			if (BodyPartHit != BoneBodyPartType.None)
 			{
@@ -282,32 +298,65 @@ public struct CombatLogData
 				mBStringBuilder.Append(GameTexts.FindText("combat_log_detail_distance"));
 				mBStringBuilder.Append("</Detail>");
 			}
-			if (AbsorbedDamage > 0)
+			if (TotalDamage > 0)
 			{
-				GameTexts.SetVariable("ABSORBED_DAMAGE", AbsorbedDamage);
-				mBStringBuilder.Append("<Detail>");
-				mBStringBuilder.Append(GameTexts.FindText("combat_log_detail_absorbed_damage"));
-				mBStringBuilder.Append("</Detail>");
-			}
-			if (ModifiedDamage != 0)
-			{
-				GameTexts.SetVariable("MODIFIED_DAMAGE", TaleWorlds.Library.MathF.Abs(ModifiedDamage));
-				mBStringBuilder.Append("<Detail>");
-				if (ModifiedDamage > 0)
+				if (AbsorbedDamage > 0)
 				{
-					mBStringBuilder.Append(GameTexts.FindText("combat_log_detail_extra_damage"));
+					GameTexts.SetVariable("ABSORBED_DAMAGE", AbsorbedDamage);
+					mBStringBuilder.Append("<Detail>");
+					mBStringBuilder.Append(GameTexts.FindText("combat_log_detail_absorbed_damage"));
+					mBStringBuilder.Append("</Detail>");
 				}
-				else if (ModifiedDamage < 0)
+				if (ModifiedDamage != 0)
 				{
-					mBStringBuilder.Append(GameTexts.FindText("combat_log_detail_reduced_damage"));
+					GameTexts.SetVariable("MODIFIED_DAMAGE", TaleWorlds.Library.MathF.Abs(ModifiedDamage));
+					mBStringBuilder.Append("<Detail>");
+					if (ModifiedDamage > 0)
+					{
+						mBStringBuilder.Append(GameTexts.FindText("combat_log_detail_extra_damage"));
+					}
+					else if (ModifiedDamage < 0)
+					{
+						mBStringBuilder.Append(GameTexts.FindText("combat_log_detail_reduced_damage"));
+					}
+					mBStringBuilder.Append("</Detail>");
 				}
-				mBStringBuilder.Append("</Detail>");
+				if (ReflectedDamage > 0)
+				{
+					GameTexts.SetVariable("REFLECTED_DAMAGE", ReflectedDamage);
+					mBStringBuilder.Append("<Detail>");
+					mBStringBuilder.Append(GameTexts.FindText("combat_log_detail_reflected_damage"));
+					mBStringBuilder.Append("</Detail>");
+				}
 			}
-			if (ReflectedDamage > 0)
+			if (TotalFireDamage > 0)
 			{
-				GameTexts.SetVariable("REFLECTED_DAMAGE", ReflectedDamage);
+				if (TotalDamage > 0 && TotalFireDamage > 0)
+				{
+					mBStringBuilder.AppendLine();
+				}
+				GameTexts.SetVariable("FIRE_DAMAGE", TotalFireDamage);
+				mBStringBuilder.Append(GameTexts.FindText("ui_delivered_number_fire_damage_to_entity"));
+				if (ModifiedFireDamage != 0)
+				{
+					GameTexts.SetVariable("MODIFIED_DAMAGE", TaleWorlds.Library.MathF.Abs(ModifiedFireDamage));
+					mBStringBuilder.Append("<Detail>");
+					if (ModifiedFireDamage > 0)
+					{
+						mBStringBuilder.Append(GameTexts.FindText("combat_log_detail_extra_damage"));
+					}
+					else if (ModifiedFireDamage < 0)
+					{
+						mBStringBuilder.Append(GameTexts.FindText("combat_log_detail_reduced_damage"));
+					}
+					mBStringBuilder.Append("</Detail>");
+				}
+			}
+			if (!TextObject.IsNullOrEmpty(textObject))
+			{
+				GameTexts.SetVariable("OBJECT_NAME", textObject.ToString());
 				mBStringBuilder.Append("<Detail>");
-				mBStringBuilder.Append(GameTexts.FindText("combat_log_detail_reflected_damage"));
+				mBStringBuilder.Append(GameTexts.FindText("combat_log_detail_entity_name"));
 				mBStringBuilder.Append("</Detail>");
 			}
 			_logStringCache.Add(ValueTuple.Create(mBStringBuilder.ToStringAndRelease(), item));
@@ -344,6 +393,8 @@ public struct CombatLogData
 		InflictedDamage = 0;
 		AbsorbedDamage = 0;
 		ModifiedDamage = 0;
+		InflictedFireDamage = 0;
+		ModifiedFireDamage = 0;
 		ReflectedDamage = 0;
 		AttackProgress = 0f;
 		BodyPartHit = BoneBodyPartType.None;

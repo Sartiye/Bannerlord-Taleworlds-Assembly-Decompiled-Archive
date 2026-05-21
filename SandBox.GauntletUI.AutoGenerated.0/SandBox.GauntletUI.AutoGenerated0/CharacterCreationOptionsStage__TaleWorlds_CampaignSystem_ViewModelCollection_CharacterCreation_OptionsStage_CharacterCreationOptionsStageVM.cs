@@ -202,12 +202,12 @@ public class CharacterCreationOptionsStage__TaleWorlds_CampaignSystem_ViewModelC
 		_widget_1_2_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_2_0_0_0.MarginLeft = 20f;
 		_widget_1_2_0_0_0.MarginRight = 20f;
-		_widget_1_2_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_2_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_2_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_2_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_2_0_0_0_0.MarginTop = 10f;
 		_widget_1_2_0_0_0_0.MarginBottom = 30f;
-		_widget_1_2_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_2_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_2_0_0_0_0.MinIndex = 0;
 		_widget_1_2_0_0_0_0.MaxIndex = 50;
 		_widget_1_2_0_1.DoNotAcceptEvents = true;

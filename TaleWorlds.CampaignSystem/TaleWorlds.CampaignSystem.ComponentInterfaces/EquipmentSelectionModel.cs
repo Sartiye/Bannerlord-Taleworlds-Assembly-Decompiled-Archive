@@ -1,17 +1,18 @@
 using TaleWorlds.Core;
-using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
 public abstract class EquipmentSelectionModel : MBGameModel<EquipmentSelectionModel>
 {
-	public abstract MBList<MBEquipmentRoster> GetEquipmentRostersForHeroComeOfAge(Hero hero, bool isCivilian);
+	public abstract Equipment GetEquipmentForHeroComeOfAge(Hero hero, Equipment.EquipmentType equipmentType);
 
-	public abstract MBList<MBEquipmentRoster> GetEquipmentRostersForHeroReachesTeenAge(Hero hero);
+	public abstract Equipment GetEquipmentForHeroReachesTeenAge(Hero hero);
 
-	public abstract MBList<MBEquipmentRoster> GetEquipmentRostersForInitialChildrenGeneration(Hero hero);
+	public abstract Equipment GetEquipmentForInitialChildrenGeneration(Hero hero);
 
-	public abstract MBList<MBEquipmentRoster> GetEquipmentRostersForDeliveredOffspring(Hero hero);
+	public abstract Equipment GetEquipmentForDeliveredOffspring(Hero hero);
 
-	public abstract MBList<MBEquipmentRoster> GetEquipmentRostersForCompanion(Hero companionHero, bool isCivilian);
+	public abstract (Equipment, Equipment) GetEquipmentsForChangingRuler(Hero newRuler, Hero oldRuler, Equipment.EquipmentType equipmentType);
+
+	public abstract Equipment GetEquipmentForCompanionWhenTurningToLord(Hero companionHero, Equipment.EquipmentType equipmentType);
 }

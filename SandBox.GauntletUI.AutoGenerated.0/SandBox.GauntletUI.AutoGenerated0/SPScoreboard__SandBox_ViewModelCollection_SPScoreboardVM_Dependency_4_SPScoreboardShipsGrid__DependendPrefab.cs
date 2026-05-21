@@ -150,8 +150,8 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				for (int num = _widget_0_0_1.ChildCount - 1; num >= 0; num--)
 				{
 					Widget child = _widget_0_0_1.GetChild(num);
-					((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate)child).OnBeforeRemovedChild(child);
-					((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate)_widget_0_0_1.GetChild(num)).DestroyDataSource();
+					((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate)child).OnBeforeRemovedChild(child);
+					((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate)_widget_0_0_1.GetChild(num)).DestroyDataSource();
 				}
 				_datasource_Root_Defenders_Ships = null;
 			}
@@ -280,9 +280,9 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			for (int num = _widget_0_0_1.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child3 = _widget_0_0_1.GetChild(num);
-				((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+				((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate)child3).OnBeforeRemovedChild(child3);
 				Widget child4 = _widget_0_0_1.GetChild(num);
-				((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate)child4).SetDataSource(null);
+				((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate)child4).SetDataSource(null);
 				_widget_0_0_1.RemoveChild(child4);
 			}
 			break;
@@ -298,27 +298,27 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 		}
 		case TaleWorlds.Library.ListChangedType.ItemAdded:
 		{
-			SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate = new SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate(base.Context);
-			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate);
+			SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate = new SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate(base.Context);
+			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate);
 			SPScoreboardShipVM dataSource = (SPScoreboardShipVM)(generatedWidgetData.Data = _datasource_Root_Defenders_Ships[e.NewIndex]);
-			sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate.AddComponent(generatedWidgetData);
-			_widget_0_0_1.AddChildAtIndex(sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate, e.NewIndex);
-			sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate.CreateWidgets();
-			sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate.SetIds();
-			sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate.SetAttributes();
-			sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate.SetDataSource(dataSource);
+			sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate.AddComponent(generatedWidgetData);
+			_widget_0_0_1.AddChildAtIndex(sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate, e.NewIndex);
+			sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate.CreateWidgets();
+			sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate.SetIds();
+			sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate.SetAttributes();
+			sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate.SetDataSource(dataSource);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
 		{
 			Widget child2 = _widget_0_0_1.GetChild(e.NewIndex);
-			((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate)child2).OnBeforeRemovedChild(child2);
+			((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate)child2).OnBeforeRemovedChild(child2);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemDeleted:
 		{
 			Widget child = _widget_0_0_1.GetChild(e.NewIndex);
-			((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate)child).SetDataSource(null);
+			((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate)child).SetDataSource(null);
 			_widget_0_0_1.RemoveChild(child);
 			break;
 		}
@@ -357,9 +357,9 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 					for (int num = _widget_0_0_1.ChildCount - 1; num >= 0; num--)
 					{
 						Widget child = _widget_0_0_1.GetChild(num);
-						((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate)child).OnBeforeRemovedChild(child);
+						((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate)child).OnBeforeRemovedChild(child);
 						Widget child2 = _widget_0_0_1.GetChild(num);
-						((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate)child2).SetDataSource(null);
+						((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate)child2).SetDataSource(null);
 						_widget_0_0_1.RemoveChild(child2);
 					}
 					_datasource_Root_Defenders_Ships = null;
@@ -402,15 +402,15 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_datasource_Root_Defenders_Ships.ListChanged += OnList_datasource_Root_Defenders_ShipsChanged;
 			for (int i = 0; i < _datasource_Root_Defenders_Ships.Count; i++)
 			{
-				SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate = new SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate);
+				SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate = new SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate);
 				SPScoreboardShipVM dataSource = (SPScoreboardShipVM)(generatedWidgetData.Data = _datasource_Root_Defenders_Ships[i]);
-				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_0_1.AddChildAtIndex(sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate, i);
-				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate.CreateWidgets();
-				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate.SetIds();
-				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate.SetAttributes();
-				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate.SetDataSource(dataSource);
+				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_0_1.AddChildAtIndex(sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate, i);
+				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate.CreateWidgets();
+				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate.SetIds();
+				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate.SetAttributes();
+				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}
@@ -423,9 +423,9 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			for (int num = _widget_0_0_1.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child = _widget_0_0_1.GetChild(num);
-				((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate)child).OnBeforeRemovedChild(child);
 				Widget child2 = _widget_0_0_1.GetChild(num);
-				((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate)child2).SetDataSource(null);
+				((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate)child2).SetDataSource(null);
 				_widget_0_0_1.RemoveChild(child2);
 			}
 			_datasource_Root_Defenders_Ships = null;
@@ -437,15 +437,15 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_datasource_Root_Defenders_Ships.ListChanged += OnList_datasource_Root_Defenders_ShipsChanged;
 			for (int i = 0; i < _datasource_Root_Defenders_Ships.Count; i++)
 			{
-				SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate = new SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate);
+				SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate = new SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate);
 				SPScoreboardShipVM dataSource = (SPScoreboardShipVM)(generatedWidgetData.Data = _datasource_Root_Defenders_Ships[i]);
-				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_0_1.AddChildAtIndex(sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate, i);
-				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate.CreateWidgets();
-				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate.SetIds();
-				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate.SetAttributes();
-				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate.SetDataSource(dataSource);
+				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_0_1.AddChildAtIndex(sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate, i);
+				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate.CreateWidgets();
+				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate.SetIds();
+				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate.SetAttributes();
+				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}
@@ -469,9 +469,9 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				for (int num = _widget_0_0_1.ChildCount - 1; num >= 0; num--)
 				{
 					Widget child = _widget_0_0_1.GetChild(num);
-					((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate)child).OnBeforeRemovedChild(child);
+					((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate)child).OnBeforeRemovedChild(child);
 					Widget child2 = _widget_0_0_1.GetChild(num);
-					((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate)child2).SetDataSource(null);
+					((SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate)child2).SetDataSource(null);
 					_widget_0_0_1.RemoveChild(child2);
 				}
 				_datasource_Root_Defenders_Ships = null;
@@ -499,15 +499,15 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_datasource_Root_Defenders_Ships.ListChanged += OnList_datasource_Root_Defenders_ShipsChanged;
 			for (int i = 0; i < _datasource_Root_Defenders_Ships.Count; i++)
 			{
-				SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate = new SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate);
+				SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate = new SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate);
 				SPScoreboardShipVM dataSource = (SPScoreboardShipVM)(generatedWidgetData.Data = _datasource_Root_Defenders_Ships[i]);
-				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_0_1.AddChildAtIndex(sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate, i);
-				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate.CreateWidgets();
-				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate.SetIds();
-				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate.SetAttributes();
-				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_12_ItemTemplate.SetDataSource(dataSource);
+				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_0_1.AddChildAtIndex(sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate, i);
+				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate.CreateWidgets();
+				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate.SetIds();
+				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate.SetAttributes();
+				sPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_11_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}

@@ -301,7 +301,7 @@ public abstract class SettlementProjectVM : ViewModel
 	{
 	}
 
-	public abstract void ExecuteAddToQueue();
+	public abstract void ExecuteAddRemoveToQueue();
 
 	public abstract void ExecuteSetAsActiveDevelopment();
 

@@ -6,15 +6,15 @@ namespace TaleWorlds.CampaignSystem;
 
 public sealed class SkillEffect : PropertyObject
 {
-	private float Bonus;
-
-	private float BaseValue;
-
-	private float LimitMin;
-
-	private float LimitMax;
-
 	public static MBReadOnlyList<SkillEffect> All => Campaign.Current.AllSkillEffects;
+
+	public float Bonus { get; private set; }
+
+	public float BaseValue { get; private set; }
+
+	public float LimitMin { get; private set; }
+
+	public float LimitMax { get; private set; }
 
 	public PartyRole Role { get; private set; }
 

@@ -118,7 +118,7 @@ public class LauncherUI
 
 	public bool CheckMouseOverWindowDragArea()
 	{
-		return _context.EventManager.HoveredView is LauncherDragWindowAreaWidget;
+		return _context.EventManager.HoveredWidget is LauncherDragWindowAreaWidget;
 	}
 
 	public bool HitTest()

@@ -220,6 +220,10 @@ public class GameStateManager
 
 	public void PushState(GameState gameState, int level = 0)
 	{
+		if (!TWParallel.IsMainThread())
+		{
+			Debug.FailedAssert("State should be changed from main thread", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\GameStateManager.cs", "PushState", 222);
+		}
 		GameStateJob item = new GameStateJob(GameStateJob.JobType.Push, gameState, level);
 		_gameStateJobs.Enqueue(item);
 		DoGameStateJobs();
@@ -227,6 +231,10 @@ public class GameStateManager
 
 	public void PopState(int level = 0)
 	{
+		if (!TWParallel.IsMainThread())
+		{
+			Debug.FailedAssert("State should be changed from main thread", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\GameStateManager.cs", "PopState", 235);
+		}
 		GameStateJob item = new GameStateJob(GameStateJob.JobType.Pop, null, level);
 		_gameStateJobs.Enqueue(item);
 		DoGameStateJobs();

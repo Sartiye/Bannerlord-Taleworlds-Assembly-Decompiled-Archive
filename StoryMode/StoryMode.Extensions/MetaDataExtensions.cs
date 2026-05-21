@@ -22,4 +22,13 @@ public static class MetaDataExtensions
 		}
 		return result;
 	}
+
+	public static bool AreAchievementsDisabled(this MetaData metaData)
+	{
+		if (metaData != null && metaData.TryGetValue("AchievementsDisabled", out var value) && int.TryParse(value, out var result))
+		{
+			return result == 1;
+		}
+		return false;
+	}
 }

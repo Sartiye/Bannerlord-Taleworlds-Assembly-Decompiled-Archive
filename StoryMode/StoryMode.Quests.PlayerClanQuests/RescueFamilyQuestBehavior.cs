@@ -22,6 +22,7 @@ using TaleWorlds.Localization;
 using TaleWorlds.ModuleManager;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.SaveSystem;
+using TaleWorlds.SaveSystem.Load;
 
 namespace StoryMode.Quests.PlayerClanQuests;
 
@@ -43,16 +44,19 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 
 			protected override void DefineEnumTypes()
 			{
-				AddEnumDefinition(typeof(HideoutBattleEndState), 10);
+				AddEnumDefinition(typeof(RescueFamilyQuestStateEnum), 11);
 			}
 		}
 
-		private enum HideoutBattleEndState
+		private enum RescueFamilyQuestStateEnum
 		{
 			None,
-			Retreated,
-			Defeated,
-			Victory
+			ReunionTalkWithRadagosDone,
+			HideoutTalkWithRadagosDone,
+			HideoutBattleInProgress,
+			ExecutionTalkWithGalterDone,
+			ReunionTalkWithBrotherDone,
+			GoodbyeTalkWithRadagosDone
 		}
 
 		private const int RaiderPartySize = 10;
@@ -70,23 +74,11 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 		[SaveableField(1)]
 		private readonly Settlement _hideout;
 
-		[SaveableField(2)]
-		private bool _reunionTalkDone;
-
-		[SaveableField(3)]
-		private bool _hideoutTalkDone;
-
-		[SaveableField(4)]
-		private bool _brotherConversationDone;
-
-		[SaveableField(5)]
-		private bool _radagosGoodByeConversationDone;
-
-		[SaveableField(6)]
-		private HideoutBattleEndState _hideoutBattleEndState;
-
 		[SaveableField(7)]
 		private readonly List<MobileParty> _raiderParties;
+
+		[SaveableField(8)]
+		private RescueFamilyQuestStateEnum _rescueFamilyQuestState;
 
 		private TextObject _startQuestLogText
 		{
@@ -142,15 +134,40 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 			_hideoutBoss = StoryModeHeroes.RadagosHenchman;
 			_targetSettlementForSiblings = null;
 			_hideout = SettlementHelper.FindNearestHideoutToMobileParty(MobileParty.MainParty, MobileParty.NavigationType.All, (Settlement s) => !s.IsSettlementBusy(this)).Settlement;
-			_reunionTalkDone = false;
-			_hideoutTalkDone = false;
-			_brotherConversationDone = false;
-			_radagosGoodByeConversationDone = false;
+			_rescueFamilyQuestState = RescueFamilyQuestStateEnum.None;
 			_raiderParties = new List<MobileParty>();
 			InitializeHideout();
 			AddTrackedObject(_hideout);
 			SetDialogs();
 			AddGameMenus();
+		}
+
+		[LoadInitializationCallback]
+		private void OnLoad(MetaData metaData, ObjectLoadData objectLoadData)
+		{
+			if (objectLoadData.HasMember(2, objectLoadData.TypeDefinition.TypeLevel))
+			{
+				bool num = (bool)objectLoadData.GetMemberValueBySaveId(2, objectLoadData.TypeDefinition.TypeLevel);
+				bool flag = (bool)objectLoadData.GetMemberValueBySaveId(3, objectLoadData.TypeDefinition.TypeLevel);
+				bool flag2 = (bool)objectLoadData.GetMemberValueBySaveId(4, objectLoadData.TypeDefinition.TypeLevel);
+				bool flag3 = (bool)objectLoadData.GetMemberValueBySaveId(5, objectLoadData.TypeDefinition.TypeLevel);
+				if (num)
+				{
+					_rescueFamilyQuestState = RescueFamilyQuestStateEnum.ReunionTalkWithRadagosDone;
+				}
+				if (flag)
+				{
+					_rescueFamilyQuestState = RescueFamilyQuestStateEnum.HideoutTalkWithRadagosDone;
+				}
+				if (flag2)
+				{
+					_rescueFamilyQuestState = RescueFamilyQuestStateEnum.ReunionTalkWithBrotherDone;
+				}
+				if (flag3)
+				{
+					_rescueFamilyQuestState = RescueFamilyQuestStateEnum.GoodbyeTalkWithRadagosDone;
+				}
+			}
 		}
 
 		protected override void InitializeQuestOnGameLoad()
@@ -162,6 +179,10 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 			SetDialogs();
 			AddGameMenus();
 			SelectTargetSettlementForSiblings();
+			if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.CurrentVersion.IsOlderThan(ApplicationVersion.FromString("v1.4.0")) && _rescueFamilyQuestState == RescueFamilyQuestStateEnum.HideoutTalkWithRadagosDone && PlayerEncounter.Battle?.MapEventSettlement == _hideout)
+			{
+				_rescueFamilyQuestState = RescueFamilyQuestStateEnum.HideoutBattleInProgress;
+			}
 		}
 
 		public override void OnHeroCanHaveCampaignIssuesInfoIsRequested(Hero hero, ref bool result)
@@ -220,11 +241,6 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 			}
 		}
 
-		protected override void OnFinalize()
-		{
-			base.OnFinalize();
-		}
-
 		protected override void OnTimedOut()
 		{
 			base.OnTimedOut();
@@ -236,7 +252,6 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 		private void InitializeHideout()
 		{
 			CheckIfHideoutIsReady();
-			_hideoutBattleEndState = HideoutBattleEndState.None;
 		}
 
 		private void CheckIfHideoutIsReady()
@@ -273,19 +288,11 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 					party.MemberRoster.RemoveTroop(troopRosterElement.Character);
 				}
 				_hideoutBoss.ChangeState(Hero.CharacterStates.Active);
-				party.MemberRoster.AddToCounts(_hideoutBoss.CharacterObject, 1, insertAtFront: true);
+				if (_hideoutBoss.PartyBelongedTo == null)
+				{
+					party.MemberRoster.AddToCounts(_hideoutBoss.CharacterObject, 1, insertAtFront: true);
+				}
 				break;
-			}
-		}
-
-		private void RemoveRadagosHenchmanFromHideout()
-		{
-			MobileParty mobileParty = _hideout.Parties.FirstOrDefault((MobileParty x) => x.MemberRoster.Contains(_hideoutBoss.CharacterObject));
-			if (mobileParty != null)
-			{
-				mobileParty.MemberRoster.RemoveTroop(_hideoutBoss.CharacterObject);
-				DisableHeroAction.Apply(_hideoutBoss);
-				mobileParty.MemberRoster.AddToCounts(_hideout.Culture.BanditBoss, 1);
 			}
 		}
 
@@ -329,12 +336,13 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 		protected override void RegisterEvents()
 		{
 			CampaignEvents.OnSettlementLeftEvent.AddNonSerializedListener(this, OnSettlementLeft);
-			CampaignEvents.MapEventEnded.AddNonSerializedListener(this, OnMapEventEnded);
 			CampaignEvents.GameMenuOpened.AddNonSerializedListener(this, OnGameMenuOpened);
 			CampaignEvents.SettlementEntered.AddNonSerializedListener(this, OnSettlementEntered);
 			CampaignEvents.HeroKilledEvent.AddNonSerializedListener(this, OnHeroKilled);
 			CampaignEvents.IsSettlementBusyEvent.AddNonSerializedListener(this, IsSettlementBusy);
-			CampaignEvents.OnHideoutDeactivatedEvent.AddNonSerializedListener(this, OnHideoutCleared);
+			CampaignEvents.MapEventStarted.AddNonSerializedListener(this, OnMapEventStarted);
+			CampaignEvents.OnHideoutBattleCompletedEvent.AddNonSerializedListener(this, OnHideoutBattleCompleted);
+			CampaignEvents.OnMissionStartedEvent.AddNonSerializedListener(this, OnMissionStarted);
 		}
 
 		private void IsSettlementBusy(Settlement settlement, object asker, ref int priority)
@@ -345,18 +353,70 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 			}
 		}
 
-		private void OnHideoutCleared(Settlement hideout)
+		private void OnMapEventStarted(MapEvent mapEvent, PartyBase attackerParty, PartyBase defenderParty)
 		{
-			if (hideout == _hideout)
+			if (mapEvent.IsHideoutBattle && mapEvent.MapEventSettlement == _hideout && attackerParty == PartyBase.MainParty)
 			{
-				MobileParty lastAttackerParty = hideout.LastAttackerParty;
-				if (lastAttackerParty != null && lastAttackerParty.IsMainParty && _hideoutBattleEndState == HideoutBattleEndState.None)
-				{
-					_hideoutBattleEndState = HideoutBattleEndState.Victory;
-					CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, noHorse: true, noWeapon: true), new ConversationCharacterData(StoryModeHeroes.ElderBrother.CharacterObject, null, noHorse: true, noWeapon: true));
-					CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, noHorse: true, noWeapon: true), new ConversationCharacterData(StoryModeHeroes.RadagosHenchman.CharacterObject, null, noHorse: true, noWeapon: true));
-					_hideoutBattleEndState = HideoutBattleEndState.None;
-				}
+				_rescueFamilyQuestState = RescueFamilyQuestStateEnum.HideoutBattleInProgress;
+			}
+		}
+
+		private void OnHideoutBattleCompleted(BattleSideEnum winnerSide, HideoutEventComponent hideoutEventComponent, HideoutEventComponent.HideoutBattleEndState battleEndState)
+		{
+			Settlement mapEventSettlement = hideoutEventComponent.MapEvent.MapEventSettlement;
+			if (mapEventSettlement != _hideout)
+			{
+				return;
+			}
+			MobileParty lastAttackerParty = mapEventSettlement.LastAttackerParty;
+			if (lastAttackerParty == null || !lastAttackerParty.IsMainParty || _rescueFamilyQuestState != RescueFamilyQuestStateEnum.HideoutBattleInProgress)
+			{
+				return;
+			}
+			if ((uint)battleEndState > 2u && (uint)(battleEndState - 3) <= 1u)
+			{
+				CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, noHorse: true, noWeapon: true), new ConversationCharacterData(StoryModeHeroes.RadagosHenchman.CharacterObject, null, noHorse: true, noWeapon: true));
+				return;
+			}
+			if (!_hideoutBoss.IsHealthFull())
+			{
+				_hideoutBoss.Heal(_hideoutBoss.CharacterObject.MaxHitPoints());
+			}
+			AddLog(_defeatedQuestLogText);
+			DisableHeroAction.Apply(_radagos);
+			if (Hero.MainHero.IsPrisoner && _raiderParties.Contains(Hero.MainHero.PartyBelongedToAsPrisoner.MobileParty))
+			{
+				EndCaptivityAction.ApplyByPeace(Hero.MainHero);
+				InformationManager.ShowInquiry(new InquiryData(new TextObject("{=FPhWhjq7}Defeated").ToString(), new TextObject("{=WN6aHR6m}You were defeated by the bandits in the hideout but you managed to escape. You need to wait a while before attacking again.").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, new TextObject("{=yQtzabbe}Close").ToString(), null, null, null));
+			}
+			if (_hideout.Parties.Count == 0)
+			{
+				InitializeHideout();
+			}
+			_hideout.Hideout.SetNextPossibleAttackTime(StoryModeData.StorylineQuestHideoutHiddenDuration);
+		}
+
+		private void OnMissionStarted(IMission mission)
+		{
+			if (Settlement.CurrentSettlement != _hideout || PlayerEncounter.Current == null)
+			{
+				return;
+			}
+			Mission mission2 = (Mission)mission;
+			HideoutAmbushMissionController missionBehavior = mission2.GetMissionBehavior<HideoutAmbushMissionController>();
+			if (missionBehavior != null)
+			{
+				missionBehavior.SetOverriddenHideoutBossCharacterObject(_hideoutBoss.CharacterObject);
+				return;
+			}
+			HideoutMissionController missionBehavior2 = mission2.GetMissionBehavior<HideoutMissionController>();
+			if (missionBehavior2 != null)
+			{
+				missionBehavior2.SetOverriddenHideoutBossCharacterObject(_hideoutBoss.CharacterObject);
+			}
+			else
+			{
+				Debug.FailedAssert("Hideout boss can not be set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Quests\\PlayerClanQuests\\RescueFamilyQuestBehavior.cs", "OnMissionStarted", 542);
 			}
 		}
 
@@ -377,101 +437,38 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 
 		private void OnSettlementLeft(MobileParty party, Settlement settlement)
 		{
-			if (!party.IsMainParty)
+			if (party.IsMainParty)
 			{
-				return;
-			}
-			if (base.IsTrackEnabled && _reunionTalkDone && !IsTracked(_hideout))
-			{
-				AddTrackedObject(_hideout);
-			}
-			if (settlement == _hideout)
-			{
-				if (PartyBase.MainParty.MemberRoster.Contains(_radagos.CharacterObject))
+				if (base.IsTrackEnabled && _rescueFamilyQuestState > RescueFamilyQuestStateEnum.None && !IsTracked(_hideout))
+				{
+					AddTrackedObject(_hideout);
+				}
+				if (settlement == _hideout && PartyBase.MainParty.MemberRoster.Contains(_radagos.CharacterObject))
 				{
 					PartyBase.MainParty.MemberRoster.RemoveTroop(_radagos.CharacterObject);
 				}
-				RemoveRadagosHenchmanFromHideout();
-			}
-		}
-
-		private void OnMapEventEnded(MapEvent mapEvent)
-		{
-			if (PlayerEncounter.Current == null || !mapEvent.IsPlayerMapEvent || Settlement.CurrentSettlement != _hideout)
-			{
-				return;
-			}
-			if (mapEvent.WinningSide == mapEvent.PlayerSide)
-			{
-				_hideoutBattleEndState = HideoutBattleEndState.Victory;
-			}
-			else if (mapEvent.WinningSide == BattleSideEnum.None)
-			{
-				_hideoutBattleEndState = HideoutBattleEndState.Retreated;
-				if (Hero.MainHero.IsPrisoner && _raiderParties.Contains(Hero.MainHero.PartyBelongedToAsPrisoner.MobileParty))
-				{
-					EndCaptivityAction.ApplyByPeace(Hero.MainHero);
-					InformationManager.ShowInquiry(new InquiryData(new TextObject("{=FPhWhjq7}Defeated").ToString(), new TextObject("{=WN6aHR6m}You were defeated by the bandits in the hideout but you managed to escape. You need to wait a while before attacking again.").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, new TextObject("{=yQtzabbe}Close").ToString(), null, null, null));
-				}
-				if (_hideout.Parties.Count == 0)
-				{
-					InitializeHideout();
-				}
-				_hideout.Hideout.SetNextPossibleAttackTime(StoryModeData.StorylineQuestHideoutHiddenDuration);
-				_hideoutBattleEndState = HideoutBattleEndState.None;
-			}
-			else
-			{
-				_hideout.Hideout.SetNextPossibleAttackTime(StoryModeData.StorylineQuestHideoutHiddenDuration);
-				_hideoutBattleEndState = HideoutBattleEndState.Defeated;
 			}
 		}
 
 		private void OnGameMenuOpened(MenuCallbackArgs args)
 		{
-			if (_hideoutBattleEndState != HideoutBattleEndState.Victory && !_hideoutBoss.IsHealthFull())
+			if (GameStateManager.Current?.ActiveState is MapState)
 			{
-				_hideoutBoss.Heal(_hideoutBoss.CharacterObject.MaxHitPoints());
-			}
-			if (_hideoutBattleEndState == HideoutBattleEndState.Victory)
-			{
-				if (StoryModeHeroes.RadagosHenchman.IsAlive)
+				if (_rescueFamilyQuestState < RescueFamilyQuestStateEnum.HideoutTalkWithRadagosDone && Settlement.CurrentSettlement != null && Settlement.CurrentSettlement == _hideout)
 				{
-					CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, noHorse: true, noWeapon: true), new ConversationCharacterData(StoryModeHeroes.RadagosHenchman.CharacterObject, null, noHorse: true, noWeapon: true));
-					return;
+					CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, noHorse: true, noWeapon: true), new ConversationCharacterData(StoryModeHeroes.Radagos.CharacterObject, null, noHorse: true, noWeapon: true));
 				}
-				CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, noHorse: true, noWeapon: true), new ConversationCharacterData(StoryModeHeroes.ElderBrother.CharacterObject, null, noHorse: true, noWeapon: true));
-				_hideoutBattleEndState = HideoutBattleEndState.None;
-			}
-			else if (_hideoutBattleEndState == HideoutBattleEndState.Retreated || _hideoutBattleEndState == HideoutBattleEndState.Defeated)
-			{
-				AddLog(_defeatedQuestLogText);
-				DisableHeroAction.Apply(_radagos);
-				if (Hero.MainHero.IsPrisoner)
+				else if (_rescueFamilyQuestState == RescueFamilyQuestStateEnum.GoodbyeTalkWithRadagosDone && args.MenuContext.GameMenu.StringId == "radagos_goodbye_menu")
 				{
-					EndCaptivityAction.ApplyByPeace(Hero.MainHero);
-					InformationManager.ShowInquiry(new InquiryData(new TextObject("{=FPhWhjq7}Defeated").ToString(), new TextObject("{=XSzmugWh}You were defeated by the raiders in the hideout but you managed to escape. You need to wait a while before attacking again.").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, new TextObject("{=yQtzabbe}Close").ToString(), null, null, null));
+					GameMenu.ExitToLast();
+					CompleteQuestWithSuccess();
 				}
-				if (_hideout.Parties.Count == 0)
-				{
-					InitializeHideout();
-				}
-				_hideoutBattleEndState = HideoutBattleEndState.None;
-			}
-			else if (_radagosGoodByeConversationDone && args.MenuContext.GameMenu.StringId == "radagos_goodbye_menu")
-			{
-				GameMenu.ExitToLast();
-				CompleteQuestWithSuccess();
-			}
-			else if (!_hideoutTalkDone && Settlement.CurrentSettlement != null && Settlement.CurrentSettlement == _hideout)
-			{
-				CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, noHorse: true, noWeapon: true), new ConversationCharacterData(StoryModeHeroes.Radagos.CharacterObject, null, noHorse: true, noWeapon: true));
 			}
 		}
 
 		private void OnSettlementEntered(MobileParty mobileParty, Settlement settlement, Hero hero)
 		{
-			if (!_hideoutTalkDone || settlement != _hideout || mobileParty == null || !mobileParty.IsMainParty)
+			if (_rescueFamilyQuestState < RescueFamilyQuestStateEnum.HideoutTalkWithRadagosDone || settlement != _hideout || mobileParty == null || !mobileParty.IsMainParty)
 			{
 				return;
 			}
@@ -544,7 +541,8 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 				.PlayerLine(new TextObject("{=fM4eSVps}You said talking was a waste of time. You are {RADAGOS.NAME}'s property, now."))
 				.Consequence(delegate
 				{
-					Campaign.Current.ConversationManager.ConversationEndOneShot += hideout_boss_prisoner_talk_consequence;
+					_rescueFamilyQuestState = RescueFamilyQuestStateEnum.ExecutionTalkWithGalterDone;
+					hideout_boss_prisoner_talk_consequence();
 				})
 				.CloseDialog(), this);
 			Campaign.Current.ConversationManager.AddDialogFlow(DialogFlow.CreateDialogFlow("start", 1000015).NpcLine(GameTexts.FindText("rescue_family_quest_radagos_goodbye_conversation_line_1")).Condition(goodbye_conversation_with_radagos_condition)
@@ -577,7 +575,7 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 		{
 			StringHelpers.SetCharacterProperties("PLAYER", CharacterObject.PlayerCharacter);
 			StringHelpers.SetCharacterProperties("HIDEOUT_BOSS", _hideoutBoss.CharacterObject);
-			if (!_reunionTalkDone)
+			if (_rescueFamilyQuestState == RescueFamilyQuestStateEnum.None)
 			{
 				return Hero.OneToOneConversationHero == _radagos;
 			}
@@ -586,14 +584,14 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 
 		private void radagos_reunion_conversation_consequence()
 		{
-			_reunionTalkDone = true;
+			_rescueFamilyQuestState = RescueFamilyQuestStateEnum.ReunionTalkWithRadagosDone;
 			AddLog(_startQuestLogText);
 		}
 
 		private bool radagos_hideout_conversation_condition()
 		{
 			StringHelpers.SetCharacterProperties("HIDEOUT_BOSS", _hideoutBoss.CharacterObject);
-			if (!_hideoutTalkDone && Settlement.CurrentSettlement == _hideout)
+			if (_rescueFamilyQuestState < RescueFamilyQuestStateEnum.HideoutTalkWithRadagosDone && Settlement.CurrentSettlement == _hideout)
 			{
 				return Hero.OneToOneConversationHero == _radagos;
 			}
@@ -602,7 +600,7 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 
 		private void radagos_hideout_conversation_consequence()
 		{
-			_hideoutTalkDone = true;
+			_rescueFamilyQuestState = RescueFamilyQuestStateEnum.HideoutTalkWithRadagosDone;
 			if (!PartyBase.MainParty.MemberRoster.Contains(_radagos.CharacterObject))
 			{
 				if (_radagos.HeroState != Hero.CharacterStates.Active)
@@ -616,7 +614,7 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 
 		private bool brother_hideout_conversation_condition()
 		{
-			if (!_brotherConversationDone && Hero.OneToOneConversationHero == StoryModeHeroes.ElderBrother)
+			if (_rescueFamilyQuestState < RescueFamilyQuestStateEnum.ReunionTalkWithBrotherDone && Hero.OneToOneConversationHero == StoryModeHeroes.ElderBrother)
 			{
 				SelectTargetSettlementForSiblings();
 				StringHelpers.SetCharacterProperties("PLAYER", CharacterObject.PlayerCharacter);
@@ -641,7 +639,7 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 
 		private void brother_hideout_conversation_consequence()
 		{
-			_brotherConversationDone = true;
+			_rescueFamilyQuestState = RescueFamilyQuestStateEnum.ReunionTalkWithBrotherDone;
 		}
 
 		private bool bandit_hideout_boss_fight_start_on_condition()
@@ -714,15 +712,31 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 
 		private void hideout_boss_prisoner_talk_consequence()
 		{
-			if (_hideoutBoss.IsAlive)
+			MBInformationManager.ShowSceneNotification(HeroExecutionSceneNotificationData.CreateForInformingPlayer(_radagos, _hideoutBoss, SceneNotificationData.RelevantContextType.Map, OnGalterExecutionIsDone));
+			Campaign.Current.ConversationManager.ConversationEndOneShot += delegate
 			{
-				MBInformationManager.ShowSceneNotification(HeroExecutionSceneNotificationData.CreateForInformingPlayer(_radagos, _hideoutBoss, SceneNotificationData.RelevantContextType.Map));
+				if (Campaign.Current.CurrentMenuContext != null)
+				{
+					Campaign.Current.CurrentMenuContext.SwitchToMenu("radagos_goodbye_menu");
+				}
+				else
+				{
+					GameMenu.ActivateGameMenu("radagos_goodbye_menu");
+				}
+			};
+		}
+
+		private void OnGalterExecutionIsDone()
+		{
+			if (_rescueFamilyQuestState == RescueFamilyQuestStateEnum.ExecutionTalkWithGalterDone && !Campaign.Current.ConversationManager.IsConversationInProgress)
+			{
+				CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, noHorse: true, noWeapon: true), new ConversationCharacterData(StoryModeHeroes.ElderBrother.CharacterObject, null, noHorse: true, noWeapon: true));
 			}
 		}
 
 		private bool goodbye_conversation_with_radagos_condition()
 		{
-			if (_brotherConversationDone && Hero.OneToOneConversationHero == _radagos)
+			if (_rescueFamilyQuestState == RescueFamilyQuestStateEnum.ReunionTalkWithBrotherDone && Hero.OneToOneConversationHero == _radagos)
 			{
 				StringHelpers.SetCharacterProperties("PLAYER", CharacterObject.PlayerCharacter);
 				StringHelpers.SetCharacterProperties("RADAGOS", _radagos.CharacterObject);
@@ -734,17 +748,15 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 		private void execute_radagos_consequence()
 		{
 			AddLog(_executeRadagosEndQuestLogText);
-			_brotherConversationDone = false;
 			MBInformationManager.ShowSceneNotification(HeroExecutionSceneNotificationData.CreateForInformingPlayer(Hero.MainHero, _radagos, SceneNotificationData.RelevantContextType.Map));
-			_radagosGoodByeConversationDone = true;
+			_rescueFamilyQuestState = RescueFamilyQuestStateEnum.GoodbyeTalkWithRadagosDone;
 		}
 
 		private void let_go_radagos_consequence()
 		{
 			AddLog(_letGoRadagosEndQuestLogText);
-			_brotherConversationDone = false;
 			DisableHeroAction.Apply(_radagos);
-			_radagosGoodByeConversationDone = true;
+			_rescueFamilyQuestState = RescueFamilyQuestStateEnum.GoodbyeTalkWithRadagosDone;
 		}
 
 		private void AddGameMenus()
@@ -793,34 +805,14 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 			return ((RescueFamilyQuest)o)._hideout;
 		}
 
-		internal static object AutoGeneratedGetMemberValue_reunionTalkDone(object o)
-		{
-			return ((RescueFamilyQuest)o)._reunionTalkDone;
-		}
-
-		internal static object AutoGeneratedGetMemberValue_hideoutTalkDone(object o)
-		{
-			return ((RescueFamilyQuest)o)._hideoutTalkDone;
-		}
-
-		internal static object AutoGeneratedGetMemberValue_brotherConversationDone(object o)
-		{
-			return ((RescueFamilyQuest)o)._brotherConversationDone;
-		}
-
-		internal static object AutoGeneratedGetMemberValue_radagosGoodByeConversationDone(object o)
-		{
-			return ((RescueFamilyQuest)o)._radagosGoodByeConversationDone;
-		}
-
-		internal static object AutoGeneratedGetMemberValue_hideoutBattleEndState(object o)
-		{
-			return ((RescueFamilyQuest)o)._hideoutBattleEndState;
-		}
-
 		internal static object AutoGeneratedGetMemberValue_raiderParties(object o)
 		{
 			return ((RescueFamilyQuest)o)._raiderParties;
+		}
+
+		internal static object AutoGeneratedGetMemberValue_rescueFamilyQuestState(object o)
+		{
+			return ((RescueFamilyQuest)o)._rescueFamilyQuestState;
 		}
 	}
 

@@ -95,7 +95,7 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 		_widget_2_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0.HorizontalAlignment = HorizontalAlignment.Center;

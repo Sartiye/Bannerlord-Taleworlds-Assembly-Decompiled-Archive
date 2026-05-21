@@ -168,11 +168,13 @@ public static class CampaignData
 
 	public const string HermitTag = "sp_hermit";
 
-	public const string SpShipWright = "sp_shipwright";
-
 	public const string CarpenterTag = "merchant_carpenter";
 
+	public const string SpShipWright = "sp_shipwright";
+
 	public const string ShipyardWorkerTag = "shipyard_worker";
+
+	public const string ShipyardShopWorkerTag = "shipyard_shop_worker";
 
 	public const string MarketWorkerTag = "market_worker";
 
@@ -300,9 +302,9 @@ public static class CampaignData
 
 	public const uint NeutralAlternativeColor2 = 4291609515u;
 
-	public const uint StealthColor1 = 4281281067u;
+	public const uint StealthColor1 = 4279111698u;
 
-	public const uint StealthColor2 = 4281281067u;
+	public const uint StealthColor2 = 4279111698u;
 
 	public static readonly uint[] EmpireHeroClothColors = new uint[13]
 	{

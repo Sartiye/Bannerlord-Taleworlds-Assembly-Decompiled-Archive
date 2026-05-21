@@ -30,5 +30,6 @@ public enum BuildingEffectEnum
 	VillageHeartsPerDay,
 	DenarByBoundVillageHeartPerDay,
 	PatrolPartyStrength,
+	ShipProduction,
 	MaximumShipCount
 }

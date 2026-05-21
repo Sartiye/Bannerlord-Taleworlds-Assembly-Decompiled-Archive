@@ -39,7 +39,7 @@ public abstract class SallyOutMissionController : MissionLogic
 
 	private MBReadOnlyList<SiegeWeapon> _besiegerSiegeEngines;
 
-	protected MissionAgentSpawnLogic MissionAgentSpawnLogic;
+	protected DefaultBattleMissionAgentSpawnLogic MissionAgentSpawnLogic;
 
 	private bool _isSallyOutAmbush;
 
@@ -56,7 +56,7 @@ public abstract class SallyOutMissionController : MissionLogic
 
 	public override void OnBehaviorInitialize()
 	{
-		MissionAgentSpawnLogic = base.Mission.GetMissionBehavior<MissionAgentSpawnLogic>();
+		MissionAgentSpawnLogic = base.Mission.GetMissionBehavior<DefaultBattleMissionAgentSpawnLogic>();
 		_sallyOutNotificationsHandler = new SallyOutMissionNotificationsHandler(MissionAgentSpawnLogic, this);
 		Mission.Current.GetOverriddenFleePositionForAgent += GetSallyOutFleePositionForAgent;
 	}
@@ -147,11 +147,14 @@ public abstract class SallyOutMissionController : MissionLogic
 
 	private void ActivateDefenders()
 	{
-		foreach (Agent item in base.Mission.DefenderAllyTeam.ActiveAgents.ToList())
+		if (base.Mission.DefenderAllyTeam != null)
 		{
-			FormationClass formationIndex = item.Formation.FormationIndex;
-			item.SetTeam(base.Mission.DefenderTeam, sync: true);
-			item.Formation = base.Mission.DefenderTeam.GetFormation(formationIndex);
+			foreach (Agent item in base.Mission.DefenderAllyTeam.ActiveAgents.ToList())
+			{
+				FormationClass formationIndex = item.Formation.FormationIndex;
+				item.SetTeam(base.Mission.DefenderTeam, sync: true);
+				item.Formation = base.Mission.DefenderTeam.GetFormation(formationIndex);
+			}
 		}
 		foreach (Formation item2 in base.Mission.DefenderTeam.FormationsIncludingSpecialAndEmpty)
 		{

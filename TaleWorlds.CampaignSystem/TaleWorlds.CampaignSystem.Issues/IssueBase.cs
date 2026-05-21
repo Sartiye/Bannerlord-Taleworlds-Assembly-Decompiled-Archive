@@ -526,7 +526,7 @@ public abstract class IssueBase : MBObjectBase
 
 	public abstract IssueFrequency GetFrequency();
 
-	protected abstract bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill);
+	protected abstract bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold);
 
 	public abstract bool IssueStayAliveConditions();
 
@@ -901,7 +901,8 @@ public abstract class IssueBase : MBObjectBase
 		PreconditionFlags flag;
 		Hero relationHero;
 		SkillObject skill;
-		bool result = CanPlayerTakeQuestConditions(issueGiver, out flag, out relationHero, out skill);
+		int requiredGold;
+		bool result = CanPlayerTakeQuestConditions(issueGiver, out flag, out relationHero, out skill, out requiredGold);
 		bool flag2 = false;
 		if (!IssueQuestCanBeDuplicated)
 		{
@@ -961,7 +962,9 @@ public abstract class IssueBase : MBObjectBase
 		}
 		else if ((flag & PreconditionFlags.Money) == PreconditionFlags.Money)
 		{
-			explanation.SetTextVariable("EXPLANATION", new TextObject("{=GhcUKfbJ}I don't think you can help me. I need someone who has some gold to spend...[ib:closed]"));
+			TextObject textObject3 = new TextObject("{=GdXQhtME}I don't think you can help me. I need someone who has at least {GOLD_AMOUNT} gold to spend...[ib:closed]");
+			textObject3.SetTextVariable("GOLD_AMOUNT", requiredGold);
+			explanation.SetTextVariable("EXPLANATION", textObject3);
 		}
 		else if ((flag & PreconditionFlags.Influence) == PreconditionFlags.Influence)
 		{

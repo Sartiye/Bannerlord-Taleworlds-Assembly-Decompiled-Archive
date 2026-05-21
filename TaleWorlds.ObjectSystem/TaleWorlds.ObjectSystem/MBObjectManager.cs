@@ -693,7 +693,7 @@ public sealed class MBObjectManager
 				return objectTypeRecord.GetMBObject(objectId);
 			}
 		}
-		Debug.FailedAssert(objectId.GetTypeIndex() + " could not be found in MBObjectManager objectTypeRecords!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "GetObject", 424);
+		Debug.FailedAssert(objectId.GetTypeIndex() + " could not be found in MBObjectManager objectTypeRecords!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "GetObject", 423);
 		return null;
 	}
 
@@ -706,7 +706,7 @@ public sealed class MBObjectManager
 				return objectTypeRecord.GetMBObject(objectName);
 			}
 		}
-		Debug.FailedAssert(typeName + " could not be found in MBObjectManager objectTypeRecords!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "GetObject", 439);
+		Debug.FailedAssert(typeName + " could not be found in MBObjectManager objectTypeRecords!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "GetObject", 438);
 		return null;
 	}
 
@@ -730,7 +730,7 @@ public sealed class MBObjectManager
 				throw new MBCanNotCreatePresumedObjectException();
 			}
 		}
-		Debug.FailedAssert(typeName + " could not be found in MBObjectManager objectTypeRecords!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "GetPresumedObject", 467);
+		Debug.FailedAssert(typeName + " could not be found in MBObjectManager objectTypeRecords!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "GetPresumedObject", 466);
 		return null;
 	}
 
@@ -746,7 +746,7 @@ public sealed class MBObjectManager
 					return ((ObjectTypeRecord<T>)objectTypeRecord).GetObjectsList();
 				}
 			}
-			Debug.FailedAssert(typeof(T).Name + " could not be found in MBObjectManager objectTypeRecords!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "GetObjectTypeList", 504);
+			Debug.FailedAssert(typeof(T).Name + " could not be found in MBObjectManager objectTypeRecords!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.ObjectSystem\\MBObjectManager.cs", "GetObjectTypeList", 503);
 			return null;
 		}
 		MBList<T> mBList = new MBList<T>();

@@ -193,7 +193,7 @@ public class GameMenuOverlay : ViewModel
 					Campaign.Current.EncyclopediaManager.GoToLink(_contextMenuItem.Character.HeroObject.EncyclopediaLink);
 					break;
 				}
-				Debug.FailedAssert("Character object in menu overlay", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\GameMenuOverlay.cs", "ExecuteTroopAction", 100);
+				Debug.FailedAssert("Character object in menu overlay", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\GameMenuOverlay.cs", "ExecuteTroopAction", 101);
 				Campaign.Current.EncyclopediaManager.GoToLink(_contextMenuItem.Character.EncyclopediaLink);
 			}
 			else if (_contextMenuItem.Party != null)
@@ -233,7 +233,7 @@ public class GameMenuOverlay : ViewModel
 			}
 			else
 			{
-				Debug.FailedAssert("Character object in menu overlay", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\GameMenuOverlay.cs", "ExecuteTroopAction", 144);
+				Debug.FailedAssert("Character object in menu overlay", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\GameMenuOverlay.cs", "ExecuteTroopAction", 145);
 			}
 			break;
 		case MenuOverlayContextList.QuickConversation:
@@ -254,7 +254,7 @@ public class GameMenuOverlay : ViewModel
 			}
 			else
 			{
-				Debug.FailedAssert("Character object in menu overlay", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\GameMenuOverlay.cs", "ExecuteTroopAction", 167);
+				Debug.FailedAssert("Character object in menu overlay", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\GameMenuOverlay.cs", "ExecuteTroopAction", 168);
 			}
 			break;
 		case MenuOverlayContextList.ConverseWithLeader:
@@ -304,7 +304,7 @@ public class GameMenuOverlay : ViewModel
 		case MenuOverlayContextList.ManageTroops:
 			if (_contextMenuItem.Party?.MobileParty != null && _contextMenuItem.Party.MobileParty.ActualClan == Clan.PlayerClan)
 			{
-				PartyScreenHelper.OpenScreenAsManageTroopsAndPrisoners(_contextMenuItem.Party.MobileParty);
+				PartyScreenHelper.OpenScreenAsManageTroopsAndPrisoners(_contextMenuItem.Party.MobileParty, PartyScreenHelper.OpenScreenAsManagePlayerClanPartyClosed);
 			}
 			break;
 		case MenuOverlayContextList.JoinArmy:

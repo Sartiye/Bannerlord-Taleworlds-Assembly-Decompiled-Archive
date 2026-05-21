@@ -69,7 +69,8 @@ public class FlagCapturePoint : SynchedMissionObject
 		_flagDependentObjects = new List<SynchedMissionObject>();
 		foreach (WeakGameEntity item in Mission.Current.Scene.FindWeakEntitiesWithTag("depends_flag_" + FlagIndex).ToList())
 		{
-			_flagDependentObjects.Add(item.GetScriptComponents<SynchedMissionObject>().SingleOrDefault());
+			SynchedMissionObject firstScriptOfType = item.GetFirstScriptOfType<SynchedMissionObject>();
+			_flagDependentObjects.Add(firstScriptOfType);
 		}
 	}
 

@@ -422,7 +422,7 @@ public class HumanAIComponent : AgentComponent
 	{
 		Agent targetAgent = Agent.GetTargetAgent();
 		Vec3 v = ((targetAgent == null) ? Vec3.Invalid : (targetAgent.Position - Agent.Position));
-		int num = Agent.Mission.Scene.SelectEntitiesInBoxWithScriptComponent<SpawnedItemEntity>(ref bMin, ref bMax, _tempPickableEntities, _pickableItemsId);
+		int num = Agent.Mission.Scene.SelectEntitiesInBoxWithScriptComponent<SpawnedItemEntity>(ref bMin, ref bMax, _tempPickableEntities, _pickableItemsId, isFixedTick: false);
 		float num2 = 0f;
 		SpawnedItemEntity result = null;
 		for (int i = 0; i < num; i++)
@@ -598,28 +598,6 @@ public class HumanAIComponent : AgentComponent
 		Formation formation = Agent.Formation;
 		limitIsMultiplier = false;
 		bool result = false;
-		if (formation != null && (!Agent.IsInWater() || Agent.Mission.IsTeleportingAgents))
-		{
-			formationPosition = formation.GetOrderPositionOfUnit(Agent);
-			formationDirection = formation.GetDirectionOfUnit(Agent);
-		}
-		else
-		{
-			formationPosition = WorldPosition.Invalid;
-			formationDirection = Vec2.Invalid;
-		}
-		if (formationPosition.IsValid && formationPosition.GetNavMeshMT() == UIntPtr.Zero)
-		{
-			UIntPtr nearestNavMesh = formationPosition.GetNearestNavMesh();
-			if (nearestNavMesh != UIntPtr.Zero)
-			{
-				Vec2 vec = Mission.Current.Scene.FindClosestExitPositionForPositionOnABoundaryFace(formationPosition.GetVec3WithoutValidity(), nearestNavMesh);
-				if (vec.IsValid)
-				{
-					formationPosition.SetVec2(vec);
-				}
-			}
-		}
 		if (FormationSpeedAdjustmentEnabled && Agent.IsMount)
 		{
 			formationPosition = WorldPosition.Invalid;
@@ -634,60 +612,51 @@ public class HumanAIComponent : AgentComponent
 				speedLimit = Agent.RiderAgent.HumanAIComponent.GetDesiredSpeedInFormation(formation.GetReadonlyMovementOrderReference().MovementState == MovementOrder.MovementStateEnum.Charge);
 			}
 		}
-		else if (formation == null)
+		else
 		{
-			speedLimit = -1f;
-		}
-		else if (Agent.IsDetachedFromFormation)
-		{
-			speedLimit = -1f;
-			WorldFrame? worldFrame = null;
-			if (formation.GetReadonlyMovementOrderReference().MovementState != 0 || (Agent.Detachment != null && (!Agent.Detachment.IsLoose || formationPosition.IsValid)))
+			bool baseFormationFrame = Agent.GetBaseFormationFrame(out formationPosition, out formationDirection);
+			if (formation == null)
 			{
-				worldFrame = formation.GetDetachmentFrame(Agent);
+				speedLimit = -1f;
 			}
-			if (worldFrame.HasValue)
+			else if (Agent.IsDetachedFromFormation)
 			{
-				formationDirection = worldFrame.Value.Rotation.f.AsVec2.Normalized();
-				result = true;
+				speedLimit = -1f;
+				result = baseFormationFrame;
 			}
 			else
 			{
-				formationDirection = Vec2.Invalid;
-			}
-		}
-		else
-		{
-			switch (formation.GetReadonlyMovementOrderReference().MovementState)
-			{
-			case MovementOrder.MovementStateEnum.Hold:
-				if (FormationSpeedAdjustmentEnabled && ShouldCatchUpWithFormation)
+				switch (formation.GetReadonlyMovementOrderReference().MovementState)
 				{
-					limitIsMultiplier = true;
-					speedLimit = GetDesiredSpeedInFormation(isCharging: false);
-				}
-				else
-				{
+				case MovementOrder.MovementStateEnum.Hold:
+					if (FormationSpeedAdjustmentEnabled && ShouldCatchUpWithFormation)
+					{
+						limitIsMultiplier = true;
+						speedLimit = GetDesiredSpeedInFormation(isCharging: false);
+					}
+					else
+					{
+						speedLimit = -1f;
+					}
+					result = true;
+					break;
+				case MovementOrder.MovementStateEnum.StandGround:
 					speedLimit = -1f;
+					result = true;
+					break;
+				case MovementOrder.MovementStateEnum.Charge:
+					limitIsMultiplier = true;
+					speedLimit = (FormationSpeedAdjustmentEnabled ? GetDesiredSpeedInFormation(isCharging: true) : (-1f));
+					result = formationPosition.IsValid;
+					break;
+				case MovementOrder.MovementStateEnum.Retreat:
+					speedLimit = -1f;
+					break;
+				default:
+					Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\AgentComponents\\HumanAIComponent.cs", "GetFormationFrame", 836);
+					speedLimit = -1f;
+					break;
 				}
-				result = true;
-				break;
-			case MovementOrder.MovementStateEnum.StandGround:
-				speedLimit = -1f;
-				result = true;
-				break;
-			case MovementOrder.MovementStateEnum.Charge:
-				limitIsMultiplier = true;
-				speedLimit = (FormationSpeedAdjustmentEnabled ? GetDesiredSpeedInFormation(isCharging: true) : (-1f));
-				result = formationPosition.IsValid;
-				break;
-			case MovementOrder.MovementStateEnum.Retreat:
-				speedLimit = -1f;
-				break;
-			default:
-				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\AgentComponents\\HumanAIComponent.cs", "GetFormationFrame", 878);
-				speedLimit = -1f;
-				break;
 			}
 		}
 		return result;
@@ -733,34 +702,13 @@ public class HumanAIComponent : AgentComponent
 		{
 			ShouldCatchUpWithFormation = false;
 		}
-		bool flag = formationPosition.IsValid;
-		if (!formationFrame || !flag)
+		if (!formationFrame)
 		{
 			Agent.SetFormationFrameDisabled();
-			return;
 		}
-		if (!GameNetwork.IsMultiplayer && Agent.Mission.Mode == MissionMode.Deployment && !Agent.Mission.IsNavalBattle)
+		else if (Agent.TrySetFormationFrame(in formationPosition, in formationDirection))
 		{
-			IMissionDeploymentPlan deploymentPlan = Agent.Mission.DeploymentPlan;
-			if (deploymentPlan.SupportsNavmesh())
-			{
-				deploymentPlan.ProjectPositionToDeploymentBoundaries(Agent.Formation.Team, ref formationPosition);
-			}
-			flag = Agent.Mission.IsFormationUnitPositionAvailable(ref formationPosition, Agent.Team);
-		}
-		if (flag)
-		{
-			Agent.SetFormationFrameEnabled(formationPosition, formationDirection, Agent.Formation.GetReadonlyMovementOrderReference().GetTargetVelocity(), Agent.Formation.CalculateFormationDirectionEnforcingFactorForRank(((IFormationUnit)Agent).FormationRankIndex));
-			float directionChangeTendency = 1f;
-			if (Agent.Formation.ArrangementOrder.OrderEnum == ArrangementOrder.ArrangementOrderEnum.ShieldWall && !Agent.IsDetachedFromFormation)
-			{
-				directionChangeTendency = Agent.Formation.Arrangement.GetDirectionChangeTendencyOfUnit(Agent);
-			}
-			Agent.SetDirectionChangeTendency(directionChangeTendency);
-		}
-		else
-		{
-			Agent.SetFormationFrameDisabled();
+			Agent.UpdateDirectionChangeTendency();
 		}
 	}
 

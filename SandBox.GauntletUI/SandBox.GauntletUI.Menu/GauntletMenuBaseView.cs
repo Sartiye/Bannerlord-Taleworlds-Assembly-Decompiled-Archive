@@ -1,5 +1,4 @@
 using SandBox.View.Menu;
-using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.GameState;
 using TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu;
 using TaleWorlds.Core;
@@ -24,7 +23,7 @@ public class GauntletMenuBaseView : MenuView
 		base.OnInitialize();
 		GameMenuDataSource = new GameMenuVM(base.MenuContext);
 		GameKey gameKey = HotKeyManager.GetCategory("Generic").GetGameKey(4);
-		GameMenuDataSource.AddHotKey(GameMenuOption.LeaveType.Leave, gameKey);
+		GameMenuDataSource.SetLeaveHotKey(gameKey);
 		base.Layer = base.MenuViewContext.FindLayer<GauntletLayer>("MapMenuView");
 		if (base.Layer == null)
 		{

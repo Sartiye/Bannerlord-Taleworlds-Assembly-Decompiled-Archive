@@ -97,7 +97,7 @@ public class GameMenu__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Ga
 		base.HorizontalAlignment = HorizontalAlignment.Center;
 		base.MarginTop = 10f;
 		base.MarginBottom = 10f;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0.SuggestedWidth = 290f;
@@ -149,6 +149,9 @@ public class GameMenu__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Ga
 		_widget_0_4.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_4.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_4.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_0_4.VerticalAlignment = VerticalAlignment.Bottom;
+		_widget_0_4.PositionYOffset = 30f;
+		_widget_0_4.Brush = base.Context.GetBrush("GameMenu.ProgressText");
 		_widget_0_4.IsEnabled = false;
 	}
 

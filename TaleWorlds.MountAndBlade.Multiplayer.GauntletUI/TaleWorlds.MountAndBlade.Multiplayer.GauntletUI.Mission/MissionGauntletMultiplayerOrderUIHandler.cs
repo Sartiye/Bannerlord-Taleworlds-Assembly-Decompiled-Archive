@@ -4,6 +4,7 @@ using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.InputSystem;
+using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.GauntletUI;
 using TaleWorlds.MountAndBlade.Multiplayer.View.MissionViews;
 using TaleWorlds.MountAndBlade.View;
@@ -172,9 +173,15 @@ public class MissionGauntletMultiplayerOrderUIHandler : GauntletOrderUIHandler
 
 	public void InitializeInADisgustingManner()
 	{
+		Debug.Print($"InitializeInADisgustingManner is called. IsValidForTick: {IsValidForTick}");
 		base.AfterStart();
 		_orderTroopPlacer = base.Mission.GetMissionBehavior<OrderTroopPlacer>();
+		if (_orderTroopPlacer?.OrderFlag == null)
+		{
+			Debug.FailedAssert("Order troop placer's order flag is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.GauntletUI\\Mission\\MissionGauntletMultiplayerOrderUIHandler.cs", "InitializeInADisgustingManner", 194);
+		}
 		base.MissionScreen.OrderFlag = _orderTroopPlacer.OrderFlag;
+		Debug.Print("MissionScreen.OrderFlag has been set (MP)");
 		base.MissionScreen.SetOrderFlagVisibility(value: false);
 		MissionPeer.OnTeamChanged += TeamChange;
 		_isInitialized = true;

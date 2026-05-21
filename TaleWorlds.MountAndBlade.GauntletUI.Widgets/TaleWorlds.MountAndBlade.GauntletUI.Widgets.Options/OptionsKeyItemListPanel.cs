@@ -10,9 +10,13 @@ public class OptionsKeyItemListPanel : ListPanel
 
 	private bool _eventsRegistered;
 
+	private bool _initialized;
+
 	private string _optionDescription;
 
 	private string _optionTitle;
+
+	private string _optionExtraInformation;
 
 	public string OptionTitle
 	{
@@ -44,6 +48,21 @@ public class OptionsKeyItemListPanel : ListPanel
 		}
 	}
 
+	public string OptionExtraInformation
+	{
+		get
+		{
+			return _optionExtraInformation;
+		}
+		set
+		{
+			if (_optionExtraInformation != value)
+			{
+				_optionExtraInformation = value;
+			}
+		}
+	}
+
 	public OptionsKeyItemListPanel(UIContext context)
 		: base(context)
 	{
@@ -52,9 +71,10 @@ public class OptionsKeyItemListPanel : ListPanel
 	protected override void OnLateUpdate(float dt)
 	{
 		base.OnLateUpdate(dt);
-		if (_screenWidget == null)
+		if (!_initialized)
 		{
-			_screenWidget = base.EventManager.Root.GetChild(0).FindChild("Options") as OptionsScreenWidget;
+			_screenWidget = FindScreenWidget(base.ParentWidget);
+			_initialized = true;
 		}
 		if (!_eventsRegistered)
 		{
@@ -73,6 +93,19 @@ public class OptionsKeyItemListPanel : ListPanel
 	{
 		base.OnHoverEnd();
 		ResetCurrentOption();
+	}
+
+	private OptionsScreenWidget FindScreenWidget(Widget parent)
+	{
+		if (parent is OptionsScreenWidget result)
+		{
+			return result;
+		}
+		if (parent == null)
+		{
+			return null;
+		}
+		return FindScreenWidget(parent.ParentWidget);
 	}
 
 	private void SetCurrentOption(bool fromHoverOverDropdown, bool fromBooleanSelection, int hoverDropdownItemIndex = -1)

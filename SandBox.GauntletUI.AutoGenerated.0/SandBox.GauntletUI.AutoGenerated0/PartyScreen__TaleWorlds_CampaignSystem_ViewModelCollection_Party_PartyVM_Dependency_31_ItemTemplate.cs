@@ -100,7 +100,7 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 		base.DoNotAcceptEvents = true;
 		base.WidthSizePolicy = SizePolicy.CoverChildren;
 		base.HeightSizePolicy = SizePolicy.CoverChildren;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0.FromTarget = _widget;
 		_widget_0.ToTarget = _widget_1;
 		_widget_1.DoNotPassEventsToChildren = true;

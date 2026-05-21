@@ -359,7 +359,7 @@ public class EncyclopediaBar__TaleWorlds_CampaignSystem_ViewModelCollection_Ency
 		_widget_5_0_2.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_5_0_2.VerticalAlignment = VerticalAlignment.Top;
 		_widget_5_0_2.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_5_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
+		_widget_5_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
 		_widget_6.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_6.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_6.SuggestedHeight = 84f;

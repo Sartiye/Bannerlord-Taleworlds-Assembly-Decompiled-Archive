@@ -387,7 +387,8 @@ public class IssueManager : CampaignEventReceiver
 		{
 			bool num2 = issue.Value.IsSolvingWithAlternative || issue.Value.IsSolvingWithLordSolution || issue.Value.IsSolvingWithQuest;
 			bool flag = issue.Value.IssueSettlement == settlement || issue.Value.IssueOwner.CurrentSettlement == settlement;
-			if (!num2 && flag && issue.Value.IssueQuest == null)
+			bool flag2 = issue.Value.IssueOwner.PartyBelongedTo == MobileParty.MainParty || issue.Value.IssueOwner.PartyBelongedToAsPrisoner == PartyBase.MainParty;
+			if (!num2 && flag && issue.Value.IssueQuest == null && !flag2)
 			{
 				if (issue.Value.IssueStayAliveConditions())
 				{
@@ -413,7 +414,8 @@ public class IssueManager : CampaignEventReceiver
 		{
 			bool num2 = issue.Value.IsSolvingWithAlternative || issue.Value.IsSolvingWithLordSolution || issue.Value.IsSolvingWithQuest;
 			bool flag = issue.Value.IssueSettlement == settlement || issue.Value.IssueOwner.CurrentSettlement == settlement;
-			if (num2 && flag && includeQuests == (issue.Value.IssueQuest != null))
+			bool flag2 = issue.Value.IssueOwner.PartyBelongedTo == MobileParty.MainParty || issue.Value.IssueOwner.PartyBelongedToAsPrisoner == PartyBase.MainParty;
+			if (num2 && flag && includeQuests == (issue.Value.IssueQuest != null) && !flag2)
 			{
 				num++;
 			}

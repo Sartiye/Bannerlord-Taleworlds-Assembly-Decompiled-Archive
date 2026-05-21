@@ -3,6 +3,7 @@ using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
@@ -27,4 +28,10 @@ public abstract class CombatSimulationModel : MBGameModel<CombatSimulationModel>
 	public abstract int GetPursuitRoundCount(MapEvent mapEvent);
 
 	public abstract float GetBluntDamageChance(CharacterObject strikerTroop, CharacterObject strikedTroop, PartyBase strikerParty, PartyBase strikedParty, MapEvent battle);
+
+	public abstract CampaignTime GetSimulationTickInterval(MapEvent mapEvent);
+
+	public abstract MBList<(Ship, MapEventParty)> GetSimulationShips(MapEvent mapEvent, MBList<MapEventParty> battleParties);
+
+	public abstract int GetParticipatingTroopCount(MapEventSide side);
 }

@@ -10,6 +10,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Locations;
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
 namespace SandBox.CampaignBehaviors;
@@ -22,12 +23,14 @@ public class TavernEmployeesCampaignBehavior : CampaignBehaviorBase
 		Engineer,
 		Surgeon,
 		Quartermaster,
+		FirstMate,
+		Navigator,
 		CaravanLeader,
 		Leader,
 		Roguery
 	}
 
-	private const int TavernCompanionInquiryCost = 2;
+	public const int TavernCompanionInquiryCost = 2;
 
 	private const int MinimumTavernCompanionInquirySkillLevel = 30;
 
@@ -315,6 +318,22 @@ public class TavernEmployeesCampaignBehavior : CampaignBehaviorBase
 		return _inquiryCurrentCompanion != null;
 	}
 
+	public void FindCompanionWithType(PartyRole role)
+	{
+		switch (role)
+		{
+		case PartyRole.FirstMate:
+			FindCompanionWithType(TavernInquiryCompanionType.FirstMate);
+			break;
+		case PartyRole.Navigator:
+			FindCompanionWithType(TavernInquiryCompanionType.Navigator);
+			break;
+		default:
+			Debug.FailedAssert("Wrong function call! This only should be called for First Mate and Navigator.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\CampaignBehaviors\\TavernEmployeesCampaignBehavior.cs", "FindCompanionWithType", 353);
+			break;
+		}
+	}
+
 	private void FindCompanionWithType(TavernInquiryCompanionType companionType)
 	{
 		int num = 30;
@@ -335,16 +354,22 @@ public class TavernEmployeesCampaignBehavior : CampaignBehaviorBase
 					switch (companionType)
 					{
 					case TavernInquiryCompanionType.Scout:
-						num3 = item.GetSkillValue(DefaultSkills.Scouting);
+						num3 = item.GetSkillValue(Campaign.Current.Models.ClanMemberPartyRoleModel.GetRelevantSkillForPartyRole(PartyRole.Scout));
 						break;
 					case TavernInquiryCompanionType.Engineer:
-						num3 = item.GetSkillValue(DefaultSkills.Engineering);
+						num3 = item.GetSkillValue(Campaign.Current.Models.ClanMemberPartyRoleModel.GetRelevantSkillForPartyRole(PartyRole.Engineer));
 						break;
 					case TavernInquiryCompanionType.Surgeon:
-						num3 = item.GetSkillValue(DefaultSkills.Medicine);
+						num3 = item.GetSkillValue(Campaign.Current.Models.ClanMemberPartyRoleModel.GetRelevantSkillForPartyRole(PartyRole.Surgeon));
 						break;
 					case TavernInquiryCompanionType.Quartermaster:
-						num3 = item.GetSkillValue(DefaultSkills.Steward);
+						num3 = item.GetSkillValue(Campaign.Current.Models.ClanMemberPartyRoleModel.GetRelevantSkillForPartyRole(PartyRole.Quartermaster));
+						break;
+					case TavernInquiryCompanionType.FirstMate:
+						num3 = item.GetSkillValue(Campaign.Current.Models.ClanMemberPartyRoleModel.GetRelevantSkillForPartyRole(PartyRole.FirstMate));
+						break;
+					case TavernInquiryCompanionType.Navigator:
+						num3 = item.GetSkillValue(Campaign.Current.Models.ClanMemberPartyRoleModel.GetRelevantSkillForPartyRole(PartyRole.Navigator));
 						break;
 					case TavernInquiryCompanionType.CaravanLeader:
 						num3 += item.GetSkillValue(DefaultSkills.Trade);

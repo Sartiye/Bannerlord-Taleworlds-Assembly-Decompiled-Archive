@@ -47,9 +47,9 @@ public class TestContext
 			int.TryParse(array[j], out var result);
 			TestCommonBase.BaseInstance.TestRandomSeed = result;
 		}
-		Debug.Print("commandLine" + commandLine);
-		Debug.Print("p" + array.ToString());
-		Debug.Print("Looking for test " + text, 0, Debug.DebugColor.Yellow);
+		Debug.Print("commandLine: " + commandLine);
+		Debug.Print("p: " + array.ToString());
+		Debug.Print("Looking for test: " + text, 0, Debug.DebugColor.Yellow);
 		ConstructorInfo asyncRunnerConstructor = GetAsyncRunnerConstructor(text);
 		object obj = null;
 		if (asyncRunnerConstructor != null)
@@ -127,7 +127,7 @@ public class TestContext
 			}
 			_asyncTask = null;
 			Debug.Print(text, 5);
-			Debug.FailedAssert(text, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\TestContext.cs", "OnApplicationTick", 180);
+			Debug.FailedAssert(text, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\TestContext.cs", "OnApplicationTick", 177);
 			Debug.DoDelayedexit(5);
 		}
 	}

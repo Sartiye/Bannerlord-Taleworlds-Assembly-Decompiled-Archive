@@ -133,12 +133,17 @@ public class SettlementVisual : MapEntityVisual<PartyBase>
 
 	public override bool IsEnemyOf(IFaction faction)
 	{
-		return FactionManager.IsAtWarAgainstFaction(base.MapEntity.MapFaction, Hero.MainHero.MapFaction);
+		return FactionManager.IsAtWarAgainstFaction(base.MapEntity.MapFaction, faction.MapFaction);
+	}
+
+	public override bool IsInSameFaction(IFaction faction)
+	{
+		return DiplomacyHelper.IsSameFactionAndNotEliminated(base.MapEntity.MapFaction, faction.MapFaction);
 	}
 
 	public override bool IsAllyOf(IFaction faction)
 	{
-		return DiplomacyHelper.IsSameFactionAndNotEliminated(base.MapEntity.MapFaction, Hero.MainHero.MapFaction);
+		return DiplomacyHelper.HasAllianceWithFaction(base.MapEntity.MapFaction, faction.MapFaction);
 	}
 
 	internal void OnPartyRemoved()
@@ -216,14 +221,10 @@ public class SettlementVisual : MapEntityVisual<PartyBase>
 		}
 		else if (base.MapEntity.IsVisible)
 		{
-			MobileParty.NavigationType navigationType2;
-			if (MobileParty.MainParty.IsCurrentlyAtSea && base.MapEntity.Settlement.HasPort && NavigationHelper.CanPlayerNavigateToPosition(base.MapEntity.Settlement.PortPosition, out var navigationType))
+			NavigationHelper.GetInteractionDataForMainParty(base.MapEntity.Settlement, out var canNavigate, out var bestNavigationType, out var isTargetingPort);
+			if (canNavigate)
 			{
-				MobileParty.MainParty.SetMoveGoToSettlement(base.MapEntity.Settlement, navigationType, isTargetingThePort: true);
-			}
-			else if (NavigationHelper.CanPlayerNavigateToPosition(base.MapEntity.Settlement.GatePosition, out navigationType2))
-			{
-				MobileParty.MainParty.SetMoveGoToSettlement(base.MapEntity.Settlement, navigationType2, isTargetingThePort: false);
+				MobileParty.MainParty.SetMoveGoToSettlement(base.MapEntity.Settlement, bestNavigationType, isTargetingPort);
 			}
 		}
 		return true;
@@ -308,7 +309,7 @@ public class SettlementVisual : MapEntityVisual<PartyBase>
 				}
 				return matrixFrame.origin + vec * ((num + 1) / 2) * (num % 2 * 2 - 1) * num3 * num4;
 			}
-			Debug.FailedAssert($"{base.MapEntity.Settlement.Name} - has no Banner Entities at level {wallLevel}.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\Visuals\\SettlementVisual.cs", "GetBannerPositionForParty", 306);
+			Debug.FailedAssert($"{base.MapEntity.Settlement.Name} - has no Banner Entities at level {wallLevel}.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\Visuals\\SettlementVisual.cs", "GetBannerPositionForParty", 304);
 		}
 		return Vec3.Invalid;
 	}
@@ -1071,7 +1072,7 @@ public class SettlementVisual : MapEntityVisual<PartyBase>
 		}
 		if (mBReadOnlyList.Count == 0)
 		{
-			Debug.FailedAssert("Town (" + base.MapEntity.Settlement.Name.ToString() + ") doesn't have wall entities defined for it's current level(" + base.MapEntity.Settlement.Town.GetWallLevel() + ")", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\Visuals\\SettlementVisual.cs", "RefreshWallState", 1303);
+			Debug.FailedAssert("Town (" + base.MapEntity.Settlement.Name.ToString() + ") doesn't have wall entities defined for it's current level(" + base.MapEntity.Settlement.Town.GetWallLevel() + ")", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\Visuals\\SettlementVisual.cs", "RefreshWallState", 1301);
 			return;
 		}
 		for (int i = 0; i < _defenderBreachableWallEntitiesForAllLevels.Length; i++)

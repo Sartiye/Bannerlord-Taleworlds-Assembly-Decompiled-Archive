@@ -12,7 +12,7 @@ public sealed class ConversationHotKeyCategory : GameKeyContext
 	public const string ContinueClick = "ContinueClick";
 
 	public ConversationHotKeyCategory()
-		: base("ConversationHotKeyCategory", 110)
+		: base("ConversationHotKeyCategory", 116)
 	{
 		RegisterHotKeys();
 		RegisterGameKeys();

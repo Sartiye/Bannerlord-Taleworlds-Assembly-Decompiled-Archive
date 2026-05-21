@@ -3,6 +3,7 @@ using Helpers;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Issues;
+using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.ViewModelCollection;
@@ -34,6 +35,10 @@ public class PartyNameplateVM : NameplateVM
 	public static string MainPartyIndicator = Color.FromUint(4287421380u).ToString();
 
 	public static string MainPartyArmyIndicator = Color.FromUint(4289593317u).ToString();
+
+	public static string AllianceIndicator = Color.FromUint(4279460044u).ToString();
+
+	public static string AllianceArmyIndicator = Color.FromUint(4279476684u).ToString();
 
 	protected float _latestX;
 
@@ -576,16 +581,20 @@ public class PartyNameplateVM : NameplateVM
 				{
 					_factionColorBind = ((Party.Army != null && Party.Army.LeaderParty == Party) ? PositiveArmyIndicator : PositiveIndicator);
 				}
+				else if (DiplomacyHelper.HasAllianceWithFaction(Party.MapFaction, Hero.MainHero?.MapFaction))
+				{
+					_factionColorBind = ((Party.Army != null && Party.Army.LeaderParty == Party) ? AllianceArmyIndicator : AllianceIndicator);
+				}
 				else
 				{
 					_factionColorBind = ((Party.Army != null && Party.Army.LeaderParty == Party) ? NeutralArmyIndicator : NeutralIndicator);
 				}
-				goto IL_046e;
+				goto IL_04cd;
 			}
 		}
 		_factionColorBind = ((Party.Army != null && Party.Army.LeaderParty == Party) ? MainPartyArmyIndicator : MainPartyIndicator);
-		goto IL_046e;
-		IL_046e:
+		goto IL_04cd;
+		IL_04cd:
 		if (_isPartyBannerDirty || forceUpdate)
 		{
 			PartyBanner = new BannerImageIdentifierVM(Party.Banner, nineGrid: true);
@@ -615,6 +624,12 @@ public class PartyNameplateVM : NameplateVM
 	{
 		base.RefreshPosition();
 		Vec3 vec = (Party.Position + Party.EventPositionAdder).AsVec3();
+		MapEvent mapEvent = Party.MapEvent;
+		if (mapEvent != null && mapEvent.MapEventSettlement?.IsVillage == true && Party.IsCurrentlyAtSea)
+		{
+			vec = Party.MapEvent.MapEventSettlement.GatePosition.AsVec3();
+			vec += new Vec3(Party.RandomFloatWithSeed((uint)Party.RandomValue, -0.3f, 0.3f), Party.RandomFloatWithSeed((uint)Party.RandomValue, -0.3f, 0.3f));
+		}
 		Vec3 worldSpacePosition = vec + new Vec3(0f, 0f, 0.8f);
 		_latestX = 0f;
 		_latestY = 0f;
@@ -631,7 +646,7 @@ public class PartyNameplateVM : NameplateVM
 		base.RefreshTutorialStatus(newTutorialHighlightElementID);
 		if (Party?.Party?.Id == null)
 		{
-			Debug.FailedAssert("Mobile party id is null when refreshing tutorial status", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Nameplate\\PartyNameplateVM.cs", "RefreshTutorialStatus", 344);
+			Debug.FailedAssert("Mobile party id is null when refreshing tutorial status", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Nameplate\\PartyNameplateVM.cs", "RefreshTutorialStatus", 357);
 		}
 		else
 		{

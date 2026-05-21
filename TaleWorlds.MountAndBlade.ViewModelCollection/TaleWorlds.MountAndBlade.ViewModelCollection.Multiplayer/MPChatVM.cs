@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using TaleWorlds.Core;
@@ -850,7 +849,7 @@ public class MPChatVM : ViewModel, IChatHandler
 				CheckSpamAndSendMessage(ActiveChannelType, text);
 				break;
 			default:
-				TaleWorlds.Library.Debug.FailedAssert("Player in invalid channel", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Multiplayer\\MPChatVM.cs", "ExecuteSendMessage", 496);
+				Debug.FailedAssert("Player in invalid channel", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Multiplayer\\MPChatVM.cs", "ExecuteSendMessage", 496);
 				break;
 			case ChatChannelType.Private:
 				break;
@@ -952,16 +951,6 @@ public class MPChatVM : ViewModel, IChatHandler
 		foreach (MPChatLineVM allMessage in _allMessages)
 		{
 			allMessage.HandleFading(dt);
-		}
-	}
-
-	[Conditional("DEBUG")]
-	private void CheckFadingOutOrder()
-	{
-		for (int i = 0; i < _allMessages.Count - 1; i++)
-		{
-			_ = _allMessages[i];
-			_ = _allMessages[i + 1];
 		}
 	}
 

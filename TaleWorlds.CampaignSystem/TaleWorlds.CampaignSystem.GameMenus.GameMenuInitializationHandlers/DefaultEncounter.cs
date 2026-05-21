@@ -249,7 +249,7 @@ public class DefaultEncounter
 				}
 				else
 				{
-					Debug.FailedAssert("settlement encounter, but there is no MapEvent, menu text will be wrong", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameMenus\\GameMenuInitializationHandlers\\DefaultEncounter.cs", "game_menu_encounter_on_init", 326);
+					Debug.FailedAssert("settlement encounter, but there is no MapEvent, menu text will be wrong", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameMenus\\GameMenuInitializationHandlers\\DefaultEncounter.cs", "game_menu_encounter_on_init", 327);
 					TextObject textObject7 = GameTexts.FindText("str_you_have_encountered_settlement_to_siege");
 					textObject7.SetTextVariable("SETTLEMENT", currentSettlement.Name);
 					MBTextManager.SetTextVariable("ENCOUNTER_TEXT", textObject7, sendClients: true);
@@ -282,7 +282,7 @@ public class DefaultEncounter
 				{
 					if (PlayerEncounter.Battle != null && PlayerEncounter.Battle.IsSallyOut)
 					{
-						textObject9 = new TextObject("{=*}{RELIEF_PARTY} has come to support the defenders and the garrison decided to sally out.");
+						textObject9 = new TextObject("{=4vcmcP4C}{RELIEF_PARTY} has come to support the defenders and the garrison decided to sally out.");
 						textObject9.SetTextVariable("RELIEF_PARTY", PlayerEncounter.Battle.GetLeaderParty(PartyBase.MainParty.OpponentSide).Name);
 					}
 					else

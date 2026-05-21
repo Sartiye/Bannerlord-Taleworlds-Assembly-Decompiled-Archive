@@ -944,9 +944,8 @@ public class OptionsVM : ViewModel
 		{
 			InformationManager.ShowInquiry(new InquiryData(new TextObject("{=oZrVNUOk}Error").ToString(), Module.CurrentModule.GlobalTextManager.FindText("str_config_save_result", ((saveResult != 0) ? saveResult : saveResult2).ToString()).ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, Module.CurrentModule.GlobalTextManager.FindText("str_ok").ToString(), null, null, null));
 		}
-		bool throwEvent = GameKeyOptionGroups.IsChanged();
 		GameKeyOptionGroups.ApplyValues();
-		HotKeyManager.SaveAsync(throwEvent);
+		HotKeyManager.MarkForSave();
 		enumerable = enumerable.Concat(_performanceOptionCategory.AllOptions);
 		enumerable = enumerable.Where((GenericOptionDataVM x) => x != _monitorOption && x != _resolutionOption && x != _refreshRateOption && x != _displayModeOption);
 		foreach (GenericOptionDataVM item2 in enumerable)
@@ -985,7 +984,7 @@ public class OptionsVM : ViewModel
 
 	public bool IsOptionsChanged()
 	{
-		return _groupedCategories.Any((GroupedOptionCategoryVM c) => c.IsChanged()) | (_performanceOptionCategory.IsChanged() || GameKeyOptionGroups.IsChanged());
+		return (_groupedCategories.Any((GroupedOptionCategoryVM c) => c.IsChanged()) || GameKeyOptionGroups.IsChanged()) | _performanceOptionCategory.IsChanged();
 	}
 
 	private void OnResetToDefaults()
@@ -1050,7 +1049,7 @@ public class OptionsVM : ViewModel
 				TextObject optionActionName = Module.CurrentModule.GlobalTextManager.FindText("str_options_type_action", text);
 				return new ActionOptionDataVM(actionOptionData.OnAction, this, actionOptionData, name, optionActionName, textObject);
 			}
-			Debug.FailedAssert("Given option data does not match with any option type!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\GameOptions\\OptionsVM.cs", "GetOptionItem", 900);
+			Debug.FailedAssert("Given option data does not match with any option type!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\GameOptions\\OptionsVM.cs", "GetOptionItem", 897);
 			return null;
 		}
 		if (option is ActionOptionData actionOptionData2)
@@ -1062,7 +1061,7 @@ public class OptionsVM : ViewModel
 			textObject2.SetTextVariable("newline", "\n");
 			return new ActionOptionDataVM(actionOptionData2.OnAction, this, actionOptionData2, name2, optionActionName2, textObject2);
 		}
-		Debug.FailedAssert("Given option data does not match with any option type!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\GameOptions\\OptionsVM.cs", "GetOptionItem", 923);
+		Debug.FailedAssert("Given option data does not match with any option type!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\GameOptions\\OptionsVM.cs", "GetOptionItem", 920);
 		return null;
 	}
 

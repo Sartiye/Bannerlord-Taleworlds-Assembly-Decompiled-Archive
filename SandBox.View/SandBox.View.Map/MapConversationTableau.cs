@@ -340,7 +340,7 @@ public class MapConversationTableau
 		{
 			seed = CharacterHelper.GetPartyMemberFaceSeed(_data.ConversationPartnerData.Party, character, 0);
 		}
-		(uint, uint) deterministicColorsForCharacter = CharacterHelper.GetDeterministicColorsForCharacter(character);
+		(uint, uint) deterministicColorsForCharacter = CharacterHelper.GetDeterministicColorsForCharacter(character, _data.ConversationPartnerData.Party);
 		Monster baseMonsterFromRace = TaleWorlds.Core.FaceGen.GetBaseMonsterFromRace(character.Race);
 		AgentVisualsData agentVisualsData = new AgentVisualsData().Banner(character.HeroObject?.ClanBanner).Equipment(equipment).Race(character.Race)
 			.BodyProperties(character.HeroObject?.BodyProperties ?? character.GetBodyProperties(equipment, seed))
@@ -492,7 +492,7 @@ public class MapConversationTableau
 	{
 		if (!_initialized)
 		{
-			Debug.FailedAssert("Conversation Tableau shouldn't play before initialization", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapConversationTableau.cs", "OnConversationPlay", 604);
+			Debug.FailedAssert("Conversation Tableau shouldn't play before initialization", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapConversationTableau.cs", "OnConversationPlay", 605);
 			return;
 		}
 		if (!Campaign.Current.ConversationManager.SpeakerAgent.Character.IsPlayerCharacter)

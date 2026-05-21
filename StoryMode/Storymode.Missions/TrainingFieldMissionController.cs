@@ -24,17 +24,17 @@ public class TrainingFieldMissionController : MissionLogic
 {
 	public class TutorialObjective
 	{
-		private TextObject _name;
+		private readonly TextObject _name;
 
-		public string Id { get; private set; }
+		public string Id { get; }
 
 		public bool IsFinished { get; private set; }
 
-		public bool HasBackground { get; private set; }
+		public bool HasBackground { get; }
 
 		public bool IsActive { get; private set; }
 
-		public List<TutorialObjective> SubTasks { get; private set; }
+		public List<TutorialObjective> SubTasks { get; }
 
 		public float Score { get; private set; }
 
@@ -61,11 +61,11 @@ public class TrainingFieldMissionController : MissionLogic
 
 		public string GetNameString()
 		{
-			if (_name == null)
+			if (!(_name == null))
 			{
-				return "";
+				return _name.ToString();
 			}
-			return _name.ToString();
+			return "";
 		}
 
 		public bool SetActive(bool isActive)
@@ -138,22 +138,19 @@ public class TrainingFieldMissionController : MissionLogic
 		}
 	}
 
-	public struct DelayedAction
+	public readonly struct DelayedAction
 	{
-		private float _orderGivenTime;
+		private readonly float _orderGivenTime;
 
-		private float _delayTime;
+		private readonly float _delayTime;
 
-		private Action _order;
+		private readonly Action _order;
 
-		private string _explanation;
-
-		public DelayedAction(Action order, float delayTime, string explanation)
+		public DelayedAction(Action order, float delayTime)
 		{
 			_orderGivenTime = Mission.Current.CurrentTime;
 			_delayTime = delayTime;
 			_order = order;
-			_explanation = explanation;
 		}
 
 		public bool Update()
@@ -197,8 +194,6 @@ public class TrainingFieldMissionController : MissionLogic
 		Following
 	}
 
-	private const string SoundBasicMeleeGreet = "event:/mission/tutorial/vo/parrying/greet";
-
 	private const string SoundBasicMeleeBlockLeft = "event:/mission/tutorial/vo/parrying/block_left";
 
 	private const string SoundBasicMeleeBlockRight = "event:/mission/tutorial/vo/parrying/block_right";
@@ -233,13 +228,9 @@ public class TrainingFieldMissionController : MissionLogic
 
 	private const string SoundRangedHitTarget = "event:/mission/tutorial/vo/archery/hit_target";
 
-	private const string SoundRangedMissTarget = "event:/mission/tutorial/vo/archery/miss_target";
-
 	private const string SoundRangedFinish = "event:/mission/tutorial/vo/archery/finish";
 
 	private const string SoundMountedPickPrefix = "event:/mission/tutorial/vo/riding/pick_";
-
-	private const string SoundMountedMountHorse = "event:/mission/tutorial/vo/riding/mount_horse";
 
 	private const string SoundMountedStartCourse = "event:/mission/tutorial/vo/riding/start_course";
 
@@ -252,12 +243,6 @@ public class TrainingFieldMissionController : MissionLogic
 	private const string FinishTaskSound = "event:/mission/tutorial/finish_task";
 
 	private const string HitTargetSound = "event:/mission/tutorial/hit_target";
-
-	private TextObject _trainingFinishedText = new TextObject("{=cRvSuYC8}Choose another weapon or go to another training area.");
-
-	private List<DelayedAction> _delayedActions = new List<DelayedAction>();
-
-	private MissionConversationLogic _missionConversationHandler;
 
 	private const string RangedNpcCharacter = "tutorial_npc_ranged";
 
@@ -305,6 +290,12 @@ public class TrainingFieldMissionController : MissionLogic
 
 	private const string NameOfTheHorse = "old_horse";
 
+	private readonly TextObject _trainingFinishedText = new TextObject("{=cRvSuYC8}Choose another weapon or go to another training area.");
+
+	private readonly List<DelayedAction> _delayedActions = new List<DelayedAction>();
+
+	private MissionConversationLogic _missionConversationHandler;
+
 	private readonly List<TutorialArea> _trainingAreas = new List<TutorialArea>();
 
 	private TutorialArea _activeTutorialArea;
@@ -339,7 +330,7 @@ public class TrainingFieldMissionController : MissionLogic
 
 	private int _rangedLastBrokenTargetCount;
 
-	private List<DestructableComponent> _targetsForRangedNpc = new List<DestructableComponent>();
+	private readonly List<DestructableComponent> _targetsForRangedNpc = new List<DestructableComponent>();
 
 	private DestructableComponent _lastTargetGiven;
 
@@ -347,13 +338,13 @@ public class TrainingFieldMissionController : MissionLogic
 
 	private bool _targetPositionSet;
 
-	private List<TutorialObjective> _rangedObjectives = new List<TutorialObjective>
+	private readonly List<TutorialObjective> _rangedObjectives = new List<TutorialObjective>
 	{
 		new TutorialObjective("ranged_go_to_shooting_position"),
 		new TutorialObjective("ranged_shoot_targets")
 	};
 
-	private TextObject _remainingTargetText = new TextObject("{=gBbm9beO}Hit all of the targets. {REMAINING_TARGET} {?REMAINING_TARGET>1}targets{?}target{\\?} left.");
+	private readonly TextObject _remainingTargetText = new TextObject("{=gBbm9beO}Hit all of the targets. {REMAINING_TARGET} {?REMAINING_TARGET>1}targets{?}target{\\?} left.");
 
 	private Agent _meleeTrainer;
 
@@ -361,7 +352,7 @@ public class TrainingFieldMissionController : MissionLogic
 
 	private float _timer;
 
-	private List<TutorialObjective> _meleeObjectives = new List<TutorialObjective>
+	private readonly List<TutorialObjective> _meleeObjectives = new List<TutorialObjective>
 	{
 		new TutorialObjective("melee_go_to_trainer"),
 		new TutorialObjective("melee_defense", isFinished: false, isActive: false, hasBackground: true),
@@ -405,7 +396,7 @@ public class TrainingFieldMissionController : MissionLogic
 
 	private int _finishGateStatus;
 
-	private List<(VolumeBox, bool)> _checkpoints = new List<(VolumeBox, bool)>();
+	private readonly List<(VolumeBox, bool)> _checkpoints = new List<(VolumeBox, bool)>();
 
 	private int _currentCheckpointIndex = -1;
 
@@ -419,7 +410,7 @@ public class TrainingFieldMissionController : MissionLogic
 
 	private HorseReturningSituation _horseBehaviorMode = HorseReturningSituation.ReturnCompleted;
 
-	private List<TutorialObjective> _mountedObjectives = new List<TutorialObjective>
+	private readonly List<TutorialObjective> _mountedObjectives = new List<TutorialObjective>
 	{
 		new TutorialObjective("mounted_mount_the_horse"),
 		new TutorialObjective("mounted_hit_targets")
@@ -439,11 +430,9 @@ public class TrainingFieldMissionController : MissionLogic
 
 	private bool _allTargetsDestroyed;
 
-	private List<DestructableComponent> _mountedAITargets = new List<DestructableComponent>();
+	private readonly List<DestructableComponent> _mountedAITargets = new List<DestructableComponent>();
 
 	private bool _continueLoop = true;
-
-	private List<Vec3> _mountedAICheckpointList = new List<Vec3>();
 
 	private List<TutorialObjective> _detailedObjectives = new List<TutorialObjective>();
 
@@ -746,31 +735,17 @@ public class TrainingFieldMissionController : MissionLogic
 		UpdateObjectives();
 	}
 
-	private void EndTraining()
-	{
-		_trainingProgress = 0;
-		_trainingSubTypeIndex = -1;
-		_activeTutorialArea = null;
-	}
-
 	private void SuccessfullyFinishTraining(float score)
 	{
 		_tutorialObjectives.Find((TutorialObjective x) => x.Id == _activeTutorialArea.TypeOfTraining.ToString()).FinishSubTask(_activeTrainingSubTypeTag, score);
-		if (_tutorialScores.ContainsKey(_activeTrainingSubTypeTag))
-		{
-			_tutorialScores[_activeTrainingSubTypeTag] = score;
-		}
-		else
-		{
-			_tutorialScores.Add(_activeTrainingSubTypeTag, score);
-		}
+		_tutorialScores[_activeTrainingSubTypeTag] = score;
 		_activeTutorialArea.MarkTrainingIcons(mark: true);
 		Mission.Current.MakeSound(SoundEvent.GetEventIdFromString("event:/mission/tutorial/finish_task"), Agent.Main.GetEyeGlobalPosition(), soundCanBePredicted: true, isReliable: false, -1, -1);
 		_showTutorialObjectivesAnyway = true;
 		UpdateObjectives();
 	}
 
-	private void RefillAmmoOfAgent(Agent agent)
+	private static void RefillAmmoOfAgent(Agent agent)
 	{
 		for (EquipmentIndex equipmentIndex = EquipmentIndex.WeaponItemBeginSlot; equipmentIndex < EquipmentIndex.NumAllWeaponSlots; equipmentIndex++)
 		{
@@ -798,6 +773,8 @@ public class TrainingFieldMissionController : MissionLogic
 		case TutorialArea.TrainingType.AdvancedMelee:
 			OnAdvancedTrainingExit();
 			break;
+		default:
+			throw new ArgumentOutOfRangeException("trainingType", trainingType, null);
 		case TutorialArea.TrainingType.Melee:
 			break;
 		}
@@ -807,12 +784,12 @@ public class TrainingFieldMissionController : MissionLogic
 	{
 		switch (trainingType)
 		{
-		case TutorialArea.TrainingType.Bow:
-			OnBowTrainingEnter();
-			break;
 		case TutorialArea.TrainingType.AdvancedMelee:
 			OnAdvancedTrainingAreaEnter();
 			break;
+		default:
+			throw new ArgumentOutOfRangeException("trainingType", trainingType, null);
+		case TutorialArea.TrainingType.Bow:
 		case TutorialArea.TrainingType.Melee:
 		case TutorialArea.TrainingType.Mounted:
 			break;
@@ -836,6 +813,8 @@ public class TrainingFieldMissionController : MissionLogic
 		case TutorialArea.TrainingType.AdvancedMelee:
 			OnAdvancedTrainingStart();
 			break;
+		default:
+			throw new ArgumentOutOfRangeException("trainingType", trainingType, null);
 		case TutorialArea.TrainingType.Melee:
 			break;
 		}
@@ -857,10 +836,12 @@ public class TrainingFieldMissionController : MissionLogic
 		case TutorialArea.TrainingType.AdvancedMelee:
 			AdvancedMeleeTrainingUpdate();
 			break;
+		default:
+			throw new ArgumentOutOfRangeException("trainingType", trainingType, null);
 		}
 	}
 
-	private void DropAllWeaponsOfMainAgent()
+	private static void DropAllWeaponsOfMainAgent()
 	{
 		Mission.Current.MainAgent.SetActionChannel(1, in ActionIndexCache.act_none, ignorePriority: true, (AnimFlags)0uL);
 		for (EquipmentIndex equipmentIndex = EquipmentIndex.WeaponItemBeginSlot; equipmentIndex <= EquipmentIndex.Weapon3; equipmentIndex++)
@@ -872,7 +853,7 @@ public class TrainingFieldMissionController : MissionLogic
 		}
 	}
 
-	private void RemoveAllWeaponsFromMainAgent()
+	private static void RemoveAllWeaponsFromMainAgent()
 	{
 		for (EquipmentIndex equipmentIndex = EquipmentIndex.WeaponItemBeginSlot; equipmentIndex <= EquipmentIndex.Weapon3; equipmentIndex++)
 		{
@@ -900,9 +881,9 @@ public class TrainingFieldMissionController : MissionLogic
 				foreach (string subTrainingTag in _trainingAreas[_trainingAreas.Count - 1].GetSubTrainingTags())
 				{
 					_tutorialObjectives[_tutorialObjectives.Count - 1].AddSubTask(new TutorialObjective(subTrainingTag));
-					if (_tutorialScores.ContainsKey(subTrainingTag))
+					if (_tutorialScores.TryGetValue(subTrainingTag, out var value))
 					{
-						_tutorialObjectives[_tutorialObjectives.Count - 1].SubTasks.Last().RestoreScoreFromSave(_tutorialScores[subTrainingTag]);
+						_tutorialObjectives[_tutorialObjectives.Count - 1].SubTasks.Last().RestoreScoreFromSave(value);
 					}
 				}
 			}
@@ -943,7 +924,7 @@ public class TrainingFieldMissionController : MissionLogic
 		}
 	}
 
-	private void MakeAllAgentsImmortal()
+	private static void MakeAllAgentsImmortal()
 	{
 		foreach (Agent agent in Mission.Current.Agents)
 		{
@@ -1033,7 +1014,7 @@ public class TrainingFieldMissionController : MissionLogic
 		{
 			_bowNpc.ClearTargetFrame();
 			_bowNpc.SetScriptedPositionAndDirection(ref worldPosition, _rangedTargetRotation.AsVec2.RotationInRadians, addHumanLikeDelay: true);
-		}, 2f, "move order for ranged npc."));
+		}, 2f));
 	}
 
 	private WeakGameEntity GetValidTarget()
@@ -1082,10 +1063,6 @@ public class TrainingFieldMissionController : MissionLogic
 		}
 	}
 
-	private void OnBowTrainingEnter()
-	{
-	}
-
 	private Agent SpawnBowNPC()
 	{
 		MatrixFrame matrixFrame = MatrixFrame.Identity;
@@ -1097,7 +1074,7 @@ public class TrainingFieldMissionController : MissionLogic
 		}
 		else
 		{
-			Debug.FailedAssert("There are no spawn points for bow npc.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "SpawnBowNPC", 1129);
+			Debug.FailedAssert("There are no spawn points for bow npc.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "SpawnBowNPC", 1091);
 		}
 		Location locationWithId = LocationComplex.Current.GetLocationWithId("training_field");
 		CharacterObject @object = Game.Current.ObjectManager.GetObject<CharacterObject>("tutorial_npc_ranged");
@@ -1120,8 +1097,9 @@ public class TrainingFieldMissionController : MissionLogic
 
 	private void BowInTrainingAreaUpdate()
 	{
-		if (_trainingProgress == 1)
+		switch (_trainingProgress)
 		{
+		case 1:
 			if (HasAllWeaponsPicked())
 			{
 				_rangedLastBrokenTargetCount = 0;
@@ -1135,9 +1113,8 @@ public class TrainingFieldMissionController : MissionLogic
 				_detailedObjectives[0].SetActive(isActive: true);
 				Mission.Current.MakeSound(SoundEvent.GetEventIdFromString("event:/mission/tutorial/vo/archery/pick_" + _trainingSubTypeIndex), Agent.Main.GetEyeGlobalPosition(), soundCanBePredicted: true, isReliable: false, -1, -1);
 			}
-		}
-		else if (_trainingProgress == 2)
-		{
+			break;
+		case 2:
 			if ((_shootingPosition.GetGlobalFrame().origin - Agent.Main.Position).LengthSquared < 4f)
 			{
 				_trainingProgress++;
@@ -1148,8 +1125,8 @@ public class TrainingFieldMissionController : MissionLogic
 				_detailedObjectives[0].FinishTask();
 				_detailedObjectives[1].SetActive(isActive: true);
 			}
-		}
-		else if (_trainingProgress == 4)
+			break;
+		case 4:
 		{
 			int brokenBreakableCount = _activeTutorialArea.GetBrokenBreakableCount(_trainingSubTypeIndex);
 			_remainingTargetText.SetTextVariable("REMAINING_TARGET", _activeTutorialArea.GetUnbrokenBreakableCount(_trainingSubTypeIndex));
@@ -1170,6 +1147,10 @@ public class TrainingFieldMissionController : MissionLogic
 				_trainingProgress++;
 				BowTrainingEndedSuccessfully();
 			}
+			break;
+		}
+		case 3:
+			break;
 		}
 	}
 
@@ -1187,7 +1168,7 @@ public class TrainingFieldMissionController : MissionLogic
 		}
 	}
 
-	public override void OnAgentShootMissile(Agent shooterAgent, EquipmentIndex weaponIndex, Vec3 position, Vec3 velocity, Mat3 orientation, bool hasRigidBody, int forcedMissileIndex = -1)
+	public override void OnAgentShootMissile(Agent shooterAgent, EquipmentIndex weaponIndex, Vec3 position, Vec3 velocity, Mat3 orientation, bool hasRigidBody, int forcedMissileIndex)
 	{
 		base.OnAgentShootMissile(shooterAgent, weaponIndex, position, velocity, orientation, hasRigidBody, forcedMissileIndex);
 		TutorialArea activeTutorialArea = _activeTutorialArea;
@@ -1263,7 +1244,7 @@ public class TrainingFieldMissionController : MissionLogic
 		}
 		else
 		{
-			Debug.FailedAssert("There are no spawn points for advanced melee trainer.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "SpawnAdvancedMeleeTrainerEasy", 1347);
+			Debug.FailedAssert("There are no spawn points for advanced melee trainer.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "SpawnAdvancedMeleeTrainerEasy", 1319);
 		}
 		CharacterObject @object = Game.Current.ObjectManager.GetObject<CharacterObject>("tutorial_npc_advanced_melee_easy");
 		AgentBuildData agentBuildData = new AgentBuildData(@object).Team(base.Mission.PlayerTeam).InitialPosition(in _advancedMeleeTrainerEasyInitialPosition.origin);
@@ -1291,7 +1272,7 @@ public class TrainingFieldMissionController : MissionLogic
 		}
 		else
 		{
-			Debug.FailedAssert("There are no spawn points for advanced melee trainer.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "SpawnAdvancedMeleeTrainerNormal", 1379);
+			Debug.FailedAssert("There are no spawn points for advanced melee trainer.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "SpawnAdvancedMeleeTrainerNormal", 1351);
 		}
 		CharacterObject @object = Game.Current.ObjectManager.GetObject<CharacterObject>("tutorial_npc_advanced_melee_normal");
 		AgentBuildData agentBuildData = new AgentBuildData(@object).Team(base.Mission.PlayerTeam).InitialPosition(in _advancedMeleeTrainerNormalInitialPosition.origin);
@@ -1314,8 +1295,9 @@ public class TrainingFieldMissionController : MissionLogic
 		{
 			return;
 		}
-		if (_trainingProgress == 1)
+		switch (_trainingProgress)
 		{
+		case 1:
 			if (HasAllWeaponsPicked())
 			{
 				_playerLeftBattleArea = false;
@@ -1328,9 +1310,8 @@ public class TrainingFieldMissionController : MissionLogic
 				_advancedMeleeTrainerNormal.SetTeam(Mission.Current.PlayerAllyTeam, sync: false);
 				_advancedMeleeTrainerEasy.SetTeam(Mission.Current.PlayerAllyTeam, sync: false);
 			}
-		}
-		else if (_trainingProgress == 2)
-		{
+			break;
+		case 2:
 			if ((_advancedMeleeTrainerEasy.Position - Agent.Main.Position).LengthSquared < 6f)
 			{
 				_detailedObjectives[0].FinishTask();
@@ -1340,9 +1321,8 @@ public class TrainingFieldMissionController : MissionLogic
 				_fightStartsIn.SetTextVariable("REMAINING_TIME", 3);
 				CurrentObjectiveTick(_fightStartsIn);
 			}
-		}
-		else if (_trainingProgress == 3)
-		{
+			break;
+		case 3:
 			if (base.Mission.CurrentTime - _timer > 3f)
 			{
 				_playerHealth = Agent.Main.HealthLimit;
@@ -1364,9 +1344,8 @@ public class TrainingFieldMissionController : MissionLogic
 				_fightStartsIn.SetTextVariable("REMAINING_TIME", 2);
 				CurrentObjectiveTick(_fightStartsIn);
 			}
-		}
-		else if (_trainingProgress == 4)
-		{
+			break;
+		case 4:
 			if (_playerHealth <= 1f)
 			{
 				_trainingProgress = 9;
@@ -1394,9 +1373,8 @@ public class TrainingFieldMissionController : MissionLogic
 				Agent.Main.Health = _playerHealth;
 				CheckAndHandlePlayerInsideBattleArea();
 			}
-		}
-		else if (_trainingProgress == 5)
-		{
+			break;
+		case 5:
 			if ((_advancedMeleeTrainerNormal.Position - Agent.Main.Position).LengthSquared < 6f && (_advancedMeleeTrainerNormal.Position - _advancedMeleeTrainerNormalInitialPosition.origin).LengthSquared < 6f)
 			{
 				_timer = base.Mission.CurrentTime;
@@ -1404,9 +1382,8 @@ public class TrainingFieldMissionController : MissionLogic
 				_fightStartsIn.SetTextVariable("REMAINING_TIME", 3);
 				CurrentObjectiveTick(_fightStartsIn);
 			}
-		}
-		else if (_trainingProgress == 6)
-		{
+			break;
+		case 6:
 			if (base.Mission.CurrentTime - _timer > 3f)
 			{
 				_playerHealth = Agent.Main.HealthLimit;
@@ -1428,9 +1405,8 @@ public class TrainingFieldMissionController : MissionLogic
 				_fightStartsIn.SetTextVariable("REMAINING_TIME", 2);
 				CurrentObjectiveTick(_fightStartsIn);
 			}
-		}
-		else if (_trainingProgress == 7)
-		{
+			break;
+		case 7:
 			if (_playerHealth <= 1f)
 			{
 				ResetTrainingArea();
@@ -1457,6 +1433,7 @@ public class TrainingFieldMissionController : MissionLogic
 				Agent.Main.Health = _playerHealth;
 				CheckAndHandlePlayerInsideBattleArea();
 			}
+			break;
 		}
 	}
 
@@ -1483,31 +1460,37 @@ public class TrainingFieldMissionController : MissionLogic
 
 	private void OnPlayerLeftBattleArea()
 	{
-		if (_trainingProgress == 4)
+		switch (_trainingProgress)
+		{
+		case 4:
 		{
 			_advancedMeleeTrainerEasy.SetWatchState(Agent.WatchState.Patrolling);
-			WorldPosition scriptedPosition = _advancedMeleeTrainerEasyInitialPosition.origin.ToWorldPosition();
-			_advancedMeleeTrainerEasy.SetScriptedPositionAndDirection(ref scriptedPosition, _advancedMeleeTrainerEasySecondPosition.rotation.f.AsVec2.RotationInRadians, addHumanLikeDelay: true);
+			WorldPosition scriptedPosition2 = _advancedMeleeTrainerEasyInitialPosition.origin.ToWorldPosition();
+			_advancedMeleeTrainerEasy.SetScriptedPositionAndDirection(ref scriptedPosition2, _advancedMeleeTrainerEasySecondPosition.rotation.f.AsVec2.RotationInRadians, addHumanLikeDelay: true);
+			break;
 		}
-		else if (_trainingProgress == 7)
+		case 7:
 		{
 			_advancedMeleeTrainerNormal.SetWatchState(Agent.WatchState.Patrolling);
-			WorldPosition scriptedPosition2 = _advancedMeleeTrainerNormalInitialPosition.origin.ToWorldPosition();
-			_advancedMeleeTrainerNormal.SetScriptedPositionAndDirection(ref scriptedPosition2, _advancedMeleeTrainerNormalInitialPosition.rotation.f.AsVec2.RotationInRadians, addHumanLikeDelay: true);
+			WorldPosition scriptedPosition = _advancedMeleeTrainerNormalInitialPosition.origin.ToWorldPosition();
+			_advancedMeleeTrainerNormal.SetScriptedPositionAndDirection(ref scriptedPosition, _advancedMeleeTrainerNormalInitialPosition.rotation.f.AsVec2.RotationInRadians, addHumanLikeDelay: true);
+			break;
+		}
 		}
 	}
 
 	private void OnPlayerReEnteredBattleArea()
 	{
-		if (_trainingProgress == 4)
+		switch (_trainingProgress)
 		{
+		case 4:
 			_advancedMeleeTrainerEasy.DisableScriptedMovement();
 			_advancedMeleeTrainerEasy.SetWatchState(Agent.WatchState.Alarmed);
-		}
-		else if (_trainingProgress == 7)
-		{
+			break;
+		case 7:
 			_advancedMeleeTrainerNormal.DisableScriptedMovement();
 			_advancedMeleeTrainerNormal.SetWatchState(Agent.WatchState.Alarmed);
+			break;
 		}
 	}
 
@@ -1537,7 +1520,7 @@ public class TrainingFieldMissionController : MissionLogic
 		_delayedActions.Add(new DelayedAction(delegate
 		{
 			Agent.Main.Health = Agent.Main.HealthLimit;
-		}, 1.5f, "Agent health recover after advanced melee fight"));
+		}, 1.5f));
 	}
 
 	private void OnLost()
@@ -1575,7 +1558,7 @@ public class TrainingFieldMissionController : MissionLogic
 		Mission.Current.MakeSound(SoundEvent.GetEventIdFromString("event:/mission/tutorial/vo/fighting/greet"), _advancedMeleeTrainerNormal.GetEyeGlobalPosition(), soundCanBePredicted: true, isReliable: false, -1, -1);
 	}
 
-	private void SetAgentDefensiveness(Agent agent, float formationOrderDefensivenessFactor)
+	private static void SetAgentDefensiveness(Agent agent, float formationOrderDefensivenessFactor)
 	{
 		agent.Defensiveness = formationOrderDefensivenessFactor;
 	}
@@ -1658,16 +1641,16 @@ public class TrainingFieldMissionController : MissionLogic
 			Vec2 targetPosition = _meleeTrainer.Position.AsVec2;
 			Vec3 targetDirection = Agent.Main.GetEyeGlobalPosition() - _meleeTrainer.GetWorldFrame().Rotation.s * 0.1f - _meleeTrainer.GetEyeGlobalPosition();
 			meleeTrainer.SetTargetPositionAndDirection(in targetPosition, in targetDirection);
-			if (_trainingProgress == 2)
+			switch (_trainingProgress)
 			{
+			case 2:
 				_detailedObjectives[0].FinishTask();
 				_detailedObjectives[1].SetActive(isActive: true);
 				Mission.Current.MakeSound(SoundEvent.GetEventIdFromString("event:/mission/tutorial/vo/parrying/block_left"), _meleeTrainer.GetEyeGlobalPosition(), soundCanBePredicted: true, isReliable: false, -1, -1);
 				CurrentObjectiveTick(new TextObject("{=Db98U6fF}Defend from left."));
 				_trainingProgress++;
-			}
-			else if (_trainingProgress == 3)
-			{
+				break;
+			case 3:
 				if (base.Mission.CurrentTime - _timer > 2f && Agent.Main.GetCurrentActionDirection(1) == Agent.UsageDirection.DefendLeft && Agent.Main.GetCurrentActionProgress(1) > 0.1f && Agent.Main.GetCurrentActionType(1) != Agent.ActionCodeType.Guard)
 				{
 					_meleeTrainer.MovementFlags = Agent.MovementControlFlag.None;
@@ -1678,9 +1661,8 @@ public class TrainingFieldMissionController : MissionLogic
 					_meleeTrainer.MovementFlags = Agent.MovementControlFlag.AttackRight;
 				}
 				TickMouseObjective(MouseObjectives.DefendLeft);
-			}
-			else if (_trainingProgress == 4)
-			{
+				break;
+			case 4:
 				if (base.Mission.CurrentTime - _timer > 1.5f && Agent.Main.GetCurrentActionDirection(1) == Agent.UsageDirection.DefendRight && Agent.Main.GetCurrentActionProgress(1) > 0.1f && Agent.Main.GetCurrentActionType(1) != Agent.ActionCodeType.Guard)
 				{
 					_meleeTrainer.MovementFlags = Agent.MovementControlFlag.None;
@@ -1691,9 +1673,8 @@ public class TrainingFieldMissionController : MissionLogic
 					_meleeTrainer.MovementFlags = Agent.MovementControlFlag.AttackLeft;
 				}
 				TickMouseObjective(MouseObjectives.DefendRight);
-			}
-			else if (_trainingProgress == 5)
-			{
+				break;
+			case 5:
 				if (base.Mission.CurrentTime - _timer > 1.5f && Agent.Main.GetCurrentActionDirection(1) == Agent.UsageDirection.AttackEnd && Agent.Main.GetCurrentActionProgress(1) > 0.1f && Agent.Main.GetCurrentActionType(1) != Agent.ActionCodeType.Guard)
 				{
 					_meleeTrainer.MovementFlags = Agent.MovementControlFlag.None;
@@ -1704,9 +1685,8 @@ public class TrainingFieldMissionController : MissionLogic
 					_meleeTrainer.MovementFlags = Agent.MovementControlFlag.AttackUp;
 				}
 				TickMouseObjective(MouseObjectives.DefendUp);
-			}
-			else if (_trainingProgress == 6)
-			{
+				break;
+			case 6:
 				if (base.Mission.CurrentTime - _timer > 1.5f && Agent.Main.GetCurrentActionDirection(1) == Agent.UsageDirection.DefendDown && Agent.Main.GetCurrentActionProgress(1) > 0.1f && Agent.Main.GetCurrentActionType(1) != Agent.ActionCodeType.Guard)
 				{
 					_meleeTrainer.MovementFlags = Agent.MovementControlFlag.None;
@@ -1717,42 +1697,38 @@ public class TrainingFieldMissionController : MissionLogic
 					_meleeTrainer.MovementFlags = Agent.MovementControlFlag.AttackDown;
 				}
 				TickMouseObjective(MouseObjectives.DefendDown);
-			}
-			else if (_trainingProgress == 7)
-			{
+				break;
+			case 7:
 				_meleeTrainer.MovementFlags |= Agent.MovementControlFlag.DefendRight;
 				TickMouseObjective(MouseObjectives.AttackLeft);
-			}
-			else if (_trainingProgress == 8)
-			{
+				break;
+			case 8:
 				if (base.Mission.CurrentTime - _timer > 1f)
 				{
 					_meleeTrainer.MovementFlags |= Agent.MovementControlFlag.DefendLeft;
 				}
 				TickMouseObjective(MouseObjectives.AttackRight);
-			}
-			else if (_trainingProgress == 9)
-			{
+				break;
+			case 9:
 				if (base.Mission.CurrentTime - _timer > 1f)
 				{
 					_meleeTrainer.MovementFlags |= Agent.MovementControlFlag.DefendUp;
 				}
 				TickMouseObjective(MouseObjectives.AttackUp);
-			}
-			else if (_trainingProgress == 10)
-			{
+				break;
+			case 10:
 				if (base.Mission.CurrentTime - _timer > 1f)
 				{
 					_meleeTrainer.MovementFlags |= Agent.MovementControlFlag.DefendDown;
 				}
 				TickMouseObjective(MouseObjectives.AttackDown);
-			}
-			else if (_trainingProgress == 11)
-			{
+				break;
+			case 11:
 				_meleeTrainer.MovementFlags = Agent.MovementControlFlag.None;
 				_trainingProgress++;
 				Mission.Current.MakeSound(SoundEvent.GetEventIdFromString("event:/mission/tutorial/vo/parrying/praise"), _meleeTrainer.GetEyeGlobalPosition(), soundCanBePredicted: true, isReliable: false, -1, -1);
 				SuccessfullyFinishTraining(0f);
+				break;
 			}
 		}
 		else
@@ -1767,67 +1743,6 @@ public class TrainingFieldMissionController : MissionLogic
 				_meleeTrainer.MovementFlags &= ~Agent.MovementControlFlag.AttackMask;
 				_meleeTrainer.MovementFlags |= Agent.MovementControlFlag.DefendDown;
 			}
-		}
-	}
-
-	private void ShieldTraining()
-	{
-		if (_trainingProgress == 1)
-		{
-			if (HasAllWeaponsPicked())
-			{
-				_trainingProgress++;
-				MBInformationManager.AddQuickInformation(new TextObject("{=Zb1uFhsY}Go to trainer."));
-			}
-		}
-		else if ((_meleeTrainer.Position - Agent.Main.Position).LengthSquared < 3f)
-		{
-			if (_trainingProgress == 2)
-			{
-				_meleeTrainer.SetLookAgent(Agent.Main);
-				if ((_meleeTrainer.Position - Agent.Main.Position).LengthSquared < 1.5f)
-				{
-					MBInformationManager.AddQuickInformation(new TextObject("{=WysXGbM6}Right click to defend"));
-					_trainingProgress++;
-				}
-			}
-			else if (_trainingProgress == 3)
-			{
-				if (base.Mission.CurrentTime - _timer > 2f && (Agent.Main.MovementFlags & Agent.MovementControlFlag.DefendMask) != 0)
-				{
-					_meleeTrainer.MovementFlags = Agent.MovementControlFlag.None;
-					_timer = base.Mission.CurrentTime;
-				}
-				else
-				{
-					_meleeTrainer.MovementFlags = Agent.MovementControlFlag.AttackLeft;
-				}
-			}
-			else if (_trainingProgress == 4)
-			{
-				if (base.Mission.CurrentTime - _timer > 2f && (Agent.Main.MovementFlags & Agent.MovementControlFlag.DefendMask) != 0)
-				{
-					_meleeTrainer.MovementFlags = Agent.MovementControlFlag.None;
-					_timer = base.Mission.CurrentTime;
-				}
-				else
-				{
-					_meleeTrainer.MovementFlags = Agent.MovementControlFlag.AttackRight;
-				}
-			}
-			else if (_trainingProgress == 5)
-			{
-				_meleeTrainer.MovementFlags = Agent.MovementControlFlag.None;
-			}
-		}
-		else if (_meleeTrainer.MovementFlags == Agent.MovementControlFlag.DefendDown)
-		{
-			_meleeTrainer.MovementFlags &= ~Agent.MovementControlFlag.DefendDown;
-		}
-		else if ((_meleeTrainer.MovementFlags & Agent.MovementControlFlag.AttackMask) != 0)
-		{
-			_meleeTrainer.MovementFlags &= ~Agent.MovementControlFlag.AttackMask;
-			_meleeTrainer.MovementFlags |= Agent.MovementControlFlag.DefendDown;
 		}
 	}
 
@@ -1915,14 +1830,7 @@ public class TrainingFieldMissionController : MissionLogic
 					_detailedObjectives[2].FinishTask();
 					CurrentObjectiveTick(_trainingFinishedText);
 					TickMouseObjective(MouseObjectives.None);
-					if (Agent.Main.Equipment.HasShield())
-					{
-						MBInformationManager.AddQuickInformation(new TextObject("{=PiOiQ3u5}You've successfully finished the sword and shield tutorial."));
-					}
-					else
-					{
-						MBInformationManager.AddQuickInformation(new TextObject("{=GZaYmg95}You've successfully finished the sword tutorial."));
-					}
+					MBInformationManager.AddQuickInformation(Agent.Main.Equipment.HasShield() ? new TextObject("{=PiOiQ3u5}You've successfully finished the sword and shield tutorial.") : new TextObject("{=GZaYmg95}You've successfully finished the sword tutorial."));
 					_trainingProgress++;
 				}
 				else
@@ -1955,45 +1863,29 @@ public class TrainingFieldMissionController : MissionLogic
 		CurrentMouseObjectiveTick?.Invoke(GetAdjustedMouseObjective(objective), GetObjectivePerformingType(objective));
 	}
 
-	private bool IsAttackDirection(MouseObjectives objective)
+	private static bool IsAttackDirection(MouseObjectives objective)
 	{
-		switch (objective)
+		if ((uint)(objective - 1) <= 3u)
 		{
-		case MouseObjectives.AttackLeft:
-		case MouseObjectives.AttackRight:
-		case MouseObjectives.AttackUp:
-		case MouseObjectives.AttackDown:
 			return true;
-		case MouseObjectives.DefendLeft:
-		case MouseObjectives.DefendRight:
-		case MouseObjectives.DefendUp:
-		case MouseObjectives.DefendDown:
-			return false;
-		default:
-			return false;
 		}
+		return false;
 	}
 
-	private MouseObjectives GetAdjustedMouseObjective(MouseObjectives baseObjective)
+	private static MouseObjectives GetAdjustedMouseObjective(MouseObjectives baseObjective)
 	{
 		if (IsAttackDirection(baseObjective))
 		{
-			if (BannerlordConfig.AttackDirectionControl == 0)
+			if (BannerlordConfig.AttackDirectionControl != 0)
 			{
-				return GetInverseDirection(baseObjective);
+				return baseObjective;
 			}
-			_ = 1;
-			return baseObjective;
+			return GetInverseDirection(baseObjective);
 		}
-		if (BannerlordConfig.DefendDirectionControl == 0)
-		{
-			return baseObjective;
-		}
-		_ = 1;
 		return baseObjective;
 	}
 
-	private ObjectivePerformingType GetObjectivePerformingType(MouseObjectives baseObjective)
+	private static ObjectivePerformingType GetObjectivePerformingType(MouseObjectives baseObjective)
 	{
 		if (IsAttackDirection(baseObjective))
 		{
@@ -2012,7 +1904,7 @@ public class TrainingFieldMissionController : MissionLogic
 		};
 	}
 
-	private MouseObjectives GetInverseDirection(MouseObjectives objective)
+	private static MouseObjectives GetInverseDirection(MouseObjectives objective)
 	{
 		switch (objective)
 		{
@@ -2035,7 +1927,7 @@ public class TrainingFieldMissionController : MissionLogic
 		case MouseObjectives.DefendDown:
 			return MouseObjectives.DefendUp;
 		default:
-			Debug.FailedAssert($"Inverse direction is not defined for: {objective}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "GetInverseDirection", 2304);
+			Debug.FailedAssert($"Inverse direction is not defined for: {objective}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "GetInverseDirection", 2208);
 			return MouseObjectives.None;
 		}
 	}
@@ -2050,14 +1942,6 @@ public class TrainingFieldMissionController : MissionLogic
 		_mountedAIWaitingPosition = base.Mission.Scene.FindEntityWithTag("_mounted_ai_waiting_position").GetGlobalFrame();
 		_mountedAI = SpawnMountedAI();
 		_mountedAI.SetWatchState(Agent.WatchState.Alarmed);
-		for (int i = 0; i < _checkpoints.Count; i++)
-		{
-			_mountedAICheckpointList.Add(_checkpoints[i].Item1.GameEntity.GlobalPosition);
-			if (i < _checkpoints.Count - 1)
-			{
-				_mountedAICheckpointList.Add((_checkpoints[i].Item1.GameEntity.GlobalPosition + _checkpoints[i + 1].Item1.GameEntity.GlobalPosition) / 2f);
-			}
-		}
 	}
 
 	private Agent SpawnMountedAI()
@@ -2071,7 +1955,7 @@ public class TrainingFieldMissionController : MissionLogic
 		}
 		else
 		{
-			Debug.FailedAssert("There are no spawn points for mounted ai.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "SpawnMountedAI", 2348);
+			Debug.FailedAssert("There are no spawn points for mounted ai.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "SpawnMountedAI", 2253);
 		}
 		CharacterObject @object = Game.Current.ObjectManager.GetObject<CharacterObject>("tutorial_npc_mounted_ai");
 		AgentBuildData agentBuildData = new AgentBuildData(@object).Team(base.Mission.PlayerTeam).InitialPosition(in _mountedAISpawnPosition.origin);
@@ -2314,8 +2198,9 @@ public class TrainingFieldMissionController : MissionLogic
 		{
 			_activeTutorialArea.HideBoundaries();
 		}
-		if (_trainingProgress == 1)
+		switch (_trainingProgress)
 		{
+		case 1:
 			if (HasAllWeaponsPicked())
 			{
 				_detailedObjectives = _mountedObjectives.ConvertAll((TutorialObjective x) => new TutorialObjective(x.Id, x.IsFinished, x.IsActive, x.HasBackground));
@@ -2328,9 +2213,8 @@ public class TrainingFieldMissionController : MissionLogic
 				_trainingProgress++;
 				CurrentObjectiveTick(new TextObject("{=h31YaM4b}Mount the horse."));
 			}
-		}
-		else if (_trainingProgress == 2)
-		{
+			break;
+		case 2:
 			if (Agent.Main.HasMount)
 			{
 				_detailedObjectives[0].FinishTask();
@@ -2339,9 +2223,8 @@ public class TrainingFieldMissionController : MissionLogic
 				_trainingProgress++;
 				CurrentObjectiveTick(new TextObject("{=gJBNUAJd}Finish the track and hit as many targets as you can."));
 			}
-		}
-		else if (_trainingProgress == 3)
-		{
+			break;
+		case 3:
 			if (_checkpoints[0].Item2)
 			{
 				_activeTutorialArea.MakeDestructible(_trainingSubTypeIndex);
@@ -2360,8 +2243,8 @@ public class TrainingFieldMissionController : MissionLogic
 			{
 				_trainingProgress = 1;
 			}
-		}
-		else if (_trainingProgress == 4)
+			break;
+		case 4:
 		{
 			int brokenBreakableCount = _activeTutorialArea.GetBrokenBreakableCount(_trainingSubTypeIndex);
 			_detailedObjectives[1].SetTextVariableOfName("HIT", brokenBreakableCount);
@@ -2376,12 +2259,16 @@ public class TrainingFieldMissionController : MissionLogic
 				_trainingProgress++;
 				MountedTrainingEndedSuccessfully();
 			}
+			break;
 		}
-		else if (_trainingProgress == 5 && !Agent.Main.HasMount)
-		{
-			_trainingProgress++;
-			SetHorseMountable(mountable: false);
-			CurrentObjectiveTick(_trainingFinishedText);
+		case 5:
+			if (!Agent.Main.HasMount)
+			{
+				_trainingProgress++;
+				SetHorseMountable(mountable: false);
+				CurrentObjectiveTick(_trainingFinishedText);
+			}
+			break;
 		}
 	}
 
@@ -2444,7 +2331,7 @@ public class TrainingFieldMissionController : MissionLogic
 		return result;
 	}
 
-	private void SetHorseMountable(bool mountable)
+	private static void SetHorseMountable(bool mountable)
 	{
 		if (mountable)
 		{

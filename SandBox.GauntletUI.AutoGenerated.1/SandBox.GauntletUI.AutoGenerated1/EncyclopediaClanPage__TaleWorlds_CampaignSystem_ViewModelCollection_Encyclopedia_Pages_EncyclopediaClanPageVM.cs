@@ -296,7 +296,7 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0.DoNotAcceptEvents = true;
 		_widget_0_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0.SuggestedWidth = 370f;
 		_widget_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
@@ -396,7 +396,7 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0_2_0_0_0.DoNotAcceptEvents = true;
 		_widget_0_0_2_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_2_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_0_2_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_2_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_2_0_0_0_0.DoNotAcceptEvents = true;
 		_widget_0_0_2_0_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_2_0_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
@@ -426,7 +426,7 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0_2_0_0_0_0_3_2.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_2_0_0_0_0_3_2.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_2_0_0_0_0_3_2.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_0_0_2_0_0_0_0_3_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_2_0_0_0_0_3_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_2_0_0_0_0_3_2_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_2_0_0_0_0_3_2_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_2_0_0_0_0_3_2_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -502,7 +502,7 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0_2_0_0_0_0_12.AutoScrollBottomOffset = 35;
 		_widget_0_0_2_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_2_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_0_2_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_2_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_2_0_0_1.MarginTop = 34f;
 		_widget_0_0_2_0_0_1.MarginLeft = 19f;
 		_widget_0_0_2_0_0_1.MarginRight = 10f;

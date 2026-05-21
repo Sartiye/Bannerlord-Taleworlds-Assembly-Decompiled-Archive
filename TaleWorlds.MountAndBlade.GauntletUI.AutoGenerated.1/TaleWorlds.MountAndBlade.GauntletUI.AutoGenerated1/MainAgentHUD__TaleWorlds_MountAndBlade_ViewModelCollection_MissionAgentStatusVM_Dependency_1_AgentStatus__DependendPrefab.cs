@@ -475,7 +475,7 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 		_widget_0_1_3.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0_1_3.VerticalAlignment = VerticalAlignment.Center;
 		_widget_0_1_3.DoNotUpdateHandleSize = true;
-		_widget_0_1_3.Filler = _widget_0_1_3.FindChild("Fillers");
+		_widget_0_1_3.Filler = _widget_0_1_3_1;
 		_widget_0_1_3.Handle = _widget_0_1_3_2;
 		_widget_0_1_3.MaxValueFloat = 1f;
 		_widget_0_1_3.MinValueFloat = 0f;
@@ -504,7 +504,7 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 		_widget_0_1_3_2.HorizontalAlignment = HorizontalAlignment.Left;
 		_widget_0_1_3_2.VerticalAlignment = VerticalAlignment.Center;
 		_widget_0_1_3_2.IsVisible = false;
-		_widget_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_2.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_2.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_2.HorizontalAlignment = HorizontalAlignment.Right;

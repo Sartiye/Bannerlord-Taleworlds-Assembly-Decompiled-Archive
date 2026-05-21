@@ -188,8 +188,10 @@ public class DefaultEncyclopediaHeroPage : EncyclopediaPage
 		list.Add(new EncyclopediaFilterGroup(list4, new TextObject("{=DXczLzml}Status")));
 		List<EncyclopediaFilterItem> list5 = new List<EncyclopediaFilterItem>();
 		foreach (CultureObject culture in (from x in Game.Current.ObjectManager.GetObjectTypeList<CultureObject>()
-			orderby !x.IsMainCulture descending
-			select x).ThenBy((CultureObject f) => f.Name.ToString()).ToList())
+			where x.IsMainCulture
+			select x into f
+			orderby f.Name.ToString()
+			select f).ToList())
 		{
 			if (culture.StringId != "neutral_culture" && !culture.IsBandit)
 			{

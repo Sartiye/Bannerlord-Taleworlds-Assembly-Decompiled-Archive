@@ -133,7 +133,7 @@ public class CampaignOptions__TaleWorlds_CampaignSystem_ViewModelCollection_Camp
 		_widget_0_1.IsDefaultNavigationScope = true;
 		_widget_0_2.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_2.MarginTop = 0f;
 		_widget_0_2_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_0.HeightSizePolicy = SizePolicy.StretchToParent;
@@ -146,7 +146,7 @@ public class CampaignOptions__TaleWorlds_CampaignSystem_ViewModelCollection_Camp
 		_widget_0_2_0_0.ClipContents = true;
 		_widget_0_2_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_2_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_2_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_2_0_0_0.MinIndex = 0;
 		_widget_0_2_0_0_0.MaxIndex = 50;
 		_widget_0_2_1.DoNotPassEventsToChildren = true;

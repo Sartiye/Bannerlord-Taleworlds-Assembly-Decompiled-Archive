@@ -33,8 +33,6 @@ public class PerkItemButtonWidget : ButtonWidget
 
 	public Brush EarnedNotSelectedPerkBrush { get; set; }
 
-	public Brush InSelectionPerkBrush { get; set; }
-
 	public Brush EarnedActivePerkBrush { get; set; }
 
 	public Brush EarnedNotActivePerkBrush { get; set; }
@@ -130,7 +128,7 @@ public class PerkItemButtonWidget : ButtonWidget
 		}
 		else if (_animState == AnimState.Starting)
 		{
-			PerkVisualWidgetParent.BrushRenderer.RestartAnimation();
+			PerkVisualWidgetParent?.BrushRenderer.RestartAnimation();
 			_animState = AnimState.Playing;
 		}
 	}
@@ -169,36 +167,36 @@ public class PerkItemButtonWidget : ButtonWidget
 
 	private void UpdatePerkStateVisual(int perkState)
 	{
-		switch (perkState)
+		if (PerkVisualWidgetParent != null)
 		{
-		case 0:
-			PerkVisualWidgetParent.Brush = NotEarnedPerkBrush;
-			_isSelectable = false;
-			break;
-		case 1:
-			PerkVisualWidgetParent.Brush = EarnedNotSelectedPerkBrush;
-			_animState = AnimState.Start;
-			_isSelectable = true;
-			break;
-		case 2:
-			PerkVisualWidgetParent.Brush = InSelectionPerkBrush;
-			_isSelectable = false;
-			break;
-		case 3:
-			PerkVisualWidgetParent.Brush = EarnedActivePerkBrush;
-			_isSelectable = false;
-			break;
-		case 4:
-			PerkVisualWidgetParent.Brush = EarnedNotActivePerkBrush;
-			_isSelectable = false;
-			break;
-		case 5:
-			PerkVisualWidgetParent.Brush = EarnedPreviousPerkNotSelectedPerkBrush;
-			_isSelectable = false;
-			break;
-		default:
-			Debug.FailedAssert("Perk visual state is not defined", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\CharacterDeveloper\\PerkItemButtonWidget.cs", "UpdatePerkStateVisual", 132);
-			break;
+			switch (perkState)
+			{
+			case 0:
+				PerkVisualWidgetParent.Brush = NotEarnedPerkBrush;
+				_isSelectable = false;
+				break;
+			case 1:
+				PerkVisualWidgetParent.Brush = EarnedNotSelectedPerkBrush;
+				_animState = AnimState.Start;
+				_isSelectable = true;
+				_ = PerkVisualWidgetParent.Brush.TransitionDuration;
+				break;
+			case 2:
+				PerkVisualWidgetParent.Brush = EarnedActivePerkBrush;
+				_isSelectable = false;
+				break;
+			case 3:
+				PerkVisualWidgetParent.Brush = EarnedNotActivePerkBrush;
+				_isSelectable = false;
+				break;
+			case 4:
+				PerkVisualWidgetParent.Brush = EarnedPreviousPerkNotSelectedPerkBrush;
+				_isSelectable = false;
+				break;
+			default:
+				Debug.FailedAssert("Perk visual state is not defined", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\CharacterDeveloper\\PerkItemButtonWidget.cs", "UpdatePerkStateVisual", 132);
+				break;
+			}
 		}
 	}
 }

@@ -165,7 +165,7 @@ public class LobbyClient : Client<LobbyClient>
 			case State.WaitingToRegisterCustomGame:
 			case State.HostingCustomGame:
 			case State.WaitingToJoinCustomGame:
-				return 2000L;
+				return 3500L;
 			default:
 				return 1000L;
 			}
@@ -411,7 +411,6 @@ public class LobbyClient : Client<LobbyClient>
 		AddMessageHandler<RequestJoinPartyMessage>(OnRequestJoinPartyMessage);
 		AddMessageHandler<WhisperReceivedMessage>(OnWhisperMessageReceivedMessage);
 		AddMessageHandler<ClanMessageReceivedMessage>(OnClanMessageReceivedMessage);
-		AddMessageHandler<ChannelMessageReceivedMessage>(OnChannelMessageReceivedMessage);
 		AddMessageHandler<PartyMessageReceivedMessage>(OnPartyMessageReceivedMessage);
 		AddMessageHandler<SystemMessage>(OnSystemMessage);
 		AddMessageHandler<InvitationToPartyMessage>(OnInvitationToPartyMessage);
@@ -444,6 +443,7 @@ public class LobbyClient : Client<LobbyClient>
 		AddMessageHandler<InvitationToClanMessage>(OnInvitationToClanMessage);
 		AddMessageHandler<ClanDisbandedMessage>(OnClanDisbandedMessage);
 		AddMessageHandler<KickedFromClanMessage>(OnKickedFromClan);
+		AddMessageHandler<PartyPlayerLeftClanMessage>(OnPartyPlayerLeftClan);
 		AddMessageHandler<JoinPremadeGameAnswerMessage>(OnJoinPremadeGameAnswerMessage);
 		AddMessageHandler<PremadeGameEligibilityStatusMessage>(OnPremadeGameEligibilityStatusMessage);
 		AddMessageHandler<CreatePremadeGameAnswerMessage>(OnCreatePremadeGameAnswerMessage);
@@ -833,11 +833,6 @@ public class LobbyClient : Client<LobbyClient>
 	private void OnClanMessageReceivedMessage(ClanMessageReceivedMessage message)
 	{
 		_handler?.OnClanMessageReceived(message.PlayerName, message.Message);
-	}
-
-	private void OnChannelMessageReceivedMessage(ChannelMessageReceivedMessage message)
-	{
-		_handler?.OnChannelMessageReceived(message.Channel, message.PlayerName, message.Message);
 	}
 
 	private void OnPartyMessageReceivedMessage(PartyMessageReceivedMessage message)
@@ -1252,6 +1247,11 @@ public class LobbyClient : Client<LobbyClient>
 		UpdateClanInfo(await GetClanHomeInfo());
 	}
 
+	private async void OnPartyPlayerLeftClan(PartyPlayerLeftClanMessage partyPlayerLeftClanMessage)
+	{
+		UpdateClanInfo(await GetClanHomeInfo());
+	}
+
 	private void OnCustomBattleOverMessage(CustomBattleOverMessage message)
 	{
 		CurrentState = State.AtLobby;
@@ -1348,10 +1348,6 @@ public class LobbyClient : Client<LobbyClient>
 		return null;
 	}
 
-	public void JoinChannel(ChatChannelType channel)
-	{
-	}
-
 	public void AssignAsClanOfficer(PlayerId playerId, bool dontUseNameForUnknownPlayer)
 	{
 		CheckAndSendMessage(new AssignAsClanOfficerMessage(playerId, dontUseNameForUnknownPlayer));
@@ -1360,10 +1356,6 @@ public class LobbyClient : Client<LobbyClient>
 	public void RemoveClanOfficerRoleForPlayer(PlayerId playerId)
 	{
 		CheckAndSendMessage(new RemoveClanOfficerRoleForPlayerMessage(playerId));
-	}
-
-	public void LeaveChannel(ChatChannelType channel)
-	{
 	}
 
 	private void UpdateClanInfo(ClanHomeInfo clanHomeInfo)
@@ -1748,19 +1740,6 @@ public class LobbyClient : Client<LobbyClient>
 	{
 		AssertCanPerformLobbyActions();
 		SendMessage(new CreateClanMessage(clanName, clanTag, clanFaction, clanSigil));
-	}
-
-	public async Task<bool> CanLogin()
-	{
-		CurrentState = State.Working;
-		if (await Gatekeeper.IsGenerous())
-		{
-			CurrentState = State.Idle;
-			return true;
-		}
-		await Task.Delay(new Random().Next() % 3000 + 1000);
-		CurrentState = State.Idle;
-		return false;
 	}
 
 	public void GetFriendList()

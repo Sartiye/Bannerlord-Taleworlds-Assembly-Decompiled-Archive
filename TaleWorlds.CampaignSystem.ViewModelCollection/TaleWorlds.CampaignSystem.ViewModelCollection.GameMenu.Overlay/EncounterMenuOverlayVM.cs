@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.MapEvents;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Siege;
 using TaleWorlds.Core;
@@ -66,13 +68,13 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 
 	private HintViewModel _defenderBannerHint;
 
-	private HintViewModel _attackerTroopNumHint;
+	private BasicTooltipViewModel _attackerTroopNumHint;
 
-	private HintViewModel _defenderTroopNumHint;
+	private BasicTooltipViewModel _defenderTroopNumHint;
 
-	private HintViewModel _attackerShipNumHint;
+	private BasicTooltipViewModel _attackerShipNumHint;
 
-	private HintViewModel _defenderShipNumHint;
+	private BasicTooltipViewModel _defenderShipNumHint;
 
 	private BasicTooltipViewModel _defenderWallHint;
 
@@ -441,7 +443,7 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 	}
 
 	[DataSourceProperty]
-	public HintViewModel AttackerTroopNumHint
+	public BasicTooltipViewModel AttackerTroopNumHint
 	{
 		get
 		{
@@ -458,7 +460,7 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 	}
 
 	[DataSourceProperty]
-	public HintViewModel DefenderTroopNumHint
+	public BasicTooltipViewModel DefenderTroopNumHint
 	{
 		get
 		{
@@ -475,7 +477,7 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 	}
 
 	[DataSourceProperty]
-	public HintViewModel AttackerShipNumHint
+	public BasicTooltipViewModel AttackerShipNumHint
 	{
 		get
 		{
@@ -492,7 +494,7 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 	}
 
 	[DataSourceProperty]
-	public HintViewModel DefenderShipNumHint
+	public BasicTooltipViewModel DefenderShipNumHint
 	{
 		get
 		{
@@ -602,6 +604,10 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 		DefenderMoraleHint = new BasicTooltipViewModel(() => GetEncounterSideMoraleTooltip(BattleSideEnum.Defender));
 		AttackerFoodHint = new BasicTooltipViewModel(() => GetEncounterSideFoodTooltip(BattleSideEnum.Attacker));
 		DefenderFoodHint = new BasicTooltipViewModel(() => GetEncounterSideFoodTooltip(BattleSideEnum.Defender));
+		AttackerTroopNumHint = new BasicTooltipViewModel(() => GetEncounterSideTroopsTooltip(BattleSideEnum.Attacker));
+		DefenderTroopNumHint = new BasicTooltipViewModel(() => GetEncounterSideTroopsTooltip(BattleSideEnum.Defender));
+		AttackerShipNumHint = new BasicTooltipViewModel(() => GetEncounterSideShipsTooltip(BattleSideEnum.Attacker));
+		DefenderShipNumHint = new BasicTooltipViewModel(() => GetEncounterSideShipsTooltip(BattleSideEnum.Defender));
 		DefenderWallHint = new BasicTooltipViewModel();
 		base.IsInitializationOver = false;
 		UpdateLists();
@@ -664,7 +670,7 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 		}
 		else
 		{
-			Debug.FailedAssert("Encounter overlay is open but MapEvent AND SiegeEvent is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\EncounterMenuOverlayVM.cs", "SetAttackerAndDefenderParties", 114);
+			Debug.FailedAssert("Encounter overlay is open but MapEvent AND SiegeEvent is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\EncounterMenuOverlayVM.cs", "SetAttackerAndDefenderParties", 121);
 		}
 	}
 
@@ -673,10 +679,6 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 		base.RefreshValues();
 		AttackerBannerHint = new HintViewModel(GameTexts.FindText("str_attacker_banner"));
 		DefenderBannerHint = new HintViewModel(GameTexts.FindText("str_defender_banner"));
-		AttackerTroopNumHint = new HintViewModel(GameTexts.FindText("str_number_of_healthy_attacker_soldiers"));
-		DefenderTroopNumHint = new HintViewModel(GameTexts.FindText("str_number_of_healthy_defender_soldiers"));
-		AttackerShipNumHint = new HintViewModel(new TextObject("{=sZu7CCsh}Number of Attacker Ships"));
-		DefenderShipNumHint = new HintViewModel(new TextObject("{=RjBSR9iO}Number of Defender Ships"));
 		base.ContextList.Add(new StringItemWithEnabledAndHintVM(base.ExecuteTroopAction, GameTexts.FindText("str_menu_overlay_context_list", MenuOverlayContextList.Encyclopedia.ToString()).ToString(), enabled: true, MenuOverlayContextList.Encyclopedia));
 		AttackerPartyList.ApplyActionOnAllItems(delegate(GameMenuPartyItemVM x)
 		{
@@ -763,7 +765,7 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 			}
 			else
 			{
-				Debug.FailedAssert("There are no settlements involved in the siege", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\EncounterMenuOverlayVM.cs", "UpdateProperties", 213);
+				Debug.FailedAssert("There are no settlements involved in the siege", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Overlay\\EncounterMenuOverlayVM.cs", "UpdateProperties", 217);
 			}
 		}
 		else if (Settlement.CurrentSettlement?.SiegeEvent != null)
@@ -1004,6 +1006,171 @@ public class EncounterMenuOverlayVM : GameMenuOverlay
 			}
 			list.Add(new TooltipProperty("", string.Empty, 0, onlyShowWhenExtended: false, TooltipProperty.TooltipPropertyFlags.RundownSeperator));
 			list.Add(new TooltipProperty(new TextObject("{=rwKBR4NE}Average Days Until Food Runs Out").ToString(), TaleWorlds.Library.MathF.Ceiling(num / (double)mBBindingList.Count).ToString(), 0));
+		}
+		return list;
+	}
+
+	private List<TooltipProperty> GetEncounterSideTroopsTooltip(BattleSideEnum side)
+	{
+		List<TooltipProperty> list = new List<TooltipProperty>();
+		MBBindingList<GameMenuPartyItemVM> sideList = ((side == BattleSideEnum.Attacker) ? AttackerPartyList : DefenderPartyList);
+		TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
+		foreach (GameMenuPartyItemVM item in sideList)
+		{
+			for (int i = 0; i < item.Party.MemberRoster.Count; i++)
+			{
+				TroopRosterElement elementCopyAtIndex = item.Party.MemberRoster.GetElementCopyAtIndex(i);
+				troopRoster.AddToCounts(elementCopyAtIndex.Character, elementCopyAtIndex.Number, insertAtFront: false, elementCopyAtIndex.WoundedNumber);
+			}
+		}
+		Func<TroopRoster> getTempRoster = delegate
+		{
+			TroopRoster troopRoster4 = TroopRoster.CreateDummyTroopRoster();
+			foreach (GameMenuPartyItemVM item2 in sideList)
+			{
+				for (int m = 0; m < item2.Party.MemberRoster.Count; m++)
+				{
+					TroopRosterElement elementCopyAtIndex6 = item2.Party.MemberRoster.GetElementCopyAtIndex(m);
+					troopRoster4.AddToCounts(elementCopyAtIndex6.Character, elementCopyAtIndex6.Number, insertAtFront: false, elementCopyAtIndex6.WoundedNumber);
+				}
+			}
+			return troopRoster4;
+		};
+		Dictionary<FormationClass, Tuple<int, int>> dictionary = new Dictionary<FormationClass, Tuple<int, int>>();
+		for (int j = 0; j < troopRoster.Count; j++)
+		{
+			TroopRosterElement elementCopyAtIndex2 = troopRoster.GetElementCopyAtIndex(j);
+			if (dictionary.ContainsKey(elementCopyAtIndex2.Character.DefaultFormationClass))
+			{
+				Tuple<int, int> tuple = dictionary[elementCopyAtIndex2.Character.DefaultFormationClass];
+				dictionary[elementCopyAtIndex2.Character.DefaultFormationClass] = new Tuple<int, int>(tuple.Item1 + elementCopyAtIndex2.Number - elementCopyAtIndex2.WoundedNumber, tuple.Item2 + elementCopyAtIndex2.WoundedNumber);
+			}
+			else
+			{
+				dictionary.Add(elementCopyAtIndex2.Character.DefaultFormationClass, new Tuple<int, int>(elementCopyAtIndex2.Number - elementCopyAtIndex2.WoundedNumber, elementCopyAtIndex2.WoundedNumber));
+			}
+		}
+		foreach (KeyValuePair<FormationClass, Tuple<int, int>> item3 in dictionary.OrderBy((KeyValuePair<FormationClass, Tuple<int, int>> x) => x.Key))
+		{
+			TextObject textObject = new TextObject("{=Dqydb21E} {PARTY_SIZE}");
+			textObject.SetTextVariable("PARTY_SIZE", PartyBaseHelper.GetPartySizeText(item3.Value.Item1, item3.Value.Item2, isInspected: true));
+			TextObject textObject2 = GameTexts.FindText("str_troop_type_name", item3.Key.GetName());
+			list.Add(new TooltipProperty(textObject2.ToString(), textObject.ToString(), 0));
+		}
+		list.Add(new TooltipProperty(string.Empty, string.Empty, -1, onlyShowWhenExtended: true));
+		list.Add(new TooltipProperty(GameTexts.FindText("str_troop_types").ToString(), " ", 0, onlyShowWhenExtended: true));
+		list.Add(new TooltipProperty("", "", 0, onlyShowWhenExtended: true, TooltipProperty.TooltipPropertyFlags.DefaultSeperator));
+		for (int k = 0; k < troopRoster.Count; k++)
+		{
+			TroopRosterElement elementCopyAtIndex3 = troopRoster.GetElementCopyAtIndex(k);
+			if (!elementCopyAtIndex3.Character.IsHero)
+			{
+				continue;
+			}
+			CharacterObject hero = elementCopyAtIndex3.Character;
+			list.Add(new TooltipProperty(elementCopyAtIndex3.Character.Name.ToString(), delegate
+			{
+				TroopRoster troopRoster3 = ((getTempRoster != null) ? getTempRoster() : troopRoster);
+				int num2 = troopRoster3.FindIndexOfTroop(hero);
+				if (num2 == -1)
+				{
+					return string.Empty;
+				}
+				TroopRosterElement elementCopyAtIndex5 = troopRoster3.GetElementCopyAtIndex(num2);
+				TextObject textObject4 = GameTexts.FindText("str_NUMBER_percent");
+				textObject4.SetTextVariable("NUMBER", elementCopyAtIndex5.Character.HeroObject.HitPoints * 100 / elementCopyAtIndex5.Character.MaxHitPoints());
+				return textObject4.ToString();
+			}, 0, onlyShowWhenExtended: true));
+		}
+		for (int l = 0; l < troopRoster.Count; l++)
+		{
+			int index = l;
+			CharacterObject character = troopRoster.GetElementCopyAtIndex(index).Character;
+			if (character.IsHero)
+			{
+				continue;
+			}
+			list.Add(new TooltipProperty(character.Name.ToString(), delegate
+			{
+				TroopRoster troopRoster2 = ((getTempRoster != null) ? getTempRoster() : troopRoster);
+				int num = troopRoster2.FindIndexOfTroop(character);
+				if (num != -1)
+				{
+					if (num > troopRoster2.Count)
+					{
+						return string.Empty;
+					}
+					TroopRosterElement elementCopyAtIndex4 = troopRoster2.GetElementCopyAtIndex(num);
+					if (elementCopyAtIndex4.Character == null)
+					{
+						return string.Empty;
+					}
+					CharacterObject character2 = elementCopyAtIndex4.Character;
+					if (character2 != null && !character2.IsHero)
+					{
+						TextObject textObject3 = new TextObject("{=!}{PARTY_SIZE}");
+						textObject3.SetTextVariable("PARTY_SIZE", PartyBaseHelper.GetPartySizeText(elementCopyAtIndex4.Number - elementCopyAtIndex4.WoundedNumber, elementCopyAtIndex4.WoundedNumber, isInspected: true));
+						return textObject3.ToString();
+					}
+				}
+				return string.Empty;
+			}, 0, onlyShowWhenExtended: true));
+		}
+		return list;
+	}
+
+	private List<TooltipProperty> GetEncounterSideShipsTooltip(BattleSideEnum side)
+	{
+		Dictionary<ShipHull.ShipType, int> dictionary = new Dictionary<ShipHull.ShipType, int>();
+		Dictionary<ShipHull, int> dictionary2 = new Dictionary<ShipHull, int>();
+		int num = 0;
+		List<TooltipProperty> list = new List<TooltipProperty>();
+		foreach (GameMenuPartyItemVM item in (side == BattleSideEnum.Attacker) ? AttackerPartyList : DefenderPartyList)
+		{
+			if (item.Party.MobileParty.Ships.Count <= 0)
+			{
+				continue;
+			}
+			num += item.Party.MobileParty.Ships.Count;
+			for (int i = 0; i < item.Party.MobileParty.Ships.Count; i++)
+			{
+				Ship ship = item.Party.MobileParty.Ships[i];
+				ShipHull shipHull = ship.ShipHull;
+				ShipHull.ShipType type = ship.ShipHull.Type;
+				if (dictionary.ContainsKey(type))
+				{
+					dictionary[type]++;
+				}
+				else
+				{
+					dictionary[type] = 1;
+				}
+				if (dictionary2.ContainsKey(shipHull))
+				{
+					dictionary2[shipHull]++;
+				}
+				else
+				{
+					dictionary2[shipHull] = 1;
+				}
+			}
+		}
+		list.Add(new TooltipProperty("", "", 0, onlyShowWhenExtended: false, TooltipProperty.TooltipPropertyFlags.RundownSeperator));
+		foreach (KeyValuePair<ShipHull.ShipType, int> item2 in dictionary.OrderBy((KeyValuePair<ShipHull.ShipType, int> x) => x.Key))
+		{
+			TextObject textObject = new TextObject("{=Dqydb21E} {PARTY_SIZE}");
+			textObject.SetTextVariable("PARTY_SIZE", item2.Value);
+			TextObject textObject2 = GameTexts.FindText("str_ship_type", item2.Key.ToString().ToLower());
+			list.Add(new TooltipProperty(textObject2.ToString(), textObject.ToString(), 0));
+		}
+		list.Add(new TooltipProperty(string.Empty, string.Empty, -1, onlyShowWhenExtended: true));
+		list.Add(new TooltipProperty(GameTexts.FindText("str_ship_types").ToString(), " ", 0, onlyShowWhenExtended: true));
+		list.Add(new TooltipProperty("", "", 0, onlyShowWhenExtended: true, TooltipProperty.TooltipPropertyFlags.DefaultSeperator));
+		foreach (KeyValuePair<ShipHull, int> item3 in dictionary2)
+		{
+			ShipHull key = item3.Key;
+			int value = item3.Value;
+			list.Add(new TooltipProperty(key.Name.ToString(), value.ToString(), 0, onlyShowWhenExtended: true));
 		}
 		return list;
 	}

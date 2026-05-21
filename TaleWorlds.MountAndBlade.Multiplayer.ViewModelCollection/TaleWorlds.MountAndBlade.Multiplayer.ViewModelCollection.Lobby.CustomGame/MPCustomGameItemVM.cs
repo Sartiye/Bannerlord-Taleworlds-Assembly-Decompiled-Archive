@@ -516,7 +516,7 @@ public class MPCustomGameItemVM : ViewModel
 				list.Add(new TooltipProperty("", string.Empty, 0, onlyShowWhenExtended: false, TooltipProperty.TooltipPropertyFlags.DefaultSeperator));
 				TextObject textObject2 = new TextObject("{=W51HSyXy}Press {VIEW_OPTIONS_KEY} to view options");
 				string text3 = HotKeyManager.GetCategory("MultiplayerHotkeyCategory").GetHotKey("PreviewCosmeticItem").ToString();
-				textObject2.SetTextVariable("VIEW_OPTIONS_KEY", GameTexts.FindText("str_game_key_text", text3.ToLower()));
+				textObject2.SetTextVariable("VIEW_OPTIONS_KEY", Module.CurrentModule.GlobalTextManager.GetHotKeyGameTextFromKeyID(text3.ToLower()));
 				list.Add(new TooltipProperty(string.Empty, textObject2.ToString(), -1)
 				{
 					OnlyShowWhenNotExtended = true

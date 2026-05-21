@@ -36,6 +36,8 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 
 	private ButtonWidget _widget_0_0_1_0_1;
 
+	private HintWidget _widget_0_0_1_0_1_0;
+
 	private Widget _widget_0_0_1_0_2;
 
 	private TextWidget _widget_0_0_1_0_2_0;
@@ -43,6 +45,8 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 	private NavigationAutoScrollWidget _widget_0_0_1_0_3;
 
 	private ButtonWidget _widget_0_0_1_0_4;
+
+	private HintWidget _widget_0_0_1_0_4_0;
 
 	private NavigationAutoScrollWidget _widget_0_0_1_1;
 
@@ -202,6 +206,10 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 
 	private PartyTradeVM _datasource_Root_TradeData;
 
+	private HintViewModel _datasource_Root_TradeData_GiveHint;
+
+	private HintViewModel _datasource_Root_TradeData_TakeHint;
+
 	private HintViewModel _datasource_Root_TalkHint;
 
 	private BasicTooltipViewModel _datasource_Root_TroopConformityTooltip;
@@ -335,6 +343,8 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 		_widget_0_0_1_0.AddChild(_widget_0_0_1_0_0);
 		_widget_0_0_1_0_1 = new ButtonWidget(base.Context);
 		_widget_0_0_1_0.AddChild(_widget_0_0_1_0_1);
+		_widget_0_0_1_0_1_0 = new HintWidget(base.Context);
+		_widget_0_0_1_0_1.AddChild(_widget_0_0_1_0_1_0);
 		_widget_0_0_1_0_2 = new Widget(base.Context);
 		_widget_0_0_1_0.AddChild(_widget_0_0_1_0_2);
 		_widget_0_0_1_0_2_0 = new TextWidget(base.Context);
@@ -343,6 +353,8 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 		_widget_0_0_1_0.AddChild(_widget_0_0_1_0_3);
 		_widget_0_0_1_0_4 = new ButtonWidget(base.Context);
 		_widget_0_0_1_0.AddChild(_widget_0_0_1_0_4);
+		_widget_0_0_1_0_4_0 = new HintWidget(base.Context);
+		_widget_0_0_1_0_4.AddChild(_widget_0_0_1_0_4_0);
 		_widget_0_0_1_1 = new NavigationAutoScrollWidget(base.Context);
 		_widget_0_0_1.AddChild(_widget_0_0_1_1);
 		_widget_0_0_1_2 = new InventoryTwoWaySliderWidget(base.Context);
@@ -507,8 +519,8 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 		_widget_0_0.Id = "ExtensionCarrier";
 		_widget_0_0_1.Id = "SliderParent";
 		_widget_0_0_1_0.Id = "BottomLeftStack";
-		_widget_0_0_1_0_1.Id = "IncreaseStockButtonWidget";
-		_widget_0_0_1_0_4.Id = "DecreaseStockButtonWidget";
+		_widget_0_0_1_0_1.Id = "DecreaseStockButtonWidget";
+		_widget_0_0_1_0_4.Id = "IncreaseStockButtonWidget";
 		_widget_0_0_1_2.Id = "TransferSlider";
 		_widget_0_0_1_2_1.Id = "Filler";
 		_widget_0_0_1_2_2.Id = "ChangeFill";
@@ -605,9 +617,12 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 		_widget_0_0_1_0_1.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_1_0_1.SuggestedWidth = 35f;
 		_widget_0_0_1_0_1.SuggestedHeight = 35f;
-		_widget_0_0_1_0_1.Brush = base.Context.GetBrush("Inventory.Tuple.Extension.PlusButton");
+		_widget_0_0_1_0_1.Brush = base.Context.GetBrush("Inventory.Tuple.Extension.MinusButton");
 		_widget_0_0_1_0_1.VerticalAlignment = VerticalAlignment.Center;
-		_widget_0_0_1_0_1.GamepadNavigationIndex = 0;
+		_widget_0_0_1_0_1.GamepadNavigationIndex = 1;
+		_widget_0_0_1_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_0_1_0_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_0_1_0_1_0.IsEnabled = false;
 		_widget_0_0_1_0_2.IsEnabled = false;
 		_widget_0_0_1_0_2.DoNotPassEventsToChildren = true;
 		_widget_0_0_1_0_2.WidthSizePolicy = SizePolicy.Fixed;
@@ -630,9 +645,12 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 		_widget_0_0_1_0_4.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_1_0_4.SuggestedWidth = 35f;
 		_widget_0_0_1_0_4.SuggestedHeight = 35f;
-		_widget_0_0_1_0_4.Brush = base.Context.GetBrush("Inventory.Tuple.Extension.MinusButton");
+		_widget_0_0_1_0_4.Brush = base.Context.GetBrush("Inventory.Tuple.Extension.PlusButton");
 		_widget_0_0_1_0_4.VerticalAlignment = VerticalAlignment.Center;
-		_widget_0_0_1_0_4.GamepadNavigationIndex = 1;
+		_widget_0_0_1_0_4.GamepadNavigationIndex = 0;
+		_widget_0_0_1_0_4_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_0_1_0_4_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_0_1_0_4_0.IsEnabled = false;
 		_widget_0_0_1_1.TrackedWidget = _widget_0_0_1_2_3;
 		_widget_0_0_1_1.AutoScrollTopOffset = 160;
 		_widget_0_0_1_1.AutoScrollBottomOffset = 160;
@@ -649,8 +667,8 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 		_widget_0_0_1_2.MinValueInt = 0;
 		_widget_0_0_1_2.Handle = _widget_0_0_1_2_3;
 		_widget_0_0_1_2.Filler = _widget_0_0_1_2_1;
-		_widget_0_0_1_2.IncreaseStockButtonWidget = _widget_0_0_1_0_1;
-		_widget_0_0_1_2.DecreaseStockButtonWidget = _widget_0_0_1_0_4;
+		_widget_0_0_1_2.IncreaseStockButtonWidget = _widget_0_0_1_0_4;
+		_widget_0_0_1_2.DecreaseStockButtonWidget = _widget_0_0_1_0_1;
 		_widget_0_0_1_2.UpdateValueOnScroll = false;
 		_widget_0_0_1_2_0.DoNotAcceptEvents = true;
 		_widget_0_0_1_2_0.WidthSizePolicy = SizePolicy.StretchToParent;
@@ -1493,6 +1511,34 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 			_widget_0_0_1_4_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0_1_4_0_1;
 			_widget_0_0_1_4_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0_1_4_0_1;
 			_widget_0_0_1_4_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0_1_4_0_1;
+			if (_datasource_Root_TradeData_GiveHint != null)
+			{
+				_datasource_Root_TradeData_GiveHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_widget_0_0_1_0_1_0.EventFire -= EventListenerOf_widget_0_0_1_0_1_0;
+				_datasource_Root_TradeData_GiveHint = null;
+			}
+			if (_datasource_Root_TradeData_TakeHint != null)
+			{
+				_datasource_Root_TradeData_TakeHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_widget_0_0_1_0_4_0.EventFire -= EventListenerOf_widget_0_0_1_0_4_0;
+				_datasource_Root_TradeData_TakeHint = null;
+			}
 			_datasource_Root_TradeData = null;
 		}
 		if (_datasource_Root_TalkHint != null)
@@ -1801,7 +1847,7 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 	{
 		if (commandName == "Click")
 		{
-			_datasource_Root_TradeData.ExecuteIncreasePlayerStock();
+			_datasource_Root_TradeData.ExecuteIncreaseOtherStock();
 		}
 	}
 
@@ -1809,7 +1855,7 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 	{
 		if (commandName == "Click")
 		{
-			_datasource_Root_TradeData.ExecuteIncreaseOtherStock();
+			_datasource_Root_TradeData.ExecuteIncreasePlayerStock();
 		}
 	}
 
@@ -1822,6 +1868,30 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 		if (commandName == "RemoveZeroCounts")
 		{
 			_datasource_Root_TradeData.ExecuteRemoveZeroCounts();
+		}
+	}
+
+	private void EventListenerOf_widget_0_0_1_0_1_0(Widget widget, string commandName, object[] args)
+	{
+		if (commandName == "HoverBegin")
+		{
+			_datasource_Root_TradeData_GiveHint.ExecuteBeginHint();
+		}
+		if (commandName == "HoverEnd")
+		{
+			_datasource_Root_TradeData_GiveHint.ExecuteEndHint();
+		}
+	}
+
+	private void EventListenerOf_widget_0_0_1_0_4_0(Widget widget, string commandName, object[] args)
+	{
+		if (commandName == "HoverBegin")
+		{
+			_datasource_Root_TradeData_TakeHint.ExecuteBeginHint();
+		}
+		if (commandName == "HoverEnd")
+		{
+			_datasource_Root_TradeData_TakeHint.ExecuteEndHint();
 		}
 	}
 
@@ -4355,6 +4425,14 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 	{
 		switch (propertyName)
 		{
+		case "GiveHint":
+			RefreshDataSource_datasource_Root_TradeData_GiveHint(_datasource_Root_TradeData.GiveHint);
+			break;
+		case "TakeHint":
+			RefreshDataSource_datasource_Root_TradeData_TakeHint(_datasource_Root_TradeData.TakeHint);
+			break;
+		case "IsExchangeAvailable":
+			break;
 		case "IsTransfarable":
 			_widget_0_0_1_0_1.IsEnabled = _datasource_Root_TradeData.IsTransfarable;
 			_widget_0_0_1_0_4.IsEnabled = _datasource_Root_TradeData.IsTransfarable;
@@ -4378,6 +4456,104 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 			_ = propertyName == "CountLbl";
 			break;
 		}
+	}
+
+	private void ViewModelPropertyChangedListenerOf_datasource_Root_TradeData_GiveHint(object sender, PropertyChangedEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_TradeData_GiveHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_TradeData_GiveHint(object sender, PropertyChangedWithValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_TradeData_GiveHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_TradeData_GiveHint(object sender, PropertyChangedWithBoolValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_TradeData_GiveHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_TradeData_GiveHint(object sender, PropertyChangedWithIntValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_TradeData_GiveHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_TradeData_GiveHint(object sender, PropertyChangedWithFloatValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_TradeData_GiveHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_TradeData_GiveHint(object sender, PropertyChangedWithUIntValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_TradeData_GiveHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_TradeData_GiveHint(object sender, PropertyChangedWithColorValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_TradeData_GiveHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_TradeData_GiveHint(object sender, PropertyChangedWithDoubleValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_TradeData_GiveHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TradeData_GiveHint(object sender, PropertyChangedWithVec2ValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_TradeData_GiveHint(e.PropertyName);
+	}
+
+	private void HandleViewModelPropertyChangeOf_datasource_Root_TradeData_GiveHint(string propertyName)
+	{
+	}
+
+	private void ViewModelPropertyChangedListenerOf_datasource_Root_TradeData_TakeHint(object sender, PropertyChangedEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_TradeData_TakeHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_TradeData_TakeHint(object sender, PropertyChangedWithValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_TradeData_TakeHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_TradeData_TakeHint(object sender, PropertyChangedWithBoolValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_TradeData_TakeHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_TradeData_TakeHint(object sender, PropertyChangedWithIntValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_TradeData_TakeHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_TradeData_TakeHint(object sender, PropertyChangedWithFloatValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_TradeData_TakeHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_TradeData_TakeHint(object sender, PropertyChangedWithUIntValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_TradeData_TakeHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_TradeData_TakeHint(object sender, PropertyChangedWithColorValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_TradeData_TakeHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_TradeData_TakeHint(object sender, PropertyChangedWithDoubleValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_TradeData_TakeHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TradeData_TakeHint(object sender, PropertyChangedWithVec2ValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_TradeData_TakeHint(e.PropertyName);
+	}
+
+	private void HandleViewModelPropertyChangeOf_datasource_Root_TradeData_TakeHint(string propertyName)
+	{
 	}
 
 	private void ViewModelPropertyChangedListenerOf_datasource_Root_TalkHint(object sender, PropertyChangedEventArgs e)
@@ -5453,6 +5629,34 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 				_widget_0_0_1_4_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0_1_4_0_1;
 				_widget_0_0_1_4_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0_1_4_0_1;
 				_widget_0_0_1_4_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0_1_4_0_1;
+				if (_datasource_Root_TradeData_GiveHint != null)
+				{
+					_datasource_Root_TradeData_GiveHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_TradeData_GiveHint;
+					_datasource_Root_TradeData_GiveHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_TradeData_GiveHint;
+					_datasource_Root_TradeData_GiveHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_TradeData_GiveHint;
+					_datasource_Root_TradeData_GiveHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_TradeData_GiveHint;
+					_datasource_Root_TradeData_GiveHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_TradeData_GiveHint;
+					_datasource_Root_TradeData_GiveHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_TradeData_GiveHint;
+					_datasource_Root_TradeData_GiveHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_TradeData_GiveHint;
+					_datasource_Root_TradeData_GiveHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_TradeData_GiveHint;
+					_datasource_Root_TradeData_GiveHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TradeData_GiveHint;
+					_widget_0_0_1_0_1_0.EventFire -= EventListenerOf_widget_0_0_1_0_1_0;
+					_datasource_Root_TradeData_GiveHint = null;
+				}
+				if (_datasource_Root_TradeData_TakeHint != null)
+				{
+					_datasource_Root_TradeData_TakeHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_TradeData_TakeHint;
+					_datasource_Root_TradeData_TakeHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_TradeData_TakeHint;
+					_datasource_Root_TradeData_TakeHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_TradeData_TakeHint;
+					_datasource_Root_TradeData_TakeHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_TradeData_TakeHint;
+					_datasource_Root_TradeData_TakeHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_TradeData_TakeHint;
+					_datasource_Root_TradeData_TakeHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_TradeData_TakeHint;
+					_datasource_Root_TradeData_TakeHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_TradeData_TakeHint;
+					_datasource_Root_TradeData_TakeHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_TradeData_TakeHint;
+					_datasource_Root_TradeData_TakeHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TradeData_TakeHint;
+					_widget_0_0_1_0_4_0.EventFire -= EventListenerOf_widget_0_0_1_0_4_0;
+					_datasource_Root_TradeData_TakeHint = null;
+				}
 				_datasource_Root_TradeData = null;
 			}
 			if (_datasource_Root_TalkHint != null)
@@ -6089,6 +6293,34 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 			_widget_0_0_1_4_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_0_1_4_0_1;
 			_widget_0_0_1_4_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_0_1_4_0_1;
 			_widget_0_0_1_4_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_0_1_4_0_1;
+			_datasource_Root_TradeData_GiveHint = _datasource_Root_TradeData.GiveHint;
+			if (_datasource_Root_TradeData_GiveHint != null)
+			{
+				_datasource_Root_TradeData_GiveHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_widget_0_0_1_0_1_0.EventFire += EventListenerOf_widget_0_0_1_0_1_0;
+			}
+			_datasource_Root_TradeData_TakeHint = _datasource_Root_TradeData.TakeHint;
+			if (_datasource_Root_TradeData_TakeHint != null)
+			{
+				_datasource_Root_TradeData_TakeHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_widget_0_0_1_0_4_0.EventFire += EventListenerOf_widget_0_0_1_0_4_0;
+			}
 		}
 		_datasource_Root_TalkHint = _datasource_Root.TalkHint;
 		if (_datasource_Root_TalkHint != null)
@@ -6440,6 +6672,34 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 			_widget_0_0_1_4_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0_1_4_0_1;
 			_widget_0_0_1_4_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0_1_4_0_1;
 			_widget_0_0_1_4_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0_1_4_0_1;
+			if (_datasource_Root_TradeData_GiveHint != null)
+			{
+				_datasource_Root_TradeData_GiveHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_widget_0_0_1_0_1_0.EventFire -= EventListenerOf_widget_0_0_1_0_1_0;
+				_datasource_Root_TradeData_GiveHint = null;
+			}
+			if (_datasource_Root_TradeData_TakeHint != null)
+			{
+				_datasource_Root_TradeData_TakeHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_widget_0_0_1_0_4_0.EventFire -= EventListenerOf_widget_0_0_1_0_4_0;
+				_datasource_Root_TradeData_TakeHint = null;
+			}
 			_datasource_Root_TradeData = null;
 		}
 		_datasource_Root_TradeData = newDataSource;
@@ -6549,6 +6809,100 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 			_widget_0_0_1_4_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_0_1_4_0_1;
 			_widget_0_0_1_4_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_0_1_4_0_1;
 			_widget_0_0_1_4_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_0_1_4_0_1;
+			_datasource_Root_TradeData_GiveHint = _datasource_Root_TradeData.GiveHint;
+			if (_datasource_Root_TradeData_GiveHint != null)
+			{
+				_datasource_Root_TradeData_GiveHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_datasource_Root_TradeData_GiveHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TradeData_GiveHint;
+				_widget_0_0_1_0_1_0.EventFire += EventListenerOf_widget_0_0_1_0_1_0;
+			}
+			_datasource_Root_TradeData_TakeHint = _datasource_Root_TradeData.TakeHint;
+			if (_datasource_Root_TradeData_TakeHint != null)
+			{
+				_datasource_Root_TradeData_TakeHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_datasource_Root_TradeData_TakeHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TradeData_TakeHint;
+				_widget_0_0_1_0_4_0.EventFire += EventListenerOf_widget_0_0_1_0_4_0;
+			}
+		}
+	}
+
+	private void RefreshDataSource_datasource_Root_TradeData_GiveHint(HintViewModel newDataSource)
+	{
+		if (_datasource_Root_TradeData_GiveHint != null)
+		{
+			_datasource_Root_TradeData_GiveHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_TradeData_GiveHint;
+			_datasource_Root_TradeData_GiveHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_TradeData_GiveHint;
+			_datasource_Root_TradeData_GiveHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_TradeData_GiveHint;
+			_datasource_Root_TradeData_GiveHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_TradeData_GiveHint;
+			_datasource_Root_TradeData_GiveHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_TradeData_GiveHint;
+			_datasource_Root_TradeData_GiveHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_TradeData_GiveHint;
+			_datasource_Root_TradeData_GiveHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_TradeData_GiveHint;
+			_datasource_Root_TradeData_GiveHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_TradeData_GiveHint;
+			_datasource_Root_TradeData_GiveHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TradeData_GiveHint;
+			_widget_0_0_1_0_1_0.EventFire -= EventListenerOf_widget_0_0_1_0_1_0;
+			_datasource_Root_TradeData_GiveHint = null;
+		}
+		_datasource_Root_TradeData_GiveHint = newDataSource;
+		_datasource_Root_TradeData_GiveHint = _datasource_Root_TradeData.GiveHint;
+		if (_datasource_Root_TradeData_GiveHint != null)
+		{
+			_datasource_Root_TradeData_GiveHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_TradeData_GiveHint;
+			_datasource_Root_TradeData_GiveHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_TradeData_GiveHint;
+			_datasource_Root_TradeData_GiveHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_TradeData_GiveHint;
+			_datasource_Root_TradeData_GiveHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_TradeData_GiveHint;
+			_datasource_Root_TradeData_GiveHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_TradeData_GiveHint;
+			_datasource_Root_TradeData_GiveHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_TradeData_GiveHint;
+			_datasource_Root_TradeData_GiveHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_TradeData_GiveHint;
+			_datasource_Root_TradeData_GiveHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_TradeData_GiveHint;
+			_datasource_Root_TradeData_GiveHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TradeData_GiveHint;
+			_widget_0_0_1_0_1_0.EventFire += EventListenerOf_widget_0_0_1_0_1_0;
+		}
+	}
+
+	private void RefreshDataSource_datasource_Root_TradeData_TakeHint(HintViewModel newDataSource)
+	{
+		if (_datasource_Root_TradeData_TakeHint != null)
+		{
+			_datasource_Root_TradeData_TakeHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_TradeData_TakeHint;
+			_datasource_Root_TradeData_TakeHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_TradeData_TakeHint;
+			_datasource_Root_TradeData_TakeHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_TradeData_TakeHint;
+			_datasource_Root_TradeData_TakeHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_TradeData_TakeHint;
+			_datasource_Root_TradeData_TakeHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_TradeData_TakeHint;
+			_datasource_Root_TradeData_TakeHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_TradeData_TakeHint;
+			_datasource_Root_TradeData_TakeHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_TradeData_TakeHint;
+			_datasource_Root_TradeData_TakeHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_TradeData_TakeHint;
+			_datasource_Root_TradeData_TakeHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TradeData_TakeHint;
+			_widget_0_0_1_0_4_0.EventFire -= EventListenerOf_widget_0_0_1_0_4_0;
+			_datasource_Root_TradeData_TakeHint = null;
+		}
+		_datasource_Root_TradeData_TakeHint = newDataSource;
+		_datasource_Root_TradeData_TakeHint = _datasource_Root_TradeData.TakeHint;
+		if (_datasource_Root_TradeData_TakeHint != null)
+		{
+			_datasource_Root_TradeData_TakeHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_TradeData_TakeHint;
+			_datasource_Root_TradeData_TakeHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_TradeData_TakeHint;
+			_datasource_Root_TradeData_TakeHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_TradeData_TakeHint;
+			_datasource_Root_TradeData_TakeHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_TradeData_TakeHint;
+			_datasource_Root_TradeData_TakeHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_TradeData_TakeHint;
+			_datasource_Root_TradeData_TakeHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_TradeData_TakeHint;
+			_datasource_Root_TradeData_TakeHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_TradeData_TakeHint;
+			_datasource_Root_TradeData_TakeHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_TradeData_TakeHint;
+			_datasource_Root_TradeData_TakeHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TradeData_TakeHint;
+			_widget_0_0_1_0_4_0.EventFire += EventListenerOf_widget_0_0_1_0_4_0;
 		}
 	}
 

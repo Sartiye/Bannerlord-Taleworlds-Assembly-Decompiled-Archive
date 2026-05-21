@@ -461,7 +461,7 @@ public class ClanPartiesVM : ViewModel
 		CanCreateNewParty = GetCanCreateNewParty(out var disabledReason);
 		CreateNewPartyActionHint.HintText = disabledReason;
 		GameTexts.SetVariable("CURRENT", count);
-		GameTexts.SetVariable("LIMIT", _faction.CommanderLimit);
+		GameTexts.SetVariable("LIMIT", _faction.WarPartyLimit);
 		PartiesText = GameTexts.FindText("str_clan_parties").ToString();
 		GameTexts.SetVariable("CURRENT", Caravans.Count);
 		CaravansText = GameTexts.FindText("str_clan_caravans").ToString();
@@ -488,7 +488,7 @@ public class ClanPartiesVM : ViewModel
 			disabledReason = GameTexts.FindText("str_cannot_perform_action_while_sailing");
 			return false;
 		}
-		if (_faction.CommanderLimit - _faction.WarPartyComponents.Count <= 0)
+		if (_faction.WarPartyLimit - _faction.WarPartyComponents.Count <= 0)
 		{
 			disabledReason = GameTexts.FindText("str_clan_doesnt_have_empty_party_slots");
 			return false;
@@ -680,7 +680,7 @@ public class ClanPartiesVM : ViewModel
 			if (newLeader.Gold < partyGoldLowerThreshold)
 			{
 				string titleText = new TextObject("{=DAYoD0aW}Create Party").ToString();
-				string text = new TextObject("{=fRz2DJf4}Creating the party will cost you {PARTY_COST}{GOLD_ICON}. Are you sure?").SetTextVariable("PARTY_COST", partyGoldLowerThreshold - newLeader.Gold).SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">").ToString();
+				string text = new TextObject("{=fRz2DJf4}Creating the party will cost you {PARTY_COST}{GOLD_ICON}. Are you sure?").SetTextVariable("PARTY_COST", partyGoldLowerThreshold - newLeader.Gold).SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">").ToString();
 				InformationManager.ShowInquiry(new InquiryData(titleText, text, isAffirmativeOptionShown: true, isNegativeOptionShown: true, new TextObject("{=aeouhelq}Yes").ToString(), new TextObject("{=3CpNUnVl}Cancel").ToString(), delegate
 				{
 					closePopup?.Invoke();
@@ -784,7 +784,7 @@ public class ClanPartiesVM : ViewModel
 			{
 				StringHelpers.SetCharacterProperties("LEADER", newLeader.CharacterObject);
 				MBTextManager.SetTextVariable("PARTY_COST", partyGoldLowerThreshold - newLeader.Gold);
-				MBTextManager.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				MBTextManager.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				MBTextManager.SetTextVariable("DOES_LEADER_NEED_GOLD", (partyGoldLowerThreshold > newLeader.Gold) ? 1 : 0);
 			}
 			if (isDisband && partyBase != null && partyBase.Ships.Count > 0)

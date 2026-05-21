@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
-using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ImageIdentifiers;
@@ -102,23 +101,6 @@ public class StartAllianceDecision : KingdomDecision
 		KingdomToStartAllianceWith = kingdomToStartAllianceWith;
 	}
 
-	public static Clan GetProposerClanForPlayerKingdom(Kingdom target)
-	{
-		if (Clan.PlayerClan.Kingdom == null)
-		{
-			return null;
-		}
-		TextObject explanation;
-		Clan clan = ((Clan.PlayerClan.Kingdom.RulingClan != Clan.PlayerClan && Campaign.Current.Models.AllianceModel.GetScoreOfStartingAlliance(Clan.PlayerClan.Kingdom, target, Clan.PlayerClan.Kingdom.RulingClan, out explanation).ResultNumber > 50f) ? Clan.PlayerClan.Kingdom.RulingClan : null);
-		if (clan == null)
-		{
-			TextObject explanation3;
-			List<Clan> list = Clan.PlayerClan.Kingdom.Clans.Where((Clan x) => !x.IsUnderMercenaryService && x != Clan.PlayerClan && Campaign.Current.Models.AllianceModel.GetScoreOfStartingAlliance(Clan.PlayerClan.Kingdom, target, x, out explanation3).ResultNumber > 50f).ToList();
-			clan = ((list.Count <= 0) ? Clan.PlayerClan : TaleWorlds.Core.Extensions.MaxBy(list, (Clan x) => Campaign.Current.Models.AllianceModel.GetScoreOfStartingAlliance(Clan.PlayerClan.Kingdom, target, x, out var _).ResultNumber));
-		}
-		return clan;
-	}
-
 	public override bool IsAllowed()
 	{
 		TextObject reason;
@@ -132,7 +114,7 @@ public class StartAllianceDecision : KingdomDecision
 
 	public override TextObject GetGeneralTitle()
 	{
-		TextObject textObject = new TextObject("{=aE7OQDMS}Form alliance with the {KINGDOM_NAME}.");
+		TextObject textObject = new TextObject("{=aE7OQDMS}Form alliance with the {KINGDOM_NAME}");
 		textObject.SetTextVariable("KINGDOM_NAME", KingdomToStartAllianceWith.InformalName);
 		return textObject;
 	}
@@ -250,116 +232,30 @@ public class StartAllianceDecision : KingdomDecision
 		return possibleOutcomes.FirstOrDefault((DecisionOutcome t) => ((StartAllianceDecisionOutcome)t).ShouldAllianceBeStarted);
 	}
 
-	public float CalculateSupport(Clan clan, out TextObject hint, bool includeExplanation = false)
+	public float CalculateSupport(Clan clan, out TextObject hint, bool includeDescriptions = false)
 	{
-		return DetermineSupport(clan, new StartAllianceDecisionOutcome(shouldAllianceBeStarted: true, base.Kingdom, KingdomToStartAllianceWith), out hint, includeExplanation);
+		return DetermineSupport(clan, new StartAllianceDecisionOutcome(shouldAllianceBeStarted: true, base.Kingdom, KingdomToStartAllianceWith), out hint, includeDescriptions);
 	}
 
 	public override float DetermineSupport(Clan clan, DecisionOutcome possibleOutcome)
 	{
 		TextObject hint;
-		return DetermineSupport(clan, possibleOutcome, out hint, includeExplanation: false);
+		return DetermineSupport(clan, possibleOutcome, out hint, includeDescriptions: false);
 	}
 
-	private float DetermineSupport(Clan clan, DecisionOutcome possibleOutcome, out TextObject hint, bool includeExplanation)
+	private float DetermineSupport(Clan clan, DecisionOutcome possibleOutcome, out TextObject hint, bool includeDescriptions)
 	{
-		hint = TextObject.GetEmpty();
-		if (clan == Clan.PlayerClan)
-		{
-			return 100f;
-		}
 		StartAllianceDecisionOutcome obj = (StartAllianceDecisionOutcome)possibleOutcome;
-		float resultNumber = Campaign.Current.Models.AllianceModel.GetScoreOfStartingAlliance(base.Kingdom, KingdomToStartAllianceWith, clan, out hint, includeExplanation).ResultNumber;
+		float supportScoreOfStartingAllianceForClan = Campaign.Current.Models.AllianceModel.GetSupportScoreOfStartingAllianceForClan(base.Kingdom, KingdomToStartAllianceWith, clan, out hint, includeDescriptions);
 		if (obj.ShouldAllianceBeStarted)
 		{
-			int num = -clan.Leader.GetTraitLevel(DefaultTraits.Valor) * 10 + clan.Leader.GetTraitLevel(DefaultTraits.Calculating) * 10;
-			return resultNumber + (float)num;
+			return supportScoreOfStartingAllianceForClan;
 		}
-		float num2 = 0f - resultNumber;
-		int num3 = clan.Leader.GetTraitLevel(DefaultTraits.Valor) * 10 - clan.Leader.GetTraitLevel(DefaultTraits.Calculating) * 10;
-		return num2 + (float)num3;
+		return 0f - supportScoreOfStartingAllianceForClan;
 	}
 
 	public override bool CanMakeDecision(out TextObject reason, bool includeReason = false)
 	{
-		reason = (includeReason ? TextObject.GetEmpty() : null);
-		if (KingdomToStartAllianceWith.IsEliminated || base.Kingdom.IsEliminated)
-		{
-			reason = (includeReason ? new TextObject("{=a5EAl1aW}That realm has been eliminated.") : null);
-			return false;
-		}
-		if (KingdomToStartAllianceWith == base.Kingdom)
-		{
-			reason = (includeReason ? new TextObject("{=zPoS5fIu}You are referring to your own realm.") : null);
-			return false;
-		}
-		if (KingdomToStartAllianceWith.IsAtWarWith(base.Kingdom))
-		{
-			reason = new TextObject("{=lseJ70y0}Your realm is at war with the {KINGDOM_NAME}.");
-			reason.SetTextVariable("KINGDOM_NAME", KingdomToStartAllianceWith.Name);
-			return false;
-		}
-		if (base.Kingdom.AlliedKingdoms.Count >= Campaign.Current.Models.AllianceModel.MaxNumberOfAlliances)
-		{
-			reason = (includeReason ? new TextObject("{=plzVaezP}Your realm cannot have any more allies.") : null);
-			return false;
-		}
-		if (KingdomToStartAllianceWith.AlliedKingdoms.Count >= Campaign.Current.Models.AllianceModel.MaxNumberOfAlliances)
-		{
-			if (includeReason)
-			{
-				reason = new TextObject("{=rYssCdQb}{KINGDOM_NAME} cannot have any more allies.");
-				reason.SetTextVariable("KINGDOM_NAME", KingdomToStartAllianceWith.Name);
-			}
-			return false;
-		}
-		if (KingdomToStartAllianceWith.IsAllyWith(base.Kingdom))
-		{
-			if (includeReason)
-			{
-				reason = new TextObject("{=zd9sawl9}You are already allied with the {KINGDOM_NAME}.");
-				reason.SetTextVariable("KINGDOM_NAME", KingdomToStartAllianceWith.Name);
-			}
-			return false;
-		}
-		StartAllianceDecision startAllianceDecision = new StartAllianceDecision(base.ProposerClan, KingdomToStartAllianceWith);
-		TextObject hint;
-		float num = startAllianceDecision.CalculateSupport(base.ProposerClan, out hint);
-		StartAllianceDecision startAllianceDecision2 = new StartAllianceDecision(KingdomToStartAllianceWith.RulingClan, base.Kingdom);
-		startAllianceDecision2.CalculateSupport(KingdomToStartAllianceWith.RulingClan, out var hint2, includeReason);
-		float likelihoodForSponsor = new KingdomElection(startAllianceDecision2).GetLikelihoodForSponsor(KingdomToStartAllianceWith.RulingClan);
-		if (num > 50f)
-		{
-			if (Clan.PlayerClan.Kingdom == KingdomToStartAllianceWith && KingdomToStartAllianceWith.Clans.Count == 1)
-			{
-				reason = TextObject.GetEmpty();
-				return true;
-			}
-			if (likelihoodForSponsor > 0.5f)
-			{
-				if (Clan.PlayerClan.Kingdom == base.Kingdom && base.Kingdom.Clans.Count == 1)
-				{
-					reason = TextObject.GetEmpty();
-					return true;
-				}
-				KingdomElection kingdomElection = new KingdomElection(startAllianceDecision);
-				float num2 = 0f;
-				foreach (DecisionOutcome possibleOutcome in kingdomElection.PossibleOutcomes)
-				{
-					if (possibleOutcome is StartAllianceDecisionOutcome { ShouldAllianceBeStarted: not false } startAllianceDecisionOutcome)
-					{
-						num2 = startAllianceDecisionOutcome.Likelihood;
-						break;
-					}
-				}
-				if (num2 > 0.5f)
-				{
-					reason = TextObject.GetEmpty();
-					return true;
-				}
-			}
-		}
-		reason = hint2;
-		return false;
+		return Campaign.Current.Models.AllianceModel.CanMakeAlliance(base.Kingdom, KingdomToStartAllianceWith, base.ProposerClan, out reason, includeReason);
 	}
 }

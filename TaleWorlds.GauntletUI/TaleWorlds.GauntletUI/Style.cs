@@ -34,6 +34,10 @@ public class Style : IDataSource
 
 	private bool _isTextValueFactorChanged;
 
+	private bool _isXOffsetChanged;
+
+	private bool _isYOffsetChanged;
+
 	private bool _isFontChanged;
 
 	private bool _isFontStyleChanged;
@@ -65,6 +69,10 @@ public class Style : IDataSource
 	private float _textSaturationFactor;
 
 	private float _textValueFactor;
+
+	private float _xOffset;
+
+	private float _yOffset;
 
 	private Font _font;
 
@@ -416,6 +424,50 @@ public class Style : IDataSource
 	}
 
 	[Editor(false)]
+	public float XOffset
+	{
+		get
+		{
+			if (_isXOffsetChanged)
+			{
+				return _xOffset;
+			}
+			return DefaultStyle.XOffset;
+		}
+		set
+		{
+			if (XOffset != value)
+			{
+				_isXOffsetChanged = true;
+				_xOffset = value;
+				_localVersion++;
+			}
+		}
+	}
+
+	[Editor(false)]
+	public float YOffset
+	{
+		get
+		{
+			if (_isYOffsetChanged)
+			{
+				return _yOffset;
+			}
+			return DefaultStyle.YOffset;
+		}
+		set
+		{
+			if (YOffset != value)
+			{
+				_isYOffsetChanged = true;
+				_yOffset = value;
+				_localVersion++;
+			}
+		}
+	}
+
+	[Editor(false)]
 	public Font Font
 	{
 		get
@@ -499,6 +551,8 @@ public class Style : IDataSource
 		_textHueFactor = 0f;
 		_textSaturationFactor = 0f;
 		_textValueFactor = 0f;
+		_xOffset = 0f;
+		_yOffset = 0f;
 		_fontSize = 30;
 		foreach (BrushLayer layer2 in layers)
 		{
@@ -523,6 +577,8 @@ public class Style : IDataSource
 		TextHueFactor = style.TextHueFactor;
 		TextSaturationFactor = style.TextSaturationFactor;
 		TextValueFactor = style.TextValueFactor;
+		XOffset = style.XOffset;
+		YOffset = style.YOffset;
 		Font = style.Font;
 		FontStyle = style.FontStyle;
 		FontSize = style.FontSize;
@@ -610,8 +666,12 @@ public class Style : IDataSource
 			return TextSaturationFactor;
 		case BrushAnimationProperty.BrushAnimationPropertyType.TextValueFactor:
 			return TextValueFactor;
+		case BrushAnimationProperty.BrushAnimationPropertyType.XOffset:
+			return XOffset;
+		case BrushAnimationProperty.BrushAnimationPropertyType.YOffset:
+			return YOffset;
 		default:
-			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\Style.cs", "GetValueAsFloat", 615);
+			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\Style.cs", "GetValueAsFloat", 679);
 			return 0f;
 		}
 	}
@@ -627,14 +687,14 @@ public class Style : IDataSource
 		case BrushAnimationProperty.BrushAnimationPropertyType.TextOutlineColor:
 			return TextOutlineColor;
 		default:
-			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\Style.cs", "GetValueAsColor", 635);
+			Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\Style.cs", "GetValueAsColor", 699);
 			return Color.Black;
 		}
 	}
 
 	public Sprite GetValueAsSprite(BrushAnimationProperty.BrushAnimationPropertyType propertyType)
 	{
-		Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\Style.cs", "GetValueAsSprite", 643);
+		Debug.FailedAssert("Invalid value type or property name for data source.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Brush\\Style.cs", "GetValueAsSprite", 707);
 		return null;
 	}
 
@@ -653,6 +713,8 @@ public class Style : IDataSource
 		_isTextHueFactorChanged = true;
 		_isTextSaturationFactorChanged = true;
 		_isTextValueFactorChanged = true;
+		_isXOffsetChanged = true;
+		_isYOffsetChanged = true;
 		_isFontChanged = true;
 		_isFontStyleChanged = true;
 		_isFontSizeChanged = true;

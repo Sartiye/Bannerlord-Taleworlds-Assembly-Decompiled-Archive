@@ -409,7 +409,7 @@ public class KingdomClanVM : KingdomCategoryVM
 		base.CategoryNameText = new TextObject("{=j4F7tTzy}Clan").ToString();
 		base.NoItemSelectedText = GameTexts.FindText("str_kingdom_no_clan_selected").ToString();
 		SupportActionExplanationText = GameTexts.FindText("str_support_clan_action_explanation").ToString();
-		ExpelActionExplanationText = GameTexts.FindText("str_expel_clan_action_explanation").ToString();
+		ExpelActionExplanationText = GameTexts.FindText("str_expel_clan_action_explanation").SetTextVariable("SUPPORT", GameTexts.FindText("str_decision_outcome_support_status", KingdomElection.ElectionOutcomeSupport.LowSupport.ToString())).ToString();
 	}
 
 	private void SetCurrentSelectedClan(KingdomClanItemVM clan)
@@ -437,9 +437,15 @@ public class KingdomClanVM : KingdomCategoryVM
 			ExpelCost = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfExpellingClan(Clan.PlayerClan);
 			CanSupportCurrentClan = GetCanSupportCurrentClanWithReason(SupportCost, out var disabledReason2);
 			SupportHint.HintText = disabledReason2;
-			ExpelActionExplanationText = GameTexts.FindText("str_expel_clan_action_explanation").SetTextVariable("SUPPORT", CalculateExpelLikelihood(CurrentSelectedClan)).ToString();
+			ExpelActionExplanationText = GameTexts.FindText("str_expel_clan_action_explanation").SetTextVariable("SUPPORT", GetExpelLikelihoodText(CurrentSelectedClan)).ToString();
 			base.IsAcceptableItemSelected = CurrentSelectedClan != null;
 		}
+	}
+
+	private TextObject GetExpelLikelihoodText(KingdomClanItemVM clan)
+	{
+		ExpelClanFromKingdomDecision decision = new ExpelClanFromKingdomDecision(Clan.PlayerClan, clan.Clan);
+		return GameTexts.FindText("str_decision_outcome_support_status", KingdomElection.GetElectionOutcomeSupport(decision, Clan.PlayerClan).ToString());
 	}
 
 	private bool GetCanSupportCurrentClanWithReason(int supportCost, out TextObject disabledReason)

@@ -197,9 +197,12 @@ public class KingdomWarItemVM : KingdomDiplomacyItemVM
 
 	protected override void OnSelect()
 	{
-		UpdateDiplomacyProperties();
-		_onSelect(this);
-		base.IsSelected = true;
+		if (!base.IsSelected)
+		{
+			UpdateDiplomacyProperties();
+			_onSelect(this);
+			base.IsSelected = true;
+		}
 	}
 
 	protected override void UpdateDiplomacyProperties()

@@ -125,9 +125,9 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 
 	private Widget _widget_0_2_0_0;
 
-	private TextWidget _widget_0_2_0_1;
+	private Widget _widget_0_2_0_1;
 
-	private ScoreboardAnimatedTextWidget _widget_0_2_0_2;
+	private TextWidget _widget_0_2_0_2;
 
 	private ScoreboardAnimatedTextWidget _widget_0_2_0_3;
 
@@ -138,6 +138,8 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 	private ScoreboardAnimatedTextWidget _widget_0_2_0_6;
 
 	private ScoreboardAnimatedTextWidget _widget_0_2_0_7;
+
+	private ScoreboardAnimatedTextWidget _widget_0_2_0_8;
 
 	private CustomBattleScoreboardVM _datasource_Root;
 
@@ -277,9 +279,9 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 		_widget_0_2.AddChild(_widget_0_2_0);
 		_widget_0_2_0_0 = new Widget(base.Context);
 		_widget_0_2_0.AddChild(_widget_0_2_0_0);
-		_widget_0_2_0_1 = new TextWidget(base.Context);
+		_widget_0_2_0_1 = new Widget(base.Context);
 		_widget_0_2_0.AddChild(_widget_0_2_0_1);
-		_widget_0_2_0_2 = new ScoreboardAnimatedTextWidget(base.Context);
+		_widget_0_2_0_2 = new TextWidget(base.Context);
 		_widget_0_2_0.AddChild(_widget_0_2_0_2);
 		_widget_0_2_0_3 = new ScoreboardAnimatedTextWidget(base.Context);
 		_widget_0_2_0.AddChild(_widget_0_2_0_3);
@@ -291,6 +293,8 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 		_widget_0_2_0.AddChild(_widget_0_2_0_6);
 		_widget_0_2_0_7 = new ScoreboardAnimatedTextWidget(base.Context);
 		_widget_0_2_0.AddChild(_widget_0_2_0_7);
+		_widget_0_2_0_8 = new ScoreboardAnimatedTextWidget(base.Context);
+		_widget_0_2_0.AddChild(_widget_0_2_0_8);
 	}
 
 	public void SetIds()
@@ -594,60 +598,66 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 		_widget_0_2_0_0.MarginRight = 5f;
 		_widget_0_2_0_0.Sprite = base.Context.SpriteData.GetSprite("SPGeneral\\SPScoreboard\\ally_bar");
 		_widget_0_2_0_0.AlphaFactor = 0.75f;
-		_widget_0_2_0_1.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_0_2_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_2_0_1.SuggestedWidth = 250f;
-		_widget_0_2_0_1.MarginLeft = 20f;
-		_widget_0_2_0_1.Brush = base.Context.GetBrush("ScoreboardDefaultFontBrush");
-		_widget_0_2_0_1.Brush.FontSize = 36;
+		_widget_0_2_0_1.MarginLeft = 5f;
+		_widget_0_2_0_1.MarginRight = 5f;
+		_widget_0_2_0_1.Sprite = base.Context.SpriteData.GetSprite("SPGeneral\\SPScoreboard\\enemy_bar");
+		_widget_0_2_0_1.AlphaFactor = 0.75f;
 		_widget_0_2_0_2.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_2_0_2.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_2_0_2.SuggestedWidth = 55f;
-		_widget_0_2_0_2.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_0_2_0_2.PositionXOffset = -302f;
-		_widget_0_2_0_2.ShowZero = true;
-		_widget_0_2_0_2.Brush = base.Context.GetBrush("ScoreboardRemainingItem");
-		_widget_0_2_0_2.Brush.FontSize = 30;
+		_widget_0_2_0_2.SuggestedWidth = 250f;
+		_widget_0_2_0_2.MarginLeft = 20f;
+		_widget_0_2_0_2.Brush = base.Context.GetBrush("ScoreboardDefaultFontBrush");
+		_widget_0_2_0_2.Brush.FontSize = 36;
 		_widget_0_2_0_3.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_2_0_3.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_0_3.SuggestedWidth = 55f;
 		_widget_0_2_0_3.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_0_2_0_3.PositionXOffset = -242f;
+		_widget_0_2_0_3.PositionXOffset = -302f;
 		_widget_0_2_0_3.ShowZero = true;
-		_widget_0_2_0_3.Brush = base.Context.GetBrush("ScoreboardKillItem");
+		_widget_0_2_0_3.Brush = base.Context.GetBrush("ScoreboardRemainingItem");
 		_widget_0_2_0_3.Brush.FontSize = 30;
 		_widget_0_2_0_4.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_2_0_4.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_0_4.SuggestedWidth = 55f;
 		_widget_0_2_0_4.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_0_2_0_4.PositionXOffset = -192f;
+		_widget_0_2_0_4.PositionXOffset = -242f;
 		_widget_0_2_0_4.ShowZero = true;
-		_widget_0_2_0_4.Brush = base.Context.GetBrush("ScoreboardReadyToUpgradeItem");
+		_widget_0_2_0_4.Brush = base.Context.GetBrush("ScoreboardKillItem");
 		_widget_0_2_0_4.Brush.FontSize = 30;
 		_widget_0_2_0_5.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_2_0_5.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_0_5.SuggestedWidth = 55f;
 		_widget_0_2_0_5.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_0_2_0_5.PositionXOffset = -117f;
+		_widget_0_2_0_5.PositionXOffset = -192f;
 		_widget_0_2_0_5.ShowZero = true;
-		_widget_0_2_0_5.Brush = base.Context.GetBrush("ScoreboardDeadItem");
+		_widget_0_2_0_5.Brush = base.Context.GetBrush("ScoreboardReadyToUpgradeItem");
 		_widget_0_2_0_5.Brush.FontSize = 30;
 		_widget_0_2_0_6.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_2_0_6.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_0_6.SuggestedWidth = 55f;
 		_widget_0_2_0_6.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_0_2_0_6.PositionXOffset = -67f;
+		_widget_0_2_0_6.PositionXOffset = -117f;
 		_widget_0_2_0_6.ShowZero = true;
-		_widget_0_2_0_6.Brush = base.Context.GetBrush("ScoreboardWoundedItem");
+		_widget_0_2_0_6.Brush = base.Context.GetBrush("ScoreboardDeadItem");
 		_widget_0_2_0_6.Brush.FontSize = 30;
 		_widget_0_2_0_7.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_2_0_7.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_0_7.SuggestedWidth = 55f;
 		_widget_0_2_0_7.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_0_2_0_7.PositionXOffset = -17f;
+		_widget_0_2_0_7.PositionXOffset = -67f;
 		_widget_0_2_0_7.ShowZero = true;
-		_widget_0_2_0_7.Brush = base.Context.GetBrush("ScoreboardRoutedItem");
+		_widget_0_2_0_7.Brush = base.Context.GetBrush("ScoreboardWoundedItem");
 		_widget_0_2_0_7.Brush.FontSize = 30;
+		_widget_0_2_0_8.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_0_2_0_8.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_2_0_8.SuggestedWidth = 55f;
+		_widget_0_2_0_8.HorizontalAlignment = HorizontalAlignment.Right;
+		_widget_0_2_0_8.PositionXOffset = -17f;
+		_widget_0_2_0_8.ShowZero = true;
+		_widget_0_2_0_8.Brush = base.Context.GetBrush("ScoreboardRoutedItem");
+		_widget_0_2_0_8.Brush.FontSize = 30;
 	}
 
 	public void DestroyDataSource()
@@ -685,6 +695,24 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 			_widget_0_1_6_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_6_1;
+			_widget_0_2_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_1;
 			if (_datasource_Root_Defenders_SortController != null)
 			{
 				_datasource_Root_Defenders_SortController.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_SortController;
@@ -783,15 +811,6 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 				_datasource_Root_Defenders_Score.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_Score;
 				_datasource_Root_Defenders_Score.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_Score;
 				_datasource_Root_Defenders_Score.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_Score;
-				_widget_0_2_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_1;
 				_widget_0_2_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_2;
@@ -846,6 +865,15 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 				_widget_0_2_0_7.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_7;
+				_widget_0_2_0_8.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_8;
 				_datasource_Root_Defenders_Score = null;
 			}
 			_datasource_Root_Defenders = null;
@@ -1124,6 +1152,112 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 		if (propertyName == "Morale")
 		{
 			_datasource_Root_Defenders.Morale = _widget_0_1_6_1.Morale;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_0_2_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_0(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_0_2_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_0(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_0_2_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_0(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_0_2_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_0(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_0_2_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_0(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_0_2_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_0(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_0_2_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_0(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_0_2_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_0(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_0_2_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_0(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_0_2_0_0(string propertyName)
+	{
+		if (propertyName == "IsVisible")
+		{
+			_datasource_Root_Defenders.IsPlayerSide = _widget_0_2_0_0.IsVisible;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_0_2_0_1(string propertyName)
+	{
+		if (propertyName == "IsHidden")
+		{
+			_datasource_Root_Defenders.IsPlayerSide = _widget_0_2_0_1.IsHidden;
 		}
 	}
 
@@ -1469,59 +1603,6 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_0_2_0_1(string propertyName)
-	{
-		if (propertyName == "Text")
-		{
-			_datasource_Root_Defenders_Score.NameText = _widget_0_2_0_1.Text;
-		}
-	}
-
 	private void PropertyChangedListenerOf_widget_0_2_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
 		HandleWidgetPropertyChangeOf_widget_0_2_0_2(propertyName);
@@ -1569,9 +1650,9 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 
 	private void HandleWidgetPropertyChangeOf_widget_0_2_0_2(string propertyName)
 	{
-		if (propertyName == "ValueAsInt")
+		if (propertyName == "Text")
 		{
-			_datasource_Root_Defenders_Score.Remaining = _widget_0_2_0_2.ValueAsInt;
+			_datasource_Root_Defenders_Score.NameText = _widget_0_2_0_2.Text;
 		}
 	}
 
@@ -1624,7 +1705,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 	{
 		if (propertyName == "ValueAsInt")
 		{
-			_datasource_Root_Defenders_Score.Kill = _widget_0_2_0_3.ValueAsInt;
+			_datasource_Root_Defenders_Score.Remaining = _widget_0_2_0_3.ValueAsInt;
 		}
 	}
 
@@ -1677,7 +1758,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 	{
 		if (propertyName == "ValueAsInt")
 		{
-			_datasource_Root_Defenders_Score.ReadyToUpgrade = _widget_0_2_0_4.ValueAsInt;
+			_datasource_Root_Defenders_Score.Kill = _widget_0_2_0_4.ValueAsInt;
 		}
 	}
 
@@ -1730,7 +1811,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 	{
 		if (propertyName == "ValueAsInt")
 		{
-			_datasource_Root_Defenders_Score.Dead = _widget_0_2_0_5.ValueAsInt;
+			_datasource_Root_Defenders_Score.ReadyToUpgrade = _widget_0_2_0_5.ValueAsInt;
 		}
 	}
 
@@ -1783,7 +1864,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 	{
 		if (propertyName == "ValueAsInt")
 		{
-			_datasource_Root_Defenders_Score.Wounded = _widget_0_2_0_6.ValueAsInt;
+			_datasource_Root_Defenders_Score.Dead = _widget_0_2_0_6.ValueAsInt;
 		}
 	}
 
@@ -1836,7 +1917,60 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 	{
 		if (propertyName == "ValueAsInt")
 		{
-			_datasource_Root_Defenders_Score.Routed = _widget_0_2_0_7.ValueAsInt;
+			_datasource_Root_Defenders_Score.Wounded = _widget_0_2_0_7.ValueAsInt;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_0_2_0_8(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_8(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_0_2_0_8(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_8(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_0_2_0_8(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_8(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_0_2_0_8(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_8(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_0_2_0_8(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_8(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_0_2_0_8(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_8(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_0_2_0_8(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_8(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_0_2_0_8(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_8(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_0_2_0_8(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_8(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_0_2_0_8(string propertyName)
+	{
+		if (propertyName == "ValueAsInt")
+		{
+			_datasource_Root_Defenders_Score.Routed = _widget_0_2_0_8.ValueAsInt;
 		}
 	}
 
@@ -1900,6 +2034,10 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 			break;
 		case "Morale":
 			_widget_0_1_6_1.Morale = _datasource_Root_Defenders.Morale;
+			break;
+		case "IsPlayerSide":
+			_widget_0_2_0_0.IsVisible = _datasource_Root_Defenders.IsPlayerSide;
+			_widget_0_2_0_1.IsHidden = _datasource_Root_Defenders.IsPlayerSide;
 			break;
 		}
 	}
@@ -2385,25 +2523,25 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 		switch (propertyName)
 		{
 		case "NameText":
-			_widget_0_2_0_1.Text = _datasource_Root_Defenders_Score.NameText;
+			_widget_0_2_0_2.Text = _datasource_Root_Defenders_Score.NameText;
 			break;
 		case "Remaining":
-			_widget_0_2_0_2.ValueAsInt = _datasource_Root_Defenders_Score.Remaining;
+			_widget_0_2_0_3.ValueAsInt = _datasource_Root_Defenders_Score.Remaining;
 			break;
 		case "Kill":
-			_widget_0_2_0_3.ValueAsInt = _datasource_Root_Defenders_Score.Kill;
+			_widget_0_2_0_4.ValueAsInt = _datasource_Root_Defenders_Score.Kill;
 			break;
 		case "ReadyToUpgrade":
-			_widget_0_2_0_4.ValueAsInt = _datasource_Root_Defenders_Score.ReadyToUpgrade;
+			_widget_0_2_0_5.ValueAsInt = _datasource_Root_Defenders_Score.ReadyToUpgrade;
 			break;
 		case "Dead":
-			_widget_0_2_0_5.ValueAsInt = _datasource_Root_Defenders_Score.Dead;
+			_widget_0_2_0_6.ValueAsInt = _datasource_Root_Defenders_Score.Dead;
 			break;
 		case "Wounded":
-			_widget_0_2_0_6.ValueAsInt = _datasource_Root_Defenders_Score.Wounded;
+			_widget_0_2_0_7.ValueAsInt = _datasource_Root_Defenders_Score.Wounded;
 			break;
 		case "Routed":
-			_widget_0_2_0_7.ValueAsInt = _datasource_Root_Defenders_Score.Routed;
+			_widget_0_2_0_8.ValueAsInt = _datasource_Root_Defenders_Score.Routed;
 			break;
 		}
 	}
@@ -2503,6 +2641,24 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 			_widget_0_1_6_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_6_1;
+			_widget_0_2_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_1;
 			if (_datasource_Root_Defenders_SortController != null)
 			{
 				_datasource_Root_Defenders_SortController.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_SortController;
@@ -2601,15 +2757,6 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 				_datasource_Root_Defenders_Score.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_Score;
 				_datasource_Root_Defenders_Score.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_Score;
 				_datasource_Root_Defenders_Score.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_Score;
-				_widget_0_2_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_1;
 				_widget_0_2_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_2;
@@ -2664,6 +2811,15 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 				_widget_0_2_0_7.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_7;
+				_widget_0_2_0_8.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_8;
 				_datasource_Root_Defenders_Score = null;
 			}
 			_datasource_Root_Defenders = null;
@@ -2691,6 +2847,26 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 			_widget_0_1_6_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_6_1;
+			_widget_0_2_0_0.IsVisible = _datasource_Root_Defenders.IsPlayerSide;
+			_widget_0_2_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_1.IsHidden = _datasource_Root_Defenders.IsPlayerSide;
+			_widget_0_2_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_1;
 			_datasource_Root_Defenders_SortController = _datasource_Root_Defenders.SortController;
 			if (_datasource_Root_Defenders_SortController != null)
 			{
@@ -2802,17 +2978,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 				_datasource_Root_Defenders_Score.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_Score;
 				_datasource_Root_Defenders_Score.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_Score;
 				_datasource_Root_Defenders_Score.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_Score;
-				_widget_0_2_0_1.Text = _datasource_Root_Defenders_Score.NameText;
-				_widget_0_2_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_2.ValueAsInt = _datasource_Root_Defenders_Score.Remaining;
+				_widget_0_2_0_2.Text = _datasource_Root_Defenders_Score.NameText;
 				_widget_0_2_0_2.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_2;
@@ -2822,7 +2988,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 				_widget_0_2_0_2.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_2;
-				_widget_0_2_0_3.ValueAsInt = _datasource_Root_Defenders_Score.Kill;
+				_widget_0_2_0_3.ValueAsInt = _datasource_Root_Defenders_Score.Remaining;
 				_widget_0_2_0_3.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_3;
 				_widget_0_2_0_3.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_3;
 				_widget_0_2_0_3.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_3;
@@ -2832,7 +2998,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 				_widget_0_2_0_3.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_3;
 				_widget_0_2_0_3.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_3;
 				_widget_0_2_0_3.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_3;
-				_widget_0_2_0_4.ValueAsInt = _datasource_Root_Defenders_Score.ReadyToUpgrade;
+				_widget_0_2_0_4.ValueAsInt = _datasource_Root_Defenders_Score.Kill;
 				_widget_0_2_0_4.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_4;
 				_widget_0_2_0_4.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_4;
 				_widget_0_2_0_4.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_4;
@@ -2842,7 +3008,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 				_widget_0_2_0_4.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_4;
 				_widget_0_2_0_4.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_4;
 				_widget_0_2_0_4.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_4;
-				_widget_0_2_0_5.ValueAsInt = _datasource_Root_Defenders_Score.Dead;
+				_widget_0_2_0_5.ValueAsInt = _datasource_Root_Defenders_Score.ReadyToUpgrade;
 				_widget_0_2_0_5.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_5;
 				_widget_0_2_0_5.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_5;
 				_widget_0_2_0_5.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_5;
@@ -2852,7 +3018,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 				_widget_0_2_0_5.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_5;
 				_widget_0_2_0_5.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_5;
 				_widget_0_2_0_5.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_5;
-				_widget_0_2_0_6.ValueAsInt = _datasource_Root_Defenders_Score.Wounded;
+				_widget_0_2_0_6.ValueAsInt = _datasource_Root_Defenders_Score.Dead;
 				_widget_0_2_0_6.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_6;
 				_widget_0_2_0_6.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_6;
 				_widget_0_2_0_6.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_6;
@@ -2862,7 +3028,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 				_widget_0_2_0_6.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_6;
 				_widget_0_2_0_6.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_6;
 				_widget_0_2_0_6.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_6;
-				_widget_0_2_0_7.ValueAsInt = _datasource_Root_Defenders_Score.Routed;
+				_widget_0_2_0_7.ValueAsInt = _datasource_Root_Defenders_Score.Wounded;
 				_widget_0_2_0_7.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_7;
@@ -2872,6 +3038,16 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 				_widget_0_2_0_7.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_7;
+				_widget_0_2_0_8.ValueAsInt = _datasource_Root_Defenders_Score.Routed;
+				_widget_0_2_0_8.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_8;
 			}
 		}
 	}
@@ -3283,15 +3459,6 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 			_datasource_Root_Defenders_Score.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_Score;
 			_datasource_Root_Defenders_Score.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_Score;
 			_datasource_Root_Defenders_Score.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_Score;
-			_widget_0_2_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_1;
 			_widget_0_2_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_2;
 			_widget_0_2_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_2;
 			_widget_0_2_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_2;
@@ -3346,6 +3513,15 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 			_widget_0_2_0_7.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_7;
 			_widget_0_2_0_7.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_7;
 			_widget_0_2_0_7.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_7;
+			_widget_0_2_0_8.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_8;
 			_datasource_Root_Defenders_Score = null;
 		}
 		_datasource_Root_Defenders_Score = newDataSource;
@@ -3361,17 +3537,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 			_datasource_Root_Defenders_Score.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_Score;
 			_datasource_Root_Defenders_Score.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_Score;
 			_datasource_Root_Defenders_Score.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_Score;
-			_widget_0_2_0_1.Text = _datasource_Root_Defenders_Score.NameText;
-			_widget_0_2_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_2.ValueAsInt = _datasource_Root_Defenders_Score.Remaining;
+			_widget_0_2_0_2.Text = _datasource_Root_Defenders_Score.NameText;
 			_widget_0_2_0_2.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_2;
 			_widget_0_2_0_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_2;
 			_widget_0_2_0_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_2;
@@ -3381,7 +3547,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 			_widget_0_2_0_2.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_2;
 			_widget_0_2_0_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_2;
 			_widget_0_2_0_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_2;
-			_widget_0_2_0_3.ValueAsInt = _datasource_Root_Defenders_Score.Kill;
+			_widget_0_2_0_3.ValueAsInt = _datasource_Root_Defenders_Score.Remaining;
 			_widget_0_2_0_3.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_3;
 			_widget_0_2_0_3.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_3;
 			_widget_0_2_0_3.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_3;
@@ -3391,7 +3557,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 			_widget_0_2_0_3.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_3;
 			_widget_0_2_0_3.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_3;
 			_widget_0_2_0_3.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_3;
-			_widget_0_2_0_4.ValueAsInt = _datasource_Root_Defenders_Score.ReadyToUpgrade;
+			_widget_0_2_0_4.ValueAsInt = _datasource_Root_Defenders_Score.Kill;
 			_widget_0_2_0_4.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_4;
 			_widget_0_2_0_4.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_4;
 			_widget_0_2_0_4.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_4;
@@ -3401,7 +3567,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 			_widget_0_2_0_4.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_4;
 			_widget_0_2_0_4.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_4;
 			_widget_0_2_0_4.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_4;
-			_widget_0_2_0_5.ValueAsInt = _datasource_Root_Defenders_Score.Dead;
+			_widget_0_2_0_5.ValueAsInt = _datasource_Root_Defenders_Score.ReadyToUpgrade;
 			_widget_0_2_0_5.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_5;
 			_widget_0_2_0_5.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_5;
 			_widget_0_2_0_5.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_5;
@@ -3411,7 +3577,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 			_widget_0_2_0_5.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_5;
 			_widget_0_2_0_5.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_5;
 			_widget_0_2_0_5.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_5;
-			_widget_0_2_0_6.ValueAsInt = _datasource_Root_Defenders_Score.Wounded;
+			_widget_0_2_0_6.ValueAsInt = _datasource_Root_Defenders_Score.Dead;
 			_widget_0_2_0_6.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_6;
 			_widget_0_2_0_6.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_6;
 			_widget_0_2_0_6.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_6;
@@ -3421,7 +3587,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 			_widget_0_2_0_6.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_6;
 			_widget_0_2_0_6.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_6;
 			_widget_0_2_0_6.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_6;
-			_widget_0_2_0_7.ValueAsInt = _datasource_Root_Defenders_Score.Routed;
+			_widget_0_2_0_7.ValueAsInt = _datasource_Root_Defenders_Score.Wounded;
 			_widget_0_2_0_7.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_7;
 			_widget_0_2_0_7.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_7;
 			_widget_0_2_0_7.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_7;
@@ -3431,6 +3597,16 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 			_widget_0_2_0_7.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_7;
 			_widget_0_2_0_7.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_7;
 			_widget_0_2_0_7.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_7;
+			_widget_0_2_0_8.ValueAsInt = _datasource_Root_Defenders_Score.Routed;
+			_widget_0_2_0_8.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_8;
 		}
 	}
 
@@ -3467,6 +3643,24 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 				_widget_0_1_6_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_6_1;
 				_widget_0_1_6_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_6_1;
 				_widget_0_1_6_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_6_1;
+				_widget_0_2_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_0;
+				_widget_0_2_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_0;
+				_widget_0_2_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_0;
+				_widget_0_2_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_0;
+				_widget_0_2_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_0;
+				_widget_0_2_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_0;
+				_widget_0_2_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_0;
+				_widget_0_2_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_0;
+				_widget_0_2_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_0;
+				_widget_0_2_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_1;
+				_widget_0_2_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_1;
+				_widget_0_2_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_1;
+				_widget_0_2_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_1;
+				_widget_0_2_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_1;
+				_widget_0_2_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_1;
+				_widget_0_2_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_1;
+				_widget_0_2_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_1;
+				_widget_0_2_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_1;
 				if (_datasource_Root_Defenders_SortController != null)
 				{
 					_datasource_Root_Defenders_SortController.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_SortController;
@@ -3565,15 +3759,6 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 					_datasource_Root_Defenders_Score.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_Score;
 					_datasource_Root_Defenders_Score.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_Score;
 					_datasource_Root_Defenders_Score.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_Score;
-					_widget_0_2_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_1;
-					_widget_0_2_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_1;
-					_widget_0_2_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_1;
-					_widget_0_2_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_1;
-					_widget_0_2_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_1;
-					_widget_0_2_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_1;
-					_widget_0_2_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_1;
-					_widget_0_2_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_1;
-					_widget_0_2_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_1;
 					_widget_0_2_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_2;
 					_widget_0_2_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_2;
 					_widget_0_2_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_2;
@@ -3628,6 +3813,15 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 					_widget_0_2_0_7.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_7;
 					_widget_0_2_0_7.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_7;
 					_widget_0_2_0_7.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_7;
+					_widget_0_2_0_8.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_8;
+					_widget_0_2_0_8.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_8;
+					_widget_0_2_0_8.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_8;
+					_widget_0_2_0_8.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_8;
+					_widget_0_2_0_8.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_8;
+					_widget_0_2_0_8.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_8;
+					_widget_0_2_0_8.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_8;
+					_widget_0_2_0_8.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_8;
+					_widget_0_2_0_8.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_8;
 					_datasource_Root_Defenders_Score = null;
 				}
 				_datasource_Root_Defenders = null;
@@ -3754,6 +3948,26 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 			_widget_0_1_6_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_6_1;
+			_widget_0_2_0_0.IsVisible = _datasource_Root_Defenders.IsPlayerSide;
+			_widget_0_2_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_1.IsHidden = _datasource_Root_Defenders.IsPlayerSide;
+			_widget_0_2_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_1;
 			_datasource_Root_Defenders_SortController = _datasource_Root_Defenders.SortController;
 			if (_datasource_Root_Defenders_SortController != null)
 			{
@@ -3865,17 +4079,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 				_datasource_Root_Defenders_Score.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_Score;
 				_datasource_Root_Defenders_Score.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_Score;
 				_datasource_Root_Defenders_Score.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_Score;
-				_widget_0_2_0_1.Text = _datasource_Root_Defenders_Score.NameText;
-				_widget_0_2_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_2.ValueAsInt = _datasource_Root_Defenders_Score.Remaining;
+				_widget_0_2_0_2.Text = _datasource_Root_Defenders_Score.NameText;
 				_widget_0_2_0_2.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_2;
@@ -3885,7 +4089,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 				_widget_0_2_0_2.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_2;
-				_widget_0_2_0_3.ValueAsInt = _datasource_Root_Defenders_Score.Kill;
+				_widget_0_2_0_3.ValueAsInt = _datasource_Root_Defenders_Score.Remaining;
 				_widget_0_2_0_3.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_3;
 				_widget_0_2_0_3.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_3;
 				_widget_0_2_0_3.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_3;
@@ -3895,7 +4099,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 				_widget_0_2_0_3.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_3;
 				_widget_0_2_0_3.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_3;
 				_widget_0_2_0_3.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_3;
-				_widget_0_2_0_4.ValueAsInt = _datasource_Root_Defenders_Score.ReadyToUpgrade;
+				_widget_0_2_0_4.ValueAsInt = _datasource_Root_Defenders_Score.Kill;
 				_widget_0_2_0_4.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_4;
 				_widget_0_2_0_4.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_4;
 				_widget_0_2_0_4.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_4;
@@ -3905,7 +4109,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 				_widget_0_2_0_4.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_4;
 				_widget_0_2_0_4.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_4;
 				_widget_0_2_0_4.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_4;
-				_widget_0_2_0_5.ValueAsInt = _datasource_Root_Defenders_Score.Dead;
+				_widget_0_2_0_5.ValueAsInt = _datasource_Root_Defenders_Score.ReadyToUpgrade;
 				_widget_0_2_0_5.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_5;
 				_widget_0_2_0_5.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_5;
 				_widget_0_2_0_5.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_5;
@@ -3915,7 +4119,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 				_widget_0_2_0_5.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_5;
 				_widget_0_2_0_5.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_5;
 				_widget_0_2_0_5.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_5;
-				_widget_0_2_0_6.ValueAsInt = _datasource_Root_Defenders_Score.Wounded;
+				_widget_0_2_0_6.ValueAsInt = _datasource_Root_Defenders_Score.Dead;
 				_widget_0_2_0_6.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_6;
 				_widget_0_2_0_6.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_6;
 				_widget_0_2_0_6.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_6;
@@ -3925,7 +4129,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 				_widget_0_2_0_6.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_6;
 				_widget_0_2_0_6.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_6;
 				_widget_0_2_0_6.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_6;
-				_widget_0_2_0_7.ValueAsInt = _datasource_Root_Defenders_Score.Routed;
+				_widget_0_2_0_7.ValueAsInt = _datasource_Root_Defenders_Score.Wounded;
 				_widget_0_2_0_7.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_7;
@@ -3935,6 +4139,16 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 				_widget_0_2_0_7.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_7;
+				_widget_0_2_0_8.ValueAsInt = _datasource_Root_Defenders_Score.Routed;
+				_widget_0_2_0_8.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_8;
 			}
 		}
 		_datasource_Root_RoutedHint = _datasource_Root.RoutedHint;

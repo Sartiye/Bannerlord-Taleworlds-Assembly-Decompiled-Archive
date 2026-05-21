@@ -205,7 +205,7 @@ public class SPChatLog__TaleWorlds_MountAndBlade_ViewModelCollection_Multiplayer
 		_widget_1_0.MarginBottom = 40f;
 		_widget_1_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1_1_0.SuggestedHeight = 45f;
@@ -216,7 +216,7 @@ public class SPChatLog__TaleWorlds_MountAndBlade_ViewModelCollection_Multiplayer
 		_widget_1_1_0_0.MarginBottom = 8f;
 		_widget_1_1_0_0.MarginLeft = 18f;
 		_widget_1_1_0_0.MarginRight = 22f;
-		_widget_1_1_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_1_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_1_0_0_0.VerticalAlignment = VerticalAlignment.Center;
@@ -281,7 +281,7 @@ public class SPChatLog__TaleWorlds_MountAndBlade_ViewModelCollection_Multiplayer
 		_widget_1_1_2_0_0_0_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_1_1_2_0_0_0_0.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_1_1_2_0_0_0_0.ClipContents = true;
-		_widget_1_1_2_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1_2_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_1_2_0_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_1_2_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_2_0_1.HorizontalAlignment = HorizontalAlignment.Right;

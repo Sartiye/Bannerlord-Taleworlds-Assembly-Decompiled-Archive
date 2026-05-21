@@ -425,7 +425,8 @@ public abstract class ViewModel : IViewModel, INotifyPropertyChanged
 		}
 		if (bindingList.Count > 0)
 		{
-			int num = Convert.ToInt32(subPath.FirstNode);
+			int num = -1;
+			num = Convert.ToInt32(subPath.FirstNode);
 			if (num >= 0 && num < bindingList.Count)
 			{
 				object obj = bindingList[num];

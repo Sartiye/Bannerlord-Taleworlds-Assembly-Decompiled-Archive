@@ -360,7 +360,7 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 	{
 		if (commandName == "Click")
 		{
-			_datasource_Root.ExecuteResetAndCompleteTranstactions();
+			_datasource_Root.ExecuteResetAndCompleteTranstactionsWithoutInquiry();
 		}
 	}
 

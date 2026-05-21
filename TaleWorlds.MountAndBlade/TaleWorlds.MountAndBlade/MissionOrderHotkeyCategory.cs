@@ -55,7 +55,7 @@ public sealed class MissionOrderHotkeyCategory : GameKeyContext
 	public const int ToggleSelection = 91;
 
 	public MissionOrderHotkeyCategory()
-		: base("MissionOrderHotkeyCategory", 110)
+		: base("MissionOrderHotkeyCategory", 116)
 	{
 		RegisterHotKeys();
 		RegisterGameKeys();

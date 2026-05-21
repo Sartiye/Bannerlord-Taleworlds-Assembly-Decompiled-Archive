@@ -1,19 +1,17 @@
-using System.Diagnostics;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.ModuleManager;
-using TaleWorlds.PlatformService;
 
 namespace TaleWorlds.MountAndBlade.ViewModelCollection.InitialMenu;
 
 public class InitialMenuVM : ViewModel
 {
-	private string _dlcStorePageLink;
-
 	private MBBindingList<InitialMenuOptionVM> _menuOptions;
+
+	private InitialMenuAnnouncementVM _announcement;
 
 	private bool _isProfileSelectionEnabled;
 
@@ -26,10 +24,6 @@ public class InitialMenuVM : ViewModel
 	private string _profileName;
 
 	private string _downloadingText;
-
-	private bool _isUpsellButtonVisible;
-
-	private bool _isUpsellButtonActive;
 
 	private string _currentLanguageString;
 
@@ -46,6 +40,23 @@ public class InitialMenuVM : ViewModel
 			{
 				_menuOptions = value;
 				OnPropertyChangedWithValue(value, "MenuOptions");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public InitialMenuAnnouncementVM Announcement
+	{
+		get
+		{
+			return _announcement;
+		}
+		set
+		{
+			if (value != _announcement)
+			{
+				_announcement = value;
+				OnPropertyChangedWithValue(value, "Announcement");
 			}
 		}
 	}
@@ -153,40 +164,6 @@ public class InitialMenuVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public bool IsUpsellButtonVisible
-	{
-		get
-		{
-			return _isUpsellButtonVisible;
-		}
-		set
-		{
-			if (value != _isUpsellButtonVisible)
-			{
-				_isUpsellButtonVisible = value;
-				OnPropertyChangedWithValue(value, "IsUpsellButtonVisible");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public bool IsUpsellButtonActive
-	{
-		get
-		{
-			return _isUpsellButtonActive;
-		}
-		set
-		{
-			if (value != _isUpsellButtonActive)
-			{
-				_isUpsellButtonActive = value;
-				OnPropertyChangedWithValue(value, "IsUpsellButtonActive");
-			}
-		}
-	}
-
-	[DataSourceProperty]
 	public string CurrentLanguageString
 	{
 		get
@@ -206,7 +183,7 @@ public class InitialMenuVM : ViewModel
 	public InitialMenuVM(InitialState initialState)
 	{
 		MenuOptions = new MBBindingList<InitialMenuOptionVM>();
-		RefreshUpsellButtonState();
+		Announcement = new InitialMenuAnnouncementVM();
 		if (HotKeyManager.ShouldNotifyDocumentVersionDifferent())
 		{
 			MBInformationManager.AddQuickInformation(new TextObject("{=0Itt3bZM}Current keybind document version is outdated. Keybinds have been reverted to defaults."));
@@ -221,9 +198,15 @@ public class InitialMenuVM : ViewModel
 		{
 			o.RefreshValues();
 		});
+		Announcement.Refresh();
 		SelectProfileText = new TextObject("{=wubDWOlh}Select Profile").ToString();
 		DownloadingText = new TextObject("{=i4Oo6aoM}Downloading Content...").ToString();
 		CurrentLanguageString = BannerlordConfig.Language;
+	}
+
+	public void Tick()
+	{
+		Announcement?.Tick();
 	}
 
 	public void RefreshMenuOptions()
@@ -240,7 +223,7 @@ public class InitialMenuVM : ViewModel
 		}
 		IsDownloadingContent = Utilities.IsOnlyCoreContentEnabled();
 		IsNavalDLCEnabled = ModuleHelper.IsModuleActive("NavalDLC");
-		RefreshUpsellButtonState();
+		Announcement.Refresh();
 	}
 
 	public override void OnFinalize()
@@ -251,68 +234,6 @@ public class InitialMenuVM : ViewModel
 			x.OnFinalize();
 		});
 		MenuOptions.Clear();
-	}
-
-	private void RefreshUpsellButtonState()
-	{
-		RefreshUpsellButtonIsVisible();
-		RefreshUpsellButtonLink();
-		IsUpsellButtonActive = !string.IsNullOrEmpty(_dlcStorePageLink);
-	}
-
-	private void RefreshUpsellButtonIsVisible()
-	{
-		if (IsNavalDLCEnabled)
-		{
-			IsUpsellButtonVisible = false;
-			return;
-		}
-		Platform currentPlatform = ApplicationPlatform.CurrentPlatform;
-		if ((uint)currentPlatform <= 1u || (uint)(currentPlatform - 7) <= 1u)
-		{
-			IsUpsellButtonVisible = true;
-		}
-		else
-		{
-			IsUpsellButtonVisible = false;
-		}
-	}
-
-	private void RefreshUpsellButtonLink()
-	{
-		if (!IsUpsellButtonVisible)
-		{
-			_dlcStorePageLink = null;
-			return;
-		}
-		switch (ApplicationPlatform.CurrentPlatform)
-		{
-		case Platform.WindowsSteam:
-			_dlcStorePageLink = "https://store.steampowered.com/app/2927200/Mount__Blade_II_Bannerlord__War_Sails/";
-			break;
-		case Platform.WindowsGOG:
-			_dlcStorePageLink = "https://www.gog.com/en/game/mount_blade_ii_bannerlord_war_sails";
-			break;
-		case Platform.WindowsEpic:
-			_dlcStorePageLink = "https://store.epicgames.com/en-US/p/mount-and-blade-2-mount-and-blade-ii-bannerlord-war-sails-597919";
-			break;
-		case Platform.GDKDesktop:
-			_dlcStorePageLink = "https://www.xbox.com/games/store/mount-blade-ii-bannerlord-war-sails/9n205dn89073";
-			break;
-		default:
-			_dlcStorePageLink = null;
-			break;
-		}
-	}
-
-	public void ExecuteNavigateToDLCStorePage()
-	{
-		if (IsUpsellButtonActive && !string.IsNullOrEmpty(_dlcStorePageLink) && !PlatformServices.Instance.ShowOverlayForWebPage(_dlcStorePageLink).Result)
-		{
-			Process.Start(new ProcessStartInfo(_dlcStorePageLink)
-			{
-				UseShellExecute = true
-			});
-		}
+		Announcement.OnFinalize();
 	}
 }

@@ -58,7 +58,7 @@ public class PeaceOfferCampaignBehavior : CampaignBehaviorBase
 			TextObject textObject = ((tributeAmount <= 0) ? ((tributeAmount >= 0) ? ((Hero.MainHero.MapFaction.Leader == Hero.MainHero) ? PeaceOfferDefaultPanelDescriptionText : PeaceOfferDefaultPanelPlayerIsVassalDescriptionText) : ((Hero.MainHero.MapFaction.Leader == Hero.MainHero) ? PeaceOfferTributeWantedPanelDescriptionText : PeaceOfferTributeWantedPanelPlayerIsVassalDescriptionText)) : ((Hero.MainHero.MapFaction.Leader == Hero.MainHero) ? PeaceOfferTributePaidPanelDescriptionText : PeaceOfferTributePaidPanelPlayerIsVassalDescriptionText));
 			textObject.SetTextVariable("MAP_FACTION_NAME", opponentFaction.InformalName);
 			textObject.SetTextVariable("GOLD_AMOUNT", MathF.Abs(_currentPeaceOfferTributeAmount));
-			textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+			textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 			TextObject peacePanelNegativeText = PeacePanelNegativeText;
 			_influenceCostOfDecline = 0;
 			Campaign.Current.TimeControlMode = CampaignTimeControlMode.Stop;

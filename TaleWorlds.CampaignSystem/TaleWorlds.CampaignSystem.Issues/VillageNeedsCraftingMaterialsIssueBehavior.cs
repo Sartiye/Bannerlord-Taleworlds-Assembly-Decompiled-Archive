@@ -78,7 +78,7 @@ public class VillageNeedsCraftingMaterialsIssueBehavior : CampaignBehaviorBase
 				textObject.SetTextVariable("REQUESTED_ITEM", _requestedItem.Name);
 				textObject.SetTextVariable("REQUESTED_ITEM_COUNT", _numberOfRequestedItem);
 				textObject.SetTextVariable("NUMBER_OF_DAYS", 30);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -208,10 +208,11 @@ public class VillageNeedsCraftingMaterialsIssueBehavior : CampaignBehaviorBase
 			_promisedPayment = GetPayment();
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flags, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flags, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			flags = PreconditionFlags.None;
 			relationHero = null;
+			requiredGold = 0;
 			skill = null;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{

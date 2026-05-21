@@ -900,6 +900,7 @@ public class CharacterTableau
 			_mountVisuals = AgentVisuals.Create(agentVisualsData, "MountTableau", isRandomProgress: false, needBatchedVersionForWeaponMeshes: false, forceUseFaceCache: false);
 			_mountVisuals.SetAgentLodZeroOrMaxExternal(makeZero: true);
 			_mountVisuals.SetVisible(value: false);
+			_mountVisuals.SetClothingColors(_clothColor1, _clothColor2);
 			_mountVisuals.GetEntity().CheckResources(addToQueue: true, checkFaceResources: true);
 		}
 		else if (_mountVisuals != null)

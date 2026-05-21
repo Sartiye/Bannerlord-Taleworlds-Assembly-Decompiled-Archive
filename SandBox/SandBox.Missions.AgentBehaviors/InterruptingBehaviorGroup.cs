@@ -76,4 +76,15 @@ public class InterruptingBehaviorGroup : AgentBehaviorGroup
 	{
 		Navigator.RefreshBehaviorGroups(isSimulation: false);
 	}
+
+	public override void ConversationTick()
+	{
+		foreach (AgentBehavior behavior in Behaviors)
+		{
+			if (behavior.IsActive)
+			{
+				behavior.ConversationTick();
+			}
+		}
+	}
 }

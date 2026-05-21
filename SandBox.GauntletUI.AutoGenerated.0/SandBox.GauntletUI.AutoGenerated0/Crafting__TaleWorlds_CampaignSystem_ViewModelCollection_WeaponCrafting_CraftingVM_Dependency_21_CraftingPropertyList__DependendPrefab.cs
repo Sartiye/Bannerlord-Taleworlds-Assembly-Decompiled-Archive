@@ -31,7 +31,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 	{
 		base.WidthSizePolicy = SizePolicy.StretchToParent;
 		base.HeightSizePolicy = SizePolicy.CoverChildren;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 	}
 
 	public void DestroyDataSource()

@@ -530,7 +530,7 @@ public class MapBar__TaleWorlds_CampaignSystem_ViewModelCollection_Map_MapBar_Ma
 		_widget_11.NinePatchBottom = 11;
 		_widget_11_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_11_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_11_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_11_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_11_0_0.ScopeID = "MapBarRightPanelTopInfoBarScope";
 		_widget_11_0_0.ScopeParent = _widget_11_0_1;
 		_widget_11_0_0.ScopeMovements = GamepadNavigationTypes.Horizontal;

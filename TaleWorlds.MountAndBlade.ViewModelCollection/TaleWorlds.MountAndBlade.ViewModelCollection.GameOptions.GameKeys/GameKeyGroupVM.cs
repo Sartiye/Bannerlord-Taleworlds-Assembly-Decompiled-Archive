@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using TaleWorlds.Core;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace TaleWorlds.MountAndBlade.ViewModelCollection.GameOptions.GameKeys;
 
@@ -10,6 +13,8 @@ public class GameKeyGroupVM : ViewModel
 	private readonly Action<KeyOptionVM> _onKeybindRequest;
 
 	private readonly Action<int, InputKey> _setAllKeysOfId;
+
+	private readonly Func<KeyOptionVM, string> _getExtraInformation;
 
 	private readonly string _categoryId;
 
@@ -53,10 +58,11 @@ public class GameKeyGroupVM : ViewModel
 		}
 	}
 
-	public GameKeyGroupVM(string categoryId, IEnumerable<GameKey> keys, Action<KeyOptionVM> onKeybindRequest, Action<int, InputKey> setAllKeysOfId)
+	public GameKeyGroupVM(string categoryId, IEnumerable<GameKey> keys, Action<KeyOptionVM> onKeybindRequest, Action<int, InputKey> setAllKeysOfId, Func<KeyOptionVM, string> getExtraInformation)
 	{
 		_onKeybindRequest = onKeybindRequest;
 		_setAllKeysOfId = setAllKeysOfId;
+		_getExtraInformation = getExtraInformation;
 		_categoryId = categoryId;
 		_gameKeys = new MBBindingList<GameKeyOptionVM>();
 		_keys = keys;
@@ -96,7 +102,7 @@ public class GameKeyGroupVM : ViewModel
 			}
 			goto IL_008a;
 			IL_008a:
-			GameKeys.Add(new GameKeyOptionVM(key, _onKeybindRequest, SetGameKey));
+			GameKeys.Add(new GameKeyOptionVM(key, _onKeybindRequest, SetGameKey, _getExtraInformation));
 			continue;
 			IL_0088:
 			if (!num)
@@ -119,9 +125,20 @@ public class GameKeyGroupVM : ViewModel
 
 	private void SetGameKey(GameKeyOptionVM option, InputKey newKey)
 	{
-		option.CurrentKey.ChangeKey(newKey);
-		option.OptionValueText = Module.CurrentModule.GlobalTextManager.FindText("str_game_key_text", option.CurrentKey.ToString().ToLower()).ToString();
-		_setAllKeysOfId(option.CurrentGameKey.Id, newKey);
+		InputKey inputKey = option.CurrentKey.InputKey;
+		if (newKey != inputKey)
+		{
+			option.CurrentKey.ChangeKey(newKey);
+			option.OptionValueText = Module.CurrentModule.GlobalTextManager.GetHotKeyGameTextFromKeyID(option.CurrentKey.ToString().ToLower()).ToString();
+			option.UpdateIsChanged();
+			_setAllKeysOfId(option.CurrentGameKey.Id, newKey);
+			GameKeyOptionVM gameKeyOptionVM = GameKeys.FirstOrDefault((GameKeyOptionVM k) => k != option && k.CurrentKey.InputKey == option.CurrentKey.InputKey);
+			gameKeyOptionVM?.Set(inputKey);
+			if (gameKeyOptionVM != null)
+			{
+				MBInformationManager.AddQuickInformation(new TextObject("{=gb2S2aRq}Swapped {FIRST_KEY} and {SECOND_KEY}").SetTextVariable("FIRST_KEY", option.Name).SetTextVariable("SECOND_KEY", gameKeyOptionVM.Name), -1000);
+			}
+		}
 	}
 
 	internal void Update()
@@ -144,7 +161,7 @@ public class GameKeyGroupVM : ViewModel
 	{
 		for (int i = 0; i < GameKeys.Count; i++)
 		{
-			if (GameKeys[i].IsChanged())
+			if (GameKeys[i].IsChanged)
 			{
 				return true;
 			}
@@ -163,7 +180,7 @@ public class GameKeyGroupVM : ViewModel
 	{
 		GameKeys.ApplyActionOnAllItems(delegate(GameKeyOptionVM g)
 		{
-			g.Revert();
+			g.ExecuteRevert();
 		});
 	}
 

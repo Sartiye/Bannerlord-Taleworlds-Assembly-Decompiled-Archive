@@ -1,4 +1,5 @@
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 
@@ -16,6 +17,8 @@ public abstract class MobilePartyAIModel : MBGameModel<MobilePartyAIModel>
 
 	public abstract float FortificationPatrolDistanceAsDays { get; }
 
+	public abstract float FortificationPortPatrolDistanceAsDays { get; }
+
 	public abstract float VillagePatrolDistanceAsDays { get; }
 
 	public abstract float SettlementDefendingNearbyPartyCheckRadius { get; }
@@ -31,6 +34,8 @@ public abstract class MobilePartyAIModel : MBGameModel<MobilePartyAIModel>
 	public abstract bool ShouldConsiderAttacking(MobileParty party, MobileParty targetParty);
 
 	public abstract float GetPatrolRadius(MobileParty mobileParty, CampaignVec2 patrolPoint);
+
+	public abstract float GetSettlementNearbyThreatAndAllyCheckRadius(Settlement settlement, bool isPort);
 
 	public abstract bool ShouldPartyCheckInitiativeBehavior(MobileParty mobileParty);
 

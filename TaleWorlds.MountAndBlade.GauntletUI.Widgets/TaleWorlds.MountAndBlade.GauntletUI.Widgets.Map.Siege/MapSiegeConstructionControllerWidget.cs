@@ -1,5 +1,6 @@
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
+using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets.Map.Siege;
 
@@ -15,11 +16,11 @@ public class MapSiegeConstructionControllerWidget : Widget
 	protected override void OnLateUpdate(float dt)
 	{
 		base.OnLateUpdate(dt);
-		float num = 0f;
+		float num;
 		if (_currentWidget != null)
 		{
-			base.PositionXOffset = _currentWidget.PositionXOffset + _currentWidget.Size.X * base._inverseScaleToUse;
-			base.PositionYOffset = _currentWidget.PositionYOffset;
+			base.PositionXOffset = MathF.Clamp(_currentWidget.PositionXOffset + _currentWidget.Size.X * base._inverseScaleToUse, 0f, base.EventManager.PageSize.X - base.Size.X);
+			base.PositionYOffset = MathF.Clamp(_currentWidget.PositionYOffset, 175f, base.EventManager.PageSize.Y - base.Size.Y - 70f);
 			num = _currentWidget.ReadOnlyBrush.GlobalAlphaFactor;
 		}
 		else

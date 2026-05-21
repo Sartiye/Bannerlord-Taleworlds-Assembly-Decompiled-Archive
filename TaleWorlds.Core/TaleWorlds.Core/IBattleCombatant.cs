@@ -18,4 +18,6 @@ public interface IBattleCombatant
 	Banner Banner { get; }
 
 	int GetTacticsSkillAmount();
+
+	bool IsUnderPlayersCommand(BattleSideEnum playerSide);
 }

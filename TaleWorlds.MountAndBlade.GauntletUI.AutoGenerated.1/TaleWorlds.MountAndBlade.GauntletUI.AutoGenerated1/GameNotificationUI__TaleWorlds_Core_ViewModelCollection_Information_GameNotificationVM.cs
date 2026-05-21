@@ -129,6 +129,7 @@ public class GameNotificationUI__TaleWorlds_Core_ViewModelCollection_Information
 		_datasource_Root.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
+		_widget_0.EventFire -= EventListenerOf_widget_0;
 		_widget_0.PropertyChanged -= PropertyChangedListenerOf_widget_0;
 		_widget_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0;
 		_widget_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0;
@@ -199,6 +200,14 @@ public class GameNotificationUI__TaleWorlds_Core_ViewModelCollection_Information
 		RefreshDataSource_datasource_Root(dataSource);
 	}
 
+	private void EventListenerOf_widget_0(Widget widget, string commandName, object[] args)
+	{
+		if (commandName == "NotificationFinished")
+		{
+			_datasource_Root.SkipCurrentNotification();
+		}
+	}
+
 	private void PropertyChangedListenerOf_widget_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
 		HandleWidgetPropertyChangeOf_widget_0(propertyName);
@@ -254,11 +263,17 @@ public class GameNotificationUI__TaleWorlds_Core_ViewModelCollection_Information
 		case "NotificationId":
 			_datasource_Root.NotificationId = _widget_0.NotificationId;
 			break;
-		case "TotalDt":
-			_datasource_Root.Timer = _widget_0.TotalDt;
+		case "IsPaused":
+			_datasource_Root.IsPaused = _widget_0.IsPaused;
 			break;
-		case "TotalTime":
-			_datasource_Root.TotalTime = _widget_0.TotalTime;
+		case "NotificationDurationInSeconds":
+			_datasource_Root.CurrentNotificationDurationInSeconds = _widget_0.NotificationDurationInSeconds;
+			break;
+		case "MustFadeOutCurrentNotification":
+			_datasource_Root.MustFadeOutCurrentNotification = _widget_0.MustFadeOutCurrentNotification;
+			break;
+		case "NotificationFadeOutDelayInSeconds":
+			_datasource_Root.CurrentNotificationFadeOutDelayInSeconds = _widget_0.NotificationFadeOutDelayInSeconds;
 			break;
 		}
 	}
@@ -488,11 +503,17 @@ public class GameNotificationUI__TaleWorlds_Core_ViewModelCollection_Information
 		case "NotificationId":
 			_widget_0.NotificationId = _datasource_Root.NotificationId;
 			break;
-		case "Timer":
-			_widget_0.TotalDt = _datasource_Root.Timer;
+		case "IsPaused":
+			_widget_0.IsPaused = _datasource_Root.IsPaused;
 			break;
-		case "TotalTime":
-			_widget_0.TotalTime = _datasource_Root.TotalTime;
+		case "CurrentNotificationDurationInSeconds":
+			_widget_0.NotificationDurationInSeconds = _datasource_Root.CurrentNotificationDurationInSeconds;
+			break;
+		case "MustFadeOutCurrentNotification":
+			_widget_0.MustFadeOutCurrentNotification = _datasource_Root.MustFadeOutCurrentNotification;
+			break;
+		case "CurrentNotificationFadeOutDelayInSeconds":
+			_widget_0.NotificationFadeOutDelayInSeconds = _datasource_Root.CurrentNotificationFadeOutDelayInSeconds;
 			break;
 		}
 	}
@@ -632,6 +653,7 @@ public class GameNotificationUI__TaleWorlds_Core_ViewModelCollection_Information
 			_datasource_Root.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
+			_widget_0.EventFire -= EventListenerOf_widget_0;
 			_widget_0.PropertyChanged -= PropertyChangedListenerOf_widget_0;
 			_widget_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0;
 			_widget_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0;
@@ -712,8 +734,11 @@ public class GameNotificationUI__TaleWorlds_Core_ViewModelCollection_Information
 		_datasource_Root.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
 		_widget_0.IsVisible = _datasource_Root.GotNotification;
 		_widget_0.NotificationId = _datasource_Root.NotificationId;
-		_widget_0.TotalDt = _datasource_Root.Timer;
-		_widget_0.TotalTime = _datasource_Root.TotalTime;
+		_widget_0.IsPaused = _datasource_Root.IsPaused;
+		_widget_0.NotificationDurationInSeconds = _datasource_Root.CurrentNotificationDurationInSeconds;
+		_widget_0.MustFadeOutCurrentNotification = _datasource_Root.MustFadeOutCurrentNotification;
+		_widget_0.NotificationFadeOutDelayInSeconds = _datasource_Root.CurrentNotificationFadeOutDelayInSeconds;
+		_widget_0.EventFire += EventListenerOf_widget_0;
 		_widget_0.PropertyChanged += PropertyChangedListenerOf_widget_0;
 		_widget_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0;
 		_widget_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0;

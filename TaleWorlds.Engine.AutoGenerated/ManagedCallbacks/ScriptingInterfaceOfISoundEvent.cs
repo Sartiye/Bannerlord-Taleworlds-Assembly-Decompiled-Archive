@@ -61,6 +61,12 @@ internal class ScriptingInterfaceOfISoundEvent : ISoundEvent
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool IsStoppedDelegate(int eventId);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool IsValidDelegate(int eventId);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -160,6 +166,8 @@ internal class ScriptingInterfaceOfISoundEvent : ISoundEvent
 	public static IsPausedDelegate call_IsPausedDelegate;
 
 	public static IsPlayingDelegate call_IsPlayingDelegate;
+
+	public static IsStoppedDelegate call_IsStoppedDelegate;
 
 	public static IsValidDelegate call_IsValidDelegate;
 
@@ -281,6 +289,11 @@ internal class ScriptingInterfaceOfISoundEvent : ISoundEvent
 	public bool IsPlaying(int eventId)
 	{
 		return call_IsPlayingDelegate(eventId);
+	}
+
+	public bool IsStopped(int eventId)
+	{
+		return call_IsStoppedDelegate(eventId);
 	}
 
 	public bool IsValid(int eventId)

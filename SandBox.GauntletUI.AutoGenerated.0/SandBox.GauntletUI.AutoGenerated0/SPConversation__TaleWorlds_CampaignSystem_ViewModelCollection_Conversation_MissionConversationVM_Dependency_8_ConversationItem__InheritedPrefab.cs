@@ -243,7 +243,7 @@ public class SPConversation__TaleWorlds_CampaignSystem_ViewModelCollection_Conve
 		_widget_2_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_2_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_2_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_0.MinWidth = 65f;
 		_widget_2_0_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_0_0_0.HeightSizePolicy = SizePolicy.Fixed;
@@ -266,7 +266,7 @@ public class SPConversation__TaleWorlds_CampaignSystem_ViewModelCollection_Conve
 		_widget_2_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_1_0.IsFailChance = true;
-		_widget_2_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_1_0.MinWidth = 65f;
 		_widget_2_1_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_1_0_0.HeightSizePolicy = SizePolicy.Fixed;
@@ -289,7 +289,7 @@ public class SPConversation__TaleWorlds_CampaignSystem_ViewModelCollection_Conve
 		_widget_2_2.DoNotPassEventsToChildren = true;
 		_widget_2_2_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_2_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_2_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_2_0.MinWidth = 65f;
 		_widget_2_2_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_2_0_0.HeightSizePolicy = SizePolicy.Fixed;
@@ -312,7 +312,7 @@ public class SPConversation__TaleWorlds_CampaignSystem_ViewModelCollection_Conve
 		_widget_2_3_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_3_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2_3_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_2_3_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_3_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_3_0.MinWidth = 65f;
 		_widget_2_3_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_3_0_0.HeightSizePolicy = SizePolicy.Fixed;

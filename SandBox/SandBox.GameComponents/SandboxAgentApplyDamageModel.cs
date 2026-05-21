@@ -467,7 +467,12 @@ public class SandboxAgentApplyDamageModel : AgentApplyDamageModel
 				explainedNumber = new ExplainedNumber(explainedNumber.ResultNumber * (1f + attackInformation.AttackerAgent.AgentDrivenProperties.MeleeWeaponDamageMultiplierBonus));
 			}
 		}
-		return new ExplainedNumber(explainedNumber.ResultNumber * (1f + attackInformation.AttackerAgent.AgentDrivenProperties.DamageMultiplierBonus)).ResultNumber;
+		Agent attackerAgent = attackInformation.AttackerAgent;
+		if (attackerAgent != null)
+		{
+			explainedNumber = new ExplainedNumber(explainedNumber.ResultNumber * (1f + attackerAgent.AgentDrivenProperties.DamageMultiplierBonus));
+		}
+		return explainedNumber.ResultNumber;
 	}
 
 	public override bool DecideCrushedThrough(Agent attackerAgent, Agent defenderAgent, float totalAttackEnergy, Agent.UsageDirection attackDirection, StrikeType strikeType, WeaponComponentData defendItem, bool isPassiveUsage)

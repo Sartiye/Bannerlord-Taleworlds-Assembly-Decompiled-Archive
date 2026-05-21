@@ -147,7 +147,7 @@ public class EncyclopediaConceptPage__TaleWorlds_CampaignSystem_ViewModelCollect
 		_widget_0_0_0_0_1.MarginTop = 15f;
 		_widget_0_0_0_0_1.MarginRight = 10f;
 		_widget_0_0_0_0_1.MarginBottom = 10f;
-		_widget_0_0_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0_0_1_0.MarginLeft = 60f;

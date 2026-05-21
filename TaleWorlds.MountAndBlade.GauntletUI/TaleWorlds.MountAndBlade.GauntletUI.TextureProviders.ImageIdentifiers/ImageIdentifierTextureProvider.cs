@@ -5,7 +5,6 @@ using TaleWorlds.GauntletUI;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.View.Tableaus;
 using TaleWorlds.MountAndBlade.View.Tableaus.Thumbnails;
-using TaleWorlds.ScreenSystem;
 using TaleWorlds.TwoDimension;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI.TextureProviders.ImageIdentifiers;
@@ -195,10 +194,6 @@ public abstract class ImageIdentifierTextureProvider : TextureProvider, IDisposa
 
 	public void CreateImageWithId(string id, string additionalArgs)
 	{
-		if (ScreenManager.IsLateTickInProgress)
-		{
-			Debug.FailedAssert("Trying to create a render request on late tick. ", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\TextureProviders\\ImageIdentifiers\\ImageIdentifierTextureProvider.cs", "CreateImageWithId", 131);
-		}
 		OnCreateImageWithId(id, additionalArgs ?? string.Empty);
 	}
 
@@ -216,7 +211,6 @@ public abstract class ImageIdentifierTextureProvider : TextureProvider, IDisposa
 
 	private void OnDisposed()
 	{
-		_ = ThumbnailCreationData;
 		ReleaseCache();
 	}
 

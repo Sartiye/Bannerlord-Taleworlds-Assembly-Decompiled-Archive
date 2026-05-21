@@ -16,6 +16,8 @@ public class FloatInputTextWidget : EditableTextWidget
 
 	public bool EnableClamp { get; set; }
 
+	public bool UpdateValueOnDone { get; set; }
+
 	[Editor(false)]
 	public float FloatText
 	{
@@ -189,6 +191,10 @@ public class FloatInputTextWidget : EditableTextWidget
 		}
 		if (Input.IsKeyReleased(InputKey.Enter) || Input.IsKeyReleased(InputKey.NumpadEnter))
 		{
+			if (float.TryParse(base.RealText, out var result2))
+			{
+				ForceSetFloat(result2);
+			}
 			EventFired("TextEntered");
 		}
 		else if (_keyboardAction == KeyboardAction.BackSpace || _keyboardAction == KeyboardAction.Delete)
@@ -312,6 +318,15 @@ public class FloatInputTextWidget : EditableTextWidget
 		}
 	}
 
+	protected override void OnUpdate(float dt)
+	{
+		base.OnUpdate(dt);
+		if (!base.IsFocused && float.TryParse(base.RealText, out var result))
+		{
+			ForceSetFloat(result);
+		}
+	}
+
 	private bool TrySetStringAsFloat(string str)
 	{
 		if (float.TryParse(str, out var result))
@@ -336,6 +351,19 @@ public class FloatInputTextWidget : EditableTextWidget
 	}
 
 	private void SetFloat(float newFloat)
+	{
+		if (UpdateValueOnDone)
+		{
+			base.RealText = newFloat.ToString();
+			base.Text = newFloat.ToString();
+		}
+		else
+		{
+			ForceSetFloat(newFloat);
+		}
+	}
+
+	private void ForceSetFloat(float newFloat)
 	{
 		if (EnableClamp && (newFloat > MaxFloat || newFloat < MinFloat))
 		{

@@ -332,4 +332,23 @@ public class DefaultCombatSimulationModel : CombatSimulationModel
 		}
 		return 0.1f;
 	}
+
+	public override CampaignTime GetSimulationTickInterval(MapEvent mapEvent)
+	{
+		if (mapEvent.IsSiegeAssault)
+		{
+			return CampaignTime.Minutes(60L);
+		}
+		return CampaignTime.Minutes(30L);
+	}
+
+	public override MBList<(Ship, MapEventParty)> GetSimulationShips(MapEvent mapEvent, MBList<MapEventParty> battleParties)
+	{
+		return new MBList<(Ship, MapEventParty)>();
+	}
+
+	public override int GetParticipatingTroopCount(MapEventSide side)
+	{
+		return side.HealthyTroopCountAtMapEventStart;
+	}
 }

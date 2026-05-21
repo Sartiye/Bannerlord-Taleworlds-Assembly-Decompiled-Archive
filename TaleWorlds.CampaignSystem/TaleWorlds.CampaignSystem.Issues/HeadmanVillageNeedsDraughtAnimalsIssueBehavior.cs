@@ -90,7 +90,7 @@ public class HeadmanVillageNeedsDraughtAnimalsIssueBehavior : CampaignBehaviorBa
 				}
 				textObject.SetTextVariable("REQUESTED_ANIMAL_AMOUNT", _requestedAnimalAmount);
 				textObject.SetTextVariable("SELECTED_ANIMAL", _selectedAnimal.Name);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -104,7 +104,7 @@ public class HeadmanVillageNeedsDraughtAnimalsIssueBehavior : CampaignBehaviorBa
 				TextObject textObject = new TextObject("{=bvEOmHWd}I think a man who knows how to trade alongside {ALTERNATIVE_TROOP_AMOUNT} [if:convo_undecided_open]fighters can get the job done without trouble. they will need {GOLD_REQUIRED_FOR_ALTERNATIVE_SOLUTION}{GOLD_ICON} denars to buy the animals. You or one of your companions, {?PLAYER.GENDER}madam{?}sir{\\?} - it doesn't matter for us as long as you find the animals we need...");
 				textObject.SetTextVariable("ALTERNATIVE_TROOP_AMOUNT", GetTotalAlternativeSolutionNeededMenCount());
 				textObject.SetTextVariable("GOLD_REQUIRED_FOR_ALTERNATIVE_SOLUTION", GoldRequiredForAlternativeSolution);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -125,13 +125,24 @@ public class HeadmanVillageNeedsDraughtAnimalsIssueBehavior : CampaignBehaviorBa
 		{
 			get
 			{
-				TextObject textObject = new TextObject("{=F16k4H7R}{QUEST_GIVER.LINK} told you that {?QUEST_GIVER.GENDER}she{?}he{\\?} needs {.%}{?(REQUESTED_ANIMAL_AMOUNT > 1)}{PLURAL(SELECTED_ANIMAL)}{?}{SELECTED_ANIMAL}{\\?}{.%} for {?QUEST_GIVER.GENDER}her{?}his{\\?} village. {?QUEST_GIVER.GENDER}She{?}He{\\?} will pay you {REWARD_GOLD}{GOLD_ICON} denars when the animals are delivered. You asked your {COMPANION.LINK} and {ALTERNATIVE_TROOP_AMOUNT} of your men to deliver {REQUESTED_ANIMAL_AMOUNT} {.%}{?(REQUESTED_ANIMAL_AMOUNT > 1)}{PLURAL(SELECTED_ANIMAL)}{?}{SELECTED_ANIMAL}{\\?}{.%} to {QUEST_GIVER.LINK}. They will rejoin your party in {RETURN_DAYS} days.");
+				TextObject textObject = new TextObject("{=QJn8pbzh}{QUEST_GIVER.LINK} told you that {?QUEST_GIVER.GENDER}she{?}he{\\?} needs {.%}{?(REQUESTED_ANIMAL_AMOUNT > 1)}{PLURAL(SELECTED_ANIMAL)}{?}{SELECTED_ANIMAL}{\\?}{.%} for {?QUEST_GIVER.GENDER}her{?}his{\\?} village. {?QUEST_GIVER.GENDER}She{?}He{\\?} will pay you {REWARD} when the animals are delivered. You asked your {COMPANION.LINK} and {ALTERNATIVE_TROOP_AMOUNT} of your men to deliver {REQUESTED_ANIMAL_AMOUNT} {.%}{?(REQUESTED_ANIMAL_AMOUNT > 1)}{PLURAL(SELECTED_ANIMAL)}{?}{SELECTED_ANIMAL}{\\?}{.%} to {QUEST_GIVER.LINK}. They will rejoin your party in {RETURN_DAYS} days.");
 				textObject.SetTextVariable("ALTERNATIVE_TROOP_AMOUNT", GetTotalAlternativeSolutionNeededMenCount());
 				textObject.SetTextVariable("REQUESTED_ANIMAL_AMOUNT", _requestedAnimalAmount);
 				textObject.SetTextVariable("SELECTED_ANIMAL", _selectedAnimal.Name);
 				textObject.SetTextVariable("RETURN_DAYS", GetTotalAlternativeSolutionDurationInDays());
-				textObject.SetTextVariable("REWARD_GOLD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				TextObject empty = TextObject.GetEmpty();
+				if (!_isQuestWithMeatOffer)
+				{
+					empty = new TextObject("{=OyOn7N84}{REWARD_GOLD}{GOLD_ICON} denars");
+					empty.SetTextVariable("REWARD_GOLD", RewardGold);
+					empty.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
+				}
+				else
+				{
+					empty = new TextObject("{=3bh1q4ZV}{MEAT_AMOUNT} meat");
+					empty.SetTextVariable("MEAT_AMOUNT", OfferedMeatAmount);
+				}
+				textObject.SetTextVariable("REWARD", empty);
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.IssueOwner.CharacterObject, textObject);
 				StringHelpers.SetCharacterProperties("COMPANION", base.AlternativeSolutionHero.CharacterObject, textObject);
 				return textObject;
@@ -234,10 +245,11 @@ public class HeadmanVillageNeedsDraughtAnimalsIssueBehavior : CampaignBehaviorBa
 			GiveGoldAction.ApplyBetweenCharacters(Hero.MainHero, null, GoldRequiredForAlternativeSolution);
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flags, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flags, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			flags = PreconditionFlags.None;
 			relationHero = null;
+			requiredGold = 0;
 			skill = null;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -349,7 +361,7 @@ public class HeadmanVillageNeedsDraughtAnimalsIssueBehavior : CampaignBehaviorBa
 				TextObject textObject = new TextObject("{=7LjTNs1k}{QUEST_GIVER.LINK} will pay you {REWARD_GOLD}{GOLD_ICON} denars when the task is done.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("REWARD_GOLD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -485,7 +497,7 @@ public class HeadmanVillageNeedsDraughtAnimalsIssueBehavior : CampaignBehaviorBa
 					if (_discountValue > 0)
 					{
 						npcDiscountLine.SetTextVariable("DISCOUNTED_REWARD", RewardGold - _discountValue);
-						npcDiscountLine.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+						npcDiscountLine.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 						return true;
 					}
 					return false;

@@ -126,9 +126,9 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 
 	private Widget _widget_0_2_0_0;
 
-	private TextWidget _widget_0_2_0_1;
+	private Widget _widget_0_2_0_1;
 
-	private ScoreboardAnimatedTextWidget _widget_0_2_0_2;
+	private TextWidget _widget_0_2_0_2;
 
 	private ScoreboardAnimatedTextWidget _widget_0_2_0_3;
 
@@ -140,15 +140,17 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 
 	private ScoreboardAnimatedTextWidget _widget_0_2_0_7;
 
+	private ScoreboardAnimatedTextWidget _widget_0_2_0_8;
+
 	private SPScoreboardVM _datasource_Root;
 
-	private SPScoreboardSideVM _datasource_Root_Attackers;
+	private SPScoreboardSideVM _datasource_Root_Defenders;
 
-	private SPScoreboardSortControllerVM _datasource_Root_Attackers_SortController;
+	private SPScoreboardSortControllerVM _datasource_Root_Defenders_SortController;
 
-	private BasicTooltipViewModel _datasource_Root_Attackers_MoraleHint;
+	private BasicTooltipViewModel _datasource_Root_Defenders_MoraleHint;
 
-	private SPScoreboardStatsVM _datasource_Root_Attackers_Score;
+	private SPScoreboardStatsVM _datasource_Root_Defenders_Score;
 
 	private HintViewModel _datasource_Root_RoutedHint;
 
@@ -278,9 +280,9 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 		_widget_0_2.AddChild(_widget_0_2_0);
 		_widget_0_2_0_0 = new Widget(base.Context);
 		_widget_0_2_0.AddChild(_widget_0_2_0_0);
-		_widget_0_2_0_1 = new TextWidget(base.Context);
+		_widget_0_2_0_1 = new Widget(base.Context);
 		_widget_0_2_0.AddChild(_widget_0_2_0_1);
-		_widget_0_2_0_2 = new ScoreboardAnimatedTextWidget(base.Context);
+		_widget_0_2_0_2 = new TextWidget(base.Context);
 		_widget_0_2_0.AddChild(_widget_0_2_0_2);
 		_widget_0_2_0_3 = new ScoreboardAnimatedTextWidget(base.Context);
 		_widget_0_2_0.AddChild(_widget_0_2_0_3);
@@ -292,6 +294,8 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 		_widget_0_2_0.AddChild(_widget_0_2_0_6);
 		_widget_0_2_0_7 = new ScoreboardAnimatedTextWidget(base.Context);
 		_widget_0_2_0.AddChild(_widget_0_2_0_7);
+		_widget_0_2_0_8 = new ScoreboardAnimatedTextWidget(base.Context);
+		_widget_0_2_0.AddChild(_widget_0_2_0_8);
 	}
 
 	public void SetIds()
@@ -593,62 +597,68 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 		_widget_0_2_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_0_0.MarginLeft = 5f;
 		_widget_0_2_0_0.MarginRight = 5f;
-		_widget_0_2_0_0.Sprite = base.Context.SpriteData.GetSprite("SPGeneral\\SPScoreboard\\enemy_bar");
+		_widget_0_2_0_0.Sprite = base.Context.SpriteData.GetSprite("SPGeneral\\SPScoreboard\\ally_bar");
 		_widget_0_2_0_0.AlphaFactor = 1f;
-		_widget_0_2_0_1.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_0_2_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_2_0_1.SuggestedWidth = 250f;
-		_widget_0_2_0_1.MarginLeft = 20f;
-		_widget_0_2_0_1.Brush = base.Context.GetBrush("ScoreboardDefaultFontBrush");
-		_widget_0_2_0_1.Brush.FontSize = 36;
+		_widget_0_2_0_1.MarginLeft = 5f;
+		_widget_0_2_0_1.MarginRight = 5f;
+		_widget_0_2_0_1.Sprite = base.Context.SpriteData.GetSprite("SPGeneral\\SPScoreboard\\enemy_bar");
+		_widget_0_2_0_1.AlphaFactor = 1f;
 		_widget_0_2_0_2.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_2_0_2.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_2_0_2.SuggestedWidth = 55f;
-		_widget_0_2_0_2.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_0_2_0_2.PositionXOffset = -302f;
-		_widget_0_2_0_2.ShowZero = true;
-		_widget_0_2_0_2.Brush = base.Context.GetBrush("ScoreboardRemainingItem");
-		_widget_0_2_0_2.Brush.FontSize = 30;
+		_widget_0_2_0_2.SuggestedWidth = 250f;
+		_widget_0_2_0_2.MarginLeft = 20f;
+		_widget_0_2_0_2.Brush = base.Context.GetBrush("ScoreboardDefaultFontBrush");
+		_widget_0_2_0_2.Brush.FontSize = 36;
 		_widget_0_2_0_3.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_2_0_3.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_0_3.SuggestedWidth = 55f;
 		_widget_0_2_0_3.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_0_2_0_3.PositionXOffset = -242f;
+		_widget_0_2_0_3.PositionXOffset = -302f;
 		_widget_0_2_0_3.ShowZero = true;
-		_widget_0_2_0_3.Brush = base.Context.GetBrush("ScoreboardKillItem");
+		_widget_0_2_0_3.Brush = base.Context.GetBrush("ScoreboardRemainingItem");
 		_widget_0_2_0_3.Brush.FontSize = 30;
 		_widget_0_2_0_4.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_2_0_4.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_0_4.SuggestedWidth = 55f;
 		_widget_0_2_0_4.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_0_2_0_4.PositionXOffset = -192f;
+		_widget_0_2_0_4.PositionXOffset = -242f;
 		_widget_0_2_0_4.ShowZero = true;
-		_widget_0_2_0_4.Brush = base.Context.GetBrush("ScoreboardReadyToUpgradeItem");
+		_widget_0_2_0_4.Brush = base.Context.GetBrush("ScoreboardKillItem");
 		_widget_0_2_0_4.Brush.FontSize = 30;
 		_widget_0_2_0_5.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_2_0_5.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_0_5.SuggestedWidth = 55f;
 		_widget_0_2_0_5.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_0_2_0_5.PositionXOffset = -117f;
+		_widget_0_2_0_5.PositionXOffset = -192f;
 		_widget_0_2_0_5.ShowZero = true;
-		_widget_0_2_0_5.Brush = base.Context.GetBrush("ScoreboardDeadItem");
+		_widget_0_2_0_5.Brush = base.Context.GetBrush("ScoreboardReadyToUpgradeItem");
 		_widget_0_2_0_5.Brush.FontSize = 30;
 		_widget_0_2_0_6.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_2_0_6.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_0_6.SuggestedWidth = 55f;
 		_widget_0_2_0_6.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_0_2_0_6.PositionXOffset = -67f;
+		_widget_0_2_0_6.PositionXOffset = -117f;
 		_widget_0_2_0_6.ShowZero = true;
-		_widget_0_2_0_6.Brush = base.Context.GetBrush("ScoreboardWoundedItem");
+		_widget_0_2_0_6.Brush = base.Context.GetBrush("ScoreboardDeadItem");
 		_widget_0_2_0_6.Brush.FontSize = 30;
 		_widget_0_2_0_7.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_2_0_7.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_0_7.SuggestedWidth = 55f;
 		_widget_0_2_0_7.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_0_2_0_7.PositionXOffset = -17f;
+		_widget_0_2_0_7.PositionXOffset = -67f;
 		_widget_0_2_0_7.ShowZero = true;
-		_widget_0_2_0_7.Brush = base.Context.GetBrush("ScoreboardRoutedItem");
+		_widget_0_2_0_7.Brush = base.Context.GetBrush("ScoreboardWoundedItem");
 		_widget_0_2_0_7.Brush.FontSize = 30;
+		_widget_0_2_0_8.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_0_2_0_8.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_2_0_8.SuggestedWidth = 55f;
+		_widget_0_2_0_8.HorizontalAlignment = HorizontalAlignment.Right;
+		_widget_0_2_0_8.PositionXOffset = -17f;
+		_widget_0_2_0_8.ShowZero = true;
+		_widget_0_2_0_8.Brush = base.Context.GetBrush("ScoreboardRoutedItem");
+		_widget_0_2_0_8.Brush.FontSize = 30;
 	}
 
 	public void DestroyDataSource()
@@ -666,17 +676,17 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 		_datasource_Root.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
-		if (_datasource_Root_Attackers != null)
+		if (_datasource_Root_Defenders != null)
 		{
-			_datasource_Root_Attackers.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers;
+			_datasource_Root_Defenders.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders;
 			_widget_0_1_6_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1_6_1;
@@ -686,17 +696,35 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_widget_0_1_6_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_6_1;
-			if (_datasource_Root_Attackers_SortController != null)
+			_widget_0_2_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_1;
+			if (_datasource_Root_Defenders_SortController != null)
 			{
-				_datasource_Root_Attackers_SortController.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_SortController;
 				_widget_0_1_0.EventFire -= EventListenerOf_widget_0_1_0;
 				_widget_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0;
 				_widget_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0;
@@ -757,42 +785,33 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_1_5.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_5;
 				_widget_0_1_5.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_5;
 				_widget_0_1_5.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_5;
-				_datasource_Root_Attackers_SortController = null;
+				_datasource_Root_Defenders_SortController = null;
 			}
-			if (_datasource_Root_Attackers_MoraleHint != null)
+			if (_datasource_Root_Defenders_MoraleHint != null)
 			{
-				_datasource_Root_Attackers_MoraleHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_MoraleHint;
 				_widget_0_1_6_2.EventFire -= EventListenerOf_widget_0_1_6_2;
-				_datasource_Root_Attackers_MoraleHint = null;
+				_datasource_Root_Defenders_MoraleHint = null;
 			}
-			if (_datasource_Root_Attackers_Score != null)
+			if (_datasource_Root_Defenders_Score != null)
 			{
-				_datasource_Root_Attackers_Score.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_Score;
-				_widget_0_2_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_1;
+				_datasource_Root_Defenders_Score.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_Score;
 				_widget_0_2_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_2;
@@ -847,9 +866,18 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_2_0_7.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_7;
-				_datasource_Root_Attackers_Score = null;
+				_widget_0_2_0_8.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_8;
+				_datasource_Root_Defenders_Score = null;
 			}
-			_datasource_Root_Attackers = null;
+			_datasource_Root_Defenders = null;
 		}
 		if (_datasource_Root_RoutedHint != null)
 		{
@@ -947,7 +975,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 	{
 		if (commandName == "Click")
 		{
-			_datasource_Root_Attackers_SortController.ExecuteSortByRouted();
+			_datasource_Root_Defenders_SortController.ExecuteSortByRouted();
 		}
 	}
 
@@ -955,7 +983,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 	{
 		if (commandName == "Click")
 		{
-			_datasource_Root_Attackers_SortController.ExecuteSortByWounded();
+			_datasource_Root_Defenders_SortController.ExecuteSortByWounded();
 		}
 	}
 
@@ -963,7 +991,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 	{
 		if (commandName == "Click")
 		{
-			_datasource_Root_Attackers_SortController.ExecuteSortByDead();
+			_datasource_Root_Defenders_SortController.ExecuteSortByDead();
 		}
 	}
 
@@ -971,7 +999,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 	{
 		if (commandName == "Click")
 		{
-			_datasource_Root_Attackers_SortController.ExecuteSortByUpgrade();
+			_datasource_Root_Defenders_SortController.ExecuteSortByUpgrade();
 		}
 	}
 
@@ -979,7 +1007,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 	{
 		if (commandName == "Click")
 		{
-			_datasource_Root_Attackers_SortController.ExecuteSortByKill();
+			_datasource_Root_Defenders_SortController.ExecuteSortByKill();
 		}
 	}
 
@@ -987,7 +1015,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 	{
 		if (commandName == "Click")
 		{
-			_datasource_Root_Attackers_SortController.ExecuteSortByRemaining();
+			_datasource_Root_Defenders_SortController.ExecuteSortByRemaining();
 		}
 	}
 
@@ -1067,11 +1095,11 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 	{
 		if (commandName == "HoverBegin")
 		{
-			_datasource_Root_Attackers_MoraleHint.ExecuteBeginHint();
+			_datasource_Root_Defenders_MoraleHint.ExecuteBeginHint();
 		}
 		if (commandName == "HoverEnd")
 		{
-			_datasource_Root_Attackers_MoraleHint.ExecuteEndHint();
+			_datasource_Root_Defenders_MoraleHint.ExecuteEndHint();
 		}
 	}
 
@@ -1124,7 +1152,113 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 	{
 		if (propertyName == "Morale")
 		{
-			_datasource_Root_Attackers.Morale = _widget_0_1_6_1.Morale;
+			_datasource_Root_Defenders.Morale = _widget_0_1_6_1.Morale;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_0_2_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_0(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_0_2_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_0(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_0_2_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_0(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_0_2_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_0(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_0_2_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_0(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_0_2_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_0(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_0_2_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_0(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_0_2_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_0(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_0_2_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_0(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_0_2_0_0(string propertyName)
+	{
+		if (propertyName == "IsVisible")
+		{
+			_datasource_Root_Defenders.IsPlayerSide = _widget_0_2_0_0.IsVisible;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_0_2_0_1(string propertyName)
+	{
+		if (propertyName == "IsHidden")
+		{
+			_datasource_Root_Defenders.IsPlayerSide = _widget_0_2_0_1.IsHidden;
 		}
 	}
 
@@ -1177,11 +1311,11 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 	{
 		if (propertyName == "IsSelected")
 		{
-			_datasource_Root_Attackers_SortController.IsRoutedSelected = _widget_0_1_0.IsSelected;
+			_datasource_Root_Defenders_SortController.IsRoutedSelected = _widget_0_1_0.IsSelected;
 		}
 		else if (propertyName == "SortState")
 		{
-			_datasource_Root_Attackers_SortController.RoutedState = _widget_0_1_0.SortState;
+			_datasource_Root_Defenders_SortController.RoutedState = _widget_0_1_0.SortState;
 		}
 	}
 
@@ -1234,11 +1368,11 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 	{
 		if (propertyName == "IsSelected")
 		{
-			_datasource_Root_Attackers_SortController.IsWoundedSelected = _widget_0_1_1.IsSelected;
+			_datasource_Root_Defenders_SortController.IsWoundedSelected = _widget_0_1_1.IsSelected;
 		}
 		else if (propertyName == "SortState")
 		{
-			_datasource_Root_Attackers_SortController.WoundedState = _widget_0_1_1.SortState;
+			_datasource_Root_Defenders_SortController.WoundedState = _widget_0_1_1.SortState;
 		}
 	}
 
@@ -1291,11 +1425,11 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 	{
 		if (propertyName == "IsSelected")
 		{
-			_datasource_Root_Attackers_SortController.IsDeadSelected = _widget_0_1_2.IsSelected;
+			_datasource_Root_Defenders_SortController.IsDeadSelected = _widget_0_1_2.IsSelected;
 		}
 		else if (propertyName == "SortState")
 		{
-			_datasource_Root_Attackers_SortController.DeadState = _widget_0_1_2.SortState;
+			_datasource_Root_Defenders_SortController.DeadState = _widget_0_1_2.SortState;
 		}
 	}
 
@@ -1348,11 +1482,11 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 	{
 		if (propertyName == "IsSelected")
 		{
-			_datasource_Root_Attackers_SortController.IsUpgradeSelected = _widget_0_1_3.IsSelected;
+			_datasource_Root_Defenders_SortController.IsUpgradeSelected = _widget_0_1_3.IsSelected;
 		}
 		else if (propertyName == "SortState")
 		{
-			_datasource_Root_Attackers_SortController.UpgradeState = _widget_0_1_3.SortState;
+			_datasource_Root_Defenders_SortController.UpgradeState = _widget_0_1_3.SortState;
 		}
 	}
 
@@ -1405,11 +1539,11 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 	{
 		if (propertyName == "IsSelected")
 		{
-			_datasource_Root_Attackers_SortController.IsKillSelected = _widget_0_1_4.IsSelected;
+			_datasource_Root_Defenders_SortController.IsKillSelected = _widget_0_1_4.IsSelected;
 		}
 		else if (propertyName == "SortState")
 		{
-			_datasource_Root_Attackers_SortController.KillState = _widget_0_1_4.SortState;
+			_datasource_Root_Defenders_SortController.KillState = _widget_0_1_4.SortState;
 		}
 	}
 
@@ -1462,64 +1596,11 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 	{
 		if (propertyName == "IsSelected")
 		{
-			_datasource_Root_Attackers_SortController.IsRemainingSelected = _widget_0_1_5.IsSelected;
+			_datasource_Root_Defenders_SortController.IsRemainingSelected = _widget_0_1_5.IsSelected;
 		}
 		else if (propertyName == "SortState")
 		{
-			_datasource_Root_Attackers_SortController.RemainingState = _widget_0_1_5.SortState;
-		}
-	}
-
-	private void PropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_0_2_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_2_0_1(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_0_2_0_1(string propertyName)
-	{
-		if (propertyName == "Text")
-		{
-			_datasource_Root_Attackers_Score.NameText = _widget_0_2_0_1.Text;
+			_datasource_Root_Defenders_SortController.RemainingState = _widget_0_1_5.SortState;
 		}
 	}
 
@@ -1570,9 +1651,9 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 
 	private void HandleWidgetPropertyChangeOf_widget_0_2_0_2(string propertyName)
 	{
-		if (propertyName == "ValueAsInt")
+		if (propertyName == "Text")
 		{
-			_datasource_Root_Attackers_Score.Remaining = _widget_0_2_0_2.ValueAsInt;
+			_datasource_Root_Defenders_Score.NameText = _widget_0_2_0_2.Text;
 		}
 	}
 
@@ -1625,7 +1706,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 	{
 		if (propertyName == "ValueAsInt")
 		{
-			_datasource_Root_Attackers_Score.Kill = _widget_0_2_0_3.ValueAsInt;
+			_datasource_Root_Defenders_Score.Remaining = _widget_0_2_0_3.ValueAsInt;
 		}
 	}
 
@@ -1678,7 +1759,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 	{
 		if (propertyName == "ValueAsInt")
 		{
-			_datasource_Root_Attackers_Score.ReadyToUpgrade = _widget_0_2_0_4.ValueAsInt;
+			_datasource_Root_Defenders_Score.Kill = _widget_0_2_0_4.ValueAsInt;
 		}
 	}
 
@@ -1731,7 +1812,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 	{
 		if (propertyName == "ValueAsInt")
 		{
-			_datasource_Root_Attackers_Score.Dead = _widget_0_2_0_5.ValueAsInt;
+			_datasource_Root_Defenders_Score.ReadyToUpgrade = _widget_0_2_0_5.ValueAsInt;
 		}
 	}
 
@@ -1784,7 +1865,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 	{
 		if (propertyName == "ValueAsInt")
 		{
-			_datasource_Root_Attackers_Score.Wounded = _widget_0_2_0_6.ValueAsInt;
+			_datasource_Root_Defenders_Score.Dead = _widget_0_2_0_6.ValueAsInt;
 		}
 	}
 
@@ -1837,158 +1918,215 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 	{
 		if (propertyName == "ValueAsInt")
 		{
-			_datasource_Root_Attackers_Score.Routed = _widget_0_2_0_7.ValueAsInt;
+			_datasource_Root_Defenders_Score.Wounded = _widget_0_2_0_7.ValueAsInt;
 		}
 	}
 
-	private void ViewModelPropertyChangedListenerOf_datasource_Root_Attackers(object sender, PropertyChangedEventArgs e)
+	private void PropertyChangedListenerOf_widget_0_2_0_8(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers(e.PropertyName);
+		HandleWidgetPropertyChangeOf_widget_0_2_0_8(propertyName);
 	}
 
-	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers(object sender, PropertyChangedWithValueEventArgs e)
+	private void boolPropertyChangedListenerOf_widget_0_2_0_8(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers(e.PropertyName);
+		HandleWidgetPropertyChangeOf_widget_0_2_0_8(propertyName);
 	}
 
-	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers(object sender, PropertyChangedWithBoolValueEventArgs e)
+	private void floatPropertyChangedListenerOf_widget_0_2_0_8(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers(e.PropertyName);
+		HandleWidgetPropertyChangeOf_widget_0_2_0_8(propertyName);
 	}
 
-	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers(object sender, PropertyChangedWithIntValueEventArgs e)
+	private void Vec2PropertyChangedListenerOf_widget_0_2_0_8(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers(e.PropertyName);
+		HandleWidgetPropertyChangeOf_widget_0_2_0_8(propertyName);
 	}
 
-	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers(object sender, PropertyChangedWithFloatValueEventArgs e)
+	private void Vector2PropertyChangedListenerOf_widget_0_2_0_8(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers(e.PropertyName);
+		HandleWidgetPropertyChangeOf_widget_0_2_0_8(propertyName);
 	}
 
-	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers(object sender, PropertyChangedWithUIntValueEventArgs e)
+	private void doublePropertyChangedListenerOf_widget_0_2_0_8(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers(e.PropertyName);
+		HandleWidgetPropertyChangeOf_widget_0_2_0_8(propertyName);
 	}
 
-	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers(object sender, PropertyChangedWithColorValueEventArgs e)
+	private void intPropertyChangedListenerOf_widget_0_2_0_8(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers(e.PropertyName);
+		HandleWidgetPropertyChangeOf_widget_0_2_0_8(propertyName);
 	}
 
-	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers(object sender, PropertyChangedWithDoubleValueEventArgs e)
+	private void uintPropertyChangedListenerOf_widget_0_2_0_8(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers(e.PropertyName);
+		HandleWidgetPropertyChangeOf_widget_0_2_0_8(propertyName);
 	}
 
-	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers(object sender, PropertyChangedWithVec2ValueEventArgs e)
+	private void ColorPropertyChangedListenerOf_widget_0_2_0_8(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers(e.PropertyName);
+		HandleWidgetPropertyChangeOf_widget_0_2_0_8(propertyName);
 	}
 
-	private void HandleViewModelPropertyChangeOf_datasource_Root_Attackers(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_0_2_0_8(string propertyName)
+	{
+		if (propertyName == "ValueAsInt")
+		{
+			_datasource_Root_Defenders_Score.Routed = _widget_0_2_0_8.ValueAsInt;
+		}
+	}
+
+	private void ViewModelPropertyChangedListenerOf_datasource_Root_Defenders(object sender, PropertyChangedEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders(object sender, PropertyChangedWithValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders(object sender, PropertyChangedWithBoolValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders(object sender, PropertyChangedWithIntValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders(object sender, PropertyChangedWithFloatValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders(object sender, PropertyChangedWithUIntValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders(object sender, PropertyChangedWithColorValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders(object sender, PropertyChangedWithDoubleValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders(object sender, PropertyChangedWithVec2ValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders(e.PropertyName);
+	}
+
+	private void HandleViewModelPropertyChangeOf_datasource_Root_Defenders(string propertyName)
 	{
 		switch (propertyName)
 		{
 		case "SortController":
-			RefreshDataSource_datasource_Root_Attackers_SortController(_datasource_Root_Attackers.SortController);
+			RefreshDataSource_datasource_Root_Defenders_SortController(_datasource_Root_Defenders.SortController);
 			break;
 		case "MoraleHint":
-			RefreshDataSource_datasource_Root_Attackers_MoraleHint(_datasource_Root_Attackers.MoraleHint);
+			RefreshDataSource_datasource_Root_Defenders_MoraleHint(_datasource_Root_Defenders.MoraleHint);
 			break;
 		case "Score":
-			RefreshDataSource_datasource_Root_Attackers_Score(_datasource_Root_Attackers.Score);
+			RefreshDataSource_datasource_Root_Defenders_Score(_datasource_Root_Defenders.Score);
 			break;
 		case "Morale":
-			_widget_0_1_6_1.Morale = _datasource_Root_Attackers.Morale;
+			_widget_0_1_6_1.Morale = _datasource_Root_Defenders.Morale;
+			break;
+		case "IsPlayerSide":
+			_widget_0_2_0_0.IsVisible = _datasource_Root_Defenders.IsPlayerSide;
+			_widget_0_2_0_1.IsHidden = _datasource_Root_Defenders.IsPlayerSide;
 			break;
 		}
 	}
 
-	private void ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_SortController(object sender, PropertyChangedEventArgs e)
+	private void ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_SortController(object sender, PropertyChangedEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_SortController(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_SortController(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_SortController(object sender, PropertyChangedWithValueEventArgs e)
+	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_SortController(object sender, PropertyChangedWithValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_SortController(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_SortController(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_SortController(object sender, PropertyChangedWithBoolValueEventArgs e)
+	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_SortController(object sender, PropertyChangedWithBoolValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_SortController(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_SortController(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_SortController(object sender, PropertyChangedWithIntValueEventArgs e)
+	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_SortController(object sender, PropertyChangedWithIntValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_SortController(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_SortController(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_SortController(object sender, PropertyChangedWithFloatValueEventArgs e)
+	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_SortController(object sender, PropertyChangedWithFloatValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_SortController(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_SortController(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_SortController(object sender, PropertyChangedWithUIntValueEventArgs e)
+	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_SortController(object sender, PropertyChangedWithUIntValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_SortController(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_SortController(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_SortController(object sender, PropertyChangedWithColorValueEventArgs e)
+	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_SortController(object sender, PropertyChangedWithColorValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_SortController(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_SortController(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_SortController(object sender, PropertyChangedWithDoubleValueEventArgs e)
+	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_SortController(object sender, PropertyChangedWithDoubleValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_SortController(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_SortController(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_SortController(object sender, PropertyChangedWithVec2ValueEventArgs e)
+	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_SortController(object sender, PropertyChangedWithVec2ValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_SortController(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_SortController(e.PropertyName);
 	}
 
-	private void HandleViewModelPropertyChangeOf_datasource_Root_Attackers_SortController(string propertyName)
+	private void HandleViewModelPropertyChangeOf_datasource_Root_Defenders_SortController(string propertyName)
 	{
 		switch (propertyName)
 		{
 		case "IsRoutedSelected":
-			_widget_0_1_0.IsSelected = _datasource_Root_Attackers_SortController.IsRoutedSelected;
+			_widget_0_1_0.IsSelected = _datasource_Root_Defenders_SortController.IsRoutedSelected;
 			break;
 		case "RoutedState":
-			_widget_0_1_0.SortState = _datasource_Root_Attackers_SortController.RoutedState;
+			_widget_0_1_0.SortState = _datasource_Root_Defenders_SortController.RoutedState;
 			break;
 		case "IsWoundedSelected":
-			_widget_0_1_1.IsSelected = _datasource_Root_Attackers_SortController.IsWoundedSelected;
+			_widget_0_1_1.IsSelected = _datasource_Root_Defenders_SortController.IsWoundedSelected;
 			break;
 		case "WoundedState":
-			_widget_0_1_1.SortState = _datasource_Root_Attackers_SortController.WoundedState;
+			_widget_0_1_1.SortState = _datasource_Root_Defenders_SortController.WoundedState;
 			break;
 		case "IsDeadSelected":
-			_widget_0_1_2.IsSelected = _datasource_Root_Attackers_SortController.IsDeadSelected;
+			_widget_0_1_2.IsSelected = _datasource_Root_Defenders_SortController.IsDeadSelected;
 			break;
 		case "DeadState":
-			_widget_0_1_2.SortState = _datasource_Root_Attackers_SortController.DeadState;
+			_widget_0_1_2.SortState = _datasource_Root_Defenders_SortController.DeadState;
 			break;
 		case "IsUpgradeSelected":
-			_widget_0_1_3.IsSelected = _datasource_Root_Attackers_SortController.IsUpgradeSelected;
+			_widget_0_1_3.IsSelected = _datasource_Root_Defenders_SortController.IsUpgradeSelected;
 			break;
 		case "UpgradeState":
-			_widget_0_1_3.SortState = _datasource_Root_Attackers_SortController.UpgradeState;
+			_widget_0_1_3.SortState = _datasource_Root_Defenders_SortController.UpgradeState;
 			break;
 		case "IsKillSelected":
-			_widget_0_1_4.IsSelected = _datasource_Root_Attackers_SortController.IsKillSelected;
+			_widget_0_1_4.IsSelected = _datasource_Root_Defenders_SortController.IsKillSelected;
 			break;
 		case "KillState":
-			_widget_0_1_4.SortState = _datasource_Root_Attackers_SortController.KillState;
+			_widget_0_1_4.SortState = _datasource_Root_Defenders_SortController.KillState;
 			break;
 		case "IsRemainingSelected":
-			_widget_0_1_5.IsSelected = _datasource_Root_Attackers_SortController.IsRemainingSelected;
+			_widget_0_1_5.IsSelected = _datasource_Root_Defenders_SortController.IsRemainingSelected;
 			break;
 		case "RemainingState":
-			_widget_0_1_5.SortState = _datasource_Root_Attackers_SortController.RemainingState;
+			_widget_0_1_5.SortState = _datasource_Root_Defenders_SortController.RemainingState;
 			break;
 		}
 	}
@@ -2287,124 +2425,124 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 	{
 	}
 
-	private void ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_MoraleHint(object sender, PropertyChangedEventArgs e)
+	private void ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_MoraleHint(object sender, PropertyChangedEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_MoraleHint(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_MoraleHint(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_MoraleHint(object sender, PropertyChangedWithValueEventArgs e)
+	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_MoraleHint(object sender, PropertyChangedWithValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_MoraleHint(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_MoraleHint(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_MoraleHint(object sender, PropertyChangedWithBoolValueEventArgs e)
+	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_MoraleHint(object sender, PropertyChangedWithBoolValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_MoraleHint(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_MoraleHint(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_MoraleHint(object sender, PropertyChangedWithIntValueEventArgs e)
+	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_MoraleHint(object sender, PropertyChangedWithIntValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_MoraleHint(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_MoraleHint(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_MoraleHint(object sender, PropertyChangedWithFloatValueEventArgs e)
+	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_MoraleHint(object sender, PropertyChangedWithFloatValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_MoraleHint(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_MoraleHint(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_MoraleHint(object sender, PropertyChangedWithUIntValueEventArgs e)
+	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_MoraleHint(object sender, PropertyChangedWithUIntValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_MoraleHint(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_MoraleHint(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_MoraleHint(object sender, PropertyChangedWithColorValueEventArgs e)
+	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_MoraleHint(object sender, PropertyChangedWithColorValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_MoraleHint(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_MoraleHint(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_MoraleHint(object sender, PropertyChangedWithDoubleValueEventArgs e)
+	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_MoraleHint(object sender, PropertyChangedWithDoubleValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_MoraleHint(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_MoraleHint(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_MoraleHint(object sender, PropertyChangedWithVec2ValueEventArgs e)
+	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_MoraleHint(object sender, PropertyChangedWithVec2ValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_MoraleHint(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_MoraleHint(e.PropertyName);
 	}
 
-	private void HandleViewModelPropertyChangeOf_datasource_Root_Attackers_MoraleHint(string propertyName)
+	private void HandleViewModelPropertyChangeOf_datasource_Root_Defenders_MoraleHint(string propertyName)
 	{
 	}
 
-	private void ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_Score(object sender, PropertyChangedEventArgs e)
+	private void ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_Score(object sender, PropertyChangedEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_Score(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_Score(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_Score(object sender, PropertyChangedWithValueEventArgs e)
+	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_Score(object sender, PropertyChangedWithValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_Score(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_Score(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_Score(object sender, PropertyChangedWithBoolValueEventArgs e)
+	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_Score(object sender, PropertyChangedWithBoolValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_Score(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_Score(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_Score(object sender, PropertyChangedWithIntValueEventArgs e)
+	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_Score(object sender, PropertyChangedWithIntValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_Score(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_Score(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_Score(object sender, PropertyChangedWithFloatValueEventArgs e)
+	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_Score(object sender, PropertyChangedWithFloatValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_Score(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_Score(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_Score(object sender, PropertyChangedWithUIntValueEventArgs e)
+	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_Score(object sender, PropertyChangedWithUIntValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_Score(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_Score(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_Score(object sender, PropertyChangedWithColorValueEventArgs e)
+	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_Score(object sender, PropertyChangedWithColorValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_Score(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_Score(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_Score(object sender, PropertyChangedWithDoubleValueEventArgs e)
+	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_Score(object sender, PropertyChangedWithDoubleValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_Score(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_Score(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_Score(object sender, PropertyChangedWithVec2ValueEventArgs e)
+	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_Score(object sender, PropertyChangedWithVec2ValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_Attackers_Score(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_Defenders_Score(e.PropertyName);
 	}
 
-	private void HandleViewModelPropertyChangeOf_datasource_Root_Attackers_Score(string propertyName)
+	private void HandleViewModelPropertyChangeOf_datasource_Root_Defenders_Score(string propertyName)
 	{
 		switch (propertyName)
 		{
 		case "NameText":
-			_widget_0_2_0_1.Text = _datasource_Root_Attackers_Score.NameText;
+			_widget_0_2_0_2.Text = _datasource_Root_Defenders_Score.NameText;
 			break;
 		case "Remaining":
-			_widget_0_2_0_2.ValueAsInt = _datasource_Root_Attackers_Score.Remaining;
+			_widget_0_2_0_3.ValueAsInt = _datasource_Root_Defenders_Score.Remaining;
 			break;
 		case "Kill":
-			_widget_0_2_0_3.ValueAsInt = _datasource_Root_Attackers_Score.Kill;
+			_widget_0_2_0_4.ValueAsInt = _datasource_Root_Defenders_Score.Kill;
 			break;
 		case "ReadyToUpgrade":
-			_widget_0_2_0_4.ValueAsInt = _datasource_Root_Attackers_Score.ReadyToUpgrade;
+			_widget_0_2_0_5.ValueAsInt = _datasource_Root_Defenders_Score.ReadyToUpgrade;
 			break;
 		case "Dead":
-			_widget_0_2_0_5.ValueAsInt = _datasource_Root_Attackers_Score.Dead;
+			_widget_0_2_0_6.ValueAsInt = _datasource_Root_Defenders_Score.Dead;
 			break;
 		case "Wounded":
-			_widget_0_2_0_6.ValueAsInt = _datasource_Root_Attackers_Score.Wounded;
+			_widget_0_2_0_7.ValueAsInt = _datasource_Root_Defenders_Score.Wounded;
 			break;
 		case "Routed":
-			_widget_0_2_0_7.ValueAsInt = _datasource_Root_Attackers_Score.Routed;
+			_widget_0_2_0_8.ValueAsInt = _datasource_Root_Defenders_Score.Routed;
 			break;
 		}
 	}
@@ -2458,8 +2596,8 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 	{
 		switch (propertyName)
 		{
-		case "Attackers":
-			RefreshDataSource_datasource_Root_Attackers(_datasource_Root.Attackers);
+		case "Defenders":
+			RefreshDataSource_datasource_Root_Defenders(_datasource_Root.Defenders);
 			break;
 		case "RoutedHint":
 			RefreshDataSource_datasource_Root_RoutedHint(_datasource_Root.RoutedHint);
@@ -2482,19 +2620,19 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_Attackers(SPScoreboardSideVM newDataSource)
+	private void RefreshDataSource_datasource_Root_Defenders(SPScoreboardSideVM newDataSource)
 	{
-		if (_datasource_Root_Attackers != null)
+		if (_datasource_Root_Defenders != null)
 		{
-			_datasource_Root_Attackers.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers;
+			_datasource_Root_Defenders.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders;
 			_widget_0_1_6_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1_6_1;
@@ -2504,17 +2642,35 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_widget_0_1_6_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_6_1;
-			if (_datasource_Root_Attackers_SortController != null)
+			_widget_0_2_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_1;
+			if (_datasource_Root_Defenders_SortController != null)
 			{
-				_datasource_Root_Attackers_SortController.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_SortController;
 				_widget_0_1_0.EventFire -= EventListenerOf_widget_0_1_0;
 				_widget_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0;
 				_widget_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0;
@@ -2575,42 +2731,33 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_1_5.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_5;
 				_widget_0_1_5.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_5;
 				_widget_0_1_5.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_5;
-				_datasource_Root_Attackers_SortController = null;
+				_datasource_Root_Defenders_SortController = null;
 			}
-			if (_datasource_Root_Attackers_MoraleHint != null)
+			if (_datasource_Root_Defenders_MoraleHint != null)
 			{
-				_datasource_Root_Attackers_MoraleHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_MoraleHint;
 				_widget_0_1_6_2.EventFire -= EventListenerOf_widget_0_1_6_2;
-				_datasource_Root_Attackers_MoraleHint = null;
+				_datasource_Root_Defenders_MoraleHint = null;
 			}
-			if (_datasource_Root_Attackers_Score != null)
+			if (_datasource_Root_Defenders_Score != null)
 			{
-				_datasource_Root_Attackers_Score.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_Score;
-				_widget_0_2_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_1;
+				_datasource_Root_Defenders_Score.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_Score;
 				_widget_0_2_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_2;
@@ -2665,24 +2812,33 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_2_0_7.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_7;
-				_datasource_Root_Attackers_Score = null;
+				_widget_0_2_0_8.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_8;
+				_datasource_Root_Defenders_Score = null;
 			}
-			_datasource_Root_Attackers = null;
+			_datasource_Root_Defenders = null;
 		}
-		_datasource_Root_Attackers = newDataSource;
-		_datasource_Root_Attackers = _datasource_Root.Attackers;
-		if (_datasource_Root_Attackers != null)
+		_datasource_Root_Defenders = newDataSource;
+		_datasource_Root_Defenders = _datasource_Root.Defenders;
+		if (_datasource_Root_Defenders != null)
 		{
-			_datasource_Root_Attackers.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers;
-			_widget_0_1_6_1.Morale = _datasource_Root_Attackers.Morale;
+			_datasource_Root_Defenders.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders;
+			_widget_0_1_6_1.Morale = _datasource_Root_Defenders.Morale;
 			_widget_0_1_6_1.PropertyChanged += PropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_6_1;
@@ -2692,20 +2848,40 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_widget_0_1_6_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_6_1;
-			_datasource_Root_Attackers_SortController = _datasource_Root_Attackers.SortController;
-			if (_datasource_Root_Attackers_SortController != null)
+			_widget_0_2_0_0.IsVisible = _datasource_Root_Defenders.IsPlayerSide;
+			_widget_0_2_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_1.IsHidden = _datasource_Root_Defenders.IsPlayerSide;
+			_widget_0_2_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_1;
+			_datasource_Root_Defenders_SortController = _datasource_Root_Defenders.SortController;
+			if (_datasource_Root_Defenders_SortController != null)
 			{
-				_datasource_Root_Attackers_SortController.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_SortController;
-				_widget_0_1_0.IsSelected = _datasource_Root_Attackers_SortController.IsRoutedSelected;
-				_widget_0_1_0.SortState = _datasource_Root_Attackers_SortController.RoutedState;
+				_datasource_Root_Defenders_SortController.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_SortController;
+				_widget_0_1_0.IsSelected = _datasource_Root_Defenders_SortController.IsRoutedSelected;
+				_widget_0_1_0.SortState = _datasource_Root_Defenders_SortController.RoutedState;
 				_widget_0_1_0.EventFire += EventListenerOf_widget_0_1_0;
 				_widget_0_1_0.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0;
 				_widget_0_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0;
@@ -2716,8 +2892,8 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0;
 				_widget_0_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0;
 				_widget_0_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0;
-				_widget_0_1_1.IsSelected = _datasource_Root_Attackers_SortController.IsWoundedSelected;
-				_widget_0_1_1.SortState = _datasource_Root_Attackers_SortController.WoundedState;
+				_widget_0_1_1.IsSelected = _datasource_Root_Defenders_SortController.IsWoundedSelected;
+				_widget_0_1_1.SortState = _datasource_Root_Defenders_SortController.WoundedState;
 				_widget_0_1_1.EventFire += EventListenerOf_widget_0_1_1;
 				_widget_0_1_1.PropertyChanged += PropertyChangedListenerOf_widget_0_1_1;
 				_widget_0_1_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_1;
@@ -2728,8 +2904,8 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_1_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_1;
 				_widget_0_1_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_1;
 				_widget_0_1_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_1;
-				_widget_0_1_2.IsSelected = _datasource_Root_Attackers_SortController.IsDeadSelected;
-				_widget_0_1_2.SortState = _datasource_Root_Attackers_SortController.DeadState;
+				_widget_0_1_2.IsSelected = _datasource_Root_Defenders_SortController.IsDeadSelected;
+				_widget_0_1_2.SortState = _datasource_Root_Defenders_SortController.DeadState;
 				_widget_0_1_2.EventFire += EventListenerOf_widget_0_1_2;
 				_widget_0_1_2.PropertyChanged += PropertyChangedListenerOf_widget_0_1_2;
 				_widget_0_1_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_2;
@@ -2740,8 +2916,8 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_1_2.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_2;
 				_widget_0_1_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_2;
 				_widget_0_1_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_2;
-				_widget_0_1_3.IsSelected = _datasource_Root_Attackers_SortController.IsUpgradeSelected;
-				_widget_0_1_3.SortState = _datasource_Root_Attackers_SortController.UpgradeState;
+				_widget_0_1_3.IsSelected = _datasource_Root_Defenders_SortController.IsUpgradeSelected;
+				_widget_0_1_3.SortState = _datasource_Root_Defenders_SortController.UpgradeState;
 				_widget_0_1_3.EventFire += EventListenerOf_widget_0_1_3;
 				_widget_0_1_3.PropertyChanged += PropertyChangedListenerOf_widget_0_1_3;
 				_widget_0_1_3.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_3;
@@ -2752,8 +2928,8 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_1_3.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_3;
 				_widget_0_1_3.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_3;
 				_widget_0_1_3.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_3;
-				_widget_0_1_4.IsSelected = _datasource_Root_Attackers_SortController.IsKillSelected;
-				_widget_0_1_4.SortState = _datasource_Root_Attackers_SortController.KillState;
+				_widget_0_1_4.IsSelected = _datasource_Root_Defenders_SortController.IsKillSelected;
+				_widget_0_1_4.SortState = _datasource_Root_Defenders_SortController.KillState;
 				_widget_0_1_4.EventFire += EventListenerOf_widget_0_1_4;
 				_widget_0_1_4.PropertyChanged += PropertyChangedListenerOf_widget_0_1_4;
 				_widget_0_1_4.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_4;
@@ -2764,8 +2940,8 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_1_4.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_4;
 				_widget_0_1_4.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_4;
 				_widget_0_1_4.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_4;
-				_widget_0_1_5.IsSelected = _datasource_Root_Attackers_SortController.IsRemainingSelected;
-				_widget_0_1_5.SortState = _datasource_Root_Attackers_SortController.RemainingState;
+				_widget_0_1_5.IsSelected = _datasource_Root_Defenders_SortController.IsRemainingSelected;
+				_widget_0_1_5.SortState = _datasource_Root_Defenders_SortController.RemainingState;
 				_widget_0_1_5.EventFire += EventListenerOf_widget_0_1_5;
 				_widget_0_1_5.PropertyChanged += PropertyChangedListenerOf_widget_0_1_5;
 				_widget_0_1_5.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_5;
@@ -2777,43 +2953,33 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_1_5.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_5;
 				_widget_0_1_5.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_5;
 			}
-			_datasource_Root_Attackers_MoraleHint = _datasource_Root_Attackers.MoraleHint;
-			if (_datasource_Root_Attackers_MoraleHint != null)
+			_datasource_Root_Defenders_MoraleHint = _datasource_Root_Defenders.MoraleHint;
+			if (_datasource_Root_Defenders_MoraleHint != null)
 			{
-				_datasource_Root_Attackers_MoraleHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_MoraleHint;
 				_widget_0_1_6_2.EventFire += EventListenerOf_widget_0_1_6_2;
 			}
-			_datasource_Root_Attackers_Score = _datasource_Root_Attackers.Score;
-			if (_datasource_Root_Attackers_Score != null)
+			_datasource_Root_Defenders_Score = _datasource_Root_Defenders.Score;
+			if (_datasource_Root_Defenders_Score != null)
 			{
-				_datasource_Root_Attackers_Score.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_Score;
-				_widget_0_2_0_1.Text = _datasource_Root_Attackers_Score.NameText;
-				_widget_0_2_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_2.ValueAsInt = _datasource_Root_Attackers_Score.Remaining;
+				_datasource_Root_Defenders_Score.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_Score;
+				_widget_0_2_0_2.Text = _datasource_Root_Defenders_Score.NameText;
 				_widget_0_2_0_2.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_2;
@@ -2823,7 +2989,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_2_0_2.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_2;
-				_widget_0_2_0_3.ValueAsInt = _datasource_Root_Attackers_Score.Kill;
+				_widget_0_2_0_3.ValueAsInt = _datasource_Root_Defenders_Score.Remaining;
 				_widget_0_2_0_3.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_3;
 				_widget_0_2_0_3.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_3;
 				_widget_0_2_0_3.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_3;
@@ -2833,7 +2999,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_2_0_3.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_3;
 				_widget_0_2_0_3.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_3;
 				_widget_0_2_0_3.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_3;
-				_widget_0_2_0_4.ValueAsInt = _datasource_Root_Attackers_Score.ReadyToUpgrade;
+				_widget_0_2_0_4.ValueAsInt = _datasource_Root_Defenders_Score.Kill;
 				_widget_0_2_0_4.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_4;
 				_widget_0_2_0_4.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_4;
 				_widget_0_2_0_4.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_4;
@@ -2843,7 +3009,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_2_0_4.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_4;
 				_widget_0_2_0_4.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_4;
 				_widget_0_2_0_4.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_4;
-				_widget_0_2_0_5.ValueAsInt = _datasource_Root_Attackers_Score.Dead;
+				_widget_0_2_0_5.ValueAsInt = _datasource_Root_Defenders_Score.ReadyToUpgrade;
 				_widget_0_2_0_5.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_5;
 				_widget_0_2_0_5.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_5;
 				_widget_0_2_0_5.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_5;
@@ -2853,7 +3019,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_2_0_5.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_5;
 				_widget_0_2_0_5.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_5;
 				_widget_0_2_0_5.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_5;
-				_widget_0_2_0_6.ValueAsInt = _datasource_Root_Attackers_Score.Wounded;
+				_widget_0_2_0_6.ValueAsInt = _datasource_Root_Defenders_Score.Dead;
 				_widget_0_2_0_6.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_6;
 				_widget_0_2_0_6.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_6;
 				_widget_0_2_0_6.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_6;
@@ -2863,7 +3029,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_2_0_6.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_6;
 				_widget_0_2_0_6.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_6;
 				_widget_0_2_0_6.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_6;
-				_widget_0_2_0_7.ValueAsInt = _datasource_Root_Attackers_Score.Routed;
+				_widget_0_2_0_7.ValueAsInt = _datasource_Root_Defenders_Score.Wounded;
 				_widget_0_2_0_7.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_7;
@@ -2873,23 +3039,33 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_2_0_7.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_7;
+				_widget_0_2_0_8.ValueAsInt = _datasource_Root_Defenders_Score.Routed;
+				_widget_0_2_0_8.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_8;
 			}
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_Attackers_SortController(SPScoreboardSortControllerVM newDataSource)
+	private void RefreshDataSource_datasource_Root_Defenders_SortController(SPScoreboardSortControllerVM newDataSource)
 	{
-		if (_datasource_Root_Attackers_SortController != null)
+		if (_datasource_Root_Defenders_SortController != null)
 		{
-			_datasource_Root_Attackers_SortController.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_SortController;
-			_datasource_Root_Attackers_SortController.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_SortController;
-			_datasource_Root_Attackers_SortController.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_SortController;
-			_datasource_Root_Attackers_SortController.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_SortController;
-			_datasource_Root_Attackers_SortController.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_SortController;
-			_datasource_Root_Attackers_SortController.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_SortController;
-			_datasource_Root_Attackers_SortController.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_SortController;
-			_datasource_Root_Attackers_SortController.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_SortController;
-			_datasource_Root_Attackers_SortController.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_SortController;
+			_datasource_Root_Defenders_SortController.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_SortController;
+			_datasource_Root_Defenders_SortController.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_SortController;
+			_datasource_Root_Defenders_SortController.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_SortController;
+			_datasource_Root_Defenders_SortController.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_SortController;
+			_datasource_Root_Defenders_SortController.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_SortController;
+			_datasource_Root_Defenders_SortController.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_SortController;
+			_datasource_Root_Defenders_SortController.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_SortController;
+			_datasource_Root_Defenders_SortController.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_SortController;
+			_datasource_Root_Defenders_SortController.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_SortController;
 			_widget_0_1_0.EventFire -= EventListenerOf_widget_0_1_0;
 			_widget_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0;
 			_widget_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0;
@@ -2950,23 +3126,23 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_widget_0_1_5.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_5;
 			_widget_0_1_5.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_5;
 			_widget_0_1_5.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_5;
-			_datasource_Root_Attackers_SortController = null;
+			_datasource_Root_Defenders_SortController = null;
 		}
-		_datasource_Root_Attackers_SortController = newDataSource;
-		_datasource_Root_Attackers_SortController = _datasource_Root_Attackers.SortController;
-		if (_datasource_Root_Attackers_SortController != null)
+		_datasource_Root_Defenders_SortController = newDataSource;
+		_datasource_Root_Defenders_SortController = _datasource_Root_Defenders.SortController;
+		if (_datasource_Root_Defenders_SortController != null)
 		{
-			_datasource_Root_Attackers_SortController.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_SortController;
-			_datasource_Root_Attackers_SortController.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_SortController;
-			_datasource_Root_Attackers_SortController.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_SortController;
-			_datasource_Root_Attackers_SortController.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_SortController;
-			_datasource_Root_Attackers_SortController.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_SortController;
-			_datasource_Root_Attackers_SortController.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_SortController;
-			_datasource_Root_Attackers_SortController.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_SortController;
-			_datasource_Root_Attackers_SortController.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_SortController;
-			_datasource_Root_Attackers_SortController.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_SortController;
-			_widget_0_1_0.IsSelected = _datasource_Root_Attackers_SortController.IsRoutedSelected;
-			_widget_0_1_0.SortState = _datasource_Root_Attackers_SortController.RoutedState;
+			_datasource_Root_Defenders_SortController.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_SortController;
+			_datasource_Root_Defenders_SortController.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_SortController;
+			_datasource_Root_Defenders_SortController.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_SortController;
+			_datasource_Root_Defenders_SortController.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_SortController;
+			_datasource_Root_Defenders_SortController.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_SortController;
+			_datasource_Root_Defenders_SortController.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_SortController;
+			_datasource_Root_Defenders_SortController.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_SortController;
+			_datasource_Root_Defenders_SortController.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_SortController;
+			_datasource_Root_Defenders_SortController.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_SortController;
+			_widget_0_1_0.IsSelected = _datasource_Root_Defenders_SortController.IsRoutedSelected;
+			_widget_0_1_0.SortState = _datasource_Root_Defenders_SortController.RoutedState;
 			_widget_0_1_0.EventFire += EventListenerOf_widget_0_1_0;
 			_widget_0_1_0.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0;
 			_widget_0_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0;
@@ -2977,8 +3153,8 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_widget_0_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0;
 			_widget_0_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0;
 			_widget_0_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0;
-			_widget_0_1_1.IsSelected = _datasource_Root_Attackers_SortController.IsWoundedSelected;
-			_widget_0_1_1.SortState = _datasource_Root_Attackers_SortController.WoundedState;
+			_widget_0_1_1.IsSelected = _datasource_Root_Defenders_SortController.IsWoundedSelected;
+			_widget_0_1_1.SortState = _datasource_Root_Defenders_SortController.WoundedState;
 			_widget_0_1_1.EventFire += EventListenerOf_widget_0_1_1;
 			_widget_0_1_1.PropertyChanged += PropertyChangedListenerOf_widget_0_1_1;
 			_widget_0_1_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_1;
@@ -2989,8 +3165,8 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_widget_0_1_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_1;
 			_widget_0_1_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_1;
 			_widget_0_1_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_1;
-			_widget_0_1_2.IsSelected = _datasource_Root_Attackers_SortController.IsDeadSelected;
-			_widget_0_1_2.SortState = _datasource_Root_Attackers_SortController.DeadState;
+			_widget_0_1_2.IsSelected = _datasource_Root_Defenders_SortController.IsDeadSelected;
+			_widget_0_1_2.SortState = _datasource_Root_Defenders_SortController.DeadState;
 			_widget_0_1_2.EventFire += EventListenerOf_widget_0_1_2;
 			_widget_0_1_2.PropertyChanged += PropertyChangedListenerOf_widget_0_1_2;
 			_widget_0_1_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_2;
@@ -3001,8 +3177,8 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_widget_0_1_2.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_2;
 			_widget_0_1_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_2;
 			_widget_0_1_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_2;
-			_widget_0_1_3.IsSelected = _datasource_Root_Attackers_SortController.IsUpgradeSelected;
-			_widget_0_1_3.SortState = _datasource_Root_Attackers_SortController.UpgradeState;
+			_widget_0_1_3.IsSelected = _datasource_Root_Defenders_SortController.IsUpgradeSelected;
+			_widget_0_1_3.SortState = _datasource_Root_Defenders_SortController.UpgradeState;
 			_widget_0_1_3.EventFire += EventListenerOf_widget_0_1_3;
 			_widget_0_1_3.PropertyChanged += PropertyChangedListenerOf_widget_0_1_3;
 			_widget_0_1_3.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_3;
@@ -3013,8 +3189,8 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_widget_0_1_3.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_3;
 			_widget_0_1_3.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_3;
 			_widget_0_1_3.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_3;
-			_widget_0_1_4.IsSelected = _datasource_Root_Attackers_SortController.IsKillSelected;
-			_widget_0_1_4.SortState = _datasource_Root_Attackers_SortController.KillState;
+			_widget_0_1_4.IsSelected = _datasource_Root_Defenders_SortController.IsKillSelected;
+			_widget_0_1_4.SortState = _datasource_Root_Defenders_SortController.KillState;
 			_widget_0_1_4.EventFire += EventListenerOf_widget_0_1_4;
 			_widget_0_1_4.PropertyChanged += PropertyChangedListenerOf_widget_0_1_4;
 			_widget_0_1_4.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_4;
@@ -3025,8 +3201,8 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_widget_0_1_4.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_4;
 			_widget_0_1_4.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_4;
 			_widget_0_1_4.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_4;
-			_widget_0_1_5.IsSelected = _datasource_Root_Attackers_SortController.IsRemainingSelected;
-			_widget_0_1_5.SortState = _datasource_Root_Attackers_SortController.RemainingState;
+			_widget_0_1_5.IsSelected = _datasource_Root_Defenders_SortController.IsRemainingSelected;
+			_widget_0_1_5.SortState = _datasource_Root_Defenders_SortController.RemainingState;
 			_widget_0_1_5.EventFire += EventListenerOf_widget_0_1_5;
 			_widget_0_1_5.PropertyChanged += PropertyChangedListenerOf_widget_0_1_5;
 			_widget_0_1_5.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_5;
@@ -3238,61 +3414,52 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_Attackers_MoraleHint(BasicTooltipViewModel newDataSource)
+	private void RefreshDataSource_datasource_Root_Defenders_MoraleHint(BasicTooltipViewModel newDataSource)
 	{
-		if (_datasource_Root_Attackers_MoraleHint != null)
+		if (_datasource_Root_Defenders_MoraleHint != null)
 		{
-			_datasource_Root_Attackers_MoraleHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_MoraleHint;
-			_datasource_Root_Attackers_MoraleHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_MoraleHint;
-			_datasource_Root_Attackers_MoraleHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_MoraleHint;
-			_datasource_Root_Attackers_MoraleHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_MoraleHint;
-			_datasource_Root_Attackers_MoraleHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_MoraleHint;
-			_datasource_Root_Attackers_MoraleHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_MoraleHint;
-			_datasource_Root_Attackers_MoraleHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_MoraleHint;
-			_datasource_Root_Attackers_MoraleHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_MoraleHint;
-			_datasource_Root_Attackers_MoraleHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_MoraleHint;
+			_datasource_Root_Defenders_MoraleHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_MoraleHint;
+			_datasource_Root_Defenders_MoraleHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_MoraleHint;
+			_datasource_Root_Defenders_MoraleHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_MoraleHint;
+			_datasource_Root_Defenders_MoraleHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_MoraleHint;
+			_datasource_Root_Defenders_MoraleHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_MoraleHint;
+			_datasource_Root_Defenders_MoraleHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_MoraleHint;
+			_datasource_Root_Defenders_MoraleHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_MoraleHint;
+			_datasource_Root_Defenders_MoraleHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_MoraleHint;
+			_datasource_Root_Defenders_MoraleHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_MoraleHint;
 			_widget_0_1_6_2.EventFire -= EventListenerOf_widget_0_1_6_2;
-			_datasource_Root_Attackers_MoraleHint = null;
+			_datasource_Root_Defenders_MoraleHint = null;
 		}
-		_datasource_Root_Attackers_MoraleHint = newDataSource;
-		_datasource_Root_Attackers_MoraleHint = _datasource_Root_Attackers.MoraleHint;
-		if (_datasource_Root_Attackers_MoraleHint != null)
+		_datasource_Root_Defenders_MoraleHint = newDataSource;
+		_datasource_Root_Defenders_MoraleHint = _datasource_Root_Defenders.MoraleHint;
+		if (_datasource_Root_Defenders_MoraleHint != null)
 		{
-			_datasource_Root_Attackers_MoraleHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_MoraleHint;
-			_datasource_Root_Attackers_MoraleHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_MoraleHint;
-			_datasource_Root_Attackers_MoraleHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_MoraleHint;
-			_datasource_Root_Attackers_MoraleHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_MoraleHint;
-			_datasource_Root_Attackers_MoraleHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_MoraleHint;
-			_datasource_Root_Attackers_MoraleHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_MoraleHint;
-			_datasource_Root_Attackers_MoraleHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_MoraleHint;
-			_datasource_Root_Attackers_MoraleHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_MoraleHint;
-			_datasource_Root_Attackers_MoraleHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_MoraleHint;
+			_datasource_Root_Defenders_MoraleHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_MoraleHint;
+			_datasource_Root_Defenders_MoraleHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_MoraleHint;
+			_datasource_Root_Defenders_MoraleHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_MoraleHint;
+			_datasource_Root_Defenders_MoraleHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_MoraleHint;
+			_datasource_Root_Defenders_MoraleHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_MoraleHint;
+			_datasource_Root_Defenders_MoraleHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_MoraleHint;
+			_datasource_Root_Defenders_MoraleHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_MoraleHint;
+			_datasource_Root_Defenders_MoraleHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_MoraleHint;
+			_datasource_Root_Defenders_MoraleHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_MoraleHint;
 			_widget_0_1_6_2.EventFire += EventListenerOf_widget_0_1_6_2;
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_Attackers_Score(SPScoreboardStatsVM newDataSource)
+	private void RefreshDataSource_datasource_Root_Defenders_Score(SPScoreboardStatsVM newDataSource)
 	{
-		if (_datasource_Root_Attackers_Score != null)
+		if (_datasource_Root_Defenders_Score != null)
 		{
-			_datasource_Root_Attackers_Score.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_Score;
-			_datasource_Root_Attackers_Score.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_Score;
-			_datasource_Root_Attackers_Score.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_Score;
-			_datasource_Root_Attackers_Score.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_Score;
-			_datasource_Root_Attackers_Score.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_Score;
-			_datasource_Root_Attackers_Score.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_Score;
-			_datasource_Root_Attackers_Score.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_Score;
-			_datasource_Root_Attackers_Score.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_Score;
-			_datasource_Root_Attackers_Score.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_Score;
-			_widget_0_2_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_1;
+			_datasource_Root_Defenders_Score.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_Score;
+			_datasource_Root_Defenders_Score.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_Score;
+			_datasource_Root_Defenders_Score.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_Score;
+			_datasource_Root_Defenders_Score.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_Score;
+			_datasource_Root_Defenders_Score.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_Score;
+			_datasource_Root_Defenders_Score.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_Score;
+			_datasource_Root_Defenders_Score.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_Score;
+			_datasource_Root_Defenders_Score.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_Score;
+			_datasource_Root_Defenders_Score.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_Score;
 			_widget_0_2_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_2;
 			_widget_0_2_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_2;
 			_widget_0_2_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_2;
@@ -3347,32 +3514,31 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_widget_0_2_0_7.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_7;
 			_widget_0_2_0_7.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_7;
 			_widget_0_2_0_7.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_7;
-			_datasource_Root_Attackers_Score = null;
+			_widget_0_2_0_8.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_8;
+			_datasource_Root_Defenders_Score = null;
 		}
-		_datasource_Root_Attackers_Score = newDataSource;
-		_datasource_Root_Attackers_Score = _datasource_Root_Attackers.Score;
-		if (_datasource_Root_Attackers_Score != null)
+		_datasource_Root_Defenders_Score = newDataSource;
+		_datasource_Root_Defenders_Score = _datasource_Root_Defenders.Score;
+		if (_datasource_Root_Defenders_Score != null)
 		{
-			_datasource_Root_Attackers_Score.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_Score;
-			_datasource_Root_Attackers_Score.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_Score;
-			_datasource_Root_Attackers_Score.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_Score;
-			_datasource_Root_Attackers_Score.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_Score;
-			_datasource_Root_Attackers_Score.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_Score;
-			_datasource_Root_Attackers_Score.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_Score;
-			_datasource_Root_Attackers_Score.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_Score;
-			_datasource_Root_Attackers_Score.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_Score;
-			_datasource_Root_Attackers_Score.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_Score;
-			_widget_0_2_0_1.Text = _datasource_Root_Attackers_Score.NameText;
-			_widget_0_2_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_1;
-			_widget_0_2_0_2.ValueAsInt = _datasource_Root_Attackers_Score.Remaining;
+			_datasource_Root_Defenders_Score.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_Score;
+			_datasource_Root_Defenders_Score.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_Score;
+			_datasource_Root_Defenders_Score.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_Score;
+			_datasource_Root_Defenders_Score.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_Score;
+			_datasource_Root_Defenders_Score.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_Score;
+			_datasource_Root_Defenders_Score.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_Score;
+			_datasource_Root_Defenders_Score.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_Score;
+			_datasource_Root_Defenders_Score.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_Score;
+			_datasource_Root_Defenders_Score.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_Score;
+			_widget_0_2_0_2.Text = _datasource_Root_Defenders_Score.NameText;
 			_widget_0_2_0_2.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_2;
 			_widget_0_2_0_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_2;
 			_widget_0_2_0_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_2;
@@ -3382,7 +3548,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_widget_0_2_0_2.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_2;
 			_widget_0_2_0_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_2;
 			_widget_0_2_0_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_2;
-			_widget_0_2_0_3.ValueAsInt = _datasource_Root_Attackers_Score.Kill;
+			_widget_0_2_0_3.ValueAsInt = _datasource_Root_Defenders_Score.Remaining;
 			_widget_0_2_0_3.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_3;
 			_widget_0_2_0_3.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_3;
 			_widget_0_2_0_3.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_3;
@@ -3392,7 +3558,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_widget_0_2_0_3.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_3;
 			_widget_0_2_0_3.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_3;
 			_widget_0_2_0_3.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_3;
-			_widget_0_2_0_4.ValueAsInt = _datasource_Root_Attackers_Score.ReadyToUpgrade;
+			_widget_0_2_0_4.ValueAsInt = _datasource_Root_Defenders_Score.Kill;
 			_widget_0_2_0_4.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_4;
 			_widget_0_2_0_4.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_4;
 			_widget_0_2_0_4.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_4;
@@ -3402,7 +3568,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_widget_0_2_0_4.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_4;
 			_widget_0_2_0_4.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_4;
 			_widget_0_2_0_4.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_4;
-			_widget_0_2_0_5.ValueAsInt = _datasource_Root_Attackers_Score.Dead;
+			_widget_0_2_0_5.ValueAsInt = _datasource_Root_Defenders_Score.ReadyToUpgrade;
 			_widget_0_2_0_5.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_5;
 			_widget_0_2_0_5.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_5;
 			_widget_0_2_0_5.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_5;
@@ -3412,7 +3578,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_widget_0_2_0_5.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_5;
 			_widget_0_2_0_5.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_5;
 			_widget_0_2_0_5.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_5;
-			_widget_0_2_0_6.ValueAsInt = _datasource_Root_Attackers_Score.Wounded;
+			_widget_0_2_0_6.ValueAsInt = _datasource_Root_Defenders_Score.Dead;
 			_widget_0_2_0_6.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_6;
 			_widget_0_2_0_6.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_6;
 			_widget_0_2_0_6.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_6;
@@ -3422,7 +3588,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_widget_0_2_0_6.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_6;
 			_widget_0_2_0_6.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_6;
 			_widget_0_2_0_6.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_6;
-			_widget_0_2_0_7.ValueAsInt = _datasource_Root_Attackers_Score.Routed;
+			_widget_0_2_0_7.ValueAsInt = _datasource_Root_Defenders_Score.Wounded;
 			_widget_0_2_0_7.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_7;
 			_widget_0_2_0_7.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_7;
 			_widget_0_2_0_7.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_7;
@@ -3432,6 +3598,16 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_widget_0_2_0_7.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_7;
 			_widget_0_2_0_7.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_7;
 			_widget_0_2_0_7.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_7;
+			_widget_0_2_0_8.ValueAsInt = _datasource_Root_Defenders_Score.Routed;
+			_widget_0_2_0_8.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_8;
+			_widget_0_2_0_8.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_8;
 		}
 	}
 
@@ -3448,17 +3624,17 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_datasource_Root.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
-			if (_datasource_Root_Attackers != null)
+			if (_datasource_Root_Defenders != null)
 			{
-				_datasource_Root_Attackers.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Attackers;
-				_datasource_Root_Attackers.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers;
-				_datasource_Root_Attackers.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers;
-				_datasource_Root_Attackers.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers;
-				_datasource_Root_Attackers.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers;
-				_datasource_Root_Attackers.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers;
-				_datasource_Root_Attackers.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers;
-				_datasource_Root_Attackers.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers;
-				_datasource_Root_Attackers.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers;
+				_datasource_Root_Defenders.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Defenders;
+				_datasource_Root_Defenders.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders;
+				_datasource_Root_Defenders.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders;
+				_datasource_Root_Defenders.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders;
+				_datasource_Root_Defenders.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders;
+				_datasource_Root_Defenders.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders;
+				_datasource_Root_Defenders.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders;
+				_datasource_Root_Defenders.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders;
+				_datasource_Root_Defenders.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders;
 				_widget_0_1_6_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_6_1;
 				_widget_0_1_6_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_6_1;
 				_widget_0_1_6_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1_6_1;
@@ -3468,17 +3644,35 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_1_6_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_6_1;
 				_widget_0_1_6_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_6_1;
 				_widget_0_1_6_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_6_1;
-				if (_datasource_Root_Attackers_SortController != null)
+				_widget_0_2_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_0;
+				_widget_0_2_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_0;
+				_widget_0_2_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_0;
+				_widget_0_2_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_0;
+				_widget_0_2_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_0;
+				_widget_0_2_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_0;
+				_widget_0_2_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_0;
+				_widget_0_2_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_0;
+				_widget_0_2_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_0;
+				_widget_0_2_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_1;
+				_widget_0_2_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_1;
+				_widget_0_2_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_1;
+				_widget_0_2_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_1;
+				_widget_0_2_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_1;
+				_widget_0_2_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_1;
+				_widget_0_2_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_1;
+				_widget_0_2_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_1;
+				_widget_0_2_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_1;
+				if (_datasource_Root_Defenders_SortController != null)
 				{
-					_datasource_Root_Attackers_SortController.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_SortController;
-					_datasource_Root_Attackers_SortController.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_SortController;
-					_datasource_Root_Attackers_SortController.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_SortController;
-					_datasource_Root_Attackers_SortController.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_SortController;
-					_datasource_Root_Attackers_SortController.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_SortController;
-					_datasource_Root_Attackers_SortController.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_SortController;
-					_datasource_Root_Attackers_SortController.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_SortController;
-					_datasource_Root_Attackers_SortController.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_SortController;
-					_datasource_Root_Attackers_SortController.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_SortController;
+					_datasource_Root_Defenders_SortController.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_SortController;
+					_datasource_Root_Defenders_SortController.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_SortController;
+					_datasource_Root_Defenders_SortController.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_SortController;
+					_datasource_Root_Defenders_SortController.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_SortController;
+					_datasource_Root_Defenders_SortController.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_SortController;
+					_datasource_Root_Defenders_SortController.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_SortController;
+					_datasource_Root_Defenders_SortController.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_SortController;
+					_datasource_Root_Defenders_SortController.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_SortController;
+					_datasource_Root_Defenders_SortController.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_SortController;
 					_widget_0_1_0.EventFire -= EventListenerOf_widget_0_1_0;
 					_widget_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0;
 					_widget_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0;
@@ -3539,42 +3733,33 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 					_widget_0_1_5.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_5;
 					_widget_0_1_5.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_5;
 					_widget_0_1_5.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_5;
-					_datasource_Root_Attackers_SortController = null;
+					_datasource_Root_Defenders_SortController = null;
 				}
-				if (_datasource_Root_Attackers_MoraleHint != null)
+				if (_datasource_Root_Defenders_MoraleHint != null)
 				{
-					_datasource_Root_Attackers_MoraleHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_MoraleHint;
-					_datasource_Root_Attackers_MoraleHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_MoraleHint;
-					_datasource_Root_Attackers_MoraleHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_MoraleHint;
-					_datasource_Root_Attackers_MoraleHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_MoraleHint;
-					_datasource_Root_Attackers_MoraleHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_MoraleHint;
-					_datasource_Root_Attackers_MoraleHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_MoraleHint;
-					_datasource_Root_Attackers_MoraleHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_MoraleHint;
-					_datasource_Root_Attackers_MoraleHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_MoraleHint;
-					_datasource_Root_Attackers_MoraleHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_MoraleHint;
+					_datasource_Root_Defenders_MoraleHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_MoraleHint;
+					_datasource_Root_Defenders_MoraleHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_MoraleHint;
+					_datasource_Root_Defenders_MoraleHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_MoraleHint;
+					_datasource_Root_Defenders_MoraleHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_MoraleHint;
+					_datasource_Root_Defenders_MoraleHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_MoraleHint;
+					_datasource_Root_Defenders_MoraleHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_MoraleHint;
+					_datasource_Root_Defenders_MoraleHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_MoraleHint;
+					_datasource_Root_Defenders_MoraleHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_MoraleHint;
+					_datasource_Root_Defenders_MoraleHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_MoraleHint;
 					_widget_0_1_6_2.EventFire -= EventListenerOf_widget_0_1_6_2;
-					_datasource_Root_Attackers_MoraleHint = null;
+					_datasource_Root_Defenders_MoraleHint = null;
 				}
-				if (_datasource_Root_Attackers_Score != null)
+				if (_datasource_Root_Defenders_Score != null)
 				{
-					_datasource_Root_Attackers_Score.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_Score;
-					_datasource_Root_Attackers_Score.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_Score;
-					_datasource_Root_Attackers_Score.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_Score;
-					_datasource_Root_Attackers_Score.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_Score;
-					_datasource_Root_Attackers_Score.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_Score;
-					_datasource_Root_Attackers_Score.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_Score;
-					_datasource_Root_Attackers_Score.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_Score;
-					_datasource_Root_Attackers_Score.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_Score;
-					_datasource_Root_Attackers_Score.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_Score;
-					_widget_0_2_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_1;
-					_widget_0_2_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_1;
-					_widget_0_2_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_1;
-					_widget_0_2_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_1;
-					_widget_0_2_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_1;
-					_widget_0_2_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_1;
-					_widget_0_2_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_1;
-					_widget_0_2_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_1;
-					_widget_0_2_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_1;
+					_datasource_Root_Defenders_Score.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_Score;
+					_datasource_Root_Defenders_Score.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_Score;
+					_datasource_Root_Defenders_Score.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_Score;
+					_datasource_Root_Defenders_Score.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_Score;
+					_datasource_Root_Defenders_Score.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_Score;
+					_datasource_Root_Defenders_Score.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_Score;
+					_datasource_Root_Defenders_Score.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_Score;
+					_datasource_Root_Defenders_Score.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_Score;
+					_datasource_Root_Defenders_Score.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_Score;
 					_widget_0_2_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_2;
 					_widget_0_2_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_2;
 					_widget_0_2_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_2;
@@ -3629,9 +3814,18 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 					_widget_0_2_0_7.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_7;
 					_widget_0_2_0_7.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_7;
 					_widget_0_2_0_7.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_7;
-					_datasource_Root_Attackers_Score = null;
+					_widget_0_2_0_8.PropertyChanged -= PropertyChangedListenerOf_widget_0_2_0_8;
+					_widget_0_2_0_8.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_2_0_8;
+					_widget_0_2_0_8.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_2_0_8;
+					_widget_0_2_0_8.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_2_0_8;
+					_widget_0_2_0_8.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_2_0_8;
+					_widget_0_2_0_8.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_2_0_8;
+					_widget_0_2_0_8.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_2_0_8;
+					_widget_0_2_0_8.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_2_0_8;
+					_widget_0_2_0_8.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_2_0_8;
+					_datasource_Root_Defenders_Score = null;
 				}
-				_datasource_Root_Attackers = null;
+				_datasource_Root_Defenders = null;
 			}
 			if (_datasource_Root_RoutedHint != null)
 			{
@@ -3733,19 +3927,19 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 		_datasource_Root.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
-		_datasource_Root_Attackers = _datasource_Root.Attackers;
-		if (_datasource_Root_Attackers != null)
+		_datasource_Root_Defenders = _datasource_Root.Defenders;
+		if (_datasource_Root_Defenders != null)
 		{
-			_datasource_Root_Attackers.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers;
-			_datasource_Root_Attackers.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers;
-			_widget_0_1_6_1.Morale = _datasource_Root_Attackers.Morale;
+			_datasource_Root_Defenders.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders;
+			_datasource_Root_Defenders.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders;
+			_widget_0_1_6_1.Morale = _datasource_Root_Defenders.Morale;
 			_widget_0_1_6_1.PropertyChanged += PropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_6_1;
@@ -3755,20 +3949,40 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 			_widget_0_1_6_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_6_1;
 			_widget_0_1_6_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_6_1;
-			_datasource_Root_Attackers_SortController = _datasource_Root_Attackers.SortController;
-			if (_datasource_Root_Attackers_SortController != null)
+			_widget_0_2_0_0.IsVisible = _datasource_Root_Defenders.IsPlayerSide;
+			_widget_0_2_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_0;
+			_widget_0_2_0_1.IsHidden = _datasource_Root_Defenders.IsPlayerSide;
+			_widget_0_2_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_1;
+			_widget_0_2_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_1;
+			_datasource_Root_Defenders_SortController = _datasource_Root_Defenders.SortController;
+			if (_datasource_Root_Defenders_SortController != null)
 			{
-				_datasource_Root_Attackers_SortController.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_SortController;
-				_datasource_Root_Attackers_SortController.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_SortController;
-				_widget_0_1_0.IsSelected = _datasource_Root_Attackers_SortController.IsRoutedSelected;
-				_widget_0_1_0.SortState = _datasource_Root_Attackers_SortController.RoutedState;
+				_datasource_Root_Defenders_SortController.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_SortController;
+				_datasource_Root_Defenders_SortController.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_SortController;
+				_widget_0_1_0.IsSelected = _datasource_Root_Defenders_SortController.IsRoutedSelected;
+				_widget_0_1_0.SortState = _datasource_Root_Defenders_SortController.RoutedState;
 				_widget_0_1_0.EventFire += EventListenerOf_widget_0_1_0;
 				_widget_0_1_0.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0;
 				_widget_0_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0;
@@ -3779,8 +3993,8 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0;
 				_widget_0_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0;
 				_widget_0_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0;
-				_widget_0_1_1.IsSelected = _datasource_Root_Attackers_SortController.IsWoundedSelected;
-				_widget_0_1_1.SortState = _datasource_Root_Attackers_SortController.WoundedState;
+				_widget_0_1_1.IsSelected = _datasource_Root_Defenders_SortController.IsWoundedSelected;
+				_widget_0_1_1.SortState = _datasource_Root_Defenders_SortController.WoundedState;
 				_widget_0_1_1.EventFire += EventListenerOf_widget_0_1_1;
 				_widget_0_1_1.PropertyChanged += PropertyChangedListenerOf_widget_0_1_1;
 				_widget_0_1_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_1;
@@ -3791,8 +4005,8 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_1_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_1;
 				_widget_0_1_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_1;
 				_widget_0_1_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_1;
-				_widget_0_1_2.IsSelected = _datasource_Root_Attackers_SortController.IsDeadSelected;
-				_widget_0_1_2.SortState = _datasource_Root_Attackers_SortController.DeadState;
+				_widget_0_1_2.IsSelected = _datasource_Root_Defenders_SortController.IsDeadSelected;
+				_widget_0_1_2.SortState = _datasource_Root_Defenders_SortController.DeadState;
 				_widget_0_1_2.EventFire += EventListenerOf_widget_0_1_2;
 				_widget_0_1_2.PropertyChanged += PropertyChangedListenerOf_widget_0_1_2;
 				_widget_0_1_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_2;
@@ -3803,8 +4017,8 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_1_2.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_2;
 				_widget_0_1_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_2;
 				_widget_0_1_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_2;
-				_widget_0_1_3.IsSelected = _datasource_Root_Attackers_SortController.IsUpgradeSelected;
-				_widget_0_1_3.SortState = _datasource_Root_Attackers_SortController.UpgradeState;
+				_widget_0_1_3.IsSelected = _datasource_Root_Defenders_SortController.IsUpgradeSelected;
+				_widget_0_1_3.SortState = _datasource_Root_Defenders_SortController.UpgradeState;
 				_widget_0_1_3.EventFire += EventListenerOf_widget_0_1_3;
 				_widget_0_1_3.PropertyChanged += PropertyChangedListenerOf_widget_0_1_3;
 				_widget_0_1_3.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_3;
@@ -3815,8 +4029,8 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_1_3.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_3;
 				_widget_0_1_3.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_3;
 				_widget_0_1_3.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_3;
-				_widget_0_1_4.IsSelected = _datasource_Root_Attackers_SortController.IsKillSelected;
-				_widget_0_1_4.SortState = _datasource_Root_Attackers_SortController.KillState;
+				_widget_0_1_4.IsSelected = _datasource_Root_Defenders_SortController.IsKillSelected;
+				_widget_0_1_4.SortState = _datasource_Root_Defenders_SortController.KillState;
 				_widget_0_1_4.EventFire += EventListenerOf_widget_0_1_4;
 				_widget_0_1_4.PropertyChanged += PropertyChangedListenerOf_widget_0_1_4;
 				_widget_0_1_4.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_4;
@@ -3827,8 +4041,8 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_1_4.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_4;
 				_widget_0_1_4.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_4;
 				_widget_0_1_4.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_4;
-				_widget_0_1_5.IsSelected = _datasource_Root_Attackers_SortController.IsRemainingSelected;
-				_widget_0_1_5.SortState = _datasource_Root_Attackers_SortController.RemainingState;
+				_widget_0_1_5.IsSelected = _datasource_Root_Defenders_SortController.IsRemainingSelected;
+				_widget_0_1_5.SortState = _datasource_Root_Defenders_SortController.RemainingState;
 				_widget_0_1_5.EventFire += EventListenerOf_widget_0_1_5;
 				_widget_0_1_5.PropertyChanged += PropertyChangedListenerOf_widget_0_1_5;
 				_widget_0_1_5.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_5;
@@ -3840,43 +4054,33 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_1_5.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_5;
 				_widget_0_1_5.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_5;
 			}
-			_datasource_Root_Attackers_MoraleHint = _datasource_Root_Attackers.MoraleHint;
-			if (_datasource_Root_Attackers_MoraleHint != null)
+			_datasource_Root_Defenders_MoraleHint = _datasource_Root_Defenders.MoraleHint;
+			if (_datasource_Root_Defenders_MoraleHint != null)
 			{
-				_datasource_Root_Attackers_MoraleHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_MoraleHint;
-				_datasource_Root_Attackers_MoraleHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_MoraleHint;
+				_datasource_Root_Defenders_MoraleHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_MoraleHint;
 				_widget_0_1_6_2.EventFire += EventListenerOf_widget_0_1_6_2;
 			}
-			_datasource_Root_Attackers_Score = _datasource_Root_Attackers.Score;
-			if (_datasource_Root_Attackers_Score != null)
+			_datasource_Root_Defenders_Score = _datasource_Root_Defenders.Score;
+			if (_datasource_Root_Defenders_Score != null)
 			{
-				_datasource_Root_Attackers_Score.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Attackers_Score;
-				_datasource_Root_Attackers_Score.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Attackers_Score;
-				_widget_0_2_0_1.Text = _datasource_Root_Attackers_Score.NameText;
-				_widget_0_2_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_1;
-				_widget_0_2_0_2.ValueAsInt = _datasource_Root_Attackers_Score.Remaining;
+				_datasource_Root_Defenders_Score.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Defenders_Score;
+				_datasource_Root_Defenders_Score.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Defenders_Score;
+				_widget_0_2_0_2.Text = _datasource_Root_Defenders_Score.NameText;
 				_widget_0_2_0_2.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_2;
@@ -3886,7 +4090,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_2_0_2.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_2;
 				_widget_0_2_0_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_2;
-				_widget_0_2_0_3.ValueAsInt = _datasource_Root_Attackers_Score.Kill;
+				_widget_0_2_0_3.ValueAsInt = _datasource_Root_Defenders_Score.Remaining;
 				_widget_0_2_0_3.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_3;
 				_widget_0_2_0_3.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_3;
 				_widget_0_2_0_3.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_3;
@@ -3896,7 +4100,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_2_0_3.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_3;
 				_widget_0_2_0_3.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_3;
 				_widget_0_2_0_3.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_3;
-				_widget_0_2_0_4.ValueAsInt = _datasource_Root_Attackers_Score.ReadyToUpgrade;
+				_widget_0_2_0_4.ValueAsInt = _datasource_Root_Defenders_Score.Kill;
 				_widget_0_2_0_4.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_4;
 				_widget_0_2_0_4.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_4;
 				_widget_0_2_0_4.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_4;
@@ -3906,7 +4110,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_2_0_4.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_4;
 				_widget_0_2_0_4.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_4;
 				_widget_0_2_0_4.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_4;
-				_widget_0_2_0_5.ValueAsInt = _datasource_Root_Attackers_Score.Dead;
+				_widget_0_2_0_5.ValueAsInt = _datasource_Root_Defenders_Score.ReadyToUpgrade;
 				_widget_0_2_0_5.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_5;
 				_widget_0_2_0_5.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_5;
 				_widget_0_2_0_5.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_5;
@@ -3916,7 +4120,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_2_0_5.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_5;
 				_widget_0_2_0_5.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_5;
 				_widget_0_2_0_5.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_5;
-				_widget_0_2_0_6.ValueAsInt = _datasource_Root_Attackers_Score.Wounded;
+				_widget_0_2_0_6.ValueAsInt = _datasource_Root_Defenders_Score.Dead;
 				_widget_0_2_0_6.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_6;
 				_widget_0_2_0_6.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_6;
 				_widget_0_2_0_6.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_6;
@@ -3926,7 +4130,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_2_0_6.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_6;
 				_widget_0_2_0_6.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_6;
 				_widget_0_2_0_6.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_6;
-				_widget_0_2_0_7.ValueAsInt = _datasource_Root_Attackers_Score.Routed;
+				_widget_0_2_0_7.ValueAsInt = _datasource_Root_Defenders_Score.Wounded;
 				_widget_0_2_0_7.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_7;
@@ -3936,6 +4140,16 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency
 				_widget_0_2_0_7.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_7;
 				_widget_0_2_0_7.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_7;
+				_widget_0_2_0_8.ValueAsInt = _datasource_Root_Defenders_Score.Routed;
+				_widget_0_2_0_8.PropertyChanged += PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.intPropertyChanged += intPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_2_0_8;
+				_widget_0_2_0_8.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_2_0_8;
 			}
 		}
 		_datasource_Root_RoutedHint = _datasource_Root.RoutedHint;

@@ -22,7 +22,9 @@ public struct CustomBattleSceneData
 
 	public bool IsLordsHallMap { get; private set; }
 
-	public CustomBattleSceneData(string sceneID, TextObject name, TerrainType terrain, List<TerrainType> terrainTypes, ForestDensity forestDensity, bool isSiegeMap, bool isVillageMap, bool isLordsHallMap)
+	public string ForcedSceneLevel { get; private set; }
+
+	public CustomBattleSceneData(string sceneID, TextObject name, TerrainType terrain, List<TerrainType> terrainTypes, ForestDensity forestDensity, bool isSiegeMap, bool isVillageMap, bool isLordsHallMap, string forcedSceneLevel)
 	{
 		SceneID = sceneID;
 		Name = name;
@@ -32,5 +34,6 @@ public struct CustomBattleSceneData
 		IsSiegeMap = isSiegeMap;
 		IsVillageMap = isVillageMap;
 		IsLordsHallMap = isLordsHallMap;
+		ForcedSceneLevel = forcedSceneLevel;
 	}
 }

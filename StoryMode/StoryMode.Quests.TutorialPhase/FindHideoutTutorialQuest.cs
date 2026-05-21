@@ -91,8 +91,8 @@ public class FindHideoutTutorialQuest : StoryModeQuestBase
 		}
 	}
 
-	public FindHideoutTutorialQuest(Hero questGiver, Settlement hideout)
-		: base("find_hideout_tutorial_quest", questGiver, CampaignTime.Never)
+	public FindHideoutTutorialQuest(Settlement hideout)
+		: base("find_hideout_tutorial_quest", null, CampaignTime.Never)
 	{
 		_hideout = hideout;
 		_activeHideoutStringId = _hideout.StringId;
@@ -354,9 +354,8 @@ public class FindHideoutTutorialQuest : StoryModeQuestBase
 	private void radagos_meeting_conversation_consequence()
 	{
 		StoryModeHeroes.Radagos.SetHasMet();
-		MobileParty partyBelongedTo = StoryModeHeroes.Radagos.PartyBelongedTo;
+		_ = StoryModeHeroes.Radagos.PartyBelongedTo;
 		DisableHeroAction.Apply(StoryModeHeroes.Radagos);
-		DestroyPartyAction.Apply(PartyBase.MainParty, partyBelongedTo);
 		_talkedWithRadagos = true;
 		Campaign.Current.ConversationManager.ConversationEndOneShot += OpenBrotherConversationMenu;
 	}

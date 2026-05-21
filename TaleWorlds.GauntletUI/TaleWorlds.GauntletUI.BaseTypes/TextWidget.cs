@@ -149,6 +149,8 @@ public class TextWidget : ImageWidget
 		TextMaterial textMaterial = base.BrushRenderer.CreateTextMaterial(drawContext);
 		textMaterial.AlphaFactor *= base.Context.ContextAlpha;
 		Rectangle2D rectangle = AreaRect;
+		Style style = base.Brush?.GetStyleOrDefault(base.CurrentState);
+		rectangle.AddVisualOffset(style.XOffset, style.YOffset);
 		rectangle.AddVisualOffset(_renderOffset.X, _renderOffset.Y);
 		drawContext.Draw(_text, textMaterial, in base.ParentWidget.AreaRect, in rectangle);
 	}

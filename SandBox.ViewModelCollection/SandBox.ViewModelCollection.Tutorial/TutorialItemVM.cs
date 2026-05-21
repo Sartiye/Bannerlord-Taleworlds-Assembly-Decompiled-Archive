@@ -285,7 +285,7 @@ public class TutorialItemVM : ViewModel
 		TutorialsEnabledText = GameTexts.FindText("str_tutorials_enabled").ToString();
 		TutorialTitleText = GameTexts.FindText("str_initial_menu_option", "Tutorial").ToString();
 		TitleText = GameTexts.FindText("str_campaign_tutorial_title", _tutorialTypeId).ToString();
-		if (TaleWorlds.InputSystem.Input.IsControllerConnected && !TaleWorlds.InputSystem.Input.IsMouseActive && GameTexts.TryGetText("str_campaign_tutorial_description", out var textObject, _tutorialTypeId + "_controller"))
+		if (TaleWorlds.InputSystem.Input.IsGamepadActive && GameTexts.TryGetText("str_campaign_tutorial_description", out var textObject, _tutorialTypeId + "_controller"))
 		{
 			DescriptionText = textObject.ToString();
 		}

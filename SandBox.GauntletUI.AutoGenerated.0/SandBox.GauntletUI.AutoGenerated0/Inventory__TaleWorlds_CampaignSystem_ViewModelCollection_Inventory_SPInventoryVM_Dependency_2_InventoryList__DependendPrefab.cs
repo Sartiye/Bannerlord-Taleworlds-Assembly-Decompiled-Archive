@@ -195,8 +195,8 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget_0_1.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
-		_widget_0_1_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
+		_widget_0_1_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_1_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1_0_0.MinIndex = 0;

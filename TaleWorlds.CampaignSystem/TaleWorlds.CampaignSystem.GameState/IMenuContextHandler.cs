@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Roster;
 
 namespace TaleWorlds.CampaignSystem.GameState;
@@ -13,7 +15,7 @@ public interface IMenuContextHandler
 
 	void OnOpenTournamentLeaderboard();
 
-	void OnOpenTroopSelection(TroopRoster fullRoster, TroopRoster initialSelections, Func<CharacterObject, bool> canChangeStatusOfTroop, Action<TroopRoster> onDone, int maxSelectableTroopCount, int minSelectableTroopCount);
+	void OnOpenTroopSelection(TroopRoster fullRoster, TroopRoster initialSelections, List<Ship> eligibleShips, Func<CharacterObject, bool> canChangeStatusOfTroop, Action<TroopRoster> onDone, int maxSelectableTroopCount, int minSelectableTroopCount, bool isNavalRaid);
 
 	void OnMenuCreate();
 

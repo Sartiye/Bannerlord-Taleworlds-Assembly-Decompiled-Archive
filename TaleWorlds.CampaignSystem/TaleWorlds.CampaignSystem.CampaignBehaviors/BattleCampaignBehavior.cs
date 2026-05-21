@@ -29,14 +29,12 @@ public class BattleCampaignBehavior : CampaignBehaviorBase
 			}
 			for (int i = 0; i < item.Amount; i++)
 			{
-				int num = 0;
 				if (MBRandom.RandomFloat < DefaultPerks.Engineering.Metallurgy.PrimaryBonus)
 				{
-					num++;
+					gainedLoots.AddToCounts(item.EquipmentElement, -1);
+					ItemRosterElement itemRosterElement = new ItemRosterElement(item.EquipmentElement.Item, 1);
+					gainedLoots.Add(itemRosterElement);
 				}
-				gainedLoots.AddToCounts(item.EquipmentElement.Item, -num);
-				ItemRosterElement itemRosterElement = new ItemRosterElement(item.EquipmentElement.Item, num);
-				gainedLoots.Add(itemRosterElement);
 			}
 		}
 	}

@@ -1,10 +1,11 @@
+using System;
 using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
-using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.GameComponents;
 
@@ -17,7 +18,7 @@ public class DefaultMapVisibilityModel : MapVisibilityModel
 		return 60f;
 	}
 
-	public override float GetPartySpottingRangeBase(MobileParty party)
+	public override float GetPartySeeingRangeBase(MobileParty party)
 	{
 		if (!Campaign.Current.IsNight)
 		{
@@ -28,9 +29,8 @@ public class DefaultMapVisibilityModel : MapVisibilityModel
 
 	public override ExplainedNumber GetPartySpottingRange(MobileParty party, bool includeDescriptions = false)
 	{
-		float partySpottingRangeBase = Campaign.Current.Models.MapVisibilityModel.GetPartySpottingRangeBase(party);
-		ExplainedNumber explainedNumber = new ExplainedNumber(partySpottingRangeBase, includeDescriptions);
-		TerrainType faceTerrainType = Campaign.Current.MapSceneWrapper.GetFaceTerrainType(party.CurrentNavigationFace);
+		float partySeeingRangeBase = Campaign.Current.Models.MapVisibilityModel.GetPartySeeingRangeBase(party);
+		ExplainedNumber explainedNumber = new ExplainedNumber(partySeeingRangeBase, includeDescriptions);
 		SkillHelper.AddSkillBonusForParty(DefaultSkillEffects.TrackingSpottingDistance, party, ref explainedNumber);
 		if (!party.IsCurrentlyAtSea)
 		{
@@ -39,6 +39,7 @@ public class DefaultMapVisibilityModel : MapVisibilityModel
 		Hero effectiveScout = party.EffectiveScout;
 		if (effectiveScout != null)
 		{
+			TerrainType faceTerrainType = Campaign.Current.MapSceneWrapper.GetFaceTerrainType(party.CurrentNavigationFace);
 			if (faceTerrainType == TerrainType.Forest && PartyBaseHelper.HasFeat(party.Party, DefaultCulturalFeats.BattanianForestSpeedFeat))
 			{
 				explainedNumber.AddFactor(0.15f, GameTexts.FindText("str_culture"));
@@ -78,27 +79,24 @@ public class DefaultMapVisibilityModel : MapVisibilityModel
 				}
 			}
 		}
+		explainedNumber.LimitMax(Campaign.Current.Models.MapVisibilityModel.MaximumSeeingRange(), new TextObject("{=6qv6Hdww}Limit"));
 		return explainedNumber;
 	}
 
-	public override float GetPartyRelativeInspectionRange(IMapPoint party)
-	{
-		return 0.5f;
-	}
-
-	public override float GetPartySpottingDifficulty(MobileParty spottingParty, MobileParty party)
+	public override float GetPartySpottingRatioForMainPartySeeingRange(MobileParty party)
 	{
 		float num = 1f;
-		if (party != null && spottingParty != null && Campaign.Current.MapSceneWrapper.GetFaceTerrainType(party.CurrentNavigationFace) == TerrainType.Forest)
+		if (Campaign.Current.MapSceneWrapper.GetFaceTerrainType(party.CurrentNavigationFace) == TerrainType.Forest)
 		{
-			float num2 = 0.3f;
-			if (spottingParty.HasPerk(DefaultPerks.Scouting.KeenSight))
+			float num2 = -0.3f;
+			if (MobileParty.MainParty.HasPerk(DefaultPerks.Scouting.KeenSight))
 			{
 				num2 += num2 * DefaultPerks.Scouting.KeenSight.PrimaryBonus;
 			}
 			num += num2;
 		}
-		return (1f / MathF.Pow((float)(party.Party.NumberOfAllMembers + party.Party.NumberOfPrisoners + 2) * 0.2f, 0.6f) + 0.94f) * num;
+		int num3 = ((party.Army != null && party.Army.LeaderParty == party) ? party.Army.TotalManCount : party.MemberRoster.TotalManCount);
+		return MBMath.ClampFloat(1.1f - 0.5f * TaleWorlds.Library.MathF.Pow(System.MathF.E, (float)(-num3) / 200f), 0f, 1f) * num;
 	}
 
 	public override float GetHideoutSpottingDistance()

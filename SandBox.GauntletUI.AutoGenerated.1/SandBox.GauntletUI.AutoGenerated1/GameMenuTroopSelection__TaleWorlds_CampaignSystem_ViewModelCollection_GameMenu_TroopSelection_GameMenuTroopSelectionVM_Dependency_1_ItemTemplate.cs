@@ -238,7 +238,7 @@ public class GameMenuTroopSelection__TaleWorlds_CampaignSystem_ViewModelCollecti
 		_widget_0_8.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_8.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_0_8.VerticalAlignment = VerticalAlignment.Center;
-		_widget_0_8.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_8.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_8_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_8_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_8_0.SuggestedWidth = 35f;

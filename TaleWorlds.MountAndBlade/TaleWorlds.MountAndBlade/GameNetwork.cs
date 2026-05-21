@@ -998,6 +998,10 @@ public static class GameNetwork
 	[MBCallback(null, false)]
 	internal static bool HandleNetworkPacketAsClient()
 	{
+		if (!TWParallel.IsMainThread())
+		{
+			Debug.FailedAssert("Network messages should be handled from main thread", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\GameNetwork.cs", "HandleNetworkPacketAsClient", 1204);
+		}
 		bool bufferReadValid = true;
 		int num = GameNetworkMessage.ReadIntFromPacket(CompressionBasic.NetworkComponentEventTypeFromServerCompressionInfo, ref bufferReadValid);
 		if (bufferReadValid && num >= 0 && num < _gameNetworkMessageIdsFromServer.Count)

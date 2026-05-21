@@ -69,7 +69,7 @@ public static class DistanceHelper
 		{
 			landRatio = 0f;
 		}
-		bool flag4 = mobileParty.Anchor.IsAtSettlement(currentSettlement);
+		bool flag4 = flag2 && mobileParty.Anchor.IsAtSettlement(currentSettlement);
 		isFromPort = false;
 		isTargetingPort = false;
 		if (flag2 && flag)
@@ -285,7 +285,7 @@ public static class DistanceHelper
 			{
 				num = Campaign.Current.Models.MapDistanceModel.GetDistance(currentSettlement, in point, isFromPort: false, navCapabilities);
 			}
-			bool flag2 = mobileParty.Anchor.IsAtSettlement(currentSettlement);
+			bool flag2 = flag && mobileParty.Anchor.IsAtSettlement(currentSettlement);
 			if (flag)
 			{
 				float num2 = Campaign.Current.Models.MapDistanceModel.GetDistance(currentSettlement, in point, isFromPort: true, navCapabilities);

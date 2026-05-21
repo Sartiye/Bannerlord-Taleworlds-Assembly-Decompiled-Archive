@@ -54,7 +54,7 @@ public class LordsHallFightMissionController : MissionLogic, IMissionAgentSpawnL
 				KeyValuePair<int, AreaData> keyValuePair = MBRandom.ChooseWeighted(list3);
 				AreaEntityData obj = keyValuePair.Value.GetAvailableMachines(flag).GetRandomElementInefficiently() ?? keyValuePair.Value.GetAvailableMachines(!flag).GetRandomElementInefficiently();
 				MatrixFrame globalFrame = obj.Entity.GetGlobalFrame();
-				Agent agent = Mission.Current.SpawnTroop(agentOriginBase, isPlayerSide: false, hasFormation: false, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: false, wieldInitialWeapons: false, forceDismounted: false, globalFrame.origin, globalFrame.rotation.f.AsVec2.Normalized());
+				Agent agent = Mission.Current.SpawnTroop(agentOriginBase, isPlayerSide: false, hasFormation: false, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: false, wieldInitialWeapons: false, globalFrame.origin, globalFrame.rotation.f.AsVec2.Normalized());
 				_numberOfSpawnedTroops++;
 				AgentFlag agentFlags = agent.GetAgentFlags();
 				agent.SetAgentFlags(agentFlags & ~AgentFlag.CanRetreat);
@@ -76,7 +76,7 @@ public class LordsHallFightMissionController : MissionLogic, IMissionAgentSpawnL
 			{
 				if (BattleSideEnum.Attacker == _side)
 				{
-					Mission.Current.SpawnTroop(list[i], _isPlayerSide, hasFormation: true, spawnWithHorse: false, isReinforcement, spawnCount, i, isAlarmed: true, wieldInitialWeapons: true, forceDismounted: true, null, null);
+					Mission.Current.SpawnTroop(list[i], _isPlayerSide, hasFormation: true, spawnWithHorse: false, isReinforcement, spawnCount, i, isAlarmed: true, wieldInitialWeapons: true, null, null);
 					_numberOfSpawnedTroops++;
 				}
 			}
@@ -226,8 +226,11 @@ public class LordsHallFightMissionController : MissionLogic, IMissionAgentSpawnL
 
 	private int _removedAllyCounter;
 
+	public BattleSideEnum PlayerSide { get; private set; }
+
 	public LordsHallFightMissionController(IMissionTroopSupplier[] suppliers, float areaLostRatio, float attackerDefenderTroopCountRatio, int attackerSideTroopCountMax, int defenderSideTroopCountMax, BattleSideEnum playerSide)
 	{
+		PlayerSide = playerSide;
 		_areaLostRatio = areaLostRatio;
 		_attackerDefenderTroopCountRatio = attackerDefenderTroopCountRatio;
 		_attackerSideTroopCountMax = attackerSideTroopCountMax;
@@ -406,7 +409,7 @@ public class LordsHallFightMissionController : MissionLogic, IMissionAgentSpawnL
 		return _missionSides[(int)side].TroopSpawningActive;
 	}
 
-	public float GetReinforcementInterval()
+	public float GetReinforcementInterval(BattleSideEnum side = BattleSideEnum.None)
 	{
 		return 0f;
 	}

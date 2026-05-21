@@ -24,13 +24,11 @@ public class GraphicsContext
 
 	private int[] _scissorParameters = new int[4];
 
-	private Matrix4x4 _projectionMatrix = Matrix4x4.Identity;
+	private MatrixFrame _modelMatrix = MatrixFrame.Identity.Filled();
 
-	private Matrix4x4 _modelMatrix = Matrix4x4.Identity;
+	private MatrixFrame _viewMatrix = MatrixFrame.Identity.Filled();
 
-	private Matrix4x4 _viewMatrix = Matrix4x4.Identity;
-
-	private Matrix4x4 _modelViewMatrix = Matrix4x4.Identity;
+	private MatrixFrame _projectionMatrix = MatrixFrame.Identity.Filled();
 
 	private Stopwatch _stopwatch;
 
@@ -48,6 +46,8 @@ public class GraphicsContext
 
 	private bool _anyInvalidMatricesThisFrame;
 
+	private bool _forceContextReactivation;
+
 	private ResourceDepot _resourceDepot;
 
 	private bool _blendingMode;
@@ -62,7 +62,7 @@ public class GraphicsContext
 
 	internal Dictionary<string, OpenGLTexture> LoadedTextures { get; private set; }
 
-	public Matrix4x4 ProjectionMatrix
+	public MatrixFrame ProjectionMatrix
 	{
 		get
 		{
@@ -74,7 +74,7 @@ public class GraphicsContext
 		}
 	}
 
-	public Matrix4x4 ViewMatrix
+	public MatrixFrame ViewMatrix
 	{
 		get
 		{
@@ -83,11 +83,10 @@ public class GraphicsContext
 		set
 		{
 			_viewMatrix = value;
-			_modelViewMatrix = _viewMatrix * _modelMatrix;
 		}
 	}
 
-	public Matrix4x4 ModelMatrix
+	public MatrixFrame ModelMatrix
 	{
 		get
 		{
@@ -96,7 +95,6 @@ public class GraphicsContext
 		set
 		{
 			_modelMatrix = value;
-			_modelViewMatrix = _viewMatrix * _modelMatrix;
 		}
 	}
 
@@ -158,7 +156,7 @@ public class GraphicsContext
 		_handleRenderContext = Opengl32.wglCreateContext(_handleDeviceContext);
 		if (_handleRenderContext == IntPtr.Zero)
 		{
-			throw new OpenGlLoadException("Could not create default OpenGL context.");
+			StandaloneApplicationUtility.TerminateWithMessageBox("Graphics driver error", "Could not create default OpenGL context.");
 		}
 		SetActive();
 		string @string = Opengl32.GetString(7938u);
@@ -183,7 +181,7 @@ public class GraphicsContext
 		_handleRenderContext = Opengl32ARB.wglCreateContextAttribs(_handleDeviceContext, IntPtr.Zero, array);
 		if (_handleRenderContext == IntPtr.Zero)
 		{
-			throw new OpenGlLoadException("Could not create OpenGL context.");
+			StandaloneApplicationUtility.TerminateWithMessageBox("Graphics driver error", "Could not create OpenGL context.");
 		}
 		SetActive();
 		string string4 = Opengl32.GetString(7938u);
@@ -199,9 +197,9 @@ public class GraphicsContext
 		Opengl32.ClearDepth(1.0);
 		Opengl32.Disable(Target.DepthTest);
 		Opengl32.Hint(3152u, 4354u);
-		ProjectionMatrix = Matrix4x4.Identity;
-		ModelMatrix = Matrix4x4.Identity;
-		ViewMatrix = Matrix4x4.Identity;
+		ProjectionMatrix = MatrixFrame.Identity.Filled();
+		ViewMatrix = MatrixFrame.Identity.Filled();
+		ModelMatrix = MatrixFrame.Identity.Filled();
 		_simpleVAO = VertexArrayObject.Create();
 		_textureVAO = VertexArrayObject.CreateWithUVBuffer();
 	}
@@ -225,6 +223,25 @@ public class GraphicsContext
 	{
 		_anyInvalidMatricesThisFrame = false;
 		_stopwatch.Start();
+		if (_forceContextReactivation)
+		{
+			TaleWorlds.Library.Debug.Print("[LAUNCHER]: Display or DPI change detected, reactivating GL context.");
+			_forceContextReactivation = false;
+			Active = null;
+			SetActive();
+		}
+		IntPtr intPtr = Opengl32.wglGetCurrentContext();
+		if (intPtr == IntPtr.Zero || intPtr != _handleRenderContext)
+		{
+			Active = null;
+			SetActive();
+			intPtr = Opengl32.wglGetCurrentContext();
+			if (intPtr == IntPtr.Zero)
+			{
+				_anyInvalidMatricesThisFrame = true;
+				return;
+			}
+		}
 		Resize(width, height);
 		Opengl32.Clear(AttribueMask.ColorBufferBit);
 		Opengl32.ClearDepth(1.0);
@@ -246,17 +263,29 @@ public class GraphicsContext
 		{
 			Thread.Sleep(num2);
 		}
-		Gdi32.SwapBuffers(_handleDeviceContext);
+		if (!Gdi32.SwapBuffers(_handleDeviceContext))
+		{
+			_forceContextReactivation = true;
+		}
 		_stopwatch.Restart();
 		if (_anyInvalidMatricesThisFrame)
 		{
 			_failedRenderFrames++;
 		}
+		else
+		{
+			_failedRenderFrames = 0;
+		}
 		if (_failedRenderFrames >= 100)
 		{
 			TaleWorlds.Library.Debug.ShowMessageBox("Launcher render error", "ERROR", 4u);
-			throw new Exception("[Launcher]: More than 100 frames had a render fail");
+			throw new Exception("[Launcher]: More than 100 consecutive frames had a render fail");
 		}
+	}
+
+	public void RequestContextReactivation()
+	{
+		_forceContextReactivation = true;
 	}
 
 	public void DestroyContext()
@@ -283,13 +312,21 @@ public class GraphicsContext
 	{
 		if (!_loadedShaders.ContainsKey(shaderName))
 		{
-			string filePath = _resourceDepot.GetFilePath(shaderName + ".vert");
-			string filePath2 = _resourceDepot.GetFilePath(shaderName + ".frag");
-			string vertexShaderCode = File.ReadAllText(filePath);
-			string fragmentShaderCode = File.ReadAllText(filePath2);
-			Shader shader = Shader.CreateShader(this, vertexShaderCode, fragmentShaderCode);
-			_loadedShaders.Add(shaderName, shader);
-			return shader;
+			try
+			{
+				string filePath = _resourceDepot.GetFilePath(shaderName + ".vert");
+				string filePath2 = _resourceDepot.GetFilePath(shaderName + ".frag");
+				string vertexShaderCode = File.ReadAllText(filePath);
+				string fragmentShaderCode = File.ReadAllText(filePath2);
+				Shader shader = Shader.CreateShader(this, vertexShaderCode, fragmentShaderCode);
+				_loadedShaders.Add(shaderName, shader);
+				return shader;
+			}
+			catch (Exception)
+			{
+				_loadedShaders.Add(shaderName, null);
+				return null;
+			}
 		}
 		return _loadedShaders[shaderName];
 	}
@@ -297,53 +334,112 @@ public class GraphicsContext
 	public void DrawImage(SimpleMaterial material, in ImageDrawObject drawObject)
 	{
 		Shader shader = PrepareRender(material, in drawObject.Rectangle);
-		DrawImageAux(shader, material, in drawObject);
-		VertexArrayObject.UnBind();
-		shader.StopUsing();
+		if (shader != null)
+		{
+			DrawImageAux(shader, material, in drawObject);
+			VertexArrayObject.UnBind();
+			shader.StopUsing();
+		}
 	}
 
 	public void DrawText(TextMaterial material, in TextDrawObject drawObject)
 	{
 		Shader shader = PrepareRender(material, in drawObject.Rectangle);
-		DrawTextAux(shader, material, in drawObject);
-		VertexArrayObject.UnBind();
-		shader.StopUsing();
+		if (shader != null)
+		{
+			DrawTextAux(shader, material, in drawObject);
+			VertexArrayObject.UnBind();
+			shader.StopUsing();
+		}
 	}
 
 	public void DrawPolygon(PrimitivePolygonMaterial material, in ImageDrawObject drawObject)
 	{
 		Shader shader = PrepareRender(material, in drawObject.Rectangle);
-		DrawPolygonAux(shader, material, in drawObject);
-		VertexArrayObject.UnBind();
-		shader.StopUsing();
+		if (shader != null)
+		{
+			DrawPolygonAux(shader, material, in drawObject);
+			VertexArrayObject.UnBind();
+			shader.StopUsing();
+		}
 	}
 
 	private Shader PrepareRender(Material material, in Rectangle2D rect)
 	{
 		Shader orLoadShader = GetOrLoadShader(material.GetType().Name);
-		MatrixFrame matrixFrame = rect.GetCachedVisualMatrixFrame();
-		if (IsValidMatrixFrame(in matrixFrame))
+		if (orLoadShader == null)
 		{
-			ModelMatrix = new Matrix4x4(matrixFrame.rotation.s.x, matrixFrame.rotation.s.y, matrixFrame.rotation.s.z, matrixFrame.rotation.s.w, matrixFrame.rotation.f.x, matrixFrame.rotation.f.y, matrixFrame.rotation.f.z, matrixFrame.rotation.f.w, matrixFrame.rotation.u.x, matrixFrame.rotation.u.y, matrixFrame.rotation.u.z, matrixFrame.rotation.u.w, matrixFrame.origin.x, matrixFrame.origin.y, 0f, matrixFrame.origin.w);
+			_anyInvalidMatricesThisFrame = true;
+			return null;
+		}
+		if (_screenWidth <= 0 || _screenHeight <= 0)
+		{
+			_anyInvalidMatricesThisFrame = true;
+			return null;
+		}
+		MatrixFrame cachedVisualMatrixFrame = rect.GetCachedVisualMatrixFrame();
+		if (cachedVisualMatrixFrame.AreAllComponentsValid() && !cachedVisualMatrixFrame.IsZero)
+		{
+			ModelMatrix = cachedVisualMatrixFrame;
 		}
 		else
 		{
-			ModelMatrix = new Matrix4x4(250f, 0f, 0f, 0f, 0f, 100f, 0f, 0f, 0f, 0f, 0f, 1f, 50f, 50f, 0f, 1f);
+			ModelMatrix = ValidateModelMatrix(cachedVisualMatrixFrame);
 			_anyInvalidMatricesThisFrame = true;
 		}
+		MatrixFrame matrixFrame = ValidateModelMatrix(_modelMatrix);
+		MatrixFrame matrixFrame2 = ValidateViewMatrix(in _viewMatrix);
+		MatrixFrame matrixFrame3 = ValidateProjectionMatrix(in _projectionMatrix);
 		orLoadShader.Use();
-		Matrix4x4 matrix = _modelMatrix * _viewMatrix * _projectionMatrix;
-		orLoadShader.SetMatrix("MVP", matrix);
+		if (Opengl32.GetError() != 0)
+		{
+			_anyInvalidMatricesThisFrame = true;
+			orLoadShader.StopUsing();
+			return null;
+		}
+		Matrix4x4 matrix = matrixFrame.ToMatrix4x4() * matrixFrame2.ToMatrix4x4() * matrixFrame3.ToMatrix4x4();
+		orLoadShader.SetMatrix("MVP", in matrix);
 		return orLoadShader;
 	}
 
-	private bool IsValidMatrixFrame(in MatrixFrame matrixFrame)
+	private static MatrixFrame ValidateModelMatrix(MatrixFrame modelMatrix)
 	{
-		if (!matrixFrame.IsZero && matrixFrame.origin.IsValidXYZW && matrixFrame.rotation.f.IsValidXYZW && matrixFrame.rotation.s.IsValidXYZW)
+		if (!modelMatrix.origin.IsValidXYZW)
 		{
-			return matrixFrame.rotation.u.IsValidXYZW;
+			modelMatrix.origin = new Vec3(0f, 0f, 0f, 0f);
 		}
-		return false;
+		if (!modelMatrix.rotation.s.IsValidXYZW)
+		{
+			modelMatrix.rotation.s = new Vec3(100f, 0f, 0f, 0f);
+		}
+		if (!modelMatrix.rotation.f.IsValidXYZW)
+		{
+			modelMatrix.rotation.f = new Vec3(0f, 100f, 0f, 0f);
+		}
+		if (!modelMatrix.rotation.u.IsValidXYZW)
+		{
+			modelMatrix.rotation.u = new Vec3(0f, 0f, 1f, 0f);
+		}
+		modelMatrix.Fill();
+		return modelMatrix;
+	}
+
+	private static MatrixFrame ValidateViewMatrix(in MatrixFrame viewMatrix)
+	{
+		if (viewMatrix.AreAllComponentsValid())
+		{
+			return viewMatrix;
+		}
+		return MatrixFrame.CreateLookAt(in Vec3.Up, in Vec3.Zero, in Vec3.Forward);
+	}
+
+	private static MatrixFrame ValidateProjectionMatrix(in MatrixFrame projectionMatrix)
+	{
+		if (projectionMatrix.AreAllComponentsValid())
+		{
+			return projectionMatrix;
+		}
+		return MatrixExtensions.CreateOrthographicOffCenter(0f, 900f, 600f, 0f, 0f, 1f);
 	}
 
 	private void DrawImageAux(Shader shader, SimpleMaterial material, in ImageDrawObject drawObject)

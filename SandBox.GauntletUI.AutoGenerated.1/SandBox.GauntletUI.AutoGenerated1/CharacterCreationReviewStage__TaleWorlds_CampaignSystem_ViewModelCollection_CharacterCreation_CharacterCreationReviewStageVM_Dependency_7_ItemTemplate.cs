@@ -65,7 +65,7 @@ public class CharacterCreationReviewStage__TaleWorlds_CampaignSystem_ViewModelCo
 		base.HeightSizePolicy = SizePolicy.CoverChildren;
 		base.MarginLeft = 13f;
 		base.MarginRight = 13f;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		base.DoNotUseCustomScaleAndChildren = true;
 		_widget_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0.HeightSizePolicy = SizePolicy.Fixed;

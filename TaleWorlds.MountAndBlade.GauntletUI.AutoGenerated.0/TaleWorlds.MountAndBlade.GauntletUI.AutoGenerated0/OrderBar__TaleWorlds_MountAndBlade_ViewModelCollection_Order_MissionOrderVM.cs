@@ -211,7 +211,7 @@ public class OrderBar__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Missio
 		_widget_1_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0_0_0.HorizontalAlignment = HorizontalAlignment.Left;
 		_widget_1_0_0_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_1_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_0_0_0_0.SetAttributes();
 		_widget_1_0_0_0_1.SetAttributes();
 		_widget_1_0_0_0_2.SetAttributes();
@@ -220,7 +220,7 @@ public class OrderBar__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Missio
 		_widget_1_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0_0_1.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_1_0_0_1.VerticalAlignment = VerticalAlignment.Center;
-		_widget_1_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_0_0_1_0.SetAttributes();
 		_widget_1_0_0_1_1.SetAttributes();
 		_widget_1_0_0_1_2.SetAttributes();
@@ -259,7 +259,7 @@ public class OrderBar__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Missio
 		_widget_1_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_1.MarginLeft = 200f;
 		_widget_1_1.MarginTop = 120f;
-		_widget_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2.SetAttributes();
 	}
 

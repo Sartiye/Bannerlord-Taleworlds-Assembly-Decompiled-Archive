@@ -115,9 +115,9 @@ public class MultiplayerLobbyAfterBattleExperiencePanelWidget : Widget
 	{
 	}
 
-	public void StartAnimation()
+	public void StartAnimation(float animationDelay)
 	{
-		ExperienceFillBar.StartAnimation();
+		ExperienceFillBar.StartAnimation(animationDelay);
 		EarnedExperienceCounterTextWidget.IntTarget = GainedExperience;
 	}
 
@@ -127,10 +127,10 @@ public class MultiplayerLobbyAfterBattleExperiencePanelWidget : Widget
 		EarnedExperienceCounterTextWidget?.SetInitialValue(0f);
 	}
 
-	private void OnFillBarFill()
+	private void OnFillBarFill(bool isPositive)
 	{
-		CurrentLevelTextWidget.IntText++;
-		NextLevelTextWidget.IntText++;
+		CurrentLevelTextWidget.IntText += (isPositive ? 1 : (-1));
+		NextLevelTextWidget.IntText += (isPositive ? 1 : (-1));
 	}
 
 	protected override void RefreshState()

@@ -61,37 +61,9 @@ public class DefaultFormationDeploymentPlan : IFormationDeploymentPlan
 		return _spawnFrame.IsValid;
 	}
 
-	public FormationDeploymentFlank GetDefaultFlank(int formationTroopCount, int infantryCount, bool spawnWithHorses = false)
+	public FormationDeploymentFlank GetDefaultFlank(int formationTroopCount, bool teamPlanHasAnyFootTroops, bool spawnWithHorses = false)
 	{
-		FormationDeploymentFlank formationDeploymentFlank = FormationDeploymentFlank.Count;
-		if (!_class.IsMounted() && formationTroopCount == 0)
-		{
-			return FormationDeploymentFlank.Rear;
-		}
-		if (HasSignificantMountedTroops && (!spawnWithHorses || infantryCount == 0))
-		{
-			if (formationTroopCount == 0 || _class == FormationClass.LightCavalry || _class == FormationClass.HorseArcher)
-			{
-				return FormationDeploymentFlank.Rear;
-			}
-			return FormationDeploymentFlank.Front;
-		}
-		switch (_class)
-		{
-		case FormationClass.Cavalry:
-		case FormationClass.HeavyCavalry:
-			return FormationDeploymentFlank.Left;
-		case FormationClass.HorseArcher:
-		case FormationClass.LightCavalry:
-			return FormationDeploymentFlank.Right;
-		case FormationClass.Ranged:
-		case FormationClass.NumberOfRegularFormations:
-		case FormationClass.Bodyguard:
-		case FormationClass.NumberOfAllFormations:
-			return FormationDeploymentFlank.Rear;
-		default:
-			return FormationDeploymentFlank.Front;
-		}
+		return GetFormationDefaultFlankAux(_class, formationTroopCount, teamPlanHasAnyFootTroops, HasSignificantMountedTroops, spawnWithHorses);
 	}
 
 	public FormationDeploymentOrder GetFlankDeploymentOrder(int offset = 0)
@@ -153,5 +125,38 @@ public class DefaultFormationDeploymentPlan : IFormationDeploymentPlan
 	public void SetSpawnClass(FormationClass spawnClass)
 	{
 		_spawnClass = spawnClass;
+	}
+
+	public static FormationDeploymentFlank GetFormationDefaultFlankAux(FormationClass formationClass, int formationTroopCount, bool teamPlanHasAnyFootTroops, bool hasSignificantMountedTroops, bool canSpawnWithHorses)
+	{
+		FormationDeploymentFlank formationDeploymentFlank = FormationDeploymentFlank.Count;
+		if (!formationClass.IsMounted() && formationTroopCount == 0)
+		{
+			return FormationDeploymentFlank.Rear;
+		}
+		if (hasSignificantMountedTroops && (!canSpawnWithHorses || !teamPlanHasAnyFootTroops))
+		{
+			if (formationTroopCount == 0 || formationClass == FormationClass.LightCavalry || formationClass == FormationClass.HorseArcher)
+			{
+				return FormationDeploymentFlank.Rear;
+			}
+			return FormationDeploymentFlank.Front;
+		}
+		switch (formationClass)
+		{
+		case FormationClass.Cavalry:
+		case FormationClass.HeavyCavalry:
+			return FormationDeploymentFlank.Left;
+		case FormationClass.HorseArcher:
+		case FormationClass.LightCavalry:
+			return FormationDeploymentFlank.Right;
+		case FormationClass.Ranged:
+		case FormationClass.NumberOfRegularFormations:
+		case FormationClass.Bodyguard:
+		case FormationClass.NumberOfAllFormations:
+			return FormationDeploymentFlank.Rear;
+		default:
+			return FormationDeploymentFlank.Front;
+		}
 	}
 }

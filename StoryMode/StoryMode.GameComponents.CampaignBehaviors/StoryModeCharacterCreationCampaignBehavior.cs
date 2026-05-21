@@ -180,9 +180,13 @@ public class StoryModeCharacterCreationCampaignBehavior : CampaignBehaviorBase, 
 			}
 		}
 		Hero elderBrother = StoryModeHeroes.ElderBrother;
-		CreateSibling(StoryModeHeroes.LittleBrother, bodyProperties, bodyProperties2);
-		CreateSibling(StoryModeHeroes.LittleSister, bodyProperties, bodyProperties2);
-		BodyProperties randomBodyProperties = BodyProperties.GetRandomBodyProperties(elderBrother.CharacterObject.Race, elderBrother.IsFemale, bodyProperties, bodyProperties2, 1, Hero.MainHero.Mother.CharacterObject.GetDefaultFaceSeed(1), Hero.MainHero.Father.CharacterObject.BodyPropertyRange.HairTags, Hero.MainHero.Father.CharacterObject.BodyPropertyRange.BeardTags, Hero.MainHero.Father.CharacterObject.BodyPropertyRange.TattooTags);
+		uint hashCode = (uint)Hero.MainHero.BodyProperties.GetHashCode();
+		string hairTags = Hero.MainHero.Culture.ToString().ToLower() + ",";
+		string beardTags = Hero.MainHero.Culture.ToString().ToLower() + ",";
+		int seed = Hero.MainHero.RandomIntWithSeed(hashCode, 1, 100);
+		CreateSibling(StoryModeHeroes.LittleBrother, bodyProperties, bodyProperties2, hashCode + 1);
+		CreateSibling(StoryModeHeroes.LittleSister, bodyProperties, bodyProperties2, hashCode + 2);
+		BodyProperties randomBodyProperties = BodyProperties.GetRandomBodyProperties(elderBrother.CharacterObject.Race, elderBrother.IsFemale, bodyProperties, bodyProperties2, 1, seed, hairTags, beardTags, Hero.MainHero.Father.CharacterObject.BodyPropertyRange.TattooTags);
 		randomBodyProperties = new BodyProperties(new DynamicBodyProperties(elderBrother.Age, 0.5f, 0.5f), randomBodyProperties.StaticProperties);
 		elderBrother.StaticBodyProperties = randomBodyProperties.StaticProperties;
 		elderBrother.Weight = randomBodyProperties.Weight;
@@ -241,18 +245,20 @@ public class StoryModeCharacterCreationCampaignBehavior : CampaignBehaviorBase, 
 			}
 		}
 		Hero elderBrother = StoryModeHeroes.ElderBrother;
-		BodyProperties originalBodyProperties = CharacterObject.PlayerCharacter.GetBodyProperties(CharacterObject.PlayerCharacter.Equipment);
-		originalBodyProperties = FaceGen.GetBodyPropertiesWithAge(ref originalBodyProperties, 23f);
-		CreateSibling(StoryModeHeroes.LittleBrother, bodyProperties, bodyProperties2);
-		CreateSibling(StoryModeHeroes.LittleSister, bodyProperties, bodyProperties2);
-		BodyProperties randomBodyProperties = BodyProperties.GetRandomBodyProperties(elderBrother.CharacterObject.Race, elderBrother.IsFemale, bodyProperties, bodyProperties2, 1, Hero.MainHero.Mother.CharacterObject.GetDefaultFaceSeed(1), Hero.MainHero.Father.CharacterObject.BodyPropertyRange.HairTags, Hero.MainHero.Father.CharacterObject.BodyPropertyRange.BeardTags, Hero.MainHero.Father.CharacterObject.BodyPropertyRange.TattooTags);
+		uint hashCode = (uint)Hero.MainHero.BodyProperties.GetHashCode();
+		string hairTags = Hero.MainHero.Culture.ToString().ToLower() + ",";
+		string beardTags = Hero.MainHero.Culture.ToString().ToLower() + ",";
+		int seed = Hero.MainHero.RandomIntWithSeed(hashCode, 1, 100);
+		CreateSibling(StoryModeHeroes.LittleBrother, bodyProperties, bodyProperties2, hashCode + 1);
+		CreateSibling(StoryModeHeroes.LittleSister, bodyProperties, bodyProperties2, hashCode + 2);
+		BodyProperties randomBodyProperties = BodyProperties.GetRandomBodyProperties(elderBrother.CharacterObject.Race, elderBrother.IsFemale, bodyProperties, bodyProperties2, 1, seed, hairTags, beardTags, Hero.MainHero.Father.CharacterObject.BodyPropertyRange.TattooTags);
 		randomBodyProperties = new BodyProperties(new DynamicBodyProperties(elderBrother.Age, 0.5f, 0.5f), randomBodyProperties.StaticProperties);
 		elderBrother.StaticBodyProperties = randomBodyProperties.StaticProperties;
 		elderBrother.Weight = randomBodyProperties.Weight;
 		elderBrother.Build = randomBodyProperties.Build;
 		NarrativeMenuCharacter item = new NarrativeMenuCharacter("brother_character", randomBodyProperties, elderBrother.CharacterObject.Race, elderBrother.CharacterObject.IsFemale);
 		list.Add(item);
-		NarrativeMenuCharacter item2 = new NarrativeMenuCharacter("player_escape_character", originalBodyProperties, CharacterObject.PlayerCharacter.Race, CharacterObject.PlayerCharacter.IsFemale);
+		NarrativeMenuCharacter item2 = new NarrativeMenuCharacter("player_escape_character", Hero.MainHero.BodyProperties, CharacterObject.PlayerCharacter.Race, CharacterObject.PlayerCharacter.IsFemale);
 		list.Add(item2);
 		NarrativeMenu narrativeMenu = new NarrativeMenu("narrative_escape_menu", "narrative_adulthood_menu", "", new TextObject("{=peNBA0WW}Story Background"), new TextObject("{=jg3T5AyE}Like many families in Calradia, your life was upended by war. Your home was ravaged by the passage of army after army. Eventually, you sold your property and set off with your father, mother, brother, and your two younger siblings to a new town you'd heard was safer. But you did not make it. Along the way, the inn at which you were staying was attacked by raiders. Your parents were slain and your two youngest siblings seized, but you and your brother survived because..."), list, GetEscapeMenuNarrativeMenuCharacterArgs);
 		AddEscapeNarrativeMenuOptions(narrativeMenu);
@@ -271,7 +277,7 @@ public class StoryModeCharacterCreationCampaignBehavior : CampaignBehaviorBase, 
 		narrativeMenu.AddNarrativeMenuOption(narrativeMenuOption4);
 		NarrativeMenuOption narrativeMenuOption5 = new NarrativeMenuOption("escape_breakout_option", new TextObject("{=qhAhPWdp}you organized the travelers to break out."), new TextObject("{=Lmfi0cYk}You encouraged the few travellers in the inn to break out in a coordinated fashion. Raiders killed or captured most but you and your brother were able to escape."), GetEscapeBreakOutNarrativeOptionArgs, EscapeBreakOutNarrativeOptionOnCondition, EscapeBreakOutNarrativeOptionOnSelect, FinalizeMainHeroAndElderBrother);
 		narrativeMenu.AddNarrativeMenuOption(narrativeMenuOption5);
-		NarrativeMenuOption narrativeMenuOption6 = new NarrativeMenuOption("escape_makeshift_fortification_option", new TextObject("{=7AEw4RbK}You threw up makeshift fortifications."), new TextObject("{=Lmfi0cYk}You encouraged the few travellers in the inn to break out in a coordinated fashion. Raiders killed or captured most but you and your brother were able to escape."), GetMakeshiftFortificationNarrativeOptionArgs, MakeshiftFortificationNarrativeOptionOnCondition, MakeshiftFortificationNarrativeOptionOnSelect, FinalizeMainHeroAndElderBrother);
+		NarrativeMenuOption narrativeMenuOption6 = new NarrativeMenuOption("escape_makeshift_fortification_option", new TextObject("{=7AEw4RbK}you threw up makeshift fortifications."), new TextObject("{=Lmfi0cYk}You encouraged the few travellers in the inn to break out in a coordinated fashion. Raiders killed or captured most but you and your brother were able to escape."), GetMakeshiftFortificationNarrativeOptionArgs, MakeshiftFortificationNarrativeOptionOnCondition, MakeshiftFortificationNarrativeOptionOnSelect, FinalizeMainHeroAndElderBrother);
 		narrativeMenu.AddNarrativeMenuOption(narrativeMenuOption6);
 	}
 
@@ -570,9 +576,12 @@ public class StoryModeCharacterCreationCampaignBehavior : CampaignBehaviorBase, 
 		elderBrother.CharacterObject.FirstCivilianEquipment.FillFrom(narrativeMenuCharacter2.Equipment.GetRandomCivilianEquipment());
 	}
 
-	protected void CreateSibling(Hero hero, BodyProperties motherBodyProperties, BodyProperties fatherBodyProperties)
+	protected void CreateSibling(Hero hero, BodyProperties motherBodyProperties, BodyProperties fatherBodyProperties, uint seed)
 	{
-		BodyProperties randomBodyProperties = BodyProperties.GetRandomBodyProperties(hero.CharacterObject.Race, hero.IsFemale, motherBodyProperties, fatherBodyProperties, 1, Hero.MainHero.Mother.CharacterObject.GetDefaultFaceSeed(1), hero.IsFemale ? Hero.MainHero.Mother.CharacterObject.BodyPropertyRange.HairTags : Hero.MainHero.Father.CharacterObject.BodyPropertyRange.HairTags, hero.IsFemale ? Hero.MainHero.Mother.CharacterObject.BodyPropertyRange.BeardTags : Hero.MainHero.Father.CharacterObject.BodyPropertyRange.BeardTags, hero.IsFemale ? Hero.MainHero.Mother.CharacterObject.BodyPropertyRange.TattooTags : Hero.MainHero.Father.CharacterObject.BodyPropertyRange.TattooTags);
+		string hairTags = Hero.MainHero.Culture.ToString().ToLower() + ",";
+		string beardTags = Hero.MainHero.Culture.ToString().ToLower() + ",";
+		int seed2 = Hero.MainHero.RandomIntWithSeed(seed, 1, 100);
+		BodyProperties randomBodyProperties = BodyProperties.GetRandomBodyProperties(hero.CharacterObject.Race, hero.IsFemale, motherBodyProperties, fatherBodyProperties, 1, seed2, hairTags, beardTags, hero.IsFemale ? Hero.MainHero.Mother.CharacterObject.BodyPropertyRange.TattooTags : Hero.MainHero.Father.CharacterObject.BodyPropertyRange.TattooTags);
 		randomBodyProperties = new BodyProperties(new DynamicBodyProperties(hero.Age, 0.5f, 0.5f), randomBodyProperties.StaticProperties);
 		hero.StaticBodyProperties = randomBodyProperties.StaticProperties;
 		hero.Weight = randomBodyProperties.Weight;

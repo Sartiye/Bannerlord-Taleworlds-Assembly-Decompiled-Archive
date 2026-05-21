@@ -221,6 +221,15 @@ public class GameMenu__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Ga
 		_widget_0_3.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_3;
 		_widget_0_3.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_3;
 		_widget_0_3.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_3;
+		_widget_0_3_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_3_0;
+		_widget_0_3_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_3_0;
+		_widget_0_3_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_3_0;
+		_widget_0_3_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_3_0;
+		_widget_0_3_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_3_0;
+		_widget_0_3_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_3_0;
+		_widget_0_3_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_3_0;
+		_widget_0_3_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_3_0;
+		_widget_0_3_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_3_0;
 		if (_datasource_Root_Quests != null)
 		{
 			_datasource_Root_Quests.ListChanged -= OnList_datasource_Root_QuestsChanged;
@@ -542,6 +551,59 @@ public class GameMenu__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Ga
 		}
 	}
 
+	private void PropertyChangedListenerOf_widget_0_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_3_0(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_0_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_3_0(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_0_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_3_0(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_0_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_3_0(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_0_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_3_0(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_0_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_3_0(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_0_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_3_0(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_0_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_3_0(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_0_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_3_0(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_0_3_0(string propertyName)
+	{
+		if (propertyName == "IsVisible")
+		{
+			_datasource_Root.IsEnabled = _widget_0_3_0.IsVisible;
+		}
+	}
+
 	private void PropertyChangedListenerOf_widget_0_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
 		HandleWidgetPropertyChangeOf_widget_0_3_0_0(propertyName);
@@ -678,6 +740,7 @@ public class GameMenu__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Ga
 		case "IsEnabled":
 			_widget_0.IsEnabled = _datasource_Root.IsEnabled;
 			_widget_0_3.IsEnabled = _datasource_Root.IsEnabled;
+			_widget_0_3_0.IsVisible = _datasource_Root.IsEnabled;
 			break;
 		case "IsHighlightEnabled":
 			_widget_0_2.IsHighlightEnabled = _datasource_Root.IsHighlightEnabled;
@@ -900,6 +963,15 @@ public class GameMenu__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Ga
 			_widget_0_3.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_3;
 			_widget_0_3.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_3;
 			_widget_0_3.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_3;
+			_widget_0_3_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_3_0;
+			_widget_0_3_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_3_0;
+			_widget_0_3_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_3_0;
+			_widget_0_3_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_3_0;
+			_widget_0_3_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_3_0;
+			_widget_0_3_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_3_0;
+			_widget_0_3_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_3_0;
+			_widget_0_3_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_3_0;
+			_widget_0_3_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_3_0;
 			if (_datasource_Root_Quests != null)
 			{
 				_datasource_Root_Quests.ListChanged -= OnList_datasource_Root_QuestsChanged;
@@ -1013,6 +1085,16 @@ public class GameMenu__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Ga
 		_widget_0_3.intPropertyChanged += intPropertyChangedListenerOf_widget_0_3;
 		_widget_0_3.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_3;
 		_widget_0_3.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_3;
+		_widget_0_3_0.IsVisible = _datasource_Root.IsEnabled;
+		_widget_0_3_0.PropertyChanged += PropertyChangedListenerOf_widget_0_3_0;
+		_widget_0_3_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_3_0;
+		_widget_0_3_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_3_0;
+		_widget_0_3_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_3_0;
+		_widget_0_3_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_3_0;
+		_widget_0_3_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_3_0;
+		_widget_0_3_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_3_0;
+		_widget_0_3_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_3_0;
+		_widget_0_3_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_3_0;
 		_datasource_Root_Quests = _datasource_Root.Quests;
 		if (_datasource_Root_Quests != null)
 		{

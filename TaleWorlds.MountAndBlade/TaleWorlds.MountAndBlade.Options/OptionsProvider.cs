@@ -82,6 +82,7 @@ public static class OptionsProvider
 		yield return new NativeSelectionOptionData(NativeOptions.NativeOptionsType.Occlusion);
 		yield return new NativeSelectionOptionData(NativeOptions.NativeOptionsType.DecalQuality);
 		yield return new NativeSelectionOptionData(NativeOptions.NativeOptionsType.WaterQuality);
+		yield return new NativeSelectionOptionData(NativeOptions.NativeOptionsType.SSRQuality);
 		if (!isMultiplayer)
 		{
 			yield return new ManagedSelectionOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.NumberOfCorpses);
@@ -98,23 +99,23 @@ public static class OptionsProvider
 		yield return new NativeBooleanOptionData(NativeOptions.NativeOptionsType.DepthOfField);
 		yield return new NativeBooleanOptionData(NativeOptions.NativeOptionsType.Bloom);
 		yield return new NativeBooleanOptionData(NativeOptions.NativeOptionsType.FilmGrain);
-		if (NativeOptions.CheckGFXSupportStatus(64))
+		if (NativeOptions.CheckGFXSupportStatus(65))
 		{
 			yield return new NativeBooleanOptionData(NativeOptions.NativeOptionsType.PostFXVignette);
 		}
-		if (NativeOptions.CheckGFXSupportStatus(63))
+		if (NativeOptions.CheckGFXSupportStatus(64))
 		{
 			yield return new NativeBooleanOptionData(NativeOptions.NativeOptionsType.PostFXChromaticAberration);
 		}
-		if (NativeOptions.CheckGFXSupportStatus(61))
+		if (NativeOptions.CheckGFXSupportStatus(62))
 		{
 			yield return new NativeBooleanOptionData(NativeOptions.NativeOptionsType.PostFXLensFlare);
 		}
-		if (NativeOptions.CheckGFXSupportStatus(65))
+		if (NativeOptions.CheckGFXSupportStatus(66))
 		{
 			yield return new NativeBooleanOptionData(NativeOptions.NativeOptionsType.PostFXHexagonVignette);
 		}
-		if (NativeOptions.CheckGFXSupportStatus(62))
+		if (NativeOptions.CheckGFXSupportStatus(63))
 		{
 			yield return new NativeBooleanOptionData(NativeOptions.NativeOptionsType.PostFXStreaks);
 		}
@@ -215,10 +216,7 @@ public static class OptionsProvider
 		yield return new NativeBooleanOptionData(NativeOptions.NativeOptionsType.EnableAlternateAiming);
 		if (isDualSense)
 		{
-			if (isMainMenu)
-			{
-				yield return new NativeBooleanOptionData(NativeOptions.NativeOptionsType.EnableTouchpadMouse);
-			}
+			yield return new NativeBooleanOptionData(NativeOptions.NativeOptionsType.EnableTouchpadMouse);
 			yield return new NativeBooleanOptionData(NativeOptions.NativeOptionsType.EnableGyroAssistedAim);
 			yield return new NativeNumericOptionData(NativeOptions.NativeOptionsType.GyroAimSensitivity);
 		}
@@ -290,6 +288,7 @@ public static class OptionsProvider
 		yield return new ManagedNumericOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.AutoSaveInterval);
 		yield return new ManagedSelectionOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.UnitSpawnPrioritization);
 		yield return new ManagedSelectionOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.ReinforcementWaveCount);
+		yield return new ManagedSelectionOptionData(TaleWorlds.MountAndBlade.ManagedOptions.ManagedOptionsType.MapDoubleClickBehavior);
 	}
 
 	public static IEnumerable<string> GetGameKeyCategoriesList(bool isMultiplayer)
@@ -298,6 +297,7 @@ public static class OptionsProvider
 		yield return GameKeyMainCategories.OrderMenuCategory;
 		if (!isMultiplayer)
 		{
+			yield return GameKeyMainCategories.ShipControlsCategory;
 			yield return GameKeyMainCategories.CampaignMapCategory;
 			yield return GameKeyMainCategories.MenuShortcutCategory;
 			yield return GameKeyMainCategories.PhotoModeCategory;

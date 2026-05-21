@@ -1,26 +1,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using Helpers;
-using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Siege;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
-using TaleWorlds.LinQuick;
 
 namespace TaleWorlds.CampaignSystem.CampaignBehaviors.AiBehaviors;
 
 public class AiMilitaryBehavior : CampaignBehaviorBase
 {
-	private const int MinimumInfluenceNeededToCreateArmy = 50;
-
 	private const float MeaningfulCohesionThresholdForArmy = 40f;
 
 	private const float MinimumCohesionScoreThreshold = 0.25f;
 
-	private const float AverageSiegeDurationAsDays = 5.73f;
+	private const float AverageSiegeDurationAsDays = 8.02f;
 
 	private IDisbandPartyCampaignBehavior _disbandPartyCampaignBehavior;
 
@@ -37,17 +33,34 @@ public class AiMilitaryBehavior : CampaignBehaviorBase
 
 	private void OnMapEventStarted(MapEvent mapEvent, PartyBase attackerParty, PartyBase defenderParty)
 	{
-		if (mapEvent.MapEventSettlement == null || !mapEvent.MapEventSettlement.IsFortification || !mapEvent.MapEventSettlement.HasPort || mapEvent.MapEventSettlement.SiegeEvent == null || !mapEvent.MapEventSettlement.SiegeEvent.IsBlockadeActive)
+		if (mapEvent.MapEventSettlement == null || !mapEvent.MapEventSettlement.HasPort)
 		{
 			return;
 		}
-		bool isNavalMapEvent = mapEvent.IsNavalMapEvent;
-		foreach (MobileParty allLordParty in MobileParty.AllLordParties)
+		if (mapEvent.MapEventSettlement.IsFortification && mapEvent.MapEventSettlement.SiegeEvent != null && mapEvent.MapEventSettlement.SiegeEvent.IsBlockadeActive)
 		{
-			bool flag = allLordParty.DefaultBehavior == AiBehavior.DefendSettlement && allLordParty.TargetSettlement == mapEvent.MapEventSettlement;
-			if (((allLordParty.ShortTermBehavior == AiBehavior.EngageParty && allLordParty.ShortTermTargetParty.SiegeEvent != null && allLordParty.ShortTermTargetParty.MapFaction.IsAtWarWith(allLordParty.MapFaction)) || flag) && isNavalMapEvent != allLordParty.IsTargetingPort)
+			bool isNavalMapEvent = mapEvent.IsNavalMapEvent;
 			{
-				allLordParty.SetMoveModeHold();
+				foreach (MobileParty allLordParty in MobileParty.AllLordParties)
+				{
+					bool flag = allLordParty.DefaultBehavior == AiBehavior.DefendSettlement && allLordParty.TargetSettlement == mapEvent.MapEventSettlement;
+					if (((allLordParty.ShortTermBehavior == AiBehavior.EngageParty && allLordParty.ShortTermTargetParty.SiegeEvent != null && allLordParty.ShortTermTargetParty.MapFaction.IsAtWarWith(allLordParty.MapFaction)) || flag) && isNavalMapEvent != allLordParty.IsTargetingPort)
+					{
+						allLordParty.SetMoveModeHold();
+					}
+				}
+				return;
+			}
+		}
+		if (!mapEvent.MapEventSettlement.IsVillage)
+		{
+			return;
+		}
+		foreach (MobileParty allLordParty2 in MobileParty.AllLordParties)
+		{
+			if (allLordParty2.CurrentSettlement != mapEvent.MapEventSettlement && allLordParty2.DefaultBehavior == AiBehavior.GoToSettlement && allLordParty2.TargetSettlement == mapEvent.MapEventSettlement)
+			{
+				allLordParty2.SetMoveModeHold();
 			}
 		}
 	}
@@ -75,7 +88,7 @@ public class AiMilitaryBehavior : CampaignBehaviorBase
 					if (mobileParty != null && mobileParty.AttachedTo == null)
 					{
 						mobileParty.TeleportPartyToOutSideOfEncounterRadius();
-						mobileParty.Ai.CalculateFleePosition(out var fleeTargetPoint, mapEventSide.LeaderParty.MobileParty, mapEventSide.LeaderParty.MobileParty.Position.ToVec2());
+						mobileParty.Ai.CalculateFleePosition(out var fleeTargetPoint, mapEventSide.LeaderParty.MobileParty, ((mapEventSide.LeaderParty.MobileParty != null) ? mapEventSide.LeaderParty.MobileParty.Position.ToVec2() : mapEvent.Position.ToVec2()) - mobileParty.Position.ToVec2());
 						mobileParty.SetMoveGoToPoint(fleeTargetPoint, (!mobileParty.IsCurrentlyAtSea) ? MobileParty.NavigationType.Default : MobileParty.NavigationType.Naval);
 					}
 				}
@@ -87,7 +100,7 @@ public class AiMilitaryBehavior : CampaignBehaviorBase
 		Settlement mapEventSettlement = mapEvent.MapEventSettlement;
 		if (mobileParty2 != MobileParty.MainParty && flag)
 		{
-			mobileParty2.SetMoveRaidSettlement(mapEventSettlement, mobileParty2.NavigationCapability);
+			mobileParty2.SetMoveRaidSettlement(mapEventSettlement, mobileParty2.NavigationCapability, mobileParty2.IsCurrentlyAtSea);
 			mobileParty2.RecalculateShortTermBehavior();
 		}
 	}
@@ -101,7 +114,7 @@ public class AiMilitaryBehavior : CampaignBehaviorBase
 	{
 	}
 
-	public void FindBestTargetAndItsValueForFaction(Army.ArmyTypes missionType, PartyThinkParams p, float ourStrength, float newArmyCreatingAdditionalConstant = 1f)
+	public void FindBestTargetAndItsValueForFaction(Army.ArmyTypes missionType, PartyThinkParams p, float ourStrength)
 	{
 		MobileParty mobilePartyOf = p.MobilePartyOf;
 		IFaction mapFaction = mobilePartyOf.MapFaction;
@@ -140,7 +153,7 @@ public class AiMilitaryBehavior : CampaignBehaviorBase
 		switch (missionType)
 		{
 		case Army.ArmyTypes.Defender:
-			CalculateMilitaryBehaviorForFactionSettlements(mapFaction, p, missionType, aiBehavior, ourStrength, partySizeScore, num, foodScoreForActionType, newArmyCreatingAdditionalConstant);
+			CalculateMilitaryBehaviorForFactionSettlements(mapFaction, p, missionType, aiBehavior, ourStrength, partySizeScore, num, foodScoreForActionType);
 			break;
 		case Army.ArmyTypes.Raider:
 			if (mobilePartyOf.Army != null || p.WillGatherAnArmy)
@@ -155,7 +168,7 @@ public class AiMilitaryBehavior : CampaignBehaviorBase
 				IFaction faction = mapFaction.FactionsAtWarWith[i];
 				if (faction.Leader != null && faction.IsMapFaction)
 				{
-					CalculateMilitaryBehaviorForFactionSettlements(faction, p, missionType, aiBehavior, ourStrength, partySizeScore, num, foodScoreForActionType, newArmyCreatingAdditionalConstant);
+					CalculateMilitaryBehaviorForFactionSettlements(faction, p, missionType, aiBehavior, ourStrength, partySizeScore, num, foodScoreForActionType);
 				}
 			}
 			break;
@@ -218,7 +231,7 @@ public class AiMilitaryBehavior : CampaignBehaviorBase
 		switch (missionType)
 		{
 		case Army.ArmyTypes.Defender:
-			num6 = MathF.Pow(num6, 0.75f);
+			num6 *= 0.5f;
 			break;
 		case Army.ArmyTypes.Raider:
 			num6 *= 0.75f;
@@ -227,7 +240,7 @@ public class AiMilitaryBehavior : CampaignBehaviorBase
 		return MathF.Min(1f, MathF.Pow(num, num6));
 	}
 
-	private void CalculateMilitaryBehaviorForFactionSettlements(IFaction faction, PartyThinkParams p, Army.ArmyTypes missionType, AiBehavior aiBehavior, float ourStrength, float partySizeScore, float cohesionScore, float foodScore, float newArmyCreatingAdditionalConstant)
+	private void CalculateMilitaryBehaviorForFactionSettlements(IFaction faction, PartyThinkParams p, Army.ArmyTypes missionType, AiBehavior aiBehavior, float ourStrength, float partySizeScore, float cohesionScore, float foodScore)
 	{
 		MobileParty mobilePartyOf = p.MobilePartyOf;
 		for (int i = 0; i < faction.Settlements.Count; i++)
@@ -235,7 +248,7 @@ public class AiMilitaryBehavior : CampaignBehaviorBase
 			Settlement settlement = faction.Settlements[i];
 			if (CheckIfSettlementIsSuitableForMilitaryAction(settlement, mobilePartyOf, missionType, p.WillGatherAnArmy))
 			{
-				CalculateMilitaryBehaviorForSettlement(settlement, missionType, aiBehavior, p, ourStrength, partySizeScore, cohesionScore, foodScore, newArmyCreatingAdditionalConstant);
+				CalculateMilitaryBehaviorForSettlement(settlement, missionType, aiBehavior, p, ourStrength, partySizeScore, cohesionScore, foodScore);
 			}
 		}
 	}
@@ -304,83 +317,82 @@ public class AiMilitaryBehavior : CampaignBehaviorBase
 
 	private void GetDistanceScoreForRaiding(Settlement targetSettlement, MobileParty mobileParty, out MobileParty.NavigationType bestNavigationType, out float bestDistanceScore, out bool isFromPort, out bool isTargetingPort)
 	{
+		AiHelper.GetBestNavigationTypeAndAdjustedDistanceOfSettlementForMobileParty(mobileParty, targetSettlement, isTargetingPort: false, out bestNavigationType, out var bestNavigationDistance, out isFromPort);
 		isTargetingPort = false;
-		AiHelper.GetBestNavigationTypeAndAdjustedDistanceOfSettlementForMobileParty(mobileParty, targetSettlement, isTargetingPort, out bestNavigationType, out var bestNavigationDistance, out isFromPort);
-		float num = Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(mobileParty.NavigationCapability) * 3f;
+		if (mobileParty.HasNavalNavigationCapability && targetSettlement.HasPort)
+		{
+			AiHelper.GetBestNavigationTypeAndAdjustedDistanceOfSettlementForMobileParty(mobileParty, targetSettlement, isTargetingPort: true, out var bestNavigationType2, out var bestNavigationDistance2, out var isFromPort2);
+			if (bestNavigationDistance2 < bestNavigationDistance)
+			{
+				bestNavigationType = bestNavigationType2;
+				bestNavigationDistance = bestNavigationDistance2;
+				isFromPort = isFromPort2;
+				isTargetingPort = true;
+			}
+		}
+		float num = Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(mobileParty.NavigationCapability) * 5f;
 		if (bestNavigationDistance > num)
 		{
 			bestNavigationType = MobileParty.NavigationType.None;
 			bestNavigationDistance = float.MaxValue;
 			isTargetingPort = false;
+			bestDistanceScore = 0f;
 		}
-		bestDistanceScore = MBMath.Map(0.75f - bestNavigationDistance / num, 0f, 1f, 0.1f, 1f);
+		else
+		{
+			bestDistanceScore = MBMath.Map(0.75f - bestNavigationDistance / num, 0f, 1f, 0.1f, 1f);
+		}
 	}
 
 	private void GetDistanceScoreForDefending(Settlement targetSettlement, MobileParty mobileParty, out MobileParty.NavigationType bestNavigationType, out float bestDistanceScore, out bool isFromPort, out bool isTargetingPort)
 	{
 		isTargetingPort = false;
 		bool flag = targetSettlement.HasPort && mobileParty.HasNavalNavigationCapability;
-		int num;
-		if (flag && targetSettlement.SiegeEvent != null)
+		bool flag2 = false;
+		if (flag)
 		{
-			if (targetSettlement.SiegeEvent.IsBlockadeActive)
+			if (targetSettlement.IsFortification)
 			{
-				if (targetSettlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent == null)
-				{
-					num = 0;
-					goto IL_008e;
-				}
-				if (!targetSettlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent.IsBlockade)
-				{
-					num = (targetSettlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent.IsBlockadeSallyOut ? 1 : 0);
-					if (num == 0)
-					{
-						goto IL_008e;
-					}
-				}
-				else
-				{
-					num = 1;
-				}
+				flag2 = targetSettlement.SiegeEvent != null && (!targetSettlement.SiegeEvent.IsBlockadeActive || (targetSettlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent != null && (targetSettlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent.IsBlockade || targetSettlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent.IsBlockadeSallyOut)));
 			}
-			else
+			else if (targetSettlement.IsVillage)
 			{
-				num = 1;
+				flag2 = targetSettlement.HasPort;
 			}
+		}
+		if (flag2)
+		{
 			isTargetingPort = true;
 		}
-		else
-		{
-			num = 0;
-		}
-		goto IL_008e;
-		IL_008e:
 		AiHelper.GetBestNavigationTypeAndAdjustedDistanceOfSettlementForMobileParty(mobileParty, targetSettlement, isTargetingPort, out bestNavigationType, out var bestNavigationDistance, out isFromPort);
-		if (num == 0 && flag)
+		if (!flag2 && flag)
 		{
 			AiHelper.GetBestNavigationTypeAndAdjustedDistanceOfSettlementForMobileParty(mobileParty, targetSettlement, isTargetingPort: true, out bestNavigationType, out bestNavigationDistance, out isFromPort);
 		}
-		float num2 = ((bestNavigationType == MobileParty.NavigationType.Naval) ? Campaign.Current.EstimatedAverageLordPartyNavalSpeed : Campaign.Current.EstimatedAverageLordPartySpeed);
+		float num = ((bestNavigationType == MobileParty.NavigationType.Naval) ? Campaign.Current.EstimatedAverageLordPartyNavalSpeed : Campaign.Current.EstimatedAverageLordPartySpeed);
 		if (bestNavigationType == MobileParty.NavigationType.All)
 		{
-			num2 = (Campaign.Current.EstimatedAverageLordPartyNavalSpeed + Campaign.Current.EstimatedAverageLordPartySpeed) * 0.5f;
+			num = (Campaign.Current.EstimatedAverageLordPartyNavalSpeed + Campaign.Current.EstimatedAverageLordPartySpeed) * 0.5f;
 		}
-		float num3 = bestNavigationDistance / (num2 * (float)CampaignTime.HoursInDay);
-		float num4 = 2.865f;
+		float num2 = bestNavigationDistance / (num * (float)CampaignTime.HoursInDay);
+		float num3 = 4.01f;
 		if (targetSettlement.IsVillage)
 		{
 			MapEvent mapEvent = targetSettlement.Party.MapEvent;
 			if (mapEvent != null && mapEvent.Component is RaidEventComponent { RaidDamage: >0f, RaidDamage: var raidDamage })
 			{
-				float num5 = raidDamage / mapEvent.BattleStartTime.ElapsedDaysUntilNow;
-				num4 = targetSettlement.SettlementHitPoints / num5;
+				float num4 = raidDamage / mapEvent.BattleStartTime.ElapsedDaysUntilNow;
+				num3 = targetSettlement.SettlementHitPoints / num4 * 0.25f;
 			}
 		}
 		else if (targetSettlement.IsFortification && targetSettlement.Party.SiegeEvent != null)
 		{
-			num4 = 5.73f;
+			num3 = 8.02f;
 		}
-		if (num3 >= num4)
+		bool shouldEngage;
+		MobileParty mostPowerfulNavalAlly;
+		MobileParty mostPowerfulLandAlly;
+		if (num2 >= num3)
 		{
 			bestNavigationType = MobileParty.NavigationType.None;
 			bestDistanceScore = 0f;
@@ -397,14 +409,19 @@ public class AiMilitaryBehavior : CampaignBehaviorBase
 			}
 			else
 			{
-				mobileParty.Ai.GetNearbyPartyDataWhileDefendingSettlement(targetSettlement, out shouldConsiderJoiningNearbyAllyParties, out shouldJoinLandSide, out var _, out var _, out var _);
+				mobileParty.Ai.GetNearbyPartyDataWhileDefendingSettlement(targetSettlement, out shouldConsiderJoiningNearbyAllyParties, out shouldJoinLandSide, out shouldEngage, out mostPowerfulNavalAlly, out mostPowerfulLandAlly);
 			}
 			isTargetingPort = !shouldJoinLandSide && targetSettlement.HasPort;
 		}
-		bestDistanceScore = MBMath.Map(1f - num3 / (num4 + 0.01f), 0f, 1f, 0.1f, 1f);
+		else if (targetSettlement.IsVillage && targetSettlement.Party.MapEvent != null && targetSettlement.Party.MapEvent.IsRaid)
+		{
+			mobileParty.Ai.GetNearbyPartyDataWhileDefendingSettlement(targetSettlement, out var _, out var shouldJoinLandSide2, out shouldEngage, out mostPowerfulLandAlly, out mostPowerfulNavalAlly);
+			isTargetingPort = !shouldJoinLandSide2 && targetSettlement.HasPort;
+		}
+		bestDistanceScore = MBMath.Map(1f - num2 / (num3 + 0.01f), 0f, 1f, 0.1f, 1.25f);
 	}
 
-	private void CalculateMilitaryBehaviorForSettlement(Settlement settlement, Army.ArmyTypes missionType, AiBehavior aiBehavior, PartyThinkParams p, float ourStrength, float partySizeScore, float cohesionScore, float foodScore, float newArmyCreatingAdditionalConstant = 1f)
+	private void CalculateMilitaryBehaviorForSettlement(Settlement settlement, Army.ArmyTypes missionType, AiBehavior aiBehavior, PartyThinkParams p, float ourStrength, float partySizeScore, float cohesionScore, float foodScore)
 	{
 		if ((missionType != Army.ArmyTypes.Defender || settlement.LastAttackerParty == null || !settlement.LastAttackerParty.IsActive) && (missionType != Army.ArmyTypes.Raider || !settlement.IsVillage || settlement.Village.VillageState == Village.VillageStates.Looted) && (missionType != 0 || !settlement.IsFortification || (settlement.SiegeEvent != null && settlement.SiegeEvent.BesiegerCamp.MapFaction != p.MobilePartyOf.MapFaction)))
 		{
@@ -440,7 +457,7 @@ public class AiMilitaryBehavior : CampaignBehaviorBase
 			ourStrength = mobilePartyOf.BesiegerCamp.GetInvolvedPartiesForEventType().Sum((PartyBase x) => x.EstimatedStrength);
 		}
 		float targetScoreForFaction = Campaign.Current.Models.TargetScoreCalculatingModel.GetTargetScoreForFaction(settlement, missionType, mobilePartyOf, ourStrength);
-		targetScoreForFaction *= bestDistanceScore * cohesionScore * partySizeScore * foodScore * newArmyCreatingAdditionalConstant;
+		targetScoreForFaction *= bestDistanceScore * cohesionScore * partySizeScore * foodScore;
 		if (mobilePartyOf.Objective == MobileParty.PartyObjective.Defensive)
 		{
 			targetScoreForFaction = ((aiBehavior != AiBehavior.DefendSettlement) ? (targetScoreForFaction * 0.8f) : (targetScoreForFaction * 1.2f));
@@ -454,12 +471,12 @@ public class AiMilitaryBehavior : CampaignBehaviorBase
 			IDisbandPartyCampaignBehavior disbandPartyCampaignBehavior = _disbandPartyCampaignBehavior;
 			if (disbandPartyCampaignBehavior == null || !disbandPartyCampaignBehavior.IsPartyWaitingForDisband(mobilePartyOf))
 			{
-				goto IL_02d4;
+				goto IL_02d1;
 			}
 		}
 		targetScoreForFaction *= 0.25f;
-		goto IL_02d4;
-		IL_02d4:
+		goto IL_02d1;
+		IL_02d1:
 		if (bestNavigationType != 0)
 		{
 			AIBehaviorData item = new AIBehaviorData(settlement, aiBehavior, bestNavigationType, p.WillGatherAnArmy, isFromPort, isTargetingPort);
@@ -502,46 +519,23 @@ public class AiMilitaryBehavior : CampaignBehaviorBase
 		float totalLandStrengthWithFollowers = mobileParty.GetTotalLandStrengthWithFollowers();
 		p.Initialization();
 		bool flag = false;
-		float newArmyCreatingAdditionalConstant = 1f;
 		float num = totalLandStrengthWithFollowers;
-		if (mobileParty.LeaderHero != null && mobileParty.Army == null && mobileParty.LeaderHero.Clan != null && mobileParty.PartySizeRatio > 0.6f && (mobileParty.LeaderHero.Clan.Leader == mobileParty.LeaderHero || (mobileParty.LeaderHero.Clan.Leader.PartyBelongedTo == null && mobileParty.LeaderHero.Clan.WarPartyComponents != null && mobileParty.LeaderHero.Clan.WarPartyComponents.FirstOrDefault() == mobileParty.WarPartyComponent)))
+		if (mobileParty.LeaderHero != null && mobileParty.Army == null && mobileParty.LeaderHero.Clan != null && mobileParty.MapFaction is Kingdom && mobileParty.MapEvent == null && Campaign.Current.Models.ArmyManagementCalculationModel.CanLordCreateArmy(mobileParty, out var possibleArmyMembers))
 		{
-			int traitLevel = mobileParty.LeaderHero.GetTraitLevel(DefaultTraits.Calculating);
-			IFaction mapFaction = mobileParty.MapFaction;
-			Kingdom kingdom = (Kingdom)mapFaction;
-			int num2 = ((Kingdom)mapFaction).Armies.CountQ((Army x) => !x.Parties.Contains(MobileParty.MainParty));
-			int num3 = 50 + num2 * num2 * 20 + mobileParty.LeaderHero.RandomInt(20) + traitLevel * 20;
-			float num4 = 1f - (float)num2 * 0.4f;
-			flag = !mobileParty.IsCurrentlyAtSea && mobileParty.MapEvent == null && mobileParty.LeaderHero.Clan.Influence > (float)num3 && mobileParty.MapFaction.IsKingdomFaction && !mobileParty.LeaderHero.Clan.IsUnderMercenaryService && (float)mobileParty.GetNumDaysForFoodToLast() > Campaign.Current.Models.MobilePartyAIModel.NeededFoodsInDaysThresholdForSiege && mobileParty.MapFaction.FactionsAtWarWith.AnyQ((IFaction x) => x.Fiefs.Any());
-			if (flag)
+			p.SetArmyMembers(possibleArmyMembers);
+			foreach (MobileParty item in possibleArmyMembers)
 			{
-				float num5 = ((kingdom.Armies.Count == 0) ? (1f + MathF.Sqrt((int)CampaignTime.Now.ToDays - kingdom.LastArmyCreationDay) * 0.15f) : 1f);
-				float num6 = (10f + MathF.Sqrt(MathF.Min(900f, mobileParty.LeaderHero.Clan.Influence))) / 50f;
-				float num7 = MathF.Sqrt(mobileParty.PartySizeRatio);
-				newArmyCreatingAdditionalConstant = num5 * num6 * num4 * num7;
-				num = mobileParty.Party.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.Siege);
-				List<MobileParty> mobilePartiesToCallToArmy = Campaign.Current.Models.ArmyManagementCalculationModel.GetMobilePartiesToCallToArmy(mobileParty);
-				if (mobilePartiesToCallToArmy.Count == 0)
-				{
-					flag = false;
-				}
-				else
-				{
-					foreach (MobileParty item in mobilePartiesToCallToArmy)
-					{
-						p.AddPotentialArmyMember(item);
-						num += item.Party.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.Siege);
-					}
-				}
+				num += item.Party.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.Siege);
 			}
+			flag = true;
 		}
 		for (int i = 0; i < 4; i++)
 		{
 			Army.ArmyTypes armyTypes = (Army.ArmyTypes)i;
-			if (flag && armyTypes != Army.ArmyTypes.Raider)
+			if (flag && armyTypes == Army.ArmyTypes.Besieger)
 			{
 				p.WillGatherAnArmy = true;
-				FindBestTargetAndItsValueForFaction(armyTypes, p, num, newArmyCreatingAdditionalConstant);
+				FindBestTargetAndItsValueForFaction(armyTypes, p, num);
 			}
 			p.WillGatherAnArmy = false;
 			FindBestTargetAndItsValueForFaction(armyTypes, p, totalLandStrengthWithFollowers);

@@ -126,7 +126,7 @@ public class HeroExecutionSceneNotificationData : SceneNotificationData
 		return new HeroExecutionSceneNotificationData(Hero.MainHero, dyingHero, GameTexts.FindText("str_executing_prisoner"), GameTexts.FindText("str_executed_prisoner"), textObject, GameTexts.FindText("str_execute_prisoner_desc"), GetExecuteTroopHintText(dyingHero, showAll: false), GetExecuteTroopHintText(dyingHero, showAll: true), showNegativeOption, onAffirmativeAction, relevantContextType);
 	}
 
-	public static HeroExecutionSceneNotificationData CreateForInformingPlayer(Hero executingHero, Hero dyingHero, RelevantContextType relevantContextType = RelevantContextType.Any)
+	public static HeroExecutionSceneNotificationData CreateForInformingPlayer(Hero executingHero, Hero dyingHero, RelevantContextType relevantContextType = RelevantContextType.Any, Action onClose = null)
 	{
 		GameTexts.SetVariable("DAY_OF_YEAR", CampaignSceneNotificationHelper.GetFormalDayAndSeasonText(CampaignTime.Now));
 		GameTexts.SetVariable("YEAR", CampaignTime.Now.GetYear);
@@ -134,7 +134,7 @@ public class HeroExecutionSceneNotificationData : SceneNotificationData
 		TextObject textObject = new TextObject("{=uYjEknNX}{VICTIM.NAME}'s execution by {EXECUTER.NAME}");
 		textObject.SetCharacterProperties("VICTIM", dyingHero.CharacterObject);
 		textObject.SetCharacterProperties("EXECUTER", executingHero.CharacterObject);
-		return new HeroExecutionSceneNotificationData(executingHero, dyingHero, textObject, GameTexts.FindText("str_executed_prisoner"), GameTexts.FindText("str_proceed"), null, null, null, isNegativeOptionShown: false, null, relevantContextType);
+		return new HeroExecutionSceneNotificationData(executingHero, dyingHero, textObject, GameTexts.FindText("str_executed_prisoner"), GameTexts.FindText("str_proceed"), null, null, null, isNegativeOptionShown: false, onClose, relevantContextType);
 	}
 
 	private static TextObject GetExecuteTroopHintText(Hero dyingHero, bool showAll)

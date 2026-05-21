@@ -111,6 +111,14 @@ public class TeamAIGeneral : TeamAIComponent
 		}
 	}
 
+	public override void OnDeploymentFinished()
+	{
+		foreach (Formation item in Team.FormationsIncludingEmpty)
+		{
+			item.OnDeploymentFinished();
+		}
+	}
+
 	protected override void DebugTick(float dt)
 	{
 	}

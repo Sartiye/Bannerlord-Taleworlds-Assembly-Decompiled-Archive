@@ -99,31 +99,31 @@ public class MobilePartyTrainingBehavior : CampaignBehaviorBase
 	{
 		if (mobileParty == MobileParty.MainParty)
 		{
-			foreach (TroopRosterElement item in mobileParty.MemberRoster.GetTroopRoster())
+			if (!mobileParty.IsCurrentlyAtSea)
 			{
-				if (item.Character.IsHero)
+				foreach (TroopRosterElement item in mobileParty.MemberRoster.GetTroopRoster())
 				{
-					if (mobileParty.IsCurrentlyAtSea)
+					if (item.Character.IsHero)
 					{
-						SkillLevelingManager.OnTravelOnWater(item.Character.HeroObject, mobileParty._lastCalculatedSpeed);
-					}
-					else if (item.Character.Equipment.Horse.IsEmpty)
-					{
-						SkillLevelingManager.OnTravelOnFoot(item.Character.HeroObject, mobileParty._lastCalculatedSpeed);
-					}
-					else
-					{
-						SkillLevelingManager.OnTravelOnHorse(item.Character.HeroObject, mobileParty._lastCalculatedSpeed);
+						if (item.Character.Equipment.Horse.IsEmpty)
+						{
+							SkillLevelingManager.OnTravelOnFoot(item.Character.HeroObject, mobileParty._lastCalculatedSpeed);
+						}
+						else
+						{
+							SkillLevelingManager.OnTravelOnHorse(item.Character.HeroObject, mobileParty._lastCalculatedSpeed);
+						}
 					}
 				}
+				return;
 			}
-			return;
+			SkillLevelingManager.OnTravelOnWater(mobileParty, mobileParty._lastCalculatedSpeed);
 		}
-		if (mobileParty.LeaderHero != null)
+		else if (mobileParty.LeaderHero != null)
 		{
 			if (mobileParty.IsCurrentlyAtSea)
 			{
-				SkillLevelingManager.OnTravelOnWater(mobileParty.LeaderHero, mobileParty._lastCalculatedSpeed);
+				SkillLevelingManager.OnTravelOnWater(mobileParty, mobileParty._lastCalculatedSpeed);
 			}
 			else if (mobileParty.LeaderHero.CharacterObject.Equipment.Horse.IsEmpty)
 			{

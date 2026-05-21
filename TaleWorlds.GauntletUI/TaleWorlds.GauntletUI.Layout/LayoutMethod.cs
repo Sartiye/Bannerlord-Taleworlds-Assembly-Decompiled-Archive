@@ -6,8 +6,8 @@ public enum LayoutMethod
 	HorizontalRightToLeft,
 	HorizontalCentered,
 	HorizontalSpaced,
-	VerticalBottomToTop,
 	VerticalTopToBottom,
+	VerticalBottomToTop,
 	VerticalCentered,
-	PinBoard
+	VerticalSpaced
 }

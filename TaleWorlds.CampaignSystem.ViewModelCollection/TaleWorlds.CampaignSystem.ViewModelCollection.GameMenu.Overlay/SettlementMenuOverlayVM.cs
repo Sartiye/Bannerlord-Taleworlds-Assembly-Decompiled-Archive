@@ -9,6 +9,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Locations;
+using TaleWorlds.CampaignSystem.ViewModelCollection.ClanManagement;
 using TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu.Events;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Quests;
 using TaleWorlds.Core;
@@ -117,7 +118,7 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 
 	private bool _isCrimeEnabled;
 
-	private bool _canLeaveMembers;
+	private bool _canAssignMembers;
 
 	private BasicTooltipViewModel _remainingFoodHint;
 
@@ -139,15 +140,34 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 
 	private HintViewModel _partyFilterHint;
 
-	private HintViewModel _leaveMembersHint;
+	private HintViewModel _assignMembersHint;
 
 	private BannerImageIdentifierVM _settlementOwnerBanner;
+
+	private ClanCardSelectionPopupVM _cardSelectionPopup;
 
 	private bool _isShipyardEnabled;
 
 	private string _shipyardLbl;
 
 	private BasicTooltipViewModel _shipyardHint;
+
+	[DataSourceProperty]
+	public ClanCardSelectionPopupVM CardSelectionPopup
+	{
+		get
+		{
+			return _cardSelectionPopup;
+		}
+		set
+		{
+			if (value != _cardSelectionPopup)
+			{
+				_cardSelectionPopup = value;
+				OnPropertyChangedWithValue(value, "CardSelectionPopup");
+			}
+		}
+	}
 
 	[DataSourceProperty]
 	public string RemainingFoodText
@@ -473,18 +493,18 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 	}
 
 	[DataSourceProperty]
-	public HintViewModel LeaveMembersHint
+	public HintViewModel AssignMembersHint
 	{
 		get
 		{
-			return _leaveMembersHint;
+			return _assignMembersHint;
 		}
 		set
 		{
-			if (value != _leaveMembersHint)
+			if (value != _assignMembersHint)
 			{
-				_leaveMembersHint = value;
-				OnPropertyChangedWithValue(value, "LeaveMembersHint");
+				_assignMembersHint = value;
+				OnPropertyChangedWithValue(value, "AssignMembersHint");
 			}
 		}
 	}
@@ -609,18 +629,18 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 	}
 
 	[DataSourceProperty]
-	public bool CanLeaveMembers
+	public bool CanAssignMembers
 	{
 		get
 		{
-			return _canLeaveMembers;
+			return _canAssignMembers;
 		}
 		set
 		{
-			if (value != _canLeaveMembers)
+			if (value != _canAssignMembers)
 			{
-				_canLeaveMembers = value;
-				OnPropertyChangedWithValue(value, "CanLeaveMembers");
+				_canAssignMembers = value;
+				OnPropertyChangedWithValue(value, "CanAssignMembers");
 			}
 		}
 	}
@@ -873,6 +893,8 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 		PartyList = new MBBindingList<GameMenuPartyItemVM>();
 		IssueList = new MBBindingList<StringItemWithHintVM>();
 		base.CurrentOverlayType = 0;
+		CardSelectionPopup = new ClanCardSelectionPopupVM();
+		CardSelectionPopup.IsVisible = false;
 		CrimeHint = new BasicTooltipViewModel(() => GetCrimeTooltip());
 		if (Settlement.CurrentSettlement.IsFortification)
 		{
@@ -1288,24 +1310,24 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 		Game.Current.EventManager.TriggerEvent(new SettlementOverlayLeaveCharacterPermissionEvent(OnSettlementOverlayLeaveCharacterPermissionResult));
 		if (currentSettlement.IsVillage)
 		{
-			CanLeaveMembers = false;
-			LeaveMembersHint = new HintViewModel(new TextObject("{=y2M014jI}Cannot leave members in a village."));
+			CanAssignMembers = false;
+			AssignMembersHint = new HintViewModel(new TextObject("{=4p0M9T0N}Cannot assign members in a village."));
 			return;
 		}
 		if (_mostRecentOverlayLeaveCharacterPermission != null)
 		{
-			CanLeaveMembers = _mostRecentOverlayLeaveCharacterPermission.Item1;
-			LeaveMembersHint = (CanLeaveMembers ? new HintViewModel(new TextObject("{=aGFxIvqx}Leave Member(s)")) : new HintViewModel(_mostRecentOverlayLeaveCharacterPermission.Item2));
+			CanAssignMembers = _mostRecentOverlayLeaveCharacterPermission.Item1;
+			AssignMembersHint = (CanAssignMembers ? new HintViewModel(new TextObject("{=GSiE1FPj}Assing Member(s)")) : new HintViewModel(_mostRecentOverlayLeaveCharacterPermission.Item2));
 			return;
 		}
-		CanLeaveMembers = Clan.PlayerClan.Heroes.Any((Hero hero) => currentSettlement == hero.StayingInSettlement || (!hero.CharacterObject.IsPlayerCharacter && MobileParty.MainParty.MemberRoster.Contains(hero.CharacterObject)));
-		if (!CanLeaveMembers)
+		CanAssignMembers = Clan.PlayerClan.Heroes.Any((Hero hero) => currentSettlement == hero.StayingInSettlement || (!hero.CharacterObject.IsPlayerCharacter && MobileParty.MainParty.MemberRoster.Contains(hero.CharacterObject)));
+		if (!CanAssignMembers)
 		{
-			LeaveMembersHint = new HintViewModel(new TextObject("{=d2K6gMsZ}Leave members. Need at least 1 companion."));
+			AssignMembersHint = new HintViewModel(new TextObject("{=zbyqlOX3}Assign members. Need at least 1 companion."));
 		}
 		else
 		{
-			LeaveMembersHint = new HintViewModel(new TextObject("{=aGFxIvqx}Leave Member(s)"));
+			AssignMembersHint = new HintViewModel(new TextObject("{=ahp6nVg0}Assign Member(s)"));
 		}
 	}
 
@@ -1451,29 +1473,50 @@ public class SettlementMenuOverlayVM : GameMenuOverlay
 
 	public void ExecuteAddCompanion()
 	{
-		List<InquiryElement> list = new List<InquiryElement>();
-		foreach (TroopRosterElement item in from m in MobileParty.MainParty.MemberRoster.GetTroopRoster()
-			where m.Character.IsHero && m.Character.HeroObject.CanMoveToSettlement()
-			select m)
+		if (_settlement?.Town != null)
 		{
-			if (!item.Character.IsPlayerCharacter)
-			{
-				list.Add(new InquiryElement(item.Character.HeroObject, item.Character.Name.ToString(), new CharacterImageIdentifier(CampaignUIHelper.GetCharacterCode(item.Character))));
-			}
+			TextObject textObject = GameTexts.FindText("str_send_members");
+			textObject.SetTextVariable("SETTLEMENT_NAME", _settlement.Name);
+			ClanCardSelectionInfo info = new ClanCardSelectionInfo(textObject, GetSendMembersCandidates(), OnAssignMembersToSettlement, isMultiSelection: true);
+			CardSelectionPopup?.Open(info);
 		}
-		MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData(new TextObject("{=aGFxIvqx}Leave Member(s)").ToString(), string.Empty, list, isExitShown: true, 1, 0, new TextObject("{=FBYFcrWo}Leave in settlement").ToString(), new TextObject("{=3CpNUnVl}Cancel").ToString(), OnLeaveMembersInSettlement, OnLeaveMembersInSettlement));
 	}
 
-	private void OnLeaveMembersInSettlement(List<InquiryElement> leftMembers)
+	private IEnumerable<ClanCardSelectionItemInfo> GetSendMembersCandidates()
+	{
+		foreach (Hero item in from m in MobileParty.MainParty.MemberRoster.GetTroopRoster()
+			where m.Character.IsHero && !m.Character.IsPlayerCharacter && m.Character.HeroObject.CanMoveToSettlement()
+			select m.Character.HeroObject)
+		{
+			SkillObject charm = DefaultSkills.Charm;
+			int skillValue = item.GetSkillValue(charm);
+			CharacterImageIdentifier image = new CharacterImageIdentifier(CampaignUIHelper.GetCharacterCode(item.CharacterObject));
+			yield return new ClanCardSelectionItemInfo(item, item.Name, image, CardSelectionItemSpriteType.Skill, charm.StringId.ToLower(), skillValue.ToString(), GetSendMembersCandidateProperties(item), isDisabled: false, null, null);
+		}
+	}
+
+	private IEnumerable<ClanCardSelectionItemPropertyInfo> GetSendMembersCandidateProperties(Hero hero)
+	{
+		TextObject textObject = new TextObject("{=otaUtXMX}+{AMOUNT} relation chance with notables per day.");
+		int emissaryRelationBonusForMainClan = Campaign.Current.Models.EmissaryModel.EmissaryRelationBonusForMainClan;
+		textObject.SetTextVariable("AMOUNT", emissaryRelationBonusForMainClan);
+		yield return new ClanCardSelectionItemPropertyInfo(textObject);
+	}
+
+	private void OnAssignMembersToSettlement(List<object> leftMembers, Action closePopup)
 	{
 		Settlement settlement = ((MobileParty.MainParty.CurrentSettlement != null) ? MobileParty.MainParty.CurrentSettlement : MobileParty.MainParty.LastVisitedSettlement);
-		foreach (InquiryElement leftMember in leftMembers)
+		closePopup?.Invoke();
+		foreach (object leftMember in leftMembers)
 		{
-			Hero hero = leftMember.Identifier as Hero;
-			PartyBase.MainParty.MemberRoster.RemoveTroop(hero.CharacterObject);
-			if (hero.CharacterObject.IsHero && !settlement.HeroesWithoutParty.Contains(hero.CharacterObject.HeroObject))
+			if (leftMember is Hero)
 			{
-				EnterSettlementAction.ApplyForCharacterOnly(hero.CharacterObject.HeroObject, settlement);
+				Hero hero = leftMember as Hero;
+				PartyBase.MainParty.MemberRoster.RemoveTroop(hero.CharacterObject);
+				if (hero.CharacterObject.IsHero && !settlement.HeroesWithoutParty.Contains(hero.CharacterObject.HeroObject))
+				{
+					EnterSettlementAction.ApplyForCharacterOnly(hero.CharacterObject.HeroObject, settlement);
+				}
 			}
 		}
 		if (leftMembers.Count > 0)

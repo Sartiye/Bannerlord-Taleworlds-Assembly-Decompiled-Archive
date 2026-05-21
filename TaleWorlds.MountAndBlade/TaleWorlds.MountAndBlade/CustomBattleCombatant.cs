@@ -65,4 +65,13 @@ public class CustomBattleCombatant : IBattleCombatant
 	{
 		_general = generalCharacter;
 	}
+
+	public bool IsUnderPlayersCommand(BattleSideEnum playerSide)
+	{
+		if (Side != playerSide)
+		{
+			return false;
+		}
+		return General.IsPlayerCharacter;
+	}
 }

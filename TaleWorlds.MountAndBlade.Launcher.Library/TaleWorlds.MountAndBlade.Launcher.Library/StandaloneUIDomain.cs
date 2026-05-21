@@ -81,25 +81,30 @@ public class StandaloneUIDomain : FrameworkDomain
 			_launcherUI = new LauncherUI(UserDataManager, _gauntletUIContext, OnCloseRequest, OnMinimizeRequest);
 			_launcherUI.Initialize();
 			_initialized = true;
+			_graphicsForm.BeginFrame();
+			_graphicsContext.SwapBuffers();
 		}
-		_resourceDepot.CheckForChanges();
-		_synchronizationContext.Tick();
-		bool mouseOverDragArea = _launcherUI.CheckMouseOverWindowDragArea();
-		_graphicsForm.UpdateInput(mouseOverDragArea);
-		_graphicsForm.BeginFrame();
-		Input.Update();
-		_graphicsForm.Update();
-		_gauntletUIContext.UpdateInput(InputType.MouseButton | InputType.MouseWheel | InputType.Key);
-		_gauntletUIContext.Update(1f / 60f);
-		_launcherUI.Update();
-		_gauntletUIContext.LateUpdate(1f / 60f);
-		_gauntletUIContext.RenderTick(1f / 60f);
-		_graphicsForm.PostRender();
-		_graphicsContext.SwapBuffers();
-		if (_shouldDestroy)
+		else
 		{
-			DestroyAux();
-			_shouldDestroy = false;
+			_resourceDepot.CheckForChanges();
+			_synchronizationContext.Tick();
+			bool mouseOverDragArea = _launcherUI.CheckMouseOverWindowDragArea();
+			_graphicsForm.UpdateInput(mouseOverDragArea);
+			_graphicsForm.BeginFrame();
+			Input.Update();
+			_graphicsForm.Update();
+			_gauntletUIContext.UpdateInput(InputType.MouseButton | InputType.MouseWheel | InputType.Key);
+			_gauntletUIContext.Update(1f / 60f);
+			_launcherUI.Update();
+			_gauntletUIContext.LateUpdate(1f / 60f);
+			_gauntletUIContext.RenderTick(1f / 60f);
+			_graphicsForm.PostRender();
+			_graphicsContext.SwapBuffers();
+			if (_shouldDestroy)
+			{
+				DestroyAux();
+				_shouldDestroy = false;
+			}
 		}
 	}
 

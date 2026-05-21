@@ -76,7 +76,7 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 				textObject.SetTextVariable("STOLEN_GOODS_SIZE", StolenTradeGoodAmount);
 				textObject.SetTextVariable("STOLEN_GOOD", StolenTradeGood.Name);
 				textObject.SetTextVariable("REQUESTED_PRICE", StolenTradeGoodPrice);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -278,10 +278,11 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 			return IssueFrequency.Common;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			flag = PreconditionFlags.None;
 			relationHero = null;
+			requiredGold = 0;
 			skill = null;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -538,6 +539,7 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 				.BeginPlayerOptions()
 				.PlayerOption(new TextObject("{=D4CsJMLE}Don't worry, I'll get there soon enough."))
 				.NpcLine(new TextObject("{=2D4EdZVK}All right, but if this falls through because you took too long, I won't be too happy with that."))
+				.CloseDialog()
 				.PlayerOption(new TextObject("{=ErKDfLWJ}I have more urgent business to handle. I will get there when I can."))
 				.NpcLine(new TextObject("{=qLdchkGU}Yeah... Well, a lot can go wrong if you don't move on these things quickly."))
 				.EndPlayerOptions()
@@ -828,7 +830,7 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 			}
 		}
 
-		private void OnHideoutBattleCompleted(BattleSideEnum winnerSide, HideoutEventComponent hideoutEventComponent)
+		private void OnHideoutBattleCompleted(BattleSideEnum winnerSide, HideoutEventComponent hideoutEventComponent, HideoutEventComponent.HideoutBattleEndState battleEndState)
 		{
 			if (hideoutEventComponent.MapEvent.PlayerSide != winnerSide)
 			{

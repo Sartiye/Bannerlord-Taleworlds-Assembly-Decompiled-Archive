@@ -75,7 +75,7 @@ public class CharacterCreationReviewStage__TaleWorlds_CampaignSystem_ViewModelCo
 	{
 		base.WidthSizePolicy = SizePolicy.StretchToParent;
 		base.HeightSizePolicy = SizePolicy.CoverChildren;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		base.MarginBottom = 5f;
 		base.DoNotUseCustomScaleAndChildren = true;
 		_widget_0.WidthSizePolicy = SizePolicy.StretchToParent;
@@ -93,7 +93,7 @@ public class CharacterCreationReviewStage__TaleWorlds_CampaignSystem_ViewModelCo
 		_widget_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1.HorizontalAlignment = HorizontalAlignment.Left;
-		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_0.Brush = base.Context.GetBrush("Review.Stage.Banner");
 		_widget_1_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_0.HeightSizePolicy = SizePolicy.Fixed;

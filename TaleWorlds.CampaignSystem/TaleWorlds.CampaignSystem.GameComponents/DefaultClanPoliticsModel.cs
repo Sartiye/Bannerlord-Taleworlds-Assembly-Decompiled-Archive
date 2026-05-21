@@ -140,7 +140,7 @@ public class DefaultClanPoliticsModel : ClanPoliticsModel
 		}
 		if (clan.Kingdom.ActivePolicies.Contains(DefaultPolicies.Lawspeakers))
 		{
-			float value = ((clan.Leader.GetSkillValue(DefaultSkills.Charm) > 100) ? 0.5f : (-0.5f));
+			float value = ((clan.Leader.GetSkillValue(DefaultSkills.Charm) > 100) ? 1f : (-1f));
 			influenceChange.Add(value, DefaultPolicies.Lawspeakers.Name);
 		}
 		if (clan == clan.Kingdom.RulingClan)
@@ -258,10 +258,6 @@ public class DefaultClanPoliticsModel : ClanPoliticsModel
 		if (totalSupportPoints > num)
 		{
 			float num3 = (totalSupportPoints - num) / 3f * (float)decision.GetInfluenceCostOfSupport(decision.Kingdom.RulingClan, Supporter.SupportWeights.FullyPush) * 1.4f;
-			if (decision.Kingdom.ActivePolicies.Contains(DefaultPolicies.RoyalPrivilege))
-			{
-				num3 *= 0.8f;
-			}
 			if (decision.Kingdom.RulingClan != Clan.PlayerClan)
 			{
 				num3 *= 0.8f;
@@ -269,6 +265,10 @@ public class DefaultClanPoliticsModel : ClanPoliticsModel
 			num2 += num3;
 		}
 		num2 = 5 * (int)(num2 / 5f);
+		if (totalSupportPoints > num && decision.Kingdom.ActivePolicies.Contains(DefaultPolicies.RoyalPrivilege))
+		{
+			num2 *= 0.8f;
+		}
 		return (int)num2;
 	}
 

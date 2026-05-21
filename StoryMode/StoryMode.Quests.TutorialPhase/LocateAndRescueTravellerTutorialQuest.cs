@@ -48,8 +48,8 @@ public class LocateAndRescueTravellerTutorialQuest : StoryModeQuestBase
 
 	public override TextObject Title => new TextObject("{=ACyYhA2s}Locate and Rescue Traveller");
 
-	public LocateAndRescueTravellerTutorialQuest(Hero questGiver)
-		: base("locate_and_rescue_traveler_tutorial_quest", questGiver, CampaignTime.Never)
+	public LocateAndRescueTravellerTutorialQuest()
+		: base("locate_and_rescue_traveler_tutorial_quest", null, CampaignTime.Never)
 	{
 		_raiderParties = new List<MobileParty>();
 		_defeatedRaiderPartyCount = 0;

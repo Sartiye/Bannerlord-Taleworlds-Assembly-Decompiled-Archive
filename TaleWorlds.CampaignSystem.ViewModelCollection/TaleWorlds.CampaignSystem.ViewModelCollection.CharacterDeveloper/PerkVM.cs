@@ -13,7 +13,6 @@ public class PerkVM : ViewModel
 		None = -1,
 		NotEarned,
 		EarnedButNotSelected,
-		InSelection,
 		EarnedAndActive,
 		EarnedAndNotActive,
 		EarnedPreviousPerkNotSelected
@@ -39,8 +38,6 @@ public class PerkVM : ViewModel
 	private readonly bool _isAvailable;
 
 	private readonly Concept _perkConceptObj;
-
-	private bool _isInSelection;
 
 	private PerkStates _currentState = PerkStates.None;
 
@@ -84,22 +81,6 @@ public class PerkVM : ViewModel
 			{
 				_currentState = value;
 				PerkState = (int)value;
-			}
-		}
-	}
-
-	public bool IsInSelection
-	{
-		set
-		{
-			if (value != _isInSelection)
-			{
-				_isInSelection = value;
-				RefreshState();
-				if (!_isInSelection)
-				{
-					_onSelectionOver(this);
-				}
 			}
 		}
 	}
@@ -265,10 +246,6 @@ public class PerkVM : ViewModel
 		{
 			CurrentState = PerkStates.NotEarned;
 		}
-		else if (_isInSelection)
-		{
-			CurrentState = PerkStates.InSelection;
-		}
 		else if (flag)
 		{
 			CurrentState = PerkStates.EarnedAndActive;
@@ -295,7 +272,7 @@ public class PerkVM : ViewModel
 		}
 		else
 		{
-			Debug.FailedAssert("Couldn't find Perks encyclopedia page", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CharacterDeveloper\\PerkVM.cs", "ExecuteShowPerkConcept", 151);
+			Debug.FailedAssert("Couldn't find Perks encyclopedia page", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CharacterDeveloper\\PerkVM.cs", "ExecuteShowPerkConcept", 127);
 		}
 	}
 

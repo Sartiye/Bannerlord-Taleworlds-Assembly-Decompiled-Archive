@@ -372,7 +372,7 @@ public class MapConversation__TaleWorlds_CampaignSystem_ViewModelCollection_Map_
 		_widget_3_4_0.ClipContents = true;
 		_widget_4.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_4.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_4.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
+		_widget_4.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
 		_widget_4.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_4.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_4.DoNotAcceptEvents = true;
@@ -420,7 +420,7 @@ public class MapConversation__TaleWorlds_CampaignSystem_ViewModelCollection_Map_
 		_widget_4_0_2_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_4_0_2_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_4_0_2_0.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_4_0_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_4_0_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_4_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_4_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_4_1.DoNotAcceptEvents = true;
@@ -445,7 +445,7 @@ public class MapConversation__TaleWorlds_CampaignSystem_ViewModelCollection_Map_
 		_widget_4_1_0_0_0.ClipContents = false;
 		_widget_4_1_0_0_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_4_1_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_1_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_4_1_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_4_1_0_0_1.MarginBottom = 10f;
 		_widget_4_1_0_0_1.MarginTop = 10f;
 		_widget_4_1_0_0_1_0.WidthSizePolicy = SizePolicy.CoverChildren;

@@ -960,7 +960,7 @@ public class StonePile : UsableMachine, IDetachment
 		{
 			return float.MinValue;
 		}
-		_usableStandingPoints.Clear();
+		UsableStandingPoints.Clear();
 		int num = 0;
 		foreach (ThrowingPoint throwingPoint in _throwingPoints)
 		{
@@ -987,7 +987,7 @@ public class StonePile : UsableMachine, IDetachment
 			{
 				if (!flag2)
 				{
-					_usableStandingPoints.Clear();
+					UsableStandingPoints.Clear();
 				}
 				flag2 = true;
 			}
@@ -996,9 +996,9 @@ public class StonePile : UsableMachine, IDetachment
 				continue;
 			}
 			flag = true;
-			_usableStandingPoints.Add((i, standingPoint));
+			UsableStandingPoints.Add((i, standingPoint));
 		}
-		_areUsableStandingPointsVacant = flag2;
+		AreUsableStandingPointsVacant = flag2;
 		if (!flag)
 		{
 			return float.MinValue;
@@ -1007,7 +1007,7 @@ public class StonePile : UsableMachine, IDetachment
 		{
 			return 1f;
 		}
-		if (!_isDetachmentRecentlyEvaluated)
+		if (!base.IsDetachmentRecentlyEvaluated)
 		{
 			return 0.1f;
 		}

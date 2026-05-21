@@ -30,7 +30,7 @@ public sealed class PhotoModeHotKeyCategory : GameKeyContext
 	public const string FasterCamera = "FasterCamera";
 
 	public PhotoModeHotKeyCategory()
-		: base("PhotoModeHotKeyCategory", 110)
+		: base("PhotoModeHotKeyCategory", 116)
 	{
 		RegisterHotKeys();
 		RegisterGameKeys();

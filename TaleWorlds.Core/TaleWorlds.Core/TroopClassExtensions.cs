@@ -14,8 +14,7 @@ public static class TroopClassExtensions
 
 	public static bool IsMounted(this FormationClass troopClass)
 	{
-		troopClass.DefaultClass();
-		if (troopClass != FormationClass.Cavalry)
+		if (troopClass.DefaultClass() != FormationClass.Cavalry)
 		{
 			return troopClass == FormationClass.HorseArcher;
 		}
@@ -24,8 +23,7 @@ public static class TroopClassExtensions
 
 	public static bool IsMeleeInfantry(this FormationClass troopClass)
 	{
-		troopClass.DefaultClass();
-		return troopClass == FormationClass.Infantry;
+		return troopClass.DefaultClass() == FormationClass.Infantry;
 	}
 
 	public static bool IsMeleeCavalry(this FormationClass troopClass)

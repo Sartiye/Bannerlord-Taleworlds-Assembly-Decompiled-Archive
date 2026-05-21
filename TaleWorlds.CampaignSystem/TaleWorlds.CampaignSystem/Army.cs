@@ -179,8 +179,6 @@ public class Army : ITrackableCampaignObject, ITrackableBase
 
 	public bool IsReady => true;
 
-	public bool IsArmyInGatheringState => LeaderParty.AttachedParties.Count + 1 < _parties.Count;
-
 	public override string ToString()
 	{
 		return Name.ToString();
@@ -245,7 +243,7 @@ public class Army : ITrackableCampaignObject, ITrackableBase
 
 	private void OnSiegeStarted(SiegeEvent siegeEvent)
 	{
-		if (IsArmyInGatheringState && AiBehaviorObject is Settlement settlement && settlement == siegeEvent.BesiegedSettlement && LeaderParty.SiegeEvent == null)
+		if (IsWaitingForArmyMembers() && AiBehaviorObject is Settlement settlement && settlement == siegeEvent.BesiegedSettlement && LeaderParty.SiegeEvent == null && LeaderParty.MapEvent == null)
 		{
 			FindBestGatheringSettlementAndMoveTheLeader(settlement);
 		}
@@ -253,7 +251,7 @@ public class Army : ITrackableCampaignObject, ITrackableBase
 
 	private void OnSettlementOwnerChanged(Settlement settlement, bool openToClaim, Hero newOwner, Hero oldOwner, Hero capturerHero, ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail detail)
 	{
-		if (IsArmyInGatheringState && AiBehaviorObject is Settlement settlement2 && settlement2 == settlement && settlement.MapFaction != LeaderParty.MapFaction)
+		if (IsWaitingForArmyMembers() && AiBehaviorObject is Settlement settlement2 && settlement2 == settlement && settlement.MapFaction != LeaderParty.MapFaction && LeaderParty.SiegeEvent == null && LeaderParty.MapEvent == null)
 		{
 			FindBestGatheringSettlementAndMoveTheLeader(settlement);
 		}
@@ -382,7 +380,12 @@ public class Army : ITrackableCampaignObject, ITrackableBase
 	{
 		foreach (MobileParty party in _parties)
 		{
-			if (party.AttachedTo == null && party.Army != null && party.ShortTermTargetParty == LeaderParty && party.MapEvent == null && party.IsCurrentlyAtSea == LeaderParty.IsCurrentlyAtSea && (party.Position - LeaderParty.Position).LengthSquared < Campaign.Current.Models.EncounterModel.NeededMaximumDistanceForEncounteringMobileParty)
+			if (party.AttachedTo != null || party.Army == null || party.ShortTermTargetParty != LeaderParty || party.MapEvent != null || party.IsCurrentlyAtSea != LeaderParty.IsCurrentlyAtSea)
+			{
+				continue;
+			}
+			float num = (party.IsCurrentlyAtSea ? Campaign.Current.Models.EncounterModel.MaximumAllowedNavalDistanceForEncounteringMobilePartyInArmy : Campaign.Current.Models.EncounterModel.MaximumAllowedLandDistanceForEncounteringMobilePartyInArmy);
+			if ((party.Position - LeaderParty.Position).LengthSquared < num)
 			{
 				AddPartyToMergedParties(party);
 				if (party.IsMainParty)
@@ -474,13 +477,17 @@ public class Army : ITrackableCampaignObject, ITrackableBase
 
 	private void MoveLeaderToGatheringLocationIfNeeded()
 	{
-		if (AiBehaviorObject != null && LeaderParty.MapEvent == null && LeaderParty.ShortTermBehavior == AiBehavior.Hold)
+		if (AiBehaviorObject != null && LeaderParty.SiegeEvent == null && LeaderParty.MapEvent == null && LeaderParty.ShortTermBehavior == AiBehavior.Hold && IsWaitingForArmyMembers())
 		{
 			Settlement settlement = AiBehaviorObject as Settlement;
-			CampaignVec2 centerPosition = (LeaderParty.IsTargetingPort ? settlement.PortPosition : settlement.GatePosition);
 			if (!settlement.IsUnderSiege && !settlement.IsUnderRaid)
 			{
+				CampaignVec2 centerPosition = (LeaderParty.IsTargetingPort ? settlement.PortPosition : settlement.GatePosition);
 				SendLeaderPartyToReachablePointAroundPosition(centerPosition, 6f, 3f);
+			}
+			else
+			{
+				FindBestGatheringSettlementAndMoveTheLeader(settlement);
 			}
 		}
 	}
@@ -779,7 +786,8 @@ public class Army : ITrackableCampaignObject, ITrackableBase
 			mobileParty.Army = null;
 			if (num3 && mobileParty.CurrentSettlement == null && mobileParty.IsActive && (!LeaderParty.IsCurrentlyAtSea || mobileParty.HasNavalNavigationCapability))
 			{
-				mobileParty.Position = NavigationHelper.FindReachablePointAroundPosition(LeaderParty.Position, mobileParty.NavigationCapability, 1f);
+				MobileParty.NavigationType navigationCapability = ((!mobileParty.IsCurrentlyAtSea) ? MobileParty.NavigationType.Default : MobileParty.NavigationType.Naval);
+				mobileParty.Position = NavigationHelper.FindReachablePointAroundPosition(LeaderParty.Position, navigationCapability, 1f);
 				mobileParty.SetMoveModeHold();
 			}
 		}
@@ -797,36 +805,45 @@ public class Army : ITrackableCampaignObject, ITrackableBase
 	public Vec2 GetRelativePositionForParty(MobileParty mobileParty, Vec2 armyFacing)
 	{
 		float num = 0.5f;
-		float num2 = (float)MathF.Ceiling(-1f + MathF.Sqrt(1f + 8f * (float)(LeaderParty.AttachedParties.Count - 1))) / 4f * num * 0.5f + num;
-		int num3 = -1;
+		int num2 = -1;
+		int num3 = 0;
 		for (int i = 0; i < LeaderParty.AttachedParties.Count; i++)
 		{
-			if (LeaderParty.AttachedParties[i] == mobileParty)
+			MobileParty mobileParty2 = LeaderParty.AttachedParties[i];
+			if (!LeaderParty.IsCurrentlyAtSea || mobileParty2.Ships.Count > 0)
 			{
-				num3 = i;
-				break;
+				if (mobileParty2 == mobileParty)
+				{
+					num2 = num3;
+				}
+				num3++;
 			}
 		}
-		int num4 = MathF.Ceiling((-1f + MathF.Sqrt(1f + 8f * (float)(num3 + 2))) / 2f) - 1;
-		int num5 = num3 + 1 - num4 * (num4 + 1) / 2;
-		bool flag = (num4 & 1) != 0;
-		num5 = (((((uint)num5 & (true ? 1u : 0u)) != 0) ? (-1 - num5) : num5) >> 1) * ((!flag) ? 1 : (-1));
-		float num6 = 1.25f;
-		CampaignVec2 campaignVec = new CampaignVec2(LeaderParty.VisualPosition2DWithoutError + -armyFacing * 0.1f * LeaderParty.AttachedParties.Count, !LeaderParty.IsCurrentlyAtSea);
-		Vec2 vec = campaignVec.ToVec2() - MathF.Sign((float)num5 - ((((uint)num4 & (true ? 1u : 0u)) != 0) ? 0.5f : 0f)) * armyFacing.LeftVec() * num2;
+		if (LeaderParty.IsCurrentlyAtSea && LeaderParty.Ships.Count == 0)
+		{
+			num2--;
+		}
+		float num4 = (float)MathF.Ceiling(-1f + MathF.Sqrt(1f + 8f * (float)(num3 - 1))) / 4f * num * 0.5f + num;
+		int num5 = MathF.Ceiling((-1f + MathF.Sqrt(1f + 8f * (float)(num2 + 2))) / 2f) - 1;
+		int num6 = num2 + 1 - num5 * (num5 + 1) / 2;
+		bool flag = (num5 & 1) != 0;
+		num6 = (((((uint)num6 & (true ? 1u : 0u)) != 0) ? (-1 - num6) : num6) >> 1) * ((!flag) ? 1 : (-1));
+		float num7 = 1.25f;
+		CampaignVec2 campaignVec = new CampaignVec2(LeaderParty.VisualPosition2DWithoutError + -armyFacing * 0.1f * num3, !LeaderParty.IsCurrentlyAtSea);
+		Vec2 vec = campaignVec.ToVec2() - MathF.Sign((float)num6 - ((((uint)num5 & (true ? 1u : 0u)) != 0) ? 0.5f : 0f)) * armyFacing.LeftVec() * num4;
 		int[] invalidTerrainTypesForNavigationType = Campaign.Current.Models.PartyNavigationModel.GetInvalidTerrainTypesForNavigationType((!LeaderParty.IsCurrentlyAtSea) ? MobileParty.NavigationType.Default : MobileParty.NavigationType.Naval);
 		Vec2 lastPointOnNavigationMeshFromPositionToDestination = Campaign.Current.MapSceneWrapper.GetLastPointOnNavigationMeshFromPositionToDestination(campaignVec.Face, campaignVec.ToVec2(), vec, invalidTerrainTypesForNavigationType);
 		if ((vec - lastPointOnNavigationMeshFromPositionToDestination).LengthSquared > 2.25E-06f)
 		{
-			num = num * (campaignVec - lastPointOnNavigationMeshFromPositionToDestination).Length / num2;
-			num6 = num6 * (campaignVec - lastPointOnNavigationMeshFromPositionToDestination).Length / (num2 / 1.5f);
+			num = num * (campaignVec - lastPointOnNavigationMeshFromPositionToDestination).Length / num4;
+			num7 = num7 * (campaignVec - lastPointOnNavigationMeshFromPositionToDestination).Length / (num4 / 1.5f);
 		}
 		if (LeaderParty.IsCurrentlyAtSea)
 		{
-			num6 *= 3f;
+			num7 *= 3f;
 			num *= 3f;
 		}
-		return new Vec2((flag ? ((0f - num) * 0.5f) : 0f) + (float)num5 * num + mobileParty.Party.RandomFloat(-0.25f, 0.25f) * 0.6f * num, ((float)(-num4) + mobileParty.Party.RandomFloatWithSeed(1u, -0.25f, 0.25f)) * num6 * 0.3f);
+		return new Vec2((flag ? ((0f - num) * 0.5f) : 0f) + (float)num6 * num + mobileParty.Party.RandomFloat(-0.25f, 0.25f) * 0.6f * num, ((float)(-num5) + mobileParty.Party.RandomFloatWithSeed(1u, -0.25f, 0.25f)) * num7 * 0.3f);
 	}
 
 	public void AddPartyToMergedParties(MobileParty mobileParty)

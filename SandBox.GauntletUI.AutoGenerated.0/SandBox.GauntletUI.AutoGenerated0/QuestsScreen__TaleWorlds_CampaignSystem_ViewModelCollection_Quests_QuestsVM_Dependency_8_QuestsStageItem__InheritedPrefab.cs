@@ -144,7 +144,7 @@ public class QuestsScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Quests_
 		base.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0.HorizontalAlignment = HorizontalAlignment.Center;

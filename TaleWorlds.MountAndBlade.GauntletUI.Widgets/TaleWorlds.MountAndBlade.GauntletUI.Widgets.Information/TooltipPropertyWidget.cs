@@ -76,6 +76,8 @@ public class TooltipPropertyWidget : Widget
 
 	private RichTextWidget _valueLabel;
 
+	private TextWidget _itemModifierLabel;
+
 	private Widget _definitionLabelContainer;
 
 	private Widget _valueLabelContainer;
@@ -323,6 +325,23 @@ public class TooltipPropertyWidget : Widget
 	}
 
 	[Editor(false)]
+	public TextWidget ItemModifierLabel
+	{
+		get
+		{
+			return _itemModifierLabel;
+		}
+		set
+		{
+			if (_itemModifierLabel != value)
+			{
+				_itemModifierLabel = value;
+				OnPropertyChanged(value, "ItemModifierLabel");
+			}
+		}
+	}
+
+	[Editor(false)]
 	public ListPanel ValueBackgroundSpriteWidget
 	{
 		get
@@ -521,10 +540,18 @@ public class TooltipPropertyWidget : Widget
 		}
 		if (IsTwoColumn && !_isMultiLine && (!_isTitle || (_isTitle && IsTwoColumn)))
 		{
-			ValueLabel.WidthSizePolicy = SizePolicy.Fixed;
-			ValueLabel.ScaledSuggestedWidth = TaleWorlds.Library.MathF.Max(53f * base._scaleToUse, maxValueLabelSizeX);
 			ValueLabelContainer.WidthSizePolicy = SizePolicy.Fixed;
 			ValueLabelContainer.ScaledSuggestedWidth = TaleWorlds.Library.MathF.Max(53f * base._scaleToUse, maxValueLabelSizeX);
+			if (ItemModifierLabel != null && ItemModifierLabel.IsVisible)
+			{
+				ValueLabel.WidthSizePolicy = SizePolicy.CoverChildren;
+				ValueLabel.MaxWidth = TaleWorlds.Library.MathF.Max(53f, maxValueLabelSizeX * base._inverseScaleToUse) - ItemModifierLabel.Size.X * base._inverseScaleToUse - (ItemModifierLabel.MarginLeft + ItemModifierLabel.MarginRight);
+			}
+			else
+			{
+				ValueLabel.WidthSizePolicy = SizePolicy.Fixed;
+				ValueLabel.ScaledSuggestedWidth = TaleWorlds.Library.MathF.Max(53f * base._scaleToUse, maxValueLabelSizeX);
+			}
 		}
 		if (IsTwoColumn && !_isMultiLine && _isTitle)
 		{

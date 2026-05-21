@@ -106,7 +106,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 				textObject.SetCharacterProperties("ISSUE_GIVER", base.IssueOwner.CharacterObject);
 				textObject.SetCharacterProperties("PLAYER", CharacterObject.PlayerCharacter);
 				textObject.SetTextVariable("GOLD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -198,10 +198,11 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 			return new LandlordTrainingForRetainersIssueQuest(questId, base.IssueOwner, CampaignTime.DaysFromNow(60f), base.IssueDifficultyMultiplier, RewardGold);
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			skill = null;
 			relationHero = null;
+			requiredGold = 0;
 			flag = PreconditionFlags.None;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -270,7 +271,7 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 				TextObject textObject = new TextObject("{=4RNREbPW}You managed to return all of the troops {QUEST_GIVER.LINK} gave you to train. {?QUEST_GIVER.GENDER}She{?}He{\\?} sends you the following letter.{newline}“{?PLAYER.GENDER}Madam{?}Sir{\\?}, Thank you for looking after my men. You honored our agreement, and you have my gratitude. Please accept this {GOLD}{GOLD_ICON}.”");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("GOLD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -602,9 +603,15 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 		{
 			Campaign.Current.TimeControlMode = _campaignTimeControlModeCacheForDecisionPopUp;
 			int troopCount = PartyBase.MainParty.MemberRoster.GetTroopCount(_questTargetChar);
-			PartyBase.MainParty.MemberRoster.AddToCounts(_questTargetChar, -troopCount);
+			if (troopCount > 0)
+			{
+				PartyBase.MainParty.MemberRoster.AddToCounts(_questTargetChar, -troopCount);
+			}
 			int troopCount2 = PartyBase.MainParty.MemberRoster.GetTroopCount(_questGivenChar);
-			PartyBase.MainParty.MemberRoster.AddToCounts(_questGivenChar, -troopCount2);
+			if (troopCount2 > 0)
+			{
+				PartyBase.MainParty.MemberRoster.AddToCounts(_questGivenChar, -troopCount2);
+			}
 			if (troopCount >= _borrowedTroopCount)
 			{
 				TotalSuccess();

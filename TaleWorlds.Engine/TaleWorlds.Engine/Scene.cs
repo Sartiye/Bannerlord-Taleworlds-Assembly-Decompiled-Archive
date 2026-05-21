@@ -1010,10 +1010,10 @@ public sealed class Scene : NativeObject
 		EngineApplicationInterface.IScene.GetRootEntities(this, entities);
 	}
 
-	public int SelectEntitiesInBoxWithScriptComponent<T>(ref Vec3 boundingBoxMin, ref Vec3 boundingBoxMax, WeakGameEntity[] entitiesOutput, UIntPtr[] entityIds) where T : ScriptComponentBehavior
+	public int SelectEntitiesInBoxWithScriptComponent<T>(ref Vec3 boundingBoxMin, ref Vec3 boundingBoxMax, WeakGameEntity[] entitiesOutput, UIntPtr[] entityIds, bool isFixedTick) where T : ScriptComponentBehavior
 	{
 		string name = typeof(T).Name;
-		int num = EngineApplicationInterface.IScene.SelectEntitiesInBoxWithScriptComponent(base.Pointer, ref boundingBoxMin, ref boundingBoxMax, entityIds, entitiesOutput.Length, name);
+		int num = EngineApplicationInterface.IScene.SelectEntitiesInBoxWithScriptComponent(base.Pointer, ref boundingBoxMin, ref boundingBoxMax, entityIds, entitiesOutput.Length, name, isFixedTick);
 		for (int i = 0; i < num; i++)
 		{
 			entitiesOutput[i] = new WeakGameEntity(entityIds[i]);
@@ -1344,6 +1344,11 @@ public sealed class Scene : NativeObject
 	public int SetAbilityOfFacesWithId(int faceGroupId, bool isEnabled)
 	{
 		return EngineApplicationInterface.IScene.SetAbilityOfFacesWithId(base.Pointer, faceGroupId, isEnabled);
+	}
+
+	public void SetBlockerDirectionForFacesWithId(int faceGroupId, float rotation)
+	{
+		EngineApplicationInterface.IScene.SetBlockerDirectionForFacesWithId(base.Pointer, faceGroupId, rotation);
 	}
 
 	public bool SwapFaceConnectionsWithID(int hubFaceGroupID, int toBeSeparatedFaceGroupId, int toBeMergedFaceGroupId, bool canFail)
@@ -1703,9 +1708,19 @@ public sealed class Scene : NativeObject
 		EngineApplicationInterface.IScene.SetUsesDeleteLaterSystem(base.Pointer, value);
 	}
 
+	public void HandleCurrentFrameTickEntities()
+	{
+		EngineApplicationInterface.IScene.HandleCurrentFrameTickEntities(base.Pointer);
+	}
+
 	public void ClearCurrentFrameTickEntities()
 	{
 		EngineApplicationInterface.IScene.ClearCurrentFrameTickEntities(base.Pointer);
+	}
+
+	public void SetUseAdvancedWaterRendering(bool value)
+	{
+		EngineApplicationInterface.IScene.SetUseAdvancedWaterRendering(base.Pointer, value);
 	}
 
 	public Vec2 FindClosestExitPositionForPositionOnABoundaryFace(Vec3 position, UIntPtr boundaryFacePointer)

@@ -55,6 +55,7 @@ public class GameMenuOption
 		SiegeAmbush,
 		Warehouse,
 		VisitPort,
+		VisitTown,
 		SetSail,
 		ManageFleet,
 		CallFleet,

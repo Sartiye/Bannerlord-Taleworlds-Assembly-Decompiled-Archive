@@ -29,7 +29,9 @@ public class DefaultSettlementMilitiaModel : SettlementMilitiaModel
 
 	private const int AutoSpawnMilitiaDayMultiplierAfterSiege = 25;
 
-	private const int BaseMilitiaChange = 2;
+	private const int BaseFortificationMilitiaChange = 2;
+
+	private const float BaseVillageMilitiaChange = 0.5f;
 
 	public override int MilitiaToSpawnAfterSiege(Town town)
 	{
@@ -96,6 +98,10 @@ public class DefaultSettlementMilitiaModel : SettlementMilitiaModel
 		if (settlement.IsFortification)
 		{
 			result.Add(2f, BaseText);
+		}
+		else if (settlement.IsVillage)
+		{
+			result.Add(0.5f, BaseText);
 		}
 		float value = (0f - militia) * 0.025f;
 		result.Add(value, RetiredText);

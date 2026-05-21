@@ -126,7 +126,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM : Scoreboa
 
 	private SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_7_SPScoreboardSide__DependendPrefab _widget_2_0_2_1_0_2_0_0_1_0;
 
-	private SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_8_SPScoreboardSide__DependendPrefab _widget_2_0_2_1_0_2_0_0_1_1;
+	private SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_7_SPScoreboardSide__DependendPrefab _widget_2_0_2_1_0_2_0_0_1_1;
 
 	private BrushWidget _widget_2_0_2_1_1;
 
@@ -138,9 +138,9 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM : Scoreboa
 
 	private ListPanel _widget_2_0_3;
 
-	private SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_9_SPScoreboardSideHeader__DependendPrefab _widget_2_0_3_0;
+	private SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_8_SPScoreboardSideHeader__DependendPrefab _widget_2_0_3_0;
 
-	private SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_10_SPScoreboardSideHeader__DependendPrefab _widget_2_0_3_1;
+	private SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_9_SPScoreboardSideHeader__DependendPrefab _widget_2_0_3_1;
 
 	private Widget _widget_2_0_4;
 
@@ -426,7 +426,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM : Scoreboa
 		_widget_2_0_2_1_0_2_0_0_1_0 = new SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_7_SPScoreboardSide__DependendPrefab(base.Context);
 		_widget_2_0_2_1_0_2_0_0_1.AddChild(_widget_2_0_2_1_0_2_0_0_1_0);
 		_widget_2_0_2_1_0_2_0_0_1_0.CreateWidgets();
-		_widget_2_0_2_1_0_2_0_0_1_1 = new SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_8_SPScoreboardSide__DependendPrefab(base.Context);
+		_widget_2_0_2_1_0_2_0_0_1_1 = new SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_7_SPScoreboardSide__DependendPrefab(base.Context);
 		_widget_2_0_2_1_0_2_0_0_1.AddChild(_widget_2_0_2_1_0_2_0_0_1_1);
 		_widget_2_0_2_1_0_2_0_0_1_1.CreateWidgets();
 		_widget_2_0_2_1_1 = new BrushWidget(base.Context);
@@ -439,10 +439,10 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM : Scoreboa
 		_widget_2_0_2_1_2_0.AddChild(_widget_2_0_2_1_2_0_0);
 		_widget_2_0_3 = new ListPanel(base.Context);
 		_widget_2_0.AddChild(_widget_2_0_3);
-		_widget_2_0_3_0 = new SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_9_SPScoreboardSideHeader__DependendPrefab(base.Context);
+		_widget_2_0_3_0 = new SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_8_SPScoreboardSideHeader__DependendPrefab(base.Context);
 		_widget_2_0_3.AddChild(_widget_2_0_3_0);
 		_widget_2_0_3_0.CreateWidgets();
-		_widget_2_0_3_1 = new SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_10_SPScoreboardSideHeader__DependendPrefab(base.Context);
+		_widget_2_0_3_1 = new SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM_Dependency_9_SPScoreboardSideHeader__DependendPrefab(base.Context);
 		_widget_2_0_3.AddChild(_widget_2_0_3_1);
 		_widget_2_0_3_1.CreateWidgets();
 		_widget_2_0_4 = new Widget(base.Context);
@@ -656,7 +656,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM : Scoreboa
 		_widget_2_0_1.Brush = base.Context.GetBrush("Scoreboard.Time.Text");
 		_widget_2_0_2.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_0_2.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_2_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_2_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_0_2_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_2_0_2_0.SuggestedHeight = 191f;
@@ -770,12 +770,12 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM : Scoreboa
 		_widget_2_0_2_1_0_2_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2_0_2_1_0_2_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_0_2_1_0_2_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_2_0_2_1_0_2_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_2_1_0_2_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_2_1_0_2_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_0_2_1_0_2_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_2_1_0_2_0_0_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2_0_2_1_0_2_0_0_0.MarginTop = 20f;
-		_widget_2_0_2_1_0_2_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_2_1_0_2_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_2_1_0_2_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_0_2_1_0_2_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_2_1_0_2_0_0_0_0.SuggestedHeight = 500f;
@@ -872,7 +872,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM : Scoreboa
 		_widget_2_0_2_1_0_2_0_0_0_0_3_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_2_1_0_2_0_0_0_0_3_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2_0_2_1_0_2_0_0_0_0_3_0.MarginTop = 35f;
-		_widget_2_0_2_1_0_2_0_0_0_0_3_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_2_1_0_2_0_0_0_0_3_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_2_1_0_2_0_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_0_2_1_0_2_0_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_2_1_0_2_0_0_0_1.HorizontalAlignment = HorizontalAlignment.Center;
@@ -988,7 +988,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM : Scoreboa
 		_widget_2_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_1_0.MarginLeft = 10f;
 		_widget_2_1_0.MarginRight = 10f;
-		_widget_2_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_1_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_1_0_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_2_1_0_0.SuggestedWidth = 48f;
@@ -1006,7 +1006,7 @@ public class SPScoreboard__SandBox_ViewModelCollection_SPScoreboardVM : Scoreboa
 		_widget_2_1_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_1_1.MarginLeft = 10f;
 		_widget_2_1_1.MarginRight = 10f;
-		_widget_2_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_1_1_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_1_1_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_2_1_1_0.SuggestedWidth = 48f;

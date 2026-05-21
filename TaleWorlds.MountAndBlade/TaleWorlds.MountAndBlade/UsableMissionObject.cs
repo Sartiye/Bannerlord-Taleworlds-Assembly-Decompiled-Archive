@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using NetworkMessages.FromServer;
-using TaleWorlds.Core;
 using TaleWorlds.DotNet;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
@@ -286,7 +285,7 @@ public abstract class UsableMissionObject : SynchedMissionObject, IFocusable, IU
 		foreach (WeakGameEntity child in entity.GetChildren())
 		{
 			CollectChildEntity(child);
-			if (child.GetScriptComponents().IsEmpty())
+			if (child.GetScriptCount() == 0)
 			{
 				CollectChildEntitiesAux(child);
 			}

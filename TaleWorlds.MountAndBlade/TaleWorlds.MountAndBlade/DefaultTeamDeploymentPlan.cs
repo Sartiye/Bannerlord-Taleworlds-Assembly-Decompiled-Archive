@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade;
 
-public class DefaultTeamDeploymentPlan
+public class DefaultTeamDeploymentPlan : ITeamDeploymentPlan
 {
 	public const float DeployZoneMinimumWidth = 100f;
 
@@ -14,17 +15,13 @@ public class DefaultTeamDeploymentPlan
 
 	public const float DeployZoneExtraWidthPerTroop = 1.5f;
 
-	public const string DefenderSiegeDeploymentFrameEntityTag = "defender_infantry";
+	public const string DefenderDeploymentFrameEntityTag = "defender_infantry";
 
-	public const string AttackerSiegeDeploymentFrameEntityTag = "attacker_infantry";
+	public const string AttackerDeploymentFrameEntityTag = "attacker_infantry";
 
-	public readonly Team Team;
-
-	private readonly Mission _mission;
+	private Mission _mission;
 
 	private readonly DefaultDeploymentPlan _initialPlan;
-
-	private bool _spawnWithHorses;
 
 	private readonly List<DefaultDeploymentPlan> _reinforcementPlans;
 
@@ -34,15 +31,17 @@ public class DefaultTeamDeploymentPlan
 
 	private MatrixFrame _deploymentFrame;
 
-	public bool SpawnWithHorses => _spawnWithHorses;
+	private static ThreadLocal<NavigationPath> _navigationPath = new ThreadLocal<NavigationPath>(() => new NavigationPath());
 
-	public MBReadOnlyList<(string id, MBList<Vec2> points)> DeploymentBoundaries => _deploymentBoundaries;
+	public Team Team { get; private set; }
+
+	public bool SpawnWithHorses { get; private set; }
 
 	public DefaultTeamDeploymentPlan(Mission mission, Team team)
 	{
 		_mission = mission;
 		Team = team;
-		_spawnWithHorses = false;
+		SpawnWithHorses = false;
 		_initialPlan = DefaultDeploymentPlan.CreateInitialPlan(_mission, Team);
 		_deploymentBoundaries.Clear();
 		_reinforcementPlans = new List<DefaultDeploymentPlan>();
@@ -66,7 +65,7 @@ public class DefaultTeamDeploymentPlan
 
 	public void SetSpawnWithHorses(bool value)
 	{
-		_spawnWithHorses = value;
+		SpawnWithHorses = value;
 		_initialPlan.SetSpawnWithHorses(value);
 		foreach (DefaultDeploymentPlan reinforcementPlan in _reinforcementPlans)
 		{
@@ -74,23 +73,17 @@ public class DefaultTeamDeploymentPlan
 		}
 	}
 
-	public void MakeDeploymentPlan(FormationSceneSpawnEntry[,] formationSceneSpawnEntries, bool isReinforcement = false, float spawnPathOffset = 0f, float targetOffset = 0f)
+	public void MakeDeploymentPlan(float spawnPathOffset = 0f, float targetOffset = 0f, FormationSceneSpawnEntry[,] formationSceneSpawnEntries = null, bool isReinforcement = false)
 	{
 		if (isReinforcement)
 		{
 			foreach (DefaultDeploymentPlan reinforcementPlan in _reinforcementPlans)
 			{
-				if (!reinforcementPlan.IsPlanMade)
-				{
-					reinforcementPlan.PlanBattleDeployment(formationSceneSpawnEntries);
-				}
+				reinforcementPlan.MakeDeploymentPlan(0f, 0f, formationSceneSpawnEntries);
 			}
 			return;
 		}
-		if (!_initialPlan.IsPlanMade)
-		{
-			_initialPlan.PlanBattleDeployment(formationSceneSpawnEntries, spawnPathOffset, targetOffset);
-		}
+		_initialPlan.MakeDeploymentPlan(spawnPathOffset, targetOffset, formationSceneSpawnEntries);
 		PlanDeploymentZone();
 	}
 
@@ -149,6 +142,15 @@ public class DefaultTeamDeploymentPlan
 		_initialPlan.AddTroops(formationClass, footTroopCount, mountedTroopCount);
 	}
 
+	public int GetTroopCount(bool isReinforcement = false)
+	{
+		if (isReinforcement)
+		{
+			return _currentReinforcementPlan.TroopCount;
+		}
+		return _initialPlan.TroopCount;
+	}
+
 	public bool IsFirstPlan(bool isReinforcement = false)
 	{
 		if (isReinforcement)
@@ -167,6 +169,11 @@ public class DefaultTeamDeploymentPlan
 		return _initialPlan.IsPlanMade;
 	}
 
+	public MBReadOnlyList<(string id, MBList<Vec2> points)> GetDeploymentBoundaries()
+	{
+		return _deploymentBoundaries;
+	}
+
 	public float GetSpawnPathOffset(bool isReinforcement = false)
 	{
 		if (isReinforcement)
@@ -183,15 +190,6 @@ public class DefaultTeamDeploymentPlan
 			return _currentReinforcementPlan.TargetOffset;
 		}
 		return _initialPlan.TargetOffset;
-	}
-
-	public int GetTroopCount(bool isReinforcement = false)
-	{
-		if (isReinforcement)
-		{
-			return _currentReinforcementPlan.TroopCount;
-		}
-		return _initialPlan.TroopCount;
 	}
 
 	public MatrixFrame GetDeploymentFrame()
@@ -270,15 +268,15 @@ public class DefaultTeamDeploymentPlan
 		Vec2 position = startPosition.AsVec2;
 		IsPositionInsideDeploymentBoundaries(in position, out (string, MBList<Vec2>) containingBoundaryTuple);
 		intersection = WorldPosition.Invalid;
-		NavigationPath navigationPath = new NavigationPath();
-		if (Mission.Current.Scene.GetPathBetweenAIFaces(startPosition.GetNearestNavMesh(), endPosition.GetNearestNavMesh(), startPosition.AsVec2, endPosition.AsVec2, 0f, navigationPath, null) && navigationPath.Size > 0)
+		NavigationPath value = _navigationPath.Value;
+		if (Mission.Current.Scene.GetPathBetweenAIFaces(startPosition.GetNearestNavMesh(), endPosition.GetNearestNavMesh(), startPosition.AsVec2, endPosition.AsVec2, 0f, value, null) && value.Size > 0)
 		{
 			Vec2 vec = startPosition.AsVec2;
 			(string, MBList<Vec2>) tuple = containingBoundaryTuple;
 			Vec2 vec2 = Vec2.Invalid;
-			for (int i = 0; i < navigationPath.Size; i++)
+			for (int i = 0; i < value.Size; i++)
 			{
-				Vec2 position2 = navigationPath[i];
+				Vec2 position2 = value[i];
 				if (IsPositionInsideDeploymentBoundaries(in position2, out (string, MBList<Vec2>) containingBoundaryTuple2))
 				{
 					vec = position2;
@@ -305,19 +303,19 @@ public class DefaultTeamDeploymentPlan
 		{
 			intersection = startPosition;
 		}
+		_navigationPath.Value.Size = 0;
 		return intersection.IsValid;
 	}
 
 	private void PlanDeploymentZone()
 	{
-		if (_mission.HasSpawnPath || _mission.IsFieldBattle)
+		if (_mission.HasSpawnPath || _mission.IsFieldBattle || _mission.IsNavalRaidBattle)
 		{
-			ComputeDeploymentZone();
+			ComputeDeploymentZoneFromFormations();
 		}
 		else if (_mission.IsSiegeBattle)
 		{
-			SetDeploymentZoneFromMissionBoundaries();
-			_deploymentFrame = _mission.Scene.FindWeakEntityWithTag((Team.Side == BattleSideEnum.Attacker) ? "attacker_infantry" : "defender_infantry").GetGlobalFrame();
+			ComputeDeploymentZoneFromSceneDeploymentBoundaries();
 		}
 		else
 		{
@@ -325,9 +323,9 @@ public class DefaultTeamDeploymentPlan
 		}
 	}
 
-	private void ComputeDeploymentZone()
+	private void ComputeDeploymentZoneFromFormations()
 	{
-		_initialPlan.GetFormationDeploymentFrame(FormationClass.Infantry, out _deploymentFrame);
+		_initialPlan.GetFirstValidFormationDeploymentFrame(out _deploymentFrame);
 		float num = 0f;
 		float num2 = 0f;
 		for (int i = 0; i < 10; i++)
@@ -356,7 +354,7 @@ public class DefaultTeamDeploymentPlan
 		}
 	}
 
-	private void SetDeploymentZoneFromMissionBoundaries()
+	private void ComputeDeploymentZoneFromSceneDeploymentBoundaries()
 	{
 		_deploymentBoundaries.Clear();
 		foreach (var deploymentBoundary in MBSceneUtilities.GetDeploymentBoundaries(Team.Side))
@@ -366,6 +364,7 @@ public class DefaultTeamDeploymentPlan
 			MBSceneUtilities.FindConvexHull(ref boundary);
 			_deploymentBoundaries.Add((deploymentBoundary.tag, boundary));
 		}
+		_deploymentFrame = _mission.Scene.FindWeakEntityWithTag((Team.Side == BattleSideEnum.Attacker) ? "attacker_infantry" : "defender_infantry").GetGlobalFrame();
 	}
 
 	private static MBList<Vec2> ComputeDeploymentBoundariesFromMissionBoundaries(ICollection<Vec2> missionBoundaries, ref MatrixFrame deploymentFrame, float desiredWidth)
@@ -440,5 +439,15 @@ public class DefaultTeamDeploymentPlan
 			return intersectionPoint;
 		}
 		return origin;
+	}
+
+	bool ITeamDeploymentPlan.IsPositionInsideDeploymentBoundaries(in Vec2 position, out (string id, MBList<Vec2> points) containingBoundaryTuple)
+	{
+		return IsPositionInsideDeploymentBoundaries(in position, out containingBoundaryTuple);
+	}
+
+	Vec2 ITeamDeploymentPlan.GetClosestDeploymentBoundaryPosition(in Vec2 position)
+	{
+		return GetClosestDeploymentBoundaryPosition(in position);
 	}
 }

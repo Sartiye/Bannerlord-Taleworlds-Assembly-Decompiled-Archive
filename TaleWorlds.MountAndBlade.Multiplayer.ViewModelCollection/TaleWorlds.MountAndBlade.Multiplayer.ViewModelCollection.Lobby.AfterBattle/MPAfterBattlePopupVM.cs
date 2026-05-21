@@ -669,6 +669,7 @@ public class MPAfterBattlePopupVM : ViewModel
 		FinalRatio = (int)((float)playerDataExperience2.ExperienceInCurrentLevel / (float)(playerDataExperience2.ExperienceToNextLevel + playerDataExperience2.ExperienceInCurrentLevel) * 100f);
 		NumOfLevelUps = playerDataExperience2.Level - playerDataExperience.Level;
 		_hasLeveledUp = NumOfLevelUps > 0;
+		HasLostRating = GainedExperience < 0;
 		float num = (float)NumOfLevelUps + (float)FinalRatio / 100f;
 		LevelsExperienceRequirment = (int)((float)_newExperience / num);
 		RewardsEarned = new MBBindingList<MPAfterBattleRewardItemVM>();
@@ -708,22 +709,17 @@ public class MPAfterBattlePopupVM : ViewModel
 		OldRankName = MPLobbyVM.GetLocalizedRankName(OldRankID);
 		NewRankName = MPLobbyVM.GetLocalizedRankName(NewRankID);
 		HasLostRating = _oldRankBarInfo.Rating > _newRankBarInfo.Rating;
+		ShownRating = _newRankBarInfo.Rating;
+		InitialRatio = (int)_oldRankBarInfo.ProgressPercentage;
+		FinalRatio = (int)_newRankBarInfo.ProgressPercentage;
+		NumOfLevelUps = Ranks.RankIds.IndexOf(NewRankID) - Ranks.RankIds.IndexOf(OldRankID);
 		if (HasLostRating)
 		{
-			ShownRating = _newRankBarInfo.Rating;
-			InitialRatio = (int)_newRankBarInfo.ProgressPercentage;
-			FinalRatio = (int)_newRankBarInfo.ProgressPercentage;
 			_pointsLostTextObj.SetTextVariable("POINTS", _oldRankBarInfo.Rating - _newRankBarInfo.Rating);
 			PointChangedText = _pointsLostTextObj.ToString();
 		}
 		else
 		{
-			ShownRating = _oldRankBarInfo.Rating;
-			ShownRating = _newRankBarInfo.Rating;
-			InitialRatio = (int)_oldRankBarInfo.ProgressPercentage;
-			FinalRatio = (int)_newRankBarInfo.ProgressPercentage;
-			bool flag = Ranks.RankIds.IndexOf(OldRankID) < Ranks.RankIds.IndexOf(NewRankID);
-			NumOfLevelUps = (flag ? 1 : 0);
 			_pointsGainedTextObj.SetTextVariable("POINTS", _newRankBarInfo.Rating - _oldRankBarInfo.Rating);
 			PointChangedText = _pointsGainedTextObj.ToString();
 		}

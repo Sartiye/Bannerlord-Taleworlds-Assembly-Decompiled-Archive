@@ -168,6 +168,15 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
+	public override void OnHeroActivated(Hero hero, Hero.CharacterStates previousState)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnHeroActivated(hero, previousState);
+		}
+	}
+
 	public override void OnQuestLogAdded(QuestBase quest, bool hideInformation)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
@@ -510,12 +519,12 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
-	public override void OnRulingClanChanged(Kingdom kingdom, Clan newRulingClan)
+	public override void OnRulingClanChanged(Kingdom kingdom, Clan oldRulingClan)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
-			eventReceivers[i].OnRulingClanChanged(kingdom, newRulingClan);
+			eventReceivers[i].OnRulingClanChanged(kingdom, oldRulingClan);
 		}
 	}
 
@@ -1905,12 +1914,12 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
-	public override void OnHideoutBattleCompleted(BattleSideEnum winnerSide, HideoutEventComponent hideoutEventComponent)
+	public override void OnHideoutBattleCompleted(BattleSideEnum winnerSide, HideoutEventComponent hideoutEventComponent, HideoutEventComponent.HideoutBattleEndState battleEndState)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
-			eventReceivers[i].OnHideoutBattleCompleted(winnerSide, hideoutEventComponent);
+			eventReceivers[i].OnHideoutBattleCompleted(winnerSide, hideoutEventComponent, battleEndState);
 		}
 	}
 
@@ -2019,6 +2028,15 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
 			eventReceivers[i].OnSaveOver(isSuccessful, saveName);
+		}
+	}
+
+	public override void CollectMetadataEntries(List<KeyValuePair<string, string>> pairs)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].CollectMetadataEntries(pairs);
 		}
 	}
 

@@ -242,15 +242,15 @@ public class MissionDisguiseMarkerItemVM : ViewModel
 		Agent agent = OffenseInfo.Agent;
 		AlarmedBehaviorGroup alarmedBehaviorGroup = agent.GetComponent<CampaignAgentComponent>().AgentNavigator?.GetBehaviorGroup<AlarmedBehaviorGroup>();
 		Agent.AIStateFlag aIStateFlags = agent.AIStateFlags;
-		if (aIStateFlags.HasFlag(Agent.AIStateFlag.Alarmed))
+		if (aIStateFlags.HasAnyFlag(Agent.AIStateFlag.Alarmed))
 		{
 			_activeAlarmState = AgentAlarmStateEnum.Alarmed;
 		}
-		else if (aIStateFlags.HasFlag(Agent.AIStateFlag.Cautious))
+		else if (aIStateFlags.HasAnyFlag(Agent.AIStateFlag.Cautious))
 		{
 			_activeAlarmState = AgentAlarmStateEnum.Cautious;
 		}
-		else if (aIStateFlags.HasFlag(Agent.AIStateFlag.PatrollingCautious))
+		else if (aIStateFlags.HasAnyFlag(Agent.AIStateFlag.PatrollingCautious))
 		{
 			_activeAlarmState = AgentAlarmStateEnum.PatrollingCautious;
 		}
@@ -258,7 +258,7 @@ public class MissionDisguiseMarkerItemVM : ViewModel
 		{
 			_activeAlarmState = AgentAlarmStateEnum.None;
 		}
-		float num = ((!aIStateFlags.HasFlag(Agent.AIStateFlag.Alarmed)) ? MathF.Clamp(alarmedBehaviorGroup.AlarmFactor / 2f, 0f, 1f) : 1f);
+		float num = ((!aIStateFlags.HasAnyFlag(Agent.AIStateFlag.Alarmed)) ? MathF.Clamp(alarmedBehaviorGroup.AlarmFactor / 2f, 0f, 1f) : 1f);
 		AlarmState = _activeAlarmState.ToString();
 		AlarmProgress = (int)(num * 100f);
 	}

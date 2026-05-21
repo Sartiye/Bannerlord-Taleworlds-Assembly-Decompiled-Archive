@@ -124,7 +124,7 @@ public static class BannerlordMissions
 			DecalAtlasGroup = 2
 		}, (Mission missionController) => new MissionBehavior[26]
 		{
-			new MissionAgentSpawnLogic(troopSuppliers, playerSide, Mission.BattleSizeType.Battle),
+			new DefaultBattleMissionAgentSpawnLogic(troopSuppliers, playerSide, Mission.BattleSizeType.Battle),
 			new BattlePowerCalculationLogic(),
 			new CustomBattleAgentLogic(),
 			new BannerBearerLogic(),
@@ -189,7 +189,7 @@ public static class BannerlordMissions
 				new SiegeMissionPreparationHandler(isSallyOut, isReliefForceAttack, wallHitPointPercentages, hasAnySiegeTower)
 			};
 			Mission.BattleSizeType battleSizeType = ((!isSallyOut) ? Mission.BattleSizeType.Siege : Mission.BattleSizeType.SallyOut);
-			list.Add(new MissionAgentSpawnLogic(troopSuppliers, playerSide, battleSizeType));
+			list.Add(new DefaultBattleMissionAgentSpawnLogic(troopSuppliers, playerSide, battleSizeType));
 			list.Add(new BattlePowerCalculationLogic());
 			if (isSallyOut)
 			{

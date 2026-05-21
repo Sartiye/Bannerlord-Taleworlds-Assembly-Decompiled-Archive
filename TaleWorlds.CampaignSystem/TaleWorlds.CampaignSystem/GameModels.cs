@@ -252,6 +252,8 @@ public sealed class GameModels : GameModelsManager
 
 	public FleetManagementModel FleetManagementModel { get; private set; }
 
+	public ClanMemberPartyRoleModel ClanMemberPartyRoleModel { get; private set; }
+
 	private void GetSpecificGameBehaviors()
 	{
 		if (Campaign.Current.GameMode == CampaignGameMode.Campaign || Campaign.Current.GameMode == CampaignGameMode.Tutorial)
@@ -380,6 +382,7 @@ public sealed class GameModels : GameModelsManager
 			BodyPropertiesModel = GetGameModel<BodyPropertiesModel>();
 			FleetManagementModel = GetGameModel<FleetManagementModel>();
 			ShipStatModel = GetGameModel<ShipStatModel>();
+			ClanMemberPartyRoleModel = GetGameModel<ClanMemberPartyRoleModel>();
 		}
 	}
 

@@ -44,7 +44,7 @@ public class TeleportUsePoint : StandingPoint
 		DescriptionMessage = TextObject.GetEmpty();
 		if (IsLeave)
 		{
-			ActionMessage = GameTexts.FindText("str_exit");
+			ActionMessage = GameTexts.FindText("str_mission_exit");
 			return;
 		}
 		switch (TypeOfTeleport)

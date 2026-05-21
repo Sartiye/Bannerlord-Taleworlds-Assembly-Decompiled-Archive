@@ -58,6 +58,8 @@ public class TravelToVillageTutorialQuest : StoryModeQuestBase
 	{
 		_questVillage = Settlement.Find("village_ES3_2");
 		AddTrackedObject(_questVillage);
+		Hero trackedObject = _questVillage.Notables.First((Hero x) => x.IsHeadman);
+		AddTrackedObject(trackedObject);
 		_refugeeParties = new MobileParty[4];
 		TextObject textObject = new TextObject("{=3YHL3wpM}{BROTHER.NAME}:");
 		textObject.SetCharacterProperties("BROTHER", StoryModeHeroes.ElderBrother.CharacterObject);

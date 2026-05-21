@@ -51,6 +51,27 @@ public class SiegeDeploymentHandler : BattleDeploymentHandler
 			allDeploymentPoint.OnDeploymentStateChanged += OnDeploymentStateChange;
 		}
 		base.Mission.IsFormationUnitPositionAvailable_AdditionalCondition += Mission_IsFormationUnitPositionAvailable_AdditionalCondition;
+		foreach (DeploymentPoint playerDeploymentPoint in PlayerDeploymentPoints)
+		{
+			playerDeploymentPoint.OnDeployOrDisband += OnWeaponDeployOrDisband;
+		}
+		base.Mission.PlayerTeam.OnFormationsChangedInDeployment += OnFormationsChanged;
+	}
+
+	private void OnWeaponDeployOrDisband(DeploymentPoint deploymentPoint)
+	{
+		if (deploymentPoint.IsDeployed)
+		{
+			(deploymentPoint.DeployedWeapon as SiegeWeapon)?.TickAuxForInit();
+			AutoAssignDetachmentsForDeployment(base.PlayerTeam);
+		}
+		foreach (Formation item in base.PlayerTeam.FormationsIncludingEmpty)
+		{
+			item.ApplyActionOnEachUnit(delegate(Agent agent)
+			{
+				agent.ForceUpdateCachedAndFormationValues(updateOnlyMovement: false, arrangementChangeAllowed: false);
+			});
+		}
 	}
 
 	public override void FinishDeployment()
@@ -59,6 +80,11 @@ public class SiegeDeploymentHandler : BattleDeploymentHandler
 		{
 			allDeploymentPoint.OnDeploymentStateChanged -= OnDeploymentStateChange;
 		}
+		foreach (DeploymentPoint playerDeploymentPoint in PlayerDeploymentPoints)
+		{
+			playerDeploymentPoint.OnDeployOrDisband -= OnWeaponDeployOrDisband;
+		}
+		base.Mission.PlayerTeam.OnFormationsChangedInDeployment -= OnFormationsChanged;
 		base.FinishDeployment();
 	}
 
@@ -204,7 +230,7 @@ public class SiegeDeploymentHandler : BattleDeploymentHandler
 			{
 				item3.ApplyActionOnEachUnit(delegate(Agent agent)
 				{
-					if (agent.Detachment != null && !(agent.Detachment is UsableMachine))
+					if (agent.Detachment != null)
 					{
 						agent.ForceUpdateCachedAndFormationValues(updateOnlyMovement: false, arrangementChangeAllowed: false);
 					}
@@ -213,6 +239,11 @@ public class SiegeDeploymentHandler : BattleDeploymentHandler
 		}
 		base.Mission.IsTeleportingAgents = isTeleportingAgents;
 		base.Mission.AllowAiTicking = allowAiTicking;
+	}
+
+	private void OnFormationsChanged(Team team)
+	{
+		AutoAssignDetachmentsForDeployment(team);
 	}
 
 	protected bool Mission_IsFormationUnitPositionAvailable_AdditionalCondition(WorldPosition position, Team team)

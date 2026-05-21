@@ -113,6 +113,7 @@ public class SandBoxMissionViews
 			new MusicSilencedMissionView(),
 			ViewCreator.CreateMissionLeaveView(),
 			SandBoxViewCreator.CreateMissionNameMarkerUIHandler(mission),
+			SandBoxViewCreator.CreateMissionStealthFailCounter(),
 			new MissionItemContourControllerView(),
 			new MissionAgentContourControllerView(),
 			SandBoxViewCreator.CreateMissionAgentAlarmStateView(mission),
@@ -319,7 +320,7 @@ public class SandBoxMissionViews
 			new MissionCampaignView(),
 			ViewCreator.CreateMissionSingleplayerEscapeMenu(CampaignOptions.IsIronmanMode),
 			ViewCreator.CreateMissionAgentLabelUIHandler(mission),
-			ViewCreator.CreateMissionBattleScoreUIHandler(mission, new SPScoreboardVM(null)),
+			ViewCreator.CreateMissionBattleScoreUIHandler(mission, SPScoreboardVM.CreateMission(mission)),
 			ViewCreator.CreateOptionsUIHandler(),
 			ViewCreator.CreateMissionMainAgentEquipDropView(mission)
 		};
@@ -361,7 +362,7 @@ public class SandBoxMissionViews
 			ViewCreator.CreateMissionSingleplayerEscapeMenu(CampaignOptions.IsIronmanMode),
 			ViewCreator.CreateOptionsUIHandler(),
 			ViewCreator.CreateMissionMainAgentEquipDropView(mission),
-			ViewCreator.CreateMissionBattleScoreUIHandler(mission, new SPScoreboardVM(null)),
+			ViewCreator.CreateMissionBattleScoreUIHandler(mission, SPScoreboardVM.CreateMission(mission)),
 			ViewCreator.CreateMissionAgentLabelUIHandler(mission),
 			ViewCreator.CreateMissionOrderUIHandler(),
 			new OrderTroopPlacer(null),
@@ -395,7 +396,7 @@ public class SandBoxMissionViews
 			ViewCreator.CreateMissionSingleplayerEscapeMenu(CampaignOptions.IsIronmanMode),
 			ViewCreator.CreateOptionsUIHandler(),
 			ViewCreator.CreateMissionMainAgentEquipDropView(mission),
-			ViewCreator.CreateMissionBattleScoreUIHandler(mission, new SPScoreboardVM(null)),
+			ViewCreator.CreateMissionBattleScoreUIHandler(mission, SPScoreboardVM.CreateMission(mission)),
 			ViewCreator.CreateMissionAgentLabelUIHandler(mission),
 			ViewCreator.CreateMissionOrderUIHandler(),
 			new OrderTroopPlacer(null),
@@ -415,7 +416,8 @@ public class SandBoxMissionViews
 			new MissionAgentContourControllerView(),
 			new MissionCampaignBattleSpectatorView(),
 			new MissionPreloadView(),
-			ViewCreator.CreatePhotoModeView()
+			ViewCreator.CreatePhotoModeView(),
+			ViewCreator.CreateMissionObjectiveView()
 		}.ToArray();
 	}
 
@@ -447,7 +449,7 @@ public class SandBoxMissionViews
 			ViewCreator.CreateMissionLeaveView(),
 			new MissionConversationCameraView(),
 			SandBoxViewCreator.CreateMissionConversationView(mission),
-			ViewCreator.CreateMissionBattleScoreUIHandler(mission, new SPScoreboardVM(null)),
+			ViewCreator.CreateMissionBattleScoreUIHandler(mission, SPScoreboardVM.CreateMission(mission)),
 			ViewCreator.CreateMissionOrderUIHandler(),
 			SandBoxViewCreator.CreateMissionStealthFailCounter(),
 			new OrderTroopPlacer(null),
@@ -455,7 +457,8 @@ public class SandBoxMissionViews
 			ViewCreator.CreateMissionFormationMarkerUIHandler(mission),
 			new MissionPreloadView(),
 			ViewCreatorManager.CreateMissionView<MissionHideoutAmbushCinematicView>(mission != null, mission, Array.Empty<object>()),
-			ViewCreatorManager.CreateMissionView<MissionHideoutAmbushBossFightCinematicView>(mission != null, mission, Array.Empty<object>())
+			ViewCreatorManager.CreateMissionView<MissionHideoutAmbushBossFightCinematicView>(mission != null, mission, Array.Empty<object>()),
+			ViewCreator.CreateMissionObjectiveView()
 		}.ToArray();
 	}
 
@@ -470,7 +473,7 @@ public class SandBoxMissionViews
 			SandBoxViewCreator.CreateMissionConversationView(mission),
 			ViewCreator.CreateOptionsUIHandler(),
 			ViewCreator.CreateMissionMainAgentEquipDropView(mission),
-			ViewCreator.CreateMissionBattleScoreUIHandler(mission, new SPScoreboardVM(null)),
+			ViewCreator.CreateMissionBattleScoreUIHandler(mission, SPScoreboardVM.CreateMission(mission)),
 			ViewCreator.CreateMissionAgentLabelUIHandler(mission),
 			ViewCreator.CreateMissionOrderUIHandler(),
 			new OrderTroopPlacer(null),
@@ -503,7 +506,7 @@ public class SandBoxMissionViews
 			SandBoxViewCreator.CreateMissionConversationView(mission),
 			ViewCreator.CreateOptionsUIHandler(),
 			ViewCreator.CreateMissionMainAgentEquipDropView(mission),
-			ViewCreator.CreateMissionBattleScoreUIHandler(mission, new SPScoreboardVM(null)),
+			ViewCreator.CreateMissionBattleScoreUIHandler(mission, SPScoreboardVM.CreateMission(mission)),
 			ViewCreator.CreateMissionAgentLabelUIHandler(mission),
 			ViewCreator.CreateMissionOrderUIHandler(),
 			new OrderTroopPlacer(null),
@@ -586,7 +589,7 @@ public class SandBoxMissionViews
 		list.Add(ViewCreator.CreateOptionsUIHandler());
 		list.Add(ViewCreator.CreateMissionMainAgentEquipDropView(mission));
 		list.Add(ViewCreator.CreateMissionAgentLabelUIHandler(mission));
-		list.Add(ViewCreator.CreateMissionBattleScoreUIHandler(mission, new SPScoreboardVM(null)));
+		list.Add(ViewCreator.CreateMissionBattleScoreUIHandler(mission, SPScoreboardVM.CreateMission(mission)));
 		MissionView missionView = ViewCreator.CreateMissionOrderUIHandler();
 		list.Add(ViewCreator.CreateMissionAgentStatusUIHandler(mission));
 		list.Add(ViewCreator.CreateMissionMainAgentEquipmentController(mission));
@@ -627,7 +630,7 @@ public class SandBoxMissionViews
 			ViewCreator.CreateOptionsUIHandler(),
 			ViewCreator.CreateMissionMainAgentEquipDropView(mission),
 			ViewCreator.CreateMissionAgentLabelUIHandler(mission),
-			ViewCreator.CreateMissionBattleScoreUIHandler(mission, new SPScoreboardVM(null)),
+			ViewCreator.CreateMissionBattleScoreUIHandler(mission, SPScoreboardVM.CreateMission(mission)),
 			ViewCreator.CreateMissionOrderUIHandler(),
 			new OrderTroopPlacer(null),
 			new MissionSingleplayerViewHandler(),
@@ -661,7 +664,7 @@ public class SandBoxMissionViews
 			ViewCreator.CreateMissionSingleplayerEscapeMenu(CampaignOptions.IsIronmanMode),
 			ViewCreator.CreateOptionsUIHandler(),
 			ViewCreator.CreateMissionMainAgentEquipDropView(mission),
-			ViewCreator.CreateMissionBattleScoreUIHandler(mission, new SPScoreboardVM(null)),
+			ViewCreator.CreateMissionBattleScoreUIHandler(mission, SPScoreboardVM.CreateMission(mission)),
 			ViewCreator.CreateMissionAgentLabelUIHandler(mission),
 			ViewCreator.CreateMissionOrderUIHandler(),
 			new OrderTroopPlacer(null),
@@ -721,7 +724,7 @@ public class SandBoxMissionViews
 	[ViewMethod("SiegeMissionForTutorial")]
 	public static MissionView[] OpenSiegeMissionForTutorial(Mission mission)
 	{
-		Debug.FailedAssert("Do not use SiegeForTutorial! Use campaign!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Missions\\SandBoxMissionViews.cs", "OpenSiegeMissionForTutorial", 879);
+		Debug.FailedAssert("Do not use SiegeForTutorial! Use campaign!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Missions\\SandBoxMissionViews.cs", "OpenSiegeMissionForTutorial", 883);
 		List<MissionView> obj = new List<MissionView>
 		{
 			new MissionConversationCameraView(),
@@ -755,37 +758,6 @@ public class SandBoxMissionViews
 			new MissionConversationCameraView(),
 			ViewCreator.CreateMissionOrderUIHandler(),
 			new OrderTroopPlacer(null)
-		}.ToArray();
-	}
-
-	[ViewMethod("VillageBattle")]
-	public static MissionView[] OpenVillageBattleMission(Mission mission)
-	{
-		return new List<MissionView>
-		{
-			new MissionCampaignView(),
-			new MissionConversationCameraView(),
-			ViewCreator.CreateMissionSingleplayerEscapeMenu(CampaignOptions.IsIronmanMode),
-			ViewCreator.CreateOptionsUIHandler(),
-			ViewCreator.CreateMissionMainAgentEquipDropView(mission),
-			ViewCreator.CreateMissionBattleScoreUIHandler(mission, new SPScoreboardVM(null)),
-			ViewCreator.CreateMissionOrderUIHandler(),
-			new OrderTroopPlacer(null),
-			ViewCreator.CreateMissionAgentStatusUIHandler(mission),
-			ViewCreator.CreateMissionMainAgentEquipmentController(mission),
-			ViewCreator.CreateMissionMainAgentCheerBarkControllerView(mission),
-			ViewCreator.CreateMissionAgentLockVisualizerView(mission),
-			new MissionSingleplayerViewHandler(),
-			ViewCreator.CreateMissionBoundaryCrossingView(),
-			new MissionBoundaryWallView(),
-			ViewCreator.CreateMissionFormationMarkerUIHandler(mission),
-			new MissionFormationTargetSelectionHandler(),
-			ViewCreator.CreateMissionSpectatorControlView(mission),
-			new MissionItemContourControllerView(),
-			new MissionAgentContourControllerView(),
-			new MissionCampaignBattleSpectatorView(),
-			ViewCreator.CreatePhotoModeView(),
-			ViewCreator.CreateSingleplayerMissionKillNotificationUIHandler()
 		}.ToArray();
 	}
 

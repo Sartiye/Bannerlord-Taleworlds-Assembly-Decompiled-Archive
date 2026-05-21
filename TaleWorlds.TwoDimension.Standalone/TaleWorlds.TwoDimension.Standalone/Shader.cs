@@ -21,12 +21,17 @@ public class Shader
 
 	public static Shader CreateShader(GraphicsContext graphicsContext, string vertexShaderCode, string fragmentShaderCode)
 	{
-		int program = CompileShaders(vertexShaderCode, fragmentShaderCode);
-		return new Shader(graphicsContext, program);
+		int num = CompileShaders(vertexShaderCode, fragmentShaderCode);
+		if (num < 0)
+		{
+			return null;
+		}
+		return new Shader(graphicsContext, num);
 	}
 
 	public static int CompileShaders(string vertexShaderCode, string fragmentShaderCode)
 	{
+		bool flag = false;
 		int shader = Opengl32ARB.CreateShaderObject(ShaderType.VertexShader);
 		Opengl32ARB.ShaderSource(shader, vertexShaderCode);
 		Opengl32ARB.CompileShader(shader);
@@ -40,6 +45,7 @@ public class Shader
 			byte[] array = new byte[4096];
 			Opengl32ARB.GetShaderInfoLog(shader, 4096, out length, array);
 			Encoding.ASCII.GetString(array);
+			flag = true;
 		}
 		int shader2 = Opengl32ARB.CreateShaderObject(ShaderType.FragmentShader);
 		Opengl32ARB.ShaderSource(shader2, fragmentShaderCode);
@@ -53,6 +59,7 @@ public class Shader
 			byte[] array2 = new byte[4096];
 			Opengl32ARB.GetShaderInfoLog(shader2, 4096, out length2, array2);
 			Encoding.ASCII.GetString(array2);
+			flag = true;
 		}
 		int num = Opengl32ARB.CreateProgramObject();
 		Opengl32ARB.AttachShader(num, shader);
@@ -67,11 +74,17 @@ public class Shader
 			byte[] array3 = new byte[4096];
 			Opengl32ARB.GetProgramInfoLog(num, 4096, out length3, array3);
 			Encoding.ASCII.GetString(array3);
+			flag = true;
 		}
 		Opengl32ARB.DetachShader(num, shader);
 		Opengl32ARB.DetachShader(num, shader2);
 		Opengl32ARB.DeleteShader(shader);
 		Opengl32ARB.DeleteShader(shader2);
+		if (flag)
+		{
+			Opengl32ARB.DeleteProgram(num);
+			return -1;
+		}
 		return num;
 	}
 
@@ -108,9 +121,9 @@ public class Shader
 		Opengl32ARB.UseProgram(0);
 	}
 
-	public void SetMatrix(string name, Matrix4x4 matrix)
+	public void SetMatrix(string name, in Matrix4x4 matrix)
 	{
-		Opengl32ARB.UniformMatrix4fv(Opengl32ARB.GetUniformLocation(_program, name), 1, isTranspose: false, matrix);
+		Opengl32ARB.UniformMatrix4fv(Opengl32ARB.GetUniformLocation(_program, name), 1, isTranspose: false, in matrix);
 	}
 
 	public void SetBoolean(string name, bool value)

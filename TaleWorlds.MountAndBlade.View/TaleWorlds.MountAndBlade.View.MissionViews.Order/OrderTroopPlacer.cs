@@ -172,7 +172,7 @@ public class OrderTroopPlacer : MissionView
 						}
 					}
 				}
-				if (cursorState == CursorState.Invisible && base.MissionScreen.OrderFlag.FocusedOrderableObject != null)
+				if (cursorState == CursorState.Invisible && base.MissionScreen.OrderFlag?.FocusedOrderableObject != null)
 				{
 					cursorState = CursorState.OrderableEntity;
 				}

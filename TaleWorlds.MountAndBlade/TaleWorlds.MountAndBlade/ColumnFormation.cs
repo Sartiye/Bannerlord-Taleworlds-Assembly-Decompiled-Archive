@@ -1184,6 +1184,10 @@ public class ColumnFormation : IFormationArrangement
 		}
 	}
 
+	public void OnTickOccasionally()
+	{
+	}
+
 	private MBList<IFormationUnit> GetUnitsBehind(IFormationUnit unit)
 	{
 		MBList<IFormationUnit> mBList = new MBList<IFormationUnit>();

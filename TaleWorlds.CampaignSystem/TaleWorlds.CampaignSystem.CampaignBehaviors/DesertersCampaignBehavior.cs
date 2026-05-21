@@ -180,7 +180,6 @@ public class DesertersCampaignBehavior : CampaignBehaviorBase
 		InitializeDeserterParty(mobileParty);
 		mobileParty.SetMovePatrolAroundPoint(mobileParty.Position, MobileParty.NavigationType.Default);
 		PartyBaseHelper.SortRoster(mobileParty);
-		Debug.Print(mobileParty.StringId + " deserter party was created around: " + settlement.Name.ToString());
 	}
 
 	private List<Settlement> SelectRandomSettlementsForDeserters(MapEvent mapEvent, int count)

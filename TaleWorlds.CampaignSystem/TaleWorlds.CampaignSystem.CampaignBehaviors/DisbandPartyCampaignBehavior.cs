@@ -113,7 +113,7 @@ public class DisbandPartyCampaignBehavior : CampaignBehaviorBase, IDisbandPartyC
 		{
 			_ = party.LeaderHero;
 			party.RemovePartyLeader();
-			Debug.FailedAssert("Player Clan's party should not have a leader hero after party disband started!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\DisbandPartyCampaignBehavior.cs", "OnPartyDisbandStarted", 138);
+			Debug.FailedAssert("Player Clan's party should not have a leader hero after party disband started!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\DisbandPartyCampaignBehavior.cs", "OnPartyDisbandStarted", 137);
 		}
 		CampaignTime value = (party.IsCurrentlyAtSea ? CampaignTime.Never : CampaignTime.DaysFromNow(1f));
 		_partiesThatWaitingToDisband.Add(party, value);
@@ -500,15 +500,7 @@ public class DisbandPartyCampaignBehavior : CampaignBehaviorBase, IDisbandPartyC
 		{
 			PlayerEncounter.LeaveEncounter = true;
 		}
-		PartyScreenHelper.OpenScreenAsManageTroopsAndPrisoners(MobileParty.ConversationParty, OnPartyScreenClosed);
-	}
-
-	private void OnPartyScreenClosed(PartyBase leftOwnerParty, TroopRoster leftMemberRoster, TroopRoster leftPrisonRoster, PartyBase rightOwnerParty, TroopRoster rightMemberRoster, TroopRoster rightPrisonRoster, bool fromCancel)
-	{
-		if (leftOwnerParty.MemberRoster.TotalManCount <= 0)
-		{
-			DestroyPartyAction.Apply(null, leftOwnerParty.MobileParty);
-		}
+		PartyScreenHelper.OpenScreenAsManageTroopsAndPrisoners(MobileParty.ConversationParty, PartyScreenHelper.OpenScreenAsManagePlayerClanPartyClosed);
 	}
 
 	private void disbanding_leaderless_party_answer_on_consequence()

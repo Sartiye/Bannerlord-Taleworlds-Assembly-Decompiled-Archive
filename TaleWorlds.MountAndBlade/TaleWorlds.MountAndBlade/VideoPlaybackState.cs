@@ -33,6 +33,7 @@ public class VideoPlaybackState : GameState
 
 	public void OnVideoStarted()
 	{
+		MBMusicManager.Current.DeactivateCurrentMode();
 		MBMusicManager.Current.PauseMusicManagerSystem();
 	}
 

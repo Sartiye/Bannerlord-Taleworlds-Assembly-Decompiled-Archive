@@ -115,7 +115,7 @@ public class MissionGauntletMultiplayerEscapeMenu : MissionGauntletEscapeMenuBas
 			}, null, () => new Tuple<bool, TextObject>(item1: false, null));
 			list.Add(_changeTroopItem);
 		}
-		if (base.Mission.CurrentState == TaleWorlds.MountAndBlade.Mission.State.Continuing && base.Mission.GetMissionEndTimerValue() < 0f && (GameNetwork.MyPeer.IsAdmin || GameNetwork.IsServer))
+		if (base.Mission.CurrentState == TaleWorlds.MountAndBlade.Mission.State.Continuing && base.Mission.GetMissionEndTimerValue() < 0f && ((GameNetwork.IsMyPeerReady && GameNetwork.MyPeer.IsAdmin) || GameNetwork.IsServer))
 		{
 			EscapeMenuItemVM item = new EscapeMenuItemVM(new TextObject("{=xILeUbY3}Admin Panel"), delegate
 			{

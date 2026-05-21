@@ -1,4 +1,5 @@
 using System;
+using TaleWorlds.DotNet;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
 
@@ -6,6 +7,11 @@ namespace TaleWorlds.MountAndBlade.Objects;
 
 public class StealthBox : ScriptComponentBehavior
 {
+	[EditableScriptComponentVariable(true, "")]
+	private bool _coversStandingAgents;
+
+	public bool CoversStandingAgents => _coversStandingAgents;
+
 	public static event Action<StealthBox> OnBoxInitialized;
 
 	public static event Action<StealthBox> OnBoxRemoved;
@@ -14,7 +20,10 @@ public class StealthBox : ScriptComponentBehavior
 	{
 		base.OnInit();
 		MetaMesh metaMesh = base.GameEntity.GetMetaMesh(0);
-		base.GameEntity.RemoveMultiMesh(metaMesh);
+		if (metaMesh != null)
+		{
+			base.GameEntity.RemoveMultiMesh(metaMesh);
+		}
 		StealthBox.OnBoxInitialized?.Invoke(this);
 	}
 
@@ -36,9 +45,9 @@ public class StealthBox : ScriptComponentBehavior
 		Vec3 scaleAmountXYZ = new Vec3(1f / scaleVector.x, 1f / scaleVector.y, 1f / scaleVector.z);
 		rotation.ApplyScaleLocal(in scaleAmountXYZ);
 		point = globalFrame.TransformToLocal(in point);
-		if (TaleWorlds.Library.MathF.Abs(point.x) <= scaleVector.x / 2f && TaleWorlds.Library.MathF.Abs(point.y) <= scaleVector.y / 2f)
+		if (TaleWorlds.Library.MathF.Abs(point.x) <= scaleVector.x / 2f && TaleWorlds.Library.MathF.Abs(point.y) <= scaleVector.y / 2f && point.z >= 0f)
 		{
-			return TaleWorlds.Library.MathF.Abs(point.z) <= scaleVector.z / 2f;
+			return point.z <= scaleVector.z;
 		}
 		return false;
 	}

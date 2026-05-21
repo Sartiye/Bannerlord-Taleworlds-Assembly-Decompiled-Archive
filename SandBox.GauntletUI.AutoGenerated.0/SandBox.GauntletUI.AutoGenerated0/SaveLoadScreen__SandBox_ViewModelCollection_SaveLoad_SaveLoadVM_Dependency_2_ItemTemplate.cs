@@ -90,9 +90,8 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM_Dep
 
 	public void SetAttributes()
 	{
-		base.WidthSizePolicy = SizePolicy.Fixed;
+		base.WidthSizePolicy = SizePolicy.StretchToParent;
 		base.HeightSizePolicy = SizePolicy.Fixed;
-		base.SuggestedWidth = 100f;
 		base.SuggestedHeight = 55f;
 		base.VerticalAlignment = VerticalAlignment.Bottom;
 		base.MarginBottom = 13f;
@@ -102,10 +101,10 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM_Dep
 		base.DoNotPassEventsToChildren = true;
 		_widget_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_0_0.SuggestedWidth = 40f;
+		_widget_0_0.SuggestedWidth = 60f;
 		_widget_0_0.SuggestedHeight = 40f;
 		_widget_0_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0_0.VerticalAlignment = VerticalAlignment.Top;

@@ -281,7 +281,7 @@ public class ClimbingMachineDetachment : IDetachment
 					ClimbingMachine climbingMachine = null;
 					foreach (ClimbingMachine climbingMachine2 in _climbingMachines)
 					{
-						float num5 = climbingMachine2.GameEntity.GlobalPosition.DistanceSquared(agent3.Position) * (Vec2.DotProduct((agent3.Position.AsVec2 - climbingMachine2.GameEntity.GlobalPosition.AsVec2).Normalized(), climbingMachine2.StandingPoints[0].GameEntity.GetGlobalFrame().rotation.f.AsVec2.Normalized()) + 2f);
+						float num5 = climbingMachine2.GameEntity.GlobalPosition.DistanceSquared(agent3.Position) * (Vec2.DotProduct((agent3.Position.AsVec2 - climbingMachine2.GameEntity.GlobalPosition.AsVec2).Normalized(), climbingMachine2.PilotStandingPoint.GameEntity.GetGlobalFrame().rotation.f.AsVec2.Normalized()) + 2f);
 						if (num5 < num4)
 						{
 							num4 = num5;
@@ -290,11 +290,19 @@ public class ClimbingMachineDetachment : IDetachment
 					}
 					if (climbingMachine != null)
 					{
-						StandingPoint standingPoint = climbingMachine.StandingPoints[0];
-						if (agent3.CanReachAndUseObject(standingPoint, standingPoint.GetUserFrameForAgent(agent3).Origin.AsVec2.DistanceSquared(agent3.Position.AsVec2)) && MathF.Abs(standingPoint.GameEntity.GlobalPosition.z - agent3.Position.z) < 1.5f && !climbingMachine.StandingPoints[0].HasUser)
+						StandingPoint standingPoint = null;
+						foreach (StandingPoint standingPoint2 in climbingMachine.StandingPoints)
+						{
+							if (!standingPoint2.HasUser && !standingPoint2.IsDeactivated)
+							{
+								standingPoint = standingPoint2;
+								break;
+							}
+						}
+						if (standingPoint != null && agent3.CanReachAndUseObject(standingPoint, standingPoint.GetUserFrameForAgent(agent3).Origin.AsVec2.DistanceSquared(agent3.Position.AsVec2)) && MathF.Abs(standingPoint.GameEntity.GlobalPosition.z - agent3.Position.z) < 1.5f)
 						{
 							agent3.DisableScriptedMovement();
-							agent3.UseGameObject(climbingMachine.StandingPoints[0]);
+							agent3.UseGameObject(standingPoint);
 						}
 						else
 						{
@@ -307,20 +315,14 @@ public class ClimbingMachineDetachment : IDetachment
 				{
 					_climberAgents.RemoveAt(num3);
 					RemoveAgent(agent3);
-					if (agent3.Formation != null)
-					{
-						agent3.Formation.AttachUnit(agent3);
-					}
+					agent3.Formation?.AttachUnit(agent3);
 				}
 			}
 			else
 			{
 				_climberAgents.RemoveAt(num3);
 				RemoveAgent(agent3);
-				if (agent3.Formation != null)
-				{
-					agent3.Formation.AttachUnit(agent3);
-				}
+				agent3.Formation?.AttachUnit(agent3);
 			}
 		}
 	}

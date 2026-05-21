@@ -162,6 +162,7 @@ public class TrainingFieldObjectiveItemVM : ViewModel
 		_textObjectString = objective.GetNameString();
 		_hasBackground = objective.HasBackground;
 		IsCompleted = objective.IsFinished;
+		IsActive = objective.IsActive;
 		_score = objective.Score;
 		ObjectiveItems = new MBBindingList<TrainingFieldObjectiveItemVM>();
 		if (objective.SubTasks != null)

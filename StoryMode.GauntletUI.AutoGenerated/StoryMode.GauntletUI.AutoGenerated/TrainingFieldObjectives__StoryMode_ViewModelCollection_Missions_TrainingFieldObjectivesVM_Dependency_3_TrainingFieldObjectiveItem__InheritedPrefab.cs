@@ -56,7 +56,7 @@ public class TrainingFieldObjectives__StoryMode_ViewModelCollection_Missions_Tra
 		base.MarginLeft = 20f;
 		base.WidthSizePolicy = SizePolicy.CoverChildren;
 		base.HeightSizePolicy = SizePolicy.CoverChildren;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.DoNotPassEventsToChildren = true;
@@ -79,7 +79,7 @@ public class TrainingFieldObjectives__StoryMode_ViewModelCollection_Missions_Tra
 		_widget_1.MarginLeft = 20f;
 		_widget_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 	}
 
 	public virtual void DestroyDataSource()

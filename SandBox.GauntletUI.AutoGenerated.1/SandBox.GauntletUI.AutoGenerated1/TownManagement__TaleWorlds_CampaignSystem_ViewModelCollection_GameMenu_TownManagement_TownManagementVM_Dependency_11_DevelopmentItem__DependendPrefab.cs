@@ -422,7 +422,7 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 	{
 		if (commandName == "OnAddToQueue")
 		{
-			_datasource_Root.ExecuteAddToQueue();
+			_datasource_Root.ExecuteAddRemoveToQueue();
 		}
 		if (commandName == "SetAsActive")
 		{

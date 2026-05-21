@@ -78,7 +78,7 @@ public class PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Informati
 		_widget_0.NeutralTroopsTextBrush = base.Context.GetBrush("Tooltip.NeutralTroop.Text");
 		_widget_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_0.SuggestedWidth = 220f;
@@ -103,7 +103,7 @@ public class PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Informati
 		_widget_0_0_1_0.VerticalAlignment = VerticalAlignment.Top;
 		_widget_0_0_1_0.MarginTop = 5f;
 		_widget_0_0_1_0.MarginBottom = 5f;
-		_widget_0_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_2.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_2.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_2.SuggestedHeight = 12f;

@@ -19,4 +19,6 @@ public interface IAgent
 	bool IsActive();
 
 	void SetAsConversationAgent(bool set);
+
+	void OnConversationStarted();
 }

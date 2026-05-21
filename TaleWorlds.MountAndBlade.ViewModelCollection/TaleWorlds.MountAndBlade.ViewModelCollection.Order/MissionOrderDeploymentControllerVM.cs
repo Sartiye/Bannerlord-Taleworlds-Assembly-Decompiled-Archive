@@ -209,7 +209,7 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 		{
 			_siegeDeploymentHandler.AutoDeployTeamUsingTeamAI(Mission.PlayerTeam, autoAssignDetachments: false);
 		}
-		else if (!Mission.IsNavalBattle && _deploymentHandler != null)
+		else if (!Mission.IsNavalBattle && !Mission.IsNavalRaidBattle && _deploymentHandler != null)
 		{
 			_deploymentHandler.AutoDeployTeamUsingDeploymentPlan(Mission.PlayerTeam);
 		}
@@ -512,8 +512,8 @@ public class MissionOrderDeploymentControllerVM : ViewModel
 		deploymentPlan.RemakeDeploymentPlan(Mission.PlayerTeam);
 		if (_siegeDeploymentHandler != null)
 		{
-			_siegeDeploymentHandler.AutoDeployTeamUsingTeamAI(Mission.PlayerTeam);
 			AutoDeploySiegeMachines();
+			_siegeDeploymentHandler.AutoDeployTeamUsingTeamAI(Mission.PlayerTeam);
 		}
 		else if (_deploymentHandler != null)
 		{

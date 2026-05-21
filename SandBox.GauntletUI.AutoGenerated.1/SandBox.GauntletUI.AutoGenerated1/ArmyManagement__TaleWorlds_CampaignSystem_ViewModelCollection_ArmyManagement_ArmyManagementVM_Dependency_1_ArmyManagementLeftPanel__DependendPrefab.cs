@@ -287,7 +287,7 @@ public class ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyM
 		_widget_4_0.ClipContents = true;
 		_widget_4_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_4_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_4_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 	}
 
 	public void DestroyDataSource()

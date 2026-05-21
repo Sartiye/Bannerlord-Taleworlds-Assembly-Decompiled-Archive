@@ -101,7 +101,7 @@ public class NotableSupportersCampaignBehavior : CampaignBehaviorBase
 			textObject.SetTextVariable("SUPPORTED_CLAN", Hero.OneToOneConversationHero.SupporterOf.Name);
 		}
 		textObject.SetTextVariable("AMOUNT", initialNotableSupporterCost);
-		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		MBTextManager.SetTextVariable("SUPPORT_RESPONSE", textObject);
 		return true;
 	}

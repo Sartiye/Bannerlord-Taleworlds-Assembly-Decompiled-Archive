@@ -121,7 +121,7 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM_Dep
 		_widget_2_2.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_2_2.MarginTop = 20f;
 		_widget_2_2.MarginRight = 10f;
-		_widget_2_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_2.DoNotAcceptEvents = true;
 		_widget_2_2.UpdateChildrenStates = true;
 		_widget_2_2_0.WidthSizePolicy = SizePolicy.CoverChildren;

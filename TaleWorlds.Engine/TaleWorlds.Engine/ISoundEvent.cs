@@ -69,6 +69,9 @@ internal interface ISoundEvent
 	[EngineMethod("is_playing", false, null, false)]
 	bool IsPlaying(int eventId);
 
+	[EngineMethod("is_stopped", false, null, false)]
+	bool IsStopped(int eventId);
+
 	[EngineMethod("is_paused", false, null, false)]
 	bool IsPaused(int eventId);
 

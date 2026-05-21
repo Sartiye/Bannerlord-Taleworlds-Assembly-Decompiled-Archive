@@ -8,6 +8,12 @@ public class ItemMenuTooltipPropertyVM : TooltipProperty
 {
 	private HintViewModel _propertyHint;
 
+	private bool _hasModifierBonus;
+
+	private bool _isModifierBeneficial;
+
+	private string _modifierBonusText;
+
 	[DataSourceProperty]
 	public HintViewModel PropertyHint
 	{
@@ -25,14 +31,68 @@ public class ItemMenuTooltipPropertyVM : TooltipProperty
 		}
 	}
 
+	[DataSourceProperty]
+	public bool HasModifierBonus
+	{
+		get
+		{
+			return _hasModifierBonus;
+		}
+		set
+		{
+			if (value != _hasModifierBonus)
+			{
+				_hasModifierBonus = value;
+				OnPropertyChangedWithValue(value, "HasModifierBonus");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsModifierBeneficial
+	{
+		get
+		{
+			return _isModifierBeneficial;
+		}
+		set
+		{
+			if (value != _isModifierBeneficial)
+			{
+				_isModifierBeneficial = value;
+				OnPropertyChangedWithValue(value, "IsModifierBeneficial");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string ModifierBonusText
+	{
+		get
+		{
+			return _modifierBonusText;
+		}
+		set
+		{
+			if (value != _modifierBonusText)
+			{
+				_modifierBonusText = value;
+				OnPropertyChangedWithValue(value, "ModifierBonusText");
+			}
+		}
+	}
+
 	public ItemMenuTooltipPropertyVM()
 	{
 	}
 
-	public ItemMenuTooltipPropertyVM(string definition, string value, int textHeight, bool onlyShowWhenExtended = false, HintViewModel propertyHint = null)
+	public ItemMenuTooltipPropertyVM(string definition, string value, int textHeight, bool onlyShowWhenExtended = false, HintViewModel propertyHint = null, string modifierBonusText = null, bool isModifierBeneficial = false)
 		: base(definition, value, textHeight, onlyShowWhenExtended)
 	{
 		PropertyHint = propertyHint;
+		ModifierBonusText = modifierBonusText;
+		HasModifierBonus = !string.IsNullOrEmpty(modifierBonusText);
+		IsModifierBeneficial = isModifierBeneficial;
 	}
 
 	public ItemMenuTooltipPropertyVM(string definition, Func<string> _valueFunc, int textHeight, bool onlyShowWhenExtended = false, HintViewModel propertyHint = null)
@@ -53,10 +113,13 @@ public class ItemMenuTooltipPropertyVM : TooltipProperty
 		PropertyHint = propertyHint;
 	}
 
-	public ItemMenuTooltipPropertyVM(string definition, string value, int textHeight, Color color, bool onlyShowWhenExtended = false, HintViewModel propertyHint = null, TooltipPropertyFlags propertyFlags = TooltipPropertyFlags.None)
+	public ItemMenuTooltipPropertyVM(string definition, string value, int textHeight, Color color, bool onlyShowWhenExtended = false, HintViewModel propertyHint = null, TooltipPropertyFlags propertyFlags = TooltipPropertyFlags.None, string modifierBonusText = null, bool isModifierBeneficial = false)
 		: base(definition, value, textHeight, color, onlyShowWhenExtended)
 	{
 		PropertyHint = propertyHint;
+		ModifierBonusText = modifierBonusText;
+		HasModifierBonus = !string.IsNullOrEmpty(modifierBonusText);
+		IsModifierBeneficial = isModifierBeneficial;
 	}
 
 	public ItemMenuTooltipPropertyVM(string definition, Func<string> _valueFunc, int textHeight, Color color, bool onlyShowWhenExtended = false, HintViewModel propertyHint = null)

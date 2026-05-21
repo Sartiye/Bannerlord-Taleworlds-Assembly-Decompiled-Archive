@@ -277,7 +277,7 @@ public class DefaultSettlementValueModel : SettlementValueModel
 		float value = settlement.GetValue();
 		float num4 = GeographicalAdvantageForFaction(settlement.IsVillage ? settlement.Village.Bound : settlement, faction);
 		float num5 = 1f;
-		if (settlement.HasPort)
+		if (settlement.HasPort && settlement.IsFortification)
 		{
 			num5 = 1.2f;
 			if (!faction.Settlements.Any((Settlement x) => x.HasPort))
@@ -296,7 +296,7 @@ public class DefaultSettlementValueModel : SettlementValueModel
 		float value = settlement.GetValue();
 		float num4 = GeographicalAdvantageForFaction(settlement.IsVillage ? settlement.Village.Bound : settlement, hero.MapFaction);
 		float num5 = 1f;
-		if (settlement.HasPort)
+		if (settlement.HasPort && settlement.IsFortification)
 		{
 			num5 = 1.2f;
 			if (!hero.Clan.Settlements.Any((Settlement x) => x.HasPort))

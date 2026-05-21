@@ -25,15 +25,17 @@ public class BattleSpawnPathSelector
 
 	public void Initialize()
 	{
-		float pivotRatio;
-		bool isInverted;
-		Path path = FindBestInitialPath(_mission, out pivotRatio, out isInverted);
+		float pathPivotOffset;
+		float pathLength;
+		bool isPathInverted;
+		Path path = FindBestInitialPath(_mission, out pathPivotOffset, out pathLength, out isPathInverted);
 		if (path != null)
 		{
 			_initialPath = path;
 			_battleSideSelectors = new BattleSideSpawnPathSelector[2];
-			_battleSideSelectors[0] = new BattleSideSpawnPathSelector(_mission, path, pivotRatio, isInverted);
-			_battleSideSelectors[1] = new BattleSideSpawnPathSelector(_mission, path, MathF.Max(1f - pivotRatio, 0f), !isInverted);
+			_battleSideSelectors[0] = new BattleSideSpawnPathSelector(_mission, path, pathPivotOffset, isPathInverted);
+			float initialPivotOffset = MathF.Clamp(pathLength - pathPivotOffset, 1f, pathLength - 1f);
+			_battleSideSelectors[1] = new BattleSideSpawnPathSelector(_mission, path, initialPivotOffset, !isPathInverted);
 			IsInitialized = true;
 		}
 		else
@@ -47,7 +49,7 @@ public class BattleSpawnPathSelector
 	{
 		if (!IsInitialized)
 		{
-			Debug.FailedAssert("BattleSpawnPathSelector must be initialized.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Deployment\\BattleSpawnPathSelector.cs", "HasPath", 63);
+			Debug.FailedAssert("BattleSpawnPathSelector must be initialized.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Deployment\\BattleSpawnPathSelector.cs", "HasPath", 68);
 			return false;
 		}
 		BattleSideSpawnPathSelector battleSideSpawnPathSelector = _battleSideSelectors[1];
@@ -67,8 +69,8 @@ public class BattleSpawnPathSelector
 	{
 		if (!IsInitialized)
 		{
-			Debug.FailedAssert("BattleSpawnPathSelector must be initialized.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Deployment\\BattleSpawnPathSelector.cs", "GetInitialPathDataOfSide", 77);
-			pathPathData = SpawnPathData.Invalid;
+			Debug.FailedAssert("BattleSpawnPathSelector must be initialized.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Deployment\\BattleSpawnPathSelector.cs", "GetInitialPathDataOfSide", 82);
+			pathPathData = null;
 			return false;
 		}
 		pathPathData = _battleSideSelectors[(int)side].InitialSpawnPath;
@@ -79,16 +81,17 @@ public class BattleSpawnPathSelector
 	{
 		if (!IsInitialized)
 		{
-			Debug.FailedAssert("BattleSpawnPathSelector must be initialized.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Deployment\\BattleSpawnPathSelector.cs", "GetReinforcementPathsDataOfSide", 91);
+			Debug.FailedAssert("BattleSpawnPathSelector must be initialized.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Deployment\\BattleSpawnPathSelector.cs", "GetReinforcementPathsDataOfSide", 96);
 			return null;
 		}
 		return _battleSideSelectors[(int)side].ReinforcementPaths;
 	}
 
-	public static Path FindBestInitialPath(Mission mission, out float pivotRatio, out bool isInverted)
+	public static Path FindBestInitialPath(Mission mission, out float pathPivotOffset, out float pathLength, out bool isPathInverted)
 	{
-		pivotRatio = 0f;
-		isInverted = false;
+		pathPivotOffset = 0f;
+		isPathInverted = false;
+		pathLength = 0f;
 		MBList<Path> allSpawnPaths = MBSceneUtilities.GetAllSpawnPaths(mission.Scene);
 		if (allSpawnPaths.IsEmpty())
 		{
@@ -142,21 +145,22 @@ public class BattleSpawnPathSelector
 			{
 				path2.GetPoints(array);
 				float num6 = array[0].origin.AsVec2.DistanceSquared(asVec);
+				float value = 0f;
 				float num7 = 0f;
-				float num8 = 0f;
 				for (int j = 1; j < path2.NumberOfPoints; j++)
 				{
-					float num9 = array[j].origin.AsVec2.DistanceSquared(asVec);
-					num8 += path2.GetArcLength(j - 1);
-					if (num9 < num6)
+					float num8 = array[j].origin.AsVec2.DistanceSquared(asVec);
+					num7 += path2.GetArcLength(j - 1);
+					if (num8 < num6)
 					{
-						num6 = num9;
-						num7 = num8;
+						num6 = num8;
+						value = num7;
 					}
 				}
 				path = path2;
-				pivotRatio = num7 / path.GetTotalLength();
-				isInverted = flag;
+				pathLength = path.GetTotalLength();
+				pathPivotOffset = MathF.Clamp(value, 1f, pathLength - 1f);
+				isPathInverted = flag;
 			}
 		}
 		else
@@ -165,8 +169,10 @@ public class BattleSpawnPathSelector
 			if (randomElement.NumberOfPoints > 1)
 			{
 				path = randomElement;
-				pivotRatio = 0.37f + MBRandom.RandomFloat * 0.26f;
-				isInverted = false;
+				float num9 = 0.37f + MBRandom.RandomFloat * 0.26f;
+				pathLength = path.GetTotalLength();
+				pathPivotOffset = MathF.Clamp(pathLength * num9, 1f, pathLength - 1f);
+				isPathInverted = false;
 			}
 		}
 		return path;

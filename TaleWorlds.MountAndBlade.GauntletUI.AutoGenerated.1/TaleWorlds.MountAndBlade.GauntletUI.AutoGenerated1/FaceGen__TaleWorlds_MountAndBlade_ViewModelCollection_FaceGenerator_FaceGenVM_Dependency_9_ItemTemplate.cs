@@ -80,7 +80,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 		_widget_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_0.DoNotAcceptEvents = true;
 		_widget_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0.HeightSizePolicy = SizePolicy.CoverChildren;

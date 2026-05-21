@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.GameState;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
@@ -202,56 +203,6 @@ public class MenuViewContext : IMenuContextHandler
 		}
 	}
 
-	void IMenuContextHandler.OnAmbientSoundIDSet(string ambientSoundID)
-	{
-		PlayAmbientSound(ambientSoundID);
-	}
-
-	void IMenuContextHandler.OnPanelSoundIDSet(string panelSoundID)
-	{
-		PlayPanelSound(panelSoundID);
-	}
-
-	void IMenuContextHandler.OnMenuCreate()
-	{
-		int num;
-		if (Campaign.Current.GameMode != CampaignGameMode.Tutorial)
-		{
-			num = ((CurGameMenu.StringId == "siege_test_menu") ? 1 : 0);
-			if (num == 0)
-			{
-				goto IL_0041;
-			}
-		}
-		else
-		{
-			num = 1;
-		}
-		if (_currentMenuBackground == null)
-		{
-			_currentMenuBackground = AddMenuView<MenuBackgroundView>(Array.Empty<object>());
-		}
-		goto IL_0041;
-		IL_0041:
-		if (_currentMenuBase == null)
-		{
-			_currentMenuBase = AddMenuView<MenuBaseView>(Array.Empty<object>());
-		}
-		if (num == 0)
-		{
-			CheckAndInitializeOverlay();
-		}
-		StopAllSounds();
-	}
-
-	void IMenuContextHandler.OnMenuActivate()
-	{
-		foreach (MenuView menuView in MenuViews)
-		{
-			menuView.OnActivate();
-		}
-	}
-
 	public void OnMapConversationActivated()
 	{
 		for (int i = 0; i < MenuViews.Count; i++)
@@ -378,6 +329,85 @@ public class MenuViewContext : IMenuContextHandler
 		}
 	}
 
+	public void CloseTownManagement()
+	{
+		RemoveMenuView(_menuTownManagement);
+		_menuTownManagement = null;
+	}
+
+	public void CloseRecruitVolunteers()
+	{
+		RemoveMenuView(_menuRecruitVolunteers);
+		_menuRecruitVolunteers = null;
+	}
+
+	public void CloseTournamentLeaderboard()
+	{
+		RemoveMenuView(_menuTournamentLeaderboard);
+		_menuTournamentLeaderboard = null;
+	}
+
+	public void CloseTroopSelection()
+	{
+		RemoveMenuView(_menuTroopSelection);
+		_menuTroopSelection = null;
+	}
+
+	protected virtual MenuView CreateTroopSelectionView(TroopRoster fullRoster, TroopRoster initialSelections, List<Ship> eligibleShips, Func<CharacterObject, bool> canChangeStatusOfTroop, Action<TroopRoster> onDone, int maxSelectableTroopCount, int minSelectableTroopCount, bool isNavalRaid)
+	{
+		return AddMenuView<MenuTroopSelectionView>(new object[6] { fullRoster, initialSelections, canChangeStatusOfTroop, onDone, maxSelectableTroopCount, minSelectableTroopCount });
+	}
+
+	void IMenuContextHandler.OnAmbientSoundIDSet(string ambientSoundID)
+	{
+		PlayAmbientSound(ambientSoundID);
+	}
+
+	void IMenuContextHandler.OnPanelSoundIDSet(string panelSoundID)
+	{
+		PlayPanelSound(panelSoundID);
+	}
+
+	void IMenuContextHandler.OnMenuCreate()
+	{
+		int num;
+		if (Campaign.Current.GameMode != CampaignGameMode.Tutorial)
+		{
+			num = ((CurGameMenu.StringId == "siege_test_menu") ? 1 : 0);
+			if (num == 0)
+			{
+				goto IL_0041;
+			}
+		}
+		else
+		{
+			num = 1;
+		}
+		if (_currentMenuBackground == null)
+		{
+			_currentMenuBackground = AddMenuView<MenuBackgroundView>(Array.Empty<object>());
+		}
+		goto IL_0041;
+		IL_0041:
+		if (_currentMenuBase == null)
+		{
+			_currentMenuBase = AddMenuView<MenuBaseView>(Array.Empty<object>());
+		}
+		if (num == 0)
+		{
+			CheckAndInitializeOverlay();
+		}
+		StopAllSounds();
+	}
+
+	void IMenuContextHandler.OnMenuActivate()
+	{
+		foreach (MenuView menuView in MenuViews)
+		{
+			menuView.OnActivate();
+		}
+	}
+
 	void IMenuContextHandler.OnBackgroundMeshNameSet(string name)
 	{
 		foreach (MenuView menuView in MenuViews)
@@ -394,24 +424,12 @@ public class MenuViewContext : IMenuContextHandler
 		}
 	}
 
-	public void CloseTownManagement()
-	{
-		RemoveMenuView(_menuTownManagement);
-		_menuTownManagement = null;
-	}
-
 	void IMenuContextHandler.OnOpenRecruitVolunteers()
 	{
 		if (_menuRecruitVolunteers == null)
 		{
 			_menuRecruitVolunteers = AddMenuView<MenuRecruitVolunteersView>(Array.Empty<object>());
 		}
-	}
-
-	public void CloseRecruitVolunteers()
-	{
-		RemoveMenuView(_menuRecruitVolunteers);
-		_menuRecruitVolunteers = null;
 	}
 
 	void IMenuContextHandler.OnOpenTournamentLeaderboard()
@@ -422,24 +440,12 @@ public class MenuViewContext : IMenuContextHandler
 		}
 	}
 
-	public void CloseTournamentLeaderboard()
-	{
-		RemoveMenuView(_menuTournamentLeaderboard);
-		_menuTournamentLeaderboard = null;
-	}
-
-	void IMenuContextHandler.OnOpenTroopSelection(TroopRoster fullRoster, TroopRoster initialSelections, Func<CharacterObject, bool> canChangeStatusOfTroop, Action<TroopRoster> onDone, int maxSelectableTroopCount, int minSelectableTroopCount)
+	void IMenuContextHandler.OnOpenTroopSelection(TroopRoster fullRoster, TroopRoster initialSelections, List<Ship> eligibleShips, Func<CharacterObject, bool> canChangeStatusOfTroop, Action<TroopRoster> onDone, int maxSelectableTroopCount, int minSelectableTroopCount, bool isNavalRaid)
 	{
 		if (_menuTroopSelection == null)
 		{
-			_menuTroopSelection = AddMenuView<MenuTroopSelectionView>(new object[6] { fullRoster, initialSelections, canChangeStatusOfTroop, onDone, maxSelectableTroopCount, minSelectableTroopCount });
+			_menuTroopSelection = CreateTroopSelectionView(fullRoster, initialSelections, eligibleShips, canChangeStatusOfTroop, onDone, maxSelectableTroopCount, minSelectableTroopCount, isNavalRaid);
 		}
-	}
-
-	public void CloseTroopSelection()
-	{
-		RemoveMenuView(_menuTroopSelection);
-		_menuTroopSelection = null;
 	}
 
 	void IMenuContextHandler.OnMenuRefresh()

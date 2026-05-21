@@ -134,7 +134,10 @@ public abstract class NavigationCache<T> where T : ISettlementDataHolder
 		{
 			Debug.FailedAssert("Element already exists", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Map\\DistanceCache\\NavigationCache.cs", "SetSettlementToSettlementDistanceWithLandRatio", 215);
 		}
-		value.Add(settlement2, (distance, landRatio));
+		else
+		{
+			value.Add(settlement2, (distance, landRatio));
+		}
 		if (distance < 100000000f && distance > MaximumDistanceBetweenTwoConnectedSettlements)
 		{
 			MaximumDistanceBetweenTwoConnectedSettlements = distance;
@@ -203,47 +206,52 @@ public abstract class NavigationCache<T> where T : ISettlementDataHolder
 	{
 		float num = 0f;
 		float num2 = 0f;
-		List<Vec2> list = new List<Vec2>(path.PathPoints);
-		list.Insert(0, startPosition);
-		for (int i = 0; i < list.Count - 1; i++)
+		if (path.Size > 1)
 		{
-			Vec2 vec = list[i];
-			Vec2 vec2 = list[i + 1];
-			if (vec2 == Vec2.Zero)
+			List<Vec2> list = new List<Vec2>(path.PathPoints);
+			list.Insert(0, startPosition);
+			for (int i = 0; i < list.Count - 1; i++)
 			{
-				break;
-			}
-			Vec2 vec3 = vec2 - vec;
-			float num3 = vec3.Length / 0.5f;
-			vec3.Normalize();
-			for (int j = 0; (float)j < num3 - 1f; j++)
-			{
-				Vec2 position = vec + vec3 * j * 0.5f;
-				Vec2 vec4 = vec + vec3 * (j + 1) * 0.5f;
-				GetFaceRecordForPoint(position, out var isOnRegion);
-				GetFaceRecordForPoint(vec4, out var isOnRegion2);
-				float num4 = position.Distance(vec4);
-				if (isOnRegion2 && isOnRegion)
+				Vec2 vec = list[i];
+				Vec2 vec2 = list[i + 1];
+				if (vec2 == Vec2.Zero)
 				{
-					num += num4;
+					break;
 				}
-				else if (isOnRegion2 != isOnRegion)
+				Vec2 vec3 = vec2 - vec;
+				float num3 = vec3.Length / 0.5f;
+				vec3.Normalize();
+				for (int j = 0; (float)j < num3 - 1f; j++)
 				{
-					num += num4 / 2f;
+					Vec2 position = vec + vec3 * j * 0.5f;
+					Vec2 vec4 = vec + vec3 * (j + 1) * 0.5f;
+					GetFaceRecordForPoint(position, out var isOnRegion);
+					GetFaceRecordForPoint(vec4, out var isOnRegion2);
+					float num4 = position.Distance(vec4);
+					if (isOnRegion2 && isOnRegion)
+					{
+						num += num4;
+					}
+					else if (isOnRegion2 != isOnRegion)
+					{
+						num += num4 / 2f;
+					}
+					num2 += num4;
 				}
-				num2 += num4;
 			}
+			return MBMath.ClampFloat(num / num2, 0f, 1f);
 		}
-		if (list.Count == 1)
+		GetFaceRecordForPoint(startPosition, out var isOnRegion3);
+		GetFaceRecordForPoint(path[0], out var isOnRegion4);
+		if (isOnRegion4 == isOnRegion3)
 		{
-			GetFaceRecordForPoint(list[0], out var isOnRegion3);
-			if (isOnRegion3)
+			if (isOnRegion4)
 			{
 				return 1f;
 			}
 			return 0f;
 		}
-		return MBMath.ClampFloat(num / num2, 0f, 1f);
+		return 0.5f;
 	}
 
 	protected abstract void GetFaceRecordForPoint(Vec2 position, out bool isOnRegion1);
@@ -284,7 +292,7 @@ public abstract class NavigationCache<T> where T : ISettlementDataHolder
 		{
 			Debug.Print($"Settlement to settlement cache creation index {i},    total count: {allRegisteredSettlements.Count}     {_navigationType}");
 			T settlement = allRegisteredSettlements[i];
-			for (int j = i + 1; j < allRegisteredSettlements.Count; j++)
+			for (int j = ((_navigationType == MobileParty.NavigationType.All) ? i : (i + 1)); j < allRegisteredSettlements.Count; j++)
 			{
 				T settlement2 = allRegisteredSettlements[j];
 				if (_navigationType == MobileParty.NavigationType.Default)

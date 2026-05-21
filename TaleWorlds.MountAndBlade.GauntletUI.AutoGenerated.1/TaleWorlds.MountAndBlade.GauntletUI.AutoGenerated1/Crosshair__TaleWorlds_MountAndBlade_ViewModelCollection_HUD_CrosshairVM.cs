@@ -192,7 +192,7 @@ public class Crosshair__TaleWorlds_MountAndBlade_ViewModelCollection_HUD_Crossha
 		_widget_1.PositionXOffset = 80f;
 		_widget_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
+		_widget_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
 		_widget_2.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_2.SuggestedWidth = 31f;

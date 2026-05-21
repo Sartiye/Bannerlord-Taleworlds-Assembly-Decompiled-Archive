@@ -101,6 +101,7 @@ public class GameMenuItemProgressVM : ViewModel
 		case TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuAndOptionType.WaitMenuShowProgressAndHoursOption:
 		{
 			float virtualMenuTargetWaitHours = Campaign.Current.GameMenuManager.GetVirtualMenuTargetWaitHours(_context);
+			virtualMenuTargetWaitHours = MathF.Round(virtualMenuTargetWaitHours);
 			if (virtualMenuTargetWaitHours > 1f)
 			{
 				GameTexts.SetVariable("PLURAL_HOURS", 1);
@@ -109,12 +110,12 @@ public class GameMenuItemProgressVM : ViewModel
 			{
 				GameTexts.SetVariable("PLURAL_HOURS", 0);
 			}
-			GameTexts.SetVariable("HOUR", MathF.Round(virtualMenuTargetWaitHours).ToString("0.0"));
+			GameTexts.SetVariable("HOUR", virtualMenuTargetWaitHours.ToString());
 			ProgressText = GameTexts.FindText("str_hours").ToString();
 			break;
 		}
 		default:
-			Debug.FailedAssert("Shouldn't create game menu progress for normal options", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\GameMenuItemProgressVM.cs", "Refresh", 68);
+			Debug.FailedAssert("Shouldn't create game menu progress for normal options", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\GameMenuItemProgressVM.cs", "Refresh", 69);
 			return;
 		}
 		bool virtualMenuIsWaitActive = Campaign.Current.GameMenuManager.GetVirtualMenuIsWaitActive(_context);

@@ -143,7 +143,7 @@ public class MultiplayerPollingProgress__TaleWorlds_MountAndBlade_Multiplayer_Vi
 		_widget_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.SuggestedWidth = 250f;
 		_widget_0.PositionXOffset = -400f;
-		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0.ExtendTop = 15f;
@@ -152,7 +152,7 @@ public class MultiplayerPollingProgress__TaleWorlds_MountAndBlade_Multiplayer_Vi
 		_widget_0_0.Sprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
 		_widget_0_0.Color = new Color(0f, 0f, 0f);
 		_widget_0_0.AlphaFactor = 0.9f;
-		_widget_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0.SuggestedWidth = 230f;
@@ -172,7 +172,7 @@ public class MultiplayerPollingProgress__TaleWorlds_MountAndBlade_Multiplayer_Vi
 		_widget_0_0_2.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0_0_2_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_2_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_2_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_2_0_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_2_0_0.SuggestedWidth = 60f;
@@ -213,7 +213,7 @@ public class MultiplayerPollingProgress__TaleWorlds_MountAndBlade_Multiplayer_Vi
 		_widget_0_0_4_1_0.MarginLeft = 20f;
 		_widget_0_0_4_1_0.MarginRight = 20f;
 		_widget_0_0_4_1_0.MarginTop = 10f;
-		_widget_0_0_4_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_4_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_4_1_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_4_1_0_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_4_1_0_0.SuggestedWidth = 18f;
@@ -233,7 +233,7 @@ public class MultiplayerPollingProgress__TaleWorlds_MountAndBlade_Multiplayer_Vi
 		_widget_0_0_4_1_1.MarginLeft = 20f;
 		_widget_0_0_4_1_1.MarginRight = 20f;
 		_widget_0_0_4_1_1.MarginTop = 10f;
-		_widget_0_0_4_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_4_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_4_1_1_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_4_1_1_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_4_1_1_0.SuggestedWidth = 18f;

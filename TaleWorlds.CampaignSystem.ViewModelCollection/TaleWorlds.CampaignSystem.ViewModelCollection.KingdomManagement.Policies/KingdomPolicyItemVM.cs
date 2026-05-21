@@ -1,5 +1,4 @@
 using System;
-using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Generic;
 using TaleWorlds.Core.ViewModelCollection.Information;
@@ -188,14 +187,6 @@ public class KingdomPolicyItemVM : KingdomItemVM
 		base.RefreshValues();
 		Func<PolicyObject, bool> getIsPolicyActive = _getIsPolicyActive;
 		PolicyAcceptanceText = ((getIsPolicyActive != null && getIsPolicyActive(Policy)) ? GameTexts.FindText("str_policy_support_for_abolishing").ToString() : GameTexts.FindText("str_policy_support_for_enacting").ToString());
-	}
-
-	private void DeterminePolicyLikelihood()
-	{
-		float likelihoodForSponsor = new KingdomElection(new KingdomPolicyDecision(Clan.PlayerClan, _policy)).GetLikelihoodForSponsor(Clan.PlayerClan);
-		PolicyLikelihood = TaleWorlds.Library.MathF.Round(likelihoodForSponsor * 100f);
-		GameTexts.SetVariable("NUMBER", PolicyLikelihood);
-		PolicyLikelihoodText = GameTexts.FindText("str_NUMBER_percent").ToString();
 	}
 
 	protected override void OnSelect()

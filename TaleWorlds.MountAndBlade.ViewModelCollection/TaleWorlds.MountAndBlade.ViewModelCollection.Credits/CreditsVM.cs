@@ -71,7 +71,7 @@ public class CreditsVM : ViewModel
 	public CreditsVM()
 	{
 		ExitKey = InputKeyItemVM.CreateFromHotKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Exit"), isConsoleOnly: false);
-		ExitText = new TextObject("{=3CsACce8}Exit").ToString();
+		ExitText = new TextObject("{=exitMenuOption}Exit").ToString();
 	}
 
 	private static CreditsItemVM CreateFromFile(string path)

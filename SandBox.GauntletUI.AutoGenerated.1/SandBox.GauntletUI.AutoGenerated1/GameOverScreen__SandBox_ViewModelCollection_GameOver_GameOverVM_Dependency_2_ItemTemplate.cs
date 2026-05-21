@@ -92,7 +92,7 @@ public class GameOverScreen__SandBox_ViewModelCollection_GameOver_GameOverVM_Dep
 	{
 		base.HeightSizePolicy = SizePolicy.StretchToParent;
 		base.WidthSizePolicy = SizePolicy.StretchToParent;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0.Brush = base.Context.GetBrush("GameOver.Stat.Category.Title.Text");
@@ -119,7 +119,7 @@ public class GameOverScreen__SandBox_ViewModelCollection_GameOver_GameOverVM_Dep
 		_widget_1_0_0_0.MarginRight = 15f;
 		_widget_1_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_1_0.HeightSizePolicy = SizePolicy.StretchToParent;

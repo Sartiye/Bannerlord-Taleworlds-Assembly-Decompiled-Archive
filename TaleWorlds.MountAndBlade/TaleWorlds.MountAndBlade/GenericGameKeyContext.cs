@@ -29,7 +29,7 @@ public sealed class GenericGameKeyContext : GameKeyContext
 	public static GenericGameKeyContext Current { get; private set; }
 
 	public GenericGameKeyContext()
-		: base("Generic", 110)
+		: base("Generic", 116)
 	{
 		Current = this;
 		RegisterHotKeys();

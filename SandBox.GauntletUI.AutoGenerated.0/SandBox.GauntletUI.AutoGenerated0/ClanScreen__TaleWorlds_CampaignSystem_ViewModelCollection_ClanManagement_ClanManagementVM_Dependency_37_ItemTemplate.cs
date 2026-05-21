@@ -50,7 +50,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		base.SuggestedHeight = 47f;
 		base.MarginTop = 5f;
 		base.MarginBottom = 5f;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		base.UpdateChildrenStates = true;
 		_widget_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0.HeightSizePolicy = SizePolicy.CoverChildren;

@@ -85,6 +85,36 @@ public class TextObject
 	{
 	}
 
+	public int GetDepth(int maxDepth)
+	{
+		int depth = 0;
+		return GetDepthInternal(this, depth, maxDepth);
+	}
+
+	private static int GetDepthInternal(TextObject t, int depth, int maxDepth)
+	{
+		if (t.Attributes == null || !t.Attributes.Any())
+		{
+			return depth;
+		}
+		if (depth >= maxDepth)
+		{
+			return maxDepth;
+		}
+		foreach (string key in t.Attributes.Keys)
+		{
+			if (t.Attributes[key] is TextObject textObject && t != textObject)
+			{
+				int depthInternal = GetDepthInternal(textObject, ++depth, maxDepth);
+				if (depthInternal > depth)
+				{
+					depth = depthInternal;
+				}
+			}
+		}
+		return depth;
+	}
+
 	internal List<MBTextToken> GetCachedTokens()
 	{
 		if (Value != null)

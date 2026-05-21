@@ -1,14 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TaleWorlds.Core;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace TaleWorlds.MountAndBlade.ViewModelCollection.GameOptions.AuxiliaryKeys;
 
 public class AuxiliaryKeyGroupVM : ViewModel
 {
 	private readonly Action<KeyOptionVM> _onKeybindRequest;
+
+	private readonly Func<KeyOptionVM, string> _getExtraInformation;
 
 	private readonly string _categoryId;
 
@@ -52,9 +56,10 @@ public class AuxiliaryKeyGroupVM : ViewModel
 		}
 	}
 
-	public AuxiliaryKeyGroupVM(string categoryId, IEnumerable<HotKey> keys, Action<KeyOptionVM> onKeybindRequest)
+	public AuxiliaryKeyGroupVM(string categoryId, IEnumerable<HotKey> keys, Action<KeyOptionVM> onKeybindRequest, Func<KeyOptionVM, string> getExtraInformation)
 	{
 		_onKeybindRequest = onKeybindRequest;
+		_getExtraInformation = getExtraInformation;
 		_categoryId = categoryId;
 		_hotKeys = new MBBindingList<AuxiliaryKeyOptionVM>();
 		_keys = keys;
@@ -86,7 +91,7 @@ public class AuxiliaryKeyGroupVM : ViewModel
 			}
 			if (num)
 			{
-				HotKeys.Add(new AuxiliaryKeyOptionVM(key, _onKeybindRequest, SetHotKey));
+				HotKeys.Add(new AuxiliaryKeyOptionVM(key, _onKeybindRequest, SetHotKey, _getExtraInformation));
 			}
 		}
 	}
@@ -108,8 +113,19 @@ public class AuxiliaryKeyGroupVM : ViewModel
 
 	private void SetHotKey(AuxiliaryKeyOptionVM option, InputKey newKey)
 	{
-		option.CurrentKey.ChangeKey(newKey);
-		option.OptionValueText = Module.CurrentModule.GlobalTextManager.FindText("str_game_key_text", option.CurrentKey.ToString().ToLower()).ToString();
+		InputKey inputKey = option.CurrentKey.InputKey;
+		if (newKey != inputKey)
+		{
+			option.CurrentKey.ChangeKey(newKey);
+			option.OptionValueText = Module.CurrentModule.GlobalTextManager.GetHotKeyGameTextFromKeyID(option.CurrentKey.ToString().ToLower()).ToString();
+			option.UpdateIsChanged();
+			AuxiliaryKeyOptionVM auxiliaryKeyOptionVM = HotKeys.FirstOrDefault((AuxiliaryKeyOptionVM k) => k != option && k.CurrentKey.InputKey == option.CurrentKey.InputKey && k.CurrentHotKey.HasSameModifiers(option.CurrentHotKey));
+			auxiliaryKeyOptionVM?.Set(inputKey);
+			if (auxiliaryKeyOptionVM != null)
+			{
+				MBInformationManager.AddQuickInformation(new TextObject("{=gb2S2aRq}Swapped {FIRST_KEY} and {SECOND_KEY}").SetTextVariable("FIRST_KEY", option.Name).SetTextVariable("SECOND_KEY", auxiliaryKeyOptionVM.Name), -1000);
+			}
+		}
 	}
 
 	internal void Update()
@@ -132,7 +148,7 @@ public class AuxiliaryKeyGroupVM : ViewModel
 	{
 		for (int i = 0; i < HotKeys.Count; i++)
 		{
-			if (HotKeys[i].IsChanged())
+			if (HotKeys[i].IsChanged)
 			{
 				return true;
 			}

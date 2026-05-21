@@ -41,6 +41,8 @@ public class CustomBattleAgentOrigin : IAgentOriginBase
 
 	public bool IsUnderPlayersCommand => _isPlayerSide;
 
+	public bool IsInSameArmyAsPlayer => _isPlayerSide;
+
 	public uint FactionColor => CustomBattleCombatant.BasicCulture.Color;
 
 	public uint FactionColor2 => CustomBattleCombatant.BasicCulture.Color2;

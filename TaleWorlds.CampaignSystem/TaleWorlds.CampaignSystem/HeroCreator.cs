@@ -257,7 +257,7 @@ public static class HeroCreator
 
 	public static Hero DeliverOffSpring(Hero mother, Hero father, bool isOffspringFemale)
 	{
-		Debug.SilentAssert(mother.CharacterObject.Race == father.CharacterObject.Race, "", getDump: false, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\HeroCreator.cs", "DeliverOffSpring", 275);
+		Debug.SilentAssert(mother.CharacterObject.Race == father.CharacterObject.Race, "", getDump: false, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\HeroCreator.cs", "DeliverOffSpring", 272);
 		CharacterObject characterTemplateForOffspring = Campaign.Current.Models.HeroCreationModel.GetCharacterTemplateForOffspring(mother, father, isOffspringFemale);
 		(CampaignTime birthDay, CampaignTime deathDay) birthAndDeathDay = Campaign.Current.Models.HeroCreationModel.GetBirthAndDeathDay(characterTemplateForOffspring, createAlive: true, 0);
 		CampaignTime item = birthAndDeathDay.birthDay;

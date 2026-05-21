@@ -11,7 +11,7 @@ public sealed class PollHotkeyCategory : GameKeyContext
 	public const int DeclinePoll = 109;
 
 	public PollHotkeyCategory()
-		: base("PollHotkeyCategory", 110)
+		: base("PollHotkeyCategory", 116)
 	{
 		RegisterGameKeys();
 	}

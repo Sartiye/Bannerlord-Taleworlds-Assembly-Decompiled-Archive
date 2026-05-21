@@ -338,7 +338,7 @@ public class GauntletPartyScreen : ScreenBase, IGameStateListener, IChangeableSc
 		}
 		else
 		{
-			_dataSource.ExecuteCancel();
+			_dataSource.ExecuteCancel(showCancelInquiry: true);
 		}
 		UISoundsHelper.PlayUISound("event:/ui/default");
 	}

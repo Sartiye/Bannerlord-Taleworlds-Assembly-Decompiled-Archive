@@ -58,7 +58,7 @@ public class GameMenuVM : ViewModel
 
 	private GameMenuManager _gameMenuManager;
 
-	private Dictionary<GameMenuOption.LeaveType, GameKey> _shortcutKeys;
+	private GameKey _leaveKey;
 
 	private Dictionary<string, string> _menuTextAttributeStrings;
 
@@ -309,7 +309,6 @@ public class GameMenuVM : ViewModel
 	public GameMenuVM(MenuContext menuContext)
 	{
 		_gameMenuManager = Campaign.Current.GameMenuManager;
-		_shortcutKeys = new Dictionary<GameMenuOption.LeaveType, GameKey>();
 		_gameMenuItemPool = new GameMenuItemPool<GameMenuItemVM>(10);
 		_progressItemPool = new GameMenuItemPool<GameMenuItemProgressVM>(10);
 		_newOptionsCache = new List<GameMenuItemVM.GameMenuItemCreationData>();
@@ -388,7 +387,7 @@ public class GameMenuVM : ViewModel
 					TextObject tooltip = virtualMenuOptionTooltip;
 					TaleWorlds.CampaignSystem.GameMenus.GameMenu.MenuAndOptionType virtualMenuAndOptionType = _gameMenuManager.GetVirtualMenuAndOptionType(MenuContext);
 					GameMenuOption virtualGameMenuOption = _gameMenuManager.GetVirtualGameMenuOption(MenuContext, i);
-					GameKey shortcutKey = (_shortcutKeys.ContainsKey(virtualGameMenuOption.OptionLeaveType) ? _shortcutKeys[virtualGameMenuOption.OptionLeaveType] : null);
+					GameKey shortcutKey = ((_gameMenuManager.GetLeaveMenuOption(MenuContext) == virtualGameMenuOption) ? _leaveKey : null);
 					GameMenuOption.IssueQuestFlags optionQuestData = virtualGameMenuOption.OptionQuestData;
 					GameMenuItemVM.GameMenuItemCreationData item = new GameMenuItemVM.GameMenuItemCreationData(MenuContext, i, textObject3, textObject4.IsEmpty() ? textObject3 : textObject4, tooltip, virtualMenuAndOptionType, optionQuestData, virtualGameMenuOption, shortcutKey);
 					_newOptionsCache.Add(item);
@@ -568,16 +567,9 @@ public class GameMenuVM : ViewModel
 		ItemList = null;
 	}
 
-	public void AddHotKey(GameMenuOption.LeaveType leaveType, GameKey gameKey)
+	public void SetLeaveHotKey(GameKey gameKey)
 	{
-		if (_shortcutKeys.ContainsKey(leaveType))
-		{
-			_shortcutKeys[leaveType] = gameKey;
-		}
-		else
-		{
-			_shortcutKeys.Add(leaveType, gameKey);
-		}
+		_leaveKey = gameKey;
 	}
 
 	private void OnItemsPlundered(MobileParty mobileParty, ItemRoster newItems)

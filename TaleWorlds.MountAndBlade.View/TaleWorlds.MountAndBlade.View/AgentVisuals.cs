@@ -244,7 +244,7 @@ public class AgentVisuals : IAgentVisual
 		}
 		if (!num2 || !flag2)
 		{
-			_data.AgentVisuals.ClearVisualComponents(removeSkeleton: false);
+			_data.AgentVisuals.ClearVisualComponents(removeSkeleton: false, removeLabel: false);
 			if (_data.ActionSetData.IsValid && text != "facegen_teeth")
 			{
 				AnimationSystemData animationSystemData = _data.MonsterData.FillAnimationSystemData(_data.ActionSetData, 1f, _data.HasClippingPlaneData);
@@ -259,7 +259,12 @@ public class AgentVisuals : IAgentVisual
 			}
 			else if (!string.IsNullOrEmpty(_data.MountCreationKeyData) || !flag)
 			{
-				MountVisualCreator.AddMountMeshToEntity(GetEntity(), _data.EquipmentData[EquipmentIndex.ArmorItemEndSlot].Item, _data.EquipmentData[EquipmentIndex.HorseHarness].Item, _data.MountCreationKeyData);
+				MountVisualCreator.AddMountMeshToEntity(GetEntity(), _data.EquipmentData[EquipmentIndex.ArmorItemEndSlot].Item, _data.EquipmentData[EquipmentIndex.HorseHarness].Item, _data.MountCreationKeyData, out var mountVisualCreationOutput);
+				ItemObject item = _data.EquipmentData[EquipmentIndex.HorseHarness].Item;
+				if (item != null && item.IsUsingTeamColor && mountVisualCreationOutput.MountHarnessMesh != null)
+				{
+					AddTeamColorToMesh(mountVisualCreationOutput.MountHarnessMesh, _data.ClothColor1Data, _data.ClothColor2Data);
+				}
 			}
 			else
 			{
@@ -428,9 +433,9 @@ public class AgentVisuals : IAgentVisual
 				if (itemObject != null)
 				{
 					bool isFemale = _data.BodyPropertiesData.Age >= 14f && _data.SkeletonTypeData == SkeletonType.Female;
-					bool hasGloves = equipmentIndex == EquipmentIndex.Body && _data.EquipmentData[EquipmentIndex.Gloves].Item != null;
+					bool useSlimVersion = equipmentIndex == EquipmentIndex.Body && _data.EquipmentData[EquipmentIndex.Gloves].Item != null && !_data.EquipmentData[EquipmentIndex.Gloves].Item.ArmorComponent.IsNoSlim;
 					MetaMesh metaMesh = null;
-					metaMesh = _data.EquipmentData[(int)equipmentIndex].GetMultiMesh(isFemale, hasGloves, needBatchedVersion: true);
+					metaMesh = _data.EquipmentData[(int)equipmentIndex].GetMultiMesh(isFemale, useSlimVersion, needBatchedVersion: true);
 					if (metaMesh != null)
 					{
 						if (_data.AddColorRandomnessData)
@@ -463,19 +468,7 @@ public class AgentVisuals : IAgentVisual
 						}
 						else if (itemObject.IsUsingTeamColor)
 						{
-							for (int j = 0; j < metaMesh.MeshCount; j++)
-							{
-								Mesh meshAtIndex = metaMesh.GetMeshAtIndex(j);
-								if (!meshAtIndex.HasTag("no_team_color"))
-								{
-									meshAtIndex.Color = color3;
-									meshAtIndex.Color2 = color4;
-									Material material = meshAtIndex.GetMaterial().CreateCopy();
-									material.AddMaterialShaderFlag("use_double_colormap_with_mask_texture", showErrors: false);
-									meshAtIndex.SetMaterial(material);
-								}
-								meshAtIndex.ManualInvalidate();
-							}
+							AddTeamColorToMesh(metaMesh, color3, color4);
 						}
 						if (itemObject.UsingFacegenScaling)
 						{
@@ -592,6 +585,23 @@ public class AgentVisuals : IAgentVisual
 			_data.AgentVisuals.SetWieldedWeaponIndices(_data.RightWieldedItemIndexData, _data.LeftWieldedItemIndexData);
 		}
 		return flag;
+	}
+
+	public static void AddTeamColorToMesh(MetaMesh metaMesh, uint color1, uint color2)
+	{
+		for (int i = 0; i < metaMesh.MeshCount; i++)
+		{
+			Mesh meshAtIndex = metaMesh.GetMeshAtIndex(i);
+			if (!meshAtIndex.HasTag("no_team_color"))
+			{
+				meshAtIndex.Color = color1;
+				meshAtIndex.Color2 = color2;
+				Material material = meshAtIndex.GetMaterial().CreateCopy();
+				material.AddMaterialShaderFlag("use_double_colormap_with_mask_texture", showErrors: false);
+				meshAtIndex.SetMaterial(material);
+			}
+			meshAtIndex.ManualInvalidate();
+		}
 	}
 
 	public void SetClothingColors(uint color1, uint color2)

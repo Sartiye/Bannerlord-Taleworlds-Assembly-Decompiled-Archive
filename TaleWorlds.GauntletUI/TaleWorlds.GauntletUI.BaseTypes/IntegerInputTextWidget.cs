@@ -16,6 +16,8 @@ public class IntegerInputTextWidget : EditableTextWidget
 
 	public bool EnableClamp { get; set; }
 
+	public bool UpdateValueOnDone { get; set; }
+
 	[Editor(false)]
 	public int IntText
 	{
@@ -179,6 +181,10 @@ public class IntegerInputTextWidget : EditableTextWidget
 		}
 		if (Input.IsKeyReleased(InputKey.Enter) || Input.IsKeyReleased(InputKey.NumpadEnter))
 		{
+			if (int.TryParse(base.RealText, out var result))
+			{
+				ForceSetInteger(result);
+			}
 			EventFired("TextEntered");
 		}
 		else if (_keyboardAction == KeyboardAction.BackSpace || _keyboardAction == KeyboardAction.Delete)
@@ -301,6 +307,19 @@ public class IntegerInputTextWidget : EditableTextWidget
 
 	private void SetInteger(int newInteger)
 	{
+		if (UpdateValueOnDone)
+		{
+			base.RealText = newInteger.ToString();
+			base.Text = newInteger.ToString();
+		}
+		else
+		{
+			ForceSetInteger(newInteger);
+		}
+	}
+
+	private void ForceSetInteger(int newInteger)
+	{
 		if (EnableClamp && (newInteger > MaxInt || newInteger < MinInt))
 		{
 			newInteger = ((newInteger > MaxInt) ? MaxInt : MinInt);
@@ -311,6 +330,15 @@ public class IntegerInputTextWidget : EditableTextWidget
 		{
 			base.RealText = IntText.ToString();
 			base.Text = IntText.ToString();
+		}
+	}
+
+	protected override void OnUpdate(float dt)
+	{
+		base.OnUpdate(dt);
+		if (!base.IsFocused && int.TryParse(base.RealText, out var result))
+		{
+			ForceSetInteger(result);
 		}
 	}
 

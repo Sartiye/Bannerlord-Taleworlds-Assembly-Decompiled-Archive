@@ -54,7 +54,7 @@ public class MultiplayerServerStatus__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_widget_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.MarginTop = 300f;
 		_widget_0.MarginLeft = 50f;
-		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_0.SuggestedWidth = 47f;

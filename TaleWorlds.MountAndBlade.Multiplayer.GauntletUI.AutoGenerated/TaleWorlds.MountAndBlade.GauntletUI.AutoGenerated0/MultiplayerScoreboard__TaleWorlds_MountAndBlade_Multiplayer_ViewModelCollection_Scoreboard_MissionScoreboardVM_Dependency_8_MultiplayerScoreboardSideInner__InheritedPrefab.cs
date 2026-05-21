@@ -84,7 +84,7 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		_widget_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1.VerticalAlignment = VerticalAlignment.Top;
 		_widget_0_1.MarginTop = 10f;
-		_widget_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 	}
 
 	public virtual void DestroyDataSource()

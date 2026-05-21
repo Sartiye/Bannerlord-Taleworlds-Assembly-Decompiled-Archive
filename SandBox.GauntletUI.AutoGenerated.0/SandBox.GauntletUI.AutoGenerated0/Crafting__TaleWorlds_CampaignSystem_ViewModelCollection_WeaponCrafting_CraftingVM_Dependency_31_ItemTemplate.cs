@@ -179,12 +179,12 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_0_1.MarginBottom = 2f;
 		_widget_0_1.MarginLeft = 2f;
 		_widget_0_1.MarginRight = 2f;
-		_widget_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_1.UpdateChildrenStates = true;
 		_widget_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1_0.MarginTop = 7f;
-		_widget_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_1_0.UpdateChildrenStates = true;
 		_widget_0_1_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1_0_0.HeightSizePolicy = SizePolicy.Fixed;
@@ -207,7 +207,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_0_1_0_1_1.SuggestedWidth = 20f;
 		_widget_0_1_0_1_1.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_0_1_0_1_1.MarginRight = 30f;
-		_widget_0_1_0_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
+		_widget_0_1_0_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
 		_widget_0_1_0_1_1_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_1_0_1_1_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_1_0_1_1_0.SuggestedWidth = 8f;
@@ -290,7 +290,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_0_1_1_0_1.UpdateChildrenStates = true;
 		_widget_0_1_1_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1_1_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_1_1_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
+		_widget_0_1_1_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
 		_widget_0_2.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_0.WidthSizePolicy = SizePolicy.StretchToParent;

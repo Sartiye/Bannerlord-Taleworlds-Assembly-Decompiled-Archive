@@ -3,12 +3,10 @@ using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Map;
-using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Library;
-using TaleWorlds.LinQuick;
 
 namespace TaleWorlds.CampaignSystem.GameComponents;
 
@@ -36,23 +34,19 @@ public class DefaultTargetScoreCalculatingModel : TargetScoreCalculatingModel
 
 	public override float DefendingFactor => 2f;
 
-	public override float GetPatrollingFactor(bool isNavalPatrolling)
+	public override float GetDefensivePatrollingFactor(bool isNavalPatrolling)
 	{
-		float num = 0.66f;
-		if (!isNavalPatrolling)
-		{
-			return num;
-		}
-		return num * 0.66f;
+		return 0.66f;
 	}
 
-	public override float CalculatePatrollingScoreForSettlement(Settlement settlement, bool isFromPort, MobileParty mobileParty)
+	public override float GetOffensivePatrollingFactor(bool isNavalPatrolling)
 	{
-		if (isFromPort)
-		{
-			return CalculateNavalPatrollingScoreForSettlement(settlement, mobileParty);
-		}
-		return CalculateLandPatrollingScoreForSettlement(settlement, mobileParty);
+		return 0f;
+	}
+
+	public override float CalculateOffensivePatrollingScoreForSettlement(Settlement settlement, bool isTargetingPort, MobileParty mobileParty)
+	{
+		return 0f;
 	}
 
 	public override float CurrentObjectiveValue(MobileParty mobileParty)
@@ -83,24 +77,7 @@ public class DefaultTargetScoreCalculatingModel : TargetScoreCalculatingModel
 		return result;
 	}
 
-	private float CalculateNavalPatrollingScoreForSettlement(Settlement settlement, MobileParty mobileParty)
-	{
-		if (!mobileParty.HasNavalNavigationCapability || !settlement.HasPort || settlement.MapFaction != mobileParty.MapFaction)
-		{
-			return 0f;
-		}
-		float num = ((mobileParty.Food / (0f - mobileParty.FoodChange) > 5f) ? 1f : 0.2f);
-		float num2 = ((settlement.OwnerClan == mobileParty.LeaderHero?.Clan) ? 1f : 0.5f);
-		bool flag = mobileParty.DefaultBehavior == AiBehavior.PatrolAroundPoint && !mobileParty.TargetPosition.IsOnLand;
-		bool flag2 = mobileParty.DefaultBehavior == AiBehavior.PatrolAroundPoint && mobileParty.TargetPosition.IsOnLand;
-		float num3 = ((flag && mobileParty.TargetSettlement == settlement) ? 1.35f : 1f);
-		float num4 = (3f + settlement.NearbyNavalThreatIntensity - settlement.NearbyNavalAllyIntensity * 1.5f) * (flag ? 1.5f : 1f);
-		float num5 = mobileParty.Ships.SumQ((Ship x) => x.HitPoints / x.MaxHitPoints) / (float)mobileParty.Ships.Count;
-		float num6 = (flag2 ? 0.5f : 1f);
-		return num3 * num2 * num4 * num5 * num6 * num * Campaign.Current.Models.TargetScoreCalculatingModel.GetPatrollingFactor(isNavalPatrolling: true);
-	}
-
-	private float CalculateLandPatrollingScoreForSettlement(Settlement settlement, MobileParty mobileParty)
+	public override float CalculateDefensivePatrollingScoreForSettlement(Settlement settlement, bool isTargetingPort, MobileParty mobileParty)
 	{
 		bool flag = mobileParty.Army != null && mobileParty.Army.LeaderParty == mobileParty && !mobileParty.Army.IsWaitingForArmyMembers();
 		if (mobileParty.Army != null && !flag && mobileParty.Army.Cohesion > (float)mobileParty.Army.CohesionThresholdForDispersion && mobileParty.AttachedTo != null)
@@ -139,9 +116,9 @@ public class DefaultTargetScoreCalculatingModel : TargetScoreCalculatingModel
 		{
 			num7 = settlement.RandomFloatWithSeed((uint)CampaignTime.Now.ToWeeks, 0.2f, 1.8f);
 		}
-		float num8 = ((mobileParty.DefaultBehavior == AiBehavior.PatrolAroundPoint && !mobileParty.TargetPosition.IsOnLand) ? 0.5f : 1f);
+		float num8 = ((mobileParty.DefaultBehavior == AiBehavior.PatrolAroundPoint && !mobileParty.TargetPosition.IsOnLand && mobileParty.TargetSettlement != null && !mobileParty.TargetSettlement.MapFaction.IsAtWarWith(mobileParty.MapFaction)) ? 0.5f : 1f);
 		float num9 = ((mobileParty.LeaderHero != null && settlement.OwnerClan == mobileParty.LeaderHero.Clan) ? 1f : 0.5f);
-		return num7 * num3 * num2 * num6 * num8 * num9 * Campaign.Current.Models.TargetScoreCalculatingModel.GetPatrollingFactor(isNavalPatrolling: false);
+		return num7 * num3 * num2 * num6 * num8 * num9 * Campaign.Current.Models.TargetScoreCalculatingModel.GetDefensivePatrollingFactor(isNavalPatrolling: false);
 	}
 
 	public override float GetTargetScoreForFaction(Settlement targetSettlement, Army.ArmyTypes missionType, MobileParty mobileParty, float ourStrength)
@@ -200,7 +177,7 @@ public class DefaultTargetScoreCalculatingModel : TargetScoreCalculatingModel
 			{
 				num *= 0.9f;
 			}
-			if (num5 > num4 * 1.75f)
+			if (num3 > num4 * 1.75f)
 			{
 				num *= 0.25f;
 			}
@@ -281,7 +258,7 @@ public class DefaultTargetScoreCalculatingModel : TargetScoreCalculatingModel
 							float num20 = float.MaxValue;
 							num20 = ((mobileParty4.CurrentSettlement == null) ? Campaign.Current.Models.MapDistanceModel.GetDistance(mobileParty4, targetSettlement, isTargetingPort: false, MobileParty.NavigationType.All, out var _) : Campaign.Current.Models.MapDistanceModel.GetDistance(mobileParty4.CurrentSettlement, targetSettlement, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.All));
 							float value = num18 / (num20 + 0.001f);
-							value = MBMath.ClampFloat(value, 0.3f, 1.2f);
+							value = MBMath.ClampFloat(value, 0.3f, (missionType == Army.ArmyTypes.Raider) ? 0.8f : 1.2f);
 							num17 += value * mobileParty4.Party.EstimatedStrength * num19;
 						}
 					}

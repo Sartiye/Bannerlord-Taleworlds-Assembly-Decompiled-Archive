@@ -101,15 +101,15 @@ public class AnchorPoint : IInteractablePoint, ITrackableCampaignObject, ITracka
 
 	public void CallFleet(Settlement settlement)
 	{
-		CampaignTime fleetTravelTimeToPoint = Campaign.Current.Models.PartyTransitionModel.GetFleetTravelTimeToPoint(Owner, settlement.PortPosition);
-		if (fleetTravelTimeToPoint == CampaignTime.Zero)
+		CampaignTime fleetTravelTimeToSettlement = Campaign.Current.Models.PartyTransitionModel.GetFleetTravelTimeToSettlement(Owner, settlement);
+		if (fleetTravelTimeToSettlement == CampaignTime.Zero)
 		{
 			SetSettlement(settlement);
 			return;
 		}
 		ResetPosition();
 		TargetPosition = settlement.PortPosition;
-		ArrivalTime = CampaignTime.Now + fleetTravelTimeToPoint;
+		ArrivalTime = CampaignTime.Now + fleetTravelTimeToSettlement;
 	}
 
 	public AnchorPoint(MobileParty owner)
@@ -164,7 +164,7 @@ public class AnchorPoint : IInteractablePoint, ITrackableCampaignObject, ITracka
 	{
 		if (mobileParty.IsMainParty && IsValid && !IsDisabled)
 		{
-			return mobileParty.Position.Distance(GetInteractionPosition(mobileParty)) < Campaign.Current.Models.EncounterModel.NeededMaximumDistanceForEncounteringMobileParty;
+			return mobileParty.Position.Distance(GetInteractionPosition(mobileParty)) < Campaign.Current.Models.EncounterModel.NeededMaximumLandDistanceForEncounteringMobileParty;
 		}
 		return false;
 	}

@@ -78,4 +78,9 @@ public class DefaultStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 	{
 		return 100f;
 	}
+
+	public override float CalculateBaseBlowMagnitudeForPassiveUsage(in AttackInformation attackInformation, in AttackCollisionData collisionData, float extraLinearSpeed)
+	{
+		return CombatStatCalculator.CalculateBaseBlowMagnitudeForPassiveUsage(attackInformation.AttackerWeapon.Item.Weight, extraLinearSpeed);
+	}
 }

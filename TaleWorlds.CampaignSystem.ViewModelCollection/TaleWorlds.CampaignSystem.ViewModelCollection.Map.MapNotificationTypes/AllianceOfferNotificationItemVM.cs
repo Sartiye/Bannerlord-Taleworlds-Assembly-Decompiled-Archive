@@ -30,7 +30,7 @@ public class AllianceOfferNotificationItemVM : MapNotificationItemBaseVM
 			}
 			if (flag)
 			{
-				Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>().OnAllianceOfferedToPlayer(data.OfferingKingdom);
+				Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>()?.OnAllianceOfferedToPlayer(data.OfferingKingdom);
 				allianceOfferNotificationItemVM.RemoveAllianceOfferNotification(shouldDecisionCreatedOnClosed: false);
 			}
 			else

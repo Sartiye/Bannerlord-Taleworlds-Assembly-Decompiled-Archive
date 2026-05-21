@@ -5,6 +5,8 @@ namespace TaleWorlds.MountAndBlade;
 
 public interface IMissionAgentSpawnLogic : IMissionBehavior
 {
+	BattleSideEnum PlayerSide { get; }
+
 	void StartSpawner(BattleSideEnum side);
 
 	void StopSpawner(BattleSideEnum side);
@@ -13,7 +15,7 @@ public interface IMissionAgentSpawnLogic : IMissionBehavior
 
 	bool IsSideDepleted(BattleSideEnum side);
 
-	float GetReinforcementInterval();
+	float GetReinforcementInterval(BattleSideEnum side = BattleSideEnum.None);
 
 	IEnumerable<IAgentOriginBase> GetAllTroopsForSide(BattleSideEnum side);
 

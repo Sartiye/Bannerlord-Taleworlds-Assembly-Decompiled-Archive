@@ -249,6 +249,7 @@ public class ConversationManager
 		_lastSelectedDialogObject = null;
 		Debug.Print("--------------- Conversation Start --------------- ", 0, Debug.DebugColor.White, 4503599627370496uL);
 		Debug.Print(string.Concat("Conversation character name: ", OneToOneConversationCharacter.Name, "\nid: ", OneToOneConversationCharacter.StringId, "\nculture:", OneToOneConversationCharacter.Culture, "\npersona:", OneToOneConversationCharacter.GetPersona().Name));
+		_mainAgent.OnConversationStarted();
 		if (CampaignMission.Current != null)
 		{
 			foreach (IAgent conversationAgent in ConversationAgents)
@@ -307,7 +308,7 @@ public class ConversationManager
 		}
 		if (0 > _currentSentence || _currentSentence >= count)
 		{
-			Debug.FailedAssert("CurrentSentence is not valid.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Conversation\\ConversationManager.cs", "ProcessSentence", 415);
+			Debug.FailedAssert("CurrentSentence is not valid.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Conversation\\ConversationManager.cs", "ProcessSentence", 417);
 		}
 	}
 
@@ -934,7 +935,7 @@ public class ConversationManager
 		}
 		else
 		{
-			Debug.FailedAssert("Failed to remove conversation agent.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Conversation\\ConversationManager.cs", "RemoveConversationAgent", 1247);
+			Debug.FailedAssert("Failed to remove conversation agent.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Conversation\\ConversationManager.cs", "RemoveConversationAgent", 1249);
 		}
 	}
 
@@ -943,6 +944,7 @@ public class ConversationManager
 		_conversationAgents.Add(agent);
 		agent.SetAsConversationAgent(set: true);
 		CampaignEventDispatcher.Instance.OnAgentJoinedConversation(agent);
+		agent.OnConversationStarted();
 	}
 
 	public bool IsConversationAgent(IAgent agent)
@@ -1083,7 +1085,7 @@ public class ConversationManager
 		{
 			return value.IsApplicableTo(character);
 		}
-		Debug.FailedAssert("Asking for a nonexistent tag: " + tagId, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Conversation\\ConversationManager.cs", "IsTagApplicable", 1482);
+		Debug.FailedAssert("Asking for a nonexistent tag: " + tagId, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Conversation\\ConversationManager.cs", "IsTagApplicable", 1486);
 		return false;
 	}
 

@@ -2,8 +2,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Helpers;
 using SandBox.Missions.MissionLogics.Hideout;
+using StoryMode.StoryModeObjects;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.MapEvents;
@@ -29,6 +31,8 @@ public class ConspiracyBaseOfOperationsDiscoveredConspiracyQuest : ConspiracyQue
 
 	private const int RaiderPartyCount = 2;
 
+	private const float DefaultConspiracyReductionAmount = 50f;
+
 	[SaveableField(1)]
 	private readonly Settlement _hideout;
 
@@ -37,8 +41,6 @@ public class ConspiracyBaseOfOperationsDiscoveredConspiracyQuest : ConspiracyQue
 	private bool _dueledWithHideoutBoss;
 
 	private bool _isSuccess;
-
-	private bool _isDone;
 
 	private float _conspiracyStrengthDecreaseAmount;
 
@@ -150,23 +152,58 @@ public class ConspiracyBaseOfOperationsDiscoveredConspiracyQuest : ConspiracyQue
 			AddTrackedObject(_hideout);
 		}
 		_baseLocation = SettlementHelper.FindNearestSettlementToSettlement(_hideout, MobileParty.NavigationType.Default, (Settlement p) => p.IsFortification);
-		_conspiracyStrengthDecreaseAmount = 0f;
+		_conspiracyStrengthDecreaseAmount = 50f;
 		InitializeHideout();
-		_isDone = false;
 	}
 
 	private Settlement SelectHideout()
 	{
-		Settlement settlement = SettlementHelper.FindRandomHideout((Settlement s) => s.Hideout.IsInfested && ((!StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine) ? (!StoryModeData.IsKingdomImperial(SettlementHelper.FindNearestFortificationToSettlement(s, MobileParty.NavigationType.Default).OwnerClan.Kingdom)) : StoryModeData.IsKingdomImperial(SettlementHelper.FindNearestFortificationToSettlement(s, MobileParty.NavigationType.Default).OwnerClan.Kingdom)));
+		Settlement centralSettlement = StoryModeHeroes.ImperialMentor.HomeSettlement;
+		Settlement settlement = SettlementHelper.FindRandomHideout(delegate(Settlement s)
+		{
+			if (s.Hideout.IsInfested)
+			{
+				MapDistanceModel mapDistanceModel4 = Campaign.Current.Models.MapDistanceModel;
+				CampaignVec2 fromPoint4 = s.GatePosition;
+				CampaignVec2 toPoint4 = centralSettlement.GatePosition;
+				if (mapDistanceModel4.PathExistBetweenPoints(in fromPoint4, in toPoint4, MobileParty.NavigationType.Default))
+				{
+					if (!StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine)
+					{
+						return !StoryModeData.IsKingdomImperial(SettlementHelper.FindNearestFortificationToSettlement(s, MobileParty.NavigationType.Default).OwnerClan.Kingdom);
+					}
+					return StoryModeData.IsKingdomImperial(SettlementHelper.FindNearestFortificationToSettlement(s, MobileParty.NavigationType.Default).OwnerClan.Kingdom);
+				}
+			}
+			return false;
+		});
 		if (settlement == null)
 		{
-			settlement = SettlementHelper.FindRandomHideout((Settlement s) => (!StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine) ? (!StoryModeData.IsKingdomImperial(SettlementHelper.FindNearestFortificationToSettlement(s, MobileParty.NavigationType.Default).OwnerClan.Kingdom)) : StoryModeData.IsKingdomImperial(SettlementHelper.FindNearestFortificationToSettlement(s, MobileParty.NavigationType.Default).OwnerClan.Kingdom));
+			settlement = SettlementHelper.FindRandomHideout(delegate(Settlement s)
+			{
+				MapDistanceModel mapDistanceModel3 = Campaign.Current.Models.MapDistanceModel;
+				CampaignVec2 fromPoint3 = s.GatePosition;
+				CampaignVec2 toPoint3 = centralSettlement.GatePosition;
+				return mapDistanceModel3.PathExistBetweenPoints(in fromPoint3, in toPoint3, MobileParty.NavigationType.Default) && ((!StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine) ? (!StoryModeData.IsKingdomImperial(SettlementHelper.FindNearestFortificationToSettlement(s, MobileParty.NavigationType.Default).OwnerClan.Kingdom)) : StoryModeData.IsKingdomImperial(SettlementHelper.FindNearestFortificationToSettlement(s, MobileParty.NavigationType.Default).OwnerClan.Kingdom));
+			});
 			if (settlement == null)
 			{
-				settlement = SettlementHelper.FindRandomHideout((Settlement s) => s.Hideout.IsInfested);
+				settlement = SettlementHelper.FindRandomHideout(delegate(Settlement s)
+				{
+					MapDistanceModel mapDistanceModel2 = Campaign.Current.Models.MapDistanceModel;
+					CampaignVec2 fromPoint2 = s.GatePosition;
+					CampaignVec2 toPoint2 = centralSettlement.GatePosition;
+					return mapDistanceModel2.PathExistBetweenPoints(in fromPoint2, in toPoint2, MobileParty.NavigationType.Default) && s.Hideout.IsInfested;
+				});
 				if (settlement == null)
 				{
-					settlement = SettlementHelper.FindRandomHideout();
+					settlement = SettlementHelper.FindRandomHideout(delegate(Settlement s)
+					{
+						MapDistanceModel mapDistanceModel = Campaign.Current.Models.MapDistanceModel;
+						CampaignVec2 fromPoint = s.GatePosition;
+						CampaignVec2 toPoint = centralSettlement.GatePosition;
+						return mapDistanceModel.PathExistBetweenPoints(in fromPoint, in toPoint, MobileParty.NavigationType.Default);
+					});
 				}
 			}
 		}
@@ -204,6 +241,7 @@ public class ConspiracyBaseOfOperationsDiscoveredConspiracyQuest : ConspiracyQue
 
 	protected override void InitializeQuestOnGameLoad()
 	{
+		_conspiracyStrengthDecreaseAmount = 50f;
 		_baseLocation = SettlementHelper.FindNearestFortificationToSettlement(_hideout, MobileParty.NavigationType.Default);
 		SetDialogs();
 	}
@@ -256,43 +294,47 @@ public class ConspiracyBaseOfOperationsDiscoveredConspiracyQuest : ConspiracyQue
 		CampaignEvents.OnHideoutBattleCompletedEvent.AddNonSerializedListener(this, OnHideoutBattleCompleted);
 	}
 
-	private void OnHideoutBattleCompleted(BattleSideEnum winnerSide, HideoutEventComponent hideoutEventComponent)
+	private void OnHideoutBattleCompleted(BattleSideEnum winnerSide, HideoutEventComponent hideoutEventComponent, HideoutEventComponent.HideoutBattleEndState battleEndState)
 	{
-		_isDone = true;
 		_isSuccess = hideoutEventComponent.MapEvent.InvolvedParties.Contains(PartyBase.MainParty) && winnerSide == hideoutEventComponent.MapEvent.PlayerSide;
+		HandleHideoutBattleEnd();
 	}
 
 	private void OnGameMenuOpened(MenuCallbackArgs args)
 	{
-		if (Settlement.CurrentSettlement == _hideout && !_isDone)
+		if (Settlement.CurrentSettlement != _hideout || !base.IsOngoing)
 		{
-			MobileParty mobileParty = _hideout.Parties.FirstOrDefault((MobileParty p) => p.IsBanditBossParty);
-			if (mobileParty != null && mobileParty.IsActive)
+			return;
+		}
+		MobileParty mobileParty = _hideout.Parties.FirstOrDefault((MobileParty p) => p.IsBanditBossParty);
+		if (mobileParty == null || !mobileParty.IsActive)
+		{
+			return;
+		}
+		if (mobileParty.MemberRoster.TotalManCount <= 0)
+		{
+			ChangeHideoutParties();
+			return;
+		}
+		string text = (StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine ? "anti_imperial_conspiracy_boss" : "imperial_conspiracy_boss");
+		bool flag = false;
+		foreach (TroopRosterElement item in mobileParty.MemberRoster.GetTroopRoster())
+		{
+			if (item.Character.StringId == text)
 			{
-				if (mobileParty.MemberRoster.TotalManCount <= 0)
-				{
-					ChangeHideoutParties();
-				}
-				else
-				{
-					string text = (StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine ? "anti_imperial_conspiracy_boss" : "imperial_conspiracy_boss");
-					bool flag = false;
-					foreach (TroopRosterElement item in mobileParty.MemberRoster.GetTroopRoster())
-					{
-						if (item.Character.StringId == text)
-						{
-							flag = true;
-							break;
-						}
-					}
-					if (!flag)
-					{
-						ChangeHideoutParties();
-					}
-				}
+				flag = true;
+				break;
 			}
 		}
-		if (!_isDone)
+		if (!flag)
+		{
+			ChangeHideoutParties();
+		}
+	}
+
+	private void HandleHideoutBattleEnd()
+	{
+		if (!base.IsOngoing)
 		{
 			return;
 		}
@@ -300,11 +342,11 @@ public class ConspiracyBaseOfOperationsDiscoveredConspiracyQuest : ConspiracyQue
 		{
 			EndCaptivityAction.ApplyByPeace(Hero.MainHero);
 		}
-		foreach (MobileParty item2 in _hideout.Parties.ToList())
+		foreach (MobileParty item in _hideout.Parties.ToList())
 		{
-			if (item2.IsBandit)
+			if (item.IsBandit)
 			{
-				DestroyPartyAction.Apply(null, item2);
+				DestroyPartyAction.Apply(null, item);
 			}
 		}
 		if (_isSuccess)
@@ -337,7 +379,7 @@ public class ConspiracyBaseOfOperationsDiscoveredConspiracyQuest : ConspiracyQue
 		}
 		else
 		{
-			Debug.FailedAssert("Hideout boss can not be set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Quests\\SecondPhase\\ConspiracyQuests\\ConspiracyBaseOfOperationsDiscoveredConspiracyQuest.cs", "OnMissionStarted", 406);
+			Debug.FailedAssert("Hideout boss can not be set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Quests\\SecondPhase\\ConspiracyQuests\\ConspiracyBaseOfOperationsDiscoveredConspiracyQuest.cs", "OnMissionStarted", 415);
 		}
 	}
 
@@ -379,7 +421,7 @@ public class ConspiracyBaseOfOperationsDiscoveredConspiracyQuest : ConspiracyQue
 			}
 			_isSuccess = false;
 		}
-		_isDone = true;
+		HandleHideoutBattleEnd();
 	}
 
 	private void OnHideoutSpotted(PartyBase party, PartyBase hideoutParty)
@@ -393,40 +435,16 @@ public class ConspiracyBaseOfOperationsDiscoveredConspiracyQuest : ConspiracyQue
 
 	private void OnHideoutCleared(Settlement hideout)
 	{
-		if (hideout != _hideout)
+		if (hideout == _hideout)
 		{
-			return;
-		}
-		MobileParty lastAttackerParty = hideout.LastAttackerParty;
-		if (lastAttackerParty == null || !lastAttackerParty.IsMainParty)
-		{
-			return;
-		}
-		NotDueledWithHideoutBossAndDefeatedCaravan();
-		_isSuccess = true;
-		_isDone = true;
-		if (!_isDone)
-		{
-			return;
-		}
-		if (Hero.MainHero.IsPrisoner)
-		{
-			EndCaptivityAction.ApplyByPeace(Hero.MainHero);
-		}
-		foreach (MobileParty item in _hideout.Parties.ToList())
-		{
-			if (item.IsBandit)
+			MobileParty lastAttackerParty = hideout.LastAttackerParty;
+			if (lastAttackerParty != null && lastAttackerParty.IsMainParty)
 			{
-				DestroyPartyAction.Apply(null, item);
+				NotDueledWithHideoutBossAndDefeatedCaravan();
+				_isSuccess = true;
+				HandleHideoutBattleEnd();
 			}
 		}
-		if (_isSuccess)
-		{
-			CompleteQuestWithSuccess();
-			return;
-		}
-		AddLog(HideoutRemovedLog);
-		CompleteQuestWithFail();
 	}
 
 	private void NotDueledWithHideoutBossAndDefeatedCaravan()

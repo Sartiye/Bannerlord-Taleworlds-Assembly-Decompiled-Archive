@@ -101,11 +101,11 @@ public class TrainingFieldObjectives__StoryMode_ViewModelCollection_Missions_Tra
 		_widget_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.MarginLeft = 25f;
 		_widget_0.MarginTop = 25f;
-		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0.MinWidth = 350f;
-		_widget_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0.Sprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
 		_widget_0_0.Color = new Color(0f, 0f, 0f);
 		_widget_0_0.AlphaFactor = 0.5f;
@@ -118,7 +118,7 @@ public class TrainingFieldObjectives__StoryMode_ViewModelCollection_Missions_Tra
 		_widget_1.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
+		_widget_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
 		_widget_1_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_0_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1_0_0.SuggestedWidth = 190f;

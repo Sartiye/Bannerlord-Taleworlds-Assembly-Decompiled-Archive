@@ -177,7 +177,7 @@ public class ClanSupporterGroupVM : ViewModel
 		TextObject textObject2 = GameTexts.FindText("str_plus_with_number");
 		textObject2.SetTextVariable("NUMBER", TotalInfluenceBonus.ToString("F2"));
 		textObject.SetTextVariable("AMOUNT", textObject2.ToString());
-		textObject.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"7\">");
+		textObject.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"5\">");
 		TotalInfluence = textObject.ToString();
 		TextObject textObject3 = GameTexts.FindText("str_RANK_with_NUM_between_parenthesis");
 		textObject3.SetTextVariable("RANK", _groupNameText.ToString());
@@ -189,7 +189,7 @@ public class ClanSupporterGroupVM : ViewModel
 		TitleText = textObject4.ToString();
 		TextObject textObject5 = new TextObject("{=jdbT6nc9}Each {SUPPORTER_RANK} supporter provides {INFLUENCE_BONUS} per day.");
 		textObject5.SetTextVariable("SUPPORTER_RANK", _groupNameText.ToString());
-		textObject5.SetTextVariable("INFLUENCE_BONUS", _influenceBonus.ToString("F2") + "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"7\">");
+		textObject5.SetTextVariable("INFLUENCE_BONUS", _influenceBonus.ToString("F2") + "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"5\">");
 		InfluenceBonusDescription = textObject5.ToString();
 	}
 

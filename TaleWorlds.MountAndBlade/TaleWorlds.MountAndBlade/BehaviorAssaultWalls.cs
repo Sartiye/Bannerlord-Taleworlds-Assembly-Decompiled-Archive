@@ -52,7 +52,7 @@ public class BehaviorAssaultWalls : BehaviorComponent
 	private void ResetOrderPositions()
 	{
 		_primarySiegeWeapons = _teamAISiegeComponent.PrimarySiegeWeapons.ToList();
-		_primarySiegeWeapons.RemoveAll((IPrimarySiegeWeapon uM) => uM.WeaponSide != _behaviorSide);
+		_primarySiegeWeapons.RemoveAll((IPrimarySiegeWeapon uM) => uM.WeaponSide != _behaviorSide || !(uM is SiegeWeapon siegeWeapon) || (siegeWeapon.IsDeactivated && !siegeWeapon.IsDestroyed && (!(siegeWeapon is IPrimarySiegeWeapon primarySiegeWeapon2) || !primarySiegeWeapon2.HasCompletedAction())));
 		IEnumerable<ICastleKeyPosition> source = TeamAISiegeComponent.SiegeLanes.Where((SiegeLane sl) => sl.LaneSide == _behaviorSide).SelectMany((SiegeLane sila) => sila.DefensePoints);
 		_innerGate = _teamAISiegeComponent.InnerGate;
 		_isGateLane = _teamAISiegeComponent.OuterGate.DefenseSide == _behaviorSide;

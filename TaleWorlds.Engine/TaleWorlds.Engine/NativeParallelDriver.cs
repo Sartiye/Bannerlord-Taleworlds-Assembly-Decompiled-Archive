@@ -43,10 +43,13 @@ public sealed class NativeParallelDriver : IParallelDriver
 		_loopBodyCache[num].LoopBody = null;
 	}
 
-	[EngineCallback(null, false)]
-	internal static void ParalelForLoopBodyCaller(long loopBodyKey, int localStartIndex, int localEndIndex)
+	public void ForWithoutRenderThreadDt(int fromInclusive, int toExclusive, float deltaTime, TWParallel.ParallelForWithDtAuxPredicate loopBody, int grainSize)
 	{
-		_loopBodyCache[loopBodyKey].LoopBody(localStartIndex, localEndIndex);
+		long num = Interlocked.Increment(ref LoopBodyWithDtHolder.UniqueLoopBodyKeySeed) % 256;
+		_loopBodyWithDtCache[num].LoopBody = loopBody;
+		_loopBodyWithDtCache[num].DeltaTime = deltaTime;
+		Utilities.ParallelForWithoutRenderThreadDt(fromInclusive, toExclusive, num, grainSize);
+		_loopBodyWithDtCache[num].LoopBody = null;
 	}
 
 	public void For(int fromInclusive, int toExclusive, float deltaTime, TWParallel.ParallelForWithDtAuxPredicate loopBody, int grainSize)
@@ -58,12 +61,6 @@ public sealed class NativeParallelDriver : IParallelDriver
 		_loopBodyWithDtCache[num].LoopBody = null;
 	}
 
-	[EngineCallback(null, false)]
-	internal static void ParalelForLoopBodyWithDtCaller(long loopBodyKey, int localStartIndex, int localEndIndex)
-	{
-		_loopBodyWithDtCache[loopBodyKey].LoopBody(localStartIndex, localEndIndex, _loopBodyWithDtCache[loopBodyKey].DeltaTime);
-	}
-
 	public ulong GetMainThreadId()
 	{
 		return Utilities.GetMainThreadId();
@@ -72,5 +69,17 @@ public sealed class NativeParallelDriver : IParallelDriver
 	public ulong GetCurrentThreadId()
 	{
 		return Utilities.GetCurrentThreadId();
+	}
+
+	[EngineCallback(null, false)]
+	internal static void ParalelForLoopBodyCaller(long loopBodyKey, int localStartIndex, int localEndIndex)
+	{
+		_loopBodyCache[loopBodyKey].LoopBody(localStartIndex, localEndIndex);
+	}
+
+	[EngineCallback(null, false)]
+	internal static void ParalelForLoopBodyWithDtCaller(long loopBodyKey, int localStartIndex, int localEndIndex)
+	{
+		_loopBodyWithDtCache[loopBodyKey].LoopBody(localStartIndex, localEndIndex, _loopBodyWithDtCache[loopBodyKey].DeltaTime);
 	}
 }

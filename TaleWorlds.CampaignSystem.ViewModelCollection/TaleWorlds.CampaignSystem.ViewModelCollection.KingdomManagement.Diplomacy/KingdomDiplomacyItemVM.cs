@@ -460,16 +460,20 @@ public abstract class KingdomDiplomacyItemVM : KingdomItemVM
 		Faction2OtherTradeAgreements = new MBBindingList<KingdomDiplomacyFactionItemVM>();
 		foreach (IFaction faction in Campaign.Current.Factions)
 		{
-			if (faction != Faction1 && faction != Faction2 && faction.IsKingdomFaction && Campaign.Current.GetCampaignBehavior<ITradeAgreementsCampaignBehavior>().HasTradeAgreement(faction as Kingdom, Faction2 as Kingdom))
+			if (faction != Faction1 && faction != Faction2 && faction.IsKingdomFaction)
 			{
-				Faction2OtherTradeAgreements.Add(new KingdomDiplomacyFactionItemVM(faction));
+				ITradeAgreementsCampaignBehavior campaignBehavior = Campaign.Current.GetCampaignBehavior<ITradeAgreementsCampaignBehavior>();
+				if (campaignBehavior != null && campaignBehavior.HasTradeAgreement(faction as Kingdom, Faction2 as Kingdom, out var _))
+				{
+					Faction2OtherTradeAgreements.Add(new KingdomDiplomacyFactionItemVM(faction));
+				}
 			}
 		}
 		IsFaction2OtherTradeAgreementsVisible = Faction2OtherTradeAgreements.Count > 0;
 		Faction2OtherAlliances = new MBBindingList<KingdomDiplomacyFactionItemVM>();
 		foreach (IFaction faction2 in Campaign.Current.Factions)
 		{
-			if (faction2 != Faction1 && faction2 != Faction2 && faction2.IsKingdomFaction && Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>().IsAllyWithKingdom(faction2 as Kingdom, Faction2 as Kingdom))
+			if (faction2 != Faction1 && faction2 != Faction2 && DiplomacyHelper.HasAllianceWithFaction(faction2, Faction2))
 			{
 				Faction2OtherAlliances.Add(new KingdomDiplomacyFactionItemVM(faction2));
 			}

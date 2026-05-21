@@ -16,6 +16,8 @@ public class BasicBattleAgentOrigin : IAgentOriginBase
 
 	bool IAgentOriginBase.IsUnderPlayersCommand => false;
 
+	bool IAgentOriginBase.IsInSameArmyAsPlayer => false;
+
 	uint IAgentOriginBase.FactionColor => 0u;
 
 	uint IAgentOriginBase.FactionColor2 => 0u;

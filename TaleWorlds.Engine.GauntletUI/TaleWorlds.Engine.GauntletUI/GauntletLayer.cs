@@ -255,7 +255,7 @@ public class GauntletLayer : ScreenLayer
 				return true;
 			}
 		}
-		UIContext.EventManager.SetHoveredView(null);
+		UIContext.EventManager.HoveredWidget = null;
 		return false;
 	}
 

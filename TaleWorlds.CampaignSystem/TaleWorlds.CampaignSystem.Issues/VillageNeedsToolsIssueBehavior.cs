@@ -102,7 +102,7 @@ public class VillageNeedsToolsIssueBehavior : CampaignBehaviorBase
 				TextObject textObject = new TextObject("{=8llksa4h}If so, you'll need a man with good understanding of trade. Also you will need at least {NUMBER_OF_TROOPS} fighting men to protect the goods while taking them to market and back. Your companion will also probably need around {GOLD_COST}{GOLD_ICON} in order to buy the tools.[if:convo_confused_normal]");
 				textObject.SetTextVariable("NUMBER_OF_TROOPS", GetTotalAlternativeSolutionNeededMenCount());
 				textObject.SetTextVariable("GOLD_COST", CostOfToolsForAlternativeSolution);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -133,7 +133,7 @@ public class VillageNeedsToolsIssueBehavior : CampaignBehaviorBase
 				textObject.SetTextVariable("ITEM", _requestedItem.Name);
 				textObject.SetTextVariable("NUMBER_OF_ITEM", _numberOfRequestedItem);
 				textObject.SetTextVariable("REWARD_GOLD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				textObject.SetTextVariable("NEEDED_MEN_COUNT", GetTotalAlternativeSolutionNeededMenCount());
 				textObject.SetTextVariable("ALTERNATIVE_SOLUTION_DURATION", GetTotalAlternativeSolutionDurationInDays());
 				return textObject;
@@ -244,12 +244,13 @@ public class VillageNeedsToolsIssueBehavior : CampaignBehaviorBase
 			return IssueFrequency.VeryCommon;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			bool flag2 = issueGiver.GetRelationWithPlayer() >= -10f && !issueGiver.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction);
 			flag = ((!flag2) ? ((!issueGiver.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction)) ? PreconditionFlags.Relation : PreconditionFlags.AtWar) : PreconditionFlags.None);
 			relationHero = issueGiver;
 			skill = null;
+			requiredGold = 0;
 			return flag2;
 		}
 
@@ -359,7 +360,7 @@ public class VillageNeedsToolsIssueBehavior : CampaignBehaviorBase
 				{
 					textObject2 = new TextObject("{=ZOTBiLiS}{?QUEST_GIVER.GENDER}She{?}He{\\?} will pay you {PAYMENT}{GOLD_ICON} when the task is done.");
 					textObject2.SetTextVariable("PAYMENT", RewardGold);
-					textObject2.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+					textObject2.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				}
 				else
 				{

@@ -35,6 +35,11 @@ public static class GameEntityPhysicsExtensions
 		EngineApplicationInterface.IGameEntity.AddCapsuleAsBody(gameEntity.Pointer, p1, p2, radius, (uint)bodyFlags, physicsMaterialName);
 	}
 
+	public static void UpdateBodyRestOffset(this WeakGameEntity gameEntity, float restOffset)
+	{
+		EngineApplicationInterface.IGameEntity.UpdateBodyRestOffset(gameEntity.Pointer, restOffset);
+	}
+
 	public static void PushCapsuleShapeToEntityBody(this WeakGameEntity gameEntity, Vec3 p1, Vec3 p2, float radius, string physicsMaterialName)
 	{
 		EngineApplicationInterface.IGameEntity.PushCapsuleShapeToEntityBody(gameEntity.Pointer, p1, p2, radius, physicsMaterialName);

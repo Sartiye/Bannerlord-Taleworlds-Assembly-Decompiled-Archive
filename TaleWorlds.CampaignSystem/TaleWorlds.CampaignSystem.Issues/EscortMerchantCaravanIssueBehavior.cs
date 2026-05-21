@@ -108,7 +108,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 				textObject.SetTextVariable("NEEDED_MEN_COUNT", AlternativeSolutionSentTroops.TotalManCount);
 				textObject.SetTextVariable("RETURN_DAYS", GetTotalAlternativeSolutionDurationInDays());
 				textObject.SetTextVariable("GOLD", DailyQuestRewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -191,10 +191,11 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 			return IssueFrequency.VeryCommon;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flags, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flags, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			skill = null;
 			relationHero = null;
+			requiredGold = 0;
 			flags = PreconditionFlags.None;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -340,7 +341,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 				textObject.SetTextVariable("SETTLEMENT", Settlement.CurrentSettlement.Name);
 				textObject.SetTextVariable("NUMBER_OF_SETTLEMENTS", _requiredSettlementNumber);
 				textObject.SetTextVariable("GOLD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}

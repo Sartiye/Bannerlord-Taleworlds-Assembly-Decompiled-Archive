@@ -2,10 +2,11 @@ namespace TaleWorlds.CampaignSystem.Actions;
 
 public class ChangeRulingClanAction
 {
-	private static void ApplyInternal(Kingdom kingdom, Clan clan)
+	private static void ApplyInternal(Kingdom kingdom, Clan newRulerClan)
 	{
-		kingdom.RulingClan = clan;
-		CampaignEventDispatcher.Instance.OnRulingClanChanged(kingdom, clan);
+		Clan rulingClan = kingdom.RulingClan;
+		kingdom.RulingClan = newRulerClan;
+		CampaignEventDispatcher.Instance.OnRulingClanChanged(kingdom, rulingClan);
 	}
 
 	public static void Apply(Kingdom kingdom, Clan clan)

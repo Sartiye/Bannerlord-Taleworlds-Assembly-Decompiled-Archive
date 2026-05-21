@@ -8,6 +8,7 @@ using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.CharacterDevelopment;
 
@@ -496,6 +497,18 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 		}
 	}
 
+	public void OnHideoutClearedAsGhost()
+	{
+		TextObject textObject = new TextObject("{=Obuhsttm}Ghost bonus: {XP} Roguery exp! (Base: {BASE_XP})");
+		float rogueryXpGainAsGhost = Campaign.Current.Models.HideoutModel.GetRogueryXpGainAsGhost();
+		float skillXp = Hero.MainHero.HeroDeveloper.GetSkillXp(DefaultSkills.Roguery);
+		Hero.MainHero.AddSkillXp(DefaultSkills.Roguery, rogueryXpGainAsGhost);
+		float f = Hero.MainHero.HeroDeveloper.GetSkillXp(DefaultSkills.Roguery) - skillXp;
+		textObject.SetTextVariable("BASE_XP", MathF.Floor(rogueryXpGainAsGhost));
+		textObject.SetTextVariable("XP", MathF.Floor(f));
+		InformationManager.DisplayMessage(new InformationMessage(textObject.ToString(), new Color(0f, 0f, 1f)));
+	}
+
 	public void OnHideoutMissionEnd(bool isSucceeded)
 	{
 		float rogueryXpGainOnHideoutMissionEnd = Campaign.Current.Models.HideoutModel.GetRogueryXpGainOnHideoutMissionEnd(isSucceeded);
@@ -537,7 +550,7 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 	{
 	}
 
-	public void OnTravelOnWater(Hero hero, float speed)
+	public void OnTravelOnWater(MobileParty party, float speed)
 	{
 	}
 

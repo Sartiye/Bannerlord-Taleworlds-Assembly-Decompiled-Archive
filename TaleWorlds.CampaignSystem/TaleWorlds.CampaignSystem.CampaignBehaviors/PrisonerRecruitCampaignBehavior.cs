@@ -8,7 +8,7 @@ namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
 
 public class PrisonerRecruitCampaignBehavior : CampaignBehaviorBase
 {
-	public Dictionary<CharacterObject, float> PrisonerTalkRecords = new Dictionary<CharacterObject, float>();
+	private Dictionary<CharacterObject, float> PrisonerTalkRecords = new Dictionary<CharacterObject, float>();
 
 	public override void RegisterEvents()
 	{

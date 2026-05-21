@@ -203,7 +203,7 @@ public class ScrollbarWidget : ImageWidget
 		}
 	}
 
-	protected internal override void OnMouseReleased()
+	protected internal override void OnMouseReleased(bool isFromInput)
 	{
 		if (Handle != null)
 		{

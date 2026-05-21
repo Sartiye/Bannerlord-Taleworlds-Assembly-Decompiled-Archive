@@ -494,7 +494,7 @@ public class GraphWidget : Widget
 	private void RefreshPlaneLines(Widget planeWidget)
 	{
 		int num = 1;
-		ListPanel listPanel = CreatePlaneLinesListPanel(LayoutMethod.VerticalBottomToTop);
+		ListPanel listPanel = CreatePlaneLinesListPanel(LayoutMethod.VerticalTopToBottom);
 		float marginBottom = _planeSize.Y / (float)RowCount - (float)num;
 		for (int i = 0; i < RowCount; i++)
 		{

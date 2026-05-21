@@ -128,7 +128,7 @@ public abstract class Container : Widget
 			if (flag)
 			{
 				Widget widget = base.EventManager.ReleaseDraggedWidget();
-				int indexForDrop = GetIndexForDrop(base.EventManager.DraggedWidgetPosition);
+				int indexForDrop = GetIndexForDrop(base.EventManager.MousePosition);
 				if (!base.DropEventHandledManually)
 				{
 					widget.ParentWidget = this;

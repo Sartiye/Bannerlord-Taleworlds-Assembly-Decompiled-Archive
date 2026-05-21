@@ -171,7 +171,7 @@ public class CharacterCreationOptionsStage__TaleWorlds_CampaignSystem_ViewModelC
 		base.HeightSizePolicy = SizePolicy.CoverChildren;
 		base.HorizontalAlignment = HorizontalAlignment.Center;
 		base.MarginTop = 15f;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		base.DoNotUseCustomScaleAndChildren = true;
 		_widget_0.FromTarget = _widget;
 		_widget_0.ToTarget = _widget_3_0;
@@ -227,7 +227,7 @@ public class CharacterCreationOptionsStage__TaleWorlds_CampaignSystem_ViewModelC
 		_widget_3_0_3.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_3_0_3.VerticalAlignment = VerticalAlignment.Center;
 		_widget_3_0_3.IsVisible = false;
-		_widget_3_0_3.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_3_0_3.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_3_0_3_0.FromTarget = _widget_3_0_3;
 		_widget_3_0_3_0.ToTarget = _widget_3_0_3_1_3;
 		_widget_3_0_3_1.WidthSizePolicy = SizePolicy.Fixed;

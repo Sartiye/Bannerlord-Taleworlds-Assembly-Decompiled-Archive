@@ -196,10 +196,11 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 			return _hideout.Hideout.IsInfested;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			skill = null;
 			relationHero = null;
+			requiredGold = 0;
 			flag = PreconditionFlags.None;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{

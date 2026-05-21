@@ -4,6 +4,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.LinQuick;
 
 namespace TaleWorlds.CampaignSystem.Actions;
 
@@ -98,12 +99,13 @@ public static class StartBattleAction
 				}
 				else
 				{
-					Debug.FailedAssert("Missing settlement type in StartBattleAction.GetGameAction", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\StartBattleAction.cs", "Apply", 134);
+					Debug.FailedAssert("Missing settlement type in StartBattleAction.GetGameAction", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\StartBattleAction.cs", "Apply", 135);
 				}
 			}
 		}
 		else
 		{
+			Settlement mapEventSettlement = defenderParty.MapEvent.MapEventSettlement;
 			if (defenderParty.MapEvent.IsFieldBattle)
 			{
 				battleTypes = MapEvent.BattleTypes.FieldBattle;
@@ -111,6 +113,11 @@ public static class StartBattleAction
 			else if (defenderParty.MapEvent.IsRaid)
 			{
 				battleTypes = MapEvent.BattleTypes.Raid;
+				if (defenderParty.MobileParty.IsCurrentlyAtSea && attackerParty.MobileParty.IsCurrentlyAtSea && !mapEventSettlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Raid).AnyQ((PartyBase t) => t.NumberOfHealthyMembers > 0))
+				{
+					defenderParty.MapEventSide = null;
+					battleTypes = MapEvent.BattleTypes.FieldBattle;
+				}
 			}
 			else if (defenderParty.MapEvent.IsSiegeAssault)
 			{
@@ -134,9 +141,9 @@ public static class StartBattleAction
 			}
 			else
 			{
-				Debug.FailedAssert("Missing mapEventType?", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\StartBattleAction.cs", "Apply", 170);
+				Debug.FailedAssert("Missing mapEventType?", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\StartBattleAction.cs", "Apply", 180);
 			}
-			settlement = defenderParty.MapEvent.MapEventSettlement;
+			settlement = mapEventSettlement;
 		}
 		obj = obj ?? settlement;
 		ApplyInternal(attackerParty, defenderParty, obj, battleTypes);

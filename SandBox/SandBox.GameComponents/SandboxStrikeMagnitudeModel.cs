@@ -40,6 +40,34 @@ public class SandboxStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 		return num * num * missileTotalDamage;
 	}
 
+	public override float CalculateBaseBlowMagnitudeForPassiveUsage(in AttackInformation attackInformation, in AttackCollisionData collisionData, float extraLinearSpeed)
+	{
+		ExplainedNumber bonuses = new ExplainedNumber(extraLinearSpeed);
+		CharacterObject character = attackInformation.AttackerAgentCharacter as CharacterObject;
+		CharacterObject captainCharacter = attackInformation.AttackerCaptainCharacter as CharacterObject;
+		bool doesAttackerHaveMountAgent = attackInformation.DoesAttackerHaveMountAgent;
+		SkillObject relevantSkill = attackInformation.AttackerWeapon.CurrentUsageItem.RelevantSkill;
+		if (doesAttackerHaveMountAgent)
+		{
+			PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Riding.NomadicTraditions, captainCharacter, ref bonuses);
+		}
+		else
+		{
+			PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Athletics.SurgingBlow, character, isPrimaryBonus: true, ref bonuses);
+			PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Athletics.SurgingBlow, captainCharacter, ref bonuses);
+		}
+		if (relevantSkill == DefaultSkills.Polearm)
+		{
+			PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Polearm.Lancer, captainCharacter, ref bonuses);
+			if (doesAttackerHaveMountAgent)
+			{
+				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Polearm.Lancer, character, isPrimaryBonus: true, ref bonuses);
+				PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Polearm.UnstoppableForce, captainCharacter, ref bonuses);
+			}
+		}
+		return CombatStatCalculator.CalculateBaseBlowMagnitudeForPassiveUsage(attackInformation.AttackerWeapon.Item.Weight, bonuses.ResultNumber);
+	}
+
 	public override float CalculateStrikeMagnitudeForSwing(in AttackInformation attackInformation, in AttackCollisionData collisionData, in MissionWeapon weapon, float swingSpeed, float impactPointAsPercent, float extraLinearSpeed)
 	{
 		BasicCharacterObject attackerAgentCharacter = attackInformation.AttackerAgentCharacter;
@@ -159,7 +187,7 @@ public class SandboxStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 			num4 = MathF.Max(0f, num2 - armorEffectiveness * 0.2f);
 			break;
 		default:
-			Debug.FailedAssert("Given damage type is invalid.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\GameComponents\\SandboxStrikeMagnitudeModel.cs", "ComputeRawDamage", 224);
+			Debug.FailedAssert("Given damage type is invalid.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\GameComponents\\SandboxStrikeMagnitudeModel.cs", "ComputeRawDamage", 259);
 			return 0f;
 		}
 		num3 += (1f - bluntDamageFactorByDamageType) * num4;

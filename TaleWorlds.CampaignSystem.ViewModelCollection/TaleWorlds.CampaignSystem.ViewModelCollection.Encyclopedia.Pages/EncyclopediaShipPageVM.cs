@@ -276,7 +276,7 @@ public class EncyclopediaShipPageVM : EncyclopediaContentPageVM
 			}
 			if (flag2)
 			{
-				return new TextObject("{=E3tCWX7w}Square").ToString();
+				return new TextObject("{=squareSail}Square").ToString();
 			}
 		}
 		return new TextObject("{=koX9okuG}None").ToString();
@@ -284,7 +284,7 @@ public class EncyclopediaShipPageVM : EncyclopediaContentPageVM
 
 	private string GetDraftTypeStr()
 	{
-		if (!_shipHull.HasHold)
+		if (_shipHull.CanNavigateShallowWater)
 		{
 			return new TextObject("{=ShipDraftTypeShallow}Shallow").ToString();
 		}

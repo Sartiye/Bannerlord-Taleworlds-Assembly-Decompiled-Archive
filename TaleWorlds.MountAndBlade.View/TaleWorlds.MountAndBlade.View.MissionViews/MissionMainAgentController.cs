@@ -662,10 +662,19 @@ public class MissionMainAgentController : MissionView
 				}
 				goto IL_08fe;
 			}
-			goto IL_0a2c;
+			goto IL_09be;
 		}
-		goto IL_0e1b;
-		IL_0a2c:
+		goto IL_0dad;
+		IL_0dad:
+		_overrideControlsThisFrame = OverrideMainAgentControlFlag.None;
+		return;
+		IL_08b1:
+		if (mainAgent.GetAgentFlags().HasAnyFlag(AgentFlag.CanAttack))
+		{
+			HandleRangedWeaponAttackAlternativeAiming(mainAgent);
+		}
+		goto IL_08fe;
+		IL_09be:
 		if (!base.MissionScreen.IsRadialMenuActive && !base.Mission.IsOrderMenuOpen)
 		{
 			if (base.Input.IsGameKeyPressed(16) && (mainAgent.KickClear() || mainAgent.MountAgent != null))
@@ -758,16 +767,7 @@ public class MissionMainAgentController : MissionView
 				mainAgent.EventControlFlags |= (Agent.EventControlFlag)(mainAgent.GetScriptedFlags().HasAnyFlag(Agent.AIScriptedFrameFlags.Crouch) ? 8192 : 16384);
 			}
 		}
-		goto IL_0e1b;
-		IL_08b1:
-		if (mainAgent.GetAgentFlags().HasAnyFlag(AgentFlag.CanAttack))
-		{
-			HandleRangedWeaponAttackAlternativeAiming(mainAgent);
-		}
-		goto IL_08fe;
-		IL_0e1b:
-		_overrideControlsThisFrame = OverrideMainAgentControlFlag.None;
-		return;
+		goto IL_0dad;
 		IL_08fe:
 		if (num == 0 && base.Input.IsGameKeyDown(10))
 		{
@@ -794,11 +794,7 @@ public class MissionMainAgentController : MissionView
 				mainAgent.MovementFlags |= mainAgent.GetDefendMovementFlag();
 			}
 		}
-		else if (mainAgent.CrouchMode && mainAgent.Velocity.LengthSquared > 0.010000001f && !mainAgent.WieldedWeapon.IsEmpty && mainAgent.WieldedWeapon.CurrentUsageItem.IsRangedWeapon && mainAgent.GetCurrentActionStage(1) == Agent.ActionStage.AttackReady)
-		{
-			mainAgent.MovementFlags |= Agent.MovementControlFlag.DefendDown;
-		}
-		goto IL_0a2c;
+		goto IL_09be;
 	}
 
 	private void HandleRangedWeaponAttackAlternativeAiming(Agent player)

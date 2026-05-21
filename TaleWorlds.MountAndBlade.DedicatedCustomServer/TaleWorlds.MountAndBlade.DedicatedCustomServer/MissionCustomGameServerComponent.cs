@@ -154,10 +154,7 @@ public class MissionCustomGameServerComponent : MissionLobbyComponent
 		BattleResult currentBattleResult = _battleResult.GetCurrentBattleResult();
 		PlayerId id = networkPeer.GetComponent<MissionPeer>().Peer.Id;
 		currentBattleResult.AddOrUpdatePlayerEntry(id, teamNo, _customBattleServer.CustomGameType, Guid.Empty);
-		PlayerData parameter2 = networkPeer.PlayerConnectionInfo.GetParameter<PlayerData>("PlayerData");
-		GameLog gameLog = new GameLog(GameLogType.PlayerJoin, parameter2?.PlayerId ?? PlayerId.Empty, MBCommon.GetTotalMissionTime());
-		gameLog.Data.Add("Name", parameter2?.LastPlayerName);
-		_gameLogger.Log(gameLog);
+		networkPeer.PlayerConnectionInfo.GetParameter<PlayerData>("PlayerData");
 		_customBattleServer.UpdateBattleStats(_battleResult.GetCurrentBattleResult(), _teamScores, _playerScores);
 	}
 
@@ -232,13 +229,6 @@ public class MissionCustomGameServerComponent : MissionLobbyComponent
 	public override void OnAgentBuild(Agent agent, Banner banner)
 	{
 		base.OnAgentBuild(agent, banner);
-		VirtualPlayer virtualPlayer = agent?.MissionPeer?.Peer;
-		if (virtualPlayer != null)
-		{
-			GameLog gameLog = new GameLog(GameLogType.AgentSpawn, virtualPlayer.Id, MBCommon.GetTotalMissionTime());
-			gameLog.Data.Add("Team", agent.Team?.Side.ToString());
-			_gameLogger.Log(gameLog);
-		}
 	}
 
 	public override void OnScoreHit(Agent affectedAgent, Agent affectorAgent, WeaponComponentData attackerWeapon, bool isBlocked, bool isSiegeEngineHit, in Blow blow, in AttackCollisionData collisionData, float damagedHp, float hitDistance, float shotDifficulty)
@@ -341,7 +331,7 @@ public class MissionCustomGameServerComponent : MissionLobbyComponent
 		_customBattleServer.UpdateBattleStats(_battleResult.GetCurrentBattleResult(), _teamScores, _playerScores);
 	}
 
-	private void OnDestructableComponentDestroyed(DestructableComponent destructableComponent, ScriptComponentBehavior attackerScriptComponentBehaviour, MissionPeer[] contributors)
+	private void OnDestructableComponentDestroyed(DestructableComponent destructibleComponent, ScriptComponentBehavior attackerScriptComponentBehaviour, MissionPeer[] contributors)
 	{
 		if (!_warmupEnded)
 		{
@@ -350,9 +340,9 @@ public class MissionCustomGameServerComponent : MissionLobbyComponent
 		_gameMode.GetMissionType();
 		foreach (MissionPeer missionPeer in contributors)
 		{
-			if (_battleResult.GetCurrentBattleResult().TryGetPlayerEntry(missionPeer.Peer.Id, out var battlePlayerEntry) && CheckForComponent(destructableComponent, typeof(SiegeWeapon)))
+			if (_battleResult.GetCurrentBattleResult().TryGetPlayerEntry(missionPeer.Peer.Id, out var battlePlayerEntry) && CheckForComponent<SiegeWeapon>(destructibleComponent))
 			{
-				(battlePlayerEntry.PlayerStats as BattlePlayerStatsSiege).SiegeEnginesDestroyed++;
+				((BattlePlayerStatsSiege)battlePlayerEntry.PlayerStats).SiegeEnginesDestroyed++;
 			}
 			_customBattleServer.UpdateBattleStats(_battleResult.GetCurrentBattleResult(), _teamScores, _playerScores);
 		}
@@ -403,12 +393,6 @@ public class MissionCustomGameServerComponent : MissionLobbyComponent
 
 	private void OnPostRoundEnded()
 	{
-		if (_roundComponent != null)
-		{
-			GameLog gameLog = new GameLog(GameLogType.RoundEnd, PlayerId.Empty, MBCommon.GetTotalMissionTime());
-			gameLog.Data.Add("Round", _roundComponent.RoundCount.ToString());
-			_gameLogger.Log(gameLog);
-		}
 		_customBattleServer.UpdateBattleStats(_battleResult.GetCurrentBattleResult(), _teamScores, _playerScores);
 	}
 
@@ -416,15 +400,12 @@ public class MissionCustomGameServerComponent : MissionLobbyComponent
 	{
 		if (_warmupComponent != null)
 		{
-			GameLog gameLog = new GameLog(GameLogType.RoundEnd, PlayerId.Empty, MBCommon.GetTotalMissionTime());
-			gameLog.Data.Add("Round", (-1).ToString());
-			_gameLogger.Log(gameLog);
 			_warmupComponent.OnWarmupEnded -= OnWarmupEnded;
 			_warmupEnded = true;
 		}
 	}
 
-	private bool CheckForComponent(DestructableComponent destructibleComponent, Type t)
+	private bool CheckForComponent<T>(DestructableComponent destructibleComponent) where T : ScriptComponentBehavior
 	{
 		if (destructibleComponent != null)
 		{
@@ -433,7 +414,7 @@ public class MissionCustomGameServerComponent : MissionLobbyComponent
 			destructibleComponent.GameEntity.GetChildrenRecursive(ref children);
 			foreach (WeakGameEntity item in children)
 			{
-				if (item.HasScriptOfType(t))
+				if (item.HasScriptOfType<T>())
 				{
 					return true;
 				}

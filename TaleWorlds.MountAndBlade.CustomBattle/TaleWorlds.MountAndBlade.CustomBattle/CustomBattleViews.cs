@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TaleWorlds.MountAndBlade.Missions.BattleScore;
 using TaleWorlds.MountAndBlade.Missions.Handlers;
 using TaleWorlds.MountAndBlade.View;
 using TaleWorlds.MountAndBlade.View.MissionViews;
@@ -20,7 +21,7 @@ public class CustomBattleViews
 		{
 			ViewCreator.CreateMissionSingleplayerEscapeMenu(isIronmanMode: false),
 			ViewCreator.CreateMissionAgentLabelUIHandler(mission),
-			ViewCreator.CreateMissionBattleScoreUIHandler(mission, new CustomBattleScoreboardVM()),
+			ViewCreator.CreateMissionBattleScoreUIHandler(mission, new CustomBattleScoreboardVM(new CustomBattleScoreContext(mission))),
 			ViewCreator.CreateOptionsUIHandler(),
 			ViewCreator.CreateMissionMainAgentEquipDropView(mission)
 		};
@@ -59,7 +60,7 @@ public class CustomBattleViews
 		mission.GetMissionBehavior<SiegeDeploymentHandler>();
 		list.Add(ViewCreator.CreateMissionSingleplayerEscapeMenu(isIronmanMode: false));
 		list.Add(ViewCreator.CreateMissionAgentLabelUIHandler(mission));
-		list.Add(ViewCreator.CreateMissionBattleScoreUIHandler(mission, new CustomBattleScoreboardVM()));
+		list.Add(ViewCreator.CreateMissionBattleScoreUIHandler(mission, new CustomBattleScoreboardVM(new CustomBattleScoreContext(mission))));
 		list.Add(ViewCreator.CreateOptionsUIHandler());
 		list.Add(ViewCreator.CreateMissionMainAgentEquipDropView(mission));
 		MissionView missionView = ViewCreator.CreateMissionOrderUIHandler();
@@ -96,7 +97,7 @@ public class CustomBattleViews
 		{
 			ViewCreator.CreateMissionSingleplayerEscapeMenu(isIronmanMode: false),
 			ViewCreator.CreateOptionsUIHandler(),
-			ViewCreator.CreateMissionBattleScoreUIHandler(mission, new CustomBattleScoreboardVM()),
+			ViewCreator.CreateMissionBattleScoreUIHandler(mission, new CustomBattleScoreboardVM(new CustomBattleScoreContext(mission))),
 			ViewCreator.CreateMissionAgentLabelUIHandler(mission),
 			ViewCreator.CreateMissionOrderUIHandler(),
 			new OrderTroopPlacer(null),

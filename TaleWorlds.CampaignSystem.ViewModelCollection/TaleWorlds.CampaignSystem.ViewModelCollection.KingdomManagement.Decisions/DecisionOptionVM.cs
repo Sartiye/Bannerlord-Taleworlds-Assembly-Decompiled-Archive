@@ -538,7 +538,7 @@ public class DecisionOptionVM : ViewModel
 		else
 		{
 			Name = GameTexts.FindText("str_abstain").ToString();
-			Description = GameTexts.FindText("str_kingdom_decision_abstain_desc").ToString();
+			Description = GameTexts.FindText(IsPlayerSupporter ? "str_kingdom_decision_abstain_desc" : "str_kingdom_decision_ruler_abstain_desc").ToString();
 		}
 		SupportersOfThisOption?.ApplyActionOnAllItems(delegate(DecisionSupporterVM x)
 		{
@@ -561,7 +561,7 @@ public class DecisionOptionVM : ViewModel
 			{
 				int influenceCost = Decision.GetInfluenceCost(Option, supporter.Clan, supporter.SupportWeight);
 				GameTexts.SetVariable("AMOUNT", influenceCost);
-				GameTexts.SetVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"7\">");
+				GameTexts.SetVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"5\">");
 				list.Add(new TooltipProperty(supporter.Name.ToString(), GameTexts.FindText("str_amount_with_influence_icon").ToString(), 0));
 			}
 		}

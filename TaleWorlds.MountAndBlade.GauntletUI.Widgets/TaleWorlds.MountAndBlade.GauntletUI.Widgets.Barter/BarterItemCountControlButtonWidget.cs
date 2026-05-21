@@ -34,9 +34,9 @@ public class BarterItemCountControlButtonWidget : ButtonWidget
 		EventFired("MoveOne");
 	}
 
-	protected override void OnMouseReleased()
+	protected override void OnMouseReleased(bool isFromInput)
 	{
-		base.OnMouseReleased();
+		base.OnMouseReleased(isFromInput);
 		_clickStartTime = 0f;
 	}
 }

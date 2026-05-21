@@ -55,10 +55,10 @@ public class TutorialPhaseCampaignBehavior : CampaignBehaviorBase
 		campaignGameStarter.AddGameMenu("storymode_game_menu_blocker", "{=pVKkclVk}Interactions are limited during tutorial phase. This interaction is disabled.", storymode_game_menu_blocker_on_init);
 		campaignGameStarter.AddGameMenuOption("storymode_game_menu_blocker", "game_menu_blocker_leave", "{=3sRdGQou}Leave", game_menu_leave_condition, game_menu_leave_on_consequence, isLeave: true);
 		campaignGameStarter.AddGameMenu("storymode_tutorial_village_game_menu", "{=7VFLb3Qj}You have arrived at the village.", storymode_tutorial_village_game_menu_on_init, GameMenu.MenuOverlayType.SettlementWithBoth);
-		campaignGameStarter.AddGameMenuOption("storymode_tutorial_village_game_menu", "storymode_tutorial_village_enter", "{=Xrz05hYE}Take a walk around", storymode_tutorial_village_enter_on_condition, storymode_tutorial_village_enter_on_consequence);
 		campaignGameStarter.AddGameMenuOption("storymode_tutorial_village_game_menu", "storymode_tutorial_village_hostile_action", "{=GM3tAYMr}Take a hostile action", raid_village_menu_option_condition, null);
 		campaignGameStarter.AddGameMenuOption("storymode_tutorial_village_game_menu", "storymode_tutorial_village_recruit", "{=E31IJyqs}Recruit troops", recruit_troops_village_menu_option_condition, storymode_recruit_volunteers_on_consequence);
 		campaignGameStarter.AddGameMenuOption("storymode_tutorial_village_game_menu", "storymode_tutorial_village_buy", "{=VN4ctHIU}Buy products", buy_products_village_menu_option_condition, storymode_ui_village_buy_good_on_consequence);
+		campaignGameStarter.AddGameMenuOption("storymode_tutorial_village_game_menu", "storymode_tutorial_village_enter", "{=Xrz05hYE}Take a walk around", storymode_tutorial_village_enter_on_condition, storymode_tutorial_village_enter_on_consequence);
 		campaignGameStarter.AddGameMenuOption("storymode_tutorial_village_game_menu", "storymode_tutorial_village_wait", "{=zEoHYEUS}Wait here for some time", wait_village_menu_option_condition, null);
 		campaignGameStarter.AddGameMenuOption("storymode_tutorial_village_game_menu", "storymode_tutorial_village_leave", "{=3sRdGQou}Leave", game_menu_leave_on_condition, game_menu_leave_on_consequence, isLeave: true);
 	}
@@ -448,12 +448,12 @@ public class TutorialPhaseCampaignBehavior : CampaignBehaviorBase
 		}
 		else if (quest is TalkToTheHeadmanTutorialQuest)
 		{
-			new LocateAndRescueTravellerTutorialQuest(Settlement.CurrentSettlement.Notables.First((Hero n) => n.IsHeadman)).StartQuest();
+			new LocateAndRescueTravellerTutorialQuest().StartQuest();
 			TutorialPhase.Instance.SetTutorialQuestPhase(TutorialQuestPhase.LocateAndRescueTravellerStarted);
 		}
 		else if (quest is LocateAndRescueTravellerTutorialQuest)
 		{
-			new FindHideoutTutorialQuest(quest.QuestGiver, SettlementHelper.FindNearestHideoutToSettlement(quest.QuestGiver.CurrentSettlement, MobileParty.NavigationType.Default).Settlement).StartQuest();
+			new FindHideoutTutorialQuest(SettlementHelper.FindNearestHideoutToSettlement(Settlement.Find("village_ES3_2"), MobileParty.NavigationType.Default).Settlement).StartQuest();
 			TutorialPhase.Instance.SetTutorialQuestPhase(TutorialQuestPhase.FindHideoutStarted);
 		}
 	}

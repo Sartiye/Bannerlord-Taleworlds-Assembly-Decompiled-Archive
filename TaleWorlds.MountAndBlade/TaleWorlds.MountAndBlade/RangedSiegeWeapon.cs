@@ -63,7 +63,7 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 	public enum CameraState
 	{
 		StickToWeapon,
-		DontMove,
+		DoNotMove,
 		MoveDownToReload,
 		RememberLastShotDirection,
 		FreeMove,
@@ -73,7 +73,6 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 	public enum ForceUseState
 	{
 		NotForced,
-		ForcefullyWatched,
 		ForcefullyUsed
 	}
 
@@ -164,7 +163,7 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 
 	protected float BaseReloadSpeed = 1f;
 
-	public int StartingAmmoCount = 20;
+	public int StartingAmmoCount;
 
 	protected int CurrentAmmo = 1;
 
@@ -205,6 +204,8 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 	private float _lastSyncedReleaseAngle;
 
 	private float _syncTimer;
+
+	private float _cameraMoveBackFactor;
 
 	public float TopReleaseAngleRestriction = System.MathF.PI / 2f;
 
@@ -590,7 +591,7 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 				PilotReservePriorityValues.Add(canPickUpAmmoStandingPoint, length);
 			}
 		}
-		AmmoCount = StartingAmmoCount - 1;
+		AmmoCount = TaleWorlds.Library.MathF.Max(0, StartingAmmoCount - 1);
 		UpdateAmmoMesh();
 		RegisterAnimationParameters();
 		GetSoundEventIndices();
@@ -600,8 +601,8 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 
 	protected virtual void DetermineDefaultBattleSide()
 	{
-		DestructableComponent destructableComponent = base.GameEntity.GetScriptComponents<DestructableComponent>().FirstOrDefault();
-		DefaultSide = destructableComponent.BattleSide;
+		DestructableComponent firstScriptOfType = base.GameEntity.GetFirstScriptOfType<DestructableComponent>();
+		DefaultSide = firstScriptOfType.BattleSide;
 	}
 
 	private void SortCanPickUpAmmoStandingPoints()
@@ -679,7 +680,7 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 		TargetDirection = CurrentDirection;
 		TargetReleaseAngle = CurrentReleaseAngle;
 		ApplyCurrentDirectionToEntity();
-		AmmoCount = StartingAmmoCount - 1;
+		AmmoCount = TaleWorlds.Library.MathF.Max(0, StartingAmmoCount - 1);
 		UpdateAmmoMesh();
 		if (MoveSound != null)
 		{
@@ -787,7 +788,7 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 		case WeaponState.Shooting:
 			if (CameraHolder != null)
 			{
-				_cameraState = CameraState.DontMove;
+				_cameraState = CameraState.DoNotMove;
 				DontMoveTimer = 0.35f;
 			}
 			break;
@@ -815,7 +816,7 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 			_cameraState = ((_cameraState == CameraState.FreeMove) ? CameraState.ApproachToCamera : CameraState.StickToWeapon);
 			break;
 		default:
-			Debug.FailedAssert("Invalid WeaponState.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\RangedSiegeWeapon.cs", "OnRangedSiegeWeaponStateChange", 895);
+			Debug.FailedAssert("Invalid WeaponState.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\RangedSiegeWeapon.cs", "OnRangedSiegeWeaponStateChange", 894);
 			break;
 		}
 		if (GameNetwork.IsClientOrReplay)
@@ -869,7 +870,7 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 			SetActivationLoadAmmoPoint(activate: false);
 			break;
 		default:
-			Debug.FailedAssert("Invalid WeaponState.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\RangedSiegeWeapon.cs", "OnRangedSiegeWeaponStateChange", 971);
+			Debug.FailedAssert("Invalid WeaponState.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\RangedSiegeWeapon.cs", "OnRangedSiegeWeaponStateChange", 970);
 			break;
 		case WeaponState.Idle:
 		case WeaponState.WaitingAfterShooting:
@@ -884,11 +885,11 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 
 	protected override float GetDetachmentWeightAux(BattleSideEnum side)
 	{
-		if (!HasAmmo)
+		if (HasAmmo)
 		{
-			return float.MinValue;
+			return base.GetDetachmentWeightAux(side);
 		}
-		return base.GetDetachmentWeightAux(side);
+		return float.MinValue;
 	}
 
 	protected float GetDetachmentWeightAuxForExternalAmmoWeapons(BattleSideEnum side)
@@ -897,7 +898,7 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 		{
 			return float.MinValue;
 		}
-		_usableStandingPoints.Clear();
+		UsableStandingPoints.Clear();
 		bool flag = false;
 		bool flag2 = false;
 		bool flag3 = !base.PilotStandingPoint.HasUser && !base.PilotStandingPoint.HasAIMovingTo && (ReloaderAgent == null || ReloaderAgentOriginalPoint != base.PilotStandingPoint);
@@ -919,7 +920,7 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 					{
 						if (!flag2)
 						{
-							_usableStandingPoints.Clear();
+							UsableStandingPoints.Clear();
 							num = -1;
 						}
 						flag2 = true;
@@ -929,10 +930,10 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 						continue;
 					}
 					flag = true;
-					_usableStandingPoints.Add((i, standingPoint2));
+					UsableStandingPoints.Add((i, standingPoint2));
 					if (flag3 && base.PilotStandingPoint == standingPoint2)
 					{
-						num = _usableStandingPoints.Count - 1;
+						num = UsableStandingPoints.Count - 1;
 					}
 				}
 				else if (flag3 && standingPoint2.HasAIUser && (standingPoint == null || PilotReservePriorityValues[standingPoint2] > PilotReservePriorityValues[standingPoint] || flag4))
@@ -961,10 +962,10 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 			}
 			if (num != -1)
 			{
-				_usableStandingPoints.RemoveAt(num);
+				UsableStandingPoints.RemoveAt(num);
 			}
 		}
-		_areUsableStandingPointsVacant = flag2;
+		AreUsableStandingPointsVacant = flag2;
 		if (!flag)
 		{
 			return float.MinValue;
@@ -973,7 +974,7 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 		{
 			return 1f;
 		}
-		if (_isDetachmentRecentlyEvaluated)
+		if (base.IsDetachmentRecentlyEvaluated)
 		{
 			return 0.01f;
 		}
@@ -1063,7 +1064,7 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 		float horizontalAimSensitivity = HorizontalAimSensitivity;
 		float verticalAimSensitivity = VerticalAimSensitivity;
 		bool flag2 = false;
-		if (_cameraState != CameraState.DontMove)
+		if (_cameraState != CameraState.DoNotMove)
 		{
 			if (_inputGiven)
 			{
@@ -1148,12 +1149,12 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 		switch (_cameraState)
 		{
 		case CameraState.StickToWeapon:
-			flag = ApproachToAngle(ref CurrentDirection, TargetDirection, UsesMouseForAiming, -1f, dt, horizontalAimSensitivity) || flag;
+			flag = ApproachToAngle(ref CurrentDirection, TargetDirection, UsesMouseForAiming, -1f, dt, horizontalAimSensitivity);
 			flag = ApproachToAngle(ref CurrentReleaseAngle, TargetReleaseAngle, UsesMouseForAiming, -1f, dt, verticalAimSensitivity) || flag;
 			CameraDirection = CurrentDirection;
 			CameraReleaseAngle = CurrentReleaseAngle;
 			break;
-		case CameraState.DontMove:
+		case CameraState.DoNotMove:
 			DontMoveTimer -= dt;
 			if (DontMoveTimer < 0f)
 			{
@@ -1174,7 +1175,7 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 		case CameraState.MoveDownToReload:
 			MaxRotateSpeed += dt * 1.2f;
 			MaxRotateSpeed = TaleWorlds.Library.MathF.Min(MaxRotateSpeed, 1f);
-			flag = ApproachToAngle(ref CurrentReleaseAngle, ReloadTargetReleaseAngle, UsesMouseForAiming, 0.4f + MaxRotateSpeed, dt, verticalAimSensitivity) || flag;
+			flag = ApproachToAngle(ref CurrentReleaseAngle, ReloadTargetReleaseAngle, UsesMouseForAiming, 0.4f + MaxRotateSpeed, dt, verticalAimSensitivity);
 			flag = ApproachToAngle(ref CameraDirection, TargetDirection, UsesMouseForAiming, -1f, dt, horizontalAimSensitivity) || flag;
 			flag = ApproachToAngle(ref CameraReleaseAngle, ReloadTargetReleaseAngle, UsesMouseForAiming, 0.5f + MaxRotateSpeed, dt, verticalAimSensitivity) || flag;
 			if (!flag)
@@ -1190,13 +1191,13 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 			}
 			break;
 		case CameraState.FreeMove:
-			flag = ApproachToAngle(ref CameraDirection, TargetDirection, UsesMouseForAiming, -1f, dt, horizontalAimSensitivity) || flag;
+			flag = ApproachToAngle(ref CameraDirection, TargetDirection, UsesMouseForAiming, -1f, dt, horizontalAimSensitivity);
 			flag = ApproachToAngle(ref CameraReleaseAngle, TargetReleaseAngle, UsesMouseForAiming, -1f, dt, verticalAimSensitivity) || flag;
 			MaxRotateSpeed = 0f;
 			break;
 		case CameraState.ApproachToCamera:
 			MaxRotateSpeed += 0.9f * dt + MaxRotateSpeed * 2f * dt;
-			flag = ApproachToAngle(ref CameraDirection, TargetDirection, UsesMouseForAiming, -1f, dt, horizontalAimSensitivity) || flag;
+			flag = ApproachToAngle(ref CameraDirection, TargetDirection, UsesMouseForAiming, -1f, dt, horizontalAimSensitivity);
 			flag = ApproachToAngle(ref CameraReleaseAngle, TargetReleaseAngle, UsesMouseForAiming, -1f, dt, verticalAimSensitivity) || flag;
 			flag = ApproachToAngle(ref CurrentDirection, TargetDirection, UsesMouseForAiming, MaxRotateSpeed, dt, horizontalAimSensitivity) || flag;
 			flag = ApproachToAngle(ref CurrentReleaseAngle, TargetReleaseAngle, UsesMouseForAiming, MaxRotateSpeed, dt, verticalAimSensitivity) || flag;
@@ -1219,7 +1220,23 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 			frame.rotation.u.Normalize();
 			frame.rotation.f = Vec3.CrossProduct(frame.rotation.u, frame.rotation.s);
 			frame.rotation.f.Normalize();
+			if (base.PilotAgent == null)
+			{
+				_cameraMoveBackFactor = ((1f - _cameraMoveBackFactor > 1E-05f) ? MBMath.LerpFPSIndependent(_cameraMoveBackFactor, 1f, dt * 8f) : 1f);
+			}
+			else
+			{
+				_cameraMoveBackFactor = ((_cameraMoveBackFactor > 1E-05f) ? MBMath.LerpFPSIndependent(_cameraMoveBackFactor, 0f, dt * 8f) : 0f);
+			}
+			if (_cameraMoveBackFactor > 0f)
+			{
+				frame.origin += frame.rotation.u * _cameraMoveBackFactor * 3f + frame.rotation.f * _cameraMoveBackFactor * 0.3f;
+			}
 			CameraHolder.SetGlobalFrame(in frame);
+		}
+		else
+		{
+			_cameraMoveBackFactor = ((base.PilotAgent == null) ? 1f : 0f);
 		}
 		if (flag && !_hasFrameChangedInPreviousFrame)
 		{
@@ -1589,36 +1606,29 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 			}
 		case WeaponState.WaitingBeforeReloading:
 			_animationTimeElapsed += dt;
-			if (!HasAmmo)
+			if (!(_animationTimeElapsed >= TimeGapBetweenShootingEndAndReloadingStart) || (_cameraState != CameraState.RememberLastShotDirection && _cameraState != CameraState.FreeMove && _cameraState != 0 && !(CameraHolder == null)))
 			{
-				SetIsDisabledForAI(isDisabledForAI: true);
+				break;
 			}
-			else
+			if (ReloadStandingPoints.Count == 0)
 			{
-				if (!(_animationTimeElapsed >= TimeGapBetweenShootingEndAndReloadingStart) || (_cameraState != CameraState.RememberLastShotDirection && _cameraState != CameraState.FreeMove && _cameraState != 0 && !(CameraHolder == null)))
-				{
-					break;
-				}
-				if (ReloadStandingPoints.Count != 0)
-				{
-					{
-						foreach (StandingPoint reloadStandingPoint3 in ReloadStandingPoints)
-						{
-							if (reloadStandingPoint3.HasUser && !reloadStandingPoint3.UserAgent.IsInBeingStruckAction)
-							{
-								State = WeaponState.Reloading;
-								break;
-							}
-						}
-						break;
-					}
-				}
 				if (base.PilotAgent != null && !base.PilotAgent.IsInBeingStruckAction)
 				{
 					State = WeaponState.Reloading;
 				}
+				break;
 			}
-			break;
+			{
+				foreach (StandingPoint reloadStandingPoint3 in ReloadStandingPoints)
+				{
+					if (reloadStandingPoint3.HasUser && !reloadStandingPoint3.UserAgent.IsInBeingStruckAction)
+					{
+						State = WeaponState.Reloading;
+						break;
+					}
+				}
+				break;
+			}
 		case WeaponState.WaitingBeforeProjectileLeaving:
 			_animationTimeElapsed += dt;
 			if (_animationTimeElapsed >= TimeGapBetweenShootActionAndProjectileLeaving)
@@ -1641,7 +1651,7 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 			break;
 		}
 		default:
-			Debug.FailedAssert("Invalid WeaponState.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\RangedSiegeWeapon.cs", "UpdateState", 2001);
+			Debug.FailedAssert("Invalid WeaponState.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\RangedSiegeWeapon.cs", "UpdateState", 2000);
 			break;
 		case WeaponState.Idle:
 		case WeaponState.WaitingAfterShooting:
@@ -1778,33 +1788,67 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 
 	public abstract override SiegeEngineType GetSiegeEngineType();
 
-	public bool CanShootAtBox(Vec3 boxMin, Vec3 boxMax, uint attempts = 5u)
+	public bool CanShootAtThreat(Threat threat, int attemptCount = 5)
 	{
-		Vec3 v;
-		Vec3 vec = (v = (boxMin + boxMax) / 2f);
-		v.z = boxMin.z;
-		Vec3 v2 = vec;
-		v2.z = boxMax.z;
-		uint num = attempts;
-		do
+		WeakGameEntity weakGameEntity = WeakGameEntity.Invalid;
+		if (threat.TargetableObject != null)
 		{
-			Vec3 target = Vec3.Lerp(v, v2, (float)num / (float)attempts);
-			if (CanShootAtPoint(target))
-			{
-				return true;
-			}
-			num--;
+			weakGameEntity = threat.TargetableObject.GetTargetEntity();
 		}
-		while (num != 0);
+		(Vec3, Vec3) tuple = threat.ComputeGlobalTargetingBoundingBoxMinMax();
+		Vec3 item = tuple.Item1;
+		Vec3 item2 = tuple.Item2;
+		Vec3 vec = (item2 + item) / 2f;
+		Vec3 v = new Vec3(vec.AsVec2, item.z);
+		Vec3 v2 = new Vec3(vec.AsVec2, item2.z);
+		for (int i = 0; i < attemptCount; i++)
+		{
+			Vec3 targetPoint = Vec3.Lerp(v, v2, (float)i / (float)(attemptCount - 1));
+			Scene scene = base.Scene;
+			Vec3 sourcePoint = MissileStartingGlobalPositionForSimulation;
+			if (!scene.RayCastForClosestEntityOrTerrainIgnoreEntity(in sourcePoint, in targetPoint, base.GameEntity.Root, out var collisionDistance, out var collidedEntity, _projectileRadiusCached, BodyFlags.CommonCollisionExcludeFlagsForMissile) || (!(collidedEntity == null) && !(collidedEntity.Root != weakGameEntity.Root)))
+			{
+				Vec3 estimatedTargetMovementVector = GetEstimatedTargetMovementVector(targetPoint, threat.GetGlobalVelocity());
+				targetPoint += estimatedTargetMovementVector;
+				Scene scene2 = base.Scene;
+				sourcePoint = MissileStartingGlobalPositionForSimulation;
+				if ((!scene2.RayCastForClosestEntityOrTerrainIgnoreEntity(in sourcePoint, in targetPoint, base.GameEntity.Root, out collisionDistance, out collidedEntity, _projectileRadiusCached, BodyFlags.CommonCollisionExcludeFlagsForMissile) || (!(collidedEntity == null) && !(collidedEntity.Root != weakGameEntity.Root))) && CanShootAtPoint(targetPoint))
+				{
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 
-	public bool CanShootAtThreat(Threat threat)
+	public bool CanShootAtAgent(Agent agent, int attemptCount = 5)
 	{
-		Vec3 targetingPosition = threat.TargetingPosition;
-		Vec3 estimatedTargetMovementVector = GetEstimatedTargetMovementVector(targetingPosition, threat.GetGlobalVelocity());
-		targetingPosition += estimatedTargetMovementVector;
-		return CanShootAtPoint(targetingPosition);
+		WeakGameEntity root = base.GameEntity.Root;
+		(Vec3, Vec3) boxMinMax = agent.CollisionCapsule.GetBoxMinMax();
+		Vec3 item = boxMinMax.Item1;
+		Vec3 item2 = boxMinMax.Item2;
+		Vec3 vec = (item2 + item) / 2f;
+		Vec3 v = new Vec3(vec.AsVec2, item.z);
+		Vec3 v2 = new Vec3(vec.AsVec2, item2.z);
+		for (int i = 0; i < attemptCount; i++)
+		{
+			Vec3 targetPoint = Vec3.Lerp(v, v2, (float)i / (float)(attemptCount - 1));
+			Scene scene = base.Scene;
+			Vec3 sourcePoint = MissileStartingGlobalPositionForSimulation;
+			if (!scene.RayCastForClosestEntityOrTerrainIgnoreEntity(in sourcePoint, in targetPoint, root, out var collisionDistance, out var collidedEntity, _projectileRadiusCached, BodyFlags.CommonCollisionExcludeFlagsForMissile))
+			{
+				Vec3 targetVelocity = new Vec3(agent.GetAverageRealGlobalVelocity().AsVec2);
+				Vec3 estimatedTargetMovementVector = GetEstimatedTargetMovementVector(targetPoint, targetVelocity);
+				targetPoint += estimatedTargetMovementVector;
+				Scene scene2 = base.Scene;
+				sourcePoint = MissileStartingGlobalPositionForSimulation;
+				if (!scene2.RayCastForClosestEntityOrTerrainIgnoreEntity(in sourcePoint, in targetPoint, root, out collisionDistance, out collidedEntity, _projectileRadiusCached, BodyFlags.CommonCollisionExcludeFlagsForMissile) && CanShootAtPoint(targetPoint))
+				{
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	public virtual Vec3 GetEstimatedTargetMovementVector(Vec3 targetCurrentPosition, Vec3 targetVelocity)
@@ -1814,12 +1858,6 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 			return targetVelocity * ((base.GameEntity.GlobalPosition - targetCurrentPosition).Length / ShootingSpeed + TimeGapBetweenShootActionAndProjectileLeaving);
 		}
 		return Vec3.Zero;
-	}
-
-	public bool CanShootAtAgent(Agent agent)
-	{
-		Vec3 estimatedTargetGlobalPointForAgent = GetEstimatedTargetGlobalPointForAgent(agent);
-		return CanShootAtPoint(estimatedTargetGlobalPointForAgent);
 	}
 
 	public bool CanShootAtPoint(Vec3 target)
@@ -1840,37 +1878,32 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 		Vec3 missileStartingGlobalPositionForSimulation = MissileStartingGlobalPositionForSimulation;
 		MatrixFrame globalFrame = base.GameEntity.GetGlobalFrame();
 		Vec3 v = globalFrame.rotation.u;
-		Vec3 v2 = globalFrame.rotation.s;
 		if (!v.IsUnit)
 		{
 			v.Normalize();
 		}
+		globalFrame.rotation.RotateAboutAnArbitraryVector(in v, System.MathF.PI + localTargetDirection);
+		Vec3 v2 = globalFrame.rotation.s;
 		if (!v2.IsUnit)
 		{
 			v2.Normalize();
 		}
-		globalFrame.rotation.RotateAboutAnArbitraryVector(in v, System.MathF.PI + localTargetDirection);
 		globalFrame.rotation.RotateAboutAnArbitraryVector(in v2, localTargetAngle);
 		float x = globalFrame.rotation.GetEulerAngles().x;
 		Vec3 vec = ((MissileStartingPositionEntityForSimulation == null) ? CanShootAtPointCheckingOffset : Vec3.Zero);
-		return CanSeePointBallistic(missileStartingGlobalPositionForSimulation + vec, x, ShootingSpeed, target);
+		return CanShootPointBallistic(missileStartingGlobalPositionForSimulation + vec, x, ShootingSpeed, target);
 	}
 
-	private bool CanSeePointBallistic(Vec3 startGlobalPos, float verticalAngle, float shootingSpeed, Vec3 targetGlobalPos)
+	private bool CanShootPointBallistic(Vec3 startGlobalPos, float verticalAngle, float shootingSpeed, Vec3 targetGlobalPos)
 	{
-		float num = shootingSpeed * TaleWorlds.Library.MathF.Sin(verticalAngle);
-		float num2 = num / 9.806f;
-		float num3 = num * num2;
-		float num4 = 4.903f * num2 * num2;
-		Vec3 vec = (startGlobalPos + targetGlobalPos) / 2f + new Vec3(0f, 0f, (num4 + num3) / 2f);
+		float num = shootingSpeed * TaleWorlds.Library.MathF.Sin(verticalAngle) / 9.806f;
+		float z = 4.903f * num * num;
+		Vec3 targetPoint = (startGlobalPos + targetGlobalPos) / 2f + new Vec3(0f, 0f, z);
 		float projectileRadiusCached = _projectileRadiusCached;
-		float collisionDistance = 0f;
-		Vec3 closestPoint = Vec3.Invalid;
-		UIntPtr entityIndex = UIntPtr.Zero;
-		float collisionDistance2;
+		float collisionDistance;
 		if (verticalAngle <= 0f)
 		{
-			Agent agent = Mission.Current.RayCastForClosestAgent(startGlobalPos, targetGlobalPos, -1, projectileRadiusCached, out collisionDistance2);
+			Agent agent = Mission.Current.RayCastForClosestAgent(startGlobalPos, targetGlobalPos, -1, projectileRadiusCached, out collisionDistance);
 			if (agent != null && !agent.IsEnemyOf(base.PilotAgent))
 			{
 				return false;
@@ -1878,17 +1911,16 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 		}
 		else
 		{
-			Vec3 targetPoint = ((verticalAngle <= 0f) ? targetGlobalPos : vec);
-			if (EngineApplicationInterface.IScene.RayCastForClosestEntityOrTerrainIgnoreEntity(base.Scene.Pointer, in startGlobalPos, in targetPoint, projectileRadiusCached, ref collisionDistance, ref closestPoint, ref entityIndex, BodyFlags.CommonCollisionExcludeFlagsForMissile, base.GameEntity.Root.Pointer) && entityIndex != UIntPtr.Zero && new GameEntity(entityIndex) != null)
+			if (base.Scene.RayCastForClosestEntityOrTerrainIgnoreEntity(in startGlobalPos, in targetPoint, base.GameEntity.Root, out collisionDistance, out var _, projectileRadiusCached, BodyFlags.CommonCollisionExcludeFlagsForMissile))
 			{
 				return false;
 			}
-			Agent agent2 = Mission.Current.RayCastForClosestAgent(startGlobalPos, vec, -1, projectileRadiusCached, out collisionDistance2);
+			Agent agent2 = Mission.Current.RayCastForClosestAgent(startGlobalPos, targetPoint, -1, projectileRadiusCached, out collisionDistance);
 			if (agent2 != null && !agent2.IsEnemyOf(base.PilotAgent))
 			{
 				return false;
 			}
-			agent2 = Mission.Current.RayCastForClosestAgent(vec, targetGlobalPos, -1, projectileRadiusCached * 2f, out collisionDistance2);
+			agent2 = Mission.Current.RayCastForClosestAgent(targetPoint, targetGlobalPos, -1, projectileRadiusCached * 2f, out collisionDistance);
 			if (agent2 != null && !agent2.IsEnemyOf(base.PilotAgent))
 			{
 				return false;
@@ -1963,7 +1995,7 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 	protected virtual void UpdateAmmoMesh()
 	{
 		WeakGameEntity weakGameEntity = base.AmmoPickUpPoints[0].GameEntity;
-		int num = 20 - AmmoCount;
+		int num = StartingAmmoCount - AmmoCount;
 		while (weakGameEntity.Parent.IsValid)
 		{
 			for (int i = 0; i < weakGameEntity.MultiMeshComponentCount; i++)
@@ -2024,5 +2056,11 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 	{
 		base.OnShipCaptured(newDefaultSide);
 		DefaultSide = newDefaultSide;
+	}
+
+	public override void OnDeploymentFinished()
+	{
+		base.OnDeploymentFinished();
+		(base.Ai as RangedSiegeWeaponAi).InitializeThreatSeeker();
 	}
 }

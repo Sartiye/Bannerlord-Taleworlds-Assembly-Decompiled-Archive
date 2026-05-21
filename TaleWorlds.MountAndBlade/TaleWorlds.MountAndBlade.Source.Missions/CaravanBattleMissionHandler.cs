@@ -38,8 +38,8 @@ public class CaravanBattleMissionHandler : MissionLogic
 	public override void AfterStart()
 	{
 		base.AfterStart();
-		float battleSizeOffset = Mission.GetBattleSizeOffset((int)((float)_unitCount * 1.5f), base.Mission.GetInitialSpawnPath());
-		WorldFrame spawnPathFrame = base.Mission.GetSpawnPathFrame(base.Mission.DefenderTeam.Side, battleSizeOffset);
+		float pathOffset = Mission.ComputeSpawnPathDeploymentOffset((int)((float)_unitCount * 1.5f), base.Mission.GetInitialSpawnPath());
+		WorldFrame spawnPathFrame = base.Mission.GetSpawnPathFrame(base.Mission.DefenderTeam.Side, pathOffset);
 		Scene scene = Mission.Current.Scene;
 		string prefabName = (_isCaravan ? "caravan_scattered_goods_prop" : "villager_scattered_goods_prop");
 		ref Mat3 rotation = ref spawnPathFrame.Rotation;

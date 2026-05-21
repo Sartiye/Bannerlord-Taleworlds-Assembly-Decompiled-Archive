@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Helpers;
-using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 
@@ -74,15 +73,11 @@ public class InitialChildGenerationCampaignBehavior : CampaignBehaviorBase
 					Hero hero2 = HeroCreator.CreateChild(hero.CharacterObject, clan.HomeSettlement, clan, age);
 					hero2.UpdateHomeSettlement();
 					hero2.HeroDeveloper.InitializeHeroDeveloper();
-					MBEquipmentRoster randomElementInefficiently = Campaign.Current.Models.EquipmentSelectionModel.GetEquipmentRostersForInitialChildrenGeneration(hero2).GetRandomElementInefficiently();
-					if (randomElementInefficiently != null)
-					{
-						Equipment randomCivilianEquipment = randomElementInefficiently.GetRandomCivilianEquipment();
-						EquipmentHelper.AssignHeroEquipmentFromEquipment(hero2, randomCivilianEquipment);
-						Equipment equipment = new Equipment(Equipment.EquipmentType.Battle);
-						equipment.FillFrom(randomCivilianEquipment, useSourceEquipmentType: false);
-						EquipmentHelper.AssignHeroEquipmentFromEquipment(hero2, equipment);
-					}
+					Equipment equipmentForInitialChildrenGeneration = Campaign.Current.Models.EquipmentSelectionModel.GetEquipmentForInitialChildrenGeneration(hero2);
+					EquipmentHelper.AssignHeroEquipmentFromEquipment(hero2, equipmentForInitialChildrenGeneration);
+					Equipment equipment = new Equipment(Equipment.EquipmentType.Battle);
+					equipment.FillFrom(equipmentForInitialChildrenGeneration, useSourceEquipmentType: false);
+					EquipmentHelper.AssignHeroEquipmentFromEquipment(hero2, equipment);
 				}
 				if (num2 <= 0f)
 				{

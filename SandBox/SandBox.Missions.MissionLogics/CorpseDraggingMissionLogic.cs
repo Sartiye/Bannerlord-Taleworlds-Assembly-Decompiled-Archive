@@ -140,6 +140,20 @@ public class CorpseDraggingMissionLogic : MissionLogic, IPlayerInputEffector, IM
 			_draggedCorpse.SetVelocityLimitsOnRagdoll(-1f, -1f);
 			_draggedCorpse.EndRagdollAsCorpse();
 		}
+		else if (draggedCorpse != null)
+		{
+			EquipmentIndex offhandWieldedItemIndex = draggedCorpse.GetOffhandWieldedItemIndex();
+			EquipmentIndex primaryWieldedItemIndex = draggedCorpse.GetPrimaryWieldedItemIndex();
+			MissionEquipment equipment = draggedCorpse.Equipment;
+			if (primaryWieldedItemIndex != EquipmentIndex.None && !equipment[primaryWieldedItemIndex].IsEmpty)
+			{
+				draggedCorpse.DropItem(primaryWieldedItemIndex);
+			}
+			if (offhandWieldedItemIndex != EquipmentIndex.None && !equipment[offhandWieldedItemIndex].IsEmpty)
+			{
+				draggedCorpse.DropItem(offhandWieldedItemIndex);
+			}
+		}
 		_draggedCorpse = draggedCorpse;
 		_draggedCorpseBoneIndex = draggedCorpseBoneIndex;
 		_draggedCorpseUnbindDistanceSquared = 100f;

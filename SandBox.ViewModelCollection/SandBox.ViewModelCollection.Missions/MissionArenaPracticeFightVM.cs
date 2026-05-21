@@ -122,7 +122,7 @@ public class MissionArenaPracticeFightVM : ViewModel
 			content = ((opponentCountBeatenByPlayer < 6) ? 5 : ((opponentCountBeatenByPlayer < 10) ? 10 : ((opponentCountBeatenByPlayer >= 20) ? 60 : 25)));
 		}
 		GameTexts.SetVariable("DENAR_AMOUNT", content);
-		GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		PrizeText = GameTexts.FindText("str_earned_denar").ToString();
 	}
 }

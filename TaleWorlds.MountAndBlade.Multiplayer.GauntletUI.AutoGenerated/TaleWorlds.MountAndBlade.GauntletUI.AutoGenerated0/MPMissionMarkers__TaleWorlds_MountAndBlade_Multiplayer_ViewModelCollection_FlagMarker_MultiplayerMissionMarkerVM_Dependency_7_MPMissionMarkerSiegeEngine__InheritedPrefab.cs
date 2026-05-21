@@ -52,7 +52,7 @@ public class MPMissionMarkers__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCol
 		base.FarAlphaTarget = 0.5f;
 		base.FarDistanceCutoff = 250f;
 		base.SiegeEngineWidget = _widget_0;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		base.IsSpawnFlag = false;
 		_widget_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0.HeightSizePolicy = SizePolicy.Fixed;

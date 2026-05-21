@@ -534,7 +534,7 @@ public class ClanSettlementItemVM : ViewModel
 			ItemProperties.Add(new SelectableFiefItemPropertyVM(GameTexts.FindText("str_patrol").ToString(), _patrolsBehavior.GetSettlementPatrolStatus(Settlement).ToString(), 0, SelectableItemPropertyVM.PropertyType.Patrol, hint7));
 		}
 		IsSendMembersEnabled = CampaignUIHelper.GetMapScreenActionIsEnabledWithReason(out var disabledReason);
-		TextObject textObject = new TextObject("{=uGMGjUZy}Send your clan members to {SETTLEMENT_NAME}");
+		TextObject textObject = new TextObject("{=PTGsYoPc}Assign your clan members to {SETTLEMENT_NAME}");
 		textObject.SetTextVariable("SETTLEMENT_NAME", Settlement.Name.ToString());
 		SendMembersHint = new HintViewModel(IsSendMembersEnabled ? textObject : disabledReason);
 		UpdateProfitProperties();

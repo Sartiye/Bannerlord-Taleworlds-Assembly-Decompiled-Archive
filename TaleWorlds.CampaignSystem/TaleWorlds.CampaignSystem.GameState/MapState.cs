@@ -98,11 +98,6 @@ public class MapState : TaleWorlds.Core.GameState
 		RefreshHandler();
 	}
 
-	public void OnFadeInAndOut(float fadeOutTime, float blackTime, float fadeInTime)
-	{
-		Handler?.OnFadeInAndOut(fadeOutTime, blackTime, fadeInTime);
-	}
-
 	public void OnDispersePlayerLeadedArmy()
 	{
 		RefreshHandler();

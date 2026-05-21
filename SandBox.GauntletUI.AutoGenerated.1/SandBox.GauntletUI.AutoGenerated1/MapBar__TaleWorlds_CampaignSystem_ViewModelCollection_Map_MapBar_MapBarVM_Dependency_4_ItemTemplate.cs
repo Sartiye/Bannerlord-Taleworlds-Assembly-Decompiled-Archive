@@ -125,8 +125,8 @@ public class MapBar__TaleWorlds_CampaignSystem_ViewModelCollection_Map_MapBar_Ma
 		_widget_0.IsEnabled = false;
 		_widget_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_0_0.SuggestedWidth = 33f;
-		_widget_0_0.SuggestedHeight = 33f;
+		_widget_0_0.SuggestedWidth = 40f;
+		_widget_0_0.SuggestedHeight = 40f;
 		_widget_0_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_0_0.IconBrush = base.Context.GetBrush("MapBar.Right.Icons");
 		_widget_0_0.UseStylesFromSourceIcon = true;

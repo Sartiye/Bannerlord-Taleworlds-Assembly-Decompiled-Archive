@@ -37,8 +37,6 @@ public interface ILobbyClientSessionHandler
 
 	void OnClanMessageReceived(string playerName, string message);
 
-	void OnChannelMessageReceived(ChatChannelType channel, string playerName, string message);
-
 	void OnPartyMessageReceived(string playerName, string message);
 
 	void OnSystemMessageReceived(string message);

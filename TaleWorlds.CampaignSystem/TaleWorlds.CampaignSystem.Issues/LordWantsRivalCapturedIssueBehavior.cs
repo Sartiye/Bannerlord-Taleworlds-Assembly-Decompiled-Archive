@@ -55,7 +55,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 				TextObject textObject = new TextObject("{=zKhvUmeH}{?TARGET_HERO.GENDER}She{?}He{\\?} is {TARGET_HERO.NAME} from {TARGET_HERO.CLAN}. I want {?TARGET_HERO.GENDER}her{?}him{\\?} brought to me, so I can settle this score once and for all. I have {BASE_REWARD}{GOLD_ICON} that I have set aside. If you can bring me {TARGET_HERO.LINK} alive within a year, it is yours to claim.[if:convo_bared_teeth][ib:closed2]");
 				StringHelpers.SetCharacterProperties("TARGET_HERO", _targetHero.CharacterObject, textObject, includeDetails: true);
 				textObject.SetTextVariable("BASE_REWARD", RewardGold);
-				GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -141,9 +141,10 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 			return false;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flags, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flags, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			relationHero = null;
+			requiredGold = 0;
 			flags = PreconditionFlags.None;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -246,7 +247,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 				StringHelpers.SetCharacterProperties("ISSUE_OWNER", base.QuestGiver.CharacterObject, textObject);
 				StringHelpers.SetCharacterProperties("TARGET_HERO", _targetHero.CharacterObject, textObject);
 				textObject.SetTextVariable("BASE_REWARD", RewardGold);
-				GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -259,7 +260,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 				StringHelpers.SetCharacterProperties("ISSUE_OWNER", base.QuestGiver.CharacterObject, textObject);
 				StringHelpers.SetCharacterProperties("TARGET_HERO", _targetHero.CharacterObject, textObject);
 				textObject.SetTextVariable("BASE_REWARD_X_2", RewardGold * 2);
-				GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -539,7 +540,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 			StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject);
 			StringHelpers.SetCharacterProperties("PLAYER", CharacterObject.PlayerCharacter);
 			MBTextManager.SetTextVariable("REWARD_GOLD", RewardGold);
-			GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+			GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 			return CharacterObject.OneToOneConversationCharacter == _questGiversAgentCharacterObject;
 		}
 
@@ -609,7 +610,7 @@ public class LordWantsRivalCapturedIssueBehavior : CampaignBehaviorBase
 		private bool set_reward_x_2_and_gold_icon()
 		{
 			MBTextManager.SetTextVariable("BASE_REWARD_X_2", RewardGold * 2);
-			GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+			GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 			return true;
 		}
 

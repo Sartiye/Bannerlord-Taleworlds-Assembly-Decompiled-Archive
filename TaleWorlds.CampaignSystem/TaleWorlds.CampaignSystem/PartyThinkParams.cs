@@ -75,13 +75,9 @@ public class PartyThinkParams
 		}
 	}
 
-	public void AddPotentialArmyMember(MobileParty armyMember)
+	public void SetArmyMembers(MBList<MobileParty> armyMembers)
 	{
-		if (_possibleArmyMembersUponArmyCreation == null)
-		{
-			_possibleArmyMembersUponArmyCreation = new MBList<MobileParty>(16);
-		}
-		_possibleArmyMembersUponArmyCreation.Add(armyMember);
+		_possibleArmyMembersUponArmyCreation = armyMembers;
 	}
 
 	public bool TryGetBehaviorScore(in AIBehaviorData aiBehaviorData, out float score)
@@ -109,7 +105,7 @@ public class PartyThinkParams
 				return;
 			}
 		}
-		Debug.FailedAssert("AIBehaviorScore not found.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\ICampaignBehaviorManager.cs", "SetBehaviorScore", 200);
+		Debug.FailedAssert("AIBehaviorScore not found.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\ICampaignBehaviorManager.cs", "SetBehaviorScore", 196);
 	}
 
 	public void AddBehaviorScore(in (AIBehaviorData, float) value)

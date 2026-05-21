@@ -62,7 +62,7 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM_Dep
 		base.WidthSizePolicy = SizePolicy.StretchToParent;
 		base.HeightSizePolicy = SizePolicy.CoverChildren;
 		base.SuggestedWidth = 569f;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		base.UseSelfIndexForMinimum = true;
 		_widget_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0.HeightSizePolicy = SizePolicy.Fixed;
@@ -102,7 +102,7 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM_Dep
 		_widget_0_0_1.Brush = base.Context.GetBrush("Party.Text.Toggle");
 		_widget_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1.UseSelfIndexForMinimum = true;
 	}
 

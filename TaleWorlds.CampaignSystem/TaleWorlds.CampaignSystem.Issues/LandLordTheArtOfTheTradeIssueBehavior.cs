@@ -62,7 +62,7 @@ public class LandLordTheArtOfTheTradeIssueBehavior : CampaignBehaviorBase
 				textObject.SetTextVariable("TOTAL_GOLD", (int)((float)(_selectedItemObject.Value * SelectedItemObjectCount) * 0.55f));
 				textObject.SetTextVariable("SELECTED_ITEM_COUNT", SelectedItemObjectCount);
 				textObject.SetTextVariable("SELECTED_ITEM", _selectedItemObject.Name);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -127,7 +127,7 @@ public class LandLordTheArtOfTheTradeIssueBehavior : CampaignBehaviorBase
 				textObject.SetTextVariable("UNIT_PRICE", _selectedItemObject.Value);
 				textObject.SetTextVariable("RETURN_DAYS", GetTotalAlternativeSolutionDurationInDays());
 				textObject.SetTextVariable("TROOP_COUNT", GetTotalAlternativeSolutionNeededMenCount());
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -230,10 +230,11 @@ public class LandLordTheArtOfTheTradeIssueBehavior : CampaignBehaviorBase
 			return false;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flags, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flags, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			flags = PreconditionFlags.None;
 			relationHero = null;
+			requiredGold = 0;
 			skill = null;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -337,7 +338,7 @@ public class LandLordTheArtOfTheTradeIssueBehavior : CampaignBehaviorBase
 				TextObject textObject = new TextObject("{=2bcNCnI3}{QUEST_GIVER.LINK} asked you to sell {?QUEST_GIVER.GENDER}her{?}his{\\?} goods for at least {UNIT_PRICE}{GOLD_ICON} per load and return to {?QUEST_GIVER.GENDER}her{?}him{\\?}. {?QUEST_GIVER.GENDER}She{?}He{\\?} told you that any profit would make above this price is yours to keep.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject, includeDetails: true);
 				textObject.SetTextVariable("UNIT_PRICE", _targetDenarsToAchieve / _selectedItemObjectCount);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -351,7 +352,7 @@ public class LandLordTheArtOfTheTradeIssueBehavior : CampaignBehaviorBase
 				textObject.SetTextVariable("SELECTED_ITEM_COUNT", _selectedItemObjectCount);
 				textObject.SetTextVariable("SELECTED_ITEM", _selectedItemObject.Name);
 				textObject.SetTextVariable("TOTAL_GOLD", _targetDenarsToAchieve);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -418,7 +419,7 @@ public class LandLordTheArtOfTheTradeIssueBehavior : CampaignBehaviorBase
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("QUEST_GIVER_VILLAGE", base.QuestGiver.CurrentSettlement.EncyclopediaLinkWithName);
 				textObject.SetTextVariable("TOTAL_DENAR", _targetDenarsToAchieve);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -537,7 +538,7 @@ public class LandLordTheArtOfTheTradeIssueBehavior : CampaignBehaviorBase
 				textObject = new TextObject("{=7nBOWsg2}I will buy the livestock from you for {TOTAL_GOLD}{GOLD_ICON}. This way we both will get what we desire.");
 			}
 			textObject.SetTextVariable("TOTAL_GOLD", _targetDenarsToAchieve);
-			textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+			textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 			TextObject textObject2 = new TextObject("{=iYtzlRSN}I would rather be your middleman on this matter. I need to keep my money. You can have your men load up the {.%}{SELECTED_ITEM}{.%} already.");
 			if (_selectedItemObject.IsAnimal || _selectedItemObject.HasHorseComponent)
 			{
@@ -550,7 +551,7 @@ public class LandLordTheArtOfTheTradeIssueBehavior : CampaignBehaviorBase
 				textObject3 = new TextObject("{=GihVcxIB}Do you want to buy the livestock yourself? Or will I retain ownership, and you just keep the extra profits? I am expecting to earn {TOTAL_DENARS}{GOLD_ICON} in total. If would like to buy the livestock right away you can simply sell it yourself or do whatever you wish with it.");
 			}
 			textObject3.SetTextVariable("TOTAL_DENARS", _targetDenarsToAchieve);
-			textObject3.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+			textObject3.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 			textObject3.SetTextVariable("SELECTED_COUNT", _selectedItemObjectCount);
 			OfferDialogFlow = DialogFlow.CreateDialogFlow("issue_classic_quest_start").NpcLine(new TextObject("{=NaoYCmC6}Good. Needless to say, by not taking any money up front, I am trusting in your honesty in your ability to protect those goods. But I am sure that trust will not be misplaced.[if:convo_innocent_smile][ib:closed]")).Condition(() => Hero.OneToOneConversationHero == base.QuestGiver)
 				.NpcLine(textObject3)
@@ -572,14 +573,14 @@ public class LandLordTheArtOfTheTradeIssueBehavior : CampaignBehaviorBase
 			TextObject playerMainOptionOneWithGold = new TextObject("{=1zdkXAwL}The market isn't what we expected. I am afraid I only made {GATHERED_DENARS}{GOLD_ICON} of the {TOTAL_DENARS}{GOLD_ICON} that we agreed upon.");
 			playerMainOptionOneWithGold.SetTextVariable("GATHERED_DENARS", _gatheredDenars);
 			playerMainOptionOneWithGold.SetTextVariable("TOTAL_DENARS", _targetDenarsToAchieve);
-			playerMainOptionOneWithGold.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+			playerMainOptionOneWithGold.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 			TextObject playerMainOptionOneNoGold = new TextObject("{=52lNazA1}I'm afraid that things came up. I was not able to make the sale.");
 			TextObject text = new TextObject("{=!}{PLAYER_OPTION}");
 			TextObject textObject4 = new TextObject("{=THD3C7xc}I have. Here is the {TOTAL_DENARS}{GOLD_ICON} denars just as we agreed.");
 			textObject4.SetTextVariable("TOTAL_DENARS", _targetDenarsToAchieve);
-			textObject4.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+			textObject4.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 			TextObject textObject5 = new TextObject("{=z47GjqTZ}Yes, of course. This is the {TOTAL_DENARS}{GOLD_ICON} denars that I owe you.");
-			textObject5.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+			textObject5.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 			textObject5.SetTextVariable("TOTAL_DENARS", _targetDenarsToAchieve);
 			TextObject playerFailOptionWithGold = new TextObject("{=dtzKfkrh}We never agreed on this. I am not paying you any more than {GATHERED_DENARS}{GOLD_ICON}, and you cannot force me.");
 			playerFailOptionWithGold.SetTextVariable("GATHERED_DENARS", _gatheredDenars);

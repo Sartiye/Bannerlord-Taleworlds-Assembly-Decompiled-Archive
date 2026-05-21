@@ -264,7 +264,7 @@ public class UpgradeTargetVM : ViewModel
 
 	private string GetHint()
 	{
-		string stackModifierString = CampaignUIHelper.GetStackModifierString(GameTexts.FindText("str_entire_stack_shortcut_recruit_units"), GameTexts.FindText("str_five_stack_shortcut_recruit_units"), AvailableUpgrades >= 5);
+		string stackModifierString = CampaignUIHelper.GetStackModifierString(GameTexts.FindText("str_entire_stack_shortcut_upgrade_units"), GameTexts.FindText("str_five_stack_shortcut_upgrade_units"), AvailableUpgrades >= 5);
 		if (string.IsNullOrEmpty(stackModifierString) || AvailableUpgrades < 1)
 		{
 			return _hintString;

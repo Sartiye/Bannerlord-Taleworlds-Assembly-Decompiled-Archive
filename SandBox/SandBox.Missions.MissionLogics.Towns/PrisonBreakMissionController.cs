@@ -90,8 +90,8 @@ public class PrisonBreakMissionController : MissionLogic
 		SandBoxHelpers.MissionHelper.SpawnPlayer(civilianEquipment: false, noHorses: true);
 		base.Mission.GetMissionBehavior<MissionAgentHandler>().SpawnLocationCharacters();
 		base.Mission.AllowAiTicking = true;
-		Agent.Main.SetClothingColor1(4281281067u);
-		Agent.Main.SetClothingColor2(4281281067u);
+		Agent.Main.SetClothingColor1(4279111698u);
+		Agent.Main.SetClothingColor2(4279111698u);
 		Agent.Main.UpdateSpawnEquipmentAndRefreshVisuals(Hero.MainHero.StealthEquipment);
 		PreparePrisonAgent();
 		Agent.Main.Formation = new Formation(Mission.Current.Teams.Player, 0);
@@ -185,7 +185,6 @@ public class PrisonBreakMissionController : MissionLogic
 			behaviorGroup2.AddAlarmFactor(2f, in suspiciousPosition);
 			aliveGuardAgent.SetAlarmState(Agent.AIStateFlag.PatrollingCautious);
 		}
-		_failCounterMissionLogic.IsActive = false;
 		UpdateDoorPermission();
 	}
 
@@ -312,6 +311,11 @@ public class PrisonBreakMissionController : MissionLogic
 			{
 				UpdateDoorPermission();
 			}
+		}
+		if (_failCounterMissionLogic != null && !_isFirstPhase)
+		{
+			Mission.Current.RemoveMissionBehavior(_failCounterMissionLogic);
+			_failCounterMissionLogic = null;
 		}
 		if (_prisonerAgent == null && _aliveGuardAgents.All((Agent x) => x.IsAlarmStateNormal()))
 		{

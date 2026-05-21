@@ -72,7 +72,7 @@ public class ArtisanOverpricedGoodsIssueBehavior : CampaignBehaviorBase
 				textObject.SetTextVariable("SELECTED_GOOD", _requestedTradeGood.Name);
 				textObject.SetTextVariable("SELECTED_AMOUNT", RequestedTradeGoodAmount);
 				textObject.SetTextVariable("REWARD_AMOUNT", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -84,7 +84,7 @@ public class ArtisanOverpricedGoodsIssueBehavior : CampaignBehaviorBase
 				TextObject textObject = new TextObject("{=XvC1eLR1}Or, if you will not be able to acquire the goods yourself, you can perhaps assign one of your trusted companions to the task. Somewhat with a good understanding of trade and and around {TROOP_NUMBER} {?TROOP_NUMBER}troops{?}troop{\\?} could do it easily enough, along with {GOLD_COST}{GOLD_ICON} denars to make the purchases.[ib:normal2][if:convo_undecided_open]");
 				textObject.SetTextVariable("TROOP_NUMBER", GetTotalAlternativeSolutionNeededMenCount());
 				textObject.SetTextVariable("GOLD_COST", RequiredGoldForAlternativeSolution);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -166,7 +166,7 @@ public class ArtisanOverpricedGoodsIssueBehavior : CampaignBehaviorBase
 				textObject.SetCharacterProperties("COMPANION", base.AlternativeSolutionHero.CharacterObject);
 				textObject.SetTextVariable("SETTLEMENT", base.IssueOwner.CurrentSettlement.EncyclopediaLinkWithName);
 				textObject.SetTextVariable("REWARD_AMOUNT", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				textObject.SetTextVariable("RETURN_DAYS", GetTotalAlternativeSolutionDurationInDays());
 				return textObject;
 			}
@@ -358,10 +358,11 @@ public class ArtisanOverpricedGoodsIssueBehavior : CampaignBehaviorBase
 			return IssueFrequency.Common;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			flag = PreconditionFlags.None;
 			relationHero = null;
+			requiredGold = 0;
 			skill = null;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -436,7 +437,7 @@ public class ArtisanOverpricedGoodsIssueBehavior : CampaignBehaviorBase
 				textObject.SetTextVariable("REQUESTED_AMOUNT", _requestedTradeGoodAmount);
 				textObject.SetTextVariable("REQUESTED_GOOD", _requestedTradeGood.Name);
 				textObject.SetTextVariable("REWARD_AMOUNT", _rewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}

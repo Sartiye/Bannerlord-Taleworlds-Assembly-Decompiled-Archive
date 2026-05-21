@@ -99,6 +99,7 @@ public class StoryModeHeroes
 			_elderBrother.SetName(textObject, textObject);
 			_elderBrother.Mother = @object.HeroObject;
 			_elderBrother.Father = object2.HeroObject;
+			_elderBrother.HeroDeveloper.ResetCharacterStats();
 		}
 		if (HeroCreator.CreateBasicHero("storymode_little_brother", MBObjectManager.Instance.GetObject<CharacterObject>("storymode_little_brother"), out _littleBrother))
 		{

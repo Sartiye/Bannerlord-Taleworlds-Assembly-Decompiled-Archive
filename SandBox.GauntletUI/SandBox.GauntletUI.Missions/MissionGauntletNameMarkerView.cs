@@ -64,24 +64,31 @@ public class MissionGauntletNameMarkerView : MissionNameMarkerUIHandler
 	public override void OnMissionScreenTick(float dt)
 	{
 		base.OnMissionScreenTick(dt);
-		for (int i = 0; i < _nameMarkerProviders.Count; i++)
+		if (base.IsViewCreated)
 		{
-			_nameMarkerProviders[i].Tick(dt);
+			if (base.IsViewSuspended != _gauntletLayer.IsActive)
+			{
+				ScreenManager.SetSuspendLayer(_gauntletLayer, base.IsViewSuspended);
+			}
+			for (int i = 0; i < _nameMarkerProviders.Count; i++)
+			{
+				_nameMarkerProviders[i].Tick(dt);
+			}
+			if (base.Input.IsGameKeyDown(5))
+			{
+				_dataSource.IsEnabled = true;
+			}
+			else
+			{
+				_dataSource.IsEnabled = false;
+			}
+			if (Campaign.Current != null && _lastVisualTrackerVersion != Campaign.Current.VisualTrackerManager.TrackedObjectsVersion)
+			{
+				SetMarkersDirty();
+				_lastVisualTrackerVersion = Campaign.Current.VisualTrackerManager.TrackedObjectsVersion;
+			}
+			_dataSource.Tick(dt);
 		}
-		if (base.Input.IsGameKeyDown(5))
-		{
-			_dataSource.IsEnabled = true;
-		}
-		else
-		{
-			_dataSource.IsEnabled = false;
-		}
-		if (Campaign.Current != null && _lastVisualTrackerVersion != Campaign.Current.VisualTrackerManager.TrackedObjectsVersion)
-		{
-			SetMarkersDirty();
-			_lastVisualTrackerVersion = Campaign.Current.VisualTrackerManager.TrackedObjectsVersion;
-		}
-		_dataSource.Tick(dt);
 	}
 
 	private void OnMarkersChanged()
@@ -157,12 +164,10 @@ public class MissionGauntletNameMarkerView : MissionNameMarkerUIHandler
 	protected override void OnResumeView()
 	{
 		base.OnResumeView();
-		ScreenManager.SetSuspendLayer(_gauntletLayer, isSuspended: false);
 	}
 
 	protected override void OnSuspendView()
 	{
 		base.OnSuspendView();
-		ScreenManager.SetSuspendLayer(_gauntletLayer, isSuspended: true);
 	}
 }

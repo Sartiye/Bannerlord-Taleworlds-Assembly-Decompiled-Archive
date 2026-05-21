@@ -1,5 +1,6 @@
 using SandBox.GauntletUI.Map;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.GameState;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.MountAndBlade;
@@ -10,7 +11,7 @@ namespace SandBox.GauntletUI;
 
 public class SandBoxGauntletUISubModule : MBSubModuleBase
 {
-	private class ConversationGameStateManagerListener : IGameStateManagerListener
+	private class SandBoxGameStateManagerListener : IGameStateManagerListener
 	{
 		void IGameStateManagerListener.OnCleanStates()
 		{
@@ -24,11 +25,19 @@ public class SandBoxGauntletUISubModule : MBSubModuleBase
 		void IGameStateManagerListener.OnPopState(GameState gameState)
 		{
 			UpdateCampaignMission();
+			if (gameState is MissionState || gameState is MapState)
+			{
+				CampaignInformationManager.ClearAllDialogNotifications(fadeOut: false);
+			}
 		}
 
 		void IGameStateManagerListener.OnPushState(GameState gameState, bool isTopGameState)
 		{
 			UpdateCampaignMission();
+			if (gameState is MissionState || gameState is MapState)
+			{
+				CampaignInformationManager.ClearAllDialogNotifications(fadeOut: false);
+			}
 		}
 
 		void IGameStateManagerListener.OnSavedGameLoadFinished()
@@ -49,11 +58,11 @@ public class SandBoxGauntletUISubModule : MBSubModuleBase
 
 	private bool _initializedConversationHandler;
 
-	private ConversationGameStateManagerListener _conversationListener;
+	private SandBoxGameStateManagerListener _conversationListener;
 
 	public SandBoxGauntletUISubModule()
 	{
-		_conversationListener = new ConversationGameStateManagerListener();
+		_conversationListener = new SandBoxGameStateManagerListener();
 	}
 
 	public override void OnCampaignStart(Game game, object starterObject)

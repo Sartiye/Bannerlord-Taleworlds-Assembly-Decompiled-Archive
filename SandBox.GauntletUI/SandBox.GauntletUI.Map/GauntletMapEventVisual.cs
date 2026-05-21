@@ -54,7 +54,7 @@ public class GauntletMapEventVisual : IMapEventVisual
 		MapEvent = mapEvent;
 	}
 
-	public void Initialize(CampaignVec2 position, int battleSizeValue, bool isVisible)
+	public void Initialize(CampaignVec2 position, bool isVisible)
 	{
 		WorldPosition = position.ToVec2();
 		IsVisible = isVisible;
@@ -68,7 +68,7 @@ public class GauntletMapEventVisual : IMapEventVisual
 		else if (MapEvent.IsFieldBattle || MapEvent.IsSallyOut)
 		{
 			num = _battleSoundEventIndex;
-			num2 = battleSizeValue;
+			num2 = GetBattleSizeValue();
 		}
 		else if (MapEvent.IsSiegeAssault || MapEvent.IsSiegeOutside || MapEvent.IsSiegeAmbush)
 		{
@@ -95,6 +95,28 @@ public class GauntletMapEventVisual : IMapEventVisual
 				_mapEventSoundEvent.Pause();
 			}
 		}
+	}
+
+	private int GetBattleSizeValue()
+	{
+		if (MapEvent.IsSiegeAssault)
+		{
+			return 4;
+		}
+		int numberOfInvolvedMen = MapEvent.GetNumberOfInvolvedMen();
+		if (numberOfInvolvedMen < 30)
+		{
+			return 0;
+		}
+		if (numberOfInvolvedMen < 80)
+		{
+			return 1;
+		}
+		if (numberOfInvolvedMen >= 120)
+		{
+			return 3;
+		}
+		return 2;
 	}
 
 	public void OnMapEventEnd()

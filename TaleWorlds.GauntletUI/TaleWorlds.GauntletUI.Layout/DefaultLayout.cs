@@ -9,7 +9,7 @@ public class DefaultLayout : ILayout
 {
 	private void ParallelMeasureChildren(Widget widget, Vector2 measureSpec)
 	{
-		TWParallel.For(0, widget.ChildCount, UpdateChildWidgetMT);
+		TWParallel.ForWithoutRenderThread(0, widget.ChildCount, UpdateChildWidgetMT);
 		void UpdateChildWidgetMT(int startInclusive, int endExclusive)
 		{
 			for (int i = startInclusive; i < endExclusive; i++)

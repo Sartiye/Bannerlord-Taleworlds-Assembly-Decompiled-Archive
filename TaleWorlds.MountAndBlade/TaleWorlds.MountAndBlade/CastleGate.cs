@@ -196,18 +196,18 @@ public class CastleGate : UsableMachine, IPointDefendable, ICastleKeyPosition, I
 	protected internal override void OnInit()
 	{
 		base.OnInit();
-		DestructableComponent destructableComponent = base.GameEntity.GetScriptComponents<DestructableComponent>().FirstOrDefault();
-		if (destructableComponent != null)
+		DestructableComponent firstScriptOfType = base.GameEntity.GetFirstScriptOfType<DestructableComponent>();
+		if (firstScriptOfType != null)
 		{
-			destructableComponent.OnNextDestructionState += OnNextDestructionState;
-			DestructibleComponentOnMissionReset = destructableComponent.OnMissionReset;
+			firstScriptOfType.OnNextDestructionState += OnNextDestructionState;
+			DestructibleComponentOnMissionReset = firstScriptOfType.OnMissionReset;
 			if (!GameNetwork.IsClientOrReplay)
 			{
-				destructableComponent.OnDestroyed += OnDestroyed;
-				destructableComponent.OnHitTaken += OnHitTaken;
-				destructableComponent.OnCalculateDestructionStateIndex = (Func<int, int, int, int>)Delegate.Combine(destructableComponent.OnCalculateDestructionStateIndex, new Func<int, int, int, int>(OnCalculateDestructionStateIndex));
+				firstScriptOfType.OnDestroyed += OnDestroyed;
+				firstScriptOfType.OnHitTaken += OnHitTaken;
+				firstScriptOfType.OnCalculateDestructionStateIndex = (Func<int, int, int, int>)Delegate.Combine(firstScriptOfType.OnCalculateDestructionStateIndex, new Func<int, int, int, int>(OnCalculateDestructionStateIndex));
 			}
-			destructableComponent.BattleSide = BattleSideEnum.Defender;
+			firstScriptOfType.BattleSide = BattleSideEnum.Defender;
 		}
 		CollectGameEntities(calledFromOnInit: true);
 		base.GameEntity.SetAnimationSoundActivation(activate: true);
@@ -215,10 +215,10 @@ public class CastleGate : UsableMachine, IPointDefendable, ICastleKeyPosition, I
 		{
 			return;
 		}
-		_queueManager = base.GameEntity.GetScriptComponents<LadderQueueManager>().FirstOrDefault();
+		_queueManager = base.GameEntity.GetFirstScriptOfType<LadderQueueManager>();
 		if (_queueManager == null)
 		{
-			WeakGameEntity weakGameEntity = base.GameEntity.GetChildren().FirstOrDefault((WeakGameEntity ce) => ce.GetScriptComponents<LadderQueueManager>().Any());
+			WeakGameEntity weakGameEntity = base.GameEntity.GetChildren().FirstOrDefault((WeakGameEntity ce) => ce.HasScriptOfType<LadderQueueManager>());
 			if (weakGameEntity.IsValid)
 			{
 				_queueManager = weakGameEntity.GetFirstScriptOfType<LadderQueueManager>();
@@ -316,15 +316,15 @@ public class CastleGate : UsableMachine, IPointDefendable, ICastleKeyPosition, I
 	protected override void OnRemoved(int removeReason)
 	{
 		base.OnRemoved(removeReason);
-		DestructableComponent destructableComponent = base.GameEntity.GetScriptComponents<DestructableComponent>().FirstOrDefault();
-		if (destructableComponent != null)
+		DestructableComponent firstScriptOfType = base.GameEntity.GetFirstScriptOfType<DestructableComponent>();
+		if (firstScriptOfType != null)
 		{
-			destructableComponent.OnNextDestructionState -= OnNextDestructionState;
+			firstScriptOfType.OnNextDestructionState -= OnNextDestructionState;
 			if (!GameNetwork.IsClientOrReplay)
 			{
-				destructableComponent.OnDestroyed -= OnDestroyed;
-				destructableComponent.OnHitTaken -= OnHitTaken;
-				destructableComponent.OnCalculateDestructionStateIndex = (Func<int, int, int, int>)Delegate.Remove(destructableComponent.OnCalculateDestructionStateIndex, new Func<int, int, int, int>(OnCalculateDestructionStateIndex));
+				firstScriptOfType.OnDestroyed -= OnDestroyed;
+				firstScriptOfType.OnHitTaken -= OnHitTaken;
+				firstScriptOfType.OnCalculateDestructionStateIndex = (Func<int, int, int, int>)Delegate.Remove(firstScriptOfType.OnCalculateDestructionStateIndex, new Func<int, int, int, int>(OnCalculateDestructionStateIndex));
 			}
 		}
 	}
@@ -672,9 +672,9 @@ public class CastleGate : UsableMachine, IPointDefendable, ICastleKeyPosition, I
 			return;
 		}
 		bool flag2 = false;
-		for (int j = 0; j < _userFormations.Count; j++)
+		for (int j = 0; j < base.UserFormations.Count; j++)
 		{
-			if (_userFormations[j].CountOfDetachableNonPlayerUnits > 0)
+			if (base.UserFormations[j].CountOfDetachableNonPlayerUnits > 0)
 			{
 				flag2 = true;
 				break;

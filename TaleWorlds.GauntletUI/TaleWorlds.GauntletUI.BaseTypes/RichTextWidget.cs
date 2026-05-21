@@ -338,6 +338,7 @@ public class RichTextWidget : BrushWidget
 			textMaterial.ScaleFactor = scaleFactor;
 			textMaterial.SmoothingConstant = defaultFont.SmoothingConstant;
 			textMaterial.Smooth = defaultFont.Smooth;
+			rectangle.SetVisualOffset(styleOrDefault.XOffset, styleOrDefault.YOffset);
 			rectangle.CalculateMatrixFrame(in base.ParentWidget.AreaRect);
 			drawObject.Rectangle = rectangle;
 			richTextPart.TextDrawObject = drawObject;
@@ -396,11 +397,11 @@ public class RichTextWidget : BrushWidget
 		}
 	}
 
-	protected internal override void OnMouseReleased()
+	protected internal override void OnMouseReleased(bool isFromInput)
 	{
 		if (_mouseState == MouseState.Down)
 		{
-			_mouseState = MouseState.Up;
+			_mouseState = (isFromInput ? MouseState.Up : MouseState.None);
 		}
 	}
 
@@ -413,11 +414,11 @@ public class RichTextWidget : BrushWidget
 		}
 	}
 
-	protected internal override void OnMouseAlternateReleased()
+	protected internal override void OnMouseAlternateReleased(bool isFromInput)
 	{
 		if (_mouseState == MouseState.AlternateDown)
 		{
-			_mouseState = MouseState.AlternateUp;
+			_mouseState = (isFromInput ? MouseState.AlternateUp : MouseState.None);
 		}
 	}
 }

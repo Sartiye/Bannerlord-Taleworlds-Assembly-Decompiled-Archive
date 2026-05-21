@@ -143,13 +143,13 @@ public class MaskedTextureWidget : TextureWidget
 		if (_textureCache != null)
 		{
 			bool num = base.TextureProviderName == "BannerImageTextureProvider";
-			int num2 = (num ? ((int)(((base.Size.X > base.Size.Y) ? base.Size.Y : base.Size.X) * 2.5f * OverlayTextureScale)) : ((int)(((base.Size.X > base.Size.Y) ? base.Size.X : base.Size.Y) * OverlayTextureScale)));
+			int num2 = (num ? ((int)(((base.Size.X > base.Size.Y) ? base.Size.Y : base.Size.X) * 2.5f * OverlayTextureScale * base._inverseScaleToUse)) : ((int)(((base.Size.X > base.Size.Y) ? base.Size.X : base.Size.Y) * OverlayTextureScale * base._inverseScaleToUse)));
 			Vector2 overlayOffset = default(Vector2);
 			if (num)
 			{
-				float x = ((float)num2 - base.Size.X) * 0.5f - base.Brush.DefaultLayer.OverlayXOffset;
-				float y = ((float)num2 - base.Size.Y) * 0.5f - base.Brush.DefaultLayer.OverlayYOffset;
-				overlayOffset = new Vector2(x, y) * base._inverseScaleToUse;
+				float x = ((float)num2 - base.Size.X * base._inverseScaleToUse) * 0.5f - base.Brush.DefaultLayer.OverlayXOffset;
+				float y = ((float)num2 - base.Size.Y * base._inverseScaleToUse) * 0.5f - base.Brush.DefaultLayer.OverlayYOffset;
+				overlayOffset = new Vector2(x, y);
 			}
 			if (_overlaySpriteCache == null || flag || _overlaySpriteSizeCache != num2)
 			{

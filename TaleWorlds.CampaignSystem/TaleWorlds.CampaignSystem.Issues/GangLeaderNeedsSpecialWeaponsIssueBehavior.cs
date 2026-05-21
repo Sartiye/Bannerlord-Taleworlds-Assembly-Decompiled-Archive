@@ -75,10 +75,11 @@ public class GangLeaderNeedsSpecialWeaponsIssueBehavior : CampaignBehaviorBase
 			return IssueFrequency.VeryCommon;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			flag = PreconditionFlags.None;
 			relationHero = issueGiver;
+			requiredGold = 0;
 			skill = DefaultSkills.Crafting;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{

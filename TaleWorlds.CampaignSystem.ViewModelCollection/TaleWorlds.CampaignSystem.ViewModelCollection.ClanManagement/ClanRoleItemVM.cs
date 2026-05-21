@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Information;
@@ -36,6 +35,8 @@ public class ClanRoleItemVM : ViewModel
 
 	private bool _isEnabled;
 
+	private ClanRoleMemberItemVM _clanLeader;
+
 	private MBBindingList<ClanRoleMemberItemVM> _members;
 
 	private ClanRoleMemberItemVM _effectiveOwner;
@@ -47,6 +48,8 @@ public class ClanRoleItemVM : ViewModel
 	private bool _isNotAssigned;
 
 	private bool _hasEffects;
+
+	private string _roleId;
 
 	private string _name;
 
@@ -69,6 +72,23 @@ public class ClanRoleItemVM : ViewModel
 			{
 				_isEnabled = value;
 				OnPropertyChangedWithValue(value, "IsEnabled");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public ClanRoleMemberItemVM ClanLeader
+	{
+		get
+		{
+			return _clanLeader;
+		}
+		set
+		{
+			if (value != _clanLeader)
+			{
+				_clanLeader = value;
+				OnPropertyChangedWithValue(value, "ClanLeader");
 			}
 		}
 	}
@@ -176,6 +196,23 @@ public class ClanRoleItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public string RoleId
+	{
+		get
+		{
+			return _roleId;
+		}
+		set
+		{
+			if (value != _roleId)
+			{
+				_roleId = value;
+				OnPropertyChangedWithValue(value, "RoleId");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public string Name
 	{
 		get
@@ -238,6 +275,7 @@ public class ClanRoleItemVM : ViewModel
 		NotAssignedHint = new HintViewModel(new TextObject("{=S1iS3OYj}Party leader is default for unassigned roles"));
 		DisabledHint = new HintViewModel();
 		IsEnabled = true;
+		RoleId = GetRoleIdentifier(role);
 		Refresh();
 		RefreshValues();
 	}
@@ -264,6 +302,29 @@ public class ClanRoleItemVM : ViewModel
 		});
 	}
 
+	private static string GetRoleIdentifier(PartyRole role)
+	{
+		return role switch
+		{
+			PartyRole.Ruler => "rule", 
+			PartyRole.ClanLeader => "clan_leader", 
+			PartyRole.Governor => "governor", 
+			PartyRole.ArmyCommander => "commander", 
+			PartyRole.PartyLeader => "party_leader", 
+			PartyRole.PartyOwner => "party_owner", 
+			PartyRole.Surgeon => "surgeon", 
+			PartyRole.Engineer => "engineer", 
+			PartyRole.Scout => "scout", 
+			PartyRole.Quartermaster => "quartermaser", 
+			PartyRole.PartyMember => "member", 
+			PartyRole.Personal => "personal", 
+			PartyRole.Captain => "captain", 
+			PartyRole.FirstMate => "first_mate", 
+			PartyRole.Navigator => "navigator", 
+			_ => string.Empty, 
+		};
+	}
+
 	public void Refresh()
 	{
 		Members.ApplyActionOnAllItems(delegate(ClanRoleMemberItemVM x)
@@ -273,7 +334,11 @@ public class ClanRoleItemVM : ViewModel
 		Members.Clear();
 		foreach (ClanPartyMemberItemVM heroMember in _heroMembers)
 		{
-			if (ClanRoleMemberItemVM.IsHeroAssignableForRole(heroMember.HeroObject, Role, _party))
+			if (heroMember.IsLeader)
+			{
+				ClanLeader = new ClanRoleMemberItemVM(_party, Role, heroMember, null);
+			}
+			else if (Campaign.Current.Models.ClanMemberPartyRoleModel.IsHeroAssignableForPartyRole(heroMember.HeroObject, Role, _party))
 			{
 				Members.Add(new ClanRoleMemberItemVM(_party, Role, heroMember, OnRoleAssigned));
 			}
@@ -281,7 +346,22 @@ public class ClanRoleItemVM : ViewModel
 		Members.Add(new ClanRoleMemberItemVM(_party, Role, null, OnRoleAssigned));
 		Members.Sort(_comparer);
 		GetMemberAssignedToRole(_party, Role, out var roleOwner, out var effectiveRoleOwner);
-		EffectiveOwner = Members.FirstOrDefault((ClanRoleMemberItemVM x) => x.Member?.HeroObject == effectiveRoleOwner);
+		if (effectiveRoleOwner == ClanLeader?.Member.HeroObject)
+		{
+			EffectiveOwner = ClanLeader;
+		}
+		else
+		{
+			for (int i = 0; i < Members.Count; i++)
+			{
+				ClanRoleMemberItemVM clanRoleMemberItemVM = Members[i];
+				if (clanRoleMemberItemVM.Member.HeroObject == effectiveRoleOwner)
+				{
+					EffectiveOwner = clanRoleMemberItemVM;
+					break;
+				}
+			}
+		}
 		IsNotAssigned = roleOwner == null;
 	}
 
@@ -307,10 +387,16 @@ public class ClanRoleItemVM : ViewModel
 		case PartyRole.Engineer:
 			effectiveRoleOwner = party.EffectiveEngineer;
 			return;
+		case PartyRole.FirstMate:
+			effectiveRoleOwner = party.EffectiveFirstMate;
+			return;
+		case PartyRole.Navigator:
+			effectiveRoleOwner = party.EffectiveNavigator;
+			return;
 		}
 		effectiveRoleOwner = party.LeaderHero;
 		roleOwner = party.LeaderHero;
-		Debug.FailedAssert("Given party role is not valid.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\ClanManagement\\ClanRoleItemVM.cs", "GetMemberAssignedToRole", 107);
+		Debug.FailedAssert("Given party role is not valid.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\ClanManagement\\ClanRoleItemVM.cs", "GetMemberAssignedToRole", 175);
 	}
 
 	private void OnRoleAssigned()

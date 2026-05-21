@@ -122,6 +122,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 				MobileParty.MainParty.BesiegerCamp = null;
 			}
 			PlayerEncounter.Finish();
+			MobileParty.MainParty.SetMoveModeHold();
 		}, isLeave: true);
 		gameSystemInitializer.AddGameMenu("join_sally_out", "{=CcNVobQU}Garrison of the settlement you are in decided to sally out. You decide to...", game_menu_join_sally_out_on_init, GameMenu.MenuOverlayType.Encounter);
 		gameSystemInitializer.AddGameMenuOption("join_sally_out", "join_siege_event", "{=fyNNCOFK}Join the sally out", game_menu_join_sally_out_event_on_condition, game_menu_join_sally_out_on_consequence);
@@ -224,8 +225,8 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 		gameSystemInitializer.AddGameMenu("settlement_player_unconscious_when_disguise_contact_not_set", "{=KqrkAOY9}You slip into unconsciousness guards find you and throw you in jail.", null);
 		gameSystemInitializer.AddGameMenuOption("settlement_player_unconscious_when_disguise_contact_not_set", "continue", "{=3nT5wWzb}Surrender", mno_sneak_caught_surrender_on_condition, game_menu_captivity_castle_taken_prisoner_cont_on_consequence);
 		gameSystemInitializer.AddGameMenu("disguise_not_first_time", "{=jqb0q3Gp}You have a contact in this town, you can go about your business disguised.", disguise_not_first_time_init);
-		gameSystemInitializer.AddGameMenuOption("disguise_not_first_time", "take_a_walk", "{=iHLBzWSI}Take a walk around the town disguised", launch_mission_on_condition, launch_disguise_mission);
 		gameSystemInitializer.AddGameMenuOption("disguise_not_first_time", "quick_sneak", "{=hPmawJUs}Sneak in as quickly as you can ({SNEAK_CHANCE}%)", game_menu_town_disguise_yourself_on_condition, game_menu_town_disguise_yourself_on_consequence);
+		gameSystemInitializer.AddGameMenuOption("disguise_not_first_time", "take_a_walk", "{=iHLBzWSI}Take a walk around the town disguised", launch_mission_on_condition, launch_disguise_mission);
 		gameSystemInitializer.AddGameMenuOption("disguise_not_first_time", "back", GameTexts.FindText("str_back").ToString(), game_menu_leave_on_condition, delegate
 		{
 			GameMenu.SwitchToMenu("town_outside");
@@ -257,7 +258,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 		gameSystemInitializer.AddGameMenuOption("castle_guard", "guard_back", GameTexts.FindText("str_back").ToString(), game_menu_leave_on_condition, game_menu_town_guard_back_on_consequence, isLeave: true);
 		gameSystemInitializer.AddGameMenu("castle_enter_bribe", "{=yyz111nn}The guards say that they can't just let anyone in.", null, GameMenu.MenuOverlayType.SettlementWithCharacters);
 		gameSystemInitializer.AddGameMenuOption("castle_enter_bribe", "castle_bribe_pay", "{=3lxq5fvI}Pay a {AMOUNT}{GOLD_ICON} bribe to enter the castle.", game_menu_castle_enter_bribe_pay_bribe_on_condition, game_menu_castle_enter_bribe_on_consequence);
-		gameSystemInitializer.AddGameMenuOption("castle_enter_bribe", "castle_bribe_back", "{=3sRdGQou}Leave", game_menu_leave_on_condition, delegate
+		gameSystemInitializer.AddGameMenuOption("castle_enter_bribe", "castle_bribe_back", "{=E1OwmQFb}Back", game_menu_leave_on_condition, delegate
 		{
 			GameMenu.SwitchToMenu("castle_guard");
 		}, isLeave: true);
@@ -305,6 +306,20 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 		gameSystemInitializer.AddGameMenuOption("break_out_menu", "break_out_menu_reject", "{=f1etg9oL}Think of something else.", break_out_menu_reject_on_condition, break_out_menu_reject_on_consequence);
 		gameSystemInitializer.AddGameMenu("break_out_debrief_menu", "{=!}{BREAK_IN_DEBRIEF}", break_in_out_debrief_menu_on_init);
 		gameSystemInitializer.AddGameMenuOption("break_out_debrief_menu", "break_out_debrief_continue", "{=DM6luo3c}Continue", continue_on_condition, break_out_debrief_continue_on_consequence);
+		gameSystemInitializer.AddGameMenu("naval_encounter_disengaged", "{=yvLLaNp2}Both sides have disengaged to regroup and consider their next move.", null);
+		gameSystemInitializer.AddGameMenuOption("naval_encounter_disengaged", "naval_encounter_disengaged_continue", "{=DM6luo3c}Continue", naval_encounter_disengage_condition, naval_encounter_disengaged_continue_on_consequence);
+	}
+
+	private bool naval_encounter_disengage_condition(MenuCallbackArgs args)
+	{
+		args.optionLeaveType = GameMenuOption.LeaveType.Continue;
+		return true;
+	}
+
+	private void naval_encounter_disengaged_continue_on_consequence(MenuCallbackArgs args)
+	{
+		args.optionLeaveType = GameMenuOption.LeaveType.Continue;
+		GameMenu.ExitToLast();
 	}
 
 	private void escape_continue_on_consequence(MenuCallbackArgs args)
@@ -534,6 +549,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 			}
 			MobileParty.MainParty.BesiegerCamp = null;
 		}
+		MobileParty.MainParty.SetMoveModeHold();
 	}
 
 	private bool game_menu_encounter_army_lead_inf_on_condition(MenuCallbackArgs args)
@@ -661,7 +677,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 		MapEvent encounteredBattle = PlayerEncounter.EncounteredBattle;
 		IFaction mapFaction = encounteredBattle.GetLeaderParty(BattleSideEnum.Defender).MapFaction;
 		CheckFactionAttackableHonorably(args, mapFaction);
-		if (encounteredBattle.IsNavalMapEvent != MobileParty.MainParty.IsCurrentlyAtSea)
+		if (encounteredBattle.IsNavalMapEvent != MobileParty.MainParty.IsCurrentlyAtSea && !encounteredBattle.IsRaid)
 		{
 			args.IsEnabled = false;
 			if (encounteredBattle.IsBlockade)
@@ -673,6 +689,29 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 				args.Tooltip = new TextObject("{=aBHvjGLh}You cannot join the sea battle since there is an ongoing assault on the walls. You can join the assault by land.");
 			}
 		}
+		else if (MobileParty.MainParty.IsCurrentlyAtSea)
+		{
+			MapEvent encounteredBattle2 = PlayerEncounter.EncounteredBattle;
+			if (encounteredBattle2 != null && encounteredBattle2.IsRaid)
+			{
+				MapEvent encounteredBattle3 = PlayerEncounter.EncounteredBattle;
+				if (encounteredBattle3 != null && encounteredBattle3.MapEventSettlement?.IsVillage == true)
+				{
+					int minimumNumberOfMenForAttackingVillageViaScene = Campaign.Current.Models.EncounterModel.MinimumNumberOfMenForAttackingVillageViaScene;
+					if (MobileParty.MainParty.MemberRoster.TotalHealthyCount < minimumNumberOfMenForAttackingVillageViaScene)
+					{
+						args.IsEnabled = false;
+						args.Tooltip = new TextObject("{=*}You should at least have {NUMBER} healthy men in your party to take a hostile action.");
+						args.Tooltip.SetTextVariable("NUMBER", minimumNumberOfMenForAttackingVillageViaScene);
+					}
+					else if (!ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().AnyQ())
+					{
+						args.IsEnabled = false;
+						args.Tooltip = new TextObject("{=*}You don't have any shallow draft ship.");
+					}
+				}
+			}
+		}
 		return encounteredBattle.CanPartyJoinBattle(PartyBase.MainParty, BattleSideEnum.Attacker);
 	}
 
@@ -681,6 +720,43 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 		if (PlayerEncounter.InsideSettlement && PlayerEncounter.EncounterSettlement.IsUnderSiege)
 		{
 			PlayerEncounter.LeaveSettlement();
+		}
+		PartyBase partyBase = (PlayerEncounter.EncounteredBattle.DefenderSide.LeaderParty.IsMobile ? PlayerEncounter.EncounteredBattle.DefenderSide.LeaderParty : PlayerEncounter.EncounteredBattle.DefenderSide.Parties.FirstOrDefault((MapEventParty x) => x.Party.IsMobile)?.Party);
+		if (PlayerEncounter.EncounteredBattle.IsRaid && PlayerEncounter.EncounteredBattle.WasEverInLootingPhase && partyBase != null)
+		{
+			List<PartyBase> list = new List<PartyBase>();
+			foreach (MapEventParty party in PlayerEncounter.EncounteredBattle.AttackerSide.Parties)
+			{
+				if (party.Party != PartyBase.MainParty && party.Party.IsMobile)
+				{
+					list.Add(party.Party);
+				}
+			}
+			List<PartyBase> list2 = new List<PartyBase>();
+			foreach (MapEventParty party2 in PlayerEncounter.EncounteredBattle.DefenderSide.Parties)
+			{
+				if (party2.Party != partyBase && party2.Party.IsMobile)
+				{
+					list2.Add(party2.Party);
+				}
+			}
+			bool wasEverInLootingPhase = PlayerEncounter.EncounteredBattle.WasEverInLootingPhase;
+			Settlement mapEventSettlement = PlayerEncounter.EncounteredBattle.MapEventSettlement;
+			PlayerEncounter.RestartPlayerEncounter(PartyBase.MainParty, partyBase, forcePlayerOutFromSettlement: true, isPlayerEncounterRestartedForRaid: true);
+			GameMenu.ActivateGameMenu("encounter");
+			MapEvent.PlayerMapEvent.WasEverInLootingPhase = wasEverInLootingPhase;
+			MapEvent.PlayerMapEvent.OverrideMapEventSettlementForRaidToFieldBattleSwitch(mapEventSettlement);
+			foreach (PartyBase item in list)
+			{
+				item.MapEventSide = PartyBase.MainParty.MapEventSide;
+			}
+			{
+				foreach (PartyBase item2 in list2)
+				{
+					item2.MapEventSide = partyBase.MapEventSide;
+				}
+				return;
+			}
 		}
 		PlayerEncounter.JoinBattle(BattleSideEnum.Attacker);
 		if (PlayerEncounter.Battle.DefenderSide.TroopCount > 0)
@@ -749,7 +825,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 			args.Tooltip = new TextObject("{=Z6kgb8go}You have no healthy members of your party who can fight");
 			args.IsEnabled = false;
 		}
-		if (encounteredBattle.IsNavalMapEvent != MobileParty.MainParty.IsCurrentlyAtSea)
+		if (encounteredBattle.IsNavalMapEvent != MobileParty.MainParty.IsCurrentlyAtSea && !encounteredBattle.IsRaid)
 		{
 			args.IsEnabled = false;
 			if (encounteredBattle.IsBlockade)
@@ -759,6 +835,29 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 			else
 			{
 				args.Tooltip = new TextObject("{=RvLaJbkQ}You cannot join the battle as the walls are being assaulted. You can join the assault on the walls by land.");
+			}
+		}
+		else if (MobileParty.MainParty.IsCurrentlyAtSea)
+		{
+			MapEvent encounteredBattle2 = PlayerEncounter.EncounteredBattle;
+			if (encounteredBattle2 != null && encounteredBattle2.MapEventSettlement?.IsVillage == true)
+			{
+				MapEvent encounteredBattle3 = PlayerEncounter.EncounteredBattle;
+				if (encounteredBattle3 != null && encounteredBattle3.IsRaid)
+				{
+					int minimumNumberOfMenForAttackingVillageViaScene = Campaign.Current.Models.EncounterModel.MinimumNumberOfMenForAttackingVillageViaScene;
+					if (MobileParty.MainParty.MemberRoster.TotalHealthyCount < minimumNumberOfMenForAttackingVillageViaScene)
+					{
+						args.IsEnabled = false;
+						args.Tooltip = new TextObject("{=*}You should at least have {NUMBER} healthy men in your party to take a hostile action.");
+						args.Tooltip.SetTextVariable("NUMBER", minimumNumberOfMenForAttackingVillageViaScene);
+					}
+					else if (!ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().AnyQ())
+					{
+						args.IsEnabled = false;
+						args.Tooltip = new TextObject("{=*}You don't have any shallow draft ship.");
+					}
+				}
 			}
 		}
 		return encounteredBattle.CanPartyJoinBattle(PartyBase.MainParty, BattleSideEnum.Defender);
@@ -774,8 +873,54 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 	{
 		if (PlayerEncounter.EncounteredParty != null && (PlayerEncounter.EncounteredParty.MapEvent != null || (PlayerEncounter.EncounteredParty.IsSettlement && PlayerEncounter.EncounteredParty.SiegeEvent?.BesiegerCamp.LeaderParty.MapEvent != null)))
 		{
-			PlayerEncounter.JoinBattle(BattleSideEnum.Defender);
-			GameMenu.ActivateGameMenu("encounter");
+			if (PlayerEncounter.EncounteredBattle.IsRaid)
+			{
+				bool interruptedWhileWaiting = PlayerEncounter.Current.InterruptedWhileWaiting;
+				Settlement encounterSettlement = PlayerEncounter.EncounterSettlement;
+				PartyBase leaderParty = PlayerEncounter.EncounteredBattle.AttackerSide.LeaderParty;
+				List<PartyBase> list = new List<PartyBase>();
+				bool wasEverInLootingPhase = PlayerEncounter.EncounteredBattle.WasEverInLootingPhase;
+				foreach (MapEventParty party in PlayerEncounter.EncounteredBattle.AttackerSide.Parties)
+				{
+					if (party.Party != leaderParty)
+					{
+						list.Add(party.Party);
+					}
+				}
+				List<PartyBase> list2 = new List<PartyBase>();
+				foreach (MapEventParty party2 in PlayerEncounter.EncounteredBattle.DefenderSide.Parties)
+				{
+					if (party2.Party.IsMobile)
+					{
+						list2.Add(party2.Party);
+					}
+				}
+				PlayerEncounter.EncounteredBattle.FinalizeEvent();
+				if (interruptedWhileWaiting || !wasEverInLootingPhase)
+				{
+					PlayerEncounter.RestartPlayerEncounter(PartyBase.MainParty, leaderParty);
+				}
+				else
+				{
+					PlayerEncounter.RestartPlayerEncounter(leaderParty, PartyBase.MainParty, forcePlayerOutFromSettlement: true, isPlayerEncounterRestartedForRaid: true);
+				}
+				GameMenu.ActivateGameMenu("encounter");
+				foreach (PartyBase item in list)
+				{
+					item.MapEventSide = leaderParty.MapEventSide;
+				}
+				foreach (PartyBase item2 in list2)
+				{
+					item2.MapEventSide = PartyBase.MainParty.MapEventSide;
+				}
+				MapEvent.PlayerMapEvent.OverrideMapEventSettlementForRaidToFieldBattleSwitch(encounterSettlement);
+				MapEvent.PlayerMapEvent.WasEverInLootingPhase = wasEverInLootingPhase;
+			}
+			else
+			{
+				PlayerEncounter.JoinBattle(BattleSideEnum.Defender);
+				GameMenu.ActivateGameMenu("encounter");
+			}
 		}
 		else if (PlayerEncounter.Current != null)
 		{
@@ -792,7 +937,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 		InitializeAccessDetails();
 		if (PlayerEncounter.EncounterSettlement.IsUnderSiege && PlayerEncounter.Current != null && PlayerEncounter.EncounterSettlement.Party.SiegeEvent == null)
 		{
-			Debug.FailedAssert("naval_town_outside_on_init", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EncounterGameMenuBehavior.cs", "naval_town_outside_on_init", 967);
+			Debug.FailedAssert("naval_town_outside_on_init", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EncounterGameMenuBehavior.cs", "naval_town_outside_on_init", 1125);
 			PlayerEncounter.Finish();
 		}
 		TextObject textObject = null;
@@ -802,13 +947,13 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 			{
 				textObject = new TextObject("{=n5A1tp2j}The settlement is under siege, and is also hostile to you. You may not enter.");
 			}
-			else if (!PlayerEncounter.EncounterSettlement.SiegeEvent.IsBlockadeActive)
+			else if (PlayerEncounter.EncounterSettlement.SiegeEvent.IsBlockadeActive)
 			{
-				game_menu_naval_town_outside_enter_on_consequence();
+				textObject = ((PlayerEncounter.EncounterSettlement.SiegeEvent.CanPartyJoinSide(MobileParty.MainParty.Party, BattleSideEnum.Defender) || PlayerEncounter.EncounterSettlement.SiegeEvent.CanPartyJoinSide(MobileParty.MainParty.Party, BattleSideEnum.Attacker)) ? new TextObject("{=ccttrcaX}The settlement is under siege and naval blockade. You may attempt to run the blockade.") : new TextObject("{=dZNCEaGB}The settlement is under siege and naval blockade. You are not allowed to get involved."));
 			}
 			else
 			{
-				textObject = new TextObject("{=ccttrcaX}The settlement is under siege and naval blockade. You may attempt to run the blockade.");
+				game_menu_naval_town_outside_enter_on_consequence();
 			}
 		}
 		else if (PlayerEncounter.EncounterSettlement.MapFaction.IsAtWarWith(Clan.PlayerClan.MapFaction))
@@ -860,7 +1005,6 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 	{
 		if (Settlement.CurrentSettlement.SiegeEvent.BesiegerCamp.LeaderParty.IsMainParty || Settlement.CurrentSettlement.SiegeEvent.CanPartyJoinSide(MobileParty.MainParty.Party, BattleSideEnum.Attacker))
 		{
-			_ = Settlement.CurrentSettlement.SiegeEvent.BesiegerCamp.LeaderParty;
 			if (Settlement.CurrentSettlement.Party.MapEvent != null)
 			{
 				PlayerEncounter.JoinBattle((!Settlement.CurrentSettlement.Party.MapEvent.IsSallyOut) ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
@@ -880,7 +1024,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 		}
 		else
 		{
-			Debug.FailedAssert("Player should not be able to join this siege.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EncounterGameMenuBehavior.cs", "game_menu_join_siege_event_on_consequence", 1070);
+			Debug.FailedAssert("Player should not be able to join this siege.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EncounterGameMenuBehavior.cs", "game_menu_join_siege_event_on_consequence", 1234);
 		}
 	}
 
@@ -1068,6 +1212,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 		text.SetTextVariable("DEFENDER", currentSettlement.Name);
 		if (PlayerEncounter.Current != null)
 		{
+			PlayerEncounter.Current.InterruptedWhileWaiting = PlayerEncounter.Current.IsPlayerWaiting;
 			PlayerEncounter.Current.IsPlayerWaiting = false;
 		}
 	}
@@ -1088,6 +1233,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 		text.SetTextVariable("DEFENDER", currentSettlement.Name);
 		if (PlayerEncounter.Current != null)
 		{
+			PlayerEncounter.Current.InterruptedWhileWaiting = PlayerEncounter.Current.IsPlayerWaiting;
 			PlayerEncounter.Current.IsPlayerWaiting = false;
 		}
 	}
@@ -1317,7 +1463,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 			return;
 		}
 		bool flag = battle.DefenderSide.Parties.All((MapEventParty x) => x.Party.MemberRoster.TotalHealthyCount == 0);
-		bool flag2 = ConsiderMilitiaSurrenderPossibility();
+		bool flag2 = ConsiderVillageSurrenderPossibility();
 		if (flag || flag2)
 		{
 			if (!flag)
@@ -1349,7 +1495,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 		}
 		else if (!battle.AttackerSide.MapFaction.IsAtWarWith(battle.DefenderSide.MapFaction))
 		{
-			Debug.FailedAssert("This case should not be happening anymore, check this case and make sure this is intended", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EncounterGameMenuBehavior.cs", "UpdateVillageHostileActionEncounter", 1588);
+			Debug.FailedAssert("This case should not be happening anymore, check this case and make sure this is intended", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EncounterGameMenuBehavior.cs", "UpdateVillageHostileActionEncounter", 1754);
 		}
 	}
 
@@ -1358,7 +1504,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 		return Game.Current.IsDevelopmentMode;
 	}
 
-	private bool ConsiderMilitiaSurrenderPossibility()
+	private bool ConsiderVillageSurrenderPossibility()
 	{
 		bool result = false;
 		MapEvent battle = PlayerEncounter.Battle;
@@ -1369,7 +1515,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 			bool flag = false;
 			foreach (MapEventParty party in battle.DefenderSide.Parties)
 			{
-				num += party.Party.CalculateCurrentStrength();
+				num += party.Party.GetCustomStrength(BattleSideEnum.Defender, MapEvent.PowerCalculationContext.Village);
 				if (party.Party.IsMobile && party.Party.MobileParty.IsLordParty)
 				{
 					flag = true;
@@ -1380,7 +1526,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 			{
 				if (!party2.Party.IsMobile || party2.Party.MobileParty.Army == null)
 				{
-					num2 += party2.Party.CalculateCurrentStrength();
+					num2 += party2.Party.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.Village);
 				}
 				else
 				{
@@ -1390,7 +1536,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 					}
 					foreach (MobileParty attachedParty in party2.Party.MobileParty.Army.LeaderParty.AttachedParties)
 					{
-						num2 += attachedParty.Party.CalculateCurrentStrength();
+						num2 += attachedParty.Party.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.Village);
 					}
 				}
 			}
@@ -1403,6 +1549,69 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 	private bool game_menu_encounter_leave_on_condition(MenuCallbackArgs args)
 	{
 		args.optionLeaveType = GameMenuOption.LeaveType.Leave;
+		if (MobileParty.MainParty.IsCurrentlyAtSea)
+		{
+			if (PlayerEncounter.Current.IsPlayerEncounterRestartedForRaid)
+			{
+				goto IL_007a;
+			}
+			MapEvent encounteredBattle = PlayerEncounter.EncounteredBattle;
+			if (encounteredBattle != null && encounteredBattle.IsRaid)
+			{
+				MapEvent encounteredBattle2 = PlayerEncounter.EncounteredBattle;
+				if (encounteredBattle2 != null && encounteredBattle2.MapEventSettlement?.IsVillage == true)
+				{
+					goto IL_007a;
+				}
+			}
+		}
+		if (!MobileParty.MainParty.IsCurrentlyAtSea)
+		{
+			MapEvent encounteredBattle3 = PlayerEncounter.EncounteredBattle;
+			if (encounteredBattle3 != null && encounteredBattle3.IsRaid)
+			{
+				MapEvent encounteredBattle4 = PlayerEncounter.EncounteredBattle;
+				if (encounteredBattle4 != null && encounteredBattle4.MapEventSettlement?.IsVillage == true)
+				{
+					bool flag = false;
+					bool flag2 = false;
+					bool flag3 = false;
+					foreach (MapEventParty item in PlayerEncounter.EncounteredBattle.PartiesOnSide(PlayerEncounter.EncounteredBattle.PlayerSide))
+					{
+						if (item.Party != PartyBase.MainParty && item.Party.IsMobile && item.Party.MobileParty.IsCurrentlyAtSea)
+						{
+							flag = true;
+							break;
+						}
+					}
+					foreach (MapEventParty item2 in PlayerEncounter.EncounteredBattle.PartiesOnSide(PlayerEncounter.EncounteredBattle.GetOtherSide(PlayerEncounter.EncounteredBattle.PlayerSide)))
+					{
+						if (item2.Party.IsMobile && item2.Party.MobileParty.IsCurrentlyAtSea)
+						{
+							flag2 = true;
+						}
+						if (item2.Party.IsMobile && !item2.Party.MobileParty.IsCurrentlyAtSea)
+						{
+							flag3 = true;
+						}
+					}
+					if (flag && flag2 && flag3)
+					{
+						int minimumNumberOfMenForAttackingVillageViaScene = Campaign.Current.Models.EncounterModel.MinimumNumberOfMenForAttackingVillageViaScene;
+						if (MobileParty.MainParty.MemberRoster.TotalHealthyCount < minimumNumberOfMenForAttackingVillageViaScene || !ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().AnyQ())
+						{
+							return true;
+						}
+						if (MobileParty.MainParty.MemberRoster.TotalHealthyCount >= minimumNumberOfMenForAttackingVillageViaScene && ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().AnyQ())
+						{
+							return false;
+						}
+					}
+				}
+			}
+		}
+		goto IL_02ad;
+		IL_02ad:
 		if (MapEventHelper.CanMainPartyLeaveBattleCommonCondition() && (MobileParty.MainParty.Army == null || MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty))
 		{
 			if ((MobileParty.MainParty.MapEvent.IsSallyOut || MobileParty.MainParty.MapEvent.IsBlockadeSallyOut) && MobileParty.MainParty.MapEvent.PlayerSide != 0)
@@ -1412,6 +1621,17 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 			return true;
 		}
 		return false;
+		IL_007a:
+		int minimumNumberOfMenForAttackingVillageViaScene2 = Campaign.Current.Models.EncounterModel.MinimumNumberOfMenForAttackingVillageViaScene;
+		if (MobileParty.MainParty.MemberRoster.TotalHealthyCount < minimumNumberOfMenForAttackingVillageViaScene2 || !ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().AnyQ())
+		{
+			return true;
+		}
+		if (MobileParty.MainParty.MemberRoster.TotalHealthyCount >= minimumNumberOfMenForAttackingVillageViaScene2 && ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().AnyQ())
+		{
+			return false;
+		}
+		goto IL_02ad;
 	}
 
 	private bool game_menu_sally_out_go_back_to_settlement_on_condition(MenuCallbackArgs args)
@@ -1419,7 +1639,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 		if (MobileParty.MainParty.MapEvent != null && (MobileParty.MainParty.MapEvent.IsSallyOut || MobileParty.MainParty.MapEvent.IsBlockadeSallyOut) && MobileParty.MainParty.MapEvent.PlayerSide == BattleSideEnum.Attacker && MobileParty.MainParty.CurrentSettlement != null)
 		{
 			bool flag = Campaign.Current.Models.EncounterModel.GetLeaderOfMapEvent(MobileParty.MainParty.MapEvent, MobileParty.MainParty.MapEvent.PlayerSide) == Hero.MainHero;
-			if ((MobileParty.MainParty.Army == null || MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty || flag) && (MobileParty.MainParty.SiegeEvent == null || !MobileParty.MainParty.SiegeEvent.BesiegerCamp.IsBesiegerSideParty(MobileParty.MainParty)) && !PlayerEncounter.Current.CheckIfBattleShouldContinueAfterBattleMission())
+			if ((MobileParty.MainParty.Army == null || MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty || flag) && (MobileParty.MainParty.SiegeEvent == null || !MobileParty.MainParty.SiegeEvent.BesiegerCamp.IsBesiegerSideParty(MobileParty.MainParty)))
 			{
 				args.optionLeaveType = GameMenuOption.LeaveType.Leave;
 				GameTexts.SetVariable("SETTLEMENT", MobileParty.MainParty.LastVisitedSettlement.Name);
@@ -1656,11 +1876,21 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 			{
 				MenuHelper.EncounterLeaveConsequence();
 			}, null));
+			return;
 		}
-		else
+		if (MobileParty.MainParty.IsCurrentlyAtSea)
 		{
-			MenuHelper.EncounterLeaveConsequence();
+			MapEvent battle = PlayerEncounter.Battle;
+			if (battle != null && battle.MapEventSettlement != null && battle.MapEventSettlement.IsVillage && battle.MapEventSettlement.LastAttackerParty != null)
+			{
+				PartyBase leaderParty = battle.DefenderSide.LeaderParty;
+				if (battle.MapEventSettlement.LastAttackerParty == leaderParty.MobileParty && !leaderParty.MobileParty.IsCurrentlyAtSea)
+				{
+					leaderParty.MobileParty.Ai.ForceDefaultBehaviorUpdate();
+				}
+			}
 		}
+		MenuHelper.EncounterLeaveConsequence();
 	}
 
 	private void game_menu_encounter_abandon_on_consequence(MenuCallbackArgs args)
@@ -1989,6 +2219,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 	private void game_menu_village_raid_no_resist_on_consequence(MenuCallbackArgs args)
 	{
 		BeHostileAction.ApplyEncounterHostileAction(PartyBase.MainParty, Settlement.CurrentSettlement.Party);
+		Settlement.CurrentSettlement.Militia = 0f;
 		if (PlayerEncounter.Current != null)
 		{
 			if (PlayerEncounter.InsideSettlement)
@@ -2033,6 +2264,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 			if (PlayerEncounter.LeaveEncounter)
 			{
 				PlayerEncounter.Finish();
+				MobileParty.MainParty.SetMoveModeHold();
 				return;
 			}
 			if (PlayerEncounter.Battle == null)
@@ -2407,6 +2639,31 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 	private bool game_menu_leave_on_condition(MenuCallbackArgs args)
 	{
 		args.optionLeaveType = GameMenuOption.LeaveType.Leave;
+		if (MobileParty.MainParty.IsCurrentlyAtSea)
+		{
+			if (PlayerEncounter.Current.IsPlayerEncounterRestartedForRaid)
+			{
+				goto IL_0077;
+			}
+			MapEvent encounteredBattle = PlayerEncounter.EncounteredBattle;
+			if (encounteredBattle != null && encounteredBattle.IsRaid)
+			{
+				MapEvent encounteredBattle2 = PlayerEncounter.EncounteredBattle;
+				if (encounteredBattle2 != null && encounteredBattle2.MapEventSettlement?.IsVillage == true)
+				{
+					goto IL_0077;
+				}
+			}
+		}
+		goto IL_00ac;
+		IL_0077:
+		int minimumNumberOfMenForAttackingVillageViaScene = Campaign.Current.Models.EncounterModel.MinimumNumberOfMenForAttackingVillageViaScene;
+		if (MobileParty.MainParty.MemberRoster.TotalHealthyCount >= minimumNumberOfMenForAttackingVillageViaScene && ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().AnyQ())
+		{
+			return false;
+		}
+		goto IL_00ac;
+		IL_00ac:
 		return true;
 	}
 
@@ -2551,7 +2808,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 				GameMenu.SwitchToMenu("castle");
 				return;
 			}
-			Debug.FailedAssert("non-fortification under siege", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EncounterGameMenuBehavior.cs", "game_menu_town_menu_request_meeting_with_besiegers_on_init", 2984);
+			Debug.FailedAssert("non-fortification under siege", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EncounterGameMenuBehavior.cs", "game_menu_town_menu_request_meeting_with_besiegers_on_init", 3258);
 		}
 		List<MobileParty> list = new List<MobileParty>();
 		if (currentSettlement.SiegeEvent.BesiegerCamp.LeaderParty.Army != null)
@@ -2727,6 +2984,10 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 	{
 		PlayerSiege.PlayerSiegeEvent.DeactivateBlockade();
 		List<MapEventParty> list = MobileParty.MainParty.MapEvent.AttackerSide.Parties.ToList();
+		if (PlayerEncounter.Current == null)
+		{
+			PlayerEncounter.Init();
+		}
 		PlayerEncounter.Current.FinalizeBattle();
 		PlayerEncounter.Current.SetupFields(MobileParty.MainParty.Party, PlayerSiege.PlayerSiegeEvent.BesiegedSettlement.Party);
 		foreach (MapEventParty item in list)
@@ -2841,6 +3102,10 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 		}
 		MobileParty mainParty = MobileParty.MainParty;
 		SiegeEvent siegeEvent = Settlement.CurrentSettlement.SiegeEvent;
+		Hero heroWithHighestSkill = MobilePartyHelper.GetHeroWithHighestSkill(MobileParty.MainParty, DefaultSkills.Tactics);
+		int content = heroWithHighestSkill?.GetSkillValue(DefaultSkills.Tactics) ?? 0;
+		MBTextManager.SetTextVariable("HIGHEST_TACTICS_SKILL", content);
+		MBTextManager.SetTextVariable("HIGHEST_TACTICS_SKILLED_MEMBER", (heroWithHighestSkill != null && heroWithHighestSkill != Hero.MainHero) ? heroWithHighestSkill.Name : GameTexts.FindText("str_you"));
 		int num = (isBreakIn ? Campaign.Current.Models.TroopSacrificeModel.GetLostTroopCountForBreakingInBesiegedSettlement(mainParty, siegeEvent).RoundedResultNumber : Campaign.Current.Models.TroopSacrificeModel.GetLostTroopCountForBreakingOutOfBesiegedSettlement(mainParty, siegeEvent, _isBreakingOutFromPort).RoundedResultNumber);
 		TextObject text = args.MenuContext.GameMenu.GetText();
 		if (num == 0 && isBreakIn)
@@ -2849,7 +3114,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 			return;
 		}
 		TextObject empty = TextObject.GetEmpty();
-		empty = (isBreakIn ? ((!MobileParty.MainParty.IsCurrentlyAtSea) ? new TextObject("{=sd15CQHI}You devised a plan to distract the besiegers so you can rush the fortress gates, expecting the defenders to let you in. You and most of your men may get through, but as many as {POSSIBLE_CASUALTIES} {?PLURAL}troops{?}troop{\\?} may be lost.") : ((num != 0) ? new TextObject("{=XZO2UxbW}{POSSIBLE_CASUALTIES} {?POSSIBLE_CASUALTIES > 1}troops{?}troop{\\?} will be lost.") : new TextObject("{=rQGNGtDi}No troops will be lost."))) : ((!_isBreakingOutFromPort) ? new TextObject("{=J1aEaygO}You devised a plan to fight your way through the attackers to escape from the fortress. You and most of your men may survive, but as many as {POSSIBLE_CASUALTIES} {?PLURAL}troops{?}troop{\\?} may be lost.") : ((num != 0) ? new TextObject("{=XZO2UxbW}{POSSIBLE_CASUALTIES} {?POSSIBLE_CASUALTIES > 1}troops{?}troop{\\?} will be lost.") : new TextObject("{=rQGNGtDi}No troops will be lost."))));
+		empty = (isBreakIn ? ((!MobileParty.MainParty.IsCurrentlyAtSea) ? new TextObject("{=Yc3DbHoN}As the party member with the highest skill in tactics, {HIGHEST_TACTICS_SKILLED_MEMBER} ({HIGHEST_TACTICS_SKILL}) devised a plan to distract the besiegers so you can rush the fortress gates, expecting the defenders to let you in. You and most of your men may get through, but as many as {POSSIBLE_CASUALTIES} {?PLURAL}troops{?}troop{\\?} may be lost.") : ((num != 0) ? new TextObject("{=NUSwsQA9}As the party member with the highest skill in tactics, {HIGHEST_TACTICS_SKILLED_MEMBER} ({HIGHEST_TACTICS_SKILL}) devised a plan to send a ship with a skeleton crew to distract the enemy while the rest of you row hard towards the port through the blockade. Most of you will get through, but as many as {POSSIBLE_CASUALTIES} {?POSSIBLE_CASUALTIES > 1}troops{?}troop{\\?} will be lost.") : new TextObject("{=rQGNGtDi}No troops will be lost."))) : ((!_isBreakingOutFromPort) ? new TextObject("{=tr9KzBa3}As the party member with the highest skill in tactics, {HIGHEST_TACTICS_SKILLED_MEMBER} ({HIGHEST_TACTICS_SKILL}) devised a plan to fight your way through the attackers to escape from the fortress. You and most of your men may survive, but as many as {POSSIBLE_CASUALTIES} {?PLURAL}troops{?}troop{\\?} may be lost.") : ((num != 0) ? new TextObject("{=zw4XTpAl}As the party member with the highest skill in tactics, {HIGHEST_TACTICS_SKILLED_MEMBER} ({HIGHEST_TACTICS_SKILL}) devised a plan to send a ship with a skeleton crew to delay the enemy while the rest of you row hard for safety. Most of you will escape, but as many as {POSSIBLE_CASUALTIES} {?POSSIBLE_CASUALTIES > 1}troops{?}troop{\\?} will be lost.") : new TextObject("{=rQGNGtDi}No troops will be lost."))));
 		empty.SetTextVariable("POSSIBLE_CASUALTIES", num);
 		text.SetTextVariable("BREAK_IN_OUT_MENU", empty);
 	}
@@ -2922,8 +3187,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 		}
 		if (MobileParty.MainParty.IsCurrentlyAtSea)
 		{
-			MobileParty.MainParty.IsCurrentlyAtSea = false;
-			MobileParty.MainParty.Position = Settlement.CurrentSettlement.GatePosition;
+			MobileParty.MainParty.DisembarkToPosition(Settlement.CurrentSettlement.GatePosition);
 		}
 	}
 
@@ -3001,5 +3265,11 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 	{
 		args.MenuContext.SetBackgroundMeshName(Settlement.CurrentSettlement.SettlementComponent.WaitMeshName);
 		args.MenuContext.SetAmbientSound("event:/map/ambient/node/settlements/2d/keep");
+	}
+
+	[GameMenuInitializationHandler("naval_encounter_disengaged")]
+	public static void game_menu_encounter_naval_disengaged_init(MenuCallbackArgs args)
+	{
+		args.MenuContext.SetBackgroundMeshName("encounter_naval");
 	}
 }

@@ -265,34 +265,46 @@ public class AnimatedDropdownWidget : Widget
 		{
 			ClosePanelInOneFrame();
 		}
-		if (!_isOpen && (base.IsPressed || _button.IsPressed) && IsRecursivelyVisible() && base.EventManager.GetIsHitThisFrame())
+		if (!_isOpen && (base.IsPressed || _button.IsPressed) && IsRecursivelyVisible() && base.EventManager.GetIsHitThisFrame() && IsAnyListItemEnabled())
 		{
 			if (Input.IsKeyReleased(InputKey.ControllerLLeft))
 			{
 				base.Context.TwoDimensionContext.PlaySound("checkbox");
-				if (CurrentSelectedIndex > 0)
+				ListPanel listPanel;
+				do
 				{
-					CurrentSelectedIndex--;
+					if (CurrentSelectedIndex > 0)
+					{
+						CurrentSelectedIndex--;
+					}
+					else
+					{
+						CurrentSelectedIndex = ListPanel.ChildCount - 1;
+					}
+					RefreshSelectedItem();
+					listPanel = ListPanel;
 				}
-				else
-				{
-					CurrentSelectedIndex = ListPanel.ChildCount - 1;
-				}
-				RefreshSelectedItem();
+				while (listPanel != null && listPanel.GetChild(ListPanelValue)?.IsDisabled == true);
 				_changedByControllerNavigation = true;
 			}
 			else if (Input.IsKeyReleased(InputKey.ControllerLRight))
 			{
 				base.Context.TwoDimensionContext.PlaySound("checkbox");
-				if (CurrentSelectedIndex < ListPanel.ChildCount - 1)
+				ListPanel listPanel2;
+				do
 				{
-					CurrentSelectedIndex++;
+					if (CurrentSelectedIndex < ListPanel.ChildCount - 1)
+					{
+						CurrentSelectedIndex++;
+					}
+					else
+					{
+						CurrentSelectedIndex = 0;
+					}
+					RefreshSelectedItem();
+					listPanel2 = ListPanel;
 				}
-				else
-				{
-					CurrentSelectedIndex = 0;
-				}
-				RefreshSelectedItem();
+				while (listPanel2 != null && listPanel2.GetChild(ListPanelValue)?.IsDisabled == true);
 				_changedByControllerNavigation = true;
 			}
 			base.IsUsingNavigation = true;
@@ -307,6 +319,23 @@ public class AnimatedDropdownWidget : Widget
 			_dropdownOpenPosition = DropdownClipWidget.AreaRect.TopLeft;
 		}
 		_previousOpenState = _isOpen;
+	}
+
+	private bool IsAnyListItemEnabled()
+	{
+		if (ListPanel == null || ListPanel.ChildCount == 0)
+		{
+			return false;
+		}
+		for (int i = 0; i < ListPanel.ChildCount; i++)
+		{
+			Widget child = ListPanel.GetChild(i);
+			if (child != null && child.IsEnabled)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private void UpdateListPanelPosition(float dt)

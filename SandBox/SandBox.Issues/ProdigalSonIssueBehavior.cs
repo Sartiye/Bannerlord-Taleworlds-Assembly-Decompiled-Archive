@@ -243,12 +243,13 @@ public class ProdigalSonIssueBehavior : CampaignBehaviorBase
 			return IssueFrequency.Rare;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			bool flag2 = issueGiver.GetRelationWithPlayer() >= -10f && !issueGiver.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction) && Clan.PlayerClan.Tier >= 1;
 			flag = ((!flag2) ? (issueGiver.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction) ? PreconditionFlags.AtWar : ((Clan.PlayerClan.Tier >= 1) ? PreconditionFlags.Relation : PreconditionFlags.ClanTier)) : PreconditionFlags.None);
 			relationHero = issueGiver;
 			skill = null;
+			requiredGold = 0;
 			return flag2;
 		}
 

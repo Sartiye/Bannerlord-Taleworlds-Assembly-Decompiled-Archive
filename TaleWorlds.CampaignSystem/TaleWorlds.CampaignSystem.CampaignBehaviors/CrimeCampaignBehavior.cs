@@ -219,7 +219,7 @@ public class CrimeCampaignBehavior : CampaignBehaviorBase
 		args.optionLeaveType = GameMenuOption.LeaveType.Trade;
 		int num = (int)PayForCrimeAction.GetClearCrimeCost(Settlement.CurrentSettlement.MapFaction, CrimeModel.PaymentMethod.Gold);
 		args.Text.SetTextVariable("FINE", num);
-		args.Text.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		args.Text.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		if (Hero.MainHero.Gold < num)
 		{
 			args.Tooltip = new TextObject("{=d0kbtGYn}You don't have enough gold.");
@@ -246,7 +246,7 @@ public class CrimeCampaignBehavior : CampaignBehaviorBase
 		args.optionLeaveType = GameMenuOption.LeaveType.Bribe;
 		float clearCrimeCost = PayForCrimeAction.GetClearCrimeCost(Settlement.CurrentSettlement.MapFaction, CrimeModel.PaymentMethod.Influence);
 		args.Text.SetTextVariable("FINE", clearCrimeCost.ToString("F1"));
-		args.Text.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"7\">");
+		args.Text.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"5\">");
 		if (Clan.PlayerClan.Influence < clearCrimeCost)
 		{
 			args.Tooltip = new TextObject("{=rMagXCrI}You don't have enough influence to get the charges dropped.");
@@ -273,7 +273,7 @@ public class CrimeCampaignBehavior : CampaignBehaviorBase
 		args.optionLeaveType = GameMenuOption.LeaveType.HostileAction;
 		int num = (int)PayForCrimeAction.GetClearCrimeCost(Settlement.CurrentSettlement.MapFaction, CrimeModel.PaymentMethod.Gold);
 		args.Text.SetTextVariable("FINE", num);
-		args.Text.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		args.Text.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		if (Hero.MainHero.Gold < num)
 		{
 			args.Tooltip = new TextObject("{=ETKyjOkJ}You don't have enough denars to pay the fine.");

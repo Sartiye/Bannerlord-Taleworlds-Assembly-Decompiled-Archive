@@ -212,7 +212,7 @@ public class BehaviorSkirmish : BehaviorComponent
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
 		base.Formation.SetFacingOrder(CurrentFacingOrder);
-		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLoose);
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderScatter);
 		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
 		base.Formation.SetFormOrder(FormOrder.FormOrderWide);
 	}

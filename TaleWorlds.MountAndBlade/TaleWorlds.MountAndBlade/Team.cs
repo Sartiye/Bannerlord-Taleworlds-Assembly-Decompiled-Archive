@@ -188,6 +188,8 @@ public class Team : IMissionTeam
 
 	public event Action<Formation> OnFormationAIActiveBehaviorChanged;
 
+	public event Action<Team> OnFormationsChangedInDeployment;
+
 	public Team(MBTeam mbTeam, BattleSideEnum side, Mission mission, uint color = uint.MaxValue, uint color2 = uint.MaxValue, Banner banner = null)
 	{
 		MBTeam = mbTeam;
@@ -476,7 +478,7 @@ public class Team : IMissionTeam
 		foreach (var MassTransferDatum in MassTransferData)
 		{
 			MassTransferDatum.formation.OnMassUnitTransferStart();
-			if (MassTransferDatum.formation.GetReadonlyMovementOrderReference() == MovementOrder.MovementOrderStop && MassTransferDatum.formation.CountOfUnits > 0)
+			if (MassTransferDatum.formation.GetReadonlyMovementOrderReference() == MovementOrder.MovementOrderStop && (MassTransferDatum.formation.CountOfUnits > 0 || MassTransferDatum.troopCount > 0))
 			{
 				list.Add(MassTransferDatum.formation);
 				MassTransferDatum.formation.SetMovementOrder(MovementOrder.MovementOrderMove(MassTransferDatum.formation.CreateNewOrderWorldPosition(WorldPosition.WorldPositionEnforcedCache.None)));
@@ -683,6 +685,11 @@ public class Team : IMissionTeam
 	public void TriggerOnFormationsChanged(Formation formation)
 	{
 		this.OnFormationsChanged?.Invoke(this, formation);
+	}
+
+	public void TriggerOnFormationsChangedInDeployment()
+	{
+		this.OnFormationsChangedInDeployment?.Invoke(this);
 	}
 
 	public OrderController GetOrderControllerOf(Agent agent)

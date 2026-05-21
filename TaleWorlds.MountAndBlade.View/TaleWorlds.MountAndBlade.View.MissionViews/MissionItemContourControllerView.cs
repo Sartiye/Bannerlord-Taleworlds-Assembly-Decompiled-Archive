@@ -129,12 +129,13 @@ public class MissionItemContourControllerView : MissionView
 		float num2 = main.GetMaximumForwardUnlimitedSpeed() * num;
 		Vec3 boundingBoxMin = main.Position - new Vec3(num2, num2, 1f);
 		Vec3 boundingBoxMax = main.Position + new Vec3(num2, num2, 2.5f);
-		int num3 = base.Mission.Scene.SelectEntitiesInBoxWithScriptComponent<SpawnedItemEntity>(ref boundingBoxMin, ref boundingBoxMax, _tempPickableEntities, _pickableItemsId);
 		Vec3 position = base.MissionScreen.CombatCamera.Position;
 		Vec3 position2 = main.Position;
-		float num4 = new Vec3(position.x, position.y).Distance(new Vec3(position2.x, position2.y));
-		Vec3 vec = position * (1f - num4) + (position + base.MissionScreen.CombatCamera.Direction) * num4;
-		for (int i = 0; i < num3; i++)
+		float num3 = new Vec3(position.x, position.y).Distance(new Vec3(position2.x, position2.y));
+		Vec3 vec = position * (1f - num3) + (position + base.MissionScreen.CombatCamera.Direction) * num3;
+		int num4 = base.Mission.Scene.SelectEntitiesInBoxWithScriptComponent<SpawnedItemEntity>(ref boundingBoxMin, ref boundingBoxMax, _tempPickableEntities, _pickableItemsId, isFixedTick: false);
+		float collisionDistance;
+		for (int i = 0; i < num4; i++)
 		{
 			WeakGameEntity weakGameEntity = _tempPickableEntities[i];
 			SpawnedItemEntity firstScriptOfType = weakGameEntity.GetFirstScriptOfType<SpawnedItemEntity>();
@@ -144,9 +145,9 @@ public class MissionItemContourControllerView : MissionView
 			}
 			Vec3 vec2 = weakGameEntity.ComputeGlobalPhysicsBoundingBoxCenter();
 			Vec3 vec3 = (vec2 - vec).NormalizedCopy();
-			Vec3 origin = weakGameEntity.GetBodyWorldTransform().origin;
-			Vec3 vec4 = (origin - vec).NormalizedCopy();
-			if ((!base.Mission.Scene.RayCastForClosestEntityOrTerrain(vec + vec3 * 0.2f, vec2, out float collisionDistance, out WeakGameEntity collidedEntity, 0.2f, BodyFlags.CommonFocusRayCastExcludeFlags) || !collidedEntity.IsValid || !(collidedEntity == weakGameEntity)) && (!base.Mission.Scene.RayCastForClosestEntityOrTerrain(vec + vec4 * 0.2f, origin, out collisionDistance, out WeakGameEntity collidedEntity2, 0.2f, BodyFlags.CommonFocusRayCastExcludeFlags) || !collidedEntity2.IsValid || !(collidedEntity2 == weakGameEntity)))
+			Vec3 globalPosition = weakGameEntity.GlobalPosition;
+			Vec3 vec4 = (globalPosition - vec).NormalizedCopy();
+			if ((!base.Mission.Scene.RayCastForClosestEntityOrTerrain(vec + vec3 * 0.2f, vec2, out collisionDistance, out WeakGameEntity collidedEntity, 0.2f, BodyFlags.CommonFocusRayCastExcludeFlags) || !collidedEntity.IsValid || !(collidedEntity == weakGameEntity)) && (!base.Mission.Scene.RayCastForClosestEntityOrTerrain(vec + vec4 * 0.2f, globalPosition, out collisionDistance, out WeakGameEntity collidedEntity2, 0.2f, BodyFlags.CommonFocusRayCastExcludeFlags) || !collidedEntity2.IsValid || !(collidedEntity2 == weakGameEntity)))
 			{
 				continue;
 			}
@@ -162,14 +163,43 @@ public class MissionItemContourControllerView : MissionView
 				_contourItems.Add(GameEntity.CreateFromWeakEntity(weakGameEntity));
 			}
 		}
-		int num5 = base.Mission.Scene.SelectEntitiesInBoxWithScriptComponent<UsableMachine>(ref boundingBoxMin, ref boundingBoxMax, _tempPickableEntities, _pickableItemsId);
+		int num5 = base.Mission.Scene.SelectEntitiesInBoxWithScriptComponent<SpawnedItemEntity>(ref boundingBoxMin, ref boundingBoxMax, _tempPickableEntities, _pickableItemsId, isFixedTick: true);
 		for (int j = 0; j < num5; j++)
 		{
-			WeakGameEntity weakEntity = _tempPickableEntities[j];
-			UsableMachine firstScriptOfType2 = weakEntity.GetFirstScriptOfType<UsableMachine>();
-			if (firstScriptOfType2 != null && !firstScriptOfType2.IsDisabled)
+			WeakGameEntity weakGameEntity2 = _tempPickableEntities[j];
+			SpawnedItemEntity firstScriptOfType2 = weakGameEntity2.GetFirstScriptOfType<SpawnedItemEntity>();
+			if (firstScriptOfType2 == null)
 			{
-				WeakGameEntity validStandingPointForAgentWithoutDistanceCheck = firstScriptOfType2.GetValidStandingPointForAgentWithoutDistanceCheck(main);
+				continue;
+			}
+			Vec3 vec5 = weakGameEntity2.ComputeGlobalPhysicsBoundingBoxCenter();
+			Vec3 vec6 = (vec5 - vec).NormalizedCopy();
+			Vec3 globalPosition2 = weakGameEntity2.GlobalPosition;
+			Vec3 vec7 = (globalPosition2 - vec).NormalizedCopy();
+			if ((!base.Mission.Scene.RayCastForClosestEntityOrTerrainFixedPhysics(vec + vec6 * 0.2f, vec5, out collisionDistance, out WeakGameEntity collidedEntity3, 0.2f, BodyFlags.CommonFocusRayCastExcludeFlags) || !collidedEntity3.IsValid || !(collidedEntity3 == weakGameEntity2)) && (!base.Mission.Scene.RayCastForClosestEntityOrTerrainFixedPhysics(vec + vec7 * 0.2f, globalPosition2, out collisionDistance, out WeakGameEntity collidedEntity4, 0.2f, BodyFlags.CommonFocusRayCastExcludeFlags) || !collidedEntity4.IsValid || !(collidedEntity4 == weakGameEntity2)))
+			{
+				continue;
+			}
+			if (firstScriptOfType2.IsBanner())
+			{
+				if (MissionGameModels.Current.BattleBannerBearersModel.IsInteractableFormationBanner(firstScriptOfType2, main))
+				{
+					_contourItems.Add(GameEntity.CreateFromWeakEntity(weakGameEntity2));
+				}
+			}
+			else
+			{
+				_contourItems.Add(GameEntity.CreateFromWeakEntity(weakGameEntity2));
+			}
+		}
+		int num6 = base.Mission.Scene.SelectEntitiesInBoxWithScriptComponent<UsableMachine>(ref boundingBoxMin, ref boundingBoxMax, _tempPickableEntities, _pickableItemsId, isFixedTick: false);
+		for (int k = 0; k < num6; k++)
+		{
+			WeakGameEntity weakEntity = _tempPickableEntities[k];
+			UsableMachine firstScriptOfType3 = weakEntity.GetFirstScriptOfType<UsableMachine>();
+			if (firstScriptOfType3 != null && !firstScriptOfType3.IsDisabled)
+			{
+				WeakGameEntity validStandingPointForAgentWithoutDistanceCheck = firstScriptOfType3.GetValidStandingPointForAgentWithoutDistanceCheck(main);
 				if (validStandingPointForAgentWithoutDistanceCheck.IsValid && !(validStandingPointForAgentWithoutDistanceCheck.GetFirstScriptOfType<UsableMissionObject>() is SpawnedItemEntity) && validStandingPointForAgentWithoutDistanceCheck.GetScriptComponents().FirstOrDefault((ScriptComponentBehavior sc) => sc is IFocusable) is IFocusable focusable && focusable is UsableMissionObject)
 				{
 					_contourItems.Add(GameEntity.CreateFromWeakEntity(weakEntity));

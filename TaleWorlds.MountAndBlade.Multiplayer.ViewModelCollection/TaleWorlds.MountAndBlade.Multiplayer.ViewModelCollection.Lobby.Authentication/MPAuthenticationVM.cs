@@ -257,7 +257,7 @@ public class MPAuthenticationVM : ViewModel
 	public override void RefreshValues()
 	{
 		base.RefreshValues();
-		ExitText = new TextObject("{=3CsACce8}Exit").ToString();
+		ExitText = new TextObject("{=exitMenuOption}Exit").ToString();
 		LoginText = new TextObject("{=lugGPVOb}Login").ToString();
 		TitleText = _idleTitle.ToString();
 		MessageText = _idleMessage.ToString();

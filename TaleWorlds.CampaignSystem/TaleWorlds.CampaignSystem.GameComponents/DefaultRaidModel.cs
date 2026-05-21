@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.MapEvents;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 
@@ -54,6 +55,11 @@ public class DefaultRaidModel : RaidModel
 			}
 		}
 		return result;
+	}
+
+	public override ExplainedNumber GetRaidLootMultiplier(PartyBase receivingParty)
+	{
+		return new ExplainedNumber(1f);
 	}
 
 	public override MBReadOnlyList<(ItemObject, float)> GetCommonLootItemScores()

@@ -19,6 +19,7 @@ public static class DestroyClanAction
 
 	private static void ApplyInternal(Clan destroyedClan, DestroyClanActionDetails details)
 	{
+		CampaignEventDispatcher.Instance.OnClanDestroyed(destroyedClan);
 		destroyedClan.DeactivateClan();
 		foreach (WarPartyComponent item in destroyedClan.WarPartyComponents.ToList())
 		{
@@ -67,7 +68,6 @@ public static class DestroyClanAction
 		{
 			Campaign.Current.CampaignObjectManager.RemoveClan(destroyedClan);
 		}
-		CampaignEventDispatcher.Instance.OnClanDestroyed(destroyedClan);
 	}
 
 	public static void Apply(Clan destroyedClan)

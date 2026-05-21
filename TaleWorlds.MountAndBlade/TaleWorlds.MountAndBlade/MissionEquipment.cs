@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -109,6 +110,8 @@ public class MissionEquipment
 
 	private readonly ReaderWriterLockSlim _cacheLock = new ReaderWriterLockSlim();
 
+	public Action OnWeaponSlotUpdated;
+
 	private readonly MissionWeapon[] _weaponSlots;
 
 	private MissionEquipmentCache _cache;
@@ -123,6 +126,7 @@ public class MissionEquipment
 		{
 			_weaponSlots[index] = value;
 			_cache.InvalidateOnWeaponSlotUpdated();
+			OnWeaponSlotUpdated?.Invoke();
 		}
 	}
 
@@ -480,7 +484,7 @@ public class MissionEquipment
 				GetAmmoCountAndIndexOfType(this[equipmentIndex].Item.Type, out var _, out var eIndex);
 				if (eIndex != EquipmentIndex.None)
 				{
-					MissionWeapon ammoWeapon = _weaponSlots[(int)eIndex].Consume(MathF.Min(this[equipmentIndex].MaxAmmo, _weaponSlots[(int)eIndex].Amount));
+					MissionWeapon ammoWeapon = _weaponSlots[(int)eIndex].Consume(TaleWorlds.Library.MathF.Min(this[equipmentIndex].MaxAmmo, _weaponSlots[(int)eIndex].Amount));
 					_weaponSlots[(int)equipmentIndex].ReloadAmmo(ammoWeapon, _weaponSlots[(int)equipmentIndex].ReloadPhaseCount);
 				}
 			}
@@ -593,6 +597,19 @@ public class MissionEquipment
 		{
 			WeaponComponentData currentUsageItem = _weaponSlots[(int)equipmentIndex].CurrentUsageItem;
 			if (currentUsageItem != null && currentUsageItem.WeaponFlags.HasAllFlags(flags))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public bool HasAnyWeaponWithItemUsageSetFlags(ItemObject.ItemUsageSetFlags flags)
+	{
+		for (EquipmentIndex equipmentIndex = EquipmentIndex.WeaponItemBeginSlot; equipmentIndex < EquipmentIndex.NumAllWeaponSlots; equipmentIndex++)
+		{
+			MissionWeapon missionWeapon = _weaponSlots[(int)equipmentIndex];
+			if (missionWeapon.HasAnyUsageWithItemUsageSetFlags(flags))
 			{
 				return true;
 			}

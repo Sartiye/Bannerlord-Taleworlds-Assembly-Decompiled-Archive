@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.MapNotificationTypes;
@@ -136,6 +137,12 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 		}
 	}
 
+	private const int BreakingAllianceRelationPenalty = -100;
+
+	private const int DenyingCallToWarRelationPenalty = -50;
+
+	private const int AcceptingCallToWarRelationBonus = 10;
+
 	private List<Alliance> _alliances = new List<Alliance>();
 
 	private List<CallToWarAgreement> _callToWarAgreements = new List<CallToWarAgreement>();
@@ -146,6 +153,9 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 		CampaignEvents.WarDeclared.AddNonSerializedListener(this, OnWarDeclared);
 		CampaignEvents.MakePeace.AddNonSerializedListener(this, OnMakePeace);
 		CampaignEvents.KingdomDestroyedEvent.AddNonSerializedListener(this, OnKingdomDestroyed);
+		CampaignEvents.OnGameLoadFinishedEvent.AddNonSerializedListener(this, OnGameLoadFinished);
+		CampaignEvents.OnNewGameCreatedEvent.AddNonSerializedListener(this, OnNewGameCreated);
+		CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(this, OnGameLoaded);
 	}
 
 	public override void SyncData(IDataStore dataStore)
@@ -154,7 +164,7 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 		dataStore.SyncData("_callToWarAgreements", ref _callToWarAgreements);
 	}
 
-	void IAllianceCampaignBehavior.OnAllianceOfferedToPlayer(Kingdom offeringKingdom)
+	public void OnAllianceOfferedToPlayer(Kingdom offeringKingdom)
 	{
 		if (Clan.PlayerClan.Kingdom.Clans.Count == 1)
 		{
@@ -183,24 +193,21 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 		}
 	}
 
-	void IAllianceCampaignBehavior.OnAllianceOfferedToPlayerKingdom(Kingdom offeringKingdom)
+	public void OnAllianceOfferedToPlayerKingdom(Kingdom offeringKingdom)
 	{
 		if (Clan.PlayerClan.Kingdom.Clans.Count == 1)
 		{
 			TextObject textObject = new TextObject("{=1V8f9vRM}A courier bearing an alliance offer from the {PROPOSER_KINGDOM} has arrived at the court of your realm.");
 			textObject.SetTextVariable("PROPOSER_KINGDOM", offeringKingdom.InformalName);
 			Campaign.Current.CampaignInformationManager.NewMapNoticeAdded(new AllianceOfferMapNotification(offeringKingdom, textObject));
-			return;
 		}
-		KingdomDecision kingdomDecision = Clan.PlayerClan.Kingdom.UnresolvedDecisions.FirstOrDefault((KingdomDecision s) => s is StartAllianceDecision startAllianceDecision && startAllianceDecision.KingdomToStartAllianceWith == offeringKingdom);
-		if (kingdomDecision != null)
+		else
 		{
-			Clan.PlayerClan.Kingdom.RemoveDecision(kingdomDecision);
+			AddAllianceDecision(Clan.PlayerClan.Kingdom, offeringKingdom);
 		}
-		Clan.PlayerClan.Kingdom.AddDecision(new StartAllianceDecision(StartAllianceDecision.GetProposerClanForPlayerKingdom(offeringKingdom), offeringKingdom), ignoreInfluenceCost: true);
 	}
 
-	void IAllianceCampaignBehavior.OnCallToWarAgreementProposedToPlayer(Kingdom proposerKingdom, Kingdom kingdomToCallToWarAgainst)
+	public void OnCallToWarAgreementProposedToPlayer(Kingdom proposerKingdom, Kingdom kingdomToCallToWarAgainst)
 	{
 		if (Clan.PlayerClan.Kingdom.Clans.Count == 1)
 		{
@@ -213,12 +220,15 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 			textObject2.SetTextVariable("CALLING_KINGDOM", proposerKingdom.Name);
 			textObject2.SetTextVariable("KINGDOM_TO_CALL_TO_WAR_AGAINST", kingdomToCallToWarAgainst.Name);
 			textObject2.SetTextVariable("CALL_TO_WAR_COST", callToWarCost);
-			textObject2.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+			textObject2.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 			TextObject textObject4 = new TextObject("{=Y94H6XnK}Accept");
 			InformationManager.ShowInquiry(new InquiryData(negativeText: new TextObject("{=cOgmdp9e}Decline").ToString(), titleText: textObject.ToString(), text: textObject2.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, affirmativeText: textObject4.ToString(), affirmativeAction: delegate
 			{
-				AcceptCallToWarAgreement(proposerKingdom, kingdomToCallToWarAgainst, callToWarCost);
-			}, negativeAction: null));
+				StartCallToWarAgreement(proposerKingdom, Clan.PlayerClan.Kingdom, kingdomToCallToWarAgainst, callToWarCost);
+			}, negativeAction: delegate
+			{
+				DenyCallToWarAgreement(proposerKingdom, Clan.PlayerClan.Kingdom);
+			}));
 		}
 		else
 		{
@@ -234,7 +244,7 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 		}
 	}
 
-	void IAllianceCampaignBehavior.OnCallToWarAgreementProposedToPlayerKingdom(Kingdom proposerKingdom, Kingdom kingdomToCallToWarAgainst)
+	public void OnCallToWarAgreementProposedToPlayerKingdom(Kingdom proposerKingdom, Kingdom kingdomToCallToWarAgainst)
 	{
 		if (Clan.PlayerClan.Kingdom.Clans.Count == 1)
 		{
@@ -244,7 +254,7 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 			Campaign.Current.CampaignInformationManager.NewMapNoticeAdded(new AcceptCallToWarOfferMapNotification(proposerKingdom, kingdomToCallToWarAgainst, textObject));
 			return;
 		}
-		KingdomDecision kingdomDecision = Clan.PlayerClan.Kingdom.UnresolvedDecisions.FirstOrDefault((KingdomDecision s) => s is AcceptCallToWarAgreementDecision acceptCallToWarAgreementDecision && acceptCallToWarAgreementDecision.CallingKingdom == proposerKingdom);
+		KingdomDecision kingdomDecision = Clan.PlayerClan.Kingdom.UnresolvedDecisions.FirstOrDefault((KingdomDecision s) => s is AcceptCallToWarAgreementDecision acceptCallToWarAgreementDecision && acceptCallToWarAgreementDecision.CallingKingdom == proposerKingdom && acceptCallToWarAgreementDecision.KingdomToCallToWarAgainst == kingdomToCallToWarAgainst);
 		if (kingdomDecision != null)
 		{
 			Clan.PlayerClan.Kingdom.RemoveDecision(kingdomDecision);
@@ -253,7 +263,7 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 		Clan.PlayerClan.Kingdom.AddDecision(kingdomDecision2, ignoreInfluenceCost: true);
 	}
 
-	void IAllianceCampaignBehavior.OnCallToWarAgreementProposedByPlayer(Kingdom proposedKingdom, Kingdom kingdomToCallToWarAgainst)
+	public void OnCallToWarAgreementProposedByPlayer(Kingdom proposedKingdom, Kingdom kingdomToCallToWarAgainst)
 	{
 		if (Clan.PlayerClan.Kingdom.Clans.Count == 1)
 		{
@@ -268,11 +278,11 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 				textObject2.SetTextVariable("CALLED_KINGDOM", proposedKingdom.Name);
 				textObject2.SetTextVariable("KINGDOM_TO_CALL_TO_WAR_AGAINST", kingdomToCallToWarAgainst.Name);
 				textObject2.SetTextVariable("CALL_TO_WAR_COST", callToWarCost);
-				textObject2.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject2.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				TextObject textObject4 = new TextObject("{=Y94H6XnK}Accept");
 				InformationManager.ShowInquiry(new InquiryData(negativeText: new TextObject("{=cOgmdp9e}Decline").ToString(), titleText: textObject.ToString(), text: textObject2.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, affirmativeText: textObject4.ToString(), affirmativeAction: delegate
 				{
-					AcceptProposalOfCallToWarAgreement(proposedKingdom, kingdomToCallToWarAgainst, callToWarCost);
+					StartCallToWarAgreement(Clan.PlayerClan.Kingdom, proposedKingdom, kingdomToCallToWarAgainst, callToWarCost);
 				}, negativeAction: null));
 			}
 		}
@@ -290,11 +300,11 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 		}
 	}
 
-	CampaignTime IAllianceCampaignBehavior.GetAllianceEndDate(Kingdom kingdom1, Kingdom kingdom2)
+	public CampaignTime GetAllianceEndDate(Kingdom kingdom1, Kingdom kingdom2)
 	{
 		if (!TryGetAlliance(kingdom1, kingdom2, out var foundAlliance))
 		{
-			Debug.FailedAssert("Cant find alliance", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\AllianceCampaignBehavior.cs", "GetAllianceEndDate", 271);
+			Debug.FailedAssert("Cant find alliance", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\AllianceCampaignBehavior.cs", "GetAllianceEndDate", 277);
 			return CampaignTime.Zero;
 		}
 		return foundAlliance.EndTime;
@@ -310,7 +320,7 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 			Campaign.Current.CampaignInformationManager.NewMapNoticeAdded(new ProposeCallToWarOfferMapNotification(proposedKingdom, kingdomToCallToWarAgainst, textObject));
 			return;
 		}
-		KingdomDecision kingdomDecision = Clan.PlayerClan.Kingdom.UnresolvedDecisions.FirstOrDefault((KingdomDecision s) => s is ProposeCallToWarAgreementDecision proposeCallToWarAgreementDecision && proposeCallToWarAgreementDecision.CalledKingdom == proposedKingdom);
+		KingdomDecision kingdomDecision = Clan.PlayerClan.Kingdom.UnresolvedDecisions.FirstOrDefault((KingdomDecision s) => s is ProposeCallToWarAgreementDecision proposeCallToWarAgreementDecision && proposeCallToWarAgreementDecision.CalledKingdom == proposedKingdom && proposeCallToWarAgreementDecision.KingdomToCallToWarAgainst == kingdomToCallToWarAgainst);
 		if (kingdomDecision != null)
 		{
 			Clan.PlayerClan.Kingdom.RemoveDecision(kingdomDecision);
@@ -344,34 +354,28 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 		{
 			stanceWith.SetDailyTributePaid(proposerKingdom, 0, 0);
 		}
-		foreach (IFaction item in proposerKingdom.FactionsAtWarWith)
-		{
-			if (item.IsKingdomFaction && !item.IsAtWarWith(receiverKingdom))
-			{
-				if (proposerKingdom == Clan.PlayerClan.Kingdom)
-				{
-					Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>().OnCallToWarAgreementProposedByPlayerKingdom(receiverKingdom, (Kingdom)item);
-					continue;
-				}
-				ProposeCallToWarAgreementDecision kingdomDecision = new ProposeCallToWarAgreementDecision(proposerKingdom.RulingClan, receiverKingdom, (Kingdom)item);
-				proposerKingdom.AddDecision(kingdomDecision, ignoreInfluenceCost: true);
-			}
-		}
-		foreach (IFaction item2 in receiverKingdom.FactionsAtWarWith)
-		{
-			if (item2.IsKingdomFaction && !item2.IsAtWarWith(proposerKingdom))
-			{
-				if (receiverKingdom == Clan.PlayerClan.Kingdom)
-				{
-					Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>().OnCallToWarAgreementProposedByPlayerKingdom(proposerKingdom, (Kingdom)item2);
-					continue;
-				}
-				ProposeCallToWarAgreementDecision kingdomDecision2 = new ProposeCallToWarAgreementDecision(receiverKingdom.RulingClan, proposerKingdom, (Kingdom)item2);
-				receiverKingdom.AddDecision(kingdomDecision2, ignoreInfluenceCost: true);
-			}
-		}
 		AddAlliance(proposerKingdom, receiverKingdom);
 		CampaignEventDispatcher.Instance.OnAllianceStarted(proposerKingdom, receiverKingdom);
+		foreach (IFaction item in proposerKingdom.FactionsAtWarWith.WhereQ((IFaction f) => f.IsKingdomFaction && !f.IsAtWarWith(receiverKingdom)).ToList())
+		{
+			if (proposerKingdom == Clan.PlayerClan.Kingdom && !Hero.MainHero.Clan.IsUnderMercenaryService)
+			{
+				OnCallToWarAgreementProposedByPlayerKingdom(receiverKingdom, (Kingdom)item);
+				continue;
+			}
+			ProposeCallToWarAgreementDecision kingdomDecision = new ProposeCallToWarAgreementDecision(proposerKingdom.RulingClan, receiverKingdom, (Kingdom)item);
+			proposerKingdom.AddDecision(kingdomDecision, ignoreInfluenceCost: true);
+		}
+		foreach (IFaction item2 in receiverKingdom.FactionsAtWarWith.WhereQ((IFaction f) => f.IsKingdomFaction && !f.IsAtWarWith(proposerKingdom)).ToList())
+		{
+			if (receiverKingdom == Clan.PlayerClan.Kingdom && !Hero.MainHero.Clan.IsUnderMercenaryService)
+			{
+				OnCallToWarAgreementProposedByPlayerKingdom(proposerKingdom, (Kingdom)item2);
+				continue;
+			}
+			ProposeCallToWarAgreementDecision kingdomDecision2 = new ProposeCallToWarAgreementDecision(receiverKingdom.RulingClan, proposerKingdom, (Kingdom)item2);
+			receiverKingdom.AddDecision(kingdomDecision2, ignoreInfluenceCost: true);
+		}
 	}
 
 	public void EndAlliance(Kingdom kingdom1, Kingdom kingdom2)
@@ -393,24 +397,30 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 		return _callToWarAgreements.AnyQ((CallToWarAgreement c) => c.CallingKingdom == callingKingdom && c.CalledKingdom == calledKingdom);
 	}
 
-	public bool IsAtWarByCallToWarAgreement(Kingdom calledKingdom, Kingdom kingdomToCallToWarAgainst)
+	public bool IsAtWarByCallToWarAgreement(Kingdom calledKingdom, Kingdom kingdomToCallToWarAgainst, out Kingdom callingKingdom)
 	{
+		callingKingdom = null;
 		if (kingdomToCallToWarAgainst == null || calledKingdom == null || kingdomToCallToWarAgainst == calledKingdom || kingdomToCallToWarAgainst.IsEliminated || calledKingdom.IsEliminated)
 		{
 			return false;
 		}
-		return _callToWarAgreements.AnyQ((CallToWarAgreement c) => c.CalledKingdom == calledKingdom && c.KingdomToCallToWarAgainst == kingdomToCallToWarAgainst);
+		for (int i = 0; i < _callToWarAgreements.Count; i++)
+		{
+			CallToWarAgreement callToWarAgreement = _callToWarAgreements[i];
+			if (callToWarAgreement.CalledKingdom == calledKingdom && callToWarAgreement.KingdomToCallToWarAgainst == kingdomToCallToWarAgainst)
+			{
+				callingKingdom = callToWarAgreement.CallingKingdom;
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public void StartCallToWarAgreement(Kingdom callingKingdom, Kingdom calledKingdom, Kingdom kingdomToCallToWarAgainst, int callToWarCost, bool isPlayerPaying = false)
 	{
 		if (IsAllyWithKingdom(callingKingdom, calledKingdom) && !calledKingdom.IsAtWarWith(kingdomToCallToWarAgainst))
 		{
-			CallToWarAgreement callToWarAgreement = AddCallToWarAgreement(callingKingdom, calledKingdom, kingdomToCallToWarAgainst);
-			if (TryGetAlliance(callingKingdom, calledKingdom, out var foundAlliance) && foundAlliance.EndTime < callToWarAgreement.EndTime)
-			{
-				foundAlliance.EndTime = callToWarAgreement.EndTime;
-			}
+			UpdateAllianceEndTime(callingKingdom, calledKingdom, AddCallToWarAgreement(callingKingdom, calledKingdom, kingdomToCallToWarAgainst).EndTime);
 			if (isPlayerPaying)
 			{
 				Hero.MainHero.ChangeHeroGold(-callToWarCost);
@@ -422,6 +432,7 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 				calledKingdom.CallToWarWallet += callToWarCost;
 			}
 			CampaignEventDispatcher.Instance.OnCallToWarAgreementStarted(callingKingdom, calledKingdom, kingdomToCallToWarAgainst);
+			ApplyAcceptingCallToWarOfferBonus(callingKingdom, calledKingdom);
 			DeclareWarAction.ApplyByCallToWarAgreement(calledKingdom, kingdomToCallToWarAgainst);
 		}
 	}
@@ -430,6 +441,11 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 	{
 		RemoveCallToWarAgreement(callingKingdom, calledKingdom, kingdomToCallToWarAgainst);
 		CampaignEventDispatcher.Instance.OnCallToWarAgreementEnded(callingKingdom, calledKingdom, kingdomToCallToWarAgainst);
+	}
+
+	public void DenyCallToWarAgreement(Kingdom callingKingdom, Kingdom calledKingdom)
+	{
+		ApplyDenyingCallToWarOfferPenalty(callingKingdom, calledKingdom);
 	}
 
 	public List<Kingdom> GetKingdomsToCallToWarAgainst(Kingdom callingKingdom, Kingdom calledKingdom)
@@ -514,19 +530,22 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 		return result;
 	}
 
-	private void AcceptProposalOfCallToWarAgreement(Kingdom proposedKingdom, Kingdom kingdomToCallToWarAgainst, int callToWarCost)
+	private void UpdateAllianceEndTime(Kingdom kingdom1, Kingdom kingdom2, CampaignTime newEndTime)
 	{
-		Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>().StartCallToWarAgreement(Clan.PlayerClan.Kingdom, proposedKingdom, kingdomToCallToWarAgainst, callToWarCost);
-	}
-
-	private void AcceptCallToWarAgreement(Kingdom proposerKingdom, Kingdom kingdomToCallToWarAgainst, int callToWarCost)
-	{
-		Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>().StartCallToWarAgreement(proposerKingdom, Clan.PlayerClan.Kingdom, kingdomToCallToWarAgainst, callToWarCost);
+		for (int i = 0; i < _alliances.Count; i++)
+		{
+			Alliance alliance = _alliances[i];
+			if (((alliance.Kingdom1 == kingdom1 && alliance.Kingdom2 == kingdom2) || (alliance.Kingdom2 == kingdom1 && alliance.Kingdom1 == kingdom2)) && alliance.EndTime < newEndTime)
+			{
+				_alliances[i] = new Alliance(_alliances[i].Kingdom1, _alliances[i].Kingdom2, newEndTime);
+				break;
+			}
+		}
 	}
 
 	private void AcceptStartingAlliance(Kingdom proposerKingdom)
 	{
-		Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>().StartAlliance(proposerKingdom, Clan.PlayerClan.Kingdom);
+		StartAlliance(proposerKingdom, Clan.PlayerClan.Kingdom);
 	}
 
 	private void ConfirmAllianceOffer(Kingdom proposerKingdom)
@@ -534,14 +553,11 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 		if (Clan.PlayerClan.IsUnderMercenaryService)
 		{
 			AcceptStartingAlliance(proposerKingdom);
-			return;
 		}
-		KingdomDecision kingdomDecision = Clan.PlayerClan.Kingdom.UnresolvedDecisions.FirstOrDefault((KingdomDecision s) => s is StartAllianceDecision startAllianceDecision && startAllianceDecision.KingdomToStartAllianceWith == proposerKingdom);
-		if (kingdomDecision != null)
+		else
 		{
-			Clan.PlayerClan.Kingdom.RemoveDecision(kingdomDecision);
+			AddAllianceDecision(Clan.PlayerClan.Kingdom, proposerKingdom);
 		}
-		Clan.PlayerClan.Kingdom.AddDecision(new StartAllianceDecision(StartAllianceDecision.GetProposerClanForPlayerKingdom(proposerKingdom), proposerKingdom), ignoreInfluenceCost: true);
 	}
 
 	private void ConfirmCallToWarAgreementProposalOffer(Kingdom proposedKingdom, Kingdom kingdomToCallToWarAgainst)
@@ -550,10 +566,10 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 		int callToWarCost = proposeCallToWarAgreementDecision.CallToWarCost;
 		if (Clan.PlayerClan.IsUnderMercenaryService)
 		{
-			AcceptProposalOfCallToWarAgreement(proposedKingdom, kingdomToCallToWarAgainst, callToWarCost);
+			StartCallToWarAgreement(Clan.PlayerClan.Kingdom, proposedKingdom, kingdomToCallToWarAgainst, callToWarCost);
 			return;
 		}
-		KingdomDecision kingdomDecision = Clan.PlayerClan.Kingdom.UnresolvedDecisions.FirstOrDefault((KingdomDecision s) => s is ProposeCallToWarAgreementDecision proposeCallToWarAgreementDecision2 && proposeCallToWarAgreementDecision2.CalledKingdom == proposedKingdom);
+		KingdomDecision kingdomDecision = Clan.PlayerClan.Kingdom.UnresolvedDecisions.FirstOrDefault((KingdomDecision s) => s is ProposeCallToWarAgreementDecision proposeCallToWarAgreementDecision2 && proposeCallToWarAgreementDecision2.CalledKingdom == proposedKingdom && proposeCallToWarAgreementDecision2.KingdomToCallToWarAgainst == kingdomToCallToWarAgainst);
 		if (kingdomDecision != null)
 		{
 			Clan.PlayerClan.Kingdom.RemoveDecision(kingdomDecision);
@@ -567,15 +583,57 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 		int callToWarCost = acceptCallToWarAgreementDecision.CallToWarCost;
 		if (Clan.PlayerClan.IsUnderMercenaryService)
 		{
-			AcceptCallToWarAgreement(proposerKingdom, kingdomToCallToWarAgainst, callToWarCost);
+			StartCallToWarAgreement(proposerKingdom, Clan.PlayerClan.Kingdom, kingdomToCallToWarAgainst, callToWarCost);
 			return;
 		}
-		KingdomDecision kingdomDecision = Clan.PlayerClan.Kingdom.UnresolvedDecisions.FirstOrDefault((KingdomDecision s) => s is AcceptCallToWarAgreementDecision acceptCallToWarAgreementDecision2 && acceptCallToWarAgreementDecision2.CallingKingdom == proposerKingdom);
+		KingdomDecision kingdomDecision = Clan.PlayerClan.Kingdom.UnresolvedDecisions.FirstOrDefault((KingdomDecision s) => s is AcceptCallToWarAgreementDecision acceptCallToWarAgreementDecision2 && acceptCallToWarAgreementDecision2.CallingKingdom == proposerKingdom && acceptCallToWarAgreementDecision2.KingdomToCallToWarAgainst == kingdomToCallToWarAgainst);
 		if (kingdomDecision != null)
 		{
 			Clan.PlayerClan.Kingdom.RemoveDecision(kingdomDecision);
 		}
 		Clan.PlayerClan.Kingdom.AddDecision(acceptCallToWarAgreementDecision, ignoreInfluenceCost: true);
+	}
+
+	private void ApplyBrokenAlliancePenalty(Kingdom kingdom, Kingdom otherKingdom, DeclareWarAction.DeclareWarDetail detail)
+	{
+		Hero obj = ((detail == DeclareWarAction.DeclareWarDetail.CausedByPlayerHostility) ? Hero.MainHero : kingdom.Leader);
+		ChangeRelationAction.ApplyRelationChangeBetweenHeroes(obj, otherKingdom.Leader, -100);
+		if (obj == Hero.MainHero)
+		{
+			TraitLevelingHelper.OnAllianceBrokenThroughHostility();
+		}
+	}
+
+	private void ApplyDenyingCallToWarOfferPenalty(Kingdom callingKingdom, Kingdom calledKingdom)
+	{
+		ChangeRelationAction.ApplyRelationChangeBetweenHeroes(calledKingdom.Leader, callingKingdom.Leader, -50);
+	}
+
+	private void ApplyAcceptingCallToWarOfferBonus(Kingdom callingKingdom, Kingdom calledKingdom)
+	{
+		ChangeRelationAction.ApplyRelationChangeBetweenHeroes(calledKingdom.Leader, callingKingdom.Leader, 10);
+	}
+
+	private void AddAllianceDecision(Kingdom kingdomToAddDecision, Kingdom kingdomToOffer)
+	{
+		KingdomDecision kingdomDecision = kingdomToAddDecision.UnresolvedDecisions.FirstOrDefault((KingdomDecision s) => s is StartAllianceDecision startAllianceDecision2 && startAllianceDecision2.KingdomToStartAllianceWith == kingdomToOffer);
+		if (kingdomDecision != null)
+		{
+			kingdomToAddDecision.RemoveDecision(kingdomDecision);
+		}
+		StartAllianceDecision startAllianceDecision = new StartAllianceDecision(Campaign.Current.Models.AllianceModel.GetProposerClanForAllianceDecision(kingdomToAddDecision, kingdomToOffer), kingdomToOffer);
+		if (startAllianceDecision.CanMakeDecision(out var _))
+		{
+			kingdomToAddDecision.AddDecision(startAllianceDecision, ignoreInfluenceCost: true);
+		}
+	}
+
+	private static void RefreshAlliedKingdoms()
+	{
+		foreach (Kingdom item in Kingdom.All)
+		{
+			item.UpdateAlliedKingdoms();
+		}
 	}
 
 	private void DailyTickClan(Clan clan)
@@ -611,6 +669,14 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 				if (foundAlliance.EndTime.IsPast)
 				{
 					EndAlliance(kingdom, kingdom2);
+					if (kingdom == Clan.PlayerClan.Kingdom)
+					{
+						AddAllianceDecision(kingdom, kingdom2);
+					}
+					else
+					{
+						AddAllianceDecision(kingdom2, kingdom);
+					}
 				}
 			}
 		}
@@ -626,15 +692,16 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 		Kingdom kingdom2 = (Kingdom)faction2;
 		if (kingdom.IsAllyWith(kingdom2))
 		{
+			ApplyBrokenAlliancePenalty(kingdom, kingdom2, detail);
 			EndAlliance(kingdom, kingdom2);
 		}
 		foreach (Kingdom item in kingdom.AlliedKingdoms.ToList())
 		{
 			if (!item.IsAtWarWith(kingdom2))
 			{
-				if (kingdom == Clan.PlayerClan.Kingdom)
+				if (kingdom == Clan.PlayerClan.Kingdom && !Hero.MainHero.Clan.IsUnderMercenaryService)
 				{
-					Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>().OnCallToWarAgreementProposedByPlayerKingdom(item, kingdom2);
+					OnCallToWarAgreementProposedByPlayerKingdom(item, kingdom2);
 					continue;
 				}
 				ProposeCallToWarAgreementDecision kingdomDecision = new ProposeCallToWarAgreementDecision(kingdom.RulingClan, item, kingdom2);
@@ -645,9 +712,9 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 		{
 			if (!item2.IsAtWarWith(kingdom))
 			{
-				if (kingdom2 == Clan.PlayerClan.Kingdom)
+				if (kingdom2 == Clan.PlayerClan.Kingdom && !Hero.MainHero.Clan.IsUnderMercenaryService)
 				{
-					Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>().OnCallToWarAgreementProposedByPlayerKingdom(item2, kingdom);
+					OnCallToWarAgreementProposedByPlayerKingdom(item2, kingdom);
 					continue;
 				}
 				ProposeCallToWarAgreementDecision kingdomDecision2 = new ProposeCallToWarAgreementDecision(kingdom2.RulingClan, item2, kingdom);
@@ -686,5 +753,27 @@ public class AllianceCampaignBehavior : CampaignBehaviorBase, IAllianceCampaignB
 		{
 			EndAlliance(item.Kingdom1, item.Kingdom2);
 		}
+	}
+
+	private void OnGameLoadFinished()
+	{
+		if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.4.0.110693")))
+		{
+			for (int i = 0; i < _callToWarAgreements.Count; i++)
+			{
+				CallToWarAgreement callToWarAgreement = _callToWarAgreements[i];
+				UpdateAllianceEndTime(callToWarAgreement.CallingKingdom, callToWarAgreement.CalledKingdom, callToWarAgreement.EndTime);
+			}
+		}
+	}
+
+	private void OnNewGameCreated(CampaignGameStarter starter)
+	{
+		RefreshAlliedKingdoms();
+	}
+
+	private void OnGameLoaded(CampaignGameStarter starter)
+	{
+		RefreshAlliedKingdoms();
 	}
 }

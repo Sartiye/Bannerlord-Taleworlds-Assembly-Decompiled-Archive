@@ -178,7 +178,7 @@ public class ScrollingTextWidget : TextWidget
 				}
 			}
 		}
-		if (base.EventManager.HoveredView == ScrollOnHoverWidget && !_isHovering)
+		if (base.EventManager.HoveredWidget == ScrollOnHoverWidget && !_isHovering)
 		{
 			if (!IsAutoScrolling)
 			{
@@ -188,7 +188,7 @@ public class ScrollingTextWidget : TextWidget
 			}
 			_isHovering = true;
 		}
-		else if (base.EventManager.HoveredView != ScrollOnHoverWidget && _isHovering)
+		else if (base.EventManager.HoveredWidget != ScrollOnHoverWidget && _isHovering)
 		{
 			if (!IsAutoScrolling)
 			{

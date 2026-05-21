@@ -74,7 +74,6 @@ public class GauntletGameNotification : GlobalLayer
 			_isSuspended = shouldBeSuspended;
 		}
 		_dataSource.IsPaused = _isSuspended;
-		_dataSource.Tick(dt);
 	}
 
 	protected virtual bool GetShouldBeSuspended()

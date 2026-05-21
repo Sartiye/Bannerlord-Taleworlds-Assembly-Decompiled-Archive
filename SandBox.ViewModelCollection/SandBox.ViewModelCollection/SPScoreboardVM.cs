@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SandBox.Missions.BattleScore;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
-using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
+using TaleWorlds.MountAndBlade.Missions.BattleScore;
 using TaleWorlds.MountAndBlade.Source.Missions.Handlers;
 using TaleWorlds.MountAndBlade.ViewModelCollection;
 using TaleWorlds.MountAndBlade.ViewModelCollection.Scoreboard;
@@ -72,7 +73,23 @@ public class SPScoreboardVM : ScoreboardBaseVM, IBattleObserver
 		}
 	}
 
-	public SPScoreboardVM(BattleSimulation simulation)
+	public static SPScoreboardVM CreateSimulation(BattleSimulation simulation)
+	{
+		return new SPScoreboardVM(new SandboxSimulationBattleScoreContext(simulation), simulation);
+	}
+
+	public static SPScoreboardVM CreateMission(Mission mission)
+	{
+		return new SPScoreboardVM(new SandboxMissionBattleScoreContext(mission), null);
+	}
+
+	public static SPScoreboardVM CreateCustom(BattleScoreContext battleScoreContext, BattleSimulation simulation = null)
+	{
+		return new SPScoreboardVM(battleScoreContext, simulation);
+	}
+
+	public SPScoreboardVM(BattleScoreContext scoreboardContext, BattleSimulation simulation)
+		: base(scoreboardContext)
 	{
 		_battleSimulation = simulation;
 		BattleResults = new MBBindingList<BattleResultVM>();
@@ -101,26 +118,25 @@ public class SPScoreboardVM : ScoreboardBaseVM, IBattleObserver
 	public override void Initialize(IMissionScreen missionScreen, Mission mission, Action releaseSimulationSources, Action<bool> onToggle)
 	{
 		base.Initialize(missionScreen, mission, releaseSimulationSources, onToggle);
+		base.Attackers = new SPScoreboardSideVM(GameTexts.FindText("str_battle_result_side", "attacker"), ScoreboardContext.GetAttackerBanner(), isSimulation: true, PlayerEncounter.PlayerIsAttacker);
+		base.Defenders = new SPScoreboardSideVM(GameTexts.FindText("str_battle_result_side", "defender"), ScoreboardContext.GetDefenderBanner(), isSimulation: true, !PlayerEncounter.PlayerIsAttacker);
 		if (_battleSimulation != null)
 		{
 			PlayerSide = (PlayerEncounter.PlayerIsAttacker ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
-			base.Defenders = new SPScoreboardSideVM(GameTexts.FindText("str_battle_result_side", "defender"), MobileParty.MainParty.MapEvent.DefenderSide.LeaderParty.Banner, isSimulation: true);
-			base.Attackers = new SPScoreboardSideVM(GameTexts.FindText("str_battle_result_side", "attacker"), MobileParty.MainParty.MapEvent.AttackerSide.LeaderParty.Banner, isSimulation: true);
 			base.IsSimulation = true;
 			base.IsMainCharacterDead = true;
 			base.ShowScoreboard = true;
-			foreach (List<BattleResultPartyData> team in _battleSimulation.Teams)
+			foreach (UniqueTroopDescriptor troop in _battleSimulation.MapEvent.AttackerSide.GetTroops())
 			{
-				foreach (BattleResultPartyData item in team)
-				{
-					PartyBase party = item.Party;
-					SPScoreboardSideVM side = GetSide(party.Side);
-					bool isPlayerParty = party?.Owner == Hero.MainHero;
-					foreach (TroopRosterElement item2 in party.MemberRoster.GetTroopRoster())
-					{
-						side.UpdateScores(party, isPlayerParty, item2.Character, item2.Number - item2.WoundedNumber, 0, 0, 0, 0, 0);
-					}
-				}
+				PartyBase allocatedTroopParty = _battleSimulation.MapEvent.AttackerSide.GetAllocatedTroopParty(troop);
+				CharacterObject allocatedTroop = _battleSimulation.MapEvent.AttackerSide.GetAllocatedTroop(troop);
+				GetSide(allocatedTroopParty.Side).UpdateScores(allocatedTroopParty, allocatedTroopParty?.Owner == Hero.MainHero, allocatedTroop, 1, 0, 0, 0, 0, 0);
+			}
+			foreach (UniqueTroopDescriptor troop2 in _battleSimulation.MapEvent.DefenderSide.GetTroops())
+			{
+				PartyBase allocatedTroopParty2 = _battleSimulation.MapEvent.DefenderSide.GetAllocatedTroopParty(troop2);
+				CharacterObject allocatedTroop2 = _battleSimulation.MapEvent.DefenderSide.GetAllocatedTroop(troop2);
+				GetSide(allocatedTroopParty2.Side).UpdateScores(allocatedTroopParty2, allocatedTroopParty2?.Owner == Hero.MainHero, allocatedTroop2, 1, 0, 0, 0, 0, 0);
 			}
 			_battleSimulation.BattleObserver = this;
 			base.PowerComparer.Update(base.Defenders.CurrentPower, base.Attackers.CurrentPower, base.Defenders.CurrentPower, base.Attackers.CurrentPower);
@@ -132,20 +148,16 @@ public class SPScoreboardVM : ScoreboardBaseVM, IBattleObserver
 			{
 				if (PlayerEncounter.Battle != null)
 				{
-					base.Defenders = new SPScoreboardSideVM(GameTexts.FindText("str_battle_result_side", "defender"), MobileParty.MainParty.MapEvent.DefenderSide.LeaderParty.Banner, isSimulation: false);
-					base.Attackers = new SPScoreboardSideVM(GameTexts.FindText("str_battle_result_side", "attacker"), MobileParty.MainParty.MapEvent.AttackerSide.LeaderParty.Banner, isSimulation: false);
 					PlayerSide = (PlayerEncounter.PlayerIsAttacker ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
 				}
 				else
 				{
-					base.Defenders = new SPScoreboardSideVM(GameTexts.FindText("str_battle_result_side", "defender"), Mission.Current.Teams.Defender.Banner, isSimulation: false);
-					base.Attackers = new SPScoreboardSideVM(GameTexts.FindText("str_battle_result_side", "attacker"), Mission.Current.Teams.Attacker.Banner, isSimulation: false);
 					PlayerSide = BattleSideEnum.Defender;
 				}
 			}
 			else
 			{
-				Debug.FailedAssert("SPScoreboard on CustomBattle", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\SPScoreboardVM.cs", "Initialize", 118);
+				Debug.FailedAssert("SPScoreboard on CustomBattle", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\SPScoreboardVM.cs", "Initialize", 134);
 			}
 			BattleObserverMissionLogic missionBehavior = _mission.GetMissionBehavior<BattleObserverMissionLogic>();
 			if (missionBehavior != null)
@@ -154,7 +166,7 @@ public class SPScoreboardVM : ScoreboardBaseVM, IBattleObserver
 			}
 			else
 			{
-				Debug.FailedAssert("SPScoreboard on CustomBattle", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\SPScoreboardVM.cs", "Initialize", 143);
+				Debug.FailedAssert("SPScoreboard on CustomBattle", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\SPScoreboardVM.cs", "Initialize", 159);
 			}
 		}
 		string defenderColor;
@@ -291,28 +303,29 @@ public class SPScoreboardVM : ScoreboardBaseVM, IBattleObserver
 	private void GetBattleRewards(bool playerVictory)
 	{
 		BattleResults.Clear();
-		if (playerVictory)
+		if (playerVictory && PlayerEncounter.Current != null)
 		{
-			ExplainedNumber renownExplained = new ExplainedNumber(0f, includeDescriptions: true);
-			ExplainedNumber influencExplained = new ExplainedNumber(0f, includeDescriptions: true);
-			ExplainedNumber moraleExplained = new ExplainedNumber(0f, includeDescriptions: true);
-			PlayerEncounter.GetBattleRewards(out var renownChange, out var influenceChange, out var moraleChange, out var _, out var playerEarnedLootPercentage, out var playerEarnedFigurehead, ref renownExplained, ref influencExplained, ref moraleExplained);
-			if (renownChange > 0.1f)
+			PlayerEncounter.Current.GetBattleRewards(out var renownExplained, out var influenceExplained, out var moraleExplained, out var playerEarnedLootRate, out var playerEarnedFigurehead);
+			float resultNumber = renownExplained.ResultNumber;
+			float resultNumber2 = influenceExplained.ResultNumber;
+			float resultNumber3 = moraleExplained.ResultNumber;
+			if (resultNumber > 0.1f)
 			{
-				BattleResults.Add(new BattleResultVM(_renownStr.Format(renownChange), () => SandBoxUIHelper.GetExplainedNumberTooltip(ref renownExplained)));
+				BattleResults.Add(new BattleResultVM(_renownStr.Format(resultNumber), () => SandBoxUIHelper.GetExplainedNumberTooltip(ref renownExplained)));
 			}
-			if (influenceChange > 0.1f)
+			if (resultNumber2 > 0.1f)
 			{
-				BattleResults.Add(new BattleResultVM(_influenceStr.Format(influenceChange), () => SandBoxUIHelper.GetExplainedNumberTooltip(ref influencExplained)));
+				BattleResults.Add(new BattleResultVM(_influenceStr.Format(resultNumber2), () => SandBoxUIHelper.GetExplainedNumberTooltip(ref influenceExplained)));
 			}
-			if (moraleChange > 0.1f || moraleChange < -0.1f)
+			if (resultNumber3 > 0.1f || resultNumber3 < -0.1f)
 			{
-				BattleResults.Add(new BattleResultVM(_moraleStr.Format(moraleChange), () => SandBoxUIHelper.GetExplainedNumberTooltip(ref moraleExplained)));
+				BattleResults.Add(new BattleResultVM(_moraleStr.Format(resultNumber3), () => SandBoxUIHelper.GetExplainedNumberTooltip(ref moraleExplained)));
 			}
 			int num = ((PlayerSide == BattleSideEnum.Attacker) ? base.Attackers.Parties.Count : base.Defenders.Parties.Count);
-			if (playerEarnedLootPercentage > 0.1f && num > 1)
+			if (playerEarnedLootRate > 0.1f && num > 1)
 			{
-				BattleResults.Add(new BattleResultVM(_lootStr.Format(playerEarnedLootPercentage), () => SandBoxUIHelper.GetBattleLootAwardTooltip(playerEarnedLootPercentage)));
+				playerEarnedLootRate *= 100f;
+				BattleResults.Add(new BattleResultVM(_lootStr.Format(playerEarnedLootRate), () => SandBoxUIHelper.GetBattleLootAwardTooltip(playerEarnedLootRate)));
 			}
 			if (playerEarnedFigurehead != null)
 			{
@@ -322,7 +335,7 @@ public class SPScoreboardVM : ScoreboardBaseVM, IBattleObserver
 				}
 				else
 				{
-					Debug.FailedAssert("Battle rewards contain an invalid figurehead (null or name missing)", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\SPScoreboardVM.cs", "GetBattleRewards", 342);
+					Debug.FailedAssert("Battle rewards contain an invalid figurehead (null or name missing)", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\SPScoreboardVM.cs", "GetBattleRewards", 361);
 				}
 			}
 		}
@@ -332,7 +345,7 @@ public class SPScoreboardVM : ScoreboardBaseVM, IBattleObserver
 			{
 				if (item.Character == null)
 				{
-					Debug.FailedAssert("Scoreboard has a member element without a character", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\SPScoreboardVM.cs", "GetBattleRewards", 359);
+					Debug.FailedAssert("Scoreboard has a member element without a character", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\SPScoreboardVM.cs", "GetBattleRewards", 378);
 					continue;
 				}
 				BattleResults.Add(new BattleResultVM(_deadLordStr.SetTextVariable("A0", item.Character.Name).ToString(), () => new List<TooltipProperty>(), SandBoxUIHelper.GetCharacterCode(item.Character as CharacterObject)));
@@ -344,7 +357,7 @@ public class SPScoreboardVM : ScoreboardBaseVM, IBattleObserver
 			{
 				if (item2.Character == null)
 				{
-					Debug.FailedAssert("Scoreboard has a member element without a character", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\SPScoreboardVM.cs", "GetBattleRewards", 376);
+					Debug.FailedAssert("Scoreboard has a member element without a character", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\SPScoreboardVM.cs", "GetBattleRewards", 395);
 					continue;
 				}
 				BattleResults.Add(new BattleResultVM(_deadLordStr.SetTextVariable("A0", item2.Character.Name).ToString(), () => new List<TooltipProperty>(), SandBoxUIHelper.GetCharacterCode(item2.Character as CharacterObject)));

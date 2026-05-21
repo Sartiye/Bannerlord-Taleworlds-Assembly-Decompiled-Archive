@@ -267,7 +267,7 @@ public class BannerBuilderEditableAreaWidget : Widget
 				PositionValue = vector2;
 				BannerTableauWidget.UpdatePositionValueManual = PositionValue;
 			}
-			if (_currentMode != BuilderMode.Positioning && base.EventManager.HoveredView == this)
+			if (_currentMode != BuilderMode.Positioning && base.EventManager.HoveredWidget == this)
 			{
 				_currentMode = BuilderMode.Positioning;
 			}
@@ -291,7 +291,7 @@ public class BannerBuilderEditableAreaWidget : Widget
 				RotationValue = (float)Math.Round(num, 3);
 				BannerTableauWidget.UpdateRotationValueManualWithMirror = (RotationValue, IsMirrorActive);
 			}
-			if (_currentMode != BuilderMode.Rotating && base.EventManager.HoveredView == RotateWidget)
+			if (_currentMode != BuilderMode.Rotating && base.EventManager.HoveredWidget == RotateWidget)
 			{
 				_currentMode = BuilderMode.Rotating;
 			}
@@ -337,12 +337,12 @@ public class BannerBuilderEditableAreaWidget : Widget
 					SizeValue = vec;
 				}
 			}
-			if ((_currentMode != BuilderMode.HorizontalResizing || _currentMode != BuilderMode.VerticalResizing) && base.EventManager.HoveredView == widgetFor)
+			if ((_currentMode != BuilderMode.HorizontalResizing || _currentMode != BuilderMode.VerticalResizing) && base.EventManager.HoveredWidget == widgetFor)
 			{
 				_resizeStartMousePosition = base.EventManager.MousePosition;
-				_resizeStartWidget = base.EventManager.HoveredView;
+				_resizeStartWidget = base.EventManager.HoveredWidget;
 				_resizeStartSize = SizeValue;
-				_currentMode = ((base.EventManager.HoveredView == GetWidgetFor(EdgeResizeType.Right)) ? BuilderMode.HorizontalResizing : BuilderMode.VerticalResizing);
+				_currentMode = ((base.EventManager.HoveredWidget == GetWidgetFor(EdgeResizeType.Right)) ? BuilderMode.HorizontalResizing : BuilderMode.VerticalResizing);
 			}
 		}
 		else
@@ -393,12 +393,12 @@ public class BannerBuilderEditableAreaWidget : Widget
 					SizeValue = vec;
 				}
 			}
-			if (_currentMode != BuilderMode.RightCornerResizing && base.EventManager.HoveredView == dragWidgetTopRight)
+			if (_currentMode != BuilderMode.RightCornerResizing && base.EventManager.HoveredWidget == dragWidgetTopRight)
 			{
 				if (!flag || _resizeStartWidget == null)
 				{
 					_resizeStartMousePosition = base.EventManager.MousePosition;
-					_resizeStartWidget = base.EventManager.HoveredView;
+					_resizeStartWidget = base.EventManager.HoveredWidget;
 					_resizeStartSize = SizeValue;
 				}
 				_currentMode = BuilderMode.RightCornerResizing;
@@ -415,23 +415,23 @@ public class BannerBuilderEditableAreaWidget : Widget
 
 	private void HandleCursor()
 	{
-		if (_currentMode == BuilderMode.Rotating || base.EventManager.HoveredView == RotateWidget)
+		if (_currentMode == BuilderMode.Rotating || base.EventManager.HoveredWidget == RotateWidget)
 		{
 			base.Context.ActiveCursorOfContext = UIContext.MouseCursors.Rotate;
 		}
-		else if (_currentMode == BuilderMode.Positioning || base.EventManager.HoveredView == this)
+		else if (_currentMode == BuilderMode.Positioning || base.EventManager.HoveredWidget == this)
 		{
 			base.Context.ActiveCursorOfContext = UIContext.MouseCursors.Move;
 		}
-		else if (_currentMode == BuilderMode.HorizontalResizing || base.EventManager.HoveredView == GetWidgetFor(EdgeResizeType.Right))
+		else if (_currentMode == BuilderMode.HorizontalResizing || base.EventManager.HoveredWidget == GetWidgetFor(EdgeResizeType.Right))
 		{
 			base.Context.ActiveCursorOfContext = UIContext.MouseCursors.HorizontalResize;
 		}
-		else if (_currentMode == BuilderMode.VerticalResizing || base.EventManager.HoveredView == GetWidgetFor(EdgeResizeType.Top))
+		else if (_currentMode == BuilderMode.VerticalResizing || base.EventManager.HoveredWidget == GetWidgetFor(EdgeResizeType.Top))
 		{
 			base.Context.ActiveCursorOfContext = UIContext.MouseCursors.VerticalResize;
 		}
-		else if (_currentMode == BuilderMode.RightCornerResizing || base.EventManager.HoveredView == DragWidgetTopRight)
+		else if (_currentMode == BuilderMode.RightCornerResizing || base.EventManager.HoveredWidget == DragWidgetTopRight)
 		{
 			base.Context.ActiveCursorOfContext = UIContext.MouseCursors.DiagonalRightResize;
 		}

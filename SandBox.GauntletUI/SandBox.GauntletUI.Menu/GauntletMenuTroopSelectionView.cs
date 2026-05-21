@@ -33,12 +33,12 @@ public class GauntletMenuTroopSelectionView : MenuView
 
 	private GauntletMovieIdentifier _movie;
 
-	public GauntletMenuTroopSelectionView(TroopRoster fullRoster, TroopRoster initialSelections, Func<CharacterObject, bool> changeChangeStatusOfTroop, Action<TroopRoster> onDone, int maxSelectableTroopCount, int minSelectableTroopCount)
+	public GauntletMenuTroopSelectionView(TroopRoster fullRoster, TroopRoster initialSelections, Func<CharacterObject, bool> canChangeStatusOfTroop, Action<TroopRoster> onDone, int maxSelectableTroopCount, int minSelectableTroopCount)
 	{
 		_onDone = onDone;
 		_fullRoster = fullRoster;
 		_initialSelections = initialSelections;
-		_changeChangeStatusOfTroop = changeChangeStatusOfTroop;
+		_changeChangeStatusOfTroop = canChangeStatusOfTroop;
 		_maxSelectableTroopCount = maxSelectableTroopCount;
 		_minSelectableTroopCount = minSelectableTroopCount;
 	}

@@ -48,6 +48,8 @@ public class ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyM
 
 	private Widget _widget_0_5_0_1_0;
 
+	private Widget _widget_0_5_0_1_0_0;
+
 	private TextWidget _widget_0_5_1;
 
 	private ArmyManagementItemVM _datasource_Root;
@@ -98,6 +100,8 @@ public class ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyM
 		_widget_0_5_0.AddChild(_widget_0_5_0_1);
 		_widget_0_5_0_1_0 = new Widget(base.Context);
 		_widget_0_5_0_1.AddChild(_widget_0_5_0_1_0);
+		_widget_0_5_0_1_0_0 = new Widget(base.Context);
+		_widget_0_5_0_1_0.AddChild(_widget_0_5_0_1_0_0);
 		_widget_0_5_1 = new TextWidget(base.Context);
 		_widget_0_5.AddChild(_widget_0_5_1);
 	}
@@ -212,8 +216,13 @@ public class ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyM
 		_widget_0_5_0_1_0.SuggestedHeight = 25f;
 		_widget_0_5_0_1_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_0_5_0_1_0.PositionXOffset = -8f;
-		_widget_0_5_0_1_0.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Influence@2x");
 		_widget_0_5_0_1_0.MarginLeft = 3f;
+		_widget_0_5_0_1_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_5_0_1_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_5_0_1_0_0.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Influence@2x");
+		_widget_0_5_0_1_0_0.ImageFit.Type = ImageFit.ImageFitTypes.Contain;
+		_widget_0_5_0_1_0_0.ImageFit.VerticalAlignment = ImageFit.ImageVerticalAlignments.Center;
+		_widget_0_5_0_1_0_0.ImageFit.HorizontalAlignment = ImageFit.ImageHorizontalAlignments.Center;
 		_widget_0_5_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_5_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_5_1.HorizontalAlignment = HorizontalAlignment.Center;

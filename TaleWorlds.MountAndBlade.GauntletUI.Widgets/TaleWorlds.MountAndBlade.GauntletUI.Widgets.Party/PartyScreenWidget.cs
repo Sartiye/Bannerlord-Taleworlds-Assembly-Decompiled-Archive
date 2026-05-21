@@ -438,7 +438,7 @@ public class PartyScreenWidget : Widget
 		if (base.EventManager.IsControllerActive)
 		{
 			bool flag = false;
-			if (base.EventManager.HoveredView is PartyTroopTupleButtonWidget partyTroopTupleButtonWidget)
+			if (base.EventManager.HoveredWidget is PartyTroopTupleButtonWidget partyTroopTupleButtonWidget)
 			{
 				TransferInputKeyVisual.IsVisible = partyTroopTupleButtonWidget.IsTransferable;
 				flag = true;

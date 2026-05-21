@@ -16,6 +16,8 @@ public class OptionsScreenWidget : Widget
 
 	public RichTextWidget CurrentOptionNameWidget { get; set; }
 
+	public RichTextWidget CurrentOptionExtraInformationWidget { get; set; }
+
 	public Widget CurrentOptionImageWidget { get; set; }
 
 	public TabToggleWidget PerformanceTabToggle { get; set; }
@@ -57,6 +59,7 @@ public class OptionsScreenWidget : Widget
 			_currentOptionWidget = currentOptionWidget;
 			string text = "";
 			string text2 = "";
+			string text3 = "";
 			if (_currentOptionWidget != null)
 			{
 				if (_currentOptionWidget is OptionsItemWidget optionsItemWidget)
@@ -68,15 +71,20 @@ public class OptionsScreenWidget : Widget
 				{
 					text = optionsKeyItemListPanel.OptionDescription;
 					text2 = optionsKeyItemListPanel.OptionTitle;
+					text3 = optionsKeyItemListPanel.OptionExtraInformation;
 				}
 			}
 			if (CurrentOptionDescriptionWidget != null)
 			{
 				CurrentOptionDescriptionWidget.Text = text;
 			}
-			if (CurrentOptionDescriptionWidget != null)
+			if (CurrentOptionNameWidget != null)
 			{
 				CurrentOptionNameWidget.Text = text2;
+			}
+			if (CurrentOptionExtraInformationWidget != null)
+			{
+				CurrentOptionExtraInformationWidget.Text = text3;
 			}
 		}
 		if (CurrentOptionImageWidget != null && CurrentOptionImageWidget.Sprite != newgraphicsSprite)

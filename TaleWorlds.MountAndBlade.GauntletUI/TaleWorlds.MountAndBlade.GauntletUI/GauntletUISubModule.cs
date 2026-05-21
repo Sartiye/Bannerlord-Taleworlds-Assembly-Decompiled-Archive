@@ -10,9 +10,7 @@ using TaleWorlds.Engine.Options;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.ExtraWidgets;
 using TaleWorlds.GauntletUI.GamepadNavigation;
-using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
-using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade.GauntletUI.SceneNotification;
 using TaleWorlds.MountAndBlade.GauntletUI.Widgets;
 using TaleWorlds.ScreenSystem;
@@ -32,8 +30,6 @@ public class GauntletUISubModule : MBSubModuleBase
 
 	private SpriteCategory _fullscreensCategory;
 
-	private bool _isTouchpadMouseActive;
-
 	private bool _areResourcesDirty;
 
 	private bool _loadingWindowCreated;
@@ -48,7 +44,6 @@ public class GauntletUISubModule : MBSubModuleBase
 		RefreshResources(initialLoad: true);
 		ScreenManager.OnControllerDisconnected += OnControllerDisconnected;
 		ManagedOptions.OnManagedOptionChanged = (ManagedOptions.OnManagedOptionChangedDelegate)Delegate.Combine(ManagedOptions.OnManagedOptionChanged, new ManagedOptions.OnManagedOptionChangedDelegate(OnManagedOptionChanged));
-		Input.OnControllerTypeChanged = (Action<Input.ControllerTypes>)Delegate.Combine(Input.OnControllerTypeChanged, new Action<Input.ControllerTypes>(OnControllerTypeChanged));
 		NativeOptions.GetConfig(NativeOptions.NativeOptionsType.DisplayMode);
 		GauntletGamepadNavigationManager.Initialize();
 		GauntletGameVersionView.AddModuleVersionInfo("Bannerlord", Utilities.GetApplicationVersionWithBuildNumber().ToString());
@@ -103,20 +98,6 @@ public class GauntletUISubModule : MBSubModuleBase
 		}
 	}
 
-	private void OnControllerTypeChanged(Input.ControllerTypes newType)
-	{
-		bool isTouchpadMouseActive = _isTouchpadMouseActive;
-		if (newType == Input.ControllerTypes.PlayStationDualSense || newType == Input.ControllerTypes.PlayStationDualShock)
-		{
-			_isTouchpadMouseActive = NativeOptions.GetConfig(NativeOptions.NativeOptionsType.EnableTouchpadMouse) != 0f;
-		}
-		if (isTouchpadMouseActive != _isTouchpadMouseActive && !(ScreenManager.TopScreen is GauntletInitialScreen))
-		{
-			TextObject textObject = new TextObject("{=qkPfC3Cb}Warning");
-			InformationManager.ShowInquiry(new InquiryData(text: new TextObject("{=LDRV5PxX}Touchpad Mouse setting won't take affect correctly until returning to initial menu! Exiting to main menu is recommended!").ToString(), titleText: textObject.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, affirmativeText: new TextObject("{=yS7PvrTD}OK").ToString(), negativeText: null, affirmativeAction: null, negativeAction: null), pauseGameActiveState: false, prioritize: true);
-		}
-	}
-
 	private void OnControllerDisconnected()
 	{
 	}
@@ -144,7 +125,6 @@ public class GauntletUISubModule : MBSubModuleBase
 	{
 		ScreenManager.OnControllerDisconnected -= OnControllerDisconnected;
 		ManagedOptions.OnManagedOptionChanged = (ManagedOptions.OnManagedOptionChangedDelegate)Delegate.Remove(ManagedOptions.OnManagedOptionChanged, new ManagedOptions.OnManagedOptionChangedDelegate(OnManagedOptionChanged));
-		Input.OnControllerTypeChanged = (Action<Input.ControllerTypes>)Delegate.Remove(Input.OnControllerTypeChanged, new Action<Input.ControllerTypes>(OnControllerTypeChanged));
 		UIResourceManager.Clear();
 		if (GauntletGamepadNavigationManager.Instance != null)
 		{
@@ -170,6 +150,7 @@ public class GauntletUISubModule : MBSubModuleBase
 				GauntletChatLogView.Initialize();
 				GauntletGamepadCursor.Initialize();
 				GauntletGameVersionView.Initialize();
+				GauntletCameraFadeView.Initialize();
 				InformationManager.RegisterTooltip<List<TooltipProperty>, PropertyBasedTooltipVM>(PropertyBasedTooltipVM.RefreshGenericPropertyBasedTooltip, "PropertyBasedTooltip");
 				InformationManager.RegisterTooltip<RundownLineVM, RundownTooltipVM>(RundownTooltipVM.RefreshGenericRundownTooltip, "RundownTooltip");
 				InformationManager.RegisterTooltip<string, HintVM>(HintVM.RefreshGenericHintTooltip, "HintTooltip");

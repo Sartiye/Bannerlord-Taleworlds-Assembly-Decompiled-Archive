@@ -133,6 +133,8 @@ public sealed class Formation : IFormation
 
 	private Timer _arrangementOrderTickOccasionallyTimer;
 
+	private Timer _arrangementTickOccasionallyTimer;
+
 	private Agent _captain;
 
 	private Vec2 _smoothedAverageUnitPosition = Vec2.Invalid;
@@ -187,6 +189,9 @@ public sealed class Formation : IFormation
 	public int UnitSpacing { get; private set; }
 
 	public object OrderPositionLock { get; private set; } = new object();
+
+
+	public object SimulationFormationLock { get; private set; } = new object();
 
 
 	public int CountOfUnits => Arrangement.UnitCount + _detachedUnits.Count;
@@ -552,9 +557,16 @@ public sealed class Formation : IFormation
 	{
 		get
 		{
-			if (Arrangement is ColumnFormation columnFormation && (columnFormation.GetUnit(columnFormation.VanguardFileIndex, 0) ?? columnFormation.Vanguard) is Agent { Position: var position })
+			if (Arrangement is ColumnFormation columnFormation)
 			{
-				return position.AsVec2;
+				if (CountOfUnitsWithoutDetachedOnes <= 0)
+				{
+					return OrderPosition;
+				}
+				if ((columnFormation.GetUnit(columnFormation.VanguardFileIndex, 0) ?? columnFormation.Vanguard) is Agent { Position: var position })
+				{
+					return position.AsVec2;
+				}
 			}
 			return CachedAveragePosition + CurrentDirection.TransformToParentUnitF(-OrderLocalAveragePosition);
 		}
@@ -742,6 +754,10 @@ public sealed class Formation : IFormation
 				SetFormOrder(FormOrder.FormOrderCustom(CalculateDesiredWidth()), updateDesiredFileCount: false);
 			}
 			QuerySystem.Expire();
+			if (CountOfUnitsWithoutLooseDetachedOnes > 0)
+			{
+				ForceCalculateCaches();
+			}
 		}
 		else
 		{
@@ -824,6 +840,7 @@ public sealed class Formation : IFormation
 	public void OnDeploymentFinished()
 	{
 		AI?.OnDeploymentFinished();
+		OrderController.TryCancelStopOrder(this);
 	}
 
 	public void ResetArrangementOrderTickTimer()
@@ -1109,32 +1126,28 @@ public sealed class Formation : IFormation
 	{
 		float num = float.MinValue;
 		float num2 = float.MinValue;
-		timeLimit += MBCommon.GetTotalMissionTime();
+		timeLimit = MBCommon.GetTotalMissionTime() - timeLimit;
 		foreach (IFormationUnit allUnit in Arrangement.GetAllUnits())
 		{
 			num = TaleWorlds.Library.MathF.Max(num, ((Agent)allUnit).LastMeleeHitTime);
 			num2 = TaleWorlds.Library.MathF.Max(num2, ((Agent)allUnit).LastRangedHitTime);
-			if (num2 >= 0f && num2 < timeLimit)
+			if (num2 >= 0f && num2 > timeLimit)
 			{
 				return Agent.UnderAttackType.UnderRangedAttack;
-			}
-			if (num >= 0f && num < timeLimit)
-			{
-				return Agent.UnderAttackType.UnderMeleeAttack;
 			}
 		}
 		for (int i = 0; i < _detachedUnits.Count; i++)
 		{
 			num = TaleWorlds.Library.MathF.Max(num, _detachedUnits[i].LastMeleeHitTime);
 			num2 = TaleWorlds.Library.MathF.Max(num2, _detachedUnits[i].LastRangedHitTime);
-			if (num2 >= 0f && num2 < timeLimit)
+			if (num2 >= 0f && num2 > timeLimit)
 			{
 				return Agent.UnderAttackType.UnderRangedAttack;
 			}
-			if (num >= 0f && num < timeLimit)
-			{
-				return Agent.UnderAttackType.UnderMeleeAttack;
-			}
+		}
+		if (num >= 0f && num > timeLimit)
+		{
+			return Agent.UnderAttackType.UnderMeleeAttack;
 		}
 		return Agent.UnderAttackType.NotUnderAttack;
 	}
@@ -1233,9 +1246,17 @@ public sealed class Formation : IFormation
 
 	public WorldPosition GetOrderPositionOfUnit(Agent unit)
 	{
+		if (_movementOrder.OrderEnum == MovementOrder.MovementOrderEnum.Follow && _movementOrder._targetAgent != null && _movementOrder._targetAgent == unit)
+		{
+			return unit.GetWorldPosition();
+		}
 		if (unit.IsDetachedFromFormation && (_movementOrder.MovementState != 0 || !unit.Detachment.IsLoose || unit.Mission.Mode == MissionMode.Deployment || _movementOrder.CreateNewOrderWorldPositionMT(this, WorldPosition.WorldPositionEnforcedCache.None).IsValid))
 		{
 			return GetDetachmentFrame(unit)?.Origin ?? WorldPosition.Invalid;
+		}
+		if (unit.Mission.IsDeploymentFinished && unit.GetAgentFlags().HasAnyFlag(AgentFlag.UnreachableViaNavMesh))
+		{
+			return WorldPosition.Invalid;
 		}
 		switch (_movementOrder.MovementState)
 		{
@@ -1257,7 +1278,7 @@ public sealed class Formation : IFormation
 		case MovementOrder.MovementStateEnum.StandGround:
 			return unit.GetWorldPosition();
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Formation.cs", "GetOrderPositionOfUnit", 1574);
+			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Formation.cs", "GetOrderPositionOfUnit", 1607);
 			return WorldPosition.Invalid;
 		}
 	}
@@ -1374,7 +1395,7 @@ public sealed class Formation : IFormation
 	private void CacheFormationIntegrityData()
 	{
 		bool flag = false;
-		if (CountOfUnitsWithoutDetachedOnes > 0)
+		if (CountOfUnitsWithoutLooseDetachedOnes > 0)
 		{
 			float num = 0f;
 			MBReadOnlyList<IFormationUnit> allUnits = Arrangement.GetAllUnits();
@@ -1471,11 +1492,6 @@ public sealed class Formation : IFormation
 	internal IDetachment GetDetachmentForDebug(Agent agent)
 	{
 		return Detachments.FirstOrDefault((IDetachment d) => d.IsAgentUsingOrInterested(agent));
-	}
-
-	public IDetachment GetDetachmentOrDefault(Agent agent)
-	{
-		return agent.Detachment;
 	}
 
 	public WorldFrame? GetDetachmentFrame(Agent agent)
@@ -1920,6 +1936,7 @@ public sealed class Formation : IFormation
 	{
 		Arrangement = new LineFormation(this);
 		_arrangementOrderTickOccasionallyTimer = new Timer(Mission.Current.CurrentTime, 0.5f);
+		_arrangementTickOccasionallyTimer = new Timer(Mission.Current.CurrentTime, 0.5f);
 		_cachedFormationIntegrityDataUpdateTimer = new Timer(Mission.Current.CurrentTime, 0.9f + MBRandom.RandomFloat * 0.2f);
 		_cachedPositionAndVelocityUpdateTimer = new Timer(Mission.Current.CurrentTime, 0.075f + MBRandom.RandomFloat * 0.05f);
 		_cachedMovementSpeedUpdateTimer = new Timer(Mission.Current.CurrentTime, 1.9f + MBRandom.RandomFloat * 0.2f);
@@ -2301,6 +2318,10 @@ public sealed class Formation : IFormation
 		{
 			ArrangementOrder.TickOccasionally(this);
 		}
+		if (_arrangementTickOccasionallyTimer.Check(currentTime))
+		{
+			Arrangement.OnTickOccasionally();
+		}
 		_movementOrder.Tick(this);
 		WorldPosition value = _movementOrder.CreateNewOrderWorldPositionMT(this, WorldPosition.WorldPositionEnforcedCache.None);
 		Vec2 direction = FacingOrder.GetDirection(this, _movementOrder._targetAgent);
@@ -2550,7 +2571,7 @@ public sealed class Formation : IFormation
 			UsableMachine usableMachine = detachment as UsableMachine;
 			if (usableMachine?.Ai != null)
 			{
-				usableMachine.Ai.Tick(null, this, Team, dt);
+				usableMachine.Ai.Tick(null, (usableMachine.UserFormations.Count > 1) ? this : null, Team, dt);
 				if (usableMachine.Ai.HasActionCompleted || (usableMachine.IsDisabledForBattleSideAI(Team.Side) && usableMachine.ShouldAutoLeaveDetachmentWhenDisabled(Team.Side)))
 				{
 					LeaveDetachment(detachment);
@@ -2699,7 +2720,7 @@ public sealed class Formation : IFormation
 
 	private float CalculateDesiredWidth()
 	{
-		return (float)(_desiredFileCount - 1) * (UnitDiameter + Interval) + UnitDiameter;
+		return TaleWorlds.Library.MathF.Max(0f, (float)(_desiredFileCount - 1) * (UnitDiameter + Interval) + UnitDiameter);
 	}
 
 	private void CalculateLogicalClass()
@@ -2881,52 +2902,55 @@ public sealed class Formation : IFormation
 			}
 			simulationFormation = _simulationFormationTemp;
 		}
-		if (simulationFormation.UnitSpacing == unitSpacing && (!(TaleWorlds.Library.MathF.Abs(simulationFormation.Width - width + 1E-05f) >= simulationFormation.Interval + simulationFormation.UnitDiameter - 1E-05f) || (width < simulationFormation.MinimumWidth && TaleWorlds.Library.MathF.Abs(simulationFormation.Width - simulationFormation.MinimumWidth) < 1E-05f)) && simulationFormation.OrderPositionIsValid)
+		lock (simulationFormation.SimulationFormationLock)
 		{
-			Vec3 orderGroundPosition = simulationFormation.OrderGroundPosition;
-			Vec3 v = formationPosition.GetGroundVec3();
-			if (orderGroundPosition.NearlyEquals(in v, 0.1f) && simulationFormation.Direction.NearlyEquals(formationDirection, 0.1f) && !(simulationFormation.Arrangement.GetType() != arrangement.GetType()))
+			if (simulationFormation.UnitSpacing == unitSpacing && (!(TaleWorlds.Library.MathF.Abs(simulationFormation.Width - width + 1E-05f) >= simulationFormation.Interval + simulationFormation.UnitDiameter - 1E-05f) || (width < simulationFormation.MinimumWidth && TaleWorlds.Library.MathF.Abs(simulationFormation.Width - simulationFormation.MinimumWidth) < 1E-05f)) && simulationFormation.OrderPositionIsValid)
 			{
-				goto IL_0259;
+				Vec3 orderGroundPosition = simulationFormation.OrderGroundPosition;
+				Vec3 v = formationPosition.GetGroundVec3();
+				if (orderGroundPosition.NearlyEquals(in v, 0.1f) && simulationFormation.Direction.NearlyEquals(formationDirection, 0.1f) && !(simulationFormation.Arrangement.GetType() != arrangement.GetType()))
+				{
+					goto IL_0273;
+				}
 			}
-		}
-		simulationFormation._overridenHasAnyMountedUnit = isMounted;
-		simulationFormation.ResetForSimulation();
-		simulationFormation.SetPositioning(null, null, unitSpacing);
-		simulationFormation.OverridenUnitCount = unitCount;
-		simulationFormation.SetPositioning(formationPosition, formationDirection);
-		simulationFormation.Rearrange(arrangement.Clone(simulationFormation));
-		simulationFormation.Arrangement.DeepCopyFrom(arrangement);
-		simulationFormation.Width = width;
-		_simulationFormationUniqueIdentifier = index;
-		if (arrangement is ColumnFormation columnFormation && arrangement.RankCount > 1)
-		{
-			Vec2 asVec = ((columnFormation.Vanguard ?? arrangement.GetUnit(columnFormation.VanguardFileIndex, 0)) as Agent).Position.AsVec2;
-			Vec2 asVec2 = (arrangement.GetUnit(columnFormation.VanguardFileIndex, 1) as Agent).Position.AsVec2;
-			Vec2 previousDirection = (asVec - asVec2).Normalized();
-			Vec2 value = (formationPosition.AsVec2 - asVec).Normalized();
-			if (arrangement.IsTurnBackwardsNecessary(asVec, formationPosition, previousDirection, hasNewDirection: true, value))
+			simulationFormation._overridenHasAnyMountedUnit = isMounted;
+			simulationFormation.ResetForSimulation();
+			simulationFormation.SetPositioning(null, null, unitSpacing);
+			simulationFormation.OverridenUnitCount = unitCount;
+			simulationFormation.SetPositioning(formationPosition, formationDirection);
+			simulationFormation.Rearrange(arrangement.Clone(simulationFormation));
+			simulationFormation.Arrangement.DeepCopyFrom(arrangement);
+			simulationFormation.Width = width;
+			_simulationFormationUniqueIdentifier = index;
+			if (arrangement is ColumnFormation columnFormation && arrangement.RankCount > 1)
 			{
-				(simulationFormation.Arrangement as ColumnFormation).UnitPositionsOnVanguardFileIndex.Reverse();
+				Vec2 asVec = ((columnFormation.Vanguard ?? arrangement.GetUnit(columnFormation.VanguardFileIndex, 0)) as Agent).Position.AsVec2;
+				Vec2 asVec2 = (arrangement.GetUnit(columnFormation.VanguardFileIndex, 1) as Agent).Position.AsVec2;
+				Vec2 previousDirection = (asVec - asVec2).Normalized();
+				Vec2 value = (formationPosition.AsVec2 - asVec).Normalized();
+				if (arrangement.IsTurnBackwardsNecessary(asVec, formationPosition, previousDirection, hasNewDirection: true, value))
+				{
+					(simulationFormation.Arrangement as ColumnFormation).UnitPositionsOnVanguardFileIndex.Reverse();
+				}
 			}
-		}
-		goto IL_0259;
-		IL_0259:
-		actualWidth = simulationFormation.Width;
-		if (width >= actualWidth)
-		{
-			Vec2? vec = simulationFormation.Arrangement.GetLocalPositionOfUnitOrDefault(unitIndex);
-			if (!vec.HasValue)
+			goto IL_0273;
+			IL_0273:
+			actualWidth = simulationFormation.Width;
+			if (width >= actualWidth)
 			{
-				vec = simulationFormation.Arrangement.CreateNewPosition(unitIndex);
-			}
-			if (vec.HasValue)
-			{
-				Vec2 vec2 = simulationFormation.Direction.TransformToParentUnitF(vec.Value);
-				WorldPosition value2 = simulationFormation.CreateNewOrderWorldPosition(WorldPosition.WorldPositionEnforcedCache.None);
-				value2.SetVec2(value2.AsVec2 + vec2);
-				unitPosition = value2;
-				unitDirection = formationDirection;
+				Vec2? vec = simulationFormation.Arrangement.GetLocalPositionOfUnitOrDefault(unitIndex);
+				if (!vec.HasValue)
+				{
+					vec = simulationFormation.Arrangement.CreateNewPosition(unitIndex);
+				}
+				if (vec.HasValue)
+				{
+					Vec2 vec2 = simulationFormation.Direction.TransformToParentUnitF(vec.Value);
+					WorldPosition value2 = simulationFormation.CreateNewOrderWorldPosition(WorldPosition.WorldPositionEnforcedCache.None);
+					value2.SetVec2(value2.AsVec2 + vec2);
+					unitPosition = value2;
+					unitDirection = formationDirection;
+				}
 			}
 		}
 	}
@@ -2941,33 +2965,36 @@ public sealed class Formation : IFormation
 			}
 			simulationFormation = _simulationFormationTemp;
 		}
-		if (simulationFormation.UnitSpacing == unitSpacing && !(TaleWorlds.Library.MathF.Abs(simulationFormation.Width - width) >= simulationFormation.Interval + simulationFormation.UnitDiameter) && simulationFormation.OrderPositionIsValid)
+		lock (simulationFormation.SimulationFormationLock)
 		{
-			Vec3 orderGroundPosition = simulationFormation.OrderGroundPosition;
-			Vec3 v = position.GetGroundVec3();
-			if (orderGroundPosition.NearlyEquals(in v, 0.1f) && simulationFormation.Direction.NearlyEquals(direction, 0.1f) && !(simulationFormation.Arrangement.GetType() != arrangement.GetType()))
+			if (simulationFormation.UnitSpacing == unitSpacing && !(TaleWorlds.Library.MathF.Abs(simulationFormation.Width - width) >= simulationFormation.Interval + simulationFormation.UnitDiameter) && simulationFormation.OrderPositionIsValid)
 			{
-				goto IL_0202;
+				Vec3 orderGroundPosition = simulationFormation.OrderGroundPosition;
+				Vec3 v = position.GetGroundVec3();
+				if (orderGroundPosition.NearlyEquals(in v, 0.1f) && simulationFormation.Direction.NearlyEquals(direction, 0.1f) && !(simulationFormation.Arrangement.GetType() != arrangement.GetType()))
+				{
+					goto IL_0233;
+				}
 			}
-		}
-		simulationFormation._overridenHasAnyMountedUnit = formation.HasAnyMountedUnit;
-		simulationFormation.ResetForSimulation();
-		simulationFormation.SetPositioning(null, null, unitSpacing);
-		simulationFormation.OverridenUnitCount = formation.CountOfUnitsWithoutDetachedOnes;
-		simulationFormation.SetPositioning(position, direction);
-		simulationFormation.Rearrange(arrangement.Clone(simulationFormation));
-		simulationFormation.Arrangement.DeepCopyFrom(arrangement);
-		simulationFormation.Width = width;
-		_simulationFormationUniqueIdentifier = formation.Index;
-		goto IL_0202;
-		IL_0202:
-		IEnumerable<Vec2> unavailableUnitPositions = simulationFormation.Arrangement.GetUnavailableUnitPositions();
-		foreach (Vec2 item2 in unavailableUnitPositions)
-		{
-			Vec2 vec = simulationFormation.Direction.TransformToParentUnitF(item2);
-			WorldPosition item = simulationFormation.CreateNewOrderWorldPosition(WorldPosition.WorldPositionEnforcedCache.None);
-			item.SetVec2(item.AsVec2 + vec);
-			yield return (item, direction);
+			simulationFormation._overridenHasAnyMountedUnit = formation.HasAnyMountedUnit;
+			simulationFormation.ResetForSimulation();
+			simulationFormation.SetPositioning(null, null, unitSpacing);
+			simulationFormation.OverridenUnitCount = formation.CountOfUnitsWithoutDetachedOnes;
+			simulationFormation.SetPositioning(position, direction);
+			simulationFormation.Rearrange(arrangement.Clone(simulationFormation));
+			simulationFormation.Arrangement.DeepCopyFrom(arrangement);
+			simulationFormation.Width = width;
+			_simulationFormationUniqueIdentifier = formation.Index;
+			goto IL_0233;
+			IL_0233:
+			IEnumerable<Vec2> unavailableUnitPositions = simulationFormation.Arrangement.GetUnavailableUnitPositions();
+			foreach (Vec2 item2 in unavailableUnitPositions)
+			{
+				Vec2 vec = simulationFormation.Direction.TransformToParentUnitF(item2);
+				WorldPosition item = simulationFormation.CreateNewOrderWorldPosition(WorldPosition.WorldPositionEnforcedCache.None);
+				item.SetVec2(item.AsVec2 + vec);
+				yield return (item, direction);
+			}
 		}
 	}
 }

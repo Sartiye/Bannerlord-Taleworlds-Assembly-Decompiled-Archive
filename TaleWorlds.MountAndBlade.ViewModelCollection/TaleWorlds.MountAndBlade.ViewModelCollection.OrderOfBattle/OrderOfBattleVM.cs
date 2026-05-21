@@ -645,7 +645,15 @@ public class OrderOfBattleVM : ViewModel
 		OrderOfBattleFormationItemVM orderOfBattleFormationItemVM2 = _allFormations.Find((OrderOfBattleFormationItemVM other) => other.Classes.Any((OrderOfBattleFormationClassVM fc) => fc.Class == f.Formation.PhysicalClass));
 		if (orderOfBattleFormationItemVM2 == null)
 		{
-			orderOfBattleFormationItemVM2 = _allFormations.Find((OrderOfBattleFormationItemVM other) => other.OrderOfBattleFormationClassInt != 0);
+			if (_mission.IsSiegeBattle && (f.Formation.PhysicalClass == FormationClass.Cavalry || f.Formation.PhysicalClass == FormationClass.HorseArcher))
+			{
+				FormationClass secondaryFormationClassForMountedFormation = ((f.Formation.PhysicalClass != FormationClass.Cavalry) ? FormationClass.Ranged : FormationClass.Infantry);
+				orderOfBattleFormationItemVM2 = _allFormations.Find((OrderOfBattleFormationItemVM other) => other.Classes.Any((OrderOfBattleFormationClassVM fc) => fc.Class == secondaryFormationClassForMountedFormation));
+			}
+			if (orderOfBattleFormationItemVM2 == null)
+			{
+				orderOfBattleFormationItemVM2 = _allFormations.Find((OrderOfBattleFormationItemVM other) => other.OrderOfBattleFormationClassInt != 0);
+			}
 		}
 		if (orderOfBattleFormationItemVM2 == null)
 		{
@@ -895,8 +903,8 @@ public class OrderOfBattleVM : ViewModel
 		{
 			array = new FormationClass[3]
 			{
-				FormationClass.Cavalry,
 				FormationClass.Ranged,
+				FormationClass.Cavalry,
 				FormationClass.Infantry
 			};
 		}
@@ -904,8 +912,8 @@ public class OrderOfBattleVM : ViewModel
 		{
 			array = new FormationClass[2]
 			{
-				FormationClass.Ranged,
-				FormationClass.Infantry
+				FormationClass.Infantry,
+				FormationClass.Ranged
 			};
 		}
 		else if (heroClass == FormationClass.Ranged)
@@ -962,7 +970,7 @@ public class OrderOfBattleVM : ViewModel
 			}
 			else
 			{
-				Debug.FailedAssert("Failed to find an initial formation for hero: " + _allHeroes[i].Agent.Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "SetInitialHeroFormations", 599);
+				Debug.FailedAssert("Failed to find an initial formation for hero: " + _allHeroes[i].Agent.Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "SetInitialHeroFormations", 608);
 			}
 		}
 	}
@@ -1010,7 +1018,7 @@ public class OrderOfBattleVM : ViewModel
 			}
 			else
 			{
-				Debug.FailedAssert("Agent's formation banner name should not be null!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "GetAgentTooltip", 661);
+				Debug.FailedAssert("Agent's formation banner name should not be null!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "GetAgentTooltip", 670);
 			}
 		}
 		else
@@ -1061,7 +1069,7 @@ public class OrderOfBattleVM : ViewModel
 						orderOfBattleFormationClassVM3.SetWeightAdjustmentLock(isLocked: true);
 						orderOfBattleFormationClassVM3.Weight = 0;
 						orderOfBattleFormationClassVM3.SetWeightAdjustmentLock(isLocked: false);
-						Debug.FailedAssert("Formation unit count is out of bounds! Skipping...", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "RefreshWeights", 722);
+						Debug.FailedAssert("Formation unit count is out of bounds! Skipping...", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "RefreshWeights", 731);
 						Debug.Print("Formation unit count is out of bounds! Skipping...");
 					}
 					else
@@ -1098,7 +1106,7 @@ public class OrderOfBattleVM : ViewModel
 					orderOfBattleFormationClassVM5.SetWeightAdjustmentLock(isLocked: true);
 					orderOfBattleFormationClassVM5.Weight = 0;
 					orderOfBattleFormationClassVM5.SetWeightAdjustmentLock(isLocked: false);
-					Debug.FailedAssert("Item weight is out of bounds! Skipping...", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "RefreshWeights", 763);
+					Debug.FailedAssert("Item weight is out of bounds! Skipping...", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "RefreshWeights", 772);
 					Debug.Print("Item weight is out of bounds! Skipping...");
 				}
 				else
@@ -1482,7 +1490,7 @@ public class OrderOfBattleVM : ViewModel
 			}
 			if (num3 == num2)
 			{
-				Debug.FailedAssert("Failed to sum up all weights to 100", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "DistributeWeights", 1182);
+				Debug.FailedAssert("Failed to sum up all weights to 100", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "DistributeWeights", 1191);
 				break;
 			}
 		}
@@ -1496,7 +1504,7 @@ public class OrderOfBattleVM : ViewModel
 	{
 		if (_mission.PlayerTeam == null)
 		{
-			Debug.FailedAssert("Player team should be initialized before distributing troops", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "DistributeAllTroops", 1194);
+			Debug.FailedAssert("Player team should be initialized before distributing troops", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "DistributeAllTroops", 1203);
 			Debug.Print("Player team should be initialized before distributing troops");
 			return;
 		}
@@ -1989,6 +1997,7 @@ public class OrderOfBattleVM : ViewModel
 			f.UpdateAdjustable();
 		});
 		_isMissingFormationsDirty = true;
+		_mission.PlayerTeam.TriggerOnFormationsChangedInDeployment();
 	}
 
 	public void ExecuteBeginMission()

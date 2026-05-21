@@ -16,6 +16,8 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 
 	private Widget _widget_0_0;
 
+	private Widget _widget_0_1;
+
 	private Widget _widget_1;
 
 	private Widget _widget_1_0;
@@ -40,6 +42,8 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 		_widget.AddChild(_widget_0);
 		_widget_0_0 = new Widget(base.Context);
 		_widget_0.AddChild(_widget_0_0);
+		_widget_0_1 = new Widget(base.Context);
+		_widget_0.AddChild(_widget_0_1);
 		_widget_1 = new Widget(base.Context);
 		_widget.AddChild(_widget_1);
 		_widget_1_0 = new Widget(base.Context);
@@ -72,6 +76,13 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 		_widget_0_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_0_0.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Militia");
+		_widget_0_1.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_0_1.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_0_1.SuggestedWidth = 21.6f;
+		_widget_0_1.SuggestedHeight = 18.22f;
+		_widget_0_1.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_0_1.VerticalAlignment = VerticalAlignment.Center;
+		_widget_0_1.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\hideout_militia");
 		_widget_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1.IsHidden = true;
@@ -116,6 +127,24 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 			_widget_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0;
 			_widget_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0;
 			_widget_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0;
+			_widget_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0;
+			_widget_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1;
 			_widget_1.PropertyChanged -= PropertyChangedListenerOf_widget_1;
 			_widget_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1;
 			_widget_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1;
@@ -215,6 +244,112 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 		if (propertyName == "IsVisible")
 		{
 			_datasource_Root.IsDefault = _widget_0.IsVisible;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_0_0(string propertyName)
+	{
+		if (propertyName == "IsHidden")
+		{
+			_datasource_Root.IsBandit = _widget_0_0.IsHidden;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_1(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_0_1(string propertyName)
+	{
+		if (propertyName == "IsVisible")
+		{
+			_datasource_Root.IsBandit = _widget_0_1.IsVisible;
 		}
 	}
 
@@ -440,6 +575,10 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 		case "IsDefault":
 			_widget_0.IsVisible = _datasource_Root.IsDefault;
 			break;
+		case "IsBandit":
+			_widget_0_0.IsHidden = _datasource_Root.IsBandit;
+			_widget_0_1.IsVisible = _datasource_Root.IsBandit;
+			break;
 		case "IsCaravan":
 			_widget_1.IsVisible = _datasource_Root.IsCaravan;
 			break;
@@ -532,6 +671,24 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 			_widget_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0;
 			_widget_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0;
 			_widget_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0;
+			_widget_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0;
+			_widget_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1;
 			_widget_1.PropertyChanged -= PropertyChangedListenerOf_widget_1;
 			_widget_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1;
 			_widget_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1;
@@ -596,6 +753,26 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 			_widget_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0;
 			_widget_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0;
 			_widget_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0;
+			_widget_0_0.IsHidden = _datasource_Root.IsBandit;
+			_widget_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_0;
+			_widget_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_0;
+			_widget_0_1.IsVisible = _datasource_Root.IsBandit;
+			_widget_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1;
+			_widget_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1;
 			_widget_1.IsVisible = _datasource_Root.IsCaravan;
 			_widget_1.PropertyChanged += PropertyChangedListenerOf_widget_1;
 			_widget_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1;

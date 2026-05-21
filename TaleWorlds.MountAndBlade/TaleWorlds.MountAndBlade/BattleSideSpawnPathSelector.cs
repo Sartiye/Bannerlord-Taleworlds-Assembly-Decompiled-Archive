@@ -18,11 +18,11 @@ public class BattleSideSpawnPathSelector
 
 	public MBReadOnlyList<SpawnPathData> ReinforcementPaths => _reinforcementSpawnPaths;
 
-	public BattleSideSpawnPathSelector(Mission mission, Path initialPath, float initialPivotRatio, bool initialPathIsInverted)
+	public BattleSideSpawnPathSelector(Mission mission, Path initialPath, float initialPivotOffset, bool initialPathIsInverted)
 	{
 		_mission = mission;
 		SpawnPathData.SnapMethod snapType = (mission.IsNavalBattle ? SpawnPathData.SnapMethod.SnapToWaterLevel : (mission.IsFieldBattle ? SpawnPathData.SnapMethod.SnapToTerrain : SpawnPathData.SnapMethod.DontSnap));
-		_initialSpawnPath = SpawnPathData.Create(_mission.Scene, initialPath, initialPivotRatio, initialPathIsInverted, snapType);
+		_initialSpawnPath = SpawnPathData.Create(_mission.Scene, initialPath, initialPivotOffset, initialPathIsInverted, snapType);
 		_reinforcementSpawnPaths = new MBList<SpawnPathData>();
 		FindReinforcementPaths();
 	}
@@ -39,8 +39,9 @@ public class BattleSideSpawnPathSelector
 	private void FindReinforcementPaths()
 	{
 		_reinforcementSpawnPaths.Clear();
-		SpawnPathData item = SpawnPathData.Create(_initialSpawnPath.Scene, _initialSpawnPath.Path, 0f, _initialSpawnPath.IsInverted);
-		_reinforcementSpawnPaths.Add(item);
+		float pivotOffset = _initialSpawnPath.PathLength / 2f;
+		SpawnPathData spawnPathData = SpawnPathData.Create(_initialSpawnPath.Scene, _initialSpawnPath.Path, pivotOffset, _initialSpawnPath.IsInverted);
+		_reinforcementSpawnPaths.Add(spawnPathData);
 		MBList<Path> allSpawnPaths = MBSceneUtilities.GetAllSpawnPaths(_mission.Scene);
 		if (allSpawnPaths.Count == 0)
 		{
@@ -50,31 +51,32 @@ public class BattleSideSpawnPathSelector
 		if (allSpawnPaths.Count > 1)
 		{
 			MatrixFrame[] array = new MatrixFrame[100];
-			item.Path.GetPoints(array);
-			MatrixFrame matrixFrame = (item.IsInverted ? array[item.Path.NumberOfPoints - 1] : array[0]);
+			spawnPathData.Path.GetPoints(array);
+			MatrixFrame matrixFrame = (spawnPathData.IsInverted ? array[spawnPathData.Path.NumberOfPoints - 1] : array[0]);
 			SortedList<float, SpawnPathData> sortedList = new SortedList<float, SpawnPathData>();
-			foreach (Path item2 in allSpawnPaths)
+			foreach (Path item in allSpawnPaths)
 			{
-				if (item2.NumberOfPoints > 1 && item2.Pointer != item.Path.Pointer)
+				if (item.NumberOfPoints > 1 && item.Pointer != spawnPathData.Path.Pointer)
 				{
-					item2.GetPoints(array);
+					item.GetPoints(array);
 					MatrixFrame matrixFrame2 = array[0];
-					MatrixFrame matrixFrame3 = array[item2.NumberOfPoints - 1];
+					MatrixFrame matrixFrame3 = array[item.NumberOfPoints - 1];
 					float key = matrixFrame2.origin.DistanceSquared(matrixFrame.origin);
 					float key2 = matrixFrame3.origin.DistanceSquared(matrixFrame.origin);
-					sortedList.Add(key, SpawnPathData.Create(_initialSpawnPath.Scene, item2));
-					sortedList.Add(key2, SpawnPathData.Create(_initialSpawnPath.Scene, item2, 0f, isInverted: true));
+					float pivotOffset2 = item.GetTotalLength() / 2f;
+					sortedList.Add(key, SpawnPathData.Create(_initialSpawnPath.Scene, item, pivotOffset2));
+					sortedList.Add(key2, SpawnPathData.Create(_initialSpawnPath.Scene, item, pivotOffset2, isInverted: true));
 				}
 				else
 				{
-					flag = flag || item.Path.Pointer == item2.Pointer;
+					flag = flag || spawnPathData.Path.Pointer == item.Pointer;
 				}
 			}
 			int num = 0;
 			{
-				foreach (KeyValuePair<float, SpawnPathData> item3 in sortedList)
+				foreach (KeyValuePair<float, SpawnPathData> item2 in sortedList)
 				{
-					_reinforcementSpawnPaths.Add(item3.Value);
+					_reinforcementSpawnPaths.Add(item2.Value);
 					num++;
 					if ((float)num >= 2f)
 					{
@@ -84,6 +86,6 @@ public class BattleSideSpawnPathSelector
 				return;
 			}
 		}
-		flag = item.Path.Pointer == allSpawnPaths[0].Pointer;
+		flag = spawnPathData.Path.Pointer == allSpawnPaths[0].Pointer;
 	}
 }

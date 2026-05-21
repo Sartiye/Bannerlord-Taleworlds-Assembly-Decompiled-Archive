@@ -312,13 +312,7 @@ public class BodyGeneratorView : IFaceGeneratorHandler
 			}
 			else if (DebugInput.IsHotKeyPressed("Reset"))
 			{
-				string hairTags = "";
-				string beardTags = "";
-				string tatooTags = "";
-				BodyGen.CurrentBodyProperties = MBBodyProperties.GetRandomBodyProperties(BodyGen.Race, BodyGen.IsFemale, BodyGen.BodyPropertiesMin, BodyGen.BodyPropertiesMax, 0, MBRandom.RandomInt(), hairTags, beardTags, tatooTags, 0f);
-				SetNewBodyPropertiesAndBodyGen(BodyGen.CurrentBodyProperties);
-				DataSource.SetBodyProperties(BodyGen.CurrentBodyProperties, ignoreDebugValues: false);
-				DataSource.UpdateFacegen();
+				DataSource.ExecuteReset();
 			}
 		}
 		if (DebugInput.IsHotKeyReleased("MbFaceGeneratorScreenHotkeySetCurFaceKeyToMin"))

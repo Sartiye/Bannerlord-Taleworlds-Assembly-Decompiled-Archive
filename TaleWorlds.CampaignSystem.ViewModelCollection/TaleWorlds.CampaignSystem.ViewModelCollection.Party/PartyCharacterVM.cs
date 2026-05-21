@@ -1170,7 +1170,7 @@ public class PartyCharacterVM : ViewModel
 	{
 		base.RefreshValues();
 		Name = Troop.Character.Name.ToString();
-		LockHint = new HintViewModel(GameTexts.FindText("str_inventory_lock"));
+		LockHint = new HintViewModel(GameTexts.FindText("str_lock_in_party").SetTextVariable("TRANSFERABLE", IsPrisoner ? GameTexts.FindText("str_prisoners").ToString() : GameTexts.FindText("str_troops").ToString()));
 		Upgrades?.ApplyActionOnAllItems(delegate(UpgradeTargetVM x)
 		{
 			x.RefreshValues();
@@ -1186,7 +1186,7 @@ public class PartyCharacterVM : ViewModel
 	private string GetTransferHint()
 	{
 		string text = GameTexts.FindText("str_transfer").ToString();
-		string stackModifierString = CampaignUIHelper.GetStackModifierString(GameTexts.FindText("str_entire_stack_shortcut_transfer_troops"), GameTexts.FindText("str_five_stack_shortcut_transfer_troops"), Troop.Number >= 5);
+		string stackModifierString = CampaignUIHelper.GetStackModifierString(GameTexts.FindText("str_entire_stack_shortcut_transfer"), GameTexts.FindText("str_five_stack_shortcut_transfer"), Troop.Number >= 5);
 		if (string.IsNullOrEmpty(stackModifierString))
 		{
 			return text;
@@ -1302,7 +1302,7 @@ public class PartyCharacterVM : ViewModel
 				}
 				flag = flag && !_partyVm.PartyScreenLogic.IsTroopUpgradesDisabled;
 				string upgradeHint = CampaignUIHelper.GetUpgradeHint(i, numOfCategoryItemPartyHas, num, upgradeGoldCost, flag3, requiredPerk, Character, Troop, _partyScreenLogic.CurrentData.PartyGoldChangeAmount, _partyVm.PartyScreenLogic.IsTroopUpgradesDisabled);
-				Upgrades[i].Refresh(num, flag, flag2, flag4, flag3, upgradeHint, Character.IsMariner);
+				Upgrades[i].Refresh(num, flag, flag2, flag4, flag3, upgradeHint, !Character.IsHero && Character.IsMariner);
 				if (i == 0)
 				{
 					UpgradeCostText = upgradeGoldCost.ToString();

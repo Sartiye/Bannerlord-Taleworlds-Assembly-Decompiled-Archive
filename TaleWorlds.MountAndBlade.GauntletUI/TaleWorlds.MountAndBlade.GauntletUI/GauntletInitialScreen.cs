@@ -8,7 +8,6 @@ using TaleWorlds.MountAndBlade.View.Screens;
 using TaleWorlds.MountAndBlade.ViewModelCollection.GameOptions;
 using TaleWorlds.MountAndBlade.ViewModelCollection.InitialMenu;
 using TaleWorlds.ScreenSystem;
-using TaleWorlds.TwoDimension;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI;
 
@@ -31,8 +30,6 @@ public class GauntletInitialScreen : MBInitialScreenBase, IChatLogHandlerScreen
 
 	private GauntletMovieIdentifier _exposureOptionMovie;
 
-	private SpriteCategory _upsellCategory;
-
 	public GauntletInitialScreen(InitialState initialState)
 		: base(initialState)
 	{
@@ -42,7 +39,6 @@ public class GauntletInitialScreen : MBInitialScreenBase, IChatLogHandlerScreen
 	{
 		base.OnInitialize();
 		_dataSource = new InitialMenuVM(base._state);
-		RefreshUpsellSpriteCategory();
 		_gauntletLayer = new GauntletLayer("MainMenu", 1);
 		_gauntletLayer.LoadMovie("InitialScreen", _dataSource);
 		_gauntletLayer.InputRestrictions.SetInputRestrictions(isMouseVisible: true, InputUsageMask.Mouse);
@@ -77,6 +73,7 @@ public class GauntletInitialScreen : MBInitialScreenBase, IChatLogHandlerScreen
 			MouseManager.ShowCursor(show: false);
 			MouseManager.ShowCursor(show: true);
 		}
+		_dataSource?.Tick();
 		if (_gauntletLayer.Input.IsHotKeyReleased("Exit"))
 		{
 			BrightnessOptionVM brightnessOptionDataSource = _brightnessOptionDataSource;
@@ -120,7 +117,6 @@ public class GauntletInitialScreen : MBInitialScreenBase, IChatLogHandlerScreen
 		base.OnActivate();
 		_dataSource?.RefreshMenuOptions();
 		SetGainNavigationAfterFrames(3);
-		RefreshUpsellSpriteCategory();
 	}
 
 	private void SetGainNavigationAfterFrames(int frameCount)
@@ -144,7 +140,6 @@ public class GauntletInitialScreen : MBInitialScreenBase, IChatLogHandlerScreen
 	private void OnGameContentUpdated()
 	{
 		_dataSource?.RefreshMenuOptions();
-		RefreshUpsellSpriteCategory();
 	}
 
 	private void OnCloseBrightness(bool isConfirm)
@@ -192,32 +187,11 @@ public class GauntletInitialScreen : MBInitialScreenBase, IChatLogHandlerScreen
 		_dataSource?.OnFinalize();
 		_dataSource = null;
 		_gauntletLayer = null;
-		RefreshUpsellSpriteCategory();
 	}
 
 	public void TryUpdateChatLogLayerParameters(ref bool isTeamChatAvailable, ref bool inputEnabled, ref bool isToggleChatHintAvailable, ref bool isMouseVisible, ref InputContext inputContext)
 	{
 		inputEnabled = false;
 		inputContext = null;
-	}
-
-	private void RefreshUpsellSpriteCategory()
-	{
-		InitialMenuVM dataSource = _dataSource;
-		if (dataSource != null && dataSource.IsUpsellButtonVisible)
-		{
-			SpriteCategory upsellCategory = _upsellCategory;
-			if (upsellCategory == null || !upsellCategory.IsLoaded)
-			{
-				_upsellCategory = UIResourceManager.LoadSpriteCategory("ui_upsell");
-			}
-			return;
-		}
-		SpriteCategory upsellCategory2 = _upsellCategory;
-		if (upsellCategory2 != null && upsellCategory2.IsLoaded)
-		{
-			_upsellCategory.Unload();
-			_upsellCategory = null;
-		}
 	}
 }

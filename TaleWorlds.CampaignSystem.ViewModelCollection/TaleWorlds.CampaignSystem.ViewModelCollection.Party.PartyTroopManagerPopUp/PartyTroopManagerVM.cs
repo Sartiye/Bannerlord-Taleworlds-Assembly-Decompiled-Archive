@@ -586,13 +586,13 @@ public abstract class PartyTroopManagerVM : ViewModel
 		int num = _partyVM.PartyScreenLogic.CurrentData.PartyGoldChangeAmount - _initialGoldChange;
 		int num2 = _partyVM.PartyScreenLogic.CurrentData.PartyHorseChangeAmount - _initialHorseChange;
 		int num3 = _partyVM.PartyScreenLogic.CurrentData.PartyMoraleChangeAmount - _initialMoraleChange;
-		MBTextManager.SetTextVariable("LABEL_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		MBTextManager.SetTextVariable("LABEL_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		MBTextManager.SetTextVariable("TRADE_AMOUNT", TaleWorlds.Library.MathF.Abs(num));
 		GoldChangeText = ((num == 0) ? "" : GameTexts.FindText("str_party_generic_label").ToString());
-		MBTextManager.SetTextVariable("LABEL_ICON", "{=!}<img src=\"StdAssets\\ItemIcons\\Mount\" extend=\"16\">");
+		MBTextManager.SetTextVariable("LABEL_ICON", "{=!}<img src=\"StdAssets\\ItemIcons\\Mount\" extend=\"14\">");
 		MBTextManager.SetTextVariable("TRADE_AMOUNT", TaleWorlds.Library.MathF.Abs(num2));
 		HorseChangeText = ((num2 == 0) ? "" : GameTexts.FindText("str_party_generic_label").ToString());
-		MBTextManager.SetTextVariable("LABEL_ICON", "{=!}<img src=\"General\\Icons\\Morale@2x\" extend=\"8\">");
+		MBTextManager.SetTextVariable("LABEL_ICON", "{=!}<img src=\"General\\Icons\\Morale@2x\" extend=\"4\">");
 		MBTextManager.SetTextVariable("TRADE_AMOUNT", TaleWorlds.Library.MathF.Abs(num3));
 		MoraleChangeText = ((num3 == 0) ? "" : GameTexts.FindText("str_party_generic_label").ToString());
 	}

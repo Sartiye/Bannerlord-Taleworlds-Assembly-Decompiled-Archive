@@ -91,7 +91,25 @@ public class ConversationMissionLogic : MissionLogic
 		PlayerConversationData = playerCharacterData;
 		OtherSideConversationData = otherCharacterData;
 		IsMultiAgentConversation = isMultiAgentConversation;
-		_isNaval = !isMultiAgentConversation && (playerCharacterData.Party?.MobileParty?.IsCurrentlyAtSea ?? otherCharacterData.Party?.MobileParty?.IsCurrentlyAtSea ?? false);
+		int isNaval;
+		if (!isMultiAgentConversation)
+		{
+			PartyBase party = playerCharacterData.Party;
+			if (party == null || party.MobileParty?.IsCurrentlyAtSea != true)
+			{
+				PartyBase party2 = otherCharacterData.Party;
+				isNaval = ((party2 != null && party2.MobileParty?.IsCurrentlyAtSea == true) ? 1 : 0);
+			}
+			else
+			{
+				isNaval = 1;
+			}
+		}
+		else
+		{
+			isNaval = 0;
+		}
+		_isNaval = (byte)isNaval != 0;
 		_isCivilianEquipmentRequiredForLeader = otherCharacterData.IsCivilianEquipmentRequiredForLeader;
 		_isCivilianEquipmentRequiredForBodyGuards = otherCharacterData.IsCivilianEquipmentRequiredForBodyGuardCharacters;
 		_addBloodToAgents = new List<Agent>();
@@ -568,27 +586,41 @@ public class ConversationMissionLogic : MissionLogic
 		{
 			result = "custom_camera_same_ship";
 			_navalConversationState = NavalConversationCameraState.SameShip;
+			goto IL_00c4;
+		}
+		ShipHull.ShipType shipType;
+		ShipHull.ShipType shipType2;
+		if (MobileParty.MainParty.IsCurrentlyAtSea)
+		{
+			MobileParty mobileParty = encounteredParty.MobileParty;
+			if (mobileParty != null && mobileParty.IsCurrentlyAtSea)
+			{
+				shipType = ((PartyBase.MainParty.Ships.Count <= 0) ? ShipHull.ShipType.Medium : PartyBase.MainParty.FlagShip.ShipHull.Type);
+				shipType2 = (encounteredParty.Ships.IsEmpty() ? shipType : encounteredParty.FlagShip.ShipHull.Type);
+				goto IL_0091;
+			}
+		}
+		shipType = ShipHull.ShipType.Medium;
+		shipType2 = ShipHull.ShipType.Medium;
+		goto IL_0091;
+		IL_0091:
+		if (shipType < shipType2)
+		{
+			result = "custom_camera_lookup";
+			_navalConversationState = NavalConversationCameraState.LookUp;
+		}
+		else if (shipType > shipType2)
+		{
+			result = "custom_camera_lookdown";
+			_navalConversationState = NavalConversationCameraState.LookDown;
 		}
 		else
 		{
-			ShipHull.ShipType shipType = ((PartyBase.MainParty.Ships.Count <= 0) ? ShipHull.ShipType.Medium : PartyBase.MainParty.FlagShip.ShipHull.Type);
-			ShipHull.ShipType shipType2 = (encounteredParty.Ships.IsEmpty() ? shipType : encounteredParty.FlagShip.ShipHull.Type);
-			if (shipType < shipType2)
-			{
-				result = "custom_camera_lookup";
-				_navalConversationState = NavalConversationCameraState.LookUp;
-			}
-			else if (shipType > shipType2)
-			{
-				result = "custom_camera_lookdown";
-				_navalConversationState = NavalConversationCameraState.LookDown;
-			}
-			else
-			{
-				result = "custom_camera_level";
-				_navalConversationState = NavalConversationCameraState.Level;
-			}
+			result = "custom_camera_level";
+			_navalConversationState = NavalConversationCameraState.Level;
 		}
+		goto IL_00c4;
+		IL_00c4:
 		return result;
 	}
 }

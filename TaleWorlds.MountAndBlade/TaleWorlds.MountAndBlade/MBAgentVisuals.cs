@@ -208,9 +208,9 @@ public sealed class MBAgentVisuals : NativeObject
 		MBAPI.IMBAgentVisuals.SetLodAtlasShadingIndex(GetPtr(), index, useTeamColor, teamColor1, teamColor2);
 	}
 
-	public void ClearVisualComponents(bool removeSkeleton)
+	public void ClearVisualComponents(bool removeSkeleton, bool removeLabel = true)
 	{
-		MBAPI.IMBAgentVisuals.ClearVisualComponents(GetPtr(), removeSkeleton);
+		MBAPI.IMBAgentVisuals.ClearVisualComponents(GetPtr(), removeSkeleton, removeLabel);
 	}
 
 	public void LazyUpdateAgentRendererData()

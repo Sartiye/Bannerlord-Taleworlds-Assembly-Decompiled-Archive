@@ -208,7 +208,7 @@ public class CharacterCreationNarrativeStage__TaleWorlds_CampaignSystem_ViewMode
 		_widget_2_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2_0.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_2_0.MarginLeft = 100f;
-		_widget_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0.SuggestedWidth = 650f;
@@ -268,7 +268,7 @@ public class CharacterCreationNarrativeStage__TaleWorlds_CampaignSystem_ViewMode
 		_widget_5_1_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_5_1_0_0_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_5_1_0_0_0.VerticalAlignment = VerticalAlignment.Top;
-		_widget_5_1_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_5_1_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_5_1_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_5_1_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_5_1_0_0_0_0.MarginTop = 25f;
@@ -290,7 +290,7 @@ public class CharacterCreationNarrativeStage__TaleWorlds_CampaignSystem_ViewMode
 		_widget_5_1_0_0_0_2.MarginTop = 20f;
 		_widget_5_1_0_0_0_2.MarginBottom = 30f;
 		_widget_5_1_0_0_0_2.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_5_1_0_0_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_5_1_0_0_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_5_1_0_0_0_2.MinIndex = 0;
 		_widget_5_1_0_0_0_2.MaxIndex = 1000;
 		_widget_5_1_0_0_0_2.ParentPanel = _widget_5_1_0;

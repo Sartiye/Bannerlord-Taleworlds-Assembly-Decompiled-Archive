@@ -274,7 +274,7 @@ public class BoardGameVM : ViewModel
 			TextObject textObject = new TextObject("{=azJulvrp}{?IS_BETTING}You are going to lose {BET_AMOUNT}{GOLD_ICON} if you forfeit.{newline}{?}{\\?}Do you really want to forfeit?");
 			textObject.SetTextVariable("IS_BETTING", (_missionBoardGameHandler.BetAmount > 0) ? 1 : 0);
 			textObject.SetTextVariable("BET_AMOUNT", _missionBoardGameHandler.BetAmount);
-			textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+			textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 			textObject.SetTextVariable("newline", "{=!}\n");
 			InformationManager.ShowInquiry(new InquiryData(GameTexts.FindText("str_forfeit").ToString(), textObject.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, new TextObject("{=aeouhelq}Yes").ToString(), new TextObject("{=8OkPHu4f}No").ToString(), _missionBoardGameHandler.ForfeitGame, null), pauseGameActiveState: true);
 		}

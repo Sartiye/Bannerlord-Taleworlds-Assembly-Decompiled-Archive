@@ -11,8 +11,6 @@ namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
 
 public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 {
-	private const float DefaultHealingPercentage = 0.015f;
-
 	private const float MinimumScoreForSafeSettlement = 10f;
 
 	public override void RegisterEvents()
@@ -25,6 +23,10 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.HeroComesOfAgeEvent.AddNonSerializedListener(this, OnHeroComesOfAge);
 		CampaignEvents.DailyTickHeroEvent.AddNonSerializedListener(this, OnHeroDailyTick);
 		CampaignEvents.CompanionRemoved.AddNonSerializedListener(this, OnCompanionRemoved);
+	}
+
+	public override void SyncData(IDataStore dataStore)
+	{
 	}
 
 	private void OnNewGameCreatedPartialFollowUp(CampaignGameStarter starter, int i)
@@ -56,7 +58,7 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private static void OnNewGameCreated(CampaignGameStarter starter)
+	private void OnNewGameCreated(CampaignGameStarter starter)
 	{
 		foreach (Clan nonBanditFaction in Clan.NonBanditFactions)
 		{
@@ -75,12 +77,12 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 		{
 			if (allAliveHero.IsActive)
 			{
-				OnHeroDailyTick(allAliveHero);
+				AssignSettlementToHeroOnGameStart(allAliveHero);
 			}
 		}
 	}
 
-	private static void OnHeroComesOfAge(Hero hero)
+	private void OnHeroComesOfAge(Hero hero)
 	{
 		if (!hero.IsDisabled && hero.HeroState != Hero.CharacterStates.Active && !hero.IsTraveling)
 		{
@@ -89,22 +91,30 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	public override void SyncData(IDataStore dataStore)
-	{
-	}
-
 	private void OnCompanionRemoved(Hero companion, RemoveCompanionAction.RemoveCompanionDetail detail)
 	{
-		if (companion.IsFugitive || companion.IsDead || detail == RemoveCompanionAction.RemoveCompanionDetail.ByTurningToLord || detail == RemoveCompanionAction.RemoveCompanionDetail.Death || companion.DeathMark != 0)
+		if (!companion.IsFugitive && !companion.IsDead && detail != RemoveCompanionAction.RemoveCompanionDetail.ByTurningToLord && detail != RemoveCompanionAction.RemoveCompanionDetail.Death && companion.DeathMark == KillCharacterAction.KillCharacterActionDetail.None)
 		{
-			return;
+			Settlement targetSettlement = FindASuitableSettlementToTeleportForHero(companion);
+			TeleportHeroAction.ApplyImmediateTeleportToSettlement(companion, targetSettlement);
 		}
-		Settlement settlement = HeroHelper.FindASuitableSettlementToTeleportForHero(companion);
-		if (settlement == null)
+	}
+
+	private void AssignSettlementToHeroOnGameStart(Hero hero)
+	{
+		if (hero.CurrentSettlement == null && hero.PartyBelongedTo == null && !hero.IsSpecial && hero.GovernorOf == null)
 		{
-			settlement = SettlementHelper.FindRandomSettlement((Settlement x) => x.IsTown);
+			if (MobileParty.MainParty.MemberRoster.Contains(hero.CharacterObject))
+			{
+				MobileParty.MainParty.MemberRoster.RemoveTroop(hero.CharacterObject);
+				MobileParty.MainParty.MemberRoster.AddToCounts(hero.CharacterObject, 1);
+			}
+			else
+			{
+				Settlement targetSettlement = FindASuitableSettlementToTeleportForHero(hero);
+				TeleportHeroAction.ApplyImmediateTeleportToSettlement(hero, targetSettlement);
+			}
 		}
-		TeleportHeroAction.ApplyImmediateTeleportToSettlement(companion, settlement);
 	}
 
 	private void OnHeroDailyTick(Hero hero)
@@ -114,27 +124,12 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 		{
 			if (!hero.IsSpecial && (hero.IsPlayerCompanion || MBRandom.RandomFloat < 0.3f || (hero.CurrentSettlement != null && hero.CurrentSettlement.MapFaction.IsAtWarWith(hero.MapFaction))))
 			{
-				settlement = HeroHelper.FindASuitableSettlementToTeleportForHero(hero);
+				settlement = FindASuitableSettlementToTeleportForHero(hero);
 			}
 		}
-		else if (hero.IsActive)
+		else if (hero.IsActive && CanHeroMoveToAnotherSettlement(hero))
 		{
-			if (hero.CurrentSettlement == null && hero.PartyBelongedTo == null && !hero.IsSpecial && hero.GovernorOf == null)
-			{
-				if (MobileParty.MainParty.MemberRoster.Contains(hero.CharacterObject))
-				{
-					MobileParty.MainParty.MemberRoster.RemoveTroop(hero.CharacterObject);
-					MobileParty.MainParty.MemberRoster.AddToCounts(hero.CharacterObject, 1);
-				}
-				else
-				{
-					settlement = HeroHelper.FindASuitableSettlementToTeleportForHero(hero);
-				}
-			}
-			else if (CanHeroMoveToAnotherSettlement(hero))
-			{
-				settlement = HeroHelper.FindASuitableSettlementToTeleportForHero(hero, 10f);
-			}
+			settlement = FindASuitableSettlementToTeleportForHero(hero, 10f);
 		}
 		if (settlement != null)
 		{
@@ -163,7 +158,7 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private static bool CanHeroMoveToAnotherSettlement(Hero hero)
+	private bool CanHeroMoveToAnotherSettlement(Hero hero)
 	{
 		if (hero.Clan != Clan.PlayerClan && !hero.IsTemplate && hero.IsAlive && !hero.IsNotable && !hero.IsHumanPlayerCharacter && !hero.IsPartyLeader && !hero.IsPrisoner && hero.HeroState != Hero.CharacterStates.Disabled && hero.GovernorOf == null && hero.PartyBelongedTo == null && !hero.IsWanderer && hero.PartyBelongedToAsPrisoner == null && hero.CharacterObject.Occupation != Occupation.Special && hero.Age >= (float)Campaign.Current.Models.AgeModel.HeroComesOfAge && (hero.CurrentSettlement?.Town == null || (!hero.CurrentSettlement.Town.HasTournament && !hero.CurrentSettlement.IsUnderSiege)))
 		{
@@ -172,7 +167,7 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 		return false;
 	}
 
-	private static float GetHeroPartyCommandScore(Hero hero)
+	private float GetHeroPartyCommandScore(Hero hero)
 	{
 		return 3f * (float)hero.GetSkillValue(DefaultSkills.Tactics) + 2f * (float)hero.GetSkillValue(DefaultSkills.Leadership) + (float)hero.GetSkillValue(DefaultSkills.Scouting) + (float)hero.GetSkillValue(DefaultSkills.Steward) + (float)hero.GetSkillValue(DefaultSkills.OneHanded) + (float)hero.GetSkillValue(DefaultSkills.TwoHanded) + (float)hero.GetSkillValue(DefaultSkills.Polearm) + (float)hero.GetSkillValue(DefaultSkills.Riding) + ((hero.Clan.Leader == hero) ? 1000f : 0f) + ((hero.GovernorOf == null) ? 500f : 0f) + (float)(hero.IsNoncombatant ? (-5000) : 0);
 	}
@@ -205,12 +200,12 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private static float CalculateScoreToCreateParty(Clan clan)
+	private float CalculateScoreToCreateParty(Clan clan)
 	{
 		return (float)(clan.Fiefs.Count * 100 - clan.WarPartyComponents.Count * 100) + (float)clan.Gold * 0.01f + (clan.IsMinorFaction ? 200f : 0f) + ((clan.WarPartyComponents.Count > 0) ? 0f : 200f);
 	}
 
-	private static Hero GetBestAvailableCommander(Clan clan)
+	private Hero GetBestAvailableCommander(Clan clan)
 	{
 		Hero hero = null;
 		float num = 0f;
@@ -313,7 +308,7 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private static void CheckAndAssignClanLeader(Clan clan)
+	private void CheckAndAssignClanLeader(Clan clan)
 	{
 		if (clan.Leader == null || clan.Leader.IsDead)
 		{
@@ -324,20 +319,19 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 			}
 			else
 			{
-				Debug.FailedAssert("Cant find a lord to assign as leader to minor faction.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\HeroSpawnCampaignBehavior.cs", "CheckAndAssignClanLeader", 432);
+				Debug.FailedAssert("Cant find a lord to assign as leader to minor faction.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\HeroSpawnCampaignBehavior.cs", "CheckAndAssignClanLeader", 438);
 			}
 		}
 	}
 
-	private static Hero CreateMinorFactionHeroFromTemplate(CharacterObject template, Clan faction)
+	private void CreateMinorFactionHeroFromTemplate(CharacterObject template, Clan faction)
 	{
 		Hero hero = HeroCreator.CreateSpecialHero(template, null, faction, null, Campaign.Current.GameStarted ? 19 : (-1));
 		hero.ChangeState(Campaign.Current.GameStarted ? Hero.CharacterStates.Active : Hero.CharacterStates.NotSpawned);
 		hero.IsMinorFactionHero = true;
-		return hero;
 	}
 
-	private static void SpawnMinorFactionHeroes(Clan clan, bool firstTime)
+	private void SpawnMinorFactionHeroes(Clan clan, bool firstTime)
 	{
 		int num = Campaign.Current.Models.MinorFactionsModel.MinorFactionHeroLimit - clan.AliveLords.Count;
 		if (num <= 0)
@@ -352,7 +346,8 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 				{
 					break;
 				}
-				CreateMinorFactionHeroFromTemplate(clan.MinorFactionCharacterTemplates[i], clan);
+				CharacterObject template = clan.MinorFactionCharacterTemplates[i];
+				CreateMinorFactionHeroFromTemplate(template, clan);
 				num--;
 			}
 		}
@@ -362,14 +357,15 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 		}
 		if (clan.MinorFactionCharacterTemplates == null || clan.MinorFactionCharacterTemplates.IsEmpty())
 		{
-			Debug.FailedAssert($"{clan.Name} templates are empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\HeroSpawnCampaignBehavior.cs", "SpawnMinorFactionHeroes", 470);
+			Debug.FailedAssert($"{clan.Name} templates are empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\HeroSpawnCampaignBehavior.cs", "SpawnMinorFactionHeroes", 475);
 			return;
 		}
 		for (int j = 0; j < num; j++)
 		{
 			if (MBRandom.RandomFloat < Campaign.Current.Models.MinorFactionsModel.DailyMinorFactionHeroSpawnChance)
 			{
-				CreateMinorFactionHeroFromTemplate(clan.MinorFactionCharacterTemplates.GetRandomElementInefficiently(), clan);
+				CharacterObject randomElementInefficiently = clan.MinorFactionCharacterTemplates.GetRandomElementInefficiently();
+				CreateMinorFactionHeroFromTemplate(randomElementInefficiently, clan);
 			}
 		}
 	}
@@ -391,5 +387,107 @@ public class HeroSpawnCampaignBehavior : CampaignBehaviorBase
 		{
 			hero2.UpdateHomeSettlement();
 		}
+	}
+
+	private Settlement FindASuitableSettlementToTeleportForHero(Hero hero, float minimumScore = 0f)
+	{
+		Settlement settlement = null;
+		if (hero.IsNotable)
+		{
+			Debug.FailedAssert("Notables should not use here anymore, make sure this case is intended", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\HeroSpawnCampaignBehavior.cs", "FindASuitableSettlementToTeleportForHero", 519);
+			settlement = hero.BornSettlement;
+		}
+		else
+		{
+			List<(Settlement, float)> list = new List<(Settlement, float)>(hero.MapFaction.Fiefs.Count);
+			foreach (Town fief in hero.MapFaction.Fiefs)
+			{
+				float moveScoreForHero = GetMoveScoreForHero(hero, fief);
+				list.Add((fief.Settlement, (moveScoreForHero >= minimumScore) ? moveScoreForHero : 0f));
+			}
+			settlement = MBRandom.ChooseWeighted(list);
+			if (settlement == null)
+			{
+				List<Settlement> list2 = new List<Settlement>();
+				List<Settlement> list3 = new List<Settlement>();
+				foreach (Town allFief in Town.AllFiefs)
+				{
+					if (allFief.MapFaction.IsAtWarWith(hero.MapFaction))
+					{
+						if (allFief.IsTown)
+						{
+							list3.Add(allFief.Settlement);
+						}
+					}
+					else
+					{
+						list2.Add(allFief.Settlement);
+					}
+				}
+				foreach (Settlement item in list2)
+				{
+					float moveScoreForHero2 = GetMoveScoreForHero(hero, item.Town);
+					list.Add((item, (moveScoreForHero2 >= minimumScore) ? moveScoreForHero2 : 0f));
+				}
+				settlement = MBRandom.ChooseWeighted(list);
+				if (settlement == null)
+				{
+					list.Clear();
+					foreach (Settlement item2 in list3)
+					{
+						float moveScoreForHero3 = GetMoveScoreForHero(hero, item2.Town);
+						list.Add((item2, (moveScoreForHero3 >= minimumScore) ? moveScoreForHero3 : 0f));
+					}
+					settlement = MBRandom.ChooseWeighted(list);
+				}
+			}
+		}
+		return settlement;
+	}
+
+	private float GetMoveScoreForHero(Hero hero, Town fief)
+	{
+		Clan clan = hero.Clan;
+		float num = 1E-06f;
+		if (!fief.IsUnderSiege && !fief.MapFaction.IsAtWarWith(hero.MapFaction) && (!fief.IsCastle || hero.Occupation != Occupation.Wanderer || hero.IsPlayerCompanion))
+		{
+			num = (DiplomacyHelper.IsSameFactionAndNotEliminated(fief.MapFaction, hero.MapFaction) ? 0.01f : 1E-05f);
+			if (fief.MapFaction == hero.MapFaction)
+			{
+				num += 10f;
+				if (fief.IsTown)
+				{
+					num += 100f;
+				}
+				if (fief.OwnerClan == clan)
+				{
+					num += (fief.IsTown ? 500f : 100f);
+				}
+				if (fief.HasTournament)
+				{
+					num += 400f;
+				}
+			}
+			foreach (Hero item in fief.Settlement.HeroesWithoutParty)
+			{
+				if (clan != null && item.Clan == clan)
+				{
+					num += (fief.IsTown ? 100f : 10f);
+				}
+			}
+			if (hero.IsFugitive && hero.HomeSettlement?.Town == fief)
+			{
+				num += 100f;
+			}
+			if (fief.Settlement.IsStarving)
+			{
+				num *= 0.1f;
+			}
+			if (hero.CurrentSettlement == fief.Settlement)
+			{
+				num *= 3f;
+			}
+		}
+		return num;
 	}
 }

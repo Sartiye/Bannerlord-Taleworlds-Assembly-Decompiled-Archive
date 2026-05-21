@@ -621,8 +621,9 @@ public class KingdomSettlementVM : KingdomCategoryVM
 		return kingdomDecision;
 	}
 
-	private static int CalculateLikelihood(Settlement settlement)
+	private static TextObject CalculateLikelihood(Settlement settlement)
 	{
-		return TaleWorlds.Library.MathF.Round(new KingdomElection(new SettlementClaimantPreliminaryDecision(Clan.PlayerClan, settlement)).GetLikelihoodForSponsor(Clan.PlayerClan) * 100f);
+		SettlementClaimantPreliminaryDecision decision = new SettlementClaimantPreliminaryDecision(Clan.PlayerClan, settlement);
+		return GameTexts.FindText("str_decision_outcome_support_status", KingdomElection.GetElectionOutcomeSupport(decision, Clan.PlayerClan).ToString());
 	}
 }

@@ -27,7 +27,7 @@ public class MissionPassageUsePointNameMarkerTargetVM : MissionNameMarkerTargetV
 	{
 		if (base.Target.ToLocation == null && base.Target.IsMissionExit)
 		{
-			return GameTexts.FindText("str_exit");
+			return GameTexts.FindText("str_mission_exit");
 		}
 		return base.Target.ToLocation.Name;
 	}

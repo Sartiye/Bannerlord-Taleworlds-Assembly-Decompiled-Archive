@@ -402,4 +402,8 @@ public class SquareFormation : LineFormation
 			}
 		}
 	}
+
+	protected override void UpdateFrontUnitTypeDelegate()
+	{
+	}
 }

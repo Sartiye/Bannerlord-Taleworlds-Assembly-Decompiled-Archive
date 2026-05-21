@@ -41,7 +41,7 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 
 	private bool _partyCreatedAfterRescueForCompanion;
 
-	private static CompanionRolesCampaignBehavior CurrentBehavior => Campaign.Current.GetCampaignBehavior<CompanionRolesCampaignBehavior>();
+	private CompanionRolesCampaignBehavior CurrentBehavior => Campaign.Current.GetCampaignBehavior<CompanionRolesCampaignBehavior>();
 
 	public override void RegisterEvents()
 	{
@@ -79,19 +79,27 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		campaignGameStarter.AddDialogLine("companion_pretalk", "companion_role_pretalk", "companion_role", "{=!}{COMPANION_ROLE}", companion_has_role_on_condition, null);
 		campaignGameStarter.AddPlayerLine("companion_talk_fire", "companion_role", "companion_fire", "{=pRsCnGoo}I no longer have need of your services.", companion_fire_condition, null);
 		campaignGameStarter.AddPlayerLine("companion_talk_fire_2", "companion_role", "companion_assign_new_role", "{=2g18dlwo}I would like to assign you a new role.", companion_assign_role_on_condition, null);
+		campaignGameStarter.AddPlayerLine("companion_talk_fire_3", "companion_role", "too_many_roles", "{=2g18dlwo}I would like to assign you a new role.", companion_assign_but_too_many_role_on_condition, null);
 		campaignGameStarter.AddDialogLine("companion_assign_new_role", "companion_assign_new_role", "companion_roles", "{=5ajobQiL}What role do you have in mind?", null, null);
 		campaignGameStarter.AddPlayerLine("companion_talk_fire_3", "companion_role", "companion_okay", "{=D33fIGQe}Never mind.", null, null);
-		campaignGameStarter.AddPlayerLine("companion_becomes_engineer", "companion_roles", "companion_okay", "{=E91oU7oi}I no longer need you as Engineer.", companion_fire_engineer_on_condition, companion_delete_party_role_consequence);
-		campaignGameStarter.AddPlayerLine("companion_becomes_surgeon", "companion_roles", "companion_okay", "{=Dga7sQOu}I no longer need you as Surgeon.", companion_fire_surgeon_on_condition, companion_delete_party_role_consequence);
-		campaignGameStarter.AddPlayerLine("companion_becomes_quartermaster", "companion_roles", "companion_okay", "{=GjpJN2xE}I no longer need you as Quartermaster.", companion_fire_quartermaster_on_condition, companion_delete_party_role_consequence);
-		campaignGameStarter.AddPlayerLine("companion_becomes_scout", "companion_roles", "companion_okay", "{=EUQnsZFb}I no longer need you as Scout.", companion_fire_scout_on_condition, companion_delete_party_role_consequence);
-		campaignGameStarter.AddDialogLine("companion_role_response", "companion_okay", "hero_main_options", "{=dzXaXKaC}Very well.", null, null);
-		campaignGameStarter.AddPlayerLine("companion_becomes_engineer_2", "companion_roles", "give_companion_roles", "{=UuFPafDj}Engineer {CURRENTLY_HELD_ENGINEER}", companion_becomes_engineer_on_condition, companion_becomes_engineer_on_consequence);
-		campaignGameStarter.AddPlayerLine("companion_becomes_surgeon_2", "companion_roles", "give_companion_roles", "{=6xZ8U3Yz}Surgeon {CURRENTLY_HELD_SURGEON}", companion_becomes_surgeon_on_condition, companion_becomes_surgeon_on_consequence);
-		campaignGameStarter.AddPlayerLine("companion_becomes_quartermaster_2", "companion_roles", "give_companion_roles", "{=B0VLXHHz}Quartermaster {CURRENTLY_HELD_QUARTERMASTER}", companion_becomes_quartermaster_on_condition, companion_becomes_quartermaster_on_consequence);
-		campaignGameStarter.AddPlayerLine("companion_becomes_scout_2", "companion_roles", "give_companion_roles", "{=3aziL3Gs}Scout {CURRENTLY_HELD_SCOUT}", companion_becomes_scout_on_condition, companion_becomes_scout_on_consequence);
+		campaignGameStarter.AddPlayerLine("companion_becomes_engineer", "companion_roles", "companion_okay", "{=E91oU7oi}I no longer need you as Engineer.", companion_fire_engineer_on_condition, companion_fire_engineer_on_consequence);
+		campaignGameStarter.AddPlayerLine("companion_becomes_surgeon", "companion_roles", "companion_okay", "{=Dga7sQOu}I no longer need you as Surgeon.", companion_fire_surgeon_on_condition, companion_fire_surgeon_on_consequence);
+		campaignGameStarter.AddPlayerLine("companion_becomes_quartermaster", "companion_roles", "companion_okay", "{=GjpJN2xE}I no longer need you as Quartermaster.", companion_fire_quartermaster_on_condition, companion_fire_quartermaster_on_consequence);
+		campaignGameStarter.AddPlayerLine("companion_becomes_scout", "companion_roles", "companion_okay", "{=EUQnsZFb}I no longer need you as Scout.", companion_fire_scout_on_condition, companion_fire_scout_on_consequence);
+		campaignGameStarter.AddDialogLine("companion_role_response", "companion_okay", "hero_main_options", "{=dzXaXKaC}Very well.", null, null, 1);
+		campaignGameStarter.AddPlayerLine("companion_becomes_engineer_2", "companion_roles", "give_companion_roles", "{=UuFPafDj}Engineer {CURRENTLY_HELD_ENGINEER}", companion_becomes_engineer_on_condition, companion_becomes_engineer_on_consequence, 100, companion_becomes_engineer_clickable_condition);
+		campaignGameStarter.AddPlayerLine("companion_becomes_surgeon_2", "companion_roles", "give_companion_roles", "{=6xZ8U3Yz}Surgeon {CURRENTLY_HELD_SURGEON}", companion_becomes_surgeon_on_condition, companion_becomes_surgeon_on_consequence, 100, companion_becomes_surgeon_clickable_condition);
+		campaignGameStarter.AddPlayerLine("companion_becomes_quartermaster_2", "companion_roles", "give_companion_roles", "{=B0VLXHHz}Quartermaster {CURRENTLY_HELD_QUARTERMASTER}", companion_becomes_quartermaster_on_condition, companion_becomes_quartermaster_on_consequence, 100, companion_becomes_quartermaster_clickable_condition);
+		campaignGameStarter.AddPlayerLine("companion_becomes_scout_2", "companion_roles", "give_companion_roles", "{=3aziL3Gs}Scout {CURRENTLY_HELD_SCOUT}", companion_becomes_scout_on_condition, companion_becomes_scout_on_consequence, 100, companion_becomes_scout_clickable_condition);
 		campaignGameStarter.AddDialogLine("companion_role_response_2", "give_companion_roles", "hero_main_options", "{=5hhxQBTj}I would be honored.", null, null);
-		campaignGameStarter.AddPlayerLine("companion_talk_return", "companion_roles", "companion_okay", "{=D33fIGQe}Never mind.", null, null);
+		campaignGameStarter.AddDialogLine("companion_have_too_many_roles", "too_many_roles", "too_many_roles_responses", "{=m3AsvplJ}I already have quite a few duties. Perhaps you could relieve me of one of them, so that I can take on this new responsibility?", null, null, 1);
+		campaignGameStarter.AddPlayerLine("companion_becomes_engineer_3", "too_many_roles_responses", "companion_okay_to_role_selection", "{=E91oU7oi}I no longer need you as Engineer.", companion_fire_engineer_on_condition, companion_fire_engineer_on_consequence);
+		campaignGameStarter.AddPlayerLine("companion_becomes_surgeon_3", "too_many_roles_responses", "companion_okay_to_role_selection", "{=Dga7sQOu}I no longer need you as Surgeon.", companion_fire_surgeon_on_condition, companion_fire_surgeon_on_consequence);
+		campaignGameStarter.AddPlayerLine("companion_becomes_quartermaster_3", "too_many_roles_responses", "companion_okay_to_role_selection", "{=GjpJN2xE}I no longer need you as Quartermaster.", companion_fire_quartermaster_on_condition, companion_fire_quartermaster_on_consequence);
+		campaignGameStarter.AddPlayerLine("companion_becomes_scout_3", "too_many_roles_responses", "companion_okay_to_role_selection", "{=EUQnsZFb}I no longer need you as Scout.", companion_fire_scout_on_condition, companion_fire_scout_on_consequence);
+		campaignGameStarter.AddPlayerLine("companion_becomes_engineer", "too_many_roles_responses", "hero_main_options", "{=D33fIGQe}Never mind.", null, null);
+		campaignGameStarter.AddDialogLine("companion_role_unassign_response", "companion_okay_to_role_selection", "companion_assign_new_role", "{=dzXaXKaC}Very well.", null, null, 1);
+		campaignGameStarter.AddPlayerLine("companion_talk_return", "companion_roles", "companion_okay", "{=D33fIGQe}Never mind.", null, null, 1);
 		campaignGameStarter.AddDialogLine("companion_start_mission", "hero_main_options", "companion_mission_pretalk", "{=4ry48jbg}I have a mission for you...", () => HeroHelper.IsCompanionInPlayerParty(Hero.OneToOneConversationHero), null);
 		campaignGameStarter.AddDialogLine("companion_pretalk_2", "companion_mission_pretalk", "companion_mission", "{=7EoBCTX0}What do you want me to do?", null, null);
 		campaignGameStarter.AddPlayerLine("companion_mission_gather_troops", "companion_mission", "companion_recruit_troops", "{=MDik3Kfn}I want you to recruit some troops.", null, null);
@@ -141,7 +149,7 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		campaignGameStarter.AddDialogLine("default_conversation_for_wrongly_created_heroes", "start", "close_window", "{=BaeqKlQ6}I am not allowed to talk with you.", null, null, 0);
 	}
 
-	private static bool companion_fire_condition()
+	private bool companion_fire_condition()
 	{
 		if (Hero.OneToOneConversationHero.IsPlayerCompanion && Settlement.CurrentSettlement == null)
 		{
@@ -154,12 +162,12 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		return false;
 	}
 
-	private static bool turn_companion_to_lord_no_fief_on_condition()
+	private bool turn_companion_to_lord_no_fief_on_condition()
 	{
 		return !Hero.MainHero.Clan.Settlements.Any((Settlement x) => x.IsTown || x.IsCastle);
 	}
 
-	private static bool turn_companion_to_lord_on_condition()
+	private bool turn_companion_to_lord_on_condition()
 	{
 		Hero oneToOneConversationHero = Hero.OneToOneConversationHero;
 		if (oneToOneConversationHero != null && oneToOneConversationHero.IsPlayerCompanion && Hero.MainHero.IsKingdomLeader)
@@ -174,7 +182,7 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		return false;
 	}
 
-	private static bool companion_is_leading_caravan_condition()
+	private bool companion_is_leading_caravan_condition()
 	{
 		Hero oneToOneConversationHero = Hero.OneToOneConversationHero;
 		if (oneToOneConversationHero != null && oneToOneConversationHero.IsPlayerCompanion && oneToOneConversationHero.PartyBelongedTo != null)
@@ -184,12 +192,12 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		return false;
 	}
 
-	private static void fief_grant_answer_consequence()
+	private void fief_grant_answer_consequence()
 	{
 		ConversationSentence.SetObjectsToRepeatOver(Hero.MainHero.Clan.Settlements.Where((Settlement x) => x.IsTown || x.IsCastle).ToList());
 	}
 
-	private static bool list_player_fief_clickable_condition(out TextObject explanation)
+	private bool list_player_fief_clickable_condition(out TextObject explanation)
 	{
 		Kingdom kingdom = Hero.MainHero.MapFaction as Kingdom;
 		Settlement fief = ConversationSentence.CurrentProcessedRepeatObject as Settlement;
@@ -207,7 +215,7 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		return true;
 	}
 
-	private static bool list_player_fief_on_condition()
+	private bool list_player_fief_on_condition()
 	{
 		if (ConversationSentence.CurrentProcessedRepeatObject is Settlement settlement)
 		{
@@ -221,19 +229,19 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		_selectedFief = ConversationSentence.SelectedRepeatObject as Settlement;
 	}
 
-	private static void turn_companion_to_lord_consequence()
+	private void turn_companion_to_lord_consequence()
 	{
 		TextObject textObject = new TextObject("{=ntDH7J3H}This action costs {NEEDED_GOLD_TO_GRANT_FIEF}{GOLD_ICON} and {NEEDED_INFLUENCE_TO_GRANT_FIEF}{INFLUENCE_ICON}. You will also be granting {SETTLEMENT} to {COMPANION.NAME}.");
 		textObject.SetTextVariable("NEEDED_GOLD_TO_GRANT_FIEF", 20000);
 		textObject.SetTextVariable("NEEDED_INFLUENCE_TO_GRANT_FIEF", 500);
-		textObject.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"7\">");
-		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		textObject.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"5\">");
+		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		textObject.SetCharacterProperties("COMPANION", Hero.OneToOneConversationHero.CharacterObject);
 		textObject.SetTextVariable("SETTLEMENT", CurrentBehavior._selectedFief.Name);
 		InformationManager.ShowInquiry(new InquiryData(new TextObject("{=awjomtnJ}Are you sure?").ToString(), textObject.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, new TextObject("{=aeouhelq}Yes").ToString(), new TextObject("{=8OkPHu4f}No").ToString(), ConfirmTurningCompanionToLordConsequence, RejectTurningCompanionToLordConsequence));
 	}
 
-	private static void ConfirmTurningCompanionToLordConsequence()
+	private void ConfirmTurningCompanionToLordConsequence()
 	{
 		CurrentBehavior._playerConfirmedTheAction = true;
 		TextObject textObject = new TextObject("{=4eStbG4S}Select {COMPANION.NAME}{.o} clan name: ");
@@ -241,13 +249,13 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		InformationManager.ShowTextInquiry(new TextInquiryData(textObject.ToString(), string.Empty, isAffirmativeOptionShown: true, isNegativeOptionShown: false, GameTexts.FindText("str_done").ToString(), null, ClanNameSelectionIsDone, null, shouldInputBeObfuscated: false, FactionHelper.IsClanNameApplicable));
 	}
 
-	private static void RejectTurningCompanionToLordConsequence()
+	private void RejectTurningCompanionToLordConsequence()
 	{
 		CurrentBehavior._playerConfirmedTheAction = false;
 		Campaign.Current.ConversationManager.ContinueConversation();
 	}
 
-	private static void ClanNameSelectionIsDone(string clanName)
+	private void ClanNameSelectionIsDone(string clanName)
 	{
 		Hero oneToOneConversationHero = Hero.OneToOneConversationHero;
 		RemoveCompanionAction.ApplyByByTurningToLord(Hero.MainHero.Clan, oneToOneConversationHero);
@@ -280,25 +288,25 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		Campaign.Current.ConversationManager.ContinueConversation();
 	}
 
-	private static void AdjustCompanionsEquipment(Hero companionHero)
+	private void AdjustCompanionsEquipment(Hero companionHero)
 	{
-		Equipment newEquipmentForCompanion = GetNewEquipmentForCompanion(companionHero, isCivilian: true);
-		Equipment newEquipmentForCompanion2 = GetNewEquipmentForCompanion(companionHero, isCivilian: false);
+		Equipment equipmentForCompanionWhenTurningToLord = Campaign.Current.Models.EquipmentSelectionModel.GetEquipmentForCompanionWhenTurningToLord(companionHero, Equipment.EquipmentType.Civilian);
+		Equipment equipmentForCompanionWhenTurningToLord2 = Campaign.Current.Models.EquipmentSelectionModel.GetEquipmentForCompanionWhenTurningToLord(companionHero, Equipment.EquipmentType.Battle);
 		Equipment equipment = new Equipment(Equipment.EquipmentType.Civilian);
 		Equipment equipment2 = new Equipment(Equipment.EquipmentType.Battle);
 		for (int i = 0; i < 12; i++)
 		{
-			if (newEquipmentForCompanion2[i].Item != null && (companionHero.BattleEquipment[i].Item == null || companionHero.BattleEquipment[i].Item.Tier < newEquipmentForCompanion2[i].Item.Tier))
+			if (equipmentForCompanionWhenTurningToLord2[i].Item != null && (companionHero.BattleEquipment[i].Item == null || companionHero.BattleEquipment[i].Item.Tier < equipmentForCompanionWhenTurningToLord2[i].Item.Tier))
 			{
-				equipment2[i] = newEquipmentForCompanion2[i];
+				equipment2[i] = equipmentForCompanionWhenTurningToLord2[i];
 			}
 			else
 			{
 				equipment2[i] = companionHero.BattleEquipment[i];
 			}
-			if (newEquipmentForCompanion[i].Item != null && (companionHero.CivilianEquipment[i].Item == null || companionHero.CivilianEquipment[i].Item.Tier < newEquipmentForCompanion[i].Item.Tier))
+			if (equipmentForCompanionWhenTurningToLord[i].Item != null && (companionHero.CivilianEquipment[i].Item == null || companionHero.CivilianEquipment[i].Item.Tier < equipmentForCompanionWhenTurningToLord[i].Item.Tier))
 			{
-				equipment[i] = newEquipmentForCompanion[i];
+				equipment[i] = equipmentForCompanionWhenTurningToLord[i];
 			}
 			else
 			{
@@ -309,7 +317,7 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		EquipmentHelper.AssignHeroEquipmentFromEquipment(companionHero, equipment2);
 	}
 
-	private static int GetRandomBannerIdForNewClan()
+	private int GetRandomBannerIdForNewClan()
 	{
 		MBReadOnlyList<int> possibleClanBannerIconsIDs = Hero.MainHero.MapFaction.Culture.PossibleClanBannerIconsIDs;
 		int num = possibleClanBannerIconsIDs.GetRandomElement();
@@ -348,7 +356,7 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		return num;
 	}
 
-	private static void SpawnNewHeroesForNewCompanionClan(Hero companionHero, Clan clan, Settlement settlement)
+	private void SpawnNewHeroesForNewCompanionClan(Hero companionHero, Clan clan, Settlement settlement)
 	{
 		MBReadOnlyList<CharacterObject> lordTemplates = companionHero.Culture.LordTemplates;
 		List<Hero> list = new List<Hero>();
@@ -410,7 +418,7 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private static Hero CreateNewHeroForNewCompanionClan(CharacterObject templateCharacter, Settlement settlement, Dictionary<SkillObject, int> startingSkills)
+	private Hero CreateNewHeroForNewCompanionClan(CharacterObject templateCharacter, Settlement settlement, Dictionary<SkillObject, int> startingSkills)
 	{
 		Hero hero = HeroCreator.CreateSpecialHero(templateCharacter, settlement, null, null, MBRandom.RandomInt(Campaign.Current.Models.AgeModel.HeroComesOfAge, 50));
 		foreach (KeyValuePair<SkillObject, int> startingSkill in startingSkills)
@@ -420,28 +428,23 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		return hero;
 	}
 
-	private static Equipment GetNewEquipmentForCompanion(Hero companionHero, bool isCivilian)
-	{
-		return Campaign.Current.Models.EquipmentSelectionModel.GetEquipmentRostersForCompanion(companionHero, isCivilian).GetRandomElementInefficiently().AllEquipments.GetRandomElement();
-	}
-
-	private static void list_player_fief_cancel_on_consequence()
+	private void list_player_fief_cancel_on_consequence()
 	{
 		CurrentBehavior._playerConfirmedTheAction = false;
 	}
 
-	private static bool fief_selected_on_condition()
+	private bool fief_selected_on_condition()
 	{
 		MBTextManager.SetTextVariable("SETTLEMENT_NAME", CurrentBehavior._selectedFief.Name);
 		return true;
 	}
 
-	private static bool companion_thanks_on_condition()
+	private bool companion_thanks_on_condition()
 	{
 		return CurrentBehavior._playerConfirmedTheAction;
 	}
 
-	private static bool fief_selected_confirm_clickable_on_condition(out TextObject explanation)
+	private bool fief_selected_confirm_clickable_on_condition(out TextObject explanation)
 	{
 		MBTextManager.SetTextVariable("CULTURE_SPECIFIC_TITLE", HeroHelper.GetTitleInIndefiniteCase(Hero.OneToOneConversationHero));
 		MBTextManager.SetTextVariable("SETTLEMENT_NAME", CurrentBehavior._selectedFief.Name);
@@ -449,8 +452,8 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		bool flag2 = Hero.MainHero.Clan.Influence >= 500f;
 		MBTextManager.SetTextVariable("NEEDED_GOLD_TO_GRANT_FIEF", 20000);
 		MBTextManager.SetTextVariable("NEEDED_INFLUENCE_TO_GRANT_FIEF", 500);
-		MBTextManager.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"7\">");
-		MBTextManager.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		MBTextManager.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"5\">");
+		MBTextManager.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		if (flag && flag2)
 		{
 			explanation = new TextObject("{=PxQEwCha}You will pay {NEEDED_GOLD_TO_GRANT_FIEF}{GOLD_ICON}, {NEEDED_INFLUENCE_TO_GRANT_FIEF}{INFLUENCE_ICON}.");
@@ -470,7 +473,7 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		return false;
 	}
 
-	private static void companion_talk_done_on_consequence()
+	private void companion_talk_done_on_consequence()
 	{
 		if (PlayerEncounter.Current != null)
 		{
@@ -478,7 +481,7 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private static void companion_fire_on_consequence()
+	private void companion_fire_on_consequence()
 	{
 		Hero oneToOneConversationHero = Hero.OneToOneConversationHero;
 		RemoveCompanionAction.ApplyByFire(oneToOneConversationHero.CompanionOf, oneToOneConversationHero);
@@ -530,23 +533,36 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		return true;
 	}
 
-	private static bool companion_has_role_on_condition()
+	private bool companion_has_role_on_condition()
 	{
 		Hero oneToOneConversationHero = Hero.OneToOneConversationHero;
-		PartyRole heroPartyRole = MobileParty.MainParty.GetHeroPartyRole(oneToOneConversationHero);
-		if (heroPartyRole == PartyRole.None)
+		List<PartyRole> heroPartyRoles = MobileParty.MainParty.GetHeroPartyRoles(oneToOneConversationHero);
+		if (heroPartyRoles.Count == 0)
 		{
 			MBTextManager.SetTextVariable("COMPANION_ROLE", new TextObject("{=k7ebznzr}Yes?"));
 		}
 		else
 		{
 			MBTextManager.SetTextVariable("COMPANION_ROLE", new TextObject("{=n3bvfe8t}I am currently working as {COMPANION_JOB}."));
-			MBTextManager.SetTextVariable("COMPANION_JOB", GameTexts.FindText("role", heroPartyRole.ToString()));
+			if (heroPartyRoles.Count == 1)
+			{
+				MBTextManager.SetTextVariable("COMPANION_JOB", GameTexts.FindText("role", heroPartyRoles.First().ToString()));
+			}
+			else
+			{
+				List<TextObject> list = new List<TextObject>();
+				foreach (PartyRole item in heroPartyRoles)
+				{
+					list.Add(GameTexts.FindText("role", item.ToString()));
+				}
+				TextObject text = GameTexts.GameTextHelper.MergeTextObjectsWithComma(list, includeAnd: true);
+				MBTextManager.SetTextVariable("COMPANION_JOB", text);
+			}
 		}
 		return true;
 	}
 
-	private static bool companion_role_discuss_on_condition()
+	private bool companion_role_discuss_on_condition()
 	{
 		if (Hero.OneToOneConversationHero != null && Hero.OneToOneConversationHero.Clan == Clan.PlayerClan)
 		{
@@ -560,16 +576,42 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		return false;
 	}
 
-	private static bool companion_assign_role_on_condition()
+	private bool companion_assign_role_on_condition()
 	{
-		if (Hero.OneToOneConversationHero != null && Hero.OneToOneConversationHero.Clan == Clan.PlayerClan)
+		if (Hero.OneToOneConversationHero != null && Hero.OneToOneConversationHero.Clan == Clan.PlayerClan && Hero.OneToOneConversationHero.PartyBelongedTo == MobileParty.MainParty)
 		{
-			return Hero.OneToOneConversationHero.PartyBelongedTo == MobileParty.MainParty;
+			return MobileParty.MainParty.GetHeroPartyRoles(Hero.OneToOneConversationHero).Count < Campaign.Current.Models.ClanMemberPartyRoleModel.MaximumPartyRoleAssignmentCount;
 		}
 		return false;
 	}
 
-	private static bool companion_becomes_engineer_on_condition()
+	private bool companion_assign_but_too_many_role_on_condition()
+	{
+		if (Hero.OneToOneConversationHero != null && Hero.OneToOneConversationHero.Clan == Clan.PlayerClan && Hero.OneToOneConversationHero.PartyBelongedTo == MobileParty.MainParty)
+		{
+			return MobileParty.MainParty.GetHeroPartyRoles(Hero.OneToOneConversationHero).Count >= Campaign.Current.Models.ClanMemberPartyRoleModel.MaximumPartyRoleAssignmentCount;
+		}
+		return false;
+	}
+
+	private bool party_role_assignment_clickable_condition(PartyRole role, out TextObject explanation)
+	{
+		bool num = Campaign.Current.Models.ClanMemberPartyRoleModel.IsHeroAssignableForPartyRoleInParty(role, Hero.OneToOneConversationHero, Hero.OneToOneConversationHero.PartyBelongedTo);
+		if (!num)
+		{
+			explanation = new TextObject("{=zcTOL3gI}Not eligible for the role.");
+			return num;
+		}
+		explanation = TextObject.GetEmpty();
+		return num;
+	}
+
+	private bool companion_becomes_engineer_clickable_condition(out TextObject explanation)
+	{
+		return party_role_assignment_clickable_condition(PartyRole.Engineer, out explanation);
+	}
+
+	private bool companion_becomes_engineer_on_condition()
 	{
 		Hero oneToOneConversationHero = Hero.OneToOneConversationHero;
 		Hero roleHolder = oneToOneConversationHero.PartyBelongedTo.GetRoleHolder(PartyRole.Engineer);
@@ -583,19 +625,20 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		{
 			MBTextManager.SetTextVariable("CURRENTLY_HELD_ENGINEER", "{=kNQMkh3j}(Currently unassigned)");
 		}
-		if (roleHolder != oneToOneConversationHero)
-		{
-			return MobilePartyHelper.IsHeroAssignableForEngineerInParty(oneToOneConversationHero, oneToOneConversationHero.PartyBelongedTo);
-		}
-		return false;
+		return roleHolder != oneToOneConversationHero;
 	}
 
-	private static void companion_becomes_engineer_on_consequence()
+	private void companion_becomes_engineer_on_consequence()
 	{
 		Hero.OneToOneConversationHero.PartyBelongedTo.SetPartyEngineer(Hero.OneToOneConversationHero);
 	}
 
-	private static bool companion_becomes_surgeon_on_condition()
+	private bool companion_becomes_surgeon_clickable_condition(out TextObject explanation)
+	{
+		return party_role_assignment_clickable_condition(PartyRole.Surgeon, out explanation);
+	}
+
+	private bool companion_becomes_surgeon_on_condition()
 	{
 		Hero oneToOneConversationHero = Hero.OneToOneConversationHero;
 		Hero roleHolder = oneToOneConversationHero.PartyBelongedTo.GetRoleHolder(PartyRole.Surgeon);
@@ -611,17 +654,22 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		}
 		if (roleHolder != oneToOneConversationHero)
 		{
-			return MobilePartyHelper.IsHeroAssignableForSurgeonInParty(oneToOneConversationHero, oneToOneConversationHero.PartyBelongedTo);
+			return Campaign.Current.Models.ClanMemberPartyRoleModel.IsHeroAssignableForPartyRoleInParty(PartyRole.Surgeon, oneToOneConversationHero, oneToOneConversationHero.PartyBelongedTo);
 		}
 		return false;
 	}
 
-	private static void companion_becomes_surgeon_on_consequence()
+	private void companion_becomes_surgeon_on_consequence()
 	{
 		Hero.OneToOneConversationHero.PartyBelongedTo.SetPartySurgeon(Hero.OneToOneConversationHero);
 	}
 
-	private static bool companion_becomes_quartermaster_on_condition()
+	private bool companion_becomes_quartermaster_clickable_condition(out TextObject explanation)
+	{
+		return party_role_assignment_clickable_condition(PartyRole.Quartermaster, out explanation);
+	}
+
+	private bool companion_becomes_quartermaster_on_condition()
 	{
 		Hero oneToOneConversationHero = Hero.OneToOneConversationHero;
 		Hero roleHolder = oneToOneConversationHero.PartyBelongedTo.GetRoleHolder(PartyRole.Quartermaster);
@@ -635,20 +683,25 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		{
 			MBTextManager.SetTextVariable("CURRENTLY_HELD_QUARTERMASTER", "{=kNQMkh3j}(Currently unassigned)");
 		}
-		Hero oneToOneConversationHero2 = Hero.OneToOneConversationHero;
+		_ = Hero.OneToOneConversationHero;
 		if (roleHolder != oneToOneConversationHero)
 		{
-			return MobilePartyHelper.IsHeroAssignableForQuartermasterInParty(oneToOneConversationHero2, Hero.OneToOneConversationHero.PartyBelongedTo);
+			return Campaign.Current.Models.ClanMemberPartyRoleModel.IsHeroAssignableForPartyRoleInParty(PartyRole.Quartermaster, oneToOneConversationHero, oneToOneConversationHero.PartyBelongedTo);
 		}
 		return false;
 	}
 
-	private static void companion_becomes_quartermaster_on_consequence()
+	private void companion_becomes_quartermaster_on_consequence()
 	{
 		Hero.OneToOneConversationHero.PartyBelongedTo.SetPartyQuartermaster(Hero.OneToOneConversationHero);
 	}
 
-	private static bool companion_becomes_scout_on_condition()
+	private bool companion_becomes_scout_clickable_condition(out TextObject explanation)
+	{
+		return party_role_assignment_clickable_condition(PartyRole.Scout, out explanation);
+	}
+
+	private bool companion_becomes_scout_on_condition()
 	{
 		Hero oneToOneConversationHero = Hero.OneToOneConversationHero;
 		Hero roleHolder = oneToOneConversationHero.PartyBelongedTo.GetRoleHolder(PartyRole.Scout);
@@ -664,55 +717,63 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		}
 		if (roleHolder != oneToOneConversationHero)
 		{
-			return MobilePartyHelper.IsHeroAssignableForScoutInParty(oneToOneConversationHero, oneToOneConversationHero.PartyBelongedTo);
+			return Campaign.Current.Models.ClanMemberPartyRoleModel.IsHeroAssignableForPartyRoleInParty(PartyRole.Scout, oneToOneConversationHero, oneToOneConversationHero.PartyBelongedTo);
 		}
 		return false;
 	}
 
-	private static void companion_becomes_scout_on_consequence()
+	private void companion_becomes_scout_on_consequence()
 	{
 		Hero.OneToOneConversationHero.PartyBelongedTo.SetPartyScout(Hero.OneToOneConversationHero);
 	}
 
-	private static void companion_delete_party_role_consequence()
+	private bool CanFireHeroFromRole(PartyRole role, Hero hero)
 	{
-		Hero.OneToOneConversationHero.PartyBelongedTo.RemoveHeroPartyRole(Hero.OneToOneConversationHero);
-	}
-
-	private static bool companion_fire_engineer_on_condition()
-	{
-		if (Hero.OneToOneConversationHero.PartyBelongedTo.GetRoleHolder(PartyRole.Engineer) == Hero.OneToOneConversationHero)
+		if (hero.PartyBelongedTo.GetRoleHolder(role) == hero)
 		{
-			return Hero.OneToOneConversationHero != Hero.OneToOneConversationHero.PartyBelongedTo.LeaderHero;
+			return hero != hero.PartyBelongedTo.LeaderHero;
 		}
 		return false;
 	}
 
-	private static bool companion_fire_surgeon_on_condition()
+	private bool companion_fire_engineer_on_condition()
 	{
-		if (Hero.OneToOneConversationHero.PartyBelongedTo.GetRoleHolder(PartyRole.Surgeon) == Hero.OneToOneConversationHero)
-		{
-			return Hero.OneToOneConversationHero != Hero.OneToOneConversationHero.PartyBelongedTo.LeaderHero;
-		}
-		return false;
+		return CanFireHeroFromRole(PartyRole.Engineer, Hero.OneToOneConversationHero);
 	}
 
-	private static bool companion_fire_quartermaster_on_condition()
+	private bool companion_fire_surgeon_on_condition()
 	{
-		if (Hero.OneToOneConversationHero.PartyBelongedTo.GetRoleHolder(PartyRole.Quartermaster) == Hero.OneToOneConversationHero)
-		{
-			return Hero.OneToOneConversationHero != Hero.OneToOneConversationHero.PartyBelongedTo.LeaderHero;
-		}
-		return false;
+		return CanFireHeroFromRole(PartyRole.Surgeon, Hero.OneToOneConversationHero);
 	}
 
-	private static bool companion_fire_scout_on_condition()
+	private bool companion_fire_quartermaster_on_condition()
 	{
-		if (Hero.OneToOneConversationHero.PartyBelongedTo.GetRoleHolder(PartyRole.Scout) == Hero.OneToOneConversationHero)
-		{
-			return Hero.OneToOneConversationHero != Hero.OneToOneConversationHero.PartyBelongedTo.LeaderHero;
-		}
-		return false;
+		return CanFireHeroFromRole(PartyRole.Quartermaster, Hero.OneToOneConversationHero);
+	}
+
+	private bool companion_fire_scout_on_condition()
+	{
+		return CanFireHeroFromRole(PartyRole.Scout, Hero.OneToOneConversationHero);
+	}
+
+	private void companion_fire_engineer_on_consequence()
+	{
+		Hero.OneToOneConversationHero.PartyBelongedTo.RemovePartyRoleOfHero(Hero.OneToOneConversationHero, PartyRole.Engineer);
+	}
+
+	private void companion_fire_surgeon_on_consequence()
+	{
+		Hero.OneToOneConversationHero.PartyBelongedTo.RemovePartyRoleOfHero(Hero.OneToOneConversationHero, PartyRole.Surgeon);
+	}
+
+	private void companion_fire_quartermaster_on_consequence()
+	{
+		Hero.OneToOneConversationHero.PartyBelongedTo.RemovePartyRoleOfHero(Hero.OneToOneConversationHero, PartyRole.Quartermaster);
+	}
+
+	private void companion_fire_scout_on_consequence()
+	{
+		Hero.OneToOneConversationHero.PartyBelongedTo.RemovePartyRoleOfHero(Hero.OneToOneConversationHero, PartyRole.Scout);
 	}
 
 	private bool companion_rescue_start_condition()
@@ -734,10 +795,10 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 
 	private bool lead_a_party_clickable_condition(out TextObject reason)
 	{
-		bool num = Clan.PlayerClan.CommanderLimit > Clan.PlayerClan.WarPartyComponents.Count;
+		bool num = Clan.PlayerClan.WarPartyLimit > Clan.PlayerClan.WarPartyComponents.Count;
 		int partyGoldLowerThreshold = Campaign.Current.Models.ClanFinanceModel.PartyGoldLowerThreshold;
 		bool flag = Hero.MainHero.Gold > partyGoldLowerThreshold - Hero.OneToOneConversationHero.Gold;
-		TextObject textObject = new TextObject("{=QH3pgsia}Creating the party will cost you {PARTY_COST}{GOLD_ICON}.").SetTextVariable("PARTY_COST", partyGoldLowerThreshold - Hero.OneToOneConversationHero.Gold).SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		TextObject textObject = new TextObject("{=QH3pgsia}Creating the party will cost you {PARTY_COST}{GOLD_ICON}.").SetTextVariable("PARTY_COST", partyGoldLowerThreshold - Hero.OneToOneConversationHero.Gold).SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		reason = textObject;
 		if (!num)
 		{

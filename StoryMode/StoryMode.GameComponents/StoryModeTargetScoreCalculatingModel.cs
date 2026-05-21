@@ -18,14 +18,24 @@ public class StoryModeTargetScoreCalculatingModel : TargetScoreCalculatingModel
 
 	public override float DefendingFactor => base.BaseModel.DefendingFactor;
 
-	public override float GetPatrollingFactor(bool isNavalPatrolling)
+	public override float GetDefensivePatrollingFactor(bool isNavalPatrolling)
 	{
-		return base.BaseModel.GetPatrollingFactor(isNavalPatrolling);
+		return base.BaseModel.GetDefensivePatrollingFactor(isNavalPatrolling);
 	}
 
-	public override float CalculatePatrollingScoreForSettlement(Settlement settlement, bool isFromPort, MobileParty mobileParty)
+	public override float GetOffensivePatrollingFactor(bool isNavalPatrolling)
 	{
-		return base.BaseModel.CalculatePatrollingScoreForSettlement(settlement, isFromPort, mobileParty);
+		return base.BaseModel.GetOffensivePatrollingFactor(isNavalPatrolling);
+	}
+
+	public override float CalculateDefensivePatrollingScoreForSettlement(Settlement settlement, bool isTargetingPort, MobileParty mobileParty)
+	{
+		return base.BaseModel.CalculateDefensivePatrollingScoreForSettlement(settlement, isTargetingPort, mobileParty);
+	}
+
+	public override float CalculateOffensivePatrollingScoreForSettlement(Settlement settlement, bool isTargetingPort, MobileParty mobileParty)
+	{
+		return base.BaseModel.CalculateOffensivePatrollingScoreForSettlement(settlement, isTargetingPort, mobileParty);
 	}
 
 	public override float CurrentObjectiveValue(MobileParty mobileParty)

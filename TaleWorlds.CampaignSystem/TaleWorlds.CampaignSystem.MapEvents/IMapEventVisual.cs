@@ -2,7 +2,7 @@ namespace TaleWorlds.CampaignSystem.MapEvents;
 
 public interface IMapEventVisual
 {
-	void Initialize(CampaignVec2 position, int battleSizeValue, bool isVisible);
+	void Initialize(CampaignVec2 position, bool isVisible);
 
 	void OnMapEventEnd();
 

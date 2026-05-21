@@ -56,6 +56,10 @@ public class InventoryTradeVM : ViewModel
 
 	private bool _isTradeable;
 
+	private HintViewModel _takeHint;
+
+	private HintViewModel _giveHint;
+
 	[DataSourceProperty]
 	public string ThisStockLbl
 	{
@@ -363,6 +367,40 @@ public class InventoryTradeVM : ViewModel
 		}
 	}
 
+	[DataSourceProperty]
+	public HintViewModel TakeHint
+	{
+		get
+		{
+			return _takeHint;
+		}
+		set
+		{
+			if (value != _takeHint)
+			{
+				_takeHint = value;
+				OnPropertyChangedWithValue(value, "TakeHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public HintViewModel GiveHint
+	{
+		get
+		{
+			return _giveHint;
+		}
+		set
+		{
+			if (value != _giveHint)
+			{
+				_giveHint = value;
+				OnPropertyChangedWithValue(value, "GiveHint");
+			}
+		}
+	}
+
 	public static event Action RemoveZeroCounts;
 
 	public InventoryTradeVM(InventoryLogic inventoryLogic, ItemRosterElement itemRoster, InventoryLogic.InventorySide side, Action<int, bool> onApplyTransaction)
@@ -373,6 +411,8 @@ public class InventoryTradeVM : ViewModel
 		_onApplyTransaction = onApplyTransaction;
 		PieceLbl = _pieceLblSingular;
 		IsTrading = _inventoryLogic?.IsTrading ?? false;
+		TakeHint = new HintViewModel(GameTexts.FindText("str_take"));
+		GiveHint = new HintViewModel(GameTexts.FindText("str_give"));
 		UpdateItemData(itemRoster, side);
 		RefreshValues();
 	}

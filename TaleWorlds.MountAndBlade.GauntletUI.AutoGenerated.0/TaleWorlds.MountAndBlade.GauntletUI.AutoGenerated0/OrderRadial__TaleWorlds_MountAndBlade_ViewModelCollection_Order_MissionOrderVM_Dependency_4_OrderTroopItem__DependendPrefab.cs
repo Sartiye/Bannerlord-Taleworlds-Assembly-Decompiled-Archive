@@ -223,7 +223,7 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 		_widget_1_1.MarginLeft = 15f;
 		_widget_1_1.VerticalAlignment = VerticalAlignment.Top;
 		_widget_1_1.MarginTop = 45f;
-		_widget_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_2.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_2.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_2.HorizontalAlignment = HorizontalAlignment.Left;
@@ -278,7 +278,7 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 		_widget_1_4.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_1_4.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_1_4.PositionYOffset = -215f;
-		_widget_1_4.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_4.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_4.IsVisible = true;
 		_widget_1_4_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_4_0.HeightSizePolicy = SizePolicy.CoverChildren;
@@ -345,7 +345,7 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 		_widget_1_7.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_1_7.MarginBottom = 35f;
 		_widget_1_7.MarginRight = 15f;
-		_widget_1_7.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_7.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_8.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_8.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_8.HorizontalAlignment = HorizontalAlignment.Center;

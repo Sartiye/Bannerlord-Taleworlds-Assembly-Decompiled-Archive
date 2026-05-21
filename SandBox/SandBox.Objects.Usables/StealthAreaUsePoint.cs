@@ -9,13 +9,17 @@ namespace SandBox.Objects.Usables;
 
 public class StealthAreaUsePoint : UsableMissionObject
 {
-	private bool _isEnabled;
+	private const string HighlightEntityName = "highlight_pointer_glow_ground";
+
+	private bool _isEnabled = true;
+
+	private bool _isAlreadyUsed;
+
+	private WeakGameEntity _highlightGameEntity;
 
 	public string ActionStringId;
 
 	public string DescriptionStringId;
-
-	private bool _isAlreadyUsed;
 
 	protected override void OnInit()
 	{
@@ -23,7 +27,22 @@ public class StealthAreaUsePoint : UsableMissionObject
 		_isAlreadyUsed = false;
 		ActionMessage = GameTexts.FindText(string.IsNullOrEmpty(ActionStringId) ? "str_call_troops" : ActionStringId);
 		ActionMessage.SetTextVariable("KEY", HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("CombatHotKeyCategory", 13)));
-		DescriptionMessage = GameTexts.FindText(string.IsNullOrEmpty(DescriptionStringId) ? "str_call_troops_description" : DescriptionStringId);
+		DescriptionMessage = (string.IsNullOrEmpty(DescriptionStringId) ? TextObject.GetEmpty() : GameTexts.FindText(DescriptionStringId));
+		foreach (WeakGameEntity child in base.GameEntity.GetChildren())
+		{
+			foreach (WeakGameEntity child2 in child.GetChildren())
+			{
+				if (child2.Name.Equals("highlight_pointer_glow_ground"))
+				{
+					_highlightGameEntity = child2;
+					break;
+				}
+			}
+			if (_highlightGameEntity != null)
+			{
+				break;
+			}
+		}
 	}
 
 	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
@@ -34,14 +53,18 @@ public class StealthAreaUsePoint : UsableMissionObject
 	public override void OnUse(Agent userAgent, sbyte agentBoneIndex)
 	{
 		base.OnUse(userAgent, agentBoneIndex);
-		if (userAgent.IsMainAgent)
+		if (!IsInCombat())
 		{
-			Vec3 position = userAgent.Position;
-			SoundManager.StartOneShotEvent("event:/mission/combat/pickup_arrows", in position);
-			_isAlreadyUsed = true;
-			userAgent.StopUsingGameObject();
+			if (userAgent.IsMainAgent)
+			{
+				Vec3 position = userAgent.Position;
+				SoundManager.StartOneShotEvent("event:/mission/combat/pickup_arrows", in position);
+				_isAlreadyUsed = true;
+				_highlightGameEntity.SetVisibilityExcludeParents(visible: false);
+				userAgent.StopUsingGameObject();
+			}
+			DisableAgentAIs();
 		}
-		DisableAgentAIs();
 	}
 
 	public override void OnUseStopped(Agent userAgent, bool isSuccessful, int preferenceIndex)
@@ -113,11 +136,13 @@ public class StealthAreaUsePoint : UsableMissionObject
 			Vec3 position = base.GameEntity.GlobalPosition;
 			SoundManager.StartOneShotEvent("event:/ui/notification/quest_update", in position);
 		}
+		_highlightGameEntity.SetVisibilityExcludeParents(visible: true);
 		_isEnabled = true;
 	}
 
 	public void DisableStealthAreaUsePoint()
 	{
 		_isEnabled = false;
+		_highlightGameEntity.SetVisibilityExcludeParents(visible: false);
 	}
 }

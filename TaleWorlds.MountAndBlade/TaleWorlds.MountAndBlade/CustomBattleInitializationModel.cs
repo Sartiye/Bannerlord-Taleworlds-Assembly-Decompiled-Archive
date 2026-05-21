@@ -39,6 +39,6 @@ public class CustomBattleInitializationModel : BattleInitializationModel
 			return false;
 		}
 		_ = Mission.Current.PlayerTeam;
-		return Mission.Current.GetMissionBehavior<MissionAgentSpawnLogic>().GetNumberOfPlayerControllableTroops() >= 20;
+		return Mission.Current.GetMissionBehavior<DefaultBattleMissionAgentSpawnLogic>().GetNumberOfPlayerControllableTroops() >= 20;
 	}
 }

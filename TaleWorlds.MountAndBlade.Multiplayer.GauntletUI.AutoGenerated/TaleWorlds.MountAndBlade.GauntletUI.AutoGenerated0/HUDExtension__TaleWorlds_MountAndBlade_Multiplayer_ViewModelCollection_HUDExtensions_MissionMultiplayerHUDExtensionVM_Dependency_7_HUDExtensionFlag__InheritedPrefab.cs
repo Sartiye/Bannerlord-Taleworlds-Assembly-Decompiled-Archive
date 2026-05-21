@@ -127,7 +127,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 		_widget_2.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2.PositionYOffset = 40f;
 		_widget_2_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0.HeightSizePolicy = SizePolicy.CoverChildren;

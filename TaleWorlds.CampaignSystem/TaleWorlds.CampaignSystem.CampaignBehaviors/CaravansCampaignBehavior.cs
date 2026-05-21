@@ -1031,7 +1031,7 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 			float num11 = ((town.Security >= 75f) ? (1f + TaleWorlds.Library.MathF.Clamp((town.Security - 75f) * 0.002f, 0f, 0.05f)) : 1f);
 			float num12 = ((caravanParty.Owner != null) ? caravanParty.Owner.RandomFloat(1f, 1.03f) : 1f);
 			float num13 = 1f;
-			if (TradeAgreementsCampaignBehavior != null && caravanParty.MapFaction.IsKingdomFaction && town.MapFaction.IsKingdomFaction && TradeAgreementsCampaignBehavior.HasTradeAgreement((Kingdom)caravanParty.MapFaction, (Kingdom)town.MapFaction))
+			if (TradeAgreementsCampaignBehavior != null && caravanParty.MapFaction.IsKingdomFaction && town.MapFaction.IsKingdomFaction && TradeAgreementsCampaignBehavior.HasTradeAgreement((Kingdom)caravanParty.MapFaction, (Kingdom)town.MapFaction, out var _))
 			{
 				num13 = (flag ? 1.5f : 2f);
 			}
@@ -1509,12 +1509,26 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		starter.AddDialogLine("caravan_accepted_to_give_some_goods", "caravan_loot_talk", "caravan_give_some_goods", "{=dMc3SjOK}We can pay you. {TAKE_MONEY_AND_PRODUCT_STRING}[rf:idle_angry][ib:nervous]", conversation_caravan_give_goods_on_condition, null);
 		starter.AddPlayerLine("player_decided_to_take_some_goods", "caravan_give_some_goods", "caravan_end_talk_bribe", "{=0Pd84h4W}I'll accept that.", null, null, 100, delegate(out TextObject explanation)
 		{
-			explanation = new TextObject("{=nbgyyif6}This action may start a war.");
+			if (!Hero.MainHero.MapFaction.IsAtWarWith(MobileParty.ConversationParty.MapFaction))
+			{
+				explanation = new TextObject("{=nbgyyif6}This action may start a war.");
+			}
+			else
+			{
+				explanation = null;
+			}
 			return true;
 		});
 		starter.AddPlayerLine("player_decided_to_take_everything", "caravan_give_some_goods", "player_wants_everything", "{=QZ6IcCIm}I want everything you've got.", null, null, 100, delegate(out TextObject explanation)
 		{
-			explanation = new TextObject("{=nbgyyif6}This action may start a war.");
+			if (!Hero.MainHero.MapFaction.IsAtWarWith(MobileParty.ConversationParty.MapFaction))
+			{
+				explanation = new TextObject("{=nbgyyif6}This action may start a war.");
+			}
+			else
+			{
+				explanation = null;
+			}
 			return true;
 		});
 		starter.AddPlayerLine("player_decided_to_not_fight_2", "caravan_give_some_goods", "close_window", "{=bfPsE9M1}You must have misunderstood me. Go in peace.", null, caravan_talk_leave_on_consequence);
@@ -1522,17 +1536,38 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		starter.AddDialogLine("caravan_accepted_to_give_everything", "player_wants_everything", "player_decision_to_take_prisoners", "{=hbtbSag8}We can't fight you. We surrender. Please don't hurt us. Take what you want.[if:idle_angry][ib:nervous]", conversation_caravan_give_goods_on_condition, null);
 		starter.AddPlayerLine("player_do_not_take_prisoners", "player_decision_to_take_prisoners", "caravan_end_talk_surrender", "{=6kaia5qP}Give me all your wares!", null, null, 100, delegate(out TextObject explanation)
 		{
-			explanation = new TextObject("{=nbgyyif6}This action may start a war.");
+			if (!Hero.MainHero.MapFaction.IsAtWarWith(MobileParty.ConversationParty.MapFaction))
+			{
+				explanation = new TextObject("{=nbgyyif6}This action may start a war.");
+			}
+			else
+			{
+				explanation = null;
+			}
 			return true;
 		});
 		starter.AddPlayerLine("player_decided_to_take_prisoner", "player_decision_to_take_prisoners", "caravan_taken_prisoner_warning_check", "{=1gv0AVUN}You are my prisoners now.", null, null, 100, delegate(out TextObject explanation)
 		{
-			explanation = new TextObject("{=1LlH1Jof}This action will start a war.");
+			if (!Hero.MainHero.MapFaction.IsAtWarWith(MobileParty.ConversationParty.MapFaction))
+			{
+				explanation = new TextObject("{=nbgyyif6}This action may start a war.");
+			}
+			else
+			{
+				explanation = null;
+			}
 			return true;
 		});
 		starter.AddPlayerLine("player_decided_to_force_fight", "player_decision_to_take_prisoners", "caravan_force_start_encounter", "{=ha53qb7v}Don't bother pleading for your lives. At them, lads!", null, null, 100, delegate(out TextObject explanation)
 		{
-			explanation = new TextObject("{=1LlH1Jof}This action will start a war.");
+			if (!Hero.MainHero.MapFaction.IsAtWarWith(MobileParty.ConversationParty.MapFaction))
+			{
+				explanation = new TextObject("{=nbgyyif6}This action may start a war.");
+			}
+			else
+			{
+				explanation = null;
+			}
 			return true;
 		});
 		starter.AddDialogLine("caravan_force_fight_encounter", "caravan_force_start_encounter", "close_window", "{=yoWl6w1I}Heaven will avenge us, you butcher!", null, conversation_caravan_fight_forced_on_consequence);
@@ -1794,7 +1829,7 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 				TextObject textObject = ((items.Count == 1) ? GameTexts.FindText("str_LEFT_RIGHT") : GameTexts.FindText("str_LEFT_comma_RIGHT"));
 				TextObject textObject2 = GameTexts.FindText("str_looted_party_have_money");
 				textObject2.SetTextVariable("MONEY", gold);
-				textObject2.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject2.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				textObject2.SetTextVariable("ITEM_LIST", textObject);
 				for (int i = 0; i < items.Count; i++)
 				{
@@ -1826,7 +1861,7 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 			{
 				TextObject textObject6 = GameTexts.FindText("str_looted_party_have_money_but_no_item");
 				textObject6.SetTextVariable("MONEY", gold);
-				textObject6.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject6.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				MBTextManager.SetTextVariable("TAKE_MONEY_AND_PRODUCT_STRING", textObject6);
 			}
 		}

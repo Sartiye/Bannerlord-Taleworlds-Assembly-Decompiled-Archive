@@ -1492,7 +1492,7 @@ public class MPLobbyVM : ViewModel
 		{
 			if (Input.IsGamepadActive)
 			{
-				InformationManager.ShowInquiry(new InquiryData(new TextObject("{=3CsACce8}Exit").ToString(), new TextObject("{=NMh61YLB}Are you sure you want to exit?").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, new TextObject("{=aeouhelq}Yes").ToString(), new TextObject("{=8OkPHu4f}No").ToString(), OnExit, null));
+				InformationManager.ShowInquiry(new InquiryData(new TextObject("{=exitMenuOption}Exit").ToString(), new TextObject("{=NMh61YLB}Are you sure you want to exit?").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, new TextObject("{=aeouhelq}Yes").ToString(), new TextObject("{=8OkPHu4f}No").ToString(), OnExit, null));
 			}
 			else
 			{

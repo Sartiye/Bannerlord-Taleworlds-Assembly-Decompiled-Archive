@@ -117,7 +117,7 @@ public class MultiplayerTeamSelection__TaleWorlds_MountAndBlade_Multiplayer_View
 		base.DoNotAcceptEvents = true;
 		base.WidthSizePolicy = SizePolicy.CoverChildren;
 		base.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.HorizontalAlignment = HorizontalAlignment.Left;

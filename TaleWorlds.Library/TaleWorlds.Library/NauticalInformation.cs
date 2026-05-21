@@ -14,6 +14,8 @@ public struct NauticalInformation
 
 	public int IsInsideStorm;
 
+	public int UsesNavalSimulatedWater;
+
 	public void DeserializeFrom(IReader reader)
 	{
 		WaveStrength = reader.ReadFloat();

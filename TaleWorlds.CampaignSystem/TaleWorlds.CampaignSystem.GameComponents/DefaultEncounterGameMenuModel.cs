@@ -27,6 +27,10 @@ public class DefaultEncounterGameMenuModel : EncounterGameMenuModel
 			{
 				if (encounteredPartyBase.MapEvent != null && encounteredPartyBase.MapEvent.IsRaid)
 				{
+					if (settlement.LastAttackerParty != null && settlement.LastAttackerParty != MobileParty.MainParty && MobileParty.MainParty.MapFaction.IsAtWarWith(settlement.MapFaction))
+					{
+						return "raid_occupied";
+					}
 					if (MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty != MobileParty.MainParty && encounteredPartyBase.MapEvent.AttackerSide.LeaderParty == MobileParty.MainParty.Army.LeaderParty.Party && encounteredPartyBase.MapEvent.DefenderSide.TroopCount <= 0)
 					{
 						joinBattle = true;
@@ -142,6 +146,11 @@ public class DefaultEncounterGameMenuModel : EncounterGameMenuModel
 					return "join_encounter";
 				}
 				return "join_siege_event";
+			}
+			Settlement mapEventSettlement = encounteredPartyBase.MapEvent.MapEventSettlement;
+			if (mapEventSettlement != null && mapEventSettlement.IsVillage && mapEventSettlement.IsUnderRaid && mapEventSettlement.LastAttackerParty != null && mapEventSettlement.LastAttackerParty != MobileParty.MainParty && !MobileParty.MainParty.MapFaction.IsAtWarWith(defenderParty.MapFaction))
+			{
+				return "raid_occupied";
 			}
 			return "join_encounter";
 		}

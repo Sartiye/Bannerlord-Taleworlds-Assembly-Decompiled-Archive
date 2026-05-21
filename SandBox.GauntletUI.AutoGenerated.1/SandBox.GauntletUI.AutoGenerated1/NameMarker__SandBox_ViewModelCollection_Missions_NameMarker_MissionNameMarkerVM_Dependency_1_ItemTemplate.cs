@@ -76,7 +76,7 @@ public class NameMarker__SandBox_ViewModelCollection_Missions_NameMarker_Mission
 		base.NameTextWidget = _widget_0_1_0;
 		base.DistanceTextWidget = _widget_0_1_1_1;
 		base.DistanceIconWidget = _widget_0_1_1_0;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		base.FarAlphaTarget = 0.5f;
 		base.FarDistanceCutoff = 250f;
 		base.CloseDistanceCutoff = 25f;
@@ -98,7 +98,7 @@ public class NameMarker__SandBox_ViewModelCollection_Missions_NameMarker_Mission
 		_widget_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0_1.MarginTop = 50f;
-		_widget_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_1_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1_0.SuggestedWidth = 150f;

@@ -12,7 +12,7 @@ public class TooltipHelper
 		MapEvent playerMapEvent = MapEvent.PlayerMapEvent;
 		MapEvent.PowerCalculationContext simulationContext = playerMapEvent.SimulationContext;
 		string text = simulationContext.ToString();
-		if (simulationContext == MapEvent.PowerCalculationContext.Village || simulationContext == MapEvent.PowerCalculationContext.RiverCrossingBattle || simulationContext == MapEvent.PowerCalculationContext.Siege)
+		if (simulationContext == MapEvent.PowerCalculationContext.Village || simulationContext == MapEvent.PowerCalculationContext.NavalRaid || simulationContext == MapEvent.PowerCalculationContext.RiverCrossingBattle || simulationContext == MapEvent.PowerCalculationContext.Siege)
 		{
 			text += ((playerMapEvent.PlayerSide == playerMapEvent.AttackerSide.MissionSide) ? "Attacker" : "Defender");
 		}

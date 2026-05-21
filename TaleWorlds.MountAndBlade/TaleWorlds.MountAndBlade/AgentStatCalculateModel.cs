@@ -167,6 +167,7 @@ public abstract class AgentStatCalculateModel : MBGameModel<AgentStatCalculateMo
 		int meleeSkill = GetMeleeSkill(agent, equippedItem, secondaryItem);
 		SkillObject skill = ((equippedItem == null) ? DefaultSkills.Athletics : equippedItem.RelevantSkill);
 		int effectiveSkill = GetEffectiveSkill(agent, skill);
+		agentDrivenProperties.AiShooterErrorWoRangeUpdate = 0f;
 		float num = CalculateAILevel(agent, meleeSkill) * _AILevelMultiplier;
 		float num2 = CalculateAILevel(agent, effectiveSkill) * _AILevelMultiplier;
 		float num3 = num + agent.Defensiveness;

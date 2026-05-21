@@ -71,7 +71,7 @@ public static class HeroHelper
 					}
 					else
 					{
-						Debug.FailedAssert("Mobileparty is nowhere to be found", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetClosestSettlement", 2244);
+						Debug.FailedAssert("Mobileparty is nowhere to be found", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetClosestSettlement", 2409);
 					}
 				}
 			}
@@ -345,44 +345,16 @@ public static class HeroHelper
 		int num = 0;
 		foreach (TraitObject item in DefaultTraits.Personality)
 		{
-			if (item != DefaultTraits.Calculating && item != DefaultTraits.Generosity)
+			int traitLevel = firstNPC.CharacterObject.GetTraitLevel(item);
+			int traitLevel2 = secondNPC.CharacterObject.GetTraitLevel(item);
+			if ((traitLevel > 0 && traitLevel2 < 0) || (traitLevel < 0 && traitLevel2 > 0))
 			{
-				int traitLevel = firstNPC.CharacterObject.GetTraitLevel(item);
-				int traitLevel2 = secondNPC.CharacterObject.GetTraitLevel(item);
-				if (traitLevel > 0 && traitLevel2 < 0)
-				{
-					num += 2;
-				}
-				if (traitLevel2 > 0 && traitLevel < 0)
-				{
-					num += 2;
-				}
-				if (traitLevel == 0 && traitLevel2 < 0)
-				{
-					num++;
-				}
-				if (traitLevel2 == 0 && traitLevel < 0)
-				{
-					num++;
-				}
+				num--;
 			}
-		}
-		CharacterObject characterObject = firstNPC.CharacterObject;
-		if (characterObject.GetTraitLevel(DefaultTraits.Generosity) == -1)
-		{
-			num++;
-		}
-		if (secondNPC.GetTraitLevel(DefaultTraits.Generosity) == -1)
-		{
-			num++;
-		}
-		if (characterObject.GetTraitLevel(DefaultTraits.Honor) == -1)
-		{
-			num++;
-		}
-		if (secondNPC.GetTraitLevel(DefaultTraits.Honor) == -1)
-		{
-			num++;
+			if ((traitLevel > 0 && traitLevel2 > 0) || (traitLevel < 0 && traitLevel2 < 0))
+			{
+				num++;
+			}
 		}
 		return num * 5;
 	}
@@ -564,110 +536,7 @@ public static class HeroHelper
 			}
 			return GameTexts.FindText(id, variation);
 		}
-		Debug.FailedAssert("Given trait is not a personality trait!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetPersonalityTraitChangeName", 2846);
+		Debug.FailedAssert("Given trait is not a personality trait!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetPersonalityTraitChangeName", 2983);
 		return TextObject.GetEmpty();
-	}
-
-	public static Settlement FindASuitableSettlementToTeleportForHero(Hero hero, float minimumScore = 0f)
-	{
-		Settlement settlement = null;
-		if (hero.IsNotable)
-		{
-			settlement = hero.BornSettlement;
-		}
-		else
-		{
-			List<Settlement> list = hero.MapFaction.Settlements.Where((Settlement x) => x.IsTown).ToList();
-			if (list.Count > 0)
-			{
-				List<(Settlement, float)> list2 = new List<(Settlement, float)>();
-				foreach (Settlement item in list)
-				{
-					float moveScoreForHero = GetMoveScoreForHero(hero, item.Town);
-					list2.Add((item, (moveScoreForHero >= minimumScore) ? moveScoreForHero : 0f));
-				}
-				settlement = MBRandom.ChooseWeighted(list2);
-			}
-			else
-			{
-				List<Settlement> list3 = new List<Settlement>();
-				List<Settlement> list4 = new List<Settlement>();
-				foreach (Town allTown in Town.AllTowns)
-				{
-					if (allTown.MapFaction.IsAtWarWith(hero.MapFaction))
-					{
-						list4.Add(allTown.Settlement);
-					}
-					else if (allTown.MapFaction != hero.MapFaction)
-					{
-						list3.Add(allTown.Settlement);
-					}
-				}
-				List<(Settlement, float)> list5 = new List<(Settlement, float)>();
-				foreach (Settlement item2 in list3)
-				{
-					float moveScoreForHero2 = GetMoveScoreForHero(hero, item2.Town);
-					list5.Add((item2, (moveScoreForHero2 >= minimumScore) ? moveScoreForHero2 : 0f));
-				}
-				settlement = MBRandom.ChooseWeighted(list5);
-				if (settlement == null)
-				{
-					list5 = new List<(Settlement, float)>();
-					foreach (Settlement item3 in list4)
-					{
-						float moveScoreForHero3 = GetMoveScoreForHero(hero, item3.Town);
-						list5.Add((item3, (moveScoreForHero3 >= minimumScore) ? moveScoreForHero3 : 0f));
-					}
-					settlement = MBRandom.ChooseWeighted(list5);
-				}
-			}
-		}
-		return settlement;
-	}
-
-	private static float GetMoveScoreForHero(Hero hero, Town fief)
-	{
-		Clan clan = hero.Clan;
-		float num = 1E-06f;
-		if (!fief.IsUnderSiege && !fief.MapFaction.IsAtWarWith(hero.MapFaction))
-		{
-			num = (DiplomacyHelper.IsSameFactionAndNotEliminated(fief.MapFaction, hero.MapFaction) ? 0.01f : 1E-05f);
-			if (fief.MapFaction == hero.MapFaction)
-			{
-				num += 10f;
-				if (fief.IsTown)
-				{
-					num += 100f;
-				}
-				if (fief.OwnerClan == clan)
-				{
-					num += (fief.IsTown ? 500f : 100f);
-				}
-				if (fief.HasTournament)
-				{
-					num += 400f;
-				}
-			}
-			foreach (Hero item in fief.Settlement.HeroesWithoutParty)
-			{
-				if (clan != null && item.Clan == clan)
-				{
-					num += (fief.IsTown ? 100f : 10f);
-				}
-			}
-			if (hero.IsFugitive && hero.HomeSettlement?.Town == fief)
-			{
-				num += 100f;
-			}
-			if (fief.Settlement.IsStarving)
-			{
-				num *= 0.1f;
-			}
-			if (hero.CurrentSettlement == fief.Settlement)
-			{
-				num *= 3f;
-			}
-		}
-		return num;
 	}
 }

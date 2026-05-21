@@ -66,7 +66,7 @@ public class SettlementVisualManager : EntityVisualManagerBase<PartyBase>
 
 	private float _timeSinceCreation;
 
-	public override int Priority => 4;
+	public override int Priority => 40;
 
 	public static SettlementVisualManager Current => SandBoxViewSubModule.SandBoxViewVisualManager.GetEntityComponent<SettlementVisualManager>();
 

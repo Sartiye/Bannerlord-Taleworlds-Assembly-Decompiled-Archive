@@ -74,7 +74,7 @@ public class CreditsScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Credits
 	{
 		base.WidthSizePolicy = SizePolicy.StretchToParent;
 		base.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -120,7 +120,7 @@ public class CreditsScreen__TaleWorlds_MountAndBlade_ViewModelCollection_Credits
 		_widget_0_0_4.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_4.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_4.SuggestedHeight = 20f;
-		_widget_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1.HorizontalAlignment = HorizontalAlignment.Center;

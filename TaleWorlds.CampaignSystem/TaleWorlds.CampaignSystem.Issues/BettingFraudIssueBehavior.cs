@@ -99,10 +99,11 @@ public class BettingFraudIssueBehavior : CampaignBehaviorBase
 			return IssueFrequency.Rare;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueOwner, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueOwner, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			relationHero = null;
 			skill = null;
+			requiredGold = 0;
 			flag = PreconditionFlags.None;
 			if (Clan.PlayerClan.Renown < 50f)
 			{
@@ -151,7 +152,7 @@ public class BettingFraudIssueBehavior : CampaignBehaviorBase
 
 		public override bool IssueStayAliveConditions()
 		{
-			return true;
+			return base.IssueOwner.CurrentSettlement.Town.Security < 55f;
 		}
 
 		protected override void CompleteIssueWithTimedOutConsequences()
@@ -675,7 +676,7 @@ public class BettingFraudIssueBehavior : CampaignBehaviorBase
 					textObject.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject);
 					break;
 				default:
-					Debug.FailedAssert("After tournament conversation state is not set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Issues\\BettingFraudIssueBehavior.cs", "DialogWithThugEndCondition", 722);
+					Debug.FailedAssert("After tournament conversation state is not set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Issues\\BettingFraudIssueBehavior.cs", "DialogWithThugEndCondition", 723);
 					break;
 				}
 				MBTextManager.SetTextVariable("GREETING_LINE", textObject);
@@ -828,7 +829,9 @@ public class BettingFraudIssueBehavior : CampaignBehaviorBase
 
 	private const string JoinTournamentForBettingFraudQuestMenuId = "menu_town_tournament_join_betting_fraud";
 
-	private const int SettlementSecurityLimit = 50;
+	private const int SettlementSecurityLimit = 55;
+
+	private const int SettlementSecurityMin = 45;
 
 	private BettingFraudQuest _cachedQuest;
 
@@ -917,7 +920,7 @@ public class BettingFraudIssueBehavior : CampaignBehaviorBase
 	{
 		if (issueGiver.IsGangLeader && issueGiver.CurrentSettlement != null && issueGiver.CurrentSettlement.Town != null)
 		{
-			return issueGiver.CurrentSettlement.Town.Security < 50f;
+			return issueGiver.CurrentSettlement.Town.Security < 45f;
 		}
 		return false;
 	}

@@ -317,13 +317,15 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 
 	public void TriggerOnHit(Agent attackerAgent, int inflictedDamage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, int affectorWeaponSlotOrMissileIndex, ScriptComponentBehavior attackerScriptComponentBehavior)
 	{
-		OnHit(attackerAgent, inflictedDamage, impactPosition, impactDirection, in weapon, affectorWeaponSlotOrMissileIndex, attackerScriptComponentBehavior, out var _, out var _);
+		OnHit(attackerAgent, inflictedDamage, impactPosition, impactDirection, in weapon, affectorWeaponSlotOrMissileIndex, attackerScriptComponentBehavior, out var _, out var _, out var _, out var _);
 	}
 
-	protected internal override bool OnHit(Agent attackerAgent, int inflictedDamage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, int affectorWeaponSlotOrMissileIndex, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage, out float modifiedDamage)
+	protected internal override bool OnHit(Agent attackerAgent, int inflictedDamage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, int affectorWeaponSlotOrMissileIndex, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage, out float modifiedDamage, out float fireDamage, out float modifiedFireDamage)
 	{
 		reportDamage = false;
 		modifiedDamage = inflictedDamage;
+		fireDamage = -1f;
+		modifiedFireDamage = -1f;
 		if (base.IsDisabled)
 		{
 			return true;
@@ -563,7 +565,7 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 				weakGameEntity.SetPhysicsState(isEnabled: true, setChildren: true);
 				if (!GameNetwork.IsClientOrReplay)
 				{
-					weakGameEntity.GetScriptComponents<MissionObject>().FirstOrDefault()?.SetAbilityOfFaces(enabled: true);
+					weakGameEntity.GetFirstScriptOfType<MissionObject>()?.SetAbilityOfFaces(enabled: true);
 				}
 				newCreated = false;
 			}

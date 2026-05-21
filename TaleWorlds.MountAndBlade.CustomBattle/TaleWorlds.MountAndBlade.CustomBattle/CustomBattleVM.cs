@@ -684,7 +684,7 @@ public class CustomBattleVM : ViewModel
 			FillSiegeMachines(list2, _defenderMachines);
 			wallHitPointsPercentages = CustomBattleHelper.GetWallHitpointPercentages(MapSelectionGroup.SelectedWallBreachedCount);
 		}
-		return CustomBattleHelper.PrepareBattleData(selectedCharacter, playerSideGeneralCharacter, customBattleParties[0], customBattleParties[1], GameTypeSelectionGroup.SelectedPlayerSide, GameTypeSelectionGroup.SelectedPlayerType, GameTypeSelectionGroup.SelectedGameTypeString, MapSelectionGroup.SelectedMap?.MapId, MapSelectionGroup.SelectedSeasonId, MapSelectionGroup.SelectedTimeOfDay, list, list2, wallHitPointsPercentages, MapSelectionGroup.SelectedSceneLevel, MapSelectionGroup.IsSallyOutSelected);
+		return CustomBattleHelper.PrepareBattleData(selectedCharacter, playerSideGeneralCharacter, customBattleParties[0], customBattleParties[1], GameTypeSelectionGroup.SelectedPlayerSide, GameTypeSelectionGroup.SelectedPlayerType, GameTypeSelectionGroup.SelectedGameTypeString, MapSelectionGroup.SelectedMap?.MapId, MapSelectionGroup.SelectedSeasonId, MapSelectionGroup.SelectedTimeOfDay, list, list2, wallHitPointsPercentages, MapSelectionGroup.SelectedSceneLevel, MapSelectionGroup.IsSallyOutSelected, MapSelectionGroup.SelectedMap?.ForcedSceneLevel);
 	}
 
 	public void ExecuteStart()

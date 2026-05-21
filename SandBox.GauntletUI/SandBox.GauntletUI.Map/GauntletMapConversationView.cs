@@ -13,6 +13,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.InputSystem;
+using TaleWorlds.MountAndBlade;
 using TaleWorlds.MountAndBlade.View;
 using TaleWorlds.ScreenSystem;
 using TaleWorlds.TwoDimension;
@@ -163,7 +164,7 @@ public class GauntletMapConversationView : MapConversationView, IConversationSta
 			{
 				CreateConversationTableau();
 			}
-			if (_layerAsGauntletLayer.Input.IsHotKeyReleased("ToggleEscapeMenu"))
+			if (!ScreenFadeController.IsFadeActive && _layerAsGauntletLayer.Input.IsHotKeyReleased("ToggleEscapeMenu"))
 			{
 				MapScreen mapScreen = base.MapScreen;
 				if (mapScreen != null && mapScreen.IsEscapeMenuOpened)

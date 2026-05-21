@@ -801,14 +801,14 @@ public class DefaultNotificationsCampaignBehavior : CampaignBehaviorBase
 		{
 			TextObject textObject = new TextObject("{=B0eBWPoO} You shared your food with starving soldiers of your army. You gained {INFLUENCE}{INFLUENCE_ICON}.");
 			textObject.SetTextVariable("INFLUENCE", num.ToString("0.00"));
-			textObject.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"7\">");
+			textObject.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"5\">");
 			InformationManager.DisplayMessage(new InformationMessage(textObject.ToString()));
 		}
 		if (flag2)
 		{
 			TextObject textObject2 = new TextObject("{=qQ71Ux7D} Your army shared their food with your starving soldiers. You spent {INFLUENCE}{INFLUENCE_ICON}.");
 			textObject2.SetTextVariable("INFLUENCE", num2.ToString("0.00"));
-			textObject2.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"7\">");
+			textObject2.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"5\">");
 			InformationManager.DisplayMessage(new InformationMessage(textObject2.ToString()));
 		}
 		_foodNotificationList.Clear();
@@ -906,7 +906,7 @@ public class DefaultNotificationsCampaignBehavior : CampaignBehaviorBase
 			textObject2.SetCharacterProperties("HERO", hero.CharacterObject);
 			MBInformationManager.AddQuickInformation(textObject2);
 		}
-		if (detail == TeleportHeroAction.TeleportationDetail.ImmediateTeleportToSettlement && hero.Clan == Clan.PlayerClan && targetSettlement.IsTown && targetSettlement.Town.Governor == hero && hero.HeroState == Hero.CharacterStates.Traveling)
+		if (detail == TeleportHeroAction.TeleportationDetail.ImmediateTeleportToSettlement && hero.Clan == Clan.PlayerClan && targetSettlement.IsFortification && targetSettlement.Town.Governor == hero && hero.HeroState == Hero.CharacterStates.Traveling)
 		{
 			TextObject textObject3 = new TextObject("{=btynhBAn}The new governor of {SETTLEMENT}, {HERO.NAME}, has arrived and taken up the reins of office.");
 			textObject3.SetCharacterProperties("HERO", hero.CharacterObject);

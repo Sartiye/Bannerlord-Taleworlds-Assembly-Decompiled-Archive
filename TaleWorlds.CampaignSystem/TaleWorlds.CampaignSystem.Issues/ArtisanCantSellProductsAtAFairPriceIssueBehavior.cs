@@ -68,7 +68,7 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 				textObject.SetTextVariable("ALTERNATIVE_SOLUTION_TROOP_COUNT", AlternativeSolutionSentTroops.TotalManCount - 1);
 				textObject.SetTextVariable("RETURN_DAYS", GetTotalAlternativeSolutionDurationInDays());
 				textObject.SetTextVariable("REWARD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -114,7 +114,7 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 			{
 				TextObject textObject = new TextObject("{=tgj9BuCL}You could change this law, my {?PLAYER.GENDER}lady{?}lord{\\?}. All of us would be grateful. and we're willing to donate {REWARD}{GOLD_ICON} to show our thanks...");
 				StringHelpers.SetCharacterProperties("PLAYER", CharacterObject.PlayerCharacter, textObject);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				textObject.SetTextVariable("REWARD", RewardGold);
 				return textObject;
 			}
@@ -391,9 +391,10 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 			return IssueFrequency.Common;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flags, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flags, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			relationHero = null;
+			requiredGold = 0;
 			flags = PreconditionFlags.None;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -465,7 +466,7 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 				textObject.SetTextVariable("QUEST_GIVER_SETTLEMENT", base.QuestGiver.CurrentSettlement.Name);
 				textObject.SetTextVariable("TARGET_SETTLEMENT", _targetSettlement.EncyclopediaLinkWithName);
 				textObject.SetTextVariable("REWARD_AMOUNT", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -477,7 +478,7 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 				TextObject textObject = new TextObject("{=7fr8QDYi}{QUEST_GIVER.LINK} sends {?QUEST_GIVER.GENDER}her{?}his{\\?} regards for a fine job done with the {REWARD}{GOLD_ICON} {?QUEST_GIVER.GENDER}she{?}he{\\?} promised.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("REWARD", _rewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -724,7 +725,7 @@ public class ArtisanCantSellProductsAtAFairPriceIssueBehavior : CampaignBehavior
 			StringHelpers.SetCharacterProperties("PLAYER", CharacterObject.PlayerCharacter, textObject2);
 			textObject2.SetTextVariable("RAW_MATERIALS", _rawMaterialsToBeDelivered.Name);
 			TextObject npcSecondLine = new TextObject("{=g7hZw8LI}Have you brought {REQUESTED_AMOUNT} {.%}{?(REQUESTED_AMOUNT > 1)}{PLURAL(RAW_MATERIALS)}{?}{RAW_MATERIALS}{\\?}{.%}? I have a fat purse of {REWARD}{GOLD_ICON} for you as promised.");
-			npcSecondLine.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+			npcSecondLine.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 			npcSecondLine.SetTextVariable("REWARD", _rewardGold);
 			npcSecondLine.SetTextVariable("REQUESTED_AMOUNT", _amountOfRawGoodsToBeDelivered - _deliveredRawGoods);
 			npcSecondLine.SetTextVariable("RAW_MATERIALS", _rawMaterialsToBeDelivered.Name);

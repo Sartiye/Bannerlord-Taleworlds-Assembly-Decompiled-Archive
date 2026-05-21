@@ -147,8 +147,6 @@ public class SpawnPointDebugView : ScriptComponentBehavior
 
 	private IList<SpawnPointUnits> _spUnitsList = new List<SpawnPointUnits>();
 
-	private List<NavigationPath> _allPathForPosition = new List<NavigationPath>();
-
 	private List<GameEntity> _allGameEntitiesWithAnimationScript = new List<GameEntity>();
 
 	private List<GameEntity> _inaccessibleEntitiesList = new List<GameEntity>();
@@ -202,7 +200,7 @@ public class SpawnPointDebugView : ScriptComponentBehavior
 	{
 		if (ActivateDebugUI || (MBEditor.IsEditModeOn && ActivateDebugUIEditor))
 		{
-			StartImGUIWindow("Debug Window");
+			StartImGUIWindow("Mission Spawn Point Debugger");
 			if (Mission.Current != null)
 			{
 				ImGUITextArea("- Do Not Hide The Mouse Cursor When Debug Window Is Intersecting With The Center Of The Screen!! -", _separatorNeeded, !_onSameLineNeeded);
@@ -257,7 +255,7 @@ public class SpawnPointDebugView : ScriptComponentBehavior
 
 	private void ShowWorkshopAndAlleyConflictWindow()
 	{
-		StartImGUIWindow("Warning Window");
+		StartImGUIWindow("Mission Spawn Point Debugger / Warning Window");
 		ImGUITextArea(_problematicAreaMarkerWarningText, !_separatorNeeded, !_onSameLineNeeded);
 		if (ImGUIButton("Close Tab", _normalButton))
 		{
@@ -269,7 +267,7 @@ public class SpawnPointDebugView : ScriptComponentBehavior
 
 	private void ShowRelatedEntity()
 	{
-		StartImGUIWindow("Entity Window");
+		StartImGUIWindow("Mission Spawn Point Debugger / Entity Window");
 		if (ImGUIButton("Close Tab", _normalButton))
 		{
 			_relatedEntityWindow = false;
@@ -572,6 +570,7 @@ public class SpawnPointDebugView : ScriptComponentBehavior
 	{
 		base.GameEntity.Scene.GetName();
 		bool num = base.GameEntity.Scene.GetUpgradeLevelMaskOfLevelName("siege") != 0;
+		bool flag = base.GameEntity.Scene.GetUpgradeLevelMaskOfLevelName("naval_raid") != 0;
 		List<List<string>> list = new List<List<string>>();
 		if (num)
 		{
@@ -584,6 +583,11 @@ public class SpawnPointDebugView : ScriptComponentBehavior
 			list.Add(new List<string>());
 			list[2].Add("level_3");
 			list[2].Add("civilian");
+		}
+		else if (flag)
+		{
+			list.Add(new List<string>());
+			list[0].Add("land_raid");
 		}
 		else
 		{
@@ -620,6 +624,16 @@ public class SpawnPointDebugView : ScriptComponentBehavior
 			text += item[item.Count - 1];
 			base.GameEntity.Scene.SetUpgradeLevelVisibility(item);
 			CountEntities();
+			CheckInaccesiblePositions();
+			if (_inaccessibleEntitiesList.Any())
+			{
+				foreach (GameEntity inaccessibleEntities in _inaccessibleEntitiesList)
+				{
+					string msg = ("There is an inaccessible position: " + inaccessibleEntities.GlobalPosition.ToString()) ?? "";
+					MBEditor.AddEditorWarning("Level: " + string.Join(" - ", item));
+					MBEditor.AddEntityWarning(inaccessibleEntities.WeakEntity, msg);
+				}
+			}
 			foreach (SpawnPointUnits spUnits in _spUnitsList)
 			{
 				if (spUnits.Place == SpawnPointUnits.SceneType.All || _sceneType == spUnits.Place)
@@ -1267,9 +1281,9 @@ public class SpawnPointDebugView : ScriptComponentBehavior
 	private void CheckInaccesiblePositions()
 	{
 		_allGameEntitiesWithAnimationScript.Clear();
-		_allPathForPosition.Clear();
 		_inaccessibleEntitiesList.Clear();
 		_closeEntitiesToInaccessible.Clear();
+		_selectedEntity = null;
 		GetDisableFaceID();
 		int[] excludedFaceIds = new int[1] { _disabledFaceId };
 		base.Scene.GetAllEntitiesWithScriptComponent<AnimationPoint>(ref _allGameEntitiesWithAnimationScript);
@@ -1294,57 +1308,62 @@ public class SpawnPointDebugView : ScriptComponentBehavior
 		for (int i = 0; i < _allGameEntitiesWithAnimationScript.Count; i++)
 		{
 			base.Scene.GetNavMeshFaceIndex(ref _startPositionNavMesh, _allGameEntitiesWithAnimationScript[i].GlobalPosition, checkIfDisabled: true);
-			if (_startPositionNavMesh.FaceGroupIndex != _disabledFaceId)
+			if (_startPositionNavMesh.FaceGroupIndex != _disabledFaceId && _startPositionNavMesh.FaceGroupIndex >= 0)
 			{
 				_selectedEntity = _allGameEntitiesWithAnimationScript[i];
-				break;
-			}
-		}
-		for (int j = 0; j < _allGameEntitiesWithAnimationScript.Count; j++)
-		{
-			GameEntity gameEntity2 = _allGameEntitiesWithAnimationScript[j];
-			base.Scene.GetNavMeshFaceIndex(ref _targetPositionNavMesh, gameEntity2.GlobalPosition, checkIfDisabled: true);
-			if (_startPositionNavMesh.FaceGroupIndex == _targetPositionNavMesh.FaceGroupIndex)
-			{
-				NavigationPath navigationPath = new NavigationPath();
-				if (!base.Scene.GetPathBetweenAIFaces(_startPositionNavMesh.FaceIndex, _targetPositionNavMesh.FaceIndex, _selectedEntity.GlobalPosition.AsVec2, gameEntity2.GlobalPosition.AsVec2, 0.3f, navigationPath, excludedFaceIds, 1f))
+				if (_selectedEntity.IsVisibleIncludeParents())
 				{
-					_inaccessibleEntitiesList.Add(_allGameEntitiesWithAnimationScript[j]);
-				}
-				else
-				{
-					_allPathForPosition.Add(navigationPath);
+					break;
 				}
 			}
 		}
-		if (!_inaccessibleEntitiesList.Any())
+		if (_selectedEntity != null)
 		{
-			return;
-		}
-		MBEditor.AddEditorWarning("Scene has inaccessible point!");
-		foreach (GameEntity inaccessibleEntities in _inaccessibleEntitiesList)
-		{
-			float num2 = float.MaxValue;
-			for (int k = 0; k < _allGameEntitiesWithAnimationScript.Count; k++)
+			for (int j = 0; j < _allGameEntitiesWithAnimationScript.Count; j++)
 			{
-				GameEntity gameEntity3 = _allGameEntitiesWithAnimationScript[k];
-				base.Scene.GetNavMeshFaceIndex(ref _startPositionNavMesh, gameEntity3.GlobalPosition, checkIfDisabled: true);
-				base.Scene.GetNavMeshFaceIndex(ref _targetPositionNavMesh, inaccessibleEntities.GlobalPosition, checkIfDisabled: true);
-				if (_startPositionNavMesh.FaceGroupIndex == _targetPositionNavMesh.FaceGroupIndex)
+				GameEntity gameEntity2 = _allGameEntitiesWithAnimationScript[j];
+				base.Scene.GetNavMeshFaceIndex(ref _targetPositionNavMesh, gameEntity2.GlobalPosition, checkIfDisabled: true);
+				if (_targetPositionNavMesh.FaceGroupIndex != _disabledFaceId && _targetPositionNavMesh.FaceGroupIndex >= 0 && gameEntity2.IsVisibleIncludeParents())
 				{
-					float num3 = inaccessibleEntities.GlobalPosition.DistanceSquared(gameEntity3.GlobalPosition);
-					if (!_inaccessibleEntitiesList.Contains(gameEntity3) && num3 < num2)
+					NavigationPath path = new NavigationPath();
+					if (!base.Scene.GetPathBetweenAIFaces(_startPositionNavMesh.FaceIndex, _targetPositionNavMesh.FaceIndex, _selectedEntity.GlobalPosition.AsVec2, gameEntity2.GlobalPosition.AsVec2, 0.3f, path, excludedFaceIds, 1f))
 					{
-						num2 = num3;
-						_closeEntity = gameEntity3;
+						_inaccessibleEntitiesList.Add(_allGameEntitiesWithAnimationScript[j]);
 					}
 				}
 			}
-			if (!_closeEntitiesToInaccessible.Contains(_closeEntity))
+			if (!_inaccessibleEntitiesList.Any())
 			{
-				_closeEntitiesToInaccessible.Add(_closeEntity);
+				return;
+			}
+			MBEditor.AddEditorWarning("Scene has inaccessible point!");
+			{
+				foreach (GameEntity inaccessibleEntities in _inaccessibleEntitiesList)
+				{
+					float num2 = float.MaxValue;
+					for (int k = 0; k < _allGameEntitiesWithAnimationScript.Count; k++)
+					{
+						GameEntity gameEntity3 = _allGameEntitiesWithAnimationScript[k];
+						base.Scene.GetNavMeshFaceIndex(ref _startPositionNavMesh, gameEntity3.GlobalPosition, checkIfDisabled: true);
+						if (_startPositionNavMesh.FaceGroupIndex != _disabledFaceId && _startPositionNavMesh.FaceGroupIndex >= 0 && gameEntity3.IsVisibleIncludeParents())
+						{
+							float num3 = inaccessibleEntities.GlobalPosition.DistanceSquared(gameEntity3.GlobalPosition);
+							if (!_inaccessibleEntitiesList.Contains(gameEntity3) && num3 < num2)
+							{
+								num2 = num3;
+								_closeEntity = gameEntity3;
+							}
+						}
+					}
+					if (!_closeEntitiesToInaccessible.Contains(_closeEntity))
+					{
+						_closeEntitiesToInaccessible.Add(_closeEntity);
+					}
+				}
+				return;
 			}
 		}
+		MBEditor.AddEditorWarning("You have selected multiple levels or there is no valid entity in the scene!");
 	}
 
 	private void FindAllPrefabsWithSelectedTag()

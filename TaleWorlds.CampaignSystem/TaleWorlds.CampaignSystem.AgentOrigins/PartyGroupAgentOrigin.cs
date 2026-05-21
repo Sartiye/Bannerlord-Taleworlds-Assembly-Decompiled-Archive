@@ -72,6 +72,25 @@ public class PartyGroupAgentOrigin : IAgentOriginBase
 		}
 	}
 
+	public bool IsInSameArmyAsPlayer
+	{
+		get
+		{
+			PartyBase party = Party;
+			MobileParty mobileParty;
+			Army army;
+			if (party != null && (mobileParty = party.MobileParty) != null && (army = mobileParty.Army) != null && army == MobileParty.MainParty.Army && (army.LeaderParty == mobileParty || mobileParty.AttachedTo == army.LeaderParty))
+			{
+				if (army.LeaderParty != MobileParty.MainParty)
+				{
+					return MobileParty.MainParty.AttachedTo == army.LeaderParty;
+				}
+				return true;
+			}
+			return false;
+		}
+	}
+
 	public uint FactionColor => Party.MapFaction.Color;
 
 	public uint FactionColor2 => Party.MapFaction.Color2;

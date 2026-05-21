@@ -60,6 +60,7 @@ public class IconBrushWidget : ButtonWidget
 			{
 				_useStylesFromSourceIcon = value;
 				OnPropertyChanged(value, "UseStylesFromSourceIcon");
+				UpdateIcon();
 			}
 		}
 	}
@@ -76,6 +77,7 @@ public class IconBrushWidget : ButtonWidget
 			{
 				_useIconSize = value;
 				OnPropertyChanged(value, "UseIconSize");
+				UpdateIcon();
 			}
 		}
 	}

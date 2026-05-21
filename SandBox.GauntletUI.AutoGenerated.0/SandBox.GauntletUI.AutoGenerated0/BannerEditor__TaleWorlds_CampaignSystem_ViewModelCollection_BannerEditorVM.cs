@@ -311,7 +311,7 @@ public class BannerEditor__TaleWorlds_CampaignSystem_ViewModelCollection_BannerE
 		_widget_0_2.VerticalAlignment = VerticalAlignment.Center;
 		_widget_0_2.PositionXOffset = 23f;
 		_widget_0_2.PositionYOffset = 37f;
-		_widget_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_2_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_2_0.SuggestedHeight = 470f;
@@ -388,7 +388,7 @@ public class BannerEditor__TaleWorlds_CampaignSystem_ViewModelCollection_BannerE
 		_widget_0_2_2_0_0.ClipContents = true;
 		_widget_0_2_2_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_2_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_2_2_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_2_2_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_2_2_0_0_0_0.ScopeID = "BannerEditorSizeSliderScope";
 		_widget_0_2_2_0_0_0_0.ScopeParent = _widget_0_2_2_0_0_0_1;
 		_widget_0_2_2_0_0_0_0.ScopeMovements = GamepadNavigationTypes.Horizontal;
@@ -461,7 +461,7 @@ public class BannerEditor__TaleWorlds_CampaignSystem_ViewModelCollection_BannerE
 		_widget_0_2_2_0_0_0_2.VerticalAlignment = VerticalAlignment.Center;
 		_widget_0_2_2_0_0_0_2_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_2_0_0_0_2_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_2_2_0_0_0_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_2_2_0_0_0_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_2_2_0_0_0_2_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_0_2_2_0_0_0_2_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_2_0_0_0_2_0_0.HeightSizePolicy = SizePolicy.CoverChildren;

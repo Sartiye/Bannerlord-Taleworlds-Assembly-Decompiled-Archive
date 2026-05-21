@@ -95,15 +95,6 @@ public class LobbyGameClientHandler : ILobbyClientSessionHandler
 	{
 	}
 
-	void ILobbyClientSessionHandler.OnChannelMessageReceived(ChatChannelType channel, string playerName, string message)
-	{
-		if (ChatHandler != null)
-		{
-			ChatHandler.ReceiveChatMessage(channel, playerName, message);
-		}
-		ChatBox.AddWhisperMessage(playerName, message);
-	}
-
 	void ILobbyClientSessionHandler.OnPartyMessageReceived(string playerName, string message)
 	{
 	}
@@ -382,7 +373,7 @@ public class LobbyGameClientHandler : ILobbyClientSessionHandler
 				LobbyState.SetConnectionState(isAuthenticated: false);
 				break;
 			default:
-				Debug.FailedAssert("Unexpected old state:" + oldState, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyGameClientHandler.cs", "HandleGameClientStateChange", 424);
+				Debug.FailedAssert("Unexpected old state:" + oldState, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyGameClientHandler.cs", "HandleGameClientStateChange", 414);
 				break;
 			}
 			break;

@@ -232,7 +232,7 @@ public class AgentVictoryLogic : MissionLogic
 				{
 					if (!agent.IsActive())
 					{
-						Debug.FailedAssert("Agent trying to cheer without being active", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\AgentVictoryLogic.cs", "CheckAnimationAndVoice", 252);
+						Debug.FailedAssert("Agent trying to cheer without being active", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\AgentVictoryLogic.cs", "CheckAnimationAndVoice", 250);
 						Debug.Print("Agent trying to cheer without being active");
 					}
 					ChooseWeaponToCheerWithCheerAndUpdateTimer(agent, out var resetTimer);

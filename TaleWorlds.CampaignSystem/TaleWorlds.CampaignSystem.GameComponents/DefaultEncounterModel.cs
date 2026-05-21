@@ -19,9 +19,13 @@ namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultEncounterModel : EncounterModel
 {
-	public override float NeededMaximumDistanceForEncounteringMobileParty => 0.5f;
+	public override float NeededMaximumLandDistanceForEncounteringMobileParty => 0.5f;
 
-	public override float MaximumAllowedDistanceForEncounteringMobilePartyInArmy => 1.5f;
+	public override float NeededMaximumNavalDistanceForEncounteringMobileParty => 0f;
+
+	public override float MaximumAllowedLandDistanceForEncounteringMobilePartyInArmy => 1.5f;
+
+	public override float MaximumAllowedNavalDistanceForEncounteringMobilePartyInArmy => 0f;
 
 	public override float NeededMaximumDistanceForEncounteringTown => 0.05f;
 
@@ -34,6 +38,8 @@ public class DefaultEncounterModel : EncounterModel
 	public override float PlayerParleyDistance => MobileParty.MainParty.SeeingRange;
 
 	public override float GetSettlementBeingNearFieldBattleRadius => 3f;
+
+	public override int MinimumNumberOfMenForAttackingVillageViaScene => 1;
 
 	public override bool IsEncounterExemptFromHostileActions(PartyBase side1, PartyBase side2)
 	{
@@ -310,12 +316,12 @@ public class DefaultEncounterModel : EncounterModel
 		}
 		else if (defenderParty.IsBandit)
 		{
-			num3 = ((!(defenderParty.ActualClan.StringId == "deserters")) ? 0.1f : 0.005f);
+			num3 = (defenderParty.IsCurrentlyAtSea ? 0.2f : ((!(defenderParty.ActualClan.StringId == "deserters")) ? 0.1f : 0.005f));
 			num4 = -15f;
 		}
 		else
 		{
-			Debug.FailedAssert("Unable to calculate threshold and exponentialScalingFactor!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultEncounterModel.cs", "GetSurrenderChance", 342);
+			Debug.FailedAssert("Unable to calculate threshold and exponentialScalingFactor!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultEncounterModel.cs", "GetSurrenderChance", 351);
 		}
 		float num5 = num / num2;
 		float num6 = num4 * (num5 - num3);
@@ -362,7 +368,7 @@ public class DefaultEncounterModel : EncounterModel
 		}
 		else
 		{
-			Debug.FailedAssert("Unable to calculate threshold and exponentialScalingFactor!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultEncounterModel.cs", "GetBribeChance", 397);
+			Debug.FailedAssert("Unable to calculate threshold and exponentialScalingFactor!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultEncounterModel.cs", "GetBribeChance", 406);
 		}
 		float num5 = num / num2;
 		float num6 = num4 * (num5 - num3);
@@ -407,6 +413,10 @@ public class DefaultEncounterModel : EncounterModel
 	{
 		CampaignVec2 campaignVec = MobileParty.MainParty.Position;
 		float radius = Campaign.Current.Models.EncounterModel.GetEncounterJoiningRadius;
+		if (PlayerSiege.PlayerSiegeEvent != null)
+		{
+			radius = Campaign.Current.Models.MobilePartyAIModel.SettlementDefendingWaitingPositionRadius * 1.25f;
+		}
 		if (PlayerEncounter.Battle != null)
 		{
 			campaignVec = PlayerEncounter.Battle.Position;
@@ -424,37 +434,49 @@ public class DefaultEncounterModel : EncounterModel
 		MobileParty nearbyParty = MobileParty.FindNextLocatable(ref data);
 		List<MobileParty> list = new List<MobileParty>();
 		List<MobileParty> list2 = new List<MobileParty>();
-		while (nearbyParty != null)
+		for (; nearbyParty != null; nearbyParty = MobileParty.FindNextLocatable(ref data))
 		{
 			bool flag = (PlayerEncounter.Battle != null && (PlayerEncounter.Battle.IsBlockade || PlayerEncounter.Battle.IsBlockadeSallyOut)) || MobileParty.MainParty.IsCurrentlyAtSea;
-			if (nearbyParty != MobileParty.MainParty && nearbyParty.MapEvent == null && !nearbyParty.IsInRaftState && nearbyParty.SiegeEvent == null && nearbyParty.CurrentSettlement == null && nearbyParty.AttachedTo == null && nearbyParty.IsCurrentlyAtSea == flag && (nearbyParty.IsLordParty || nearbyParty.IsBandit || nearbyParty.IsPatrolParty || nearbyParty.ShouldJoinPlayerBattles))
+			if (nearbyParty == MobileParty.MainParty || nearbyParty.MapEvent != null || nearbyParty.IsInRaftState || nearbyParty.SiegeEvent != null || nearbyParty.CurrentSettlement != null || nearbyParty.AttachedTo != null)
 			{
-				if (PlayerEncounter.Battle != null)
+				continue;
+			}
+			if (nearbyParty.IsCurrentlyAtSea != flag)
+			{
+				MapEvent battle = PlayerEncounter.Battle;
+				if (battle == null || battle.MapEventSettlement?.IsVillage != true)
 				{
-					bool num = PlayerEncounter.Battle.CanPartyJoinBattle(nearbyParty.Party, PlayerEncounter.Battle.PlayerSide);
-					bool flag2 = PlayerEncounter.Battle.CanPartyJoinBattle(nearbyParty.Party, PlayerEncounter.Battle.PlayerSide.GetOppositeSide());
-					if (num)
-					{
-						list.Add(nearbyParty);
-					}
-					if (flag2)
-					{
-						list2.Add(nearbyParty);
-					}
-				}
-				else
-				{
-					if (!nearbyParty.MapFaction.IsAtWarWith(MobileParty.MainParty.MapFaction) && nearbyParty.MapFaction.IsAtWarWith(PlayerEncounter.EncounteredParty.MapFaction) && list2.All((MobileParty x) => x.MapFaction.IsAtWarWith(nearbyParty.MapFaction)))
-					{
-						list.Add(nearbyParty);
-					}
-					if (nearbyParty.MapFaction.IsAtWarWith(MobileParty.MainParty.MapFaction) && !nearbyParty.MapFaction.IsAtWarWith(PlayerEncounter.EncounteredParty.MapFaction) && list.All((MobileParty x) => x.MapFaction.IsAtWarWith(nearbyParty.MapFaction)))
-					{
-						list2.Add(nearbyParty);
-					}
+					continue;
 				}
 			}
-			nearbyParty = MobileParty.FindNextLocatable(ref data);
+			if (!nearbyParty.IsLordParty && !nearbyParty.IsBandit && !nearbyParty.IsPatrolParty && !nearbyParty.ShouldJoinPlayerBattles)
+			{
+				continue;
+			}
+			if (PlayerEncounter.Battle != null)
+			{
+				bool num = PlayerEncounter.Battle.CanPartyJoinBattle(nearbyParty.Party, PlayerEncounter.Battle.PlayerSide);
+				bool flag2 = PlayerEncounter.Battle.CanPartyJoinBattle(nearbyParty.Party, PlayerEncounter.Battle.PlayerSide.GetOppositeSide());
+				if (num)
+				{
+					list.Add(nearbyParty);
+				}
+				if (flag2)
+				{
+					list2.Add(nearbyParty);
+				}
+			}
+			else
+			{
+				if (!nearbyParty.MapFaction.IsAtWarWith(MobileParty.MainParty.MapFaction) && nearbyParty.MapFaction.IsAtWarWith(PlayerEncounter.EncounteredParty.MapFaction) && list2.All((MobileParty x) => x.MapFaction.IsAtWarWith(nearbyParty.MapFaction)))
+				{
+					list.Add(nearbyParty);
+				}
+				if (nearbyParty.MapFaction.IsAtWarWith(MobileParty.MainParty.MapFaction) && !nearbyParty.MapFaction.IsAtWarWith(PlayerEncounter.EncounteredParty.MapFaction) && list.All((MobileParty x) => x.MapFaction.IsAtWarWith(nearbyParty.MapFaction)))
+				{
+					list2.Add(nearbyParty);
+				}
+			}
 		}
 		if (list2.AnyQ((MobileParty t) => t.ShouldBeIgnored) || partiesToJoinEnemySide.AnyQ((MobileParty t) => t.ShouldBeIgnored))
 		{
@@ -495,5 +517,19 @@ public class DefaultEncounterModel : EncounterModel
 		Settlement mapEventSettlement = party.MapEvent.MapEventSettlement;
 		bool flag4 = mapEventSettlement != null && mapEventSettlement.OwnerClan.Leader == Hero.MainHero;
 		return num || flag || flag2 || flag3 || flag4;
+	}
+
+	public override MBReadOnlyList<MobileParty> GetPartiesToTeleportOnMapEventFinalize(MapEvent mapEvent)
+	{
+		MBReadOnlyList<MapEventParty> mBReadOnlyList = ((!mapEvent.IsPlayerMapEvent) ? mapEvent.GetMapEventSide(mapEvent.DefeatedSide).Parties : mapEvent.GetMapEventSide(mapEvent.PlayerSide.GetOppositeSide()).Parties);
+		MBList<MobileParty> mBList = new MBList<MobileParty>();
+		foreach (MapEventParty item in mBReadOnlyList)
+		{
+			if (item.Party.IsMobile && item.Party.MobileParty.IsActive && item.Party.NumberOfHealthyMembers > 0 && !item.Party.MobileParty.IsGarrison && (item.Party.MobileParty.Army == null || item.Party.MobileParty.Army.LeaderParty == item.Party.MobileParty || item.Party.MobileParty.AttachedTo == null))
+			{
+				mBList.Add(item.Party.MobileParty);
+			}
+		}
+		return mBList;
 	}
 }

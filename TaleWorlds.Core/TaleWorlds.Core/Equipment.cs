@@ -45,6 +45,8 @@ public class Equipment
 
 	public const string NullCode = "@null";
 
+	public EquipmentType ItemEquipmentType => _equipmentType;
+
 	public bool IsCivilian => _equipmentType == EquipmentType.Civilian;
 
 	public bool IsBattle => _equipmentType == EquipmentType.Battle;
@@ -83,10 +85,10 @@ public class Equipment
 		get
 		{
 			ArmorComponent.HairCoverTypes result = ArmorComponent.HairCoverTypes.None;
-			ItemObject item = this[EquipmentIndex.NumAllWeaponSlots].Item;
-			if (item != null)
+			ItemObject itemObject = this[EquipmentIndex.NumAllWeaponSlots].CosmeticItem ?? this[EquipmentIndex.NumAllWeaponSlots].Item;
+			if (itemObject != null)
 			{
-				result = item.ArmorComponent?.HairCoverType ?? ArmorComponent.HairCoverTypes.None;
+				result = itemObject.ArmorComponent?.HairCoverType ?? ArmorComponent.HairCoverTypes.None;
 			}
 			else if (this[EquipmentIndex.Body].Item == null)
 			{
@@ -96,9 +98,9 @@ public class Equipment
 		}
 	}
 
-	public ArmorComponent.BeardCoverTypes BeardCoverType => this[EquipmentIndex.NumAllWeaponSlots].Item?.ArmorComponent?.BeardCoverType ?? ArmorComponent.BeardCoverTypes.None;
+	public ArmorComponent.BeardCoverTypes BeardCoverType => (this[EquipmentIndex.NumAllWeaponSlots].CosmeticItem ?? this[EquipmentIndex.NumAllWeaponSlots].Item)?.ArmorComponent?.BeardCoverType ?? ArmorComponent.BeardCoverTypes.None;
 
-	public ArmorComponent.HorseHarnessCoverTypes ManeCoverType => this[EquipmentIndex.HorseHarness].Item?.ArmorComponent?.ManeCoverType ?? ArmorComponent.HorseHarnessCoverTypes.None;
+	public ArmorComponent.HorseHarnessCoverTypes ManeCoverType => (this[EquipmentIndex.HorseHarness].CosmeticItem ?? this[EquipmentIndex.HorseHarness].Item)?.ArmorComponent?.ManeCoverType ?? ArmorComponent.HorseHarnessCoverTypes.None;
 
 	public string ReinsMeshName => this[EquipmentIndex.HorseHarness].Item?.ArmorComponent?.ReinsMesh ?? "";
 
@@ -215,7 +217,7 @@ public class Equipment
 			}
 			else
 			{
-				Debug.FailedAssert(string.Concat((@object == null) ? TextObject.GetEmpty() : @object.Name, " does not fit to slot ", equipmentIndexFromOldEquipmentIndexName), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\Equipment.cs", "DeserializeNode", 169);
+				Debug.FailedAssert(string.Concat((@object == null) ? TextObject.GetEmpty() : @object.Name, " does not fit to slot ", equipmentIndexFromOldEquipmentIndexName), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\Equipment.cs", "DeserializeNode", 171);
 			}
 		}
 	}
@@ -353,7 +355,7 @@ public class Equipment
 		for (int i = 0; i < 5; i++)
 		{
 			EquipmentElement equipmentElement = _itemSlots[i];
-			if (!equipmentElement.IsEmpty && equipmentElement.Item.PrimaryWeapon.WeaponFlags.HasAnyFlag(WeaponFlags.WeaponMask))
+			if (!equipmentElement.IsEmpty && equipmentElement.Item.ItemType != 0 && equipmentElement.Item.PrimaryWeapon.WeaponFlags.HasAnyFlag(WeaponFlags.WeaponMask))
 			{
 				return true;
 			}

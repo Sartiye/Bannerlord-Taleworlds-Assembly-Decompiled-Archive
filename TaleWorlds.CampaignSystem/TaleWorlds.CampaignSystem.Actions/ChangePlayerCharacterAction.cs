@@ -60,5 +60,9 @@ public class ChangePlayerCharacterAction
 		PartyBase.MainParty.SetVisualAsDirty();
 		mainParty.Party.SetVisualAsDirty();
 		Campaign.Current.MainHeroIllDays = -1;
+		for (int num2 = MobileParty.MainParty.Ships.Count - 1; num2 >= 0; num2--)
+		{
+			MobileParty.MainParty.Ships[num2].OnPlayerCharacterChanged();
+		}
 	}
 }

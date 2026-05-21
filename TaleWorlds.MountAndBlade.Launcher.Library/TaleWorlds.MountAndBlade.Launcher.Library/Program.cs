@@ -7,7 +7,6 @@ using System.Reflection;
 using TaleWorlds.Library;
 using TaleWorlds.Starter.Library;
 using TaleWorlds.TwoDimension.Standalone;
-using TaleWorlds.TwoDimension.Standalone.Native.OpenGL;
 using TaleWorlds.TwoDimension.Standalone.Native.Windows;
 
 namespace TaleWorlds.MountAndBlade.Launcher.Library;
@@ -60,10 +59,13 @@ public class Program
 				text = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
 				text = Path.Combine(text, "Mount and Blade II Bannerlord");
 				string name = Directory.GetParent(fileName).Name;
-				new Watchdog(use_coreclr: true, text);
-				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Source", "110062");
+				if (!_args.Contains("/no_watchdog"))
+				{
+					new Watchdog(use_coreclr: true, text);
+				}
+				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Source", "114896");
 				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Target", "Public");
-				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Version", "v1.3.15.110062");
+				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Version", "v1.4.5.114896");
 				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Product Name", "Mount and Blade II Bannerlord");
 				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Name", name);
 				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Launcher", "true");
@@ -90,15 +92,10 @@ public class Program
 				LauncherPlatform.Destroy();
 				Watchdog.DetachAndClose();
 			}
-			catch (OpenGlLoadException ex)
+			catch (Exception ex)
 			{
-				NativeMessageBox.Show(ex.Message, "Confirm", NativeMessageBox.Buttons.OK, NativeMessageBox.Icon.Information);
-				throw;
-			}
-			catch (Exception ex2)
-			{
-				TaleWorlds.Library.Debug.Print(ex2.Message);
-				TaleWorlds.Library.Debug.Print(ex2.StackTrace);
+				TaleWorlds.Library.Debug.Print(ex.Message);
+				TaleWorlds.Library.Debug.Print(ex.StackTrace);
 				throw;
 			}
 		}

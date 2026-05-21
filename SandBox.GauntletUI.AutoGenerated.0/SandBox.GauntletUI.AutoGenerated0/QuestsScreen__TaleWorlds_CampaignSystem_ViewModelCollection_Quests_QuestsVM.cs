@@ -442,7 +442,7 @@ public class QuestsScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Quests_
 		_widget_2_0.SuggestedWidth = 614f;
 		_widget_2_0.PositionXOffset = -614f;
 		_widget_2_0.Brush = base.Context.GetBrush("Frame1Brush");
-		_widget_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0.RenderLate = true;
 		_widget_2_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
@@ -523,7 +523,7 @@ public class QuestsScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Quests_
 		_widget_2_0_0_0_2_1_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_0_0_0_2_1_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0_0_2_1_0_0_0_0.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_2_0_0_0_2_1_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_0_0_2_1_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_0_0_2_1_0_1.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_0_0_0_2_1_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_0_0_0_2_1_0_1.SuggestedWidth = 8f;
@@ -570,7 +570,7 @@ public class QuestsScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Quests_
 		_widget_2_0_1_0_1.ClipContents = true;
 		_widget_2_0_1_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_0_1_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_2_0_1_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_1_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_1_0_1_0.MinIndex = 1;
 		_widget_2_0_1_0_1_0.StepSize = 1000;
 		_widget_2_0_1_0_1_0_0.DoNotPassEventsToChildren = true;
@@ -603,7 +603,7 @@ public class QuestsScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Quests_
 		_widget_2_0_1_0_1_0_0_0_1.Brush = base.Context.GetBrush("Clan.Management.Collapser.Text");
 		_widget_2_0_1_0_1_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_0_1_0_1_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_2_0_1_0_1_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_1_0_1_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_1_0_1_0_1.UseSelfIndexForMinimum = true;
 		_widget_2_0_1_0_1_0_2.DoNotPassEventsToChildren = true;
 		_widget_2_0_1_0_1_0_2.WidthSizePolicy = SizePolicy.Fixed;
@@ -638,7 +638,7 @@ public class QuestsScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Quests_
 		_widget_2_0_1_0_1_0_2_1.IsDisabled = true;
 		_widget_2_0_1_0_1_0_3.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_0_1_0_1_0_3.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_2_0_1_0_1_0_3.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_1_0_1_0_3.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_1_0_1_0_3.UseSelfIndexForMinimum = true;
 		_widget_2_0_1_1.SetAttributes();
 		_widget_2_0_1_1.HeightSizePolicy = SizePolicy.StretchToParent;
@@ -715,10 +715,10 @@ public class QuestsScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Quests_
 		_widget_2_1_3_1.GamepadNavigationIndex = 0;
 		_widget_2_1_3_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_1_3_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_2_1_3_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_1_3_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_1_3_1_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_1_3_1_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_2_1_3_1_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_1_3_1_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_1_3_1_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_1_3_1_0_1.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_2_1_3_1_0_1.SuggestedHeight = 80f;
@@ -745,7 +745,7 @@ public class QuestsScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Quests_
 		_widget_4_0.MarginLeft = 55f;
 		_widget_4_0.MarginTop = 48f;
 		_widget_4_0.MarginBottom = 35f;
-		_widget_4_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_4_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_4_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_4_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_4_0_0_0.DoNotAcceptEvents = true;

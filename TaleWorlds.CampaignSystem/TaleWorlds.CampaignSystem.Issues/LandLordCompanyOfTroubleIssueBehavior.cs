@@ -104,10 +104,11 @@ public class LandLordCompanyOfTroubleIssueBehavior : CampaignBehaviorBase
 			return IssueFrequency.Rare;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			skill = null;
 			relationHero = null;
+			requiredGold = 0;
 			flag = PreconditionFlags.None;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{

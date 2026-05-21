@@ -1,5 +1,6 @@
 using System.Linq;
 using Helpers;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Party;
@@ -36,21 +37,21 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 
 	private static readonly string _partyExpensesStr = "str_finance_party_expenses";
 
-	private static readonly string _tributeIncomeStr = "str_finance_tribute_income";
-
 	private static readonly string _tariffTaxStr = "str_finance_tariff_tax";
+
+	private static readonly TextObject _projectsIncomeText = Game.Current.GameTextManager.FindText("str_finance_projects_income");
 
 	private static readonly string _caravanIncomeStr = "str_finance_caravan_income";
 
 	private static readonly string _convoyIncomeStr = "str_finance_convoy_income";
-
-	private static readonly TextObject _projectsIncomeText = Game.Current.GameTextManager.FindText("str_finance_projects_income");
 
 	private static readonly TextObject _shopExpenseText = Game.Current.GameTextManager.FindText("str_finance_shop_expense");
 
 	private static readonly TextObject _mercenaryText = Game.Current.GameTextManager.FindText("str_finance_mercenary");
 
 	private static readonly TextObject _mercenaryExpensesText = Game.Current.GameTextManager.FindText("str_finance_mercenary_expenses");
+
+	private static readonly string _tributeIncomeStr = "str_finance_tribute_income";
 
 	private static readonly TextObject _tributeExpensesText = Game.Current.GameTextManager.FindText("str_finance_tribute_expenses");
 
@@ -80,6 +81,8 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 
 	private static readonly TextObject _shopIncomeText = Game.Current.GameTextManager.FindText("str_finance_shop_income");
 
+	private ITradeAgreementsCampaignBehavior _tradeAgreementsCampaignBehavior;
+
 	private const int PartyGoldIncomeThreshold = 10000;
 
 	private const int payGarrisonWagesTreshold = 8000;
@@ -87,6 +90,18 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 	private const int payClanPartiesTreshold = 4000;
 
 	private const int payLeaderPartyWageTreshold = 2000;
+
+	private ITradeAgreementsCampaignBehavior TradeAgreementsBehavior
+	{
+		get
+		{
+			if (_tradeAgreementsCampaignBehavior == null)
+			{
+				_tradeAgreementsCampaignBehavior = Campaign.Current.GetCampaignBehavior<ITradeAgreementsCampaignBehavior>();
+			}
+			return _tradeAgreementsCampaignBehavior;
+		}
+	}
 
 	public override int PartyGoldLowerThreshold => 5000;
 
@@ -107,40 +122,45 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 
 	private void CalculateClanIncomeInternal(Clan clan, ref ExplainedNumber goldChange, bool applyWithdrawals = false, bool includeDetails = false)
 	{
-		if (!clan.IsEliminated)
+		if (clan.IsEliminated)
 		{
-			if (clan.Kingdom?.RulingClan == clan)
+			return;
+		}
+		if (clan.Kingdom?.RulingClan == clan)
+		{
+			AddRulingClanIncome(clan, ref goldChange, applyWithdrawals, includeDetails);
+		}
+		if (clan != Clan.PlayerClan && (!clan.MapFaction.IsKingdomFaction || clan.IsUnderMercenaryService) && clan.Fiefs.Count == 0)
+		{
+			int num = clan.Tier * (80 + (clan.IsUnderMercenaryService ? 40 : 0));
+			goldChange.Add(num);
+		}
+		AddMercenaryIncome(clan, ref goldChange, applyWithdrawals);
+		AddSettlementIncome(clan, ref goldChange, applyWithdrawals, includeDetails);
+		CalculateHeroIncomeFromWorkshops(clan.Leader, ref goldChange, applyWithdrawals);
+		AddIncomeFromParties(clan, ref goldChange, applyWithdrawals, includeDetails);
+		if (clan == Clan.PlayerClan)
+		{
+			AddPlayerClanIncomeFromOwnedAlleys(ref goldChange);
+		}
+		if (!clan.IsUnderMercenaryService)
+		{
+			AddIncomeFromTribute(clan, ref goldChange, applyWithdrawals, includeDetails);
+			AddIncomeFromCallToWarAgrements(clan, ref goldChange, applyWithdrawals);
+			if (clan.Kingdom != null && TradeAgreementsBehavior != null)
 			{
-				AddRulingClanIncome(clan, ref goldChange, applyWithdrawals, includeDetails);
+				AddIncomeFromTradeAgreements(clan, ref goldChange, applyWithdrawals, includeDetails);
 			}
-			if (clan != Clan.PlayerClan && (!clan.MapFaction.IsKingdomFaction || clan.IsUnderMercenaryService) && clan.Fiefs.Count == 0)
-			{
-				int num = clan.Tier * (80 + (clan.IsUnderMercenaryService ? 40 : 0));
-				goldChange.Add(num);
-			}
-			AddMercenaryIncome(clan, ref goldChange, applyWithdrawals);
-			AddSettlementIncome(clan, ref goldChange, applyWithdrawals, includeDetails);
-			CalculateHeroIncomeFromWorkshops(clan.Leader, ref goldChange, applyWithdrawals);
-			AddIncomeFromParties(clan, ref goldChange, applyWithdrawals, includeDetails);
-			if (clan == Clan.PlayerClan)
-			{
-				AddPlayerClanIncomeFromOwnedAlleys(ref goldChange);
-			}
-			if (!clan.IsUnderMercenaryService)
-			{
-				AddIncomeFromTribute(clan, ref goldChange, applyWithdrawals, includeDetails);
-				AddIncomeFromCallToWarAgrements(clan, ref goldChange, applyWithdrawals);
-			}
-			if (clan.Gold < 30000 && clan.Kingdom != null && clan.Leader != Hero.MainHero && !clan.IsUnderMercenaryService)
-			{
-				AddIncomeFromKingdomBudget(clan, ref goldChange, applyWithdrawals);
-			}
-			Hero leader = clan.Leader;
-			if (leader != null && leader.GetPerkValue(DefaultPerks.Trade.SpringOfGold))
-			{
-				int num2 = MathF.Min(1000, MathF.Round((float)clan.Leader.Gold * DefaultPerks.Trade.SpringOfGold.PrimaryBonus));
-				goldChange.Add(num2, DefaultPerks.Trade.SpringOfGold.Name);
-			}
+		}
+		if (clan.Gold < 30000 && clan.Kingdom != null && clan.Leader != Hero.MainHero && !clan.IsUnderMercenaryService)
+		{
+			AddIncomeFromKingdomBudget(clan, ref goldChange, applyWithdrawals);
+		}
+		Hero leader = clan.Leader;
+		if (leader != null && leader.GetPerkValue(DefaultPerks.Trade.SpringOfGold))
+		{
+			int num2 = MathF.Min(1000, MathF.Round((float)clan.Leader.Gold * DefaultPerks.Trade.SpringOfGold.PrimaryBonus));
+			goldChange.Add(num2, DefaultPerks.Trade.SpringOfGold.Name);
 		}
 	}
 
@@ -213,42 +233,49 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 	private void AddRulingClanIncome(Clan clan, ref ExplainedNumber goldChange, bool applyWithdrawals, bool includeDetails)
 	{
 		ExplainedNumber explainedNumber = new ExplainedNumber(0f, goldChange.IncludeDescriptions);
-		int num = 0;
-		int num2 = 0;
-		bool flag = clan.Kingdom.ActivePolicies.Contains(DefaultPolicies.LandTax);
-		float num3 = 0f;
-		foreach (Town fief in clan.Fiefs)
+		Kingdom kingdom = clan.Kingdom;
+		if (kingdom.ActivePolicies.Contains(DefaultPolicies.LandTax))
 		{
-			num += (int)Campaign.Current.Models.SettlementTaxModel.CalculateTownTax(fief).ResultNumber;
-			num2++;
-		}
-		if (flag)
-		{
-			foreach (Village village in clan.Kingdom.Villages)
+			float num = 0f;
+			foreach (Village village in kingdom.Villages)
 			{
 				if (!village.IsOwnerUnassigned && village.Settlement.OwnerClan != clan && village.VillageState != Village.VillageStates.Looted && village.VillageState != Village.VillageStates.BeingRaided)
 				{
-					int num4 = (int)((float)village.TradeTaxAccumulated / RevenueSmoothenFraction());
-					num3 += (float)num4 * 0.05f;
+					int num2 = (int)((float)village.TradeTaxAccumulated / RevenueSmoothenFraction());
+					num += (float)num2 * 0.05f;
 				}
 			}
-			if (num3 > 1E-05f)
+			if (num > 1E-05f)
 			{
-				explainedNumber.Add((int)num3, DefaultPolicies.LandTax.Name);
+				explainedNumber.Add((int)num, DefaultPolicies.LandTax.Name);
 			}
 		}
-		Kingdom kingdom = clan.Kingdom;
-		if (kingdom.RulingClan == clan)
+		if (kingdom.ActivePolicies.Contains(DefaultPolicies.WarTax))
 		{
-			if (kingdom.ActivePolicies.Contains(DefaultPolicies.WarTax))
+			float num3 = 0f;
+			foreach (Town fief in kingdom.Fiefs)
 			{
-				int num5 = (int)((float)num * 0.05f);
-				explainedNumber.Add(num5, DefaultPolicies.WarTax.Name);
+				num3 += Campaign.Current.Models.SettlementTaxModel.CalculateTownTax(fief).ResultNumber;
 			}
-			if (kingdom.ActivePolicies.Contains(DefaultPolicies.DebasementOfTheCurrency))
+			int num4 = (int)(num3 * 0.05f);
+			explainedNumber.Add(num4, DefaultPolicies.WarTax.Name);
+		}
+		if (kingdom.ActivePolicies.Contains(DefaultPolicies.CrownDuty))
+		{
+			foreach (Town fief2 in kingdom.Fiefs)
 			{
-				explainedNumber.Add(num2 * 100, DefaultPolicies.DebasementOfTheCurrency.Name);
+				int num5 = (int)((float)fief2.TradeTaxAccumulated * 0.05f);
+				explainedNumber.Add(num5, DefaultPolicies.CrownDuty.Name);
+				if (applyWithdrawals)
+				{
+					fief2.TradeTaxAccumulated -= num5;
+				}
 			}
+		}
+		if (kingdom.ActivePolicies.Contains(DefaultPolicies.DebasementOfTheCurrency))
+		{
+			int count = kingdom.Fiefs.Count;
+			explainedNumber.Add(count * 100, DefaultPolicies.DebasementOfTheCurrency.Name);
 		}
 		int num6 = 0;
 		int num7 = 0;
@@ -554,6 +581,47 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 		else
 		{
 			goldChange.AddFromExplainedNumber(explainedNumber, _tributeIncomes);
+		}
+	}
+
+	private void AddIncomeFromTradeAgreements(Clan clan, ref ExplainedNumber goldChange, bool applyWithdrawals, bool includeDetails)
+	{
+		foreach (Kingdom item in Kingdom.All)
+		{
+			if (item != clan.Kingdom && !item.IsEliminated && TradeAgreementsBehavior.HasTradeAgreement(item, clan.Kingdom, out var tradeAgreement))
+			{
+				AddIncomeFromTradeAgreements(clan, ref tradeAgreement, ref goldChange, applyWithdrawals, includeDetails);
+			}
+		}
+	}
+
+	private void AddIncomeFromTradeAgreements(Clan clan, ref TradeAgreementsCampaignBehavior.TradeAgreement tradeAgreement, ref ExplainedNumber goldChange, bool applyWithdrawals, bool includeDetails)
+	{
+		bool flag = clan.Kingdom == tradeAgreement.Kingdom1;
+		int num = (flag ? tradeAgreement.Kingdom1GoldGained : tradeAgreement.Kingdom2GoldGained);
+		if (num <= 0)
+		{
+			return;
+		}
+		ExplainedNumber explainedNumber = new ExplainedNumber(0f, goldChange.IncludeDescriptions);
+		float num2 = 1f / (float)clan.Kingdom.Clans.Count((Clan x) => !x.IsUnderMercenaryService);
+		int num3 = (int)((float)num * num2);
+		if (num3 > 0)
+		{
+			TextObject textObject = Game.Current.GameTextManager.FindText("str_finance_trade_agreement_income").SetTextVariable("KINGDOM", flag ? tradeAgreement.Kingdom2.Name : tradeAgreement.Kingdom1.Name);
+			explainedNumber.Add(num3, textObject);
+			if (!includeDetails)
+			{
+				goldChange.Add(explainedNumber.ResultNumber, textObject);
+			}
+			else
+			{
+				goldChange.AddFromExplainedNumber(explainedNumber, textObject);
+			}
+			if (applyWithdrawals)
+			{
+				TradeAgreementsBehavior.OnTradeGoldDistributedInKingdom(tradeAgreement.Kingdom1, tradeAgreement.Kingdom2, clan, num3);
+			}
 		}
 	}
 

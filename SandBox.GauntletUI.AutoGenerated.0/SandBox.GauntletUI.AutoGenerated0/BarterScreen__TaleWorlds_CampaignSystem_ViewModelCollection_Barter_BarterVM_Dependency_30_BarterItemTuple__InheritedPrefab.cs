@@ -248,7 +248,7 @@ public class BarterScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Barter_
 		_widget_0_0_1_1.VerticalAlignment = VerticalAlignment.Center;
 		_widget_0_0_1_1.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_0_0_1_1.MarginTop = 5f;
-		_widget_0_0_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_1_1.DoNotAcceptEvents = true;
 		_widget_0_0_1_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_1_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
@@ -338,7 +338,7 @@ public class BarterScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Barter_
 		_widget_0_0_1_2.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_1_2.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_1_2.SuggestedWidth = 75f;
-		_widget_0_0_1_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_1_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_1_2.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_0_0_1_2.MarginRight = 15f;
 		_widget_0_0_1_2.DoNotAcceptEvents = true;

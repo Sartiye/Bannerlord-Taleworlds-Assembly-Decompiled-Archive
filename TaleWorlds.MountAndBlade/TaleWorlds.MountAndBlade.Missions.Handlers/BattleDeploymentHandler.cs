@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using TaleWorlds.Core;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade.Missions.Handlers;
@@ -74,14 +72,6 @@ public class BattleDeploymentHandler : DeploymentHandler
 				agent.ForceUpdateCachedAndFormationValues(updateOnlyMovement: true, arrangementChangeAllowed: false);
 			});
 			item2.SetHasPendingUnitPositions(hasPendingUnitPositions: false);
-		}
-		if (team.GeneralAgent != null)
-		{
-			base.Mission.GetFormationSpawnFrame(team, FormationClass.NumberOfRegularFormations, isReinforcement: false, out var spawnPosition2, out var spawnDirection2);
-			if (spawnPosition2.GetNavMesh() != UIntPtr.Zero && spawnPosition2.IsValid)
-			{
-				team.GeneralAgent.SetFormationFrameEnabled(spawnPosition2, spawnDirection2, Vec2.Zero, 0f);
-			}
 		}
 		base.Mission.IsTeleportingAgents = isTeleportingAgents;
 	}

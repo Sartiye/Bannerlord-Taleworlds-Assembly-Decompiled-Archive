@@ -177,22 +177,28 @@ public class ScriptBehavior : AgentBehavior
 			}
 			break;
 		case State.GoToAgent:
-		{
-			float interactionDistanceToUsable = base.OwnerAgent.GetInteractionDistanceToUsable(_targetAgent);
-			if (base.OwnerAgent.Position.DistanceSquared(_targetAgent.Position) < interactionDistanceToUsable * interactionDistanceToUsable)
+			if (_targetAgent.IsActive())
 			{
-				if (!CheckForSearchNewTarget(State.NearAgent))
+				float interactionDistanceToUsable = base.OwnerAgent.GetInteractionDistanceToUsable(_targetAgent);
+				if (base.OwnerAgent.Position.DistanceSquared(_targetAgent.Position) < interactionDistanceToUsable * interactionDistanceToUsable)
 				{
-					base.Navigator.SetTargetFrame(base.OwnerAgent.GetWorldPosition(), base.OwnerAgent.Frame.rotation.f.AsVec2.RotationInRadians, _customTargetReachedRangeThreshold, _customTargetReachedRotationThreshold);
-					RemoveTargets();
+					if (!CheckForSearchNewTarget(State.NearAgent))
+					{
+						base.Navigator.SetTargetFrame(base.OwnerAgent.GetWorldPosition(), base.OwnerAgent.Frame.rotation.f.AsVec2.RotationInRadians, _customTargetReachedRangeThreshold, _customTargetReachedRotationThreshold);
+						RemoveTargets();
+					}
+				}
+				else
+				{
+					base.Navigator.SetTargetFrame(_targetAgent.GetWorldPosition(), _targetAgent.Frame.rotation.f.AsVec2.RotationInRadians, _customTargetReachedRangeThreshold, _customTargetReachedRotationThreshold);
 				}
 			}
-			else
+			else if (!CheckForSearchNewTarget(State.NearAgent))
 			{
-				base.Navigator.SetTargetFrame(_targetAgent.GetWorldPosition(), _targetAgent.Frame.rotation.f.AsVec2.RotationInRadians, _customTargetReachedRangeThreshold, _customTargetReachedRotationThreshold);
+				base.Navigator.SetTargetFrame(base.OwnerAgent.GetWorldPosition(), base.OwnerAgent.Frame.rotation.f.AsVec2.RotationInRadians, _customTargetReachedRangeThreshold, _customTargetReachedRotationThreshold);
+				RemoveTargets();
 			}
 			break;
-		}
 		case State.GoToTargetFrame:
 			if (!_sentToTarget)
 			{

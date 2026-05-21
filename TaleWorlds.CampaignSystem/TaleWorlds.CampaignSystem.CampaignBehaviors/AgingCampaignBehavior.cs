@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
@@ -194,17 +195,12 @@ public class AgingCampaignBehavior : CampaignBehaviorBase
 
 	private void OnHeroReachesTeenAge(Hero hero)
 	{
-		MBEquipmentRoster randomElementInefficiently = Campaign.Current.Models.EquipmentSelectionModel.GetEquipmentRostersForHeroReachesTeenAge(hero).GetRandomElementInefficiently();
-		if (randomElementInefficiently != null)
+		Equipment equipmentForHeroReachesTeenAge = Campaign.Current.Models.EquipmentSelectionModel.GetEquipmentForHeroReachesTeenAge(hero);
+		if (equipmentForHeroReachesTeenAge != null)
 		{
-			Equipment randomElementInefficiently2 = randomElementInefficiently.GetCivilianEquipments().GetRandomElementInefficiently();
-			EquipmentHelper.AssignHeroEquipmentFromEquipment(hero, randomElementInefficiently2);
-			new Equipment(Equipment.EquipmentType.Battle).FillFrom(randomElementInefficiently2, useSourceEquipmentType: false);
-			EquipmentHelper.AssignHeroEquipmentFromEquipment(hero, randomElementInefficiently2);
-		}
-		else
-		{
-			Debug.FailedAssert("Cant find child equipment template for " + hero.Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\AgingCampaignBehavior.cs", "OnHeroReachesTeenAge", 221);
+			EquipmentHelper.AssignHeroEquipmentFromEquipment(hero, equipmentForHeroReachesTeenAge);
+			new Equipment(Equipment.EquipmentType.Battle).FillFrom(equipmentForHeroReachesTeenAge, useSourceEquipmentType: false);
+			EquipmentHelper.AssignHeroEquipmentFromEquipment(hero, equipmentForHeroReachesTeenAge);
 		}
 		if (hero.Clan == Clan.PlayerClan)
 		{
@@ -271,22 +267,20 @@ public class AgingCampaignBehavior : CampaignBehaviorBase
 		{
 			hero.HeroDeveloper.SetInitialLevel(hero.Level);
 		}
-		MBList<MBEquipmentRoster> equipmentRostersForHeroComeOfAge = Campaign.Current.Models.EquipmentSelectionModel.GetEquipmentRostersForHeroComeOfAge(hero, isCivilian: false);
-		MBList<MBEquipmentRoster> equipmentRostersForHeroComeOfAge2 = Campaign.Current.Models.EquipmentSelectionModel.GetEquipmentRostersForHeroComeOfAge(hero, isCivilian: true);
-		if (equipmentRostersForHeroComeOfAge.IsEmpty())
+		Equipment equipment = Campaign.Current.Models.EquipmentSelectionModel.GetEquipmentForHeroComeOfAge(hero, Equipment.EquipmentType.Battle);
+		Equipment equipment2 = Campaign.Current.Models.EquipmentSelectionModel.GetEquipmentForHeroComeOfAge(hero, Equipment.EquipmentType.Civilian);
+		if (equipment == null)
 		{
-			equipmentRostersForHeroComeOfAge.Add(MBEquipmentRosterExtensions.All.Find((MBEquipmentRoster x) => x.StringId == "generic_bat_dummy"));
+			Debug.FailedAssert("Battle equipment should not be empty", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\AgingCampaignBehavior.cs", "OnHeroComesOfAge", 304);
+			equipment = MBEquipmentRosterExtensions.All.Find((MBEquipmentRoster x) => x.StringId == "generic_bat_dummy").GetBattleEquipments().First();
 		}
-		if (equipmentRostersForHeroComeOfAge2.IsEmpty())
+		if (equipment2 == null)
 		{
-			equipmentRostersForHeroComeOfAge2.Add(MBEquipmentRosterExtensions.All.Find((MBEquipmentRoster x) => x.StringId == "generic_civ_dummy"));
+			Debug.FailedAssert("Civilian equipment should not be empty", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\AgingCampaignBehavior.cs", "OnHeroComesOfAge", 313);
+			equipment2 = MBEquipmentRosterExtensions.All.Find((MBEquipmentRoster x) => x.StringId == "generic_civ_dummy").GetCivilianEquipments().First();
 		}
-		MBEquipmentRoster randomElement = equipmentRostersForHeroComeOfAge.GetRandomElement();
-		MBEquipmentRoster randomElement2 = equipmentRostersForHeroComeOfAge2.GetRandomElement();
-		Equipment randomElement3 = randomElement.AllEquipments.GetRandomElement();
-		Equipment randomElement4 = randomElement2.AllEquipments.GetRandomElement();
-		EquipmentHelper.AssignHeroEquipmentFromEquipment(hero, randomElement3);
-		EquipmentHelper.AssignHeroEquipmentFromEquipment(hero, randomElement4);
+		EquipmentHelper.AssignHeroEquipmentFromEquipment(hero, equipment);
+		EquipmentHelper.AssignHeroEquipmentFromEquipment(hero, equipment2);
 	}
 
 	private void IsItTimeOfDeath(Hero hero)
@@ -309,19 +303,9 @@ public class AgingCampaignBehavior : CampaignBehaviorBase
 			Campaign.Current.TimeControlMode = CampaignTimeControlMode.Stop;
 			InformationManager.ShowInquiry(new InquiryData(new TextObject("{=2duoimiP}Caught Illness").ToString(), new TextObject("{=vo3MqtMn}You are at death's door, wracked by fever, drifting in and out of consciousness. The healers do not believe that you can recover. You should resolve your final affairs and determine a heir for your clan while you still have the strength to speak.").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, new TextObject("{=yQtzabbe}Close").ToString(), "", null, null, "event:/ui/notification/quest_fail"));
 		}
-		else if (hero != Hero.MainHero)
+		else if (hero != Hero.MainHero && (hero.PartyBelongedTo == null || (hero.PartyBelongedTo.MapEvent == null && hero.PartyBelongedTo.SiegeEvent == null)))
 		{
 			KillCharacterAction.ApplyByOldAge(hero);
-		}
-	}
-
-	private void MainHeroHealCheck()
-	{
-		if (MBRandom.RandomFloat <= 0.05f && Hero.MainHero.IsAlive)
-		{
-			Campaign.Current.MainHeroIllDays = -1;
-			InformationManager.ShowInquiry(new InquiryData(new TextObject("{=M5eUjgQl}Cured").ToString(), new TextObject("{=T5H3L9Kw}The fever has broken. You are weak but you feel you will recover. You rise from your bed from the first time in days, blinking in the sunlight.").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, new TextObject("{=yQtzabbe}Close").ToString(), "", null, null, "event:/ui/notification/quest_finished"));
-			Campaign.Current.TimeControlMode = CampaignTimeControlMode.Stop;
 		}
 	}
 

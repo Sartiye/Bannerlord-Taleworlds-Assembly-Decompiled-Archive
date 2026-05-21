@@ -27,10 +27,12 @@ public class DefaultIssueModel : IssueModel
 
 	public override void GetIssueEffectsOfSettlement(IssueEffect issueEffect, Settlement settlement, ref ExplainedNumber explainedNumber)
 	{
-		Hero leader = settlement.OwnerClan.Leader;
-		if (leader != null && leader.IsAlive && leader.Issue != null)
+		foreach (Hero aliveLord in settlement.OwnerClan.AliveLords)
 		{
-			GetIssueEffectOfHeroInternal(issueEffect, leader, ref explainedNumber, SettlementIssuesText);
+			if (aliveLord.Issue != null)
+			{
+				GetIssueEffectOfHeroInternal(issueEffect, aliveLord, ref explainedNumber, SettlementIssuesText);
+			}
 		}
 		foreach (Hero item in settlement.HeroesWithoutParty)
 		{

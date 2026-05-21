@@ -239,7 +239,7 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_widget_2_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0.HorizontalAlignment = HorizontalAlignment.Left;
 		_widget_2_0.VerticalAlignment = VerticalAlignment.Top;
-		_widget_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0.Brush = base.Context.GetBrush("MPIntermission.Label.Text");
@@ -251,7 +251,7 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_widget_2_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_1.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2_1.VerticalAlignment = VerticalAlignment.Top;
-		_widget_2_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_1_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -267,7 +267,7 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_widget_2_3.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_3.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_2_3.VerticalAlignment = VerticalAlignment.Top;
-		_widget_2_3.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_3.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_3_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_3_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_2_3_0.SuggestedWidth = 75f;
@@ -405,7 +405,7 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_widget_6.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_6.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_6.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_6.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_6.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_6.MarginBottom = 25f;
 		_widget_6.MarginLeft = 50f;
 		_widget_6.MarginRight = 50f;

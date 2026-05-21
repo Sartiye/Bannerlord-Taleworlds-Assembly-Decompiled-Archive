@@ -123,11 +123,11 @@ public interface IFormationArrangement
 
 	Vec2 GetLocalPositionOfReservedUnitPosition();
 
-	void OnTickOccasionallyOfUnit(IFormationUnit unit, bool arrangementChangeAllowed);
-
 	void OnUnitLostMount(IFormationUnit unit);
 
 	float GetDirectionChangeTendencyOfUnit(IFormationUnit unit);
 
 	void UpdateLocalPositionErrors(bool recalculateErrors = true);
+
+	void OnTickOccasionally();
 }

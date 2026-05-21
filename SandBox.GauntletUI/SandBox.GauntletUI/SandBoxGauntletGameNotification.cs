@@ -12,8 +12,6 @@ public class SandBoxGauntletGameNotification : GauntletGameNotification
 {
 	private SoundEvent _currentNotificationSoundEvent;
 
-	private bool _latestIsSoundPaused;
-
 	public new static void Initialize()
 	{
 		GauntletGameNotification.Current?.OnFinalize();
@@ -75,23 +73,19 @@ public class SandBoxGauntletGameNotification : GauntletGameNotification
 		}
 		if (_dataSource.GotNotification && _dataSource.CurrentNotification.IsDialog)
 		{
-			if (_latestIsSoundPaused != _dataSource.IsPaused)
-			{
-				_latestIsSoundPaused = _dataSource.IsPaused;
-				if (_latestIsSoundPaused && _currentNotificationSoundEvent.IsPlaying())
-				{
-					_currentNotificationSoundEvent.Pause();
-				}
-				else if (!_latestIsSoundPaused && _currentNotificationSoundEvent.IsPaused())
-				{
-					_currentNotificationSoundEvent.Resume();
-				}
-			}
-			else if (!_latestIsSoundPaused && !_currentNotificationSoundEvent.IsPlaying())
+			if (!_currentNotificationSoundEvent.IsValid || _currentNotificationSoundEvent.IsStopped())
 			{
 				_currentNotificationSoundEvent.Release();
 				_currentNotificationSoundEvent = null;
 				_dataSource.FadeOutCurrentNotification(useExtraDisplayTime: true);
+			}
+			else if (_dataSource.IsPaused && _currentNotificationSoundEvent.IsPlaying())
+			{
+				_currentNotificationSoundEvent.Pause();
+			}
+			else if (!_dataSource.IsPaused && _currentNotificationSoundEvent.IsPaused())
+			{
+				_currentNotificationSoundEvent.Resume();
 			}
 		}
 		else

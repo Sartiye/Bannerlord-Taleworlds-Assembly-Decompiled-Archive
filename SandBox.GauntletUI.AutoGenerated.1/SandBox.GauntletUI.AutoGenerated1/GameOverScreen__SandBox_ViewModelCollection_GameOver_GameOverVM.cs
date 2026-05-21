@@ -172,7 +172,7 @@ public class GameOverScreen__SandBox_ViewModelCollection_GameOver_GameOverVM : G
 		_widget_2_1.MarginRight = 50f;
 		_widget_2_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_2_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_1_0.MarginTop = 10f;
 		_widget_2_1_0_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_2_1_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
@@ -232,7 +232,7 @@ public class GameOverScreen__SandBox_ViewModelCollection_GameOver_GameOverVM : G
 		_widget_2_1_0_2_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_1_0_2_1.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_1_0_2_1.SuggestedWidth = 83f;
-		_widget_2_1_0_2_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_1_0_2_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_1_0_2_2.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_1_0_2_2.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_1_0_2_2.MarginLeft = 25f;

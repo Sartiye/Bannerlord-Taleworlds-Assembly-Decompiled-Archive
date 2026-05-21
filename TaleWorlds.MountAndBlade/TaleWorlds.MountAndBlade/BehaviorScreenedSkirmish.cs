@@ -77,7 +77,7 @@ public class BehaviorScreenedSkirmish : BehaviorComponent
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
 		base.Formation.SetFacingOrder(CurrentFacingOrder);
-		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
+		base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderScatter);
 		base.Formation.SetFiringOrder(FiringOrder.FiringOrderFireAtWill);
 		base.Formation.SetFormOrder(FormOrder.FormOrderWide);
 	}

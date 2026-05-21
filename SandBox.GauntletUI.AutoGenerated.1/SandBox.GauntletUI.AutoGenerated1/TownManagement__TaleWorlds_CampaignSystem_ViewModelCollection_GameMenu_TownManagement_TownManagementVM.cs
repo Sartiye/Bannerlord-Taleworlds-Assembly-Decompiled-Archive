@@ -121,6 +121,8 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 
 	private ToggleButtonWidget _widget_1_5_0_0_0_3_1_4;
 
+	private HintWidget _widget_1_5_0_0_0_3_1_4_0;
+
 	private Widget _widget_1_5_0_0_1;
 
 	private Widget _widget_1_5_0_1;
@@ -259,6 +261,8 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 
 	private TownManagementReserveControlVM _datasource_Root_ReserveControl;
 
+	private HintViewModel _datasource_Root_ReserveControl_AddGoldToReserveHint;
+
 	private SettlementProjectSelectionVM _datasource_Root_ProjectSelection;
 
 	private MBBindingList<SettlementBuildingProjectVM> _datasource_Root_ProjectSelection_AvailableProjects;
@@ -382,6 +386,8 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 		_widget_1_5_0_0_0_3_1.AddChild(_widget_1_5_0_0_0_3_1_3);
 		_widget_1_5_0_0_0_3_1_4 = new ToggleButtonWidget(base.Context);
 		_widget_1_5_0_0_0_3_1.AddChild(_widget_1_5_0_0_0_3_1_4);
+		_widget_1_5_0_0_0_3_1_4_0 = new HintWidget(base.Context);
+		_widget_1_5_0_0_0_3_1_4.AddChild(_widget_1_5_0_0_0_3_1_4_0);
 		_widget_1_5_0_0_1 = new Widget(base.Context);
 		_widget_1_5_0_0.AddChild(_widget_1_5_0_0_1);
 		_widget_1_5_0_1 = new Widget(base.Context);
@@ -586,7 +592,7 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 		_widget_1_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_1.MarginLeft = 35f;
 		_widget_1_1.MarginTop = 50f;
-		_widget_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_1_0.HorizontalAlignment = HorizontalAlignment.Left;
@@ -606,7 +612,7 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 		_widget_1_2.MarginRight = 35f;
 		_widget_1_2.MarginTop = 40f;
 		_widget_1_2.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_2_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_2_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_2_0.HorizontalAlignment = HorizontalAlignment.Right;
@@ -644,7 +650,7 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 		_widget_1_5.MarginBottom = 25f;
 		_widget_1_5_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_5_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_5_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_5_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_5_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_5_0_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1_5_0_0.SuggestedHeight = 220f;
@@ -658,7 +664,7 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 		_widget_1_5_0_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_5_0_0_0_0_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_1_5_0_0_0_0_0.VerticalAlignment = VerticalAlignment.Top;
-		_widget_1_5_0_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_5_0_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_5_0_0_0_0_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_5_0_0_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_5_0_0_0_0_0_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -739,7 +745,7 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 		_widget_1_5_0_0_0_1_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_5_0_0_0_1_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_5_0_0_0_1_0_0_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_1_5_0_0_0_1_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_5_0_0_0_1_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_5_0_0_0_1_0_1.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_5_0_0_0_1_0_1.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1_5_0_0_0_1_0_1.SuggestedWidth = 7f;
@@ -752,7 +758,7 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 		_widget_1_5_0_0_0_1_0_2_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_5_0_0_0_1_0_2_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_5_0_0_0_1_0_2_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_1_5_0_0_0_1_0_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_5_0_0_0_1_0_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_5_0_0_0_2.ScopeID = "ReserveScope";
 		_widget_1_5_0_0_0_2.ScopeParent = _widget_1_5_0_0_0_3;
 		_widget_1_5_0_0_0_2.ScopeMovements = GamepadNavigationTypes.Horizontal;
@@ -775,7 +781,7 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 		_widget_1_5_0_0_0_3_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_5_0_0_0_3_1.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_1_5_0_0_0_3_1.VerticalAlignment = VerticalAlignment.Top;
-		_widget_1_5_0_0_0_3_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_5_0_0_0_3_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_5_0_0_0_3_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_5_0_0_0_3_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_5_0_0_0_3_1_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -821,6 +827,9 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 		_widget_1_5_0_0_0_3_1_4.Brush = base.Context.GetBrush("TownManagement.Reserve.PlusButton");
 		_widget_1_5_0_0_0_3_1_4.WidgetToClose = _widget_2;
 		_widget_1_5_0_0_0_3_1_4.GamepadNavigationIndex = 0;
+		_widget_1_5_0_0_0_3_1_4_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_1_5_0_0_0_3_1_4_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_1_5_0_0_0_3_1_4_0.IsEnabled = false;
 		_widget_1_5_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_5_0_0_1.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1_5_0_0_1.SuggestedHeight = 14f;
@@ -835,7 +844,7 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 		_widget_1_5_0_1_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_5_0_1_0_0.VerticalAlignment = VerticalAlignment.Top;
 		_widget_1_5_0_1_0_0.MarginTop = 5f;
-		_widget_1_5_0_1_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_5_0_1_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_5_0_1_0_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_5_0_1_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_5_0_1_0_0_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -977,7 +986,7 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 		_widget_1_5_0_1_0_2.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_5_0_1_0_2.SuggestedWidth = 390f;
 		_widget_1_5_0_1_0_2.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_1_5_0_1_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_5_0_1_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_5_0_1_0_2_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_5_0_1_0_2_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_5_0_1_0_2_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -1024,7 +1033,7 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 		_widget_1_5_0_1_0_2_3_0.ClipContents = true;
 		_widget_1_5_0_1_0_2_3_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_5_0_1_0_2_3_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_5_0_1_0_2_3_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_5_0_1_0_2_3_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_5_0_1_0_2_3_0_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_5_0_1_0_2_3_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_5_0_1_0_2_3_0_0_0.SuggestedWidth = 350f;
@@ -1067,8 +1076,9 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 		_widget_1_5_0_1_0_3.VerticalFlip = true;
 		_widget_1_5_0_1_0_4.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_5_0_1_0_4.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_5_0_1_0_4.SuggestedWidth = 75f;
+		_widget_1_5_0_1_0_4.SuggestedWidth = 95f;
 		_widget_1_5_0_1_0_4.HorizontalAlignment = HorizontalAlignment.Right;
+		_widget_1_5_0_1_0_4.MarginRight = 5f;
 		_widget_1_5_0_1_0_4_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_5_0_1_0_4_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_5_0_1_0_4_0.MarginTop = 10f;
@@ -1076,7 +1086,7 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 		_widget_1_5_0_1_0_4_0.Brush.FontSize = 20;
 		_widget_1_5_0_1_0_4_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_5_0_1_0_4_1.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_5_0_1_0_4_1.MarginTop = 30f;
+		_widget_1_5_0_1_0_4_1.MarginTop = 40f;
 		_widget_1_5_0_1_0_4_1.AutoHideScrollBars = true;
 		_widget_1_5_0_1_0_4_1.ClipRect = _widget_1_5_0_1_0_4_1_0;
 		_widget_1_5_0_1_0_4_1.InnerPanel = _widget_1_5_0_1_0_4_1_0_1;
@@ -1090,16 +1100,19 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 		_widget_1_5_0_1_0_4_1_0_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_5_0_1_0_4_1_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_5_0_1_0_4_1_0_1.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_1_5_0_1_0_4_1_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_5_0_1_0_4_1_0_1.MarginTop = 5f;
+		_widget_1_5_0_1_0_4_1_0_1.MarginBottom = 15f;
+		_widget_1_5_0_1_0_4_1_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_5_0_1_0_4_1_0_1_0.ScopeID = "QueueDevelopmentItemsScope";
 		_widget_1_5_0_1_0_4_1_0_1_0.ScopeMovements = GamepadNavigationTypes.Vertical;
 		_widget_1_5_0_1_0_4_1_0_1_0.ScopeParent = _widget_1_5_0_1_0_4_1_0_1_1;
 		_widget_1_5_0_1_0_4_1_0_1_0.UpNavigationScope = "ReserveScope";
-		_widget_1_5_0_1_0_4_1_0_1_1.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_1_5_0_1_0_4_1_0_1_1.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_5_0_1_0_4_1_0_1_1.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_1_5_0_1_0_4_1_0_1_1.SuggestedWidth = 65f;
 		_widget_1_5_0_1_0_4_1_0_1_1.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_1_5_0_1_0_4_1_0_1_1.AcceptDrop = true;
-		_widget_1_5_0_1_0_4_1_0_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_5_0_1_0_4_1_0_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_5_0_1_0_4_1_0_1_1.UseSelfIndexForMinimum = true;
 		_widget_1_5_0_1_0_4_1_0_1_2.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_5_0_1_0_4_1_0_1_2.HeightSizePolicy = SizePolicy.Fixed;
@@ -1444,6 +1457,20 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 			_widget_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_2;
 			_widget_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2;
 			_widget_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2;
+			if (_datasource_Root_ReserveControl_AddGoldToReserveHint != null)
+			{
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_widget_1_5_0_0_0_3_1_4_0.EventFire -= EventListenerOf_widget_1_5_0_0_0_3_1_4_0;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint = null;
+			}
 			_datasource_Root_ReserveControl = null;
 		}
 		if (_datasource_Root_ProjectSelection != null)
@@ -1679,6 +1706,18 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 		if (commandName == "HoverEnd")
 		{
 			_datasource_Root_CurrentGovernorTooltip.ExecuteEndHint();
+		}
+	}
+
+	private void EventListenerOf_widget_1_5_0_0_0_3_1_4_0(Widget widget, string commandName, object[] args)
+	{
+		if (commandName == "HoverBegin")
+		{
+			_datasource_Root_ReserveControl_AddGoldToReserveHint.ExecuteBeginHint();
+		}
+		if (commandName == "HoverEnd")
+		{
+			_datasource_Root_ReserveControl_AddGoldToReserveHint.ExecuteEndHint();
 		}
 	}
 
@@ -3631,6 +3670,9 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 	{
 		switch (propertyName)
 		{
+		case "AddGoldToReserveHint":
+			RefreshDataSource_datasource_Root_ReserveControl_AddGoldToReserveHint(_datasource_Root_ReserveControl.AddGoldToReserveHint);
+			break;
 		case "ReserveText":
 			_widget_1_5_0_0_0_3_1_0.Text = _datasource_Root_ReserveControl.ReserveText;
 			break;
@@ -3644,6 +3686,55 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 			_widget_2.IsVisible = _datasource_Root_ReserveControl.IsEnabled;
 			break;
 		}
+	}
+
+	private void ViewModelPropertyChangedListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint(object sender, PropertyChangedEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ReserveControl_AddGoldToReserveHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint(object sender, PropertyChangedWithValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ReserveControl_AddGoldToReserveHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint(object sender, PropertyChangedWithBoolValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ReserveControl_AddGoldToReserveHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint(object sender, PropertyChangedWithIntValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ReserveControl_AddGoldToReserveHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint(object sender, PropertyChangedWithFloatValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ReserveControl_AddGoldToReserveHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint(object sender, PropertyChangedWithUIntValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ReserveControl_AddGoldToReserveHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint(object sender, PropertyChangedWithColorValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ReserveControl_AddGoldToReserveHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint(object sender, PropertyChangedWithDoubleValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ReserveControl_AddGoldToReserveHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint(object sender, PropertyChangedWithVec2ValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ReserveControl_AddGoldToReserveHint(e.PropertyName);
+	}
+
+	private void HandleViewModelPropertyChangeOf_datasource_Root_ReserveControl_AddGoldToReserveHint(string propertyName)
+	{
 	}
 
 	private void ViewModelPropertyChangedListenerOf_datasource_Root_ProjectSelection(object sender, PropertyChangedEventArgs e)
@@ -4528,6 +4619,20 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 				_widget_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_2;
 				_widget_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2;
 				_widget_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2;
+				if (_datasource_Root_ReserveControl_AddGoldToReserveHint != null)
+				{
+					_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+					_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+					_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+					_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+					_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+					_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+					_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+					_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+					_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+					_widget_1_5_0_0_0_3_1_4_0.EventFire -= EventListenerOf_widget_1_5_0_0_0_3_1_4_0;
+					_datasource_Root_ReserveControl_AddGoldToReserveHint = null;
+				}
 				_datasource_Root_ReserveControl = null;
 			}
 			if (_datasource_Root_ProjectSelection != null)
@@ -5045,6 +5150,20 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 			_widget_2.intPropertyChanged += intPropertyChangedListenerOf_widget_2;
 			_widget_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_2;
 			_widget_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_2;
+			_datasource_Root_ReserveControl_AddGoldToReserveHint = _datasource_Root_ReserveControl.AddGoldToReserveHint;
+			if (_datasource_Root_ReserveControl_AddGoldToReserveHint != null)
+			{
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_widget_1_5_0_0_0_3_1_4_0.EventFire += EventListenerOf_widget_1_5_0_0_0_3_1_4_0;
+			}
 			_widget_2.SetDataSource(_datasource_Root_ReserveControl);
 		}
 		_datasource_Root_ProjectSelection = _datasource_Root.ProjectSelection;
@@ -5712,6 +5831,20 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 			_widget_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_2;
 			_widget_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2;
 			_widget_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2;
+			if (_datasource_Root_ReserveControl_AddGoldToReserveHint != null)
+			{
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_widget_1_5_0_0_0_3_1_4_0.EventFire -= EventListenerOf_widget_1_5_0_0_0_3_1_4_0;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint = null;
+			}
 			_datasource_Root_ReserveControl = null;
 		}
 		_datasource_Root_ReserveControl = newDataSource;
@@ -5767,7 +5900,54 @@ public class TownManagement__TaleWorlds_CampaignSystem_ViewModelCollection_GameM
 			_widget_2.intPropertyChanged += intPropertyChangedListenerOf_widget_2;
 			_widget_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_2;
 			_widget_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_2;
+			_datasource_Root_ReserveControl_AddGoldToReserveHint = _datasource_Root_ReserveControl.AddGoldToReserveHint;
+			if (_datasource_Root_ReserveControl_AddGoldToReserveHint != null)
+			{
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+				_widget_1_5_0_0_0_3_1_4_0.EventFire += EventListenerOf_widget_1_5_0_0_0_3_1_4_0;
+			}
 			_widget_2.SetDataSource(_datasource_Root_ReserveControl);
+		}
+	}
+
+	private void RefreshDataSource_datasource_Root_ReserveControl_AddGoldToReserveHint(HintViewModel newDataSource)
+	{
+		if (_datasource_Root_ReserveControl_AddGoldToReserveHint != null)
+		{
+			_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+			_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+			_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+			_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+			_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+			_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+			_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+			_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+			_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+			_widget_1_5_0_0_0_3_1_4_0.EventFire -= EventListenerOf_widget_1_5_0_0_0_3_1_4_0;
+			_datasource_Root_ReserveControl_AddGoldToReserveHint = null;
+		}
+		_datasource_Root_ReserveControl_AddGoldToReserveHint = newDataSource;
+		_datasource_Root_ReserveControl_AddGoldToReserveHint = _datasource_Root_ReserveControl.AddGoldToReserveHint;
+		if (_datasource_Root_ReserveControl_AddGoldToReserveHint != null)
+		{
+			_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+			_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+			_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+			_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+			_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+			_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+			_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+			_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+			_datasource_Root_ReserveControl_AddGoldToReserveHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ReserveControl_AddGoldToReserveHint;
+			_widget_1_5_0_0_0_3_1_4_0.EventFire += EventListenerOf_widget_1_5_0_0_0_3_1_4_0;
 		}
 	}
 

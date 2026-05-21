@@ -168,7 +168,7 @@ public class TextQueryPopup__TaleWorlds_MountAndBlade_ViewModelCollection_Inquir
 		_widget_0_1.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1.SuggestedWidth = 512f;
-		_widget_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_1.MaxHeight = 645f;
 		_widget_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;

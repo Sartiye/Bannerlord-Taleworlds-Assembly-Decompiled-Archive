@@ -584,18 +584,18 @@ public class ClanFinanceWorkshopItemVM : ClanFinanceIncomeItemBaseVM
 		int costForNotable = _workshopModel.GetCostForNotable(Workshop);
 		TextObject textObject = new TextObject("{=ysireFjT}Sell This Workshop for {GOLD_AMOUNT}{GOLD_ICON}");
 		textObject.SetTextVariable("GOLD_AMOUNT", costForNotable);
-		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		yield return new ClanCardSelectionItemInfo(textObject, isDisabled: false, null, ClanCardSelectionItemPropertyInfo.CreateActionGoldChangeText(costForNotable));
-		int costOfChangingType = _workshopModel.GetConvertProductionCost(Workshop.WorkshopType);
-		TextObject cannotChangeTypeReason = new TextObject("{=av51ur2M}You need at least {REQUIRED_AMOUNT} denars to change the production type of this workshop.");
-		cannotChangeTypeReason.SetTextVariable("REQUIRED_AMOUNT", costOfChangingType);
 		foreach (WorkshopType item in WorkshopType.All)
 		{
 			if (Workshop.WorkshopType != item && !item.IsHidden)
 			{
 				TextObject name = item.Name;
-				bool flag = costOfChangingType <= Hero.MainHero.Gold;
-				yield return new ClanCardSelectionItemInfo(item, name, null, CardSelectionItemSpriteType.Workshop, item.StringId, null, GetWorkshopItemProperties(item), !flag, cannotChangeTypeReason, ClanCardSelectionItemPropertyInfo.CreateActionGoldChangeText(-costOfChangingType));
+				int convertProductionCost = _workshopModel.GetConvertProductionCost(item);
+				TextObject textObject2 = new TextObject("{=av51ur2M}You need at least {REQUIRED_AMOUNT} denars to change the production type of this workshop.");
+				textObject2.SetTextVariable("REQUIRED_AMOUNT", convertProductionCost);
+				bool flag = convertProductionCost <= Hero.MainHero.Gold;
+				yield return new ClanCardSelectionItemInfo(item, name, null, CardSelectionItemSpriteType.Workshop, item.StringId, null, GetWorkshopItemProperties(item), !flag, textObject2, ClanCardSelectionItemPropertyInfo.CreateActionGoldChangeText(-convertProductionCost));
 			}
 		}
 	}

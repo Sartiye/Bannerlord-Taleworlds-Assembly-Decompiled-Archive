@@ -52,7 +52,7 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		base.SuggestedWidth = 140f;
 		base.MarginLeft = 50f;
 		base.MarginRight = 50f;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0.ButtonType = ButtonType.Radio;
 		_widget_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0.HeightSizePolicy = SizePolicy.Fixed;

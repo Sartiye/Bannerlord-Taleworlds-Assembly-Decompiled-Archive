@@ -17,8 +17,7 @@ public static class EndCaptivityAction
 			PlayerCaptivity.EndCaptivity();
 			if (partyBelongedToAsPrisoner != null && partyBelongedToAsPrisoner.IsSettlement)
 			{
-				MobileParty.MainParty.Position = partyBelongedToAsPrisoner.Settlement.GatePosition;
-				MobileParty.MainParty.IsCurrentlyAtSea = false;
+				MobileParty.MainParty.DisembarkToPosition(partyBelongedToAsPrisoner.Settlement.GatePosition);
 			}
 			else if (partyBelongedToAsPrisoner != null && partyBelongedToAsPrisoner.IsMobile)
 			{

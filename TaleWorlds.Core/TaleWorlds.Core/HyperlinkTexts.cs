@@ -12,11 +12,11 @@ public static class HyperlinkTexts
 		Ps5
 	}
 
-	public const string GoldIcon = "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">";
+	public const string GoldIcon = "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">";
 
-	public const string MoraleIcon = "{=!}<img src=\"General\\Icons\\Morale@2x\" extend=\"8\">";
+	public const string MoraleIcon = "{=!}<img src=\"General\\Icons\\Morale@2x\" extend=\"4\">";
 
-	public const string InfluenceIcon = "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"7\">";
+	public const string InfluenceIcon = "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"5\">";
 
 	public const string IssueAvailableIcon = "{=!}<img src=\"General\\Icons\\icon_issue_available_square\" extend=\"4\">";
 
@@ -24,7 +24,7 @@ public static class HyperlinkTexts
 
 	public const string TrackedIssueIcon = "{=!}<img src=\"General\\Icons\\issue_target_icon\" extend=\"4\">";
 
-	public const string QuestAvailableIcon = "{=!}<img src=\"General\\Icons\\icon_quest_available_square\" extend=\"4\">";
+	public const string QuestAvailableIcon = "{=!}<img src=\"General\\Icons\\icon_quest_available\" extend=\"4\">";
 
 	public const string QuestActiveIcon = "{=!}<img src=\"General\\Icons\\icon_issue_active_square\" extend=\"4\">";
 
@@ -32,23 +32,23 @@ public static class HyperlinkTexts
 
 	public const string TrackedStoryQuestIcon = "{=!}<img src=\"General\\Icons\\quest_target_icon\" extend=\"4\">";
 
-	public const string InPrisonIcon = "{=!}<img src=\"Clan\\Status\\icon_inprison\">";
+	public const string InPrisonIcon = "{=!}<img src=\"SPGeneral\\Clan\\Status\\icon_inprison\" extend=\"4\">";
 
-	public const string ChildIcon = "{=!}<img src=\"Clan\\Status\\icon_ischild\">";
+	public const string ChildIcon = "{=!}<img src=\"SPGeneral\\Clan\\Status\\icon_ischild\" extend=\"4\">";
 
-	public const string PregnantIcon = "{=!}<img src=\"Clan\\Status\\icon_pregnant\">";
+	public const string PregnantIcon = "{=!}<img src=\"SPGeneral\\Clan\\Status\\icon_pregnant\" extend=\"4\">";
 
-	public const string IllIcon = "{=!}<img src=\"Clan\\Status\\icon_terminallyill\">";
+	public const string IllIcon = "{=!}<img src=\"SPGeneral\\Clan\\Status\\icon_terminallyill\" extend=\"4\">";
 
-	public const string HeirIcon = "{=!}<img src=\"Clan\\Status\\icon_heir\">";
+	public const string HeirIcon = "{=!}<img src=\"SPGeneral\\Clan\\Status\\icon_heir\" extend=\"4\">";
 
-	public const string UnreadIcon = "{=!}<img src=\"MapMenuUnread2x\">";
+	public const string UnreadIcon = "{=!}<img src=\"MapMenuUnread@2x\" extend=\"4\">";
 
 	public const string UnselectedPerkIcon = "{=!}<img src=\"CharacterDeveloper\\UnselectedPerksIcon\" extend=\"2\">";
 
-	public const string HorseIcon = "{=!}<img src=\"StdAssets\\ItemIcons\\Mount\" extend=\"16\">";
+	public const string HorseIcon = "{=!}<img src=\"StdAssets\\ItemIcons\\Mount\" extend=\"14\">";
 
-	public const string CrimeIcon = "{=!}<img src=\"SPGeneral\\MapOverlay\\Settlement\\icon_crime\" extend=\"16\">";
+	public const string CrimeIcon = "{=!}<img src=\"SPGeneral\\MapOverlay\\Settlement\\icon_crime\" extend=\"12\">";
 
 	public const string UpgradeAvailableIcon = "{=!}<img src=\"PartyScreen\\upgrade_icon\" extend=\"5\">";
 
@@ -177,6 +177,22 @@ public static class HyperlinkTexts
 		case "F11":
 		case "F12":
 		case "Escape":
+		case "Tilde":
+		case "BackSlash":
+		case "Insert":
+		case "Delete":
+		case "Home":
+		case "End":
+		case "PageUp":
+		case "PageDown":
+		case "OpenBraces":
+		case "CloseBraces":
+		case "Comma":
+		case "Equals":
+		case "SemiColon":
+		case "Apostrophe":
+		case "Extended":
+		case "NumLock":
 			num = 24;
 			text = keyID.ToLower();
 			break;
@@ -195,6 +211,8 @@ public static class HyperlinkTexts
 		case "MiddleMouseButton":
 		case "MouseScrollUp":
 		case "MouseScrollDown":
+		case "X1MouseButton":
+		case "X2MouseButton":
 			num = 16;
 			text = keyID.ToLower();
 			break;
@@ -254,6 +272,7 @@ public static class HyperlinkTexts
 			text = keyID.Substring(keyID.Length - 1);
 			break;
 		case "NumpadMinus":
+		case "Minus":
 			num = 24;
 			text = "-";
 			break;
@@ -265,10 +284,6 @@ public static class HyperlinkTexts
 		case "Enter":
 			num = 12;
 			text = "enter";
-			break;
-		case "Tilde":
-			num = 24;
-			text = "tilde";
 			break;
 		case "LeftShift":
 		case "RightShift":
@@ -308,6 +323,20 @@ public static class HyperlinkTexts
 		case "ControllerRStickRight":
 			num = ((consoleType == ConsoleType.Xbox) ? 12 : 10);
 			text = "controllerrstick";
+			break;
+		case "NumpadSlash":
+		case "Slash":
+			num = 24;
+			text = "slash";
+			break;
+		case "NumpadPeriod":
+		case "Period":
+			num = 24;
+			text = "period";
+			break;
+		case "NumpadMultiply":
+			num = 24;
+			text = "multiply";
 			break;
 		}
 		if (consoleType == ConsoleType.Ps4 || consoleType == ConsoleType.Ps5)

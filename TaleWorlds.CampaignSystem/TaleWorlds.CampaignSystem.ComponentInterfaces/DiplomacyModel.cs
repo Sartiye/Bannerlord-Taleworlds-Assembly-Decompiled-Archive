@@ -31,9 +31,7 @@ public abstract class DiplomacyModel : MBGameModel<DiplomacyModel>
 
 	public abstract int GiftingCastleRelationshipBonus { get; }
 
-	public abstract float WarDeclarationScorePenaltyAgainstAllies { get; }
-
-	public abstract float WarDeclarationScoreBonusAgainstEnemiesOfAllies { get; }
+	public abstract float WarDeclarationScorePenaltyAgainstTradePartners { get; }
 
 	public abstract float GetStrengthThresholdForNonMutualWarsToBeIgnoredToJoinKingdom(Kingdom kingdomToJoin);
 

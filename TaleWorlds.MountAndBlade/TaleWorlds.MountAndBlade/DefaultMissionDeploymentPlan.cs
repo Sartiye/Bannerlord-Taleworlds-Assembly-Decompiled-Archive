@@ -122,67 +122,53 @@ public class DefaultMissionDeploymentPlan : IMissionDeploymentPlan
 		}
 	}
 
-	public void MakeReinforcementDeploymentPlan(Team team, float spawnPathOffset = 0f, float targetOffset = 0f)
+	public void MakeReinforcementDeploymentPlan(Team team)
 	{
 		if (!IsReinforcementPlanMade(team))
 		{
-			MakeDeploymentPlanAux(team, isReinforcement: true, spawnPathOffset, targetOffset);
+			MakeDeploymentPlanAux(team, isReinforcement: true);
 		}
 	}
 
 	public bool RemakeDeploymentPlan(Team team)
 	{
-		if (IsPlanMade(team))
+		IsPlanMade(team);
+		float spawnPathOffset = GetSpawnPathOffset(team);
+		float targetOffset = GetTargetOffset(team);
+		(int, int)[] array = new(int, int)[11];
+		foreach (Agent item in _mission.AllAgents.Where((Agent agent) => agent.IsHuman && agent.Team != null && agent.Team == team && agent.Formation != null))
 		{
-			float spawnPathOffset = GetSpawnPathOffset(team);
-			float targetOffset = GetTargetOffset(team);
-			(int, int)[] array = new(int, int)[11];
-			foreach (Agent item in _mission.AllAgents.Where((Agent agent) => agent.IsHuman && agent.Team != null && agent.Team == team && agent.Formation != null))
+			int formationIndex = (int)item.Formation.FormationIndex;
+			(int, int) tuple = array[formationIndex];
+			array[formationIndex] = (item.HasMount ? (tuple.Item1, tuple.Item2 + 1) : (tuple.Item1 + 1, tuple.Item2));
+		}
+		if (!IsInitialPlanSuitableForFormations(team, array))
+		{
+			ClearAddedTroops(team);
+			ClearDeploymentPlan(team);
+			for (int i = 0; i < 11; i++)
 			{
-				int formationIndex = (int)item.Formation.FormationIndex;
-				(int, int) tuple = array[formationIndex];
-				array[formationIndex] = (item.HasMount ? (tuple.Item1, tuple.Item2 + 1) : (tuple.Item1 + 1, tuple.Item2));
-			}
-			if (!IsInitialPlanSuitableForFormations(team, array))
-			{
-				ClearAddedTroops(team);
-				ClearDeploymentPlan(team);
-				for (int i = 0; i < 11; i++)
+				var (num, num2) = array[i];
+				if (num + num2 > 0)
 				{
-					var (num, num2) = array[i];
-					if (num + num2 > 0)
-					{
-						AddTroops(team, (FormationClass)i, num, num2);
-					}
+					AddTroops(team, (FormationClass)i, num, num2);
 				}
-				MakeDeploymentPlan(team, spawnPathOffset, targetOffset);
-				return IsPlanMade(team);
 			}
+			MakeDeploymentPlan(team, spawnPathOffset, targetOffset);
+			return IsPlanMade(team);
 		}
 		return false;
 	}
 
 	public bool IsPositionInsideDeploymentBoundaries(Team team, in Vec2 position)
 	{
-		DefaultTeamDeploymentPlan teamPlan = GetTeamPlan(team);
 		(string, MBList<Vec2>) containingBoundaryTuple;
-		if (teamPlan.HasDeploymentBoundaries())
-		{
-			return teamPlan.IsPositionInsideDeploymentBoundaries(in position, out containingBoundaryTuple);
-		}
-		Debug.FailedAssert("Cannot check if position is within deployment boundaries as requested team " + team.TeamIndex + " does not have deployment boundaries.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Deployment\\DefaultMissionDeploymentPlan.cs", "IsPositionInsideDeploymentBoundaries", 216);
-		return false;
+		return GetTeamPlan(team).IsPositionInsideDeploymentBoundaries(in position, out containingBoundaryTuple);
 	}
 
 	public Vec2 GetClosestDeploymentBoundaryPosition(Team team, in Vec2 position)
 	{
-		DefaultTeamDeploymentPlan teamPlan = GetTeamPlan(team);
-		if (teamPlan.HasDeploymentBoundaries())
-		{
-			return teamPlan.GetClosestDeploymentBoundaryPosition(in position);
-		}
-		Debug.FailedAssert("Cannot retrieve closest deployment boundary position as requested team " + team.TeamIndex + " does not have deployment boundaries.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Deployment\\DefaultMissionDeploymentPlan.cs", "GetClosestDeploymentBoundaryPosition", 229);
-		return position;
+		return GetTeamPlan(team).GetClosestDeploymentBoundaryPosition(in position);
 	}
 
 	public bool SupportsReinforcements()
@@ -190,7 +176,7 @@ public class DefaultMissionDeploymentPlan : IMissionDeploymentPlan
 		return true;
 	}
 
-	public bool SupportsNavmesh()
+	public bool SupportsNavmesh(Team team)
 	{
 		return true;
 	}
@@ -236,16 +222,16 @@ public class DefaultMissionDeploymentPlan : IMissionDeploymentPlan
 
 	public bool IsPlanMade(Team team)
 	{
-		return GetTeamPlan(team)?.IsPlanMade() ?? false;
+		return GetTeamPlanAux(team)?.IsPlanMade() ?? false;
 	}
 
 	public bool IsPlanMade(Team team, out bool isFirstPlan)
 	{
-		DefaultTeamDeploymentPlan teamPlan = GetTeamPlan(team);
+		DefaultTeamDeploymentPlan teamPlanAux = GetTeamPlanAux(team);
 		isFirstPlan = false;
-		if (teamPlan != null && teamPlan.IsPlanMade())
+		if (teamPlanAux != null && teamPlanAux.IsPlanMade())
 		{
-			isFirstPlan = teamPlan.IsFirstPlan();
+			isFirstPlan = teamPlanAux.IsFirstPlan();
 			return true;
 		}
 		return false;
@@ -253,7 +239,7 @@ public class DefaultMissionDeploymentPlan : IMissionDeploymentPlan
 
 	public bool IsReinforcementPlanMade(Team team)
 	{
-		return GetTeamPlan(team)?.IsPlanMade(isReinforcement: true) ?? false;
+		return GetTeamPlanAux(team)?.IsPlanMade(isReinforcement: true) ?? false;
 	}
 
 	public bool IsInitialPlanSuitableForFormations(Team team, (int footTroopCount, int mountedTroopCount)[] troopDataPerFormationClass)
@@ -263,7 +249,7 @@ public class DefaultMissionDeploymentPlan : IMissionDeploymentPlan
 
 	public bool HasDeploymentBoundaries(Team team)
 	{
-		return GetTeamPlan(team)?.HasDeploymentBoundaries() ?? false;
+		return GetTeamPlanAux(team)?.HasDeploymentBoundaries() ?? false;
 	}
 
 	public MatrixFrame GetDeploymentFrame(Team team)
@@ -291,23 +277,12 @@ public class DefaultMissionDeploymentPlan : IMissionDeploymentPlan
 
 	public MBReadOnlyList<(string id, MBList<Vec2> points)> GetDeploymentBoundaries(Team team)
 	{
-		if (HasDeploymentBoundaries(team))
-		{
-			return GetTeamPlan(team).DeploymentBoundaries;
-		}
-		Debug.FailedAssert("Cannot retrieve team " + team.TeamIndex + " deployment boundaries as they are not available.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Deployment\\DefaultMissionDeploymentPlan.cs", "GetDeploymentBoundaries", 377);
-		return null;
+		return GetTeamPlan(team).GetDeploymentBoundaries();
 	}
 
 	public Vec3 GetMeanPosition(Team team, bool isReinforcement = false)
 	{
-		DefaultTeamDeploymentPlan teamPlan = GetTeamPlan(team);
-		if (teamPlan.IsPlanMade(isReinforcement))
-		{
-			return teamPlan.GetMeanPosition(isReinforcement);
-		}
-		Debug.FailedAssert("Cannot retrieve mean position as " + (isReinforcement ? "reinforcement" : "initial") + " plan(s) are not made for this team.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Deployment\\DefaultMissionDeploymentPlan.cs", "GetMeanPosition", 392);
-		return Vec3.Invalid;
+		return GetTeamPlan(team).GetMeanPosition(isReinforcement);
 	}
 
 	public void UpdateReinforcementPlan(Team team)
@@ -336,7 +311,7 @@ public class DefaultMissionDeploymentPlan : IMissionDeploymentPlan
 		{
 			ReadSpawnEntitiesFromScene(_mission.IsFieldBattle);
 		}
-		teamPlan.MakeDeploymentPlan(_formationSceneSpawnEntries, isReinforcement, spawnOffset, targetOffset);
+		teamPlan.MakeDeploymentPlan(spawnOffset, targetOffset, _formationSceneSpawnEntries, isReinforcement);
 	}
 
 	private void ReadSpawnEntitiesFromScene(bool isFieldBattle)
@@ -466,6 +441,11 @@ public class DefaultMissionDeploymentPlan : IMissionDeploymentPlan
 	}
 
 	private DefaultTeamDeploymentPlan GetTeamPlan(Team team)
+	{
+		return GetTeamPlanAux(team);
+	}
+
+	private DefaultTeamDeploymentPlan GetTeamPlanAux(Team team)
 	{
 		return _teamDeploymentPlans.FirstOrDefault(((Team team, DefaultTeamDeploymentPlan plan) t) => t.team == team).plan;
 	}

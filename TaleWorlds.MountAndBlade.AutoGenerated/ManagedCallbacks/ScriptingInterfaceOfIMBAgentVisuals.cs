@@ -78,7 +78,7 @@ internal class ScriptingInterfaceOfIMBAgentVisuals : IMBAgentVisuals
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void ClearVisualComponentsDelegate(UIntPtr agentVisualsId, [MarshalAs(UnmanagedType.U1)] bool removeSkeleton);
+	public delegate void ClearVisualComponentsDelegate(UIntPtr agentVisualsId, [MarshalAs(UnmanagedType.U1)] bool removeSkeleton, [MarshalAs(UnmanagedType.U1)] bool removeLabel);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -628,9 +628,9 @@ internal class ScriptingInterfaceOfIMBAgentVisuals : IMBAgentVisuals
 		call_ClearAllWeaponMeshesDelegate(agentVisualsPtr);
 	}
 
-	public void ClearVisualComponents(UIntPtr agentVisualsId, bool removeSkeleton)
+	public void ClearVisualComponents(UIntPtr agentVisualsId, bool removeSkeleton, bool removeLabel)
 	{
-		call_ClearVisualComponentsDelegate(agentVisualsId, removeSkeleton);
+		call_ClearVisualComponentsDelegate(agentVisualsId, removeSkeleton, removeLabel);
 	}
 
 	public void ClearWeaponMeshes(UIntPtr agentVisualsPtr, int weaponVisualIndex)

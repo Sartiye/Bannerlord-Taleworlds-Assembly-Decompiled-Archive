@@ -144,7 +144,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 		_widget_0_0_0.HasCircularMovement = true;
 		_widget_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_1_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0_0_1_0.HeightSizePolicy = SizePolicy.Fixed;
@@ -207,7 +207,7 @@ public class FaceGen__TaleWorlds_MountAndBlade_ViewModelCollection_FaceGenerator
 		_widget_0_0_1_1.MarginRight = 10f;
 		_widget_0_0_1_1.MarginTop = 10f;
 		_widget_0_0_1_1.MarginBottom = 80f;
-		_widget_0_0_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_1_1.MinIndex = 2000;
 		_widget_0_0_1_1.MaxIndex = 10000;
 		_widget_0_1.DoNotAcceptEvents = true;

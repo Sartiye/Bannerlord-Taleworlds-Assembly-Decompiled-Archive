@@ -30,7 +30,9 @@ public interface IMissionDeploymentPlan
 
 	bool SupportsReinforcements();
 
-	bool SupportsNavmesh();
+	void UpdateReinforcementPlan(Team team);
+
+	bool SupportsNavmesh(Team team);
 
 	bool HasPlayerSpawnFrame(BattleSideEnum battleSide);
 

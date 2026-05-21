@@ -15,7 +15,6 @@ public class PlayMusicPoint : AnimationPoint
 	protected override void OnInit()
 	{
 		base.OnInit();
-		KeepOldVisibility = true;
 		base.IsDisabledForPlayers = true;
 		SetScriptComponentToTick(GetTickRequirement());
 	}

@@ -81,18 +81,6 @@ public class AgentDrivenProperties
 		}
 	}
 
-	public float AiShooterErrorWoRangeUpdate
-	{
-		get
-		{
-			return GetStat(DrivenProperty.AiShooterErrorWoRangeUpdate);
-		}
-		set
-		{
-			SetStat(DrivenProperty.AiShooterErrorWoRangeUpdate, value);
-		}
-	}
-
 	public float WeaponMaxMovementAccuracyPenalty
 	{
 		get
@@ -162,6 +150,18 @@ public class AgentDrivenProperties
 		set
 		{
 			SetStat(DrivenProperty.WeaponRotationalAccuracyPenaltyInRadians, value);
+		}
+	}
+
+	public float WeaponExternalAccelerationAccuracyPenalty
+	{
+		get
+		{
+			return GetStat(DrivenProperty.WeaponExternalAccelerationAccuracyPenalty);
+		}
+		set
+		{
+			SetStat(DrivenProperty.WeaponExternalAccelerationAccuracyPenalty, value);
 		}
 	}
 
@@ -522,6 +522,18 @@ public class AgentDrivenProperties
 		set
 		{
 			SetStat(DrivenProperty.BipedalRangedReloadSpeedMultiplier, value);
+		}
+	}
+
+	public float AiShooterErrorWoRangeUpdate
+	{
+		get
+		{
+			return GetStat(DrivenProperty.AiShooterErrorWoRangeUpdate);
+		}
+		set
+		{
+			SetStat(DrivenProperty.AiShooterErrorWoRangeUpdate, value);
 		}
 	}
 
@@ -1163,7 +1175,7 @@ public class AgentDrivenProperties
 
 	public AgentDrivenProperties()
 	{
-		_statValues = new float[97];
+		_statValues = new float[98];
 	}
 
 	public float GetStat(DrivenProperty propertyEnum)

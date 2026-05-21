@@ -1,3 +1,4 @@
+using System;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -6,9 +7,7 @@ namespace TaleWorlds.MountAndBlade;
 
 public static class CombatLogManager
 {
-	public delegate void OnPrintCombatLogHandler(CombatLogData logData);
-
-	public static event OnPrintCombatLogHandler OnGenerateCombatLog;
+	public static event Action<CombatLogData> OnGenerateCombatLog;
 
 	public static void PrintDebugLogForInfo(Agent attackerAgent, Agent victimAgent, DamageTypes damageType, int speedBonus, int armorAmount, int inflictedDamage, int absorbedByArmor, sbyte collisionBone, float lostHpPercentage)
 	{

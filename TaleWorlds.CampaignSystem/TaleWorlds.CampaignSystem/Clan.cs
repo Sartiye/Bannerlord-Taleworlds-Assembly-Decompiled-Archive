@@ -418,7 +418,7 @@ public sealed class Clan : MBObjectBase, IFaction
 		}
 	}
 
-	public int CommanderLimit => Campaign.Current.Models.ClanTierModel.GetPartyLimitForTier(this, Tier);
+	public int WarPartyLimit => Campaign.Current.Models.ClanTierModel.GetPartyLimitForTier(this, Tier);
 
 	public static MBReadOnlyList<Clan> All => Campaign.Current.Clans;
 

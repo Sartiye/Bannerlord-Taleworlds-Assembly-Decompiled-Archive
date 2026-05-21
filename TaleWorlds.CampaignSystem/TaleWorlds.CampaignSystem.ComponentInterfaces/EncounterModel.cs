@@ -4,15 +4,20 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Siege;
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
 public abstract class EncounterModel : MBGameModel<EncounterModel>
 {
-	public abstract float NeededMaximumDistanceForEncounteringMobileParty { get; }
+	public abstract float NeededMaximumLandDistanceForEncounteringMobileParty { get; }
 
-	public abstract float MaximumAllowedDistanceForEncounteringMobilePartyInArmy { get; }
+	public abstract float NeededMaximumNavalDistanceForEncounteringMobileParty { get; }
+
+	public abstract float MaximumAllowedLandDistanceForEncounteringMobilePartyInArmy { get; }
+
+	public abstract float MaximumAllowedNavalDistanceForEncounteringMobilePartyInArmy { get; }
 
 	public abstract float NeededMaximumDistanceForEncounteringTown { get; }
 
@@ -25,6 +30,8 @@ public abstract class EncounterModel : MBGameModel<EncounterModel>
 	public abstract float GetSettlementBeingNearFieldBattleRadius { get; }
 
 	public abstract float PlayerParleyDistance { get; }
+
+	public abstract int MinimumNumberOfMenForAttackingVillageViaScene { get; }
 
 	public abstract bool IsEncounterExemptFromHostileActions(PartyBase side1, PartyBase side2);
 
@@ -53,4 +60,6 @@ public abstract class EncounterModel : MBGameModel<EncounterModel>
 	public abstract bool CanPlayerForceBanditsToJoin(out TextObject explanation);
 
 	public abstract bool IsPartyUnderPlayerCommand(PartyBase party);
+
+	public abstract MBReadOnlyList<MobileParty> GetPartiesToTeleportOnMapEventFinalize(MapEvent mapEvent);
 }

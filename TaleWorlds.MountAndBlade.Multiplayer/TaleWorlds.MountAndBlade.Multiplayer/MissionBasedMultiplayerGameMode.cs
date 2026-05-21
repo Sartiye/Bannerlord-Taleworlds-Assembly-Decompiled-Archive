@@ -1,4 +1,5 @@
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.Diamond;
 
 namespace TaleWorlds.MountAndBlade.Multiplayer;
@@ -19,6 +20,14 @@ public class MissionBasedMultiplayerGameMode : MultiplayerGameMode
 
 	public override void StartMultiplayerGame(string scene)
 	{
+		if (Mission.Current != null)
+		{
+			Debug.FailedAssert("Starting multiplayer game while a mission is ongoing", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\MissionBasedMultiplayerGameMode.cs", "StartMultiplayerGame", 31);
+		}
+		if (GameStateManager.Current?.ActiveState is MissionState)
+		{
+			Debug.FailedAssert("Starting multiplayer game while in mission state", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\MissionBasedMultiplayerGameMode.cs", "StartMultiplayerGame", 37);
+		}
 		if (base.Name == "TeamDeathmatch")
 		{
 			MultiplayerMissions.OpenTeamDeathmatchMission(scene);

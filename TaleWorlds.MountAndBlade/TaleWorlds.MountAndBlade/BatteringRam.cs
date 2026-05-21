@@ -227,10 +227,10 @@ public class BatteringRam : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMove
 	protected internal override void OnInit()
 	{
 		base.OnInit();
-		DestructableComponent destructableComponent = base.GameEntity.GetScriptComponents<DestructableComponent>().FirstOrDefault();
-		if (destructableComponent != null)
+		DestructableComponent firstScriptOfType = base.GameEntity.GetFirstScriptOfType<DestructableComponent>();
+		if (firstScriptOfType != null)
 		{
-			destructableComponent.BattleSide = BattleSideEnum.Attacker;
+			firstScriptOfType.BattleSide = BattleSideEnum.Attacker;
 		}
 		_state = RamState.Stable;
 		IEnumerable<WeakGameEntity> source = from ewgt in base.Scene.FindWeakEntitiesWithTag(_gateTag).ToList()

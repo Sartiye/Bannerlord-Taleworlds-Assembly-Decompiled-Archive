@@ -25,6 +25,8 @@ public class MissionAgentStatusVM : ViewModel
 
 	private float _combatUIRemainTimer;
 
+	private const float _combatUIRemainDuration = 2f;
+
 	private MissionPeer _missionPeer;
 
 	private MissionMultiplayerGameModeBaseClient _mpGameMode;
@@ -744,9 +746,7 @@ public class MissionAgentStatusVM : ViewModel
 				if (IsTroopsActive)
 				{
 					TroopCount = _myMissionPeer.ControlledFormation.CountOfUnits;
-					FormationClass defaultFormationGroup = (FormationClass)MultiplayerClassDivisions.GetMPHeroClassForPeer(_myMissionPeer).TroopCharacter.DefaultFormationGroup;
-					TroopsAmmoAvailable = defaultFormationGroup == FormationClass.Ranged || defaultFormationGroup == FormationClass.HorseArcher;
-					if (TroopsAmmoAvailable)
+					if (_myMissionPeer.ControlledFormation.QuerySystem.RangedUnitRatio > 0f || _myMissionPeer.ControlledFormation.QuerySystem.RangedCavalryUnitRatio > 0f)
 					{
 						int totalCurrentAmmo = 0;
 						int totalMaxAmmo = 0;
@@ -759,7 +759,19 @@ public class MissionAgentStatusVM : ViewModel
 								totalMaxAmmo += maxAmmo;
 							}
 						});
-						TroopsAmmoPercentage = (float)totalCurrentAmmo / (float)totalMaxAmmo;
+						if (totalMaxAmmo > 0)
+						{
+							TroopsAmmoAvailable = true;
+							TroopsAmmoPercentage = (float)totalCurrentAmmo / (float)totalMaxAmmo;
+						}
+						else
+						{
+							TroopsAmmoAvailable = false;
+						}
+					}
+					else
+					{
+						TroopsAmmoAvailable = false;
 					}
 				}
 			}
@@ -776,7 +788,7 @@ public class MissionAgentStatusVM : ViewModel
 			if (IsCombatUIActive)
 			{
 				_combatUIRemainTimer += dt;
-				if (_combatUIRemainTimer >= 3f)
+				if (_combatUIRemainTimer >= 2f)
 				{
 					IsCombatUIActive = false;
 				}
@@ -908,6 +920,7 @@ public class MissionAgentStatusVM : ViewModel
 	public void OnMainAgentHit(int damage, float distance)
 	{
 		TakenDamageController.OnMainAgentHit(damage, distance);
+		TakenDamageFeed.OnMainAgentHit(damage);
 	}
 
 	public void OnFocusGained(Agent mainAgent, IFocusable focusableObject, bool isInteractable)

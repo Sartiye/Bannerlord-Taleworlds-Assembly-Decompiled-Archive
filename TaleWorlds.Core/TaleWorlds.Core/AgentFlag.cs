@@ -31,5 +31,6 @@ public enum AgentFlag : uint
 	IsUnique = 0x800000u,
 	CanUseAllBowsMounted = 0x1000000u,
 	CanReloadAllXBowsMounted = 0x2000000u,
-	CanDeflectArrowsWith2HSword = 0x4000000u
+	CanDeflectArrowsWith2HSword = 0x4000000u,
+	UnreachableViaNavMesh = 0x8000000u
 }

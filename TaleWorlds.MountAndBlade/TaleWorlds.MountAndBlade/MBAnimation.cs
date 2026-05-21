@@ -99,15 +99,15 @@ public struct MBAnimation
 		return MBAPI.IMBAnimation.GetAnimationBlendInPeriod(animationIndex);
 	}
 
-	public static int GetAnimationBlendsWithActionIndex(string animationName)
+	public static ActionIndexCache GetAnimationBlendsWithActionIndex(string animationName)
 	{
 		int indexWithID = MBAPI.IMBAnimation.GetIndexWithID(animationName);
-		return MBAPI.IMBAnimation.GetAnimationBlendsWithActionIndex(indexWithID);
+		return new ActionIndexCache(MBAPI.IMBAnimation.GetAnimationBlendsWithActionIndex(indexWithID));
 	}
 
-	public static float GetAnimationBlendsWithActionIndex(int animationIndex)
+	public static ActionIndexCache GetAnimationBlendsWithActionIndex(int animationIndex)
 	{
-		return MBAPI.IMBAnimation.GetAnimationBlendsWithActionIndex(animationIndex);
+		return new ActionIndexCache(MBAPI.IMBAnimation.GetAnimationBlendsWithActionIndex(animationIndex));
 	}
 
 	public static Vec3 GetAnimationDisplacementAtProgress(string animationName, float progress)

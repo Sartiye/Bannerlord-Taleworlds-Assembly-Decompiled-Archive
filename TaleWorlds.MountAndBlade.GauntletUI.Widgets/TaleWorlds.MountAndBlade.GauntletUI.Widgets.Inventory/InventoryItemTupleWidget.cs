@@ -581,7 +581,7 @@ public class InventoryItemTupleWidget : InventoryItemButtonWidget
 		}
 		bool flag = base.ScreenWidget.EquipmentMode == 0 && !IsCivilian && IsEquipable;
 		bool flag2 = base.ScreenWidget.EquipmentMode == 2 && !IsStealth && IsEquipable;
-		if (!CanCharacterUseItem)
+		if (IsEquipable && !CanCharacterUseItem)
 		{
 			if (!MainContainer.Brush.IsCloneRelated(CharacterCantUseBrush))
 			{

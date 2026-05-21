@@ -350,6 +350,7 @@ public class SaveableCampaignTypeDefiner : SaveableTypeDefiner
 		AddEnumDefinition(typeof(FormationFilterType), 2140);
 		AddEnumDefinition(typeof(MobileParty.NavigationType), 2150);
 		AddEnumDefinition(typeof(GameAccelerationMode), 2160);
+		AddEnumDefinition(typeof(HideoutEventComponent.HideoutBattleEndState), 2161);
 	}
 
 	protected override void DefineInterfaceTypes()
@@ -596,7 +597,6 @@ public class SaveableCampaignTypeDefiner : SaveableTypeDefiner
 		ConstructContainerDefinition(typeof(KeyValuePair<Settlement, ItemRoster>[]));
 		ConstructContainerDefinition(typeof(Dictionary<Hero, Hero>));
 		ConstructContainerDefinition(typeof(Dictionary<ITrackableBase, TrackedObject>));
-		ConstructContainerDefinition(typeof(List<Ship>));
 		ConstructContainerDefinition(typeof(Dictionary<Incident, CampaignTime>));
 		ConstructContainerDefinition(typeof(Dictionary<MobileParty, CampaignVec2>));
 		ConstructContainerDefinition(typeof(Dictionary<Hero, Figurehead>));

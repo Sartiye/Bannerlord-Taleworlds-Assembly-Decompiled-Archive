@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Engine.InputSystem;
-using TaleWorlds.Engine.Options;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -48,7 +47,7 @@ public class ViewSubModule : MBSubModuleBase
 
 	public static GameStateScreenManager GameStateScreenManager => _instance._gameStateScreenManager;
 
-	private void InitializeHotKeyManager(bool loadKeys)
+	private void InitializeHotKeyManager()
 	{
 		string fileName = "BannerlordGameKeys.xml";
 		HotKeyManager.Initialize(new PlatformFilePath(EngineFilePaths.ConfigsPath, fileName), !ScreenManager.IsEnterButtonRDown);
@@ -75,7 +74,7 @@ public class ViewSubModule : MBSubModuleBase
 			new CheatsHotKeyCategory(),
 			new PhotoModeHotKeyCategory(),
 			new PollHotkeyCategory()
-		}, loadKeys);
+		});
 	}
 
 	private void InitializeBannerVisualManager()
@@ -91,7 +90,7 @@ public class ViewSubModule : MBSubModuleBase
 	{
 		base.OnSubModuleLoad();
 		_instance = this;
-		InitializeHotKeyManager(loadKeys: false);
+		InitializeHotKeyManager();
 		InitializeBannerVisualManager();
 		CraftedDataViewManager.Initialize();
 		_visualOrderProvider = new DefaultVisualOrderProvider();
@@ -122,9 +121,7 @@ public class ViewSubModule : MBSubModuleBase
 		}, () => (Module.CurrentModule.IsOnlyCoreContentEnabled, coreContentDisabledReason)));
 		ViewModel.RefreshPropertyAndMethodInfos();
 		Module.CurrentModule.ImguiProfilerTick += OnImguiProfilerTick;
-		Input.OnControllerTypeChanged = (Action<Input.ControllerTypes>)Delegate.Combine(Input.OnControllerTypeChanged, new Action<Input.ControllerTypes>(OnControllerTypeChanged));
 		ScreenManager.OnPushScreen += OnScreenManagerPushScreen;
-		NativeOptions.OnNativeOptionChanged = (NativeOptions.OnNativeOptionChangedDelegate)Delegate.Combine(NativeOptions.OnNativeOptionChanged, new NativeOptions.OnNativeOptionChangedDelegate(OnNativeOptionChanged));
 		EngineController.OnConstrainedStateChanged += OnConstrainedStateChange;
 		HyperlinkTexts.IsPlayStationGamepadActive = GetIsPlaystationGamepadActive;
 		_dlcInstallationQueryView = new DLCInstallationQueryView();
@@ -143,33 +140,8 @@ public class ViewSubModule : MBSubModuleBase
 
 	private bool GetIsPlaystationGamepadActive()
 	{
-		if (Input.IsGamepadActive)
-		{
-			if (Input.ControllerType != Input.ControllerTypes.PlayStationDualSense)
-			{
-				return Input.ControllerType == Input.ControllerTypes.PlayStationDualShock;
-			}
-			return true;
-		}
-		return false;
-	}
-
-	private void OnControllerTypeChanged(Input.ControllerTypes newType)
-	{
-		ReInitializeHotKeyManager();
-	}
-
-	private void OnNativeOptionChanged(NativeOptions.NativeOptionsType changedNativeOptionsType)
-	{
-		if (changedNativeOptionsType == NativeOptions.NativeOptionsType.EnableTouchpadMouse)
-		{
-			ReInitializeHotKeyManager();
-		}
-	}
-
-	private void ReInitializeHotKeyManager()
-	{
-		InitializeHotKeyManager(loadKeys: true);
+		bool flag = Input.ControllerType.IsPlaystation();
+		return Input.IsGamepadActive && flag;
 	}
 
 	protected override void OnSubModuleUnloaded()
@@ -181,9 +153,7 @@ public class ViewSubModule : MBSubModuleBase
 		BannerlordTableauManager.ClearManager();
 		CraftedDataViewManager.Clear();
 		Module.CurrentModule.ImguiProfilerTick -= OnImguiProfilerTick;
-		Input.OnControllerTypeChanged = (Action<Input.ControllerTypes>)Delegate.Remove(Input.OnControllerTypeChanged, new Action<Input.ControllerTypes>(OnControllerTypeChanged));
 		ScreenManager.OnPushScreen -= OnScreenManagerPushScreen;
-		NativeOptions.OnNativeOptionChanged = (NativeOptions.OnNativeOptionChangedDelegate)Delegate.Remove(NativeOptions.OnNativeOptionChanged, new NativeOptions.OnNativeOptionChangedDelegate(OnNativeOptionChanged));
 		EngineController.OnConstrainedStateChanged -= OnConstrainedStateChange;
 		_instance = null;
 		base.OnSubModuleUnloaded();
@@ -197,7 +167,6 @@ public class ViewSubModule : MBSubModuleBase
 		}
 		if (!_initialized)
 		{
-			HotKeyManager.LoadAsync();
 			BannerlordTableauManager.InitializeCharacterTableauRenderSystem();
 			ThumbnailCacheManager.InitializeManager();
 			ThumbnailCacheManager.Current.RegisterThumbnailCache(new AvatarThumbnailCache(75));

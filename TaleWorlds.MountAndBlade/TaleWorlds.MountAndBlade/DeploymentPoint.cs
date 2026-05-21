@@ -64,6 +64,8 @@ public class DeploymentPoint : SynchedMissionObject
 
 	public event Action<DeploymentPoint> OnDeploymentPointTypeDetermined;
 
+	public event Action<DeploymentPoint> OnDeployOrDisband;
+
 	protected internal override void OnInit()
 	{
 		_weapons = new MBList<SynchedMissionObject>();
@@ -273,6 +275,7 @@ public class DeploymentPoint : SynchedMissionObject
 		OnDeploymentStateChangedAux(DeployedWeapon);
 		ToggleDeploymentPointVisibility(visible: false);
 		ToggleDeployedWeaponVisibility(visible: true);
+		this.OnDeployOrDisband?.Invoke(this);
 	}
 
 	public void Deploy(SiegeWeapon s)
@@ -282,6 +285,7 @@ public class DeploymentPoint : SynchedMissionObject
 		OnDeploymentStateChangedAux(s);
 		ToggleDeploymentPointVisibility(visible: false);
 		ToggleDeployedWeaponVisibility(visible: true);
+		this.OnDeployOrDisband?.Invoke(this);
 	}
 
 	public ScriptComponentBehavior Disband()
@@ -291,6 +295,7 @@ public class DeploymentPoint : SynchedMissionObject
 		DisbandedWeapon = DeployedWeapon;
 		DeployedWeapon = null;
 		OnDeploymentStateChangedAux(DisbandedWeapon);
+		this.OnDeployOrDisband?.Invoke(this);
 		return DisbandedWeapon;
 	}
 

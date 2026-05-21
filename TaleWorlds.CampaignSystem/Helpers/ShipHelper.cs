@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
@@ -7,6 +9,8 @@ namespace Helpers;
 
 public static class ShipHelper
 {
+	public const int NavalRaidMissionShipLimit = 3;
+
 	public static Banner GetShipBanner(IShipOrigin shipOrigin, IAgent captain = null)
 	{
 		if (captain?.Character is CharacterObject { IsHero: not false } characterObject)
@@ -21,7 +25,7 @@ public static class ShipHelper
 			}
 			return ship.Owner.Banner;
 		}
-		return null;
+		return Banner.CreateOneColoredEmptyBanner(92);
 	}
 
 	public static (uint sailColor1, uint sailColor2) GetSailColors(IShipOrigin shipOrigin, IAgent captain = null)
@@ -78,5 +82,18 @@ public static class ShipHelper
 			}
 		}
 		return result;
+	}
+
+	public static List<Ship> GetOrderedNavalRaidShipsOfPlayerParty()
+	{
+		List<Ship> list = new List<Ship>();
+		foreach (Ship ship in MobileParty.MainParty.Ships)
+		{
+			if (ship.ShipHull.CanNavigateShallowWater)
+			{
+				list.Add(ship);
+			}
+		}
+		return list.OrderByDescending((Ship x) => x.ShipHull.MainDeckCrewCapacity).Take(3).ToList();
 	}
 }

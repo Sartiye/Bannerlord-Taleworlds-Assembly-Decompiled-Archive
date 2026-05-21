@@ -175,7 +175,7 @@ public class OrderController
 	{
 		if (selectorAgent == null || formation.PlayerOwner == selectorAgent)
 		{
-			return formation.CountOfUnits > 0;
+			return formation.GetCountOfUnitsWithCondition((Agent agent) => agent.Health > 0f) > 0;
 		}
 		return false;
 	}
@@ -427,7 +427,7 @@ public class OrderController
 			}
 			break;
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Invalid order type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrder", 620);
+			TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Invalid order type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrder", 622);
 			break;
 		}
 		AfterSetOrder(orderType);
@@ -610,7 +610,7 @@ public class OrderController
 				}
 				break;
 			default:
-				TaleWorlds.Library.Debug.FailedAssert("Unexpected weapon class.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "PlayOrderGestures", 819);
+				TaleWorlds.Library.Debug.FailedAssert("Unexpected weapon class.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "PlayOrderGestures", 821);
 				break;
 			case WeaponClass.Boulder:
 			case WeaponClass.BallistaBoulder:
@@ -620,6 +620,10 @@ public class OrderController
 		foreach (Formation selectedFormation in _selectedFormations)
 		{
 			Agent medianAgent = selectedFormation.GetMedianAgent(excludeDetachedUnits: false, excludePlayer: true, selectedFormation.CachedAveragePosition);
+			int countOfUnitsWithCondition = selectedFormation.GetCountOfUnitsWithCondition((Agent agent) => agent.IsFemale);
+			int countOfUnits = selectedFormation.CountOfUnits;
+			float value = (float)countOfUnitsWithCondition / (float)countOfUnits;
+			SoundEventParameter parameter = new SoundEventParameter("GenderRatio", value);
 			if (medianAgent == null)
 			{
 				continue;
@@ -633,12 +637,12 @@ public class OrderController
 			case OrderType.FollowMe:
 			case OrderType.AdvanceTenPaces:
 			case OrderType.Advance:
-				MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/alerts/nods/move"), position);
+				MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/alerts/nods/move"), ref parameter, position);
 				break;
 			case OrderType.Charge:
 			case OrderType.ChargeWithTarget:
 			case OrderType.AttackEntity:
-				MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/alerts/nods/attack"), position);
+				MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/alerts/nods/attack"), ref parameter, position);
 				if (_yellingAfterChargeOrderTimer.Check(reset: true))
 				{
 					selectedFormation.ApplyActionOnEachUnit(delegate(Agent yellingAgent)
@@ -648,7 +652,7 @@ public class OrderController
 				}
 				break;
 			case OrderType.StandYourGround:
-				MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/alerts/nods/stop"), position);
+				MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/alerts/nods/stop"), ref parameter, position);
 				break;
 			case OrderType.ArrangementLine:
 			case OrderType.ArrangementCloseOrder:
@@ -658,7 +662,7 @@ public class OrderController
 			case OrderType.ArrangementVee:
 			case OrderType.ArrangementColumn:
 			case OrderType.ArrangementScatter:
-				MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/alerts/nods/formation"), position);
+				MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/alerts/nods/formation"), ref parameter, position);
 				break;
 			}
 		}
@@ -686,7 +690,7 @@ public class OrderController
 			agent.MakeVoice(SkinVoiceManager.VoiceType.HorseArchers, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
 			break;
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "PlayFormationSelectedGesture", 899);
+			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "PlayFormationSelectedGesture", 906);
 			break;
 		}
 	}
@@ -759,7 +763,7 @@ public class OrderController
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Invalid order type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithAgent", 988);
+			TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Invalid order type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithAgent", 995);
 		}
 		AfterSetOrder(orderType);
 		FireOnOrderIssued(orderType, SelectedFormations, this, agent);
@@ -802,7 +806,7 @@ public class OrderController
 			break;
 		}
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Invalid order type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithPosition", 1038);
+			TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Invalid order type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithPosition", 1045);
 			break;
 		}
 		AfterSetOrder(orderType);
@@ -836,7 +840,7 @@ public class OrderController
 			}
 			break;
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("Invalid order type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithFormation", 1078);
+			TaleWorlds.Library.Debug.FailedAssert("Invalid order type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithFormation", 1085);
 			break;
 		}
 		AfterSetOrder(orderType);
@@ -854,7 +858,7 @@ public class OrderController
 			GameNetwork.WriteMessage(new ApplyOrderWithFormationAndPercentage(orderType, orderFormation.Index, value));
 			GameNetwork.EndModuleEventAsClient();
 		}
-		TaleWorlds.Library.Debug.FailedAssert("Invalid order type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithFormationAndPercentage", 1116);
+		TaleWorlds.Library.Debug.FailedAssert("Invalid order type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithFormationAndPercentage", 1123);
 		AfterSetOrder(orderType);
 		FireOnOrderIssued(orderType, SelectedFormations, this, orderFormation, percentage);
 	}
@@ -967,7 +971,7 @@ public class OrderController
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Invalid order type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithFormationAndNumber", 1358);
+			TaleWorlds.Library.Debug.FailedAssert("[DEBUG]Invalid order type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithFormationAndNumber", 1365);
 		}
 		AfterSetOrder(orderType);
 		if (this.OnOrderIssued == null)
@@ -1011,7 +1015,7 @@ public class OrderController
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Invalid order type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithTwoPositions", 1412);
+			TaleWorlds.Library.Debug.FailedAssert("Invalid order type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "SetOrderWithTwoPositions", 1419);
 		}
 		AfterSetOrder(orderType);
 		FireOnOrderIssued(orderType, SelectedFormations, this, position1, position2);
@@ -1128,7 +1132,7 @@ public class OrderController
 		case MovementOrder.MovementStateEnum.StandGround:
 			return OrderType.StandYourGround;
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "GetActiveMovementOrderOf", 1565);
+			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "GetActiveMovementOrderOf", 1572);
 			return OrderType.Move;
 		}
 	}
@@ -1474,7 +1478,7 @@ public class OrderController
 				if (!GameNetwork.IsMultiplayer && _mission.Mode == MissionMode.Deployment && !_mission.IsNavalBattle)
 				{
 					IMissionDeploymentPlan deploymentPlan = agent.Mission.DeploymentPlan;
-					if (deploymentPlan.SupportsNavmesh())
+					if (deploymentPlan.SupportsNavmesh(agent.Team))
 					{
 						deploymentPlan.ProjectPositionToDeploymentBoundaries(agent.Formation.Team, ref position);
 					}
@@ -1621,7 +1625,7 @@ public class OrderController
 				break;
 			}
 			default:
-				TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "MoveToLineSegment", 2379);
+				TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "MoveToLineSegment", 2386);
 				break;
 			}
 		}
@@ -1631,7 +1635,7 @@ public class OrderController
 	{
 		if (!formations.Any())
 		{
-			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "GetOrderLookAtDirection", 2399);
+			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\OrderController.cs", "GetOrderLookAtDirection", 2406);
 			return Vec2.One;
 		}
 		Formation formation = TaleWorlds.Core.Extensions.MaxBy(formations, (Formation f) => f.CountOfUnitsWithoutDetachedOnes);
@@ -1733,7 +1737,7 @@ public class OrderController
 		});
 	}
 
-	private static void TryCancelStopOrder(Formation formation)
+	public static void TryCancelStopOrder(Formation formation)
 	{
 		if (!GameNetwork.IsClientOrReplay && formation.GetReadonlyMovementOrderReference().OrderEnum == MovementOrder.MovementOrderEnum.Stop)
 		{

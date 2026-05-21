@@ -280,20 +280,12 @@ public class LobbyState : GameState
 		LobbyClient gameClient = LobbyClient;
 		if (gameClient.IsIdle)
 		{
-			if (!(await gameClient.CanLogin()))
-			{
-				string title = new TextObject("{=lVfmVHbz}Login Failed").ToString();
-				string message = new TextObject("{=pgw7LMRo}Server over capacity.").ToString();
-				ShowFeedback(title, message);
-				IsLoggingIn = false;
-				return;
-			}
 			await UpdateHasMultiplayerPrivilege();
 			if (!HasMultiplayerPrivilege.Value)
 			{
-				string title2 = new TextObject("{=lVfmVHbz}Login Failed").ToString();
-				string message2 = new TextObject("{=cS0Hafjl}Player does not have access to multiplayer.").ToString();
-				ShowFeedback(title2, message2);
+				string title = new TextObject("{=lVfmVHbz}Login Failed").ToString();
+				string message = new TextObject("{=cS0Hafjl}Player does not have access to multiplayer.").ToString();
+				ShowFeedback(title, message);
 				IsLoggingIn = false;
 				return;
 			}
@@ -314,8 +306,8 @@ public class LobbyState : GameState
 			}
 			else
 			{
-				string title3 = new TextObject("{=lVfmVHbz}Login Failed").ToString();
-				ShowFeedback(title3, lobbyClientConnectResult.Error.ToString());
+				string title2 = new TextObject("{=lVfmVHbz}Login Failed").ToString();
+				ShowFeedback(title2, lobbyClientConnectResult.Error.ToString());
 				SetConnectionState(isAuthenticated: false);
 				OnResume();
 			}
@@ -1035,7 +1027,7 @@ public class LobbyState : GameState
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Lobby state is finalized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyState.cs", "RegisterForCustomServerAction", 1188);
+			TaleWorlds.Library.Debug.FailedAssert("Lobby state is finalized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyState.cs", "RegisterForCustomServerAction", 1179);
 		}
 	}
 
@@ -1047,7 +1039,7 @@ public class LobbyState : GameState
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Lobby state is finalized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyState.cs", "UnregisterForCustomServerAction", 1200);
+			TaleWorlds.Library.Debug.FailedAssert("Lobby state is finalized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyState.cs", "UnregisterForCustomServerAction", 1191);
 		}
 	}
 }

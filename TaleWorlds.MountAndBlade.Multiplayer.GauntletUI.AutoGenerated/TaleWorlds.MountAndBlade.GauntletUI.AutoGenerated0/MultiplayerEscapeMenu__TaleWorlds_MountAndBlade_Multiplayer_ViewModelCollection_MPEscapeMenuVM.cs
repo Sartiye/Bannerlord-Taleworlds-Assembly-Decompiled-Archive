@@ -130,7 +130,7 @@ public class MultiplayerEscapeMenu__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		_widget_2_3.ScopeID = "EscapeMenuScope";
 		_widget_2_3.ScopeParent = _widget_2_4;
 		_widget_2_3.ScopeMovements = GamepadNavigationTypes.Vertical;
-		_widget_2_4.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_4.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_4.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_4.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_4.MarginTop = 200f;

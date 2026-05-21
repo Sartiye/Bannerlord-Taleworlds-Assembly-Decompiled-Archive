@@ -48,8 +48,12 @@ public class RecruitPrisonersCampaignBehavior : CampaignBehaviorBase
 
 	private void DailyTickAIMobileParty(MobileParty mobileParty)
 	{
+		if (mobileParty.IsMainParty || !mobileParty.IsLordParty || mobileParty.MapEvent != null)
+		{
+			return;
+		}
 		TroopRoster prisonRoster = mobileParty.PrisonRoster;
-		if (mobileParty.IsMainParty || !mobileParty.IsLordParty || prisonRoster.Count == 0 || prisonRoster.TotalRegulars <= 0 || mobileParty.MapEvent != null)
+		if (prisonRoster.Count == 0 || prisonRoster.TotalRegulars <= 0)
 		{
 			return;
 		}

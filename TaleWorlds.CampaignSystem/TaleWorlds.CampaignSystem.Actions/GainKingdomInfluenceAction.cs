@@ -48,44 +48,46 @@ public static class GainKingdomInfluenceAction
 		{
 			clan = party.Owner.Clan;
 		}
-		if (clan != null && clan.Kingdom != null)
+		if (clan == null || clan.Kingdom == null)
 		{
-			MobileParty mobileParty = party ?? hero.PartyBelongedTo;
-			if (detail != InfluenceGainingReason.BeingAtArmy && detail == InfluenceGainingReason.ClanSupport)
+			return;
+		}
+		MobileParty mobileParty = party ?? hero.PartyBelongedTo;
+		if (detail != InfluenceGainingReason.BeingAtArmy && detail == InfluenceGainingReason.ClanSupport)
+		{
+			gainedInfluence = 0.5f;
+		}
+		if (detail != 0 && detail != InfluenceGainingReason.GivingFood && detail != InfluenceGainingReason.JoinFaction && detail != InfluenceGainingReason.ClanSupport && ((Kingdom)clan.MapFaction).ActivePolicies.Contains(DefaultPolicies.MilitaryCoronae))
+		{
+			gainedInfluence *= 1.2f;
+		}
+		ExplainedNumber stat = new ExplainedNumber(gainedInfluence);
+		if (detail == InfluenceGainingReason.Battle && gainedInfluence > 0f)
+		{
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.PreBattleManeuvers, mobileParty, isPrimaryBonus: true, ref stat);
+		}
+		if (detail == InfluenceGainingReason.CaptureSettlement && (hero != null || mobileParty.LeaderHero != null))
+		{
+			Hero hero2 = hero ?? mobileParty.LeaderHero;
+			PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Tactics.Besieged, hero2.CharacterObject, isPrimaryBonus: false, ref stat);
+		}
+		gainedInfluence = stat.ResultNumber;
+		ChangeClanInfluenceAction.Apply(clan, gainedInfluence);
+		int num = (int)gainedInfluence;
+		if (MathF.Abs(num) > 0)
+		{
+			if ((detail == InfluenceGainingReason.DonatePrisoners && party == MobileParty.MainParty) || (detail == InfluenceGainingReason.Battle && hero == Hero.MainHero))
 			{
-				gainedInfluence = 0.5f;
-			}
-			if (detail != 0 && detail != InfluenceGainingReason.GivingFood && detail != InfluenceGainingReason.JoinFaction && detail != InfluenceGainingReason.ClanSupport && ((Kingdom)clan.MapFaction).ActivePolicies.Contains(DefaultPolicies.MilitaryCoronae))
-			{
-				gainedInfluence *= 1.2f;
-			}
-			ExplainedNumber stat = new ExplainedNumber(gainedInfluence);
-			if (detail == InfluenceGainingReason.Battle && gainedInfluence > 0f)
-			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.PreBattleManeuvers, mobileParty, isPrimaryBonus: true, ref stat);
-			}
-			if (detail == InfluenceGainingReason.CaptureSettlement && (hero != null || mobileParty.LeaderHero != null))
-			{
-				Hero hero2 = hero ?? mobileParty.LeaderHero;
-				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Tactics.Besieged, hero2.CharacterObject, isPrimaryBonus: false, ref stat);
-			}
-			ChangeClanInfluenceAction.Apply(clan, stat.ResultNumber);
-			if (detail == InfluenceGainingReason.DonatePrisoners && party == MobileParty.MainParty)
-			{
-				MBTextManager.SetTextVariable("INFLUENCE", (int)gainedInfluence);
-				MBTextManager.SetTextVariable("NEW_INFLUENCE", (int)clan.Influence);
-				InformationManager.DisplayMessage(new InformationMessage(GameTexts.FindText("str_influence_gain_message").ToString()));
-			}
-			if (detail == InfluenceGainingReason.Battle && hero == Hero.MainHero)
-			{
-				MBTextManager.SetTextVariable("INFLUENCE", (int)gainedInfluence);
-				MBTextManager.SetTextVariable("NEW_INFLUENCE", (int)clan.Influence);
-				InformationManager.DisplayMessage(new InformationMessage(GameTexts.FindText("str_influence_gain_message").ToString()));
+				TextObject textObject = GameTexts.FindText("str_influence_gain_message");
+				textObject.SetTextVariable("INFLUENCE", num);
+				textObject.SetTextVariable("NEW_INFLUENCE", (int)clan.Influence);
+				InformationManager.DisplayMessage(new InformationMessage(textObject.ToString()));
 			}
 			if (detail == InfluenceGainingReason.SiegeSafePassage && hero == Hero.MainHero)
 			{
-				MBTextManager.SetTextVariable("INFLUENCE", -(int)gainedInfluence);
-				InformationManager.DisplayMessage(new InformationMessage(GameTexts.FindText("str_leave_siege_lose_influence_message").ToString()));
+				TextObject textObject2 = GameTexts.FindText("str_leave_siege_lose_influence_message");
+				textObject2.SetTextVariable("INFLUENCE", -num);
+				InformationManager.DisplayMessage(new InformationMessage(textObject2.ToString()));
 			}
 		}
 	}

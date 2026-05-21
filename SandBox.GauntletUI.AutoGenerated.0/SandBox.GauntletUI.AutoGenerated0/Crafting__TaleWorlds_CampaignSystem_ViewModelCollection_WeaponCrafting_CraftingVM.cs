@@ -80,6 +80,8 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 
 	private TextWidget _widget_1_1_1_6_0_1;
 
+	private HintWidget _widget_1_1_1_7;
+
 	private NavigationScopeTargeter _widget_2;
 
 	private ListPanel _widget_3;
@@ -322,6 +324,8 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 
 	private WeaponDesignVM _datasource_Root_WeaponDesign;
 
+	private BasicTooltipViewModel _datasource_Root_WeaponDesign_DifficultyExplanationHint;
+
 	private HintViewModel _datasource_Root_WeaponDesign_ScabbardHint;
 
 	private MBBindingList<CraftingPieceListVM> _datasource_Root_WeaponDesign_PieceLists;
@@ -446,6 +450,8 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_1_1_1_6_0.AddChild(_widget_1_1_1_6_0_0);
 		_widget_1_1_1_6_0_1 = new TextWidget(base.Context);
 		_widget_1_1_1_6_0.AddChild(_widget_1_1_1_6_0_1);
+		_widget_1_1_1_7 = new HintWidget(base.Context);
+		_widget_1_1_1.AddChild(_widget_1_1_1_7);
 		_widget_2 = new NavigationScopeTargeter(base.Context);
 		_widget.AddChild(_widget_2);
 		_widget_3 = new ListPanel(base.Context);
@@ -767,7 +773,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_1.VerticalAlignment = VerticalAlignment.Center;
 		_widget_1.MarginLeft = 100f;
 		_widget_1.MarginBottom = 230f;
-		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
+		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
 		_widget_1_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1_0.SuggestedWidth = 100f;
@@ -791,9 +797,10 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_1_1_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_1.SmithingLevelTextWidget = _widget_1_1_1_6_0_1;
 		_widget_1_1_1.OrderDifficultyTextWidget = _widget_1_1_1_5_0_1;
+		_widget_1_1_1.DoNotPassEventsToChildren = true;
 		_widget_1_1_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_1_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_1_1_0.MarginLeft = 40f;
 		_widget_1_1_1_0.MarginRight = 40f;
 		_widget_1_1_1_0.MarginBottom = 40f;
@@ -919,6 +926,9 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_1_1_1_6_0_1.VerticalAlignment = VerticalAlignment.Top;
 		_widget_1_1_1_6_0_1.PositionXOffset = 45f;
 		_widget_1_1_1_6_0_1.Brush = base.Context.GetBrush("Crafting.Difficulty.Text");
+		_widget_1_1_1_7.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_1_1_1_7.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_1_1_1_7.IsDisabled = true;
 		_widget_2.ScopeID = "RightBottomButtonsScope";
 		_widget_2.ScopeParent = _widget_3;
 		_widget_2.ScopeMovements = GamepadNavigationTypes.Vertical;
@@ -928,7 +938,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_3.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_3.MarginRight = 675f;
 		_widget_3.MarginBottom = 60f;
-		_widget_3.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
+		_widget_3.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
 		_widget_3.DoNotUseCustomScale = true;
 		_widget_3_0.DoNotPassEventsToChildren = true;
 		_widget_3_0.WidthSizePolicy = SizePolicy.Fixed;
@@ -973,7 +983,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_4.DoNotUseCustomScale = true;
 		_widget_4_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_4_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_4_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_5.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_5.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_5.SuggestedWidth = 140f;
@@ -995,13 +1005,13 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_5_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_5_0_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_5_0_0.MarginTop = 10f;
-		_widget_5_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_5_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_5_0_0_0.ScopeID = "PieceListsScope";
 		_widget_5_0_0_0.ScopeParent = _widget_5_0_0_1;
 		_widget_5_0_0_0.ScopeMovements = GamepadNavigationTypes.Vertical;
 		_widget_5_0_0_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_5_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_5_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_5_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_5_1.ScopeID = "ControlButtonsScope";
 		_widget_5_1.ScopeParent = _widget_5_2;
 		_widget_5_1.ScopeMovements = GamepadNavigationTypes.Horizontal;
@@ -1125,7 +1135,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_6_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_6_1_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_6_1_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_6_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_6_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_6_1_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_6_1_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_6_1_0_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -1154,7 +1164,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_6_1_0_0_1.VerticalAlignment = VerticalAlignment.Center;
 		_widget_6_1_0_0_2.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_6_1_0_0_2.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_6_1_0_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_6_1_0_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_6_1_0_0_2.VerticalAlignment = VerticalAlignment.Center;
 		_widget_6_1_0_0_3.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_6_1_0_0_3.HeightSizePolicy = SizePolicy.Fixed;
@@ -1167,7 +1177,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_6_1_0_0_4.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_6_1_0_0_4.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_6_1_0_0_4.VerticalAlignment = VerticalAlignment.Center;
-		_widget_6_1_0_0_4.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_6_1_0_0_4.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_6_2.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_6_2.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_6_2.SuggestedWidth = 1053f;
@@ -1257,7 +1267,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_8_0_0.DoNotAcceptEvents = true;
 		_widget_8_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_8_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_8_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_8_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_8_0_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_8_0_0.MarginTop = 7f;
 		_widget_8_0_0.UpdateChildrenStates = true;
@@ -1277,7 +1287,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_8_0_1.DoNotAcceptEvents = true;
 		_widget_8_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_8_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_8_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_8_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_8_0_1.VerticalAlignment = VerticalAlignment.Center;
 		_widget_8_0_1.MarginTop = 7f;
 		_widget_8_0_1.UpdateChildrenStates = true;
@@ -1317,7 +1327,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_8_1_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_8_1_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_8_1_0.MarginTop = 7f;
-		_widget_8_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_8_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_8_1_0.UpdateChildrenStates = true;
 		_widget_8_1_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_8_1_0_0.HeightSizePolicy = SizePolicy.Fixed;
@@ -1338,7 +1348,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_8_1_1.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_8_1_1.VerticalAlignment = VerticalAlignment.Center;
 		_widget_8_1_1.MarginTop = 7f;
-		_widget_8_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_8_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_8_1_1.UpdateChildrenStates = true;
 		_widget_8_1_1_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_8_1_1_0.HeightSizePolicy = SizePolicy.Fixed;
@@ -1365,7 +1375,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_8_2_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_8_2_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_8_2_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_8_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_8_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_8_2_0.MarginTop = 7f;
 		_widget_8_2_0.UpdateChildrenStates = true;
 		_widget_8_2_0_0.WidthSizePolicy = SizePolicy.Fixed;
@@ -1385,7 +1395,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_8_2_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_8_2_1.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_8_2_1.VerticalAlignment = VerticalAlignment.Center;
-		_widget_8_2_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_8_2_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_8_2_1.MarginTop = 7f;
 		_widget_8_2_1.UpdateChildrenStates = true;
 		_widget_8_2_1_0.WidthSizePolicy = SizePolicy.Fixed;
@@ -1416,7 +1426,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_9.ScopeMovements = GamepadNavigationTypes.Horizontal;
 		_widget_10.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_10.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_10.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_10.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_10.MarginBottom = 120f;
 		_widget_10.MarginLeft = 60f;
 		_widget_10.VerticalAlignment = VerticalAlignment.Bottom;
@@ -1461,7 +1471,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_10_0_5.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_10_0_5.MarginTop = 6f;
 		_widget_10_0_5.MarginRight = 6f;
-		_widget_10_0_5.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
+		_widget_10_0_5.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
 		_widget_10_0_5_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_10_0_5_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_10_0_5_0.SuggestedWidth = 8f;
@@ -2093,6 +2103,20 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 			_widget_14.intPropertyChanged -= intPropertyChangedListenerOf_widget_14;
 			_widget_14.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_14;
 			_widget_14.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_14;
+			if (_datasource_Root_WeaponDesign_DifficultyExplanationHint != null)
+			{
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_widget_1_1_1_7.EventFire -= EventListenerOf_widget_1_1_1_7;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint = null;
+			}
 			if (_datasource_Root_WeaponDesign_ScabbardHint != null)
 			{
 				_datasource_Root_WeaponDesign_ScabbardHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_WeaponDesign_ScabbardHint;
@@ -2764,6 +2788,18 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		if (commandName == "Click")
 		{
 			_datasource_Root_WeaponDesign.ExecuteRedo();
+		}
+	}
+
+	private void EventListenerOf_widget_1_1_1_7(Widget widget, string commandName, object[] args)
+	{
+		if (commandName == "HoverBegin")
+		{
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.ExecuteBeginHint();
+		}
+		if (commandName == "HoverEnd")
+		{
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.ExecuteEndHint();
 		}
 	}
 
@@ -6521,6 +6557,9 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 	{
 		switch (propertyName)
 		{
+		case "DifficultyExplanationHint":
+			RefreshDataSource_datasource_Root_WeaponDesign_DifficultyExplanationHint(_datasource_Root_WeaponDesign.DifficultyExplanationHint);
+			break;
 		case "ScabbardHint":
 			RefreshDataSource_datasource_Root_WeaponDesign_ScabbardHint(_datasource_Root_WeaponDesign.ScabbardHint);
 			break;
@@ -6595,6 +6634,55 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 			_widget_14.IsVisible = _datasource_Root_WeaponDesign.IsInFinalCraftingStage;
 			break;
 		}
+	}
+
+	private void ViewModelPropertyChangedListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint(object sender, PropertyChangedEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_WeaponDesign_DifficultyExplanationHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint(object sender, PropertyChangedWithValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_WeaponDesign_DifficultyExplanationHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint(object sender, PropertyChangedWithBoolValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_WeaponDesign_DifficultyExplanationHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint(object sender, PropertyChangedWithIntValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_WeaponDesign_DifficultyExplanationHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint(object sender, PropertyChangedWithFloatValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_WeaponDesign_DifficultyExplanationHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint(object sender, PropertyChangedWithUIntValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_WeaponDesign_DifficultyExplanationHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint(object sender, PropertyChangedWithColorValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_WeaponDesign_DifficultyExplanationHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint(object sender, PropertyChangedWithDoubleValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_WeaponDesign_DifficultyExplanationHint(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint(object sender, PropertyChangedWithVec2ValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_WeaponDesign_DifficultyExplanationHint(e.PropertyName);
+	}
+
+	private void HandleViewModelPropertyChangeOf_datasource_Root_WeaponDesign_DifficultyExplanationHint(string propertyName)
+	{
 	}
 
 	private void ViewModelPropertyChangedListenerOf_datasource_Root_ResetCameraHint(object sender, PropertyChangedEventArgs e)
@@ -8869,6 +8957,20 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 				_widget_14.intPropertyChanged -= intPropertyChangedListenerOf_widget_14;
 				_widget_14.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_14;
 				_widget_14.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_14;
+				if (_datasource_Root_WeaponDesign_DifficultyExplanationHint != null)
+				{
+					_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+					_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+					_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+					_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+					_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+					_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+					_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+					_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+					_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+					_widget_1_1_1_7.EventFire -= EventListenerOf_widget_1_1_1_7;
+					_datasource_Root_WeaponDesign_DifficultyExplanationHint = null;
+				}
 				if (_datasource_Root_WeaponDesign_ScabbardHint != null)
 				{
 					_datasource_Root_WeaponDesign_ScabbardHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_WeaponDesign_ScabbardHint;
@@ -9984,6 +10086,20 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 			_widget_14.intPropertyChanged += intPropertyChangedListenerOf_widget_14;
 			_widget_14.uintPropertyChanged += uintPropertyChangedListenerOf_widget_14;
 			_widget_14.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_14;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint = _datasource_Root_WeaponDesign.DifficultyExplanationHint;
+			if (_datasource_Root_WeaponDesign_DifficultyExplanationHint != null)
+			{
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_widget_1_1_1_7.EventFire += EventListenerOf_widget_1_1_1_7;
+			}
 			_datasource_Root_WeaponDesign_ScabbardHint = _datasource_Root_WeaponDesign.ScabbardHint;
 			if (_datasource_Root_WeaponDesign_ScabbardHint != null)
 			{
@@ -10806,6 +10922,20 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 			_widget_14.intPropertyChanged -= intPropertyChangedListenerOf_widget_14;
 			_widget_14.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_14;
 			_widget_14.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_14;
+			if (_datasource_Root_WeaponDesign_DifficultyExplanationHint != null)
+			{
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+				_widget_1_1_1_7.EventFire -= EventListenerOf_widget_1_1_1_7;
+				_datasource_Root_WeaponDesign_DifficultyExplanationHint = null;
+			}
 			if (_datasource_Root_WeaponDesign_ScabbardHint != null)
 			{
 				_datasource_Root_WeaponDesign_ScabbardHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_WeaponDesign_ScabbardHint;
@@ -11141,6 +11271,20 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_14.intPropertyChanged += intPropertyChangedListenerOf_widget_14;
 		_widget_14.uintPropertyChanged += uintPropertyChangedListenerOf_widget_14;
 		_widget_14.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_14;
+		_datasource_Root_WeaponDesign_DifficultyExplanationHint = _datasource_Root_WeaponDesign.DifficultyExplanationHint;
+		if (_datasource_Root_WeaponDesign_DifficultyExplanationHint != null)
+		{
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_widget_1_1_1_7.EventFire += EventListenerOf_widget_1_1_1_7;
+		}
 		_datasource_Root_WeaponDesign_ScabbardHint = _datasource_Root_WeaponDesign.ScabbardHint;
 		if (_datasource_Root_WeaponDesign_ScabbardHint != null)
 		{
@@ -11326,6 +11470,39 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 			_widget_16.SetDataSource(_datasource_Root_WeaponDesign_WeaponClassSelectionPopup);
 		}
 		_widget_14.SetDataSource(_datasource_Root_WeaponDesign);
+	}
+
+	private void RefreshDataSource_datasource_Root_WeaponDesign_DifficultyExplanationHint(BasicTooltipViewModel newDataSource)
+	{
+		if (_datasource_Root_WeaponDesign_DifficultyExplanationHint != null)
+		{
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_widget_1_1_1_7.EventFire -= EventListenerOf_widget_1_1_1_7;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint = null;
+		}
+		_datasource_Root_WeaponDesign_DifficultyExplanationHint = newDataSource;
+		_datasource_Root_WeaponDesign_DifficultyExplanationHint = _datasource_Root_WeaponDesign.DifficultyExplanationHint;
+		if (_datasource_Root_WeaponDesign_DifficultyExplanationHint != null)
+		{
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_datasource_Root_WeaponDesign_DifficultyExplanationHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_WeaponDesign_DifficultyExplanationHint;
+			_widget_1_1_1_7.EventFire += EventListenerOf_widget_1_1_1_7;
+		}
 	}
 
 	private void RefreshDataSource_datasource_Root_ResetCameraHint(HintViewModel newDataSource)

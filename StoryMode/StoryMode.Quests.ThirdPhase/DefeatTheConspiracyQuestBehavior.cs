@@ -605,7 +605,7 @@ public class DefeatTheConspiracyQuestBehavior : CampaignBehaviorBase
 			for (int num5 = 0; num5 < num4; num5++)
 			{
 				bool flag = false;
-				if (clan == null || clan.AliveLords.Count >= clan.CommanderLimit)
+				if (clan == null || clan.AliveLords.Count >= clan.WarPartyLimit)
 				{
 					TextObject clanName = NameGenerator.Current.GenerateClanName(kingdom.Culture, Settlement.All.GetRandomElementWithPredicate((Settlement t) => t.Culture == kingdom.Culture && t.IsVillage));
 					clan = Clan.CreateClan("main_storyline_clan_" + clanName.ToString() + "_" + Clan.All.Count((Clan t) => t.Name == clanName));

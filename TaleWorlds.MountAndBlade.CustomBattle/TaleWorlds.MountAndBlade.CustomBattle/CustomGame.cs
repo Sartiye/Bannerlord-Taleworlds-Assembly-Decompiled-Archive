@@ -158,6 +158,8 @@ public class CustomGame : GameType
 			bool result4 = false;
 			bool result5 = false;
 			bool result6 = false;
+			bool result7 = false;
+			string forcedSceneLevel = "";
 			for (int i = 0; i < childNode.Attributes.Count; i++)
 			{
 				if (childNode.Attributes[i].Name == "id")
@@ -200,8 +202,16 @@ public class CustomGame : GameType
 				{
 					bool.TryParse(childNode.Attributes[i].InnerText, out result6);
 				}
+				else if (childNode.Attributes[i].Name == "is_naval_raid_map")
+				{
+					bool.TryParse(childNode.Attributes[i].InnerText, out result7);
+				}
+				else if (childNode.Attributes[i].Name == "forced_scene_level")
+				{
+					forcedSceneLevel = childNode.Attributes[i].InnerText;
+				}
 			}
-			if (result6)
+			if (result6 || result7)
 			{
 				continue;
 			}
@@ -215,13 +225,13 @@ public class CustomGame : GameType
 				}
 				foreach (XmlNode childNode2 in item.ChildNodes)
 				{
-					if (childNode2.NodeType != XmlNodeType.Comment && childNode2.Attributes["name"].InnerText == "TerrainType" && Enum.TryParse<TerrainType>(childNode2.Attributes["value"].InnerText, out var result7) && !list.Contains(result7))
+					if (childNode2.NodeType != XmlNodeType.Comment && childNode2.Attributes["name"].InnerText == "TerrainType" && Enum.TryParse<TerrainType>(childNode2.Attributes["value"].InnerText, out var result8) && !list.Contains(result8))
 					{
-						list.Add(result7);
+						list.Add(result8);
 					}
 				}
 			}
-			_customBattleScenes.Add(new CustomBattleSceneData(sceneID, name, result, list, result2, result3, result4, result5));
+			_customBattleScenes.Add(new CustomBattleSceneData(sceneID, name, result, list, result2, result3, result4, result5, forcedSceneLevel));
 		}
 	}
 

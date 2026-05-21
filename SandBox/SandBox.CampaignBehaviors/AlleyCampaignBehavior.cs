@@ -536,7 +536,7 @@ public class AlleyCampaignBehavior : CampaignBehaviorBase, IAlleyCampaignBehavio
 
 	protected void AddGameMenus(CampaignGameStarter campaignGameSystemStarter)
 	{
-		campaignGameSystemStarter.AddGameMenuOption("town", "manage_alley", "{=VkOtMe5a}Go to alley", go_to_alley_on_condition, go_to_alley_on_consequence, isLeave: false, 5);
+		campaignGameSystemStarter.AddGameMenuOption("town", "manage_alley", "{=VkOtMe5a}Go to alley", go_to_alley_on_condition, go_to_alley_on_consequence, isLeave: false, 4);
 		campaignGameSystemStarter.AddGameMenu("manage_alley", "{=dWf6ztYu}You are in your alley by the {ALLEY_TYPE}, {FURTHER_INFO}", manage_alley_menu_on_init, GameMenu.MenuOverlayType.SettlementWithBoth);
 		campaignGameSystemStarter.AddGameMenuOption("manage_alley", "confront_hostile_alley_leader", "{=grhRXqen}Confront {HOSTILE_GANG_LEADER.NAME} about {?HOSTILE_GANG_LEADER.GENDER}her{?}his{\\?} attack on your alley.", alley_under_attack_on_condition, alley_under_attack_response_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("manage_alley", "change_leader_of_alley", "{=ClyaDhGU}Change the leader of the alley", change_leader_of_alley_on_condition, change_leader_of_the_alley_on_consequence);
@@ -719,7 +719,10 @@ public class AlleyCampaignBehavior : CampaignBehaviorBase, IAlleyCampaignBehavio
 		if (_waitForBattleResults)
 		{
 			_waitForBattleResults = false;
-			playerAlleyData.TroopRoster.AddToCounts(CharacterObject.PlayerCharacter, -1, insertAtFront: true);
+			if (playerAlleyData.TroopRoster.Contains(CharacterObject.PlayerCharacter))
+			{
+				playerAlleyData.TroopRoster.AddToCounts(CharacterObject.PlayerCharacter, -1, insertAtFront: true);
+			}
 			if ((playerAlleyData.TroopRoster.TotalManCount == 0 && _playerDiedInMission) || _playerRetreatedFromMission)
 			{
 				_playerOwnedCommonAreaData.Remove(playerAlleyData);

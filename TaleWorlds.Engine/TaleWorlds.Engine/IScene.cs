@@ -545,7 +545,7 @@ internal interface IScene
 	GameEntity GetEntityWithGuid(UIntPtr scenePointer, string guid);
 
 	[EngineMethod("select_entities_in_box_with_script_component", false, null, false)]
-	int SelectEntitiesInBoxWithScriptComponent(UIntPtr scenePointer, ref Vec3 boundingBoxMin, ref Vec3 boundingBoxMax, UIntPtr[] entitiesOutput, int maxCount, string scriptComponentName);
+	int SelectEntitiesInBoxWithScriptComponent(UIntPtr scenePointer, ref Vec3 boundingBoxMin, ref Vec3 boundingBoxMax, UIntPtr[] entitiesOutput, int maxCount, string scriptComponentName, bool isFixedTick);
 
 	[EngineMethod("ray_cast_excluding_two_entities", false, null, false)]
 	bool RayCastExcludingTwoEntities(BodyFlags flags, UIntPtr scenePointer, in Ray ray, UIntPtr entity1, UIntPtr entity2);
@@ -660,6 +660,9 @@ internal interface IScene
 
 	[EngineMethod("set_ability_of_faces_with_id", false, null, false)]
 	int SetAbilityOfFacesWithId(UIntPtr scenePointer, int faceGroupId, bool isEnabled);
+
+	[EngineMethod("set_blocker_direction_for_faces_with_id", false, null, false)]
+	void SetBlockerDirectionForFacesWithId(UIntPtr scenePointer, int faceGroupId, float rotation);
 
 	[EngineMethod("swap_face_connections_with_id", false, null, false)]
 	bool SwapFaceConnectionsWithId(UIntPtr scenePointer, int hubFaceGroupID, int toBeSeparatedFaceGroupId, int toBeMergedFaceGroupId, bool canFail);
@@ -907,8 +910,14 @@ internal interface IScene
 	[EngineMethod("set_uses_delete_later_system", false, null, false)]
 	void SetUsesDeleteLaterSystem(UIntPtr scenePointer, bool value);
 
+	[EngineMethod("handle_current_frame_tick_entities", false, null, false)]
+	void HandleCurrentFrameTickEntities(UIntPtr scenePointer);
+
 	[EngineMethod("clear_current_frame_tick_entities", false, null, false)]
 	void ClearCurrentFrameTickEntities(UIntPtr scenePointer);
+
+	[EngineMethod("set_use_advanced_water_rendering", false, null, false)]
+	void SetUseAdvancedWaterRendering(UIntPtr scenePointer, bool value);
 
 	[EngineMethod("find_closest_exit_position_for_position_on_a_boundary_face", false, null, false)]
 	Vec2 FindClosestExitPositionForPositionOnABoundaryFace(UIntPtr scenePointer, Vec3 position, UIntPtr boundaryNavMeshFacePointer);

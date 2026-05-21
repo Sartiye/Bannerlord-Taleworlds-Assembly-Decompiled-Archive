@@ -30,29 +30,13 @@ public class MissionAgentDamageFeedVM : ViewModel
 	{
 		_takenDamageText = new TextObject("{=meFS5F4V}-{DAMAGE}");
 		FeedList = new MBBindingList<MissionAgentDamageFeedItemVM>();
-		CombatLogManager.OnGenerateCombatLog += CombatLogManagerOnPrintCombatLog;
 	}
 
-	public override void OnFinalize()
+	public void OnMainAgentHit(float damage)
 	{
-		CombatLogManager.OnGenerateCombatLog -= CombatLogManagerOnPrintCombatLog;
-		base.OnFinalize();
-	}
-
-	private void CombatLogManagerOnPrintCombatLog(CombatLogData logData)
-	{
-		int num = 0;
-		if (logData.IsVictimAgentMine)
+		if (damage > 0f)
 		{
-			num = logData.TotalDamage;
-		}
-		else if (logData.IsFriendlyFire)
-		{
-			num = logData.ReflectedDamage;
-		}
-		if (num > 0)
-		{
-			_takenDamageText.SetTextVariable("DAMAGE", logData.TotalDamage);
+			_takenDamageText.SetTextVariable("DAMAGE", damage);
 			MissionAgentDamageFeedItemVM item = new MissionAgentDamageFeedItemVM(_takenDamageText.ToString(), RemoveItem);
 			FeedList.Add(item);
 		}

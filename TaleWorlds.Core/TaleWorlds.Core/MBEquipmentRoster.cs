@@ -13,9 +13,9 @@ public class MBEquipmentRoster : MBObjectBase
 
 	private MBList<Equipment> _equipments = new MBList<Equipment>();
 
-	public BasicCultureObject EquipmentCulture;
+	public BasicCultureObject EquipmentCulture { get; private set; }
 
-	public EquipmentFlags EquipmentFlags { get; private set; }
+	public EquipmentCategories EquipmentCategories { get; private set; }
 
 	public MBReadOnlyList<Equipment> AllEquipments
 	{
@@ -41,16 +41,6 @@ public class MBEquipmentRoster : MBObjectBase
 		}
 	}
 
-	public bool HasEquipmentFlags(EquipmentFlags flags)
-	{
-		return (EquipmentFlags & flags) == flags;
-	}
-
-	public bool IsEquipmentTemplate()
-	{
-		return EquipmentFlags != EquipmentFlags.None;
-	}
-
 	public void Init(MBObjectManager objectManager, XmlNode node)
 	{
 		if (node.Name == "EquipmentRoster")
@@ -59,7 +49,7 @@ public class MBEquipmentRoster : MBObjectBase
 		}
 		else
 		{
-			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\MBEquipmentRoster.cs", "Init", 81);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\MBEquipmentRoster.cs", "Init", 78);
 		}
 	}
 
@@ -69,6 +59,10 @@ public class MBEquipmentRoster : MBObjectBase
 		if (node.Attributes["culture"] != null)
 		{
 			EquipmentCulture = MBObjectManager.Instance.ReadObjectReferenceFromXml<BasicCultureObject>("culture", node);
+		}
+		if (EquipmentCulture == null)
+		{
+			Debug.Print("EquipmentRoster with id: " + base.StringId + " don't have culture definition, make sure this is intended");
 		}
 		foreach (XmlNode childNode in node.ChildNodes)
 		{
@@ -82,10 +76,10 @@ public class MBEquipmentRoster : MBObjectBase
 			}
 			foreach (XmlAttribute attribute in childNode.Attributes)
 			{
-				EquipmentFlags equipmentFlags = (EquipmentFlags)Enum.Parse(typeof(EquipmentFlags), attribute.Name);
+				EquipmentCategories equipmentCategories = (EquipmentCategories)Enum.Parse(typeof(EquipmentCategories), attribute.Name);
 				if (bool.Parse(attribute.InnerText))
 				{
-					EquipmentFlags |= equipmentFlags;
+					EquipmentCategories |= equipmentCategories;
 				}
 			}
 		}
@@ -99,12 +93,13 @@ public class MBEquipmentRoster : MBObjectBase
 		{
 			if (!Enum.TryParse<Equipment.EquipmentType>(node.Attributes["equipmentType"].Value, out result))
 			{
-				Debug.FailedAssert("This equipment definition is wrong", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\MBEquipmentRoster.cs", "InitEquipment", 127);
+				Debug.FailedAssert("This equipment definition is wrong", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\MBEquipmentRoster.cs", "InitEquipment", 128);
 			}
 		}
 		else if (node.Attributes["civilian"] != null && bool.Parse(node.Attributes["civilian"].Value))
 		{
 			result = Equipment.EquipmentType.Civilian;
+			_ = node.Name == "EquipmentSet";
 		}
 		Equipment equipment = new Equipment(result);
 		equipment.Deserialize(objectManager, node);
@@ -121,10 +116,9 @@ public class MBEquipmentRoster : MBObjectBase
 				_equipments.Add(item);
 			}
 		}
-		EquipmentFlags = equipmentRoster.EquipmentFlags;
 	}
 
-	public void AddOverridenEquipments(MBObjectManager objectManager, List<XmlNode> overridenEquipmentSlots)
+	public void AddOverriddenEquipments(MBObjectManager objectManager, List<XmlNode> overridenEquipmentSlots)
 	{
 		List<Equipment> list = _equipments.ToList();
 		_equipments.Clear();

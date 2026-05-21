@@ -181,7 +181,28 @@ public class SaveHandler
 
 	public CampaignSaveMetaDataArgs GetSaveMetaData()
 	{
+		List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>
+		{
+			new KeyValuePair<string, string>("UniqueGameId", Campaign.Current.UniqueGameId ?? ""),
+			new KeyValuePair<string, string>("MainHeroLevel", Hero.MainHero.Level.ToString(_invariantCulture)),
+			new KeyValuePair<string, string>("MainPartyFood", Campaign.Current.MainParty.Food.ToString(_invariantCulture)),
+			new KeyValuePair<string, string>("MainHeroGold", Hero.MainHero.Gold.ToString(_invariantCulture)),
+			new KeyValuePair<string, string>("ClanInfluence", Clan.PlayerClan.Influence.ToString(_invariantCulture)),
+			new KeyValuePair<string, string>("ClanFiefs", Clan.PlayerClan.Settlements.Count.ToString(_invariantCulture)),
+			new KeyValuePair<string, string>("MainPartyShipCount", Campaign.Current.MainParty.Ships.Count.ToString(_invariantCulture)),
+			new KeyValuePair<string, string>("MainPartyHealthyMemberCount", Campaign.Current.MainParty.MemberRoster.TotalHealthyCount.ToString(_invariantCulture)),
+			new KeyValuePair<string, string>("MainPartyPrisonerMemberCount", Campaign.Current.MainParty.PrisonRoster.TotalManCount.ToString(_invariantCulture)),
+			new KeyValuePair<string, string>("MainPartyWoundedMemberCount", Campaign.Current.MainParty.MemberRoster.TotalWounded.ToString(_invariantCulture)),
+			new KeyValuePair<string, string>("CharacterName", Hero.MainHero.Name?.ToString()),
+			new KeyValuePair<string, string>("DayLong", Campaign.Current.Models.CampaignTimeModel.CampaignStartTime.ElapsedDaysUntilNow.ToString(_invariantCulture)),
+			new KeyValuePair<string, string>("ClanBannerCode", Clan.PlayerClan.Banner.Serialize()),
+			new KeyValuePair<string, string>("MainHeroVisual", MainHeroVisualSupplier?.GetMainHeroVisualCode() ?? string.Empty),
+			new KeyValuePair<string, string>("IronmanMode", (CampaignOptions.IsIronmanMode ? 1 : 0).ToString()),
+			new KeyValuePair<string, string>("HealthPercentage", MBMath.ClampInt(Hero.MainHero.HitPoints * 100 / Hero.MainHero.MaxHitPoints, 1, 100).ToString()),
+			new KeyValuePair<string, string>("NewGameVersion", string.IsNullOrEmpty(Campaign.Current.NewGameVersion) ? string.Empty : Campaign.Current.NewGameVersion)
+		};
+		CampaignEventDispatcher.Instance.CollectMetadataEntries(list);
 		return new CampaignSaveMetaDataArgs((from x in ModuleHelper.GetActiveModules()
-			select x.Id).ToArray(), new KeyValuePair<string, string>("UniqueGameId", Campaign.Current.UniqueGameId ?? ""), new KeyValuePair<string, string>("MainHeroLevel", Hero.MainHero.Level.ToString(_invariantCulture)), new KeyValuePair<string, string>("MainPartyFood", Campaign.Current.MainParty.Food.ToString(_invariantCulture)), new KeyValuePair<string, string>("MainHeroGold", Hero.MainHero.Gold.ToString(_invariantCulture)), new KeyValuePair<string, string>("ClanInfluence", Clan.PlayerClan.Influence.ToString(_invariantCulture)), new KeyValuePair<string, string>("ClanFiefs", Clan.PlayerClan.Settlements.Count.ToString(_invariantCulture)), new KeyValuePair<string, string>("MainPartyHealthyMemberCount", Campaign.Current.MainParty.MemberRoster.TotalHealthyCount.ToString(_invariantCulture)), new KeyValuePair<string, string>("MainPartyPrisonerMemberCount", Campaign.Current.MainParty.PrisonRoster.TotalManCount.ToString(_invariantCulture)), new KeyValuePair<string, string>("MainPartyWoundedMemberCount", Campaign.Current.MainParty.MemberRoster.TotalWounded.ToString(_invariantCulture)), new KeyValuePair<string, string>("CharacterName", Hero.MainHero.Name?.ToString()), new KeyValuePair<string, string>("DayLong", Campaign.Current.Models.CampaignTimeModel.CampaignStartTime.ElapsedDaysUntilNow.ToString(_invariantCulture)), new KeyValuePair<string, string>("ClanBannerCode", Clan.PlayerClan.Banner.Serialize()), new KeyValuePair<string, string>("MainHeroVisual", MainHeroVisualSupplier?.GetMainHeroVisualCode() ?? string.Empty), new KeyValuePair<string, string>("IronmanMode", (CampaignOptions.IsIronmanMode ? 1 : 0).ToString()), new KeyValuePair<string, string>("HealthPercentage", MBMath.ClampInt(Hero.MainHero.HitPoints * 100 / Hero.MainHero.MaxHitPoints, 1, 100).ToString()));
+			select x.Id).ToArray(), list.ToArray());
 	}
 }

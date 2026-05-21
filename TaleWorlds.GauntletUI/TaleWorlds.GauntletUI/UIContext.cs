@@ -325,16 +325,16 @@ public class UIContext
 		GamepadNavigation.OnFinalize();
 	}
 
-	public void Activate()
-	{
-		IsActive = true;
-		EventManager.OnContextActivated();
-	}
-
 	public void Deactivate()
 	{
 		IsActive = false;
 		EventManager.OnContextDeactivated();
+	}
+
+	public void Activate()
+	{
+		IsActive = true;
+		EventManager.OnContextActivated();
 	}
 
 	public void Update(float dt)
@@ -370,6 +370,15 @@ public class UIContext
 		EventManager.Render(TwoDimensionContext);
 	}
 
+	public void OnOnScreenkeyboardTextInputDone(string inputText)
+	{
+		if (EventManager.FocusedWidget is EditableTextWidget editableTextWidget)
+		{
+			editableTextWidget.SetAllText(inputText);
+		}
+		CancelMouseClick();
+	}
+
 	public void InitializeGamepadNavigation(IGamepadNavigationContext context)
 	{
 		GamepadNavigation = context;
@@ -402,18 +411,9 @@ public class UIContext
 		}
 	}
 
-	public void OnOnScreenkeyboardTextInputDone(string inputText)
-	{
-		if (EventManager.FocusedWidget is EditableTextWidget editableTextWidget)
-		{
-			editableTextWidget.SetAllText(inputText);
-		}
-		ReleaseMouseWithoutClick();
-	}
-
 	public void OnOnScreenKeyboardCanceled()
 	{
-		ReleaseMouseWithoutClick();
+		CancelMouseClick();
 	}
 
 	public bool HitTest(Widget root, Vector2 position)
@@ -442,7 +442,7 @@ public class UIContext
 
 	public void UpdateInput(InputType handleInputs)
 	{
-		if (_isMouseEnabled || EventManager.DraggedWidget != null || EventManager.FocusedWidget != null)
+		if (_isMouseEnabled || EventManager.FocusedWidget != null)
 		{
 			if (handleInputs.HasAnyFlag(InputType.MouseButton))
 			{
@@ -482,7 +482,7 @@ public class UIContext
 		}
 		else if (_previousFrameMouseEnabled)
 		{
-			ReleaseMouseWithoutClick();
+			CancelMouseClick();
 			_previousFrameMouseEnabled = false;
 		}
 	}
@@ -497,14 +497,11 @@ public class UIContext
 		GamepadNavigation.OnMovieReleased(movieName);
 	}
 
-	private void ReleaseMouseWithoutClick()
+	public void CancelMouseClick()
 	{
-		_uiInputContext.SetMousePositionOverride(new Vector2(-5000f, -5000f));
-		EventManager.MouseMove();
-		EventManager.MouseUp();
-		EventManager.MouseAlternateUp();
+		EventManager.MouseUp(isFromInput: false);
+		EventManager.MouseAlternateUp(isFromInput: false);
 		EventManager.ClearFocus();
-		_uiInputContext.ResetMousePositionOverride();
 	}
 
 	public void DrawWidgetDebugInfo()

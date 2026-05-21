@@ -589,26 +589,22 @@ public class MPLobbyFriendServiceVM : ViewModel
 
 	private void RemoveFriend(PlayerId providedId)
 	{
-		MPLobbyFriendItemVM mPLobbyFriendItemVM = InGameFriends.FriendList.FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == providedId);
+		MPLobbyFriendItemVM mPLobbyFriendItemVM = InGameFriends.FriendList.ToList().FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == providedId);
 		if (mPLobbyFriendItemVM != null)
 		{
 			InGameFriends.RemoveFriend(mPLobbyFriendItemVM);
+			return;
 		}
-		if (mPLobbyFriendItemVM == null)
+		mPLobbyFriendItemVM = OnlineFriends.FriendList.ToList().FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == providedId);
+		if (mPLobbyFriendItemVM != null)
 		{
-			mPLobbyFriendItemVM = OnlineFriends.FriendList.FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == providedId);
-			if (mPLobbyFriendItemVM != null)
-			{
-				OnlineFriends.RemoveFriend(mPLobbyFriendItemVM);
-			}
+			OnlineFriends.RemoveFriend(mPLobbyFriendItemVM);
+			return;
 		}
-		if (mPLobbyFriendItemVM == null)
+		mPLobbyFriendItemVM = OfflineFriends.FriendList.ToList().FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == providedId);
+		if (mPLobbyFriendItemVM != null)
 		{
-			mPLobbyFriendItemVM = OfflineFriends.FriendList.FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == providedId);
-			if (mPLobbyFriendItemVM != null)
-			{
-				OfflineFriends.RemoveFriend(mPLobbyFriendItemVM);
-			}
+			OfflineFriends.RemoveFriend(mPLobbyFriendItemVM);
 		}
 	}
 
@@ -652,17 +648,17 @@ public class MPLobbyFriendServiceVM : ViewModel
 
 	private MPLobbyPlayerBaseVM GetFriendWithID(PlayerId playerId)
 	{
-		MPLobbyFriendItemVM mPLobbyFriendItemVM = _onlineFriends.FriendList.FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == playerId);
+		MPLobbyFriendItemVM mPLobbyFriendItemVM = _onlineFriends.FriendList.ToList().FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == playerId);
 		if (mPLobbyFriendItemVM != null)
 		{
 			return mPLobbyFriendItemVM;
 		}
-		MPLobbyFriendItemVM mPLobbyFriendItemVM2 = _inGameFriends.FriendList.FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == playerId);
+		MPLobbyFriendItemVM mPLobbyFriendItemVM2 = _inGameFriends.FriendList.ToList().FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == playerId);
 		if (mPLobbyFriendItemVM2 != null)
 		{
 			return mPLobbyFriendItemVM2;
 		}
-		MPLobbyFriendItemVM mPLobbyFriendItemVM3 = _offlineFriends.FriendList.FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == playerId);
+		MPLobbyFriendItemVM mPLobbyFriendItemVM3 = _offlineFriends.FriendList.ToList().FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == playerId);
 		if (mPLobbyFriendItemVM3 != null)
 		{
 			return mPLobbyFriendItemVM3;

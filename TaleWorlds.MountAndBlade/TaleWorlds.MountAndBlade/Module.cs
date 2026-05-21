@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -137,31 +138,38 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		Utilities.SetLoadingScreenPercentage(0.4f);
 	}
 
-	private void AddSubModule(SubModuleInfo subModuleInfo, Assembly subModuleAssembly)
+	private AssemblyLoader.AssemblyLoadResult AddSubModule(SubModuleInfo subModuleInfo, Assembly subModuleAssembly)
 	{
-		MBSubModuleBase value = (MBSubModuleBase)subModuleAssembly.GetType(subModuleInfo.SubModuleClassTypeName).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.CreateInstance, null, new Type[0], null).Invoke(new object[0]);
-		_subModuleBases.Add(subModuleInfo, value);
-		Managed.AddTypes(CollectModuleAssemblyTypes(subModuleAssembly));
+		ConstructorInfo constructor = subModuleAssembly.GetType(subModuleInfo.SubModuleClassTypeName).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.CreateInstance, null, new Type[0], null);
+		Dictionary<string, Type> types;
+		AssemblyLoader.AssemblyLoadResult assemblyLoadResult = CollectModuleAssemblyTypes(subModuleInfo, subModuleAssembly, out types);
+		if (assemblyLoadResult == AssemblyLoader.AssemblyLoadResult.Success)
+		{
+			Managed.AddTypes(types);
+			MBSubModuleBase value = (MBSubModuleBase)constructor.Invoke(new object[0]);
+			_subModuleBases.Add(subModuleInfo, value);
+		}
+		return assemblyLoadResult;
 	}
 
-	private Dictionary<string, Type> CollectModuleAssemblyTypes(Assembly moduleAssembly)
+	private AssemblyLoader.AssemblyLoadResult CollectModuleAssemblyTypes(SubModuleInfo subModule, Assembly moduleAssembly, out Dictionary<string, Type> types)
 	{
 		try
 		{
-			Dictionary<string, Type> dictionary = new Dictionary<string, Type>();
-			Type[] types = moduleAssembly.GetTypes();
-			foreach (Type type in types)
+			types = new Dictionary<string, Type>();
+			Type[] types2 = moduleAssembly.GetTypes();
+			foreach (Type type in types2)
 			{
 				if (typeof(ManagedObject).IsAssignableFrom(type) || typeof(DotNetObject).IsAssignableFrom(type))
 				{
-					dictionary.Add(type.Name, type);
+					types.Add(type.Name, type);
 				}
 			}
-			return dictionary;
+			return AssemblyLoader.AssemblyLoadResult.Success;
 		}
 		catch (Exception ex)
 		{
-			MBDebug.Print("Error while getting types and loading" + ex.Message);
+			MBDebug.Print("Error while getting types and loading" + ex.Message + "\nException: " + ex.GetType().Name);
 			if (ex is ReflectionTypeLoadException ex2)
 			{
 				string text = "";
@@ -172,8 +180,8 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 					text = text + ex3.Message + Environment.NewLine;
 				}
 				TaleWorlds.Library.Debug.SetCrashReportCustomString(text);
-				Type[] types = ex2.Types;
-				foreach (Type type2 in types)
+				Type[] types2 = ex2.Types;
+				foreach (Type type2 in types2)
 				{
 					if (type2 != null)
 					{
@@ -185,7 +193,8 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 			{
 				MBDebug.Print("Inner excetion: " + ex.StackTrace);
 			}
-			throw;
+			types = null;
+			return AssemblyLoader.AssemblyLoadResult.CriticalError;
 		}
 	}
 
@@ -1023,6 +1032,7 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 			XmlResource.GetXmlListAndApply(module.Id);
 		}
 		List<SubModuleInfo> list = new List<SubModuleInfo>();
+		new List<ModuleInfo>();
 		foreach (ModuleInfo module2 in modules)
 		{
 			foreach (SubModuleInfo subModule in module2.SubModules)
@@ -1034,35 +1044,37 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 				string path = System.IO.Path.Combine(module2.FolderPath, "bin", Common.ConfigName);
 				string text = System.IO.Path.Combine(path, subModule.DLLName);
 				string text2 = ManagedDllFolder.Name + subModule.DLLName;
+				MBList<(string, AssemblyLoader.AssemblyLoadResult)> mBList = new MBList<(string, AssemblyLoader.AssemblyLoadResult)>();
 				foreach (string assembly in subModule.Assemblies)
 				{
 					string text3 = System.IO.Path.Combine(path, assembly);
-					string assemblyFile = ManagedDllFolder.Name + assembly;
-					if (File.Exists(text3))
+					string text4 = ManagedDllFolder.Name + assembly;
+					AssemblyLoader.LoadFrom(File.Exists(text3) ? text3 : text4, out var result);
+					if (result != 0)
 					{
-						AssemblyLoader.LoadFrom(text3);
-					}
-					else
-					{
-						AssemblyLoader.LoadFrom(assemblyFile);
+						mBList.Add((assembly, result));
 					}
 				}
-				if (File.Exists(text))
+				string text5 = (File.Exists(text) ? text : (File.Exists(text2) ? text2 : string.Empty));
+				AssemblyLoader.AssemblyLoadResult result2 = AssemblyLoader.AssemblyLoadResult.Success;
+				if (!string.IsNullOrEmpty(text5))
 				{
-					Assembly subModuleAssembly = AssemblyLoader.LoadFrom(text);
-					AddSubModule(subModule, subModuleAssembly);
-					if (loadNewModules)
+					Assembly subModuleAssembly = AssemblyLoader.LoadFrom(text5, out result2);
+					if (result2 != AssemblyLoader.AssemblyLoadResult.CriticalError)
 					{
-						list.Add(subModule);
+						result2 = AddSubModule(subModule, subModuleAssembly);
+						if (result2 == AssemblyLoader.AssemblyLoadResult.Success && loadNewModules)
+						{
+							list.Add(subModule);
+						}
 					}
-				}
-				else if (File.Exists(text2))
-				{
-					Assembly subModuleAssembly2 = AssemblyLoader.LoadFrom(text2);
-					AddSubModule(subModule, subModuleAssembly2);
-					if (loadNewModules)
+					if (result2 != 0)
 					{
-						list.Add(subModule);
+						HandleSubmoduleLoadError(module2, subModule, result2, mBList);
+					}
+					else if (mBList.Count > 0)
+					{
+						HandleSubmoduleLoadError(module2, null, AssemblyLoader.AssemblyLoadResult.LoadedWithErrors, mBList);
 					}
 				}
 				else
@@ -1089,6 +1101,38 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		{
 			InitializeSubModuleBases();
 		}
+	}
+
+	private void HandleSubmoduleLoadError(ModuleInfo module, SubModuleInfo subModule, AssemblyLoader.AssemblyLoadResult result, MBList<(string, AssemblyLoader.AssemblyLoadResult)> assemblyLoadResults)
+	{
+		TaleWorlds.Library.Debug.Print(module.Id + " could not be loaded correctly.");
+		string lpCaption = "Error while loading " + module.Name;
+		string assemblyLoadResultsMessage = GetAssemblyLoadResultsMessage(module, subModule, result, assemblyLoadResults);
+		switch (result)
+		{
+		case AssemblyLoader.AssemblyLoadResult.CriticalError:
+			TaleWorlds.Library.Debug.Print(assemblyLoadResultsMessage);
+			if (!module.IsOfficial)
+			{
+				TaleWorlds.Library.Debug.ShowMessageBox(assemblyLoadResultsMessage, lpCaption, 256u);
+			}
+			throw new Exception();
+		case AssemblyLoader.AssemblyLoadResult.LoadedWithErrors:
+			TaleWorlds.Library.Debug.Print(assemblyLoadResultsMessage);
+			if (!module.IsOfficial)
+			{
+				TaleWorlds.Library.Debug.ShowMessageBox(assemblyLoadResultsMessage, lpCaption, 256u);
+			}
+			break;
+		}
+	}
+
+	private string GetAssemblyLoadResultsMessage(ModuleInfo module, SubModuleInfo subModule, AssemblyLoader.AssemblyLoadResult result, MBList<(string, AssemblyLoader.AssemblyLoadResult)> assemblyLoadResults)
+	{
+		string text = ((subModule != null) ? ("\"" + module.Name + "." + subModule.Name + "\" submodule") : ("\"" + module.Name + "\" module"));
+		StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.AppendLine(text + " could not be loaded correctly due to a dependency conflict. This may cause the game to experience stability issues.");
+		return stringBuilder.ToString();
 	}
 
 	public Type GetSubModuleType(string name)
@@ -1197,7 +1241,7 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 	[MBCallback(null, false)]
 	internal static void MBThrowException()
 	{
-		TaleWorlds.Library.Debug.FailedAssert("MBThrowException", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Module.cs", "MBThrowException", 1558);
+		TaleWorlds.Library.Debug.FailedAssert("MBThrowException", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Module.cs", "MBThrowException", 1614);
 	}
 
 	[MBCallback(null, false)]
@@ -1324,6 +1368,18 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		XmlTextWriter w = new XmlTextWriter(stringWriter);
 		mergedXmlForNative.WriteTo(w);
 		baseSkinsXmlPath = usedPaths[0];
+		return stringWriter.ToString();
+	}
+
+	[MBCallback(null, false)]
+	internal static string CreateProcessedItemHolstersXMLForNative(out string baseItemHolstersPath)
+	{
+		List<string> usedPaths;
+		XmlDocument mergedXmlForNative = MBObjectManager.GetMergedXmlForNative("soln_item_holsters", out usedPaths);
+		System.IO.StringWriter stringWriter = new System.IO.StringWriter();
+		XmlTextWriter w = new XmlTextWriter(stringWriter);
+		mergedXmlForNative.WriteTo(w);
+		baseItemHolstersPath = usedPaths[0];
 		return stringWriter.ToString();
 	}
 

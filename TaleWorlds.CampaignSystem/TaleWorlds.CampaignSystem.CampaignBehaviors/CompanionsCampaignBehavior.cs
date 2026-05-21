@@ -22,7 +22,8 @@ public class CompanionsCampaignBehavior : CampaignBehaviorBase
 		Medicine,
 		Smithing,
 		Scouting,
-		Combat
+		Combat,
+		Sailor
 	}
 
 	private const int CompanionMoveRandomIndex = 2;
@@ -76,6 +77,10 @@ public class CompanionsCampaignBehavior : CampaignBehaviorBase
 		{
 			CompanionTemplateType.Combat,
 			new List<CharacterObject>()
+		},
+		{
+			CompanionTemplateType.Sailor,
+			new List<CharacterObject>()
 		}
 	};
 
@@ -101,7 +106,9 @@ public class CompanionsCampaignBehavior : CampaignBehaviorBase
 
 	private const float CombatScore = 5f;
 
-	private const float AllScore = 34f;
+	private const float SailorScore = 4f;
+
+	private const float AllScore = 38f;
 
 	private float _desiredTotalCompanionCount => (float)Town.AllTowns.Count * 0.6f;
 
@@ -302,13 +309,13 @@ public class CompanionsCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private void AdjustEquipment(Hero hero)
+	private void AdjustEquipments(Hero hero)
 	{
-		AdjustEquipmentImp(hero.BattleEquipment);
-		AdjustEquipmentImp(hero.CivilianEquipment);
+		AdjustEquipmentModifiers(hero.BattleEquipment);
+		AdjustEquipmentModifiers(hero.CivilianEquipment);
 	}
 
-	private void AdjustEquipmentImp(Equipment equipment)
+	private void AdjustEquipmentModifiers(Equipment equipment)
 	{
 		ItemModifier @object = MBObjectManager.Instance.GetObject<ItemModifier>("companion_armor");
 		ItemModifier object2 = MBObjectManager.Instance.GetObject<ItemModifier>("companion_weapon");
@@ -347,6 +354,10 @@ public class CompanionsCampaignBehavior : CampaignBehaviorBase
 
 	private CompanionTemplateType GetTemplateTypeOfCompanion(CharacterObject character)
 	{
+		if (character.IsMariner)
+		{
+			return CompanionTemplateType.Sailor;
+		}
 		CompanionTemplateType result = CompanionTemplateType.Combat;
 		int num = 20;
 		foreach (SkillObject item in Skills.All)
@@ -376,7 +387,7 @@ public class CompanionsCampaignBehavior : CampaignBehaviorBase
 				settlement2 = Town.AllTowns.GetRandomElement().Settlement;
 			}
 			Hero hero = HeroCreator.CreateSpecialHero(companionTemplate, settlement2, null, null, Campaign.Current.Models.AgeModel.HeroComesOfAge + 5 + MBRandom.RandomInt(12));
-			AdjustEquipment(hero);
+			AdjustEquipments(hero);
 			hero.ChangeState(Hero.CharacterStates.Active);
 			EnterSettlementAction.ApplyForCharacterOnly(hero, settlement);
 		}
@@ -447,16 +458,17 @@ public class CompanionsCampaignBehavior : CampaignBehaviorBase
 	{
 		return templateType switch
 		{
-			CompanionTemplateType.Engineering => 1f / 17f, 
-			CompanionTemplateType.Tactics => 0.11764706f, 
-			CompanionTemplateType.Leadership => 3f / 34f, 
-			CompanionTemplateType.Steward => 3f / 34f, 
-			CompanionTemplateType.Trade => 3f / 34f, 
-			CompanionTemplateType.Roguery => 0.11764706f, 
-			CompanionTemplateType.Medicine => 3f / 34f, 
-			CompanionTemplateType.Smithing => 1f / 17f, 
-			CompanionTemplateType.Scouting => 5f / 34f, 
-			CompanionTemplateType.Combat => 5f / 34f, 
+			CompanionTemplateType.Engineering => 1f / 19f, 
+			CompanionTemplateType.Tactics => 0.10526316f, 
+			CompanionTemplateType.Leadership => 3f / 38f, 
+			CompanionTemplateType.Steward => 3f / 38f, 
+			CompanionTemplateType.Trade => 3f / 38f, 
+			CompanionTemplateType.Roguery => 0.10526316f, 
+			CompanionTemplateType.Medicine => 3f / 38f, 
+			CompanionTemplateType.Smithing => 1f / 19f, 
+			CompanionTemplateType.Scouting => 5f / 38f, 
+			CompanionTemplateType.Combat => 5f / 38f, 
+			CompanionTemplateType.Sailor => 0.10526316f, 
 			_ => 0f, 
 		};
 	}

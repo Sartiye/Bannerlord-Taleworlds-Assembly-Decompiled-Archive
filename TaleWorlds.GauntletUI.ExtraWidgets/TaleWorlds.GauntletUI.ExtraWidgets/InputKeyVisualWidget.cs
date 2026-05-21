@@ -120,6 +120,8 @@ public class InputKeyVisualWidget : Widget
 		case "MiddleMouseButton":
 		case "MouseScrollUp":
 		case "MouseScrollDown":
+		case "X1MouseButton":
+		case "X2MouseButton":
 		case "ControllerLUp":
 		case "ControllerLDown":
 		case "ControllerLLeft":
@@ -133,6 +135,21 @@ public class InputKeyVisualWidget : Widget
 		case "ControllerLTrigger":
 		case "ControllerRTrigger":
 		case "Tilde":
+		case "BackSlash":
+		case "Insert":
+		case "Delete":
+		case "Home":
+		case "End":
+		case "PageUp":
+		case "PageDown":
+		case "OpenBraces":
+		case "CloseBraces":
+		case "Comma":
+		case "Equals":
+		case "SemiColon":
+		case "Apostrophe":
+		case "Extended":
+		case "NumLock":
 			result = keyID.ToLower();
 			break;
 		case "ControllerLOption":
@@ -180,6 +197,7 @@ public class InputKeyVisualWidget : Widget
 			result = "9";
 			break;
 		case "NumpadMinus":
+		case "Minus":
 			result = "-";
 			break;
 		case "NumpadPlus":
@@ -224,6 +242,17 @@ public class InputKeyVisualWidget : Widget
 		case "ControllerShare":
 			result = ((controllerType != Input.ControllerTypes.PlayStationDualShock) ? keyID.ToLower() : (keyID.ToLower() + "_4"));
 			break;
+		case "NumpadSlash":
+		case "Slash":
+			result = "slash";
+			break;
+		case "NumpadPeriod":
+		case "Period":
+			result = "period";
+			break;
+		case "NumpadMultiply":
+			result = "multiply";
+			break;
 		}
 		return result;
 	}
@@ -231,7 +260,8 @@ public class InputKeyVisualWidget : Widget
 	private void SetKeyVisual(string visualName)
 	{
 		string text = IconsPath + "\\" + visualName;
-		if (Input.GetPrimaryControllerType().IsPlaystation())
+		bool flag = Input.ControllerType.IsPlaystation();
+		if (Input.IsGamepadActive && flag)
 		{
 			base.Sprite = base.Context.SpriteData.GetSprite(text + "_ps");
 		}

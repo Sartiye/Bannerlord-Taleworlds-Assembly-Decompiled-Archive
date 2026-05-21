@@ -18,8 +18,6 @@ public class EavesdroppingMissionCameraView : MissionView
 
 	private EavesdroppingMissionLogic _eavesdroppingMissionLogic;
 
-	private MissionCameraFadeView _missionCameraFadeView;
-
 	protected virtual void SetPlayerMovementEnabled(bool isPlayerMovementEnabled)
 	{
 	}
@@ -28,17 +26,7 @@ public class EavesdroppingMissionCameraView : MissionView
 	{
 		base.OnBehaviorInitialize();
 		_cameraSwitchState = CameraSwitchState.None;
-		foreach (MissionBehavior missionBehavior in base.Mission.MissionBehaviors)
-		{
-			if (missionBehavior is EavesdroppingMissionLogic)
-			{
-				_eavesdroppingMissionLogic = missionBehavior as EavesdroppingMissionLogic;
-			}
-			if (missionBehavior is MissionCameraFadeView)
-			{
-				_missionCameraFadeView = missionBehavior as MissionCameraFadeView;
-			}
-		}
+		_eavesdroppingMissionLogic = base.Mission.GetMissionBehavior<EavesdroppingMissionLogic>();
 	}
 
 	public override void OnMissionTick(float dt)
@@ -61,11 +49,11 @@ public class EavesdroppingMissionCameraView : MissionView
 			}
 			break;
 		case CameraSwitchState.ReadyForFadeOut:
-			_missionCameraFadeView.BeginFadeOutAndIn(0.5f, 0.5f, 0.5f);
+			ScreenFadeController.BeginFadeOutAndIn();
 			_cameraSwitchState = CameraSwitchState.FadeOutAndInStarted;
 			break;
 		case CameraSwitchState.FadeOutAndInStarted:
-			if (_missionCameraFadeView.FadeState == MissionCameraFadeView.CameraFadeState.Black)
+			if (ScreenFadeController.IsFadedOut)
 			{
 				base.MissionScreen.CustomCamera = ((base.MissionScreen.CustomCamera == null) ? _eavesdroppingMissionLogic.CurrentEavesdroppingCamera : null);
 				if (base.MissionScreen.CustomCamera == null)
@@ -76,7 +64,7 @@ public class EavesdroppingMissionCameraView : MissionView
 			}
 			break;
 		case CameraSwitchState.WaitingForFadeInToEnd:
-			if (_missionCameraFadeView.FadeState == MissionCameraFadeView.CameraFadeState.White)
+			if (!ScreenFadeController.IsFadeActive)
 			{
 				_cameraSwitchState = CameraSwitchState.None;
 			}

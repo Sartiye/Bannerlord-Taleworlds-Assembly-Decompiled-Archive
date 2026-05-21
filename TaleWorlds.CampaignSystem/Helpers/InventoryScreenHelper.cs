@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.GameState;
 using TaleWorlds.CampaignSystem.Inventory;
-using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -141,7 +140,7 @@ public static class InventoryScreenHelper
 		{
 			return result;
 		}
-		Debug.FailedAssert("GetActiveInventoryState requested but the active state is not InventoryState!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetActiveInventoryState", 8475);
+		Debug.FailedAssert("GetActiveInventoryState requested but the active state is not InventoryState!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetActiveInventoryState", 8611);
 		return null;
 	}
 
@@ -274,22 +273,13 @@ public static class InventoryScreenHelper
 		OpenInventoryPresentation(new TextObject("{=02c5bQSM}Discard"), doneLogicExtrasDelegate);
 	}
 
-	public static void OpenCampaignBattleLootScreen()
-	{
-		OpenScreenAsLoot(new Dictionary<PartyBase, ItemRoster> { 
-		{
-			PartyBase.MainParty,
-			MapEvent.PlayerMapEvent.ItemRosterForPlayerLootShare(PartyBase.MainParty)
-		} });
-	}
-
 	public static void OpenScreenAsLoot(Dictionary<PartyBase, ItemRoster> itemRostersToLoot)
 	{
 		ItemRoster leftItemRoster = itemRostersToLoot[PartyBase.MainParty];
 		InventoryState inventoryState = Game.Current.GameStateManager.CreateState<InventoryState>();
 		inventoryState.InventoryMode = InventoryMode.Loot;
 		InventoryLogic inventoryLogic = new InventoryLogic(null);
-		inventoryLogic.Initialize(leftItemRoster, MobileParty.MainParty.ItemRoster, MobileParty.MainParty.MemberRoster, isTrading: false, isSpecialActionsPermitted: true, CharacterObject.PlayerCharacter, InventoryCategoryType.None, GetCurrentMarketDataForPlayer(), useBasePrices: false, inventoryState.InventoryMode);
+		inventoryLogic.Initialize(leftItemRoster, MobileParty.MainParty.ItemRoster, MobileParty.MainParty.MemberRoster, isTrading: false, isSpecialActionsPermitted: true, CharacterObject.PlayerCharacter, InventoryCategoryType.None, GetCurrentMarketDataForPlayer(), useBasePrices: false, inventoryState.InventoryMode, GameTexts.FindText("str_loot"));
 		inventoryState.InventoryLogic = inventoryLogic;
 		Game.Current.GameStateManager.PushState(inventoryState);
 	}

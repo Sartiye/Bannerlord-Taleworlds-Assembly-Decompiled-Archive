@@ -381,17 +381,16 @@ public class MapSiegePOIVM : ViewModel
 		_latestY = 0f;
 		_latestW = 0f;
 		MBWindowManager.WorldToScreenInsideUsableArea(_mapCamera, _mapSceneLocation, ref _latestX, ref _latestY, ref _latestW);
+		if (!TaleWorlds.Library.MathF.IsValidValue(_latestX) || !TaleWorlds.Library.MathF.IsValidValue(_latestY) || !TaleWorlds.Library.MathF.IsValidValue(_latestW))
+		{
+			_latestX = -10000f;
+			_latestY = -10000f;
+			_latestW = -1f;
+		}
 		_bindWPos = _latestW;
 		_bindWSign = (int)_bindWPos;
 		_bindIsInside = IsInsideWindow();
-		if (!_bindIsInside)
-		{
-			_bindPosition = new Vec2(-1000f, -1000f);
-		}
-		else
-		{
-			_bindPosition = new Vec2(_latestX, _latestY);
-		}
+		_bindPosition = new Vec2(_latestX, _latestY);
 	}
 
 	public void RefreshBinding()
@@ -504,7 +503,7 @@ public class MapSiegePOIVM : ViewModel
 
 	private bool IsInsideWindow()
 	{
-		if (!(_latestX > Screen.RealScreenResolutionWidth) && !(_latestY > Screen.RealScreenResolutionHeight) && !(_latestX + 200f < 0f))
+		if (!(_latestX - 100f > Screen.RealScreenResolutionWidth) && !(_latestY - 100f > Screen.RealScreenResolutionHeight) && !(_latestX + 100f < 0f))
 		{
 			return !(_latestY + 100f < 0f);
 		}

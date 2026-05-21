@@ -335,7 +335,7 @@ public abstract class TeamAIComponent
 		}
 	}
 
-	public void TickOccasionally()
+	public virtual void TickOccasionally()
 	{
 		if (Mission.Current.AllowAiTicking && Team.HasBots)
 		{

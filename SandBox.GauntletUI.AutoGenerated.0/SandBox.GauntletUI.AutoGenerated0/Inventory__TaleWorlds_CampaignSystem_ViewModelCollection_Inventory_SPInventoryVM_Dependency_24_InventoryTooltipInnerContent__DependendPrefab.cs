@@ -72,7 +72,7 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		base.WidthSizePolicy = SizePolicy.CoverChildren;
 		base.HeightSizePolicy = SizePolicy.CoverChildren;
 		base.HorizontalAlignment = HorizontalAlignment.Center;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0.SuggestedWidth = 156f;
 		_widget_1.DoNotAcceptEvents = true;
@@ -107,7 +107,7 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget_3.PositioningType = TooltipPositioningType.None;
 		_widget_3_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_3_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_3_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_3_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_3_0.HorizontalAlignment = HorizontalAlignment.Left;
 	}
 

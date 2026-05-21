@@ -130,7 +130,7 @@ public class RundownTooltip__TaleWorlds_Core_ViewModelCollection_Information_Run
 		_widget_0.DividerCollectionWidget = _widget_0_0_1_1_0;
 		_widget_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0.Sprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
 		_widget_0_0.Color = new Color(0f, 0f, 0f);
 		_widget_0_0_0.WidthSizePolicy = SizePolicy.Fixed;
@@ -143,7 +143,7 @@ public class RundownTooltip__TaleWorlds_Core_ViewModelCollection_Information_Run
 		_widget_0_0_0.PaddingAmount = 0;
 		_widget_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
+		_widget_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
 		_widget_0_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0_0_0.Sprite = base.Context.SpriteData.GetSprite("horizontal_gradient_divider");
@@ -216,7 +216,7 @@ public class RundownTooltip__TaleWorlds_Core_ViewModelCollection_Information_Run
 		_widget_0_0_3.PaddingAmount = 0;
 		_widget_0_0_3_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_3_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_0_3_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_3_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_3_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_3_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_3_0_0.Sprite = base.Context.SpriteData.GetSprite("horizontal_gradient_divider");

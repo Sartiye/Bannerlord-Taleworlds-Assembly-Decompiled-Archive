@@ -179,10 +179,12 @@ public abstract class MissionObject : ScriptComponentBehavior
 	{
 	}
 
-	protected internal virtual bool OnHit(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, int affectorWeaponSlotOrMissileIndex, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage, out float finalDamage)
+	protected internal virtual bool OnHit(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, int affectorWeaponSlotOrMissileIndex, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage, out float finalDamage, out float fireDamage, out float modifiedFireDamage)
 	{
 		reportDamage = false;
 		finalDamage = damage;
+		fireDamage = -1f;
+		modifiedFireDamage = -1f;
 		return false;
 	}
 
@@ -223,9 +225,11 @@ public abstract class MissionObject : ScriptComponentBehavior
 		base.GameEntity.GetChildrenRecursive(ref children);
 		foreach (WeakGameEntity item in children)
 		{
-			foreach (ScriptComponentBehavior scriptComponent in item.GetScriptComponents())
+			int scriptCount = item.GetScriptCount();
+			for (int i = 0; i < scriptCount; i++)
 			{
-				scriptComponent?.SetScriptComponentToTick(scriptComponent.GetTickRequirement());
+				ScriptComponentBehavior scriptAtIndex = item.GetScriptAtIndex(i);
+				scriptAtIndex?.SetScriptComponentToTick(scriptAtIndex.GetTickRequirement());
 			}
 		}
 	}
@@ -240,7 +244,7 @@ public abstract class MissionObject : ScriptComponentBehavior
 		{
 			List<WeakGameEntity> children = new List<WeakGameEntity>();
 			base.GameEntity.GetChildrenRecursive(ref children);
-			foreach (MissionObject item in children.SelectMany((WeakGameEntity ac) => ac.GetScriptComponents()).OfType<MissionObject>())
+			foreach (MissionObject item in children.SelectMany((WeakGameEntity ac) => ac.GetScriptComponents<MissionObject>()))
 			{
 				item.SetEnabledAndMakeVisibleAux(isParentObject: false, enableFaces);
 			}
@@ -268,9 +272,7 @@ public abstract class MissionObject : ScriptComponentBehavior
 		{
 			List<WeakGameEntity> children = new List<WeakGameEntity>();
 			base.GameEntity.GetChildrenRecursive(ref children);
-			foreach (MissionObject item in from sc in children.SelectMany((WeakGameEntity ac) => ac.GetScriptComponents())
-				where sc is MissionObject
-				select sc as MissionObject)
+			foreach (MissionObject item in children.SelectMany((WeakGameEntity ac) => ac.GetScriptComponents<MissionObject>()))
 			{
 				item.SetDisabled();
 			}
@@ -289,9 +291,7 @@ public abstract class MissionObject : ScriptComponentBehavior
 		{
 			List<WeakGameEntity> children = new List<WeakGameEntity>();
 			base.GameEntity.GetChildrenRecursive(ref children);
-			foreach (MissionObject item in from sc in children.SelectMany((WeakGameEntity ac) => ac.GetScriptComponents())
-				where sc is MissionObject
-				select sc as MissionObject)
+			foreach (MissionObject item in children.SelectMany((WeakGameEntity ac) => ac.GetScriptComponents<MissionObject>()))
 			{
 				item.SetDisabledAndMakeInvisible(isParentObject: false, disableFaces);
 			}

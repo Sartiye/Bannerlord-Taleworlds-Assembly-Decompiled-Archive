@@ -368,10 +368,6 @@ public class DetachmentManager
 	{
 		if (agent.Detachment != null)
 		{
-			if (!_detachmentDataDictionary.ContainsKey(agent.Detachment))
-			{
-				TaleWorlds.Library.Debug.Print("DUMP-1671 | " + agent.Detachment.ToString());
-			}
 			_detachmentDataDictionary[agent.Detachment].MovingAgentCount--;
 		}
 	}

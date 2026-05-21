@@ -2,6 +2,7 @@ using SandBox.Missions.MissionLogics.Hideout;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
+using TaleWorlds.MountAndBlade;
 using TaleWorlds.MountAndBlade.View.MissionViews;
 
 namespace SandBox.View.Missions;
@@ -11,8 +12,6 @@ internal class MissionHideoutAmbushBossFightCinematicView : MissionView
 	private bool _isInitialized;
 
 	private HideoutAmbushBossFightCinematicController _cinematicLogicController;
-
-	private MissionCameraFadeView _cameraFadeViewController;
 
 	private HideoutAmbushBossFightCinematicController.HideoutCinematicState _currentState;
 
@@ -117,11 +116,11 @@ internal class MissionHideoutAmbushBossFightCinematicView : MissionView
 			{
 			case HideoutAmbushBossFightCinematicController.HideoutCinematicState.InitialFadeOut:
 			case HideoutAmbushBossFightCinematicController.HideoutCinematicState.PostCinematic:
-				_cameraFadeViewController.BeginFadeOut(duration);
+				ScreenFadeController.BeginFadeOut(duration);
 				break;
 			case HideoutAmbushBossFightCinematicController.HideoutCinematicState.Cinematic:
 			case HideoutAmbushBossFightCinematicController.HideoutCinematicState.Completed:
-				_cameraFadeViewController.BeginFadeIn(duration);
+				ScreenFadeController.BeginFadeIn(duration);
 				break;
 			}
 			_nextState = nextState;
@@ -131,8 +130,7 @@ internal class MissionHideoutAmbushBossFightCinematicView : MissionView
 	private void InitializeView()
 	{
 		_cinematicLogicController = base.Mission.GetMissionBehavior<HideoutAmbushBossFightCinematicController>();
-		_cameraFadeViewController = base.Mission.GetMissionBehavior<MissionCameraFadeView>();
-		_isInitialized = _cinematicLogicController != null && _cameraFadeViewController != null;
+		_isInitialized = _cinematicLogicController != null;
 		if (_cinematicLogicController != null)
 		{
 			_cinematicLogicController.OnCinematicStateChanged += OnCinematicStateChanged;

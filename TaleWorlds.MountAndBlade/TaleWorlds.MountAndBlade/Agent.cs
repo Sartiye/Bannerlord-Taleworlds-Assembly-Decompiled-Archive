@@ -615,6 +615,10 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	private Vec2 _localPositionError;
 
+	private bool _canPerformBrace;
+
+	private bool _isBracingCacheValid;
+
 	public static Agent Main => Mission.Current?.MainAgent;
 
 	public bool IsPlayerControlled
@@ -906,6 +910,8 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	public bool HasThrownCached => Equipment.ContainsThrownWeapon();
 
+	public bool CanPerformBraceCached => CanPerformBrace();
+
 	public AIStateFlag AIStateFlags
 	{
 		get
@@ -1071,7 +1077,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 				SetAlarmState(AIStateFlag.Alarmed);
 				break;
 			default:
-				TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "CurrentWatchState", 929);
+				TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "CurrentWatchState", 933);
 				break;
 			}
 		}
@@ -1265,7 +1271,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			{
 				return Team.Color;
 			}
-			TaleWorlds.Library.Debug.FailedAssert("Clothing color is not set.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "ClothingColor1", 1146);
+			TaleWorlds.Library.Debug.FailedAssert("Clothing color is not set.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "ClothingColor1", 1150);
 			return uint.MaxValue;
 		}
 	}
@@ -1760,6 +1766,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 		UpdateAgentStats();
 		OnAgentMountedStateChanged?.Invoke();
+		_isBracingCacheValid = false;
 		if (GameNetwork.IsServerOrRecorder)
 		{
 			mount.SyncHealthToClients();
@@ -1779,6 +1786,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			component.OnDismount(mount);
 		}
 		Mission.OnAgentDismount(this);
+		_isBracingCacheValid = false;
 		if (IsActive())
 		{
 			UpdateAgentStats();
@@ -2051,6 +2059,56 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		return MBAPI.IMBAgent.GetAIMoveStopTolerance(GetPtr());
 	}
 
+	public bool GetBaseFormationFrame(out WorldPosition formationPosition, out Vec2 formationDirection)
+	{
+		bool result = false;
+		if (Formation != null && ((MovementMode & AgentMovementMode.WaterDiving) == AgentMovementMode.Land || Mission.IsTeleportingAgents))
+		{
+			formationPosition = Formation.GetOrderPositionOfUnit(this);
+			if (IsDetachedFromFormation)
+			{
+				Formation formation = Formation;
+				WorldFrame? worldFrame = null;
+				if (formation.GetReadonlyMovementOrderReference().MovementState != 0 || (Detachment != null && (!Detachment.IsLoose || formationPosition.IsValid)))
+				{
+					worldFrame = formation.GetDetachmentFrame(this);
+				}
+				if (worldFrame.HasValue)
+				{
+					formationDirection = worldFrame.Value.Rotation.f.AsVec2.Normalized();
+					result = true;
+				}
+				else
+				{
+					formationDirection = Vec2.Invalid;
+				}
+			}
+			else
+			{
+				formationDirection = Formation.GetDirectionOfUnit(this);
+				result = formationPosition.IsValid;
+			}
+		}
+		else
+		{
+			formationPosition = WorldPosition.Invalid;
+			formationDirection = Vec2.Invalid;
+		}
+		if (formationPosition.IsValid && formationPosition.GetNavMeshMT() == UIntPtr.Zero)
+		{
+			UIntPtr nearestNavMesh = formationPosition.GetNearestNavMesh();
+			if (nearestNavMesh != UIntPtr.Zero)
+			{
+				Vec2 vec = Mission.Current.Scene.FindClosestExitPositionForPositionOnABoundaryFace(formationPosition.GetVec3WithoutValidity(), nearestNavMesh);
+				if (vec.IsValid)
+				{
+					formationPosition.SetVec2(vec);
+				}
+			}
+		}
+		return result;
+	}
+
 	public bool IsAIAtMoveDestination()
 	{
 		float aIMoveStartTolerance = GetAIMoveStartTolerance();
@@ -2187,6 +2245,12 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		{
 			SetScriptedFlags(GetScriptedFlags() & ~AIScriptedFrameFlags.InConversation);
 		}
+	}
+
+	public void OnConversationStarted()
+	{
+		SetActionChannel(0, in ActionIndexCache.act_none, ignorePriority: false, AnimFlags.amf_priority_reload, 0f, 1f, 0f);
+		SetActionChannel(1, in ActionIndexCache.act_none, ignorePriority: false, AnimFlags.amf_priority_reload, 0f, 1f, 0f);
 	}
 
 	public void SetCrouchMode(bool set)
@@ -2966,6 +3030,13 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		return MBAPI.IMBAgent.GetBoneEntitialFrameAtAnimationProgress(GetPtr(), boneIndex, animationIndex, progress);
 	}
 
+	public MatrixFrame GetBoneEntitialFrame(sbyte boneIndex, bool useBoneMapping)
+	{
+		MatrixFrame outFrame = MatrixFrame.Identity;
+		MBAPI.IMBAgent.GetBoneEntitialFrame(GetPtr(), boneIndex, useBoneMapping, ref outFrame);
+		return outFrame;
+	}
+
 	public void GetFormationFileAndRankInfo(out int fileIndex, out int rankIndex)
 	{
 		fileIndex = ((IFormationUnit)this).FormationFileIndex;
@@ -3051,7 +3122,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		case BoneBodyPartType.ShoulderRight:
 			return GetAgentDrivenPropertyValue(DrivenProperty.ArmorTorso);
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "GetBaseArmorEffectivenessForBodyPart", 3163);
+			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "GetBaseArmorEffectivenessForBodyPart", 3238);
 			return GetAgentDrivenPropertyValue(DrivenProperty.ArmorTorso);
 		}
 	}
@@ -3481,7 +3552,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	{
 		if (other == null)
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Comparing distance with null agent", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "GetDistanceTo", 3674);
+			TaleWorlds.Library.Debug.FailedAssert("Comparing distance with null agent", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "GetDistanceTo", 3749);
 			return 0f;
 		}
 		return Position.Distance(other.Position);
@@ -3565,6 +3636,8 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	public void InitializeMissionEquipment(MissionEquipment missionEquipment, Banner banner)
 	{
 		Equipment = missionEquipment ?? new MissionEquipment(SpawnEquipment, banner);
+		MissionEquipment equipment = Equipment;
+		equipment.OnWeaponSlotUpdated = (Action)Delegate.Combine(equipment.OnWeaponSlotUpdated, new Action(OnWeaponSlotUpdated));
 	}
 
 	public void InitializeAgentProperties(Equipment spawnEquipment, AgentBuildData agentBuildData)
@@ -3628,7 +3701,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			GameNetwork.WriteMessage(new SynchronizeAgentSpawnEquipment(Index, SpawnEquipment));
 			GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.AddToMissionRecord);
 		}
-		AgentVisuals.ClearVisualComponents(removeSkeleton: false);
+		AgentVisuals.ClearVisualComponents(removeSkeleton: false, removeLabel: false);
 		Mission.OnEquipItemsFromSpawnEquipment(this, CreationType.FromCharacterObj);
 		AgentVisuals.ClearAllWeaponMeshes();
 		Equipment.FillFrom(SpawnEquipment, Origin?.Banner);
@@ -3644,23 +3717,46 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	public void ForceUpdateCachedAndFormationValues(bool updateOnlyMovement, bool arrangementChangeAllowed)
 	{
-		ParallelUpdateCachedAndFormationValues(updateOnlyMovement);
-		UpdateCachedAndFormationValues(updateOnlyMovement, arrangementChangeAllowed);
+		if (!IsActive())
+		{
+			return;
+		}
+		if (IsAIControlled)
+		{
+			ParallelUpdateCachedAndFormationValuesForAIAgent(updateOnlyMovement);
+		}
+		else
+		{
+			if (!updateOnlyMovement)
+			{
+				WalkSpeedCached = MountAgent?.WalkingSpeedLimitOfMountable ?? Monster.WalkingSpeedLimit;
+			}
+			if (!GameNetwork.IsClientOrReplay)
+			{
+				GetBaseFormationFrame(out var formationPosition, out var formationDirection);
+				TrySetFormationFrame(in formationPosition, in formationDirection);
+			}
+		}
+		ApplyFormationValuesPostUpdate(updateOnlyMovement, arrangementChangeAllowed);
 	}
 
-	private void UpdateCachedAndFormationValues(bool updateOnlyMovement, bool arrangementChangeAllowed)
+	private void ParallelUpdateCachedAndFormationValuesForAIAgent(bool updateOnlyMovement)
+	{
+		if (!updateOnlyMovement)
+		{
+			WalkSpeedCached = MountAgent?.WalkingSpeedLimitOfMountable ?? Monster.WalkingSpeedLimit;
+		}
+		if (!GameNetwork.IsClientOrReplay)
+		{
+			HumanAIComponent.ParallelUpdateFormationMovement();
+		}
+	}
+
+	private void ApplyFormationValuesPostUpdate(bool updateOnlyMovement, bool arrangementChangeAllowed)
 	{
 		if (!IsActive() || GameNetwork.IsClientOrReplay)
 		{
 			return;
-		}
-		if (!updateOnlyMovement && !IsDetachedFromFormation)
-		{
-			Formation?.Arrangement.OnTickOccasionallyOfUnit(this, arrangementChangeAllowed);
-		}
-		if (IsAIControlled)
-		{
-			Formation?.SetHasPendingUnitPositions(hasPendingUnitPositions: false);
 		}
 		if (!updateOnlyMovement)
 		{
@@ -3678,19 +3774,14 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		}
 	}
 
-	private void ParallelUpdateCachedAndFormationValues(bool updateOnlyMovement)
+	public void UpdateDirectionChangeTendency()
 	{
-		if (IsActive())
+		float directionChangeTendency = 1f;
+		if (Formation.ArrangementOrder.OrderEnum == ArrangementOrder.ArrangementOrderEnum.ShieldWall && !IsDetachedFromFormation)
 		{
-			if (!updateOnlyMovement)
-			{
-				WalkSpeedCached = MountAgent?.WalkingSpeedLimitOfMountable ?? Monster.WalkingSpeedLimit;
-			}
-			if (!GameNetwork.IsClientOrReplay && IsAIControlled)
-			{
-				HumanAIComponent.ParallelUpdateFormationMovement();
-			}
+			directionChangeTendency = Formation.Arrangement.GetDirectionChangeTendencyOfUnit(this);
 		}
+		SetDirectionChangeTendency(directionChangeTendency);
 	}
 
 	public void UpdateLastRangedAttackTimeDueToAnAttack(float newTime)
@@ -3808,6 +3899,33 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		return false;
 	}
 
+	public bool TrySetFormationFrame(in WorldPosition formationPosition, in Vec2 formationDirection)
+	{
+		bool flag = formationPosition.IsValid;
+		WorldPosition position = formationPosition;
+		if (!flag)
+		{
+			SetFormationFrameDisabled();
+			return false;
+		}
+		if (!GameNetwork.IsMultiplayer && Mission.Mode == MissionMode.Deployment && !Mission.IsNavalBattle)
+		{
+			IMissionDeploymentPlan deploymentPlan = Mission.DeploymentPlan;
+			if (deploymentPlan.SupportsNavmesh(Formation.Team))
+			{
+				deploymentPlan.ProjectPositionToDeploymentBoundaries(Formation.Team, ref position);
+			}
+			flag = Mission.IsFormationUnitPositionAvailable(ref position, Team);
+		}
+		if (flag)
+		{
+			SetFormationFrameEnabled(position, formationDirection, Formation.GetReadonlyMovementOrderReference().GetTargetVelocity(), Formation.CalculateFormationDirectionEnforcingFactorForRank(((IFormationUnit)this).FormationRankIndex));
+			return true;
+		}
+		SetFormationFrameDisabled();
+		return false;
+	}
+
 	public void EnforceShieldUsage(UsageDirection shieldDirection)
 	{
 		MBAPI.IMBAgent.EnforceShieldUsage(GetPtr(), shieldDirection);
@@ -3837,7 +3955,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	private void StopUsingGameObjectAux(bool isSuccessful, StopUsingGameObjectFlags flags)
 	{
-		UsableMachine usableMachine = ((Controller != AgentControllerType.AI || !IsDetachableFromFormation || Formation == null) ? null : (Formation.GetDetachmentOrDefault(this) as UsableMachine));
+		UsableMachine usableMachine = ((Controller != AgentControllerType.AI || !IsDetachableFromFormation || Formation == null) ? null : (Detachment as UsableMachine));
 		if (usableMachine == null)
 		{
 			flags &= ~StopUsingGameObjectFlags.AutoAttachAfterStoppingUsingGameObject;
@@ -4576,68 +4694,65 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	public void TickParallel(float dt)
 	{
-		if (IsActive())
+		if (!IsActive())
 		{
-			if (GameNetwork.IsMultiplayer && GetCurrentActionStage(1) == ActionStage.AttackQuickReady)
+			return;
+		}
+		if (GameNetwork.IsMultiplayer && GetCurrentActionStage(1) == ActionStage.AttackQuickReady)
+		{
+			_lastMultiplayerQuickReadyDetectedTime = Mission.Current.CurrentTime;
+		}
+		if (_checkIfTargetFrameIsChanged)
+		{
+			Vec2 vec = ((MovementLockedState != 0) ? GetTargetPosition() : LookFrame.origin.AsVec2);
+			Vec3 vec2 = ((MovementLockedState != 0) ? GetTargetDirection() : LookFrame.rotation.f);
+			switch (MovementLockedState)
 			{
-				_lastMultiplayerQuickReadyDetectedTime = Mission.Current.CurrentTime;
+			case AgentMovementLockedState.PositionLocked:
+				_checkIfTargetFrameIsChanged = _lastSynchedTargetPosition != vec;
+				break;
+			case AgentMovementLockedState.FrameLocked:
+				_checkIfTargetFrameIsChanged = _lastSynchedTargetPosition != vec || _lastSynchedTargetDirection != vec2;
+				break;
 			}
 			if (_checkIfTargetFrameIsChanged)
 			{
-				Vec2 vec = ((MovementLockedState != 0) ? GetTargetPosition() : LookFrame.origin.AsVec2);
-				Vec3 vec2 = ((MovementLockedState != 0) ? GetTargetDirection() : LookFrame.rotation.f);
-				switch (MovementLockedState)
+				if (MovementLockedState == AgentMovementLockedState.FrameLocked)
 				{
-				case AgentMovementLockedState.PositionLocked:
-					_checkIfTargetFrameIsChanged = _lastSynchedTargetPosition != vec;
-					break;
-				case AgentMovementLockedState.FrameLocked:
-					_checkIfTargetFrameIsChanged = _lastSynchedTargetPosition != vec || _lastSynchedTargetDirection != vec2;
-					break;
-				}
-				if (_checkIfTargetFrameIsChanged)
-				{
-					if (MovementLockedState == AgentMovementLockedState.FrameLocked)
-					{
-						Vec2 targetPosition = MBMath.Lerp(vec, _lastSynchedTargetPosition, 5f * dt, 0.005f);
-						Vec3 targetDirection = MBMath.Lerp(vec2, _lastSynchedTargetDirection, 5f * dt, 0.005f);
-						SetTargetPositionAndDirection(in targetPosition, in targetDirection);
-					}
-					else
-					{
-						SetTargetPosition(MBMath.Lerp(vec, _lastSynchedTargetPosition, 5f * dt, 0.005f));
-					}
-				}
-			}
-			foreach (AgentComponent component in _components)
-			{
-				component.OnTickParallel(dt);
-			}
-			if (Mission.AllowAiTicking && IsAIControlled && _cachedAndFormationValuesUpdateTimer.Check(Mission.CurrentTime) && Formation != null)
-			{
-				_cachedAndFormationValuesUpdateTimer.AdjustStartTime(-5f);
-				ParallelUpdateCachedAndFormationValues(updateOnlyMovement: false);
-			}
-			if (_wantsToYell)
-			{
-				if (_yellTimer > 0f)
-				{
-					_yellTimer -= dt;
+					Vec2 targetPosition = MBMath.Lerp(vec, _lastSynchedTargetPosition, 5f * dt, 0.005f);
+					Vec3 targetDirection = MBMath.Lerp(vec2, _lastSynchedTargetDirection, 5f * dt, 0.005f);
+					SetTargetPositionAndDirection(in targetPosition, in targetDirection);
 				}
 				else
 				{
-					MakeVoice((MountAgent != null) ? SkinVoiceManager.VoiceType.HorseRally : SkinVoiceManager.VoiceType.Yell, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
-					_wantsToYell = false;
+					SetTargetPosition(MBMath.Lerp(vec, _lastSynchedTargetPosition, 5f * dt, 0.005f));
 				}
 			}
-			if (IsPlayerControlled && IsCheering && MovementInputVector != Vec2.Zero)
+		}
+		foreach (AgentComponent component in _components)
+		{
+			component.OnTickParallel(dt);
+		}
+		if (Mission.AllowAiTicking && IsAIControlled && _cachedAndFormationValuesUpdateTimer.Check(Mission.CurrentTime) && Formation != null)
+		{
+			_cachedAndFormationValuesUpdateTimer.AdjustStartTime(-5f);
+			ParallelUpdateCachedAndFormationValuesForAIAgent(updateOnlyMovement: false);
+		}
+		if (_wantsToYell)
+		{
+			if (_yellTimer > 0f)
 			{
-				SetActionChannel(1, in ActionIndexCache.act_none, ignorePriority: false, (AnimFlags)0uL);
+				_yellTimer -= dt;
+			}
+			else
+			{
+				MakeVoice((MountAgent != null) ? SkinVoiceManager.VoiceType.HorseRally : SkinVoiceManager.VoiceType.Yell, SkinVoiceManager.CombatVoiceNetworkPredictionType.NoPrediction);
+				_wantsToYell = false;
 			}
 		}
-		else if (MissionPeer?.ControlledAgent == this && !IsCameraAttachable())
+		if (IsPlayerControlled && IsCheering && MovementInputVector != Vec2.Zero)
 		{
-			MissionPeer.ControlledAgent = null;
+			SetActionChannel(1, in ActionIndexCache.act_none, ignorePriority: false, (AnimFlags)0uL);
 		}
 	}
 
@@ -4659,17 +4774,20 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			}
 			_changedFormationPosition = WorldPosition.Invalid;
 		}
-		if (!IsActive())
+		if (IsActive())
 		{
-			return;
+			foreach (AgentComponent component in _components)
+			{
+				component.OnTick(dt);
+			}
+			if (Mission.AllowAiTicking && IsAIControlled)
+			{
+				TickAsAI();
+			}
 		}
-		foreach (AgentComponent component in _components)
+		else if (MissionPeer?.ControlledAgent == this && !IsCameraAttachable())
 		{
-			component.OnTick(dt);
-		}
-		if (Mission.AllowAiTicking && IsAIControlled)
-		{
-			TickAsAI();
+			MissionPeer.ControlledAgent = null;
 		}
 	}
 
@@ -4922,6 +5040,16 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			return !flag2;
 		}
 		return false;
+	}
+
+	public bool CanPerformBrace()
+	{
+		if (!_isBracingCacheValid)
+		{
+			_canPerformBrace = !HasMount && !HasShieldCached && Equipment.HasAnyWeaponWithItemUsageSetFlags((ItemObject.ItemUsageSetFlags)18);
+			_isBracingCacheValid = true;
+		}
+		return _canPerformBrace;
 	}
 
 	public void SetLastDetachmentTickAgentTime(float lastDetachmentTickAgentTime)
@@ -5317,7 +5445,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			}
 			if (!collisionData.IsSneakAttack)
 			{
-				Mission.AddSoundAlarmFactorToAgents(agent, in b.GlobalPosition, 15f);
+				Mission.AddSoundAlarmFactorToAgents(agent, in b.GlobalPosition, 7f);
 			}
 		}
 		if (b.InflictedDamage <= 0)
@@ -5327,7 +5455,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		UpdateLastAttackAndHitTimes(agent, b.IsMissile);
 		float health = Health;
 		float num = (((float)b.InflictedDamage > health) ? health : ((float)b.InflictedDamage));
-		if (CurrentMortalityState == MortalityState.Immortal || Mission.DisableDying)
+		if (CurrentMortalityState == MortalityState.Immortal || Mission.DisableDying || Mission.Current.Mode == MissionMode.Conversation || Mission.Current.Mode == MissionMode.CutScene)
 		{
 			num = 0f;
 		}
@@ -5348,7 +5476,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 				_lastHitInfo.RegisterLastBlow(b.OwnerId, b.AttackType);
 			}
 		}
-		if (!Mission.DisableDying)
+		if (!Mission.DisableDying && Mission.Current.Mode != MissionMode.Conversation && Mission.Current.Mode != MissionMode.CutScene)
 		{
 			Mission.OnAgentHit(this, agent, in b, in collisionData, isBlocked: false, num);
 		}
@@ -5402,7 +5530,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	{
 		if (_cachedAndFormationValuesUpdateTimer.Check(Mission.CurrentTime) && Formation != null)
 		{
-			UpdateCachedAndFormationValues(updateOnlyMovement: false, arrangementChangeAllowed: true);
+			ApplyFormationValuesPostUpdate(updateOnlyMovement: false, arrangementChangeAllowed: true);
 		}
 	}
 
@@ -5422,6 +5550,11 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			GameNetwork.WriteMessage(new SetAgentHealth(Index, (int)Health));
 			GameNetwork.EndModuleEventAsServer();
 		}
+	}
+
+	private void OnWeaponSlotUpdated()
+	{
+		_isBracingCacheValid = false;
 	}
 
 	public static UsageDirection MovementFlagToDirection(MovementControlFlag flag)

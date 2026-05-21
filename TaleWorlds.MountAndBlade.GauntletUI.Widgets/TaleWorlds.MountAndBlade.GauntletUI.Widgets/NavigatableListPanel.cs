@@ -205,7 +205,7 @@ public class NavigatableListPanel : ListPanel
 
 	private void SetNavigationIndexForChild(Widget widget)
 	{
-		int num = ((base.StackLayout.LayoutMethod != LayoutMethod.VerticalTopToBottom && base.StackLayout.LayoutMethod != LayoutMethod.HorizontalRightToLeft) ? (MinIndex + widget.GetSiblingIndex() * StepSize) : (MaxIndex - widget.GetSiblingIndex() * StepSize));
+		int num = ((base.StackLayout.LayoutMethod != LayoutMethod.VerticalBottomToTop && base.StackLayout.LayoutMethod != LayoutMethod.HorizontalRightToLeft) ? (MinIndex + widget.GetSiblingIndex() * StepSize) : (MaxIndex - widget.GetSiblingIndex() * StepSize));
 		if (num <= MaxIndex)
 		{
 			widget.GamepadNavigationIndex = num;

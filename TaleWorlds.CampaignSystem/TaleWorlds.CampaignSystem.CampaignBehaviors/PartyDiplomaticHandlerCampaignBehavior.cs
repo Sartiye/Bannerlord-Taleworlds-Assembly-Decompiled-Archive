@@ -188,7 +188,7 @@ public class PartyDiplomaticHandlerCampaignBehavior : CampaignBehaviorBase
 			for (int j = 0; j < list2.Count; j++)
 			{
 				PartyBase party = list2[j].Party;
-				if (!siegeEvent.CanPartyJoinSide(party, BattleSideEnum.Defender))
+				if (siegeEvent.BesiegedSettlement.MapFaction != party.MapFaction && !siegeEvent.CanPartyJoinSide(party, BattleSideEnum.Defender))
 				{
 					if (flag && !flag2 && party == PartyBase.MainParty)
 					{

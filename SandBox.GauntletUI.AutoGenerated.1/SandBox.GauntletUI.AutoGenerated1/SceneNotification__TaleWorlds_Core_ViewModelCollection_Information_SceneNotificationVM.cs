@@ -138,7 +138,7 @@ public class SceneNotification__TaleWorlds_Core_ViewModelCollection_Information_
 		_widget_0_1.HasCircularMovement = true;
 		_widget_0_2.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
+		_widget_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
 		_widget_0_2_0.DoNotAcceptEvents = true;
 		_widget_0_2_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_2_0.HeightSizePolicy = SizePolicy.Fixed;

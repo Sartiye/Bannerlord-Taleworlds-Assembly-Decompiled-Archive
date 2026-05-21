@@ -57,6 +57,18 @@ public static class TWParallel
 		}
 	}
 
+	public static void ForWithoutRenderThreadDt(int fromInclusive, int toExclusive, float deltaTime, ParallelForWithDtAuxPredicate body, int grainSize = 16)
+	{
+		if (toExclusive - fromInclusive < grainSize)
+		{
+			body(fromInclusive, toExclusive, deltaTime);
+		}
+		else
+		{
+			_parallelDriver.ForWithoutRenderThreadDt(fromInclusive, toExclusive, deltaTime, body, grainSize);
+		}
+	}
+
 	public static void For(int fromInclusive, int toExclusive, float deltaTime, ParallelForWithDtAuxPredicate body, int grainSize = 16)
 	{
 		if (toExclusive - fromInclusive < grainSize)

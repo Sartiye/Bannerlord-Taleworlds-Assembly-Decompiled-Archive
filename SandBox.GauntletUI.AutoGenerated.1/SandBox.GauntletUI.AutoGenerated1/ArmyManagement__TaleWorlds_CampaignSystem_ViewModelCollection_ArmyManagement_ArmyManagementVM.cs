@@ -53,9 +53,13 @@ public class ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyM
 
 	private Widget _widget_2_3_1_0;
 
+	private Widget _widget_2_3_1_0_0;
+
 	private TextWidget _widget_2_3_2;
 
 	private Widget _widget_2_3_2_0;
+
+	private Widget _widget_2_3_2_0_0;
 
 	private ListPanel _widget_2_4;
 
@@ -90,6 +94,8 @@ public class ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyM
 	private TextWidget _widget_2_5_1;
 
 	private Widget _widget_2_5_1_0;
+
+	private Widget _widget_2_5_1_0_0;
 
 	private ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyManagement_ArmyManagementVM_Dependency_3_Standard_TriplePopupCloseButtons__DependendPrefab _widget_3;
 
@@ -145,10 +151,14 @@ public class ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyM
 		_widget_2_3.AddChild(_widget_2_3_1);
 		_widget_2_3_1_0 = new Widget(base.Context);
 		_widget_2_3_1.AddChild(_widget_2_3_1_0);
+		_widget_2_3_1_0_0 = new Widget(base.Context);
+		_widget_2_3_1_0.AddChild(_widget_2_3_1_0_0);
 		_widget_2_3_2 = new TextWidget(base.Context);
 		_widget_2_3.AddChild(_widget_2_3_2);
 		_widget_2_3_2_0 = new Widget(base.Context);
 		_widget_2_3_2.AddChild(_widget_2_3_2_0);
+		_widget_2_3_2_0_0 = new Widget(base.Context);
+		_widget_2_3_2_0.AddChild(_widget_2_3_2_0_0);
 		_widget_2_4 = new ListPanel(base.Context);
 		_widget_2.AddChild(_widget_2_4);
 		_widget_2_4_0 = new ListPanel(base.Context);
@@ -183,6 +193,8 @@ public class ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyM
 		_widget_2_5.AddChild(_widget_2_5_1);
 		_widget_2_5_1_0 = new Widget(base.Context);
 		_widget_2_5_1.AddChild(_widget_2_5_1_0);
+		_widget_2_5_1_0_0 = new Widget(base.Context);
+		_widget_2_5_1_0.AddChild(_widget_2_5_1_0_0);
 		_widget_3 = new ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyManagement_ArmyManagementVM_Dependency_3_Standard_TriplePopupCloseButtons__DependendPrefab(base.Context);
 		_widget.AddChild(_widget_3);
 		_widget_3.CreateWidgets();
@@ -269,7 +281,7 @@ public class ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyM
 		_widget_2_3.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2_3.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_2_3.MarginBottom = 30f;
-		_widget_2_3.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_3.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_3_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_3_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_3_0.Brush = base.Context.GetBrush("ArmyManagement.Army.TotalCostAndStrength.Title");
@@ -286,7 +298,12 @@ public class ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyM
 		_widget_2_3_1_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_2_3_1_0.MarginRight = -30f;
 		_widget_2_3_1_0.PositionYOffset = 0f;
-		_widget_2_3_1_0.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Influence@2x");
+		_widget_2_3_1_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_2_3_1_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_2_3_1_0_0.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Influence@2x");
+		_widget_2_3_1_0_0.ImageFit.Type = ImageFit.ImageFitTypes.Contain;
+		_widget_2_3_1_0_0.ImageFit.VerticalAlignment = ImageFit.ImageVerticalAlignments.Center;
+		_widget_2_3_1_0_0.ImageFit.HorizontalAlignment = ImageFit.ImageHorizontalAlignments.Center;
 		_widget_2_3_2.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_3_2.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_3_2.HorizontalAlignment = HorizontalAlignment.Center;
@@ -300,7 +317,12 @@ public class ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyM
 		_widget_2_3_2_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_2_3_2_0.MarginRight = -30f;
 		_widget_2_3_2_0.PositionYOffset = 0f;
-		_widget_2_3_2_0.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Influence@2x");
+		_widget_2_3_2_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_2_3_2_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_2_3_2_0_0.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Influence@2x");
+		_widget_2_3_2_0_0.ImageFit.Type = ImageFit.ImageFitTypes.Contain;
+		_widget_2_3_2_0_0.ImageFit.VerticalAlignment = ImageFit.ImageVerticalAlignments.Center;
+		_widget_2_3_2_0_0.ImageFit.HorizontalAlignment = ImageFit.ImageHorizontalAlignments.Center;
 		_widget_2_4.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_4.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_4.SuggestedWidth = 250f;
@@ -308,7 +330,7 @@ public class ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyM
 		_widget_2_4.VerticalAlignment = VerticalAlignment.Top;
 		_widget_2_4.MarginRight = 220f;
 		_widget_2_4.PositionYOffset = 46f;
-		_widget_2_4.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_4.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_4_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_4_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_4_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -396,7 +418,12 @@ public class ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyM
 		_widget_2_5_1_0.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_2_5_1_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_2_5_1_0.MarginRight = -30f;
-		_widget_2_5_1_0.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Influence@2x");
+		_widget_2_5_1_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_2_5_1_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_2_5_1_0_0.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Influence@2x");
+		_widget_2_5_1_0_0.ImageFit.Type = ImageFit.ImageFitTypes.Contain;
+		_widget_2_5_1_0_0.ImageFit.VerticalAlignment = ImageFit.ImageVerticalAlignments.Center;
+		_widget_2_5_1_0_0.ImageFit.HorizontalAlignment = ImageFit.ImageHorizontalAlignments.Center;
 		_widget_3.SetAttributes();
 		_widget_3.MarginTop = 1025f;
 		_widget_3.VerticalAlignment = VerticalAlignment.Center;

@@ -318,13 +318,13 @@ public class ScrollablePanel : Widget
 
 	protected override bool OnPreviewRightStickMovement()
 	{
-		if ((!OnlyAcceptScrollEventIfCanScroll || _canScrollHorizontal || _canScrollVertical) && !GauntletGamepadNavigationManager.Instance.IsCursorMovingForNavigation && !GauntletGamepadNavigationManager.Instance.AnyWidgetUsingNavigation && base.EventManager.HoveredView != null)
+		if ((!OnlyAcceptScrollEventIfCanScroll || _canScrollHorizontal || _canScrollVertical) && !GauntletGamepadNavigationManager.Instance.IsCursorMovingForNavigation && !GauntletGamepadNavigationManager.Instance.AnyWidgetUsingNavigation && base.EventManager.HoveredWidget != null)
 		{
-			if (!CheckIsMyChildRecursive(base.EventManager.HoveredView))
+			if (base.EventManager.HoveredWidget != this && !CheckIsMyChildRecursive(base.EventManager.HoveredWidget))
 			{
 				if (ActiveScrollbar != null)
 				{
-					return ActiveScrollbar.CheckIsMyChildRecursive(base.EventManager.HoveredView);
+					return ActiveScrollbar.CheckIsMyChildRecursive(base.EventManager.HoveredWidget);
 				}
 				return false;
 			}

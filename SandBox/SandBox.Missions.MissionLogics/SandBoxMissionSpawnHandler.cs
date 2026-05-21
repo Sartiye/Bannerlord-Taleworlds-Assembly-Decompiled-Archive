@@ -5,14 +5,14 @@ namespace SandBox.Missions.MissionLogics;
 
 public class SandBoxMissionSpawnHandler : MissionLogic
 {
-	protected MissionAgentSpawnLogic _missionAgentSpawnLogic;
+	protected DefaultBattleMissionAgentSpawnLogic _missionAgentSpawnLogic;
 
 	protected MapEvent _mapEvent;
 
 	public override void OnBehaviorInitialize()
 	{
 		base.OnBehaviorInitialize();
-		_missionAgentSpawnLogic = base.Mission.GetMissionBehavior<MissionAgentSpawnLogic>();
+		_missionAgentSpawnLogic = base.Mission.GetMissionBehavior<DefaultBattleMissionAgentSpawnLogic>();
 		_mapEvent = MapEvent.PlayerMapEvent;
 	}
 

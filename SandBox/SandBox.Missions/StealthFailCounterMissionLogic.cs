@@ -15,11 +15,12 @@ public class StealthFailCounterMissionLogic : MissionLogic
 
 	public float FailCounterSeconds = 5f;
 
-	public bool IsActive = true;
-
 	private TextObject _popupTitle;
 
 	private TextObject _popupDescription;
+
+	public bool IsActive { get; private set; } = true;
+
 
 	public float FailCounterElapsedTime
 	{
@@ -46,6 +47,14 @@ public class StealthFailCounterMissionLogic : MissionLogic
 			{
 				_alarmedAgents.Remove(agent);
 			}
+			if (_alarmedAgents.Count == 0)
+			{
+				IsActive = false;
+			}
+			else
+			{
+				IsActive = true;
+			}
 		}
 	}
 
@@ -58,24 +67,31 @@ public class StealthFailCounterMissionLogic : MissionLogic
 	public override void OnMissionTick(float dt)
 	{
 		base.OnMissionTick(dt);
-		if (!IsActive || base.Mission.Mode != MissionMode.Stealth)
+		if (!IsActive)
 		{
 			return;
 		}
-		if (_failCounter == null && !_alarmedAgents.IsEmpty())
+		if (base.Mission.Mode == MissionMode.Stealth)
 		{
-			_failCounter = new Timer(base.Mission.CurrentTime, FailCounterSeconds);
+			if (_failCounter == null && !_alarmedAgents.IsEmpty())
+			{
+				_failCounter = new Timer(base.Mission.CurrentTime, FailCounterSeconds);
+			}
+			if (_failCounter != null)
+			{
+				if (_alarmedAgents.IsEmpty())
+				{
+					_failCounter = null;
+				}
+				else if (_failCounter.Check(base.Mission.CurrentTime))
+				{
+					ShowMissionFailedPopup();
+				}
+			}
 		}
-		if (_failCounter != null)
+		else
 		{
-			if (_alarmedAgents.IsEmpty())
-			{
-				_failCounter = null;
-			}
-			else if (_failCounter.Check(base.Mission.CurrentTime))
-			{
-				ShowMissionFailedPopup();
-			}
+			IsActive = false;
 		}
 	}
 

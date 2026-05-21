@@ -131,7 +131,7 @@ public class MultiplayerReportPlayer__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		_widget_0_2.ScopeMovements = GamepadNavigationTypes.Vertical;
 		_widget_0_3.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_3.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_3.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_3.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_3.MarginTop = 25f;
 		_widget_0_3.DoNotAcceptEvents = true;
 		_widget_0_3_0.WidthSizePolicy = SizePolicy.CoverChildren;

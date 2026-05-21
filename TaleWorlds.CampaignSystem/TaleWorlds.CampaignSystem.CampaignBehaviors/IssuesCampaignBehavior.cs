@@ -824,7 +824,7 @@ public class IssuesCampaignBehavior : CampaignBehaviorBase
 		{
 			explanation = new TextObject("{=hRdhfSs0}You don't have enough influence for this solution. ({NEEDED_INFLUENCE}{INFLUENCE_ICON})");
 			explanation.SetTextVariable("NEEDED_INFLUENCE", issueOwnersIssue.NeededInfluenceForLordSolution);
-			explanation.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"7\">");
+			explanation.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"5\">");
 			return false;
 		}
 		explanation = new TextObject("{=xbvgc8Sp}This solution will cost {INFLUENCE} influence.");

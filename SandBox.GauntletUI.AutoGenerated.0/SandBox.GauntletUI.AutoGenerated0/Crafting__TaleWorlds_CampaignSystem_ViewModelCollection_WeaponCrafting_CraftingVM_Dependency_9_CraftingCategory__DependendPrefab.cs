@@ -299,7 +299,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0.MarginLeft = 20f;
-		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
+		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
 		_widget_0_0.ScopeID = "FiltersScope";
 		_widget_0_0.ScopeParent = _widget_0_1;
 		_widget_0_0.ScopeMovements = GamepadNavigationTypes.Horizontal;
@@ -537,14 +537,14 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_1_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1.MarginTop = 5f;
-		_widget_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1_1_0.SuggestedHeight = 400f;
 		_widget_1_1_0_0.SetAttributes();
 		_widget_1_1_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_1.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_1_1_0.ScopeID = "UsageSelectorScope";
 		_widget_1_1_1_0.ScopeParent = _widget_1_1_1_1;
 		_widget_1_1_1_0.ScopeMovements = GamepadNavigationTypes.Horizontal;

@@ -104,7 +104,7 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 		_widget_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1.MarginLeft = 10f;
 		_widget_0_1.MarginTop = 3f;
-		_widget_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_1_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_1_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_1_0.SuggestedWidth = 170f;
@@ -121,7 +121,7 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 		_widget_0_2.MarginLeft = 10f;
 		_widget_0_2.MarginRight = 30f;
 		_widget_0_2.MarginTop = 3f;
-		_widget_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_2_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_2_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_2_0.SuggestedWidth = 20f;

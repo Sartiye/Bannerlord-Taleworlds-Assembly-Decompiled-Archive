@@ -402,7 +402,7 @@ public class OptionsItemWidget : Widget
 		}
 		else
 		{
-			Debug.FailedAssert("No option type is visible for: " + GetType().Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Options\\OptionsItemWidget.cs", "ResetNavigationIndices", 316);
+			Debug.FailedAssert("No option type is visible for: " + GetType().Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Options\\OptionsItemWidget.cs", "ResetNavigationIndices", 310);
 		}
 	}
 

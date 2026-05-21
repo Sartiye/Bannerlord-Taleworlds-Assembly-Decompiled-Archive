@@ -171,7 +171,7 @@ public class PerkResetCampaignBehavior : CampaignBehaviorBase
 		if (HasEnoughSkillValueForReset)
 		{
 			MBTextManager.SetTextVariable("GOLD_AMOUNT", PerkResetCost);
-			MBTextManager.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+			MBTextManager.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 			return true;
 		}
 		return false;
@@ -295,7 +295,7 @@ public class PerkResetCampaignBehavior : CampaignBehaviorBase
 
 	private void ResetPerkTreeForHero(Hero hero, SkillObject skill)
 	{
-		ClearPerksForSkill(hero, skill);
+		PerkHelper.ClearPerksForSkill(hero, skill);
 	}
 
 	private void ClearPermanentBonusesIfExists(Hero hero, PerkObject perk)

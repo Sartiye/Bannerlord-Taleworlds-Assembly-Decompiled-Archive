@@ -122,7 +122,7 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		base.SuggestedHeight = 150f;
 		base.CurrentCharacterImageWidget = _widget_0_2;
 		base.UpdateChildrenStates = true;
-		base.IsPartyItem = true;
+		base.IsPartyItem = false;
 		base.PartyBackgroundBrush = base.Context.GetBrush("GameMenu.Tableau.Background.Party");
 		base.CharacterBackgroundBrush = base.Context.GetBrush("GameMenu.Tableau.Background.Character");
 		base.BackgroundImageWidget = _widget_0_0;
@@ -399,8 +399,8 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 			for (int num = _widget_0_3.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child = _widget_0_3.GetChild(num);
-				((SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate)child).OnBeforeRemovedChild(child);
-				((SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate)_widget_0_3.GetChild(num)).DestroyDataSource();
+				((SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate)_widget_0_3.GetChild(num)).DestroyDataSource();
 			}
 			_datasource_Root_Quests = null;
 		}
@@ -1362,9 +1362,9 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 			for (int num = _widget_0_3.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child3 = _widget_0_3.GetChild(num);
-				((SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+				((SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate)child3).OnBeforeRemovedChild(child3);
 				Widget child4 = _widget_0_3.GetChild(num);
-				((SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate)child4).SetDataSource(null);
+				((SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate)child4).SetDataSource(null);
 				_widget_0_3.RemoveChild(child4);
 			}
 			break;
@@ -1380,27 +1380,27 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		}
 		case TaleWorlds.Library.ListChangedType.ItemAdded:
 		{
-			SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate = new SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate(base.Context);
-			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate);
+			SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate = new SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate(base.Context);
+			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate);
 			QuestMarkerVM dataSource = (QuestMarkerVM)(generatedWidgetData.Data = _datasource_Root_Quests[e.NewIndex]);
-			settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate.AddComponent(generatedWidgetData);
-			_widget_0_3.AddChildAtIndex(settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate, e.NewIndex);
-			settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate.CreateWidgets();
-			settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate.SetIds();
-			settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate.SetAttributes();
-			settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate.SetDataSource(dataSource);
+			settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate.AddComponent(generatedWidgetData);
+			_widget_0_3.AddChildAtIndex(settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate, e.NewIndex);
+			settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate.CreateWidgets();
+			settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate.SetIds();
+			settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate.SetAttributes();
+			settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate.SetDataSource(dataSource);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
 		{
 			Widget child2 = _widget_0_3.GetChild(e.NewIndex);
-			((SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate)child2).OnBeforeRemovedChild(child2);
+			((SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate)child2).OnBeforeRemovedChild(child2);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemDeleted:
 		{
 			Widget child = _widget_0_3.GetChild(e.NewIndex);
-			((SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate)child).SetDataSource(null);
+			((SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate)child).SetDataSource(null);
 			_widget_0_3.RemoveChild(child);
 			break;
 		}
@@ -1563,9 +1563,9 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 				for (int num = _widget_0_3.ChildCount - 1; num >= 0; num--)
 				{
 					Widget child = _widget_0_3.GetChild(num);
-					((SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate)child).OnBeforeRemovedChild(child);
+					((SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate)child).OnBeforeRemovedChild(child);
 					Widget child2 = _widget_0_3.GetChild(num);
-					((SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate)child2).SetDataSource(null);
+					((SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate)child2).SetDataSource(null);
 					_widget_0_3.RemoveChild(child2);
 				}
 				_datasource_Root_Quests = null;
@@ -1753,15 +1753,15 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 			_datasource_Root_Quests.ListChanged += OnList_datasource_Root_QuestsChanged;
 			for (int i = 0; i < _datasource_Root_Quests.Count; i++)
 			{
-				SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate = new SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate);
+				SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate = new SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate);
 				QuestMarkerVM dataSource = (QuestMarkerVM)(generatedWidgetData.Data = _datasource_Root_Quests[i]);
-				settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_3.AddChildAtIndex(settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate, i);
-				settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate.CreateWidgets();
-				settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate.SetIds();
-				settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate.SetAttributes();
-				settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate.SetDataSource(dataSource);
+				settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_3.AddChildAtIndex(settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate, i);
+				settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate.CreateWidgets();
+				settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate.SetIds();
+				settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate.SetAttributes();
+				settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}
@@ -1878,9 +1878,9 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 			for (int num = _widget_0_3.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child = _widget_0_3.GetChild(num);
-				((SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate)child).OnBeforeRemovedChild(child);
 				Widget child2 = _widget_0_3.GetChild(num);
-				((SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate)child2).SetDataSource(null);
+				((SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate)child2).SetDataSource(null);
 				_widget_0_3.RemoveChild(child2);
 			}
 			_datasource_Root_Quests = null;
@@ -1892,15 +1892,15 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 			_datasource_Root_Quests.ListChanged += OnList_datasource_Root_QuestsChanged;
 			for (int i = 0; i < _datasource_Root_Quests.Count; i++)
 			{
-				SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate = new SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate);
+				SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate = new SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate);
 				QuestMarkerVM dataSource = (QuestMarkerVM)(generatedWidgetData.Data = _datasource_Root_Quests[i]);
-				settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_3.AddChildAtIndex(settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate, i);
-				settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate.CreateWidgets();
-				settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate.SetIds();
-				settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate.SetAttributes();
-				settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_13_ItemTemplate.SetDataSource(dataSource);
+				settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_3.AddChildAtIndex(settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate, i);
+				settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate.CreateWidgets();
+				settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate.SetIds();
+				settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate.SetAttributes();
+				settlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_15_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}

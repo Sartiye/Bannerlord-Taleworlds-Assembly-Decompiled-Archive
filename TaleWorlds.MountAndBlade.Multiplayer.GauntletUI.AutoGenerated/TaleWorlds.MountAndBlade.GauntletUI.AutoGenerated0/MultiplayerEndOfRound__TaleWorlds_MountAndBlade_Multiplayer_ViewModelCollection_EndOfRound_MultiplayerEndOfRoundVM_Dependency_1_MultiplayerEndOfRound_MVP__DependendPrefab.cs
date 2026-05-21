@@ -146,7 +146,7 @@ public class MultiplayerEndOfRound__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		_widget_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_1.VerticalAlignment = VerticalAlignment.Center;
 		_widget_0_1_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_1_0.HeightSizePolicy = SizePolicy.Fixed;
@@ -211,7 +211,7 @@ public class MultiplayerEndOfRound__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		_widget_0_1_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1_1.PositionYOffset = -40f;
 		_widget_0_1_1.VerticalAlignment = VerticalAlignment.Center;
-		_widget_0_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_1_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1_1_0.MarginLeft = 10f;

@@ -9,6 +9,8 @@ namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultPrisonerRecruitmentCalculationModel : PrisonerRecruitmentCalculationModel
 {
+	private const int AILordMinTierRequirementForRecruitPrisoners = 2;
+
 	public override int GetConformityNeededToRecruitPrisoner(CharacterObject character)
 	{
 		return (character.Level + 6) * (character.Level + 6) - 10;
@@ -74,7 +76,7 @@ public class DefaultPrisonerRecruitmentCalculationModel : PrisonerRecruitmentCal
 
 	public override bool IsPrisonerRecruitable(PartyBase party, CharacterObject character, out int conformityNeeded)
 	{
-		if (!character.IsRegular || character.Tier > Campaign.Current.Models.CharacterStatsModel.MaxCharacterTier)
+		if (!character.IsRegular || character.Tier > Campaign.Current.Models.CharacterStatsModel.MaxCharacterTier || character.Tier < 2 || character.Culture.IsBandit)
 		{
 			conformityNeeded = 0;
 			return false;
@@ -86,9 +88,13 @@ public class DefaultPrisonerRecruitmentCalculationModel : PrisonerRecruitmentCal
 
 	public override bool ShouldPartyRecruitPrisoners(PartyBase party)
 	{
-		if (party.IsMobile && (party.MobileParty.Morale > 30f || party.MobileParty.HasPerk(DefaultPerks.Leadership.Presence, checkSecondaryRole: true)) && party.PartySizeLimit > party.MobileParty.MemberRoster.TotalManCount && !party.MobileParty.IsWageLimitExceeded())
+		if (party.IsMobile && party.PartySizeLimit > party.MobileParty.MemberRoster.TotalManCount && !party.MobileParty.IsWageLimitExceeded() && !party.MobileParty.IsPatrolParty)
 		{
-			return !party.MobileParty.IsPatrolParty;
+			if (!(party.MobileParty.Morale > 30f))
+			{
+				return party.MobileParty.HasPerk(DefaultPerks.Leadership.Presence, checkSecondaryRole: true);
+			}
+			return true;
 		}
 		return false;
 	}

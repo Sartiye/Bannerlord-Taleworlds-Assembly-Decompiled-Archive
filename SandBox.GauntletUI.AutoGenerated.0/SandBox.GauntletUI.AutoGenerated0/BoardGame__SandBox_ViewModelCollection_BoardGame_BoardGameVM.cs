@@ -165,7 +165,7 @@ public class BoardGame__SandBox_ViewModelCollection_BoardGame_BoardGameVM : Widg
 		_widget_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.SuggestedWidth = 350f;
 		_widget_0.MarginLeft = 10f;
-		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_0.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_0.MarginBottom = 40f;
@@ -190,7 +190,7 @@ public class BoardGame__SandBox_ViewModelCollection_BoardGame_BoardGameVM : Widg
 		_widget_0_1_0_0.MarginBottom = 10f;
 		_widget_0_1_0_0.MarginLeft = 10f;
 		_widget_0_1_0_0.MarginRight = 10f;
-		_widget_0_1_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_1_0_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1_0_0_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -218,7 +218,7 @@ public class BoardGame__SandBox_ViewModelCollection_BoardGame_BoardGameVM : Widg
 		_widget_0_1_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1_1.MarginLeft = 10f;
-		_widget_0_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_1_1_0.UpdateChildrenStates = true;
 		_widget_0_1_1_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_1_1_0.HeightSizePolicy = SizePolicy.Fixed;

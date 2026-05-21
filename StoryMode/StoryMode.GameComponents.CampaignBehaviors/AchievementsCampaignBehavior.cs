@@ -201,11 +201,12 @@ public class AchievementsCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.OnIssueUpdatedEvent.AddNonSerializedListener(this, OnIssueUpdated);
 		CampaignEvents.RulingClanChanged.AddNonSerializedListener(this, OnRulingClanChanged);
 		CampaignEvents.OnConfigChangedEvent.AddNonSerializedListener(this, OnConfigChanged);
+		CampaignEvents.CollectMetadataEntriesEvent.AddNonSerializedListener(this, CollectMetadataEntries);
 		StoryModeEvents.OnStoryModeTutorialEndedEvent.AddNonSerializedListener(this, CheckTutorialFinished);
 		StoryModeEvents.OnBannerPieceCollectedEvent.AddNonSerializedListener(this, ProgressAssembledDragonBanner);
 	}
 
-	private void OnRulingClanChanged(Kingdom kingdom, Clan newRulingCLan)
+	private void OnRulingClanChanged(Kingdom kingdom, Clan oldRulingClan)
 	{
 		ProgressOwnedFortificationCount();
 	}
@@ -218,7 +219,7 @@ public class AchievementsCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private void OnHideoutBattleCompleted(BattleSideEnum winnerSide, HideoutEventComponent hideoutEventComponent)
+	private void OnHideoutBattleCompleted(BattleSideEnum winnerSide, HideoutEventComponent hideoutEventComponent, HideoutEventComponent.HideoutBattleEndState battleEndState)
 	{
 		if (hideoutEventComponent.MapEvent.InvolvedParties.Contains(PartyBase.MainParty) && winnerSide == hideoutEventComponent.MapEvent.PlayerSide)
 		{
@@ -851,6 +852,7 @@ public class AchievementsCampaignBehavior : CampaignBehaviorBase
 	{
 		_deactivateAchievements = !temporarily || _deactivateAchievements;
 		CampaignEventDispatcher.Instance.RemoveListeners(this);
+		CampaignEvents.CollectMetadataEntriesEvent.AddNonSerializedListener(this, CollectMetadataEntries);
 		if (showMessage)
 		{
 			if (TextObject.IsNullOrEmpty(reason))
@@ -859,6 +861,11 @@ public class AchievementsCampaignBehavior : CampaignBehaviorBase
 			}
 			MBInformationManager.AddQuickInformation(reason, 4000);
 		}
+	}
+
+	private void CollectMetadataEntries(List<KeyValuePair<string, string>> list)
+	{
+		list.Add(new KeyValuePair<string, string>("AchievementsDisabled", _deactivateAchievements ? "1" : "0"));
 	}
 
 	private void SetStatInternal(string statId, int value)

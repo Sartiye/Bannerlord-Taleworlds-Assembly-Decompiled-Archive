@@ -203,7 +203,7 @@ public class ButtonWidget : ImageWidget
 		}
 	}
 
-	protected internal override void OnMouseReleased()
+	protected internal override void OnMouseReleased(bool isFromInput)
 	{
 		if (_clickState != ButtonClickState.HandlingClick)
 		{
@@ -222,7 +222,7 @@ public class ButtonWidget : ImageWidget
 				}
 			}
 		}
-		if (IsPointInsideMeasuredAreaAndCheckIfVisible())
+		if (IsPointInsideMeasuredAreaAndCheckIfVisible() && isFromInput)
 		{
 			HandleClick();
 		}
@@ -259,7 +259,7 @@ public class ButtonWidget : ImageWidget
 		}
 	}
 
-	protected internal override void OnMouseAlternateReleased()
+	protected internal override void OnMouseAlternateReleased(bool isFromInput)
 	{
 		if (_clickState != ButtonClickState.HandlingAlternateClick)
 		{
@@ -278,7 +278,7 @@ public class ButtonWidget : ImageWidget
 				}
 			}
 		}
-		if (IsPointInsideMeasuredAreaAndCheckIfVisible())
+		if (IsPointInsideMeasuredAreaAndCheckIfVisible() && isFromInput)
 		{
 			HandleAlternateClick();
 		}

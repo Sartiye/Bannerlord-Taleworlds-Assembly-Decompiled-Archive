@@ -76,7 +76,7 @@ public class LordNeedsGarrisonTroopsIssueQuestBehavior : CampaignBehaviorBase
 				TextObject textObject = new TextObject("{=igXcCqdo}One of your trusted companions who knows how to lead men can go around with {ALTERNATIVE_SOLUTION_MAN_COUNT} horsemen and pick some up. One way or the other I will pay {REWARD_GOLD}{GOLD_ICON} denars in return for your services. What do you say?[if:convo_thinking]");
 				textObject.SetTextVariable("ALTERNATIVE_SOLUTION_MAN_COUNT", GetTotalAlternativeSolutionNeededMenCount());
 				textObject.SetTextVariable("REWARD_GOLD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -124,7 +124,7 @@ public class LordNeedsGarrisonTroopsIssueQuestBehavior : CampaignBehaviorBase
 				textObject.SetTextVariable("QUEST_SETTLEMENT", _settlement.EncyclopediaLinkWithName);
 				textObject.SetTextVariable("TROOP_TYPE", _neededTroopType.EncyclopediaLinkWithName);
 				textObject.SetTextVariable("REWARD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				textObject.SetTextVariable("NUMBER_OF_TROOP_TO_BE_RECRUITED", NumberOfTroopToBeRecruited);
 				return textObject;
 			}
@@ -163,7 +163,7 @@ public class LordNeedsGarrisonTroopsIssueQuestBehavior : CampaignBehaviorBase
 				TextObject textObject = new TextObject("{=sfFkYm0a}Your companion has successfully brought the troops {ISSUE_OWNER.LINK} requested. You received {REWARD}{GOLD_ICON}.");
 				StringHelpers.SetCharacterProperties("ISSUE_OWNER", base.IssueOwner.CharacterObject, textObject);
 				textObject.SetTextVariable("REWARD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -259,10 +259,11 @@ public class LordNeedsGarrisonTroopsIssueQuestBehavior : CampaignBehaviorBase
 			return false;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flags, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flags, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			skill = null;
 			relationHero = null;
+			requiredGold = 0;
 			flags = PreconditionFlags.None;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -347,7 +348,7 @@ public class LordNeedsGarrisonTroopsIssueQuestBehavior : CampaignBehaviorBase
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("TROOP_TYPE", _requestedTroopType.Name);
 				textObject.SetTextVariable("REWARD", _rewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				textObject.SetTextVariable("NUMBER_OF_TROOP_TO_BE_RECRUITED", _requestedTroopAmount);
 				textObject.SetTextVariable("QUEST_SETTLEMENT", _settlement.EncyclopediaLinkWithName);
 				return textObject;
@@ -552,6 +553,17 @@ public class LordNeedsGarrisonTroopsIssueQuestBehavior : CampaignBehaviorBase
 			CampaignEvents.WarDeclared.AddNonSerializedListener(this, OnWarDeclared);
 			CampaignEvents.OnClanChangedKingdomEvent.AddNonSerializedListener(this, OnClanChangedKingdom);
 			CampaignEvents.MapEventStarted.AddNonSerializedListener(this, OnMapEventStarted);
+			CampaignEvents.OnPartySizeChangedEvent.AddNonSerializedListener(this, OnPartySizeChanged);
+		}
+
+		private void OnPartySizeChanged(PartyBase party)
+		{
+			if (party.IsMobile && party.MobileParty.IsMainParty)
+			{
+				CalculateTroopAmount();
+				_collectedTroopAmount = MBMath.ClampInt(_collectedTroopAmount, 0, _requestedTroopAmount);
+				_playerStartsQuestLog.UpdateCurrentProgress(_collectedTroopAmount);
+			}
 		}
 
 		private void OnMapEventStarted(MapEvent mapEvent, PartyBase attackerParty, PartyBase defenderParty)
@@ -661,7 +673,7 @@ public class LordNeedsGarrisonTroopsIssueQuestBehavior : CampaignBehaviorBase
 	private void OnSessionLaunched(CampaignGameStarter gameStarter)
 	{
 		string optionText = "{=FirEOQaI}Talk to the garrison commander";
-		gameStarter.AddGameMenuOption("town", "talk_to_garrison_commander_town", optionText, talk_to_garrison_commander_on_condition, talk_to_garrison_commander_on_consequence, isLeave: false, 2);
+		gameStarter.AddGameMenuOption("town", "talk_to_garrison_commander_town", optionText, talk_to_garrison_commander_on_condition, talk_to_garrison_commander_on_consequence, isLeave: false, 0);
 		gameStarter.AddGameMenuOption("town_guard", "talk_to_garrison_commander_town", optionText, talk_to_garrison_commander_on_condition, talk_to_garrison_commander_on_consequence, isLeave: false, 2);
 		gameStarter.AddGameMenuOption("castle_guard", "talk_to_garrison_commander_castle", optionText, talk_to_garrison_commander_on_condition, talk_to_garrison_commander_on_consequence, isLeave: false, 2);
 	}

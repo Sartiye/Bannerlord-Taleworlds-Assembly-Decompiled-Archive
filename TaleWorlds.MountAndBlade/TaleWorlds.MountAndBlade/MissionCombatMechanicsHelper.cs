@@ -662,7 +662,7 @@ public static class MissionCombatMechanicsHelper
 			}
 			else
 			{
-				baseMagnitude = CombatStatCalculator.CalculateBaseBlowMagnitudeForPassiveUsage(attackInformation.AttackerWeapon.Item.Weight, num3);
+				baseMagnitude = MissionGameModels.Current.StrikeMagnitudeModel.CalculateBaseBlowMagnitudeForPassiveUsage(in attackInformation, in collisionData, num3);
 			}
 			baseMagnitude = MissionGameModels.Current.AgentApplyDamageModel.CalculatePassiveAttackDamage(attackerAgentCharacter, in collisionData, baseMagnitude);
 		}

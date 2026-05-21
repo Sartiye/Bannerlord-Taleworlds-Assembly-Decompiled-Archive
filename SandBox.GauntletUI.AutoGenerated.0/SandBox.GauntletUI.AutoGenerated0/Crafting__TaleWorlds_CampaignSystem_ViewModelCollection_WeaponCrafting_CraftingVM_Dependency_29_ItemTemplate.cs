@@ -102,7 +102,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_1_0.Brush = base.Context.GetBrush("Crafting.Piece.Card.NewlyUnlocked.Dot");
 		_widget_1_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_1.MarginTop = 10f;
 		_widget_1_1.UpdateChildrenStates = true;
 		_widget_1_1_0.WidthSizePolicy = SizePolicy.StretchToParent;

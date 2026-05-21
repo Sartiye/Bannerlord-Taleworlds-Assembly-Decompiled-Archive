@@ -50,7 +50,7 @@ public class MPMissionMarkers__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCol
 		base.CloseDistanceCutoff = 25f;
 		base.FarAlphaTarget = 0.5f;
 		base.FarDistanceCutoff = 250f;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		base.PeerWidget = _widget_0;
 		base.IsSpawnFlag = false;
 		_widget_0.WidthSizePolicy = SizePolicy.CoverChildren;

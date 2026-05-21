@@ -275,6 +275,17 @@ public struct Mat3
 		return identity;
 	}
 
+	public static Mat3 Slerp(in Mat3 m1, in Mat3 m2, float alpha)
+	{
+		return Quaternion.Slerp(Quaternion.QuaternionFromMat3(m1), Quaternion.QuaternionFromMat3(m2), alpha).ToMat3();
+	}
+
+	public static Mat3 SlerpFPSIndependent(in Mat3 m1, in Mat3 m2, float alpha)
+	{
+		float t = MathF.Pow(2f, 0f - alpha);
+		return Quaternion.Slerp(Quaternion.QuaternionFromMat3(m2), Quaternion.QuaternionFromMat3(m1), t).ToMat3();
+	}
+
 	public static Mat3 CreateMat3WithForward(in Vec3 direction)
 	{
 		Mat3 identity = Identity;

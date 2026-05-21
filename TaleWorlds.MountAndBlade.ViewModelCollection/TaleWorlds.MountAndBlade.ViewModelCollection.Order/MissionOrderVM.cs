@@ -837,7 +837,6 @@ public class MissionOrderVM : ViewModel
 			}
 			SelectedOrderSet?.ExecuteDeSelect();
 			IsToggleOrderShown = false;
-			DisplayedOrderMessageForLastOrder = false;
 			OnOrderShownToggle();
 			if (!IsDeployment)
 			{
@@ -1034,22 +1033,6 @@ public class MissionOrderVM : ViewModel
 		_callbacks.RefreshVisuals();
 	}
 
-	public void ExecuteSelectHighlightedFormation()
-	{
-		OrderTroopItemVM orderTroopItemVM = TroopController.TroopList.FirstOrDefault((OrderTroopItemVM t) => t.IsSelectable && t.IsSelectionHighlightActive);
-		if (orderTroopItemVM != null)
-		{
-			if (orderTroopItemVM.IsSelected && TroopController.TroopList.Count((OrderTroopItemVM x) => x.IsSelected) == 1)
-			{
-				TroopController.SelectAllFormations();
-			}
-			else
-			{
-				OnTroopFormationSelected(orderTroopItemVM.FormationIndex);
-			}
-		}
-	}
-
 	public void OnTroopHighlightSelection(bool isDirectionLeft)
 	{
 		if (!CheckCanBeOpened(displayMessage: true) || TroopController.TroopList.Count <= 0)
@@ -1076,6 +1059,22 @@ public class MissionOrderVM : ViewModel
 		else
 		{
 			TroopController.TroopList[0].IsSelectionHighlightActive = true;
+		}
+	}
+
+	public void ExecuteSelectHighlightedFormation()
+	{
+		OrderTroopItemVM orderTroopItemVM = TroopController.TroopList.FirstOrDefault((OrderTroopItemVM t) => t.IsSelectable && t.IsSelectionHighlightActive);
+		if (orderTroopItemVM != null)
+		{
+			if (orderTroopItemVM.IsSelected && TroopController.TroopList.Count((OrderTroopItemVM x) => x.IsSelected) == 1)
+			{
+				TroopController.SelectAllFormations();
+			}
+			else
+			{
+				OnTroopFormationSelected(orderTroopItemVM.FormationIndex);
+			}
 		}
 	}
 

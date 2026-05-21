@@ -162,7 +162,7 @@ public class OrderFlag
 		WeakGameEntity weakGameEntity = WeakGameEntity.Invalid;
 		bool isOnValidGround = false;
 		bool flag = true;
-		flag = !_mission.IsNavalBattle;
+		flag = !_mission.IsNavalBattle && !_mission.IsNavalRaidBattle;
 		Vec3 closestPoint = Vec3.Invalid;
 		if (flag)
 		{

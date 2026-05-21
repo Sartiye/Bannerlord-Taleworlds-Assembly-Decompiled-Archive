@@ -66,6 +66,7 @@ public class AssembleEmpireQuestBehavior : CampaignBehaviorBase
 			{
 				_numberOfCapturedSettlementsLog = AddDiscreteLog(new TextObject("{=3deb2lMd}To restore the Empire you should capture two thirds of settlements with imperial culture."), new TextObject("{=Dp6newHS}Conquered Settlements"), _ownedByPlayerImperialTowns, MathF.Ceiling((float)_imperialCultureTowns * 0.66f));
 			}
+			_numberOfCapturedSettlementsLog.UpdateCurrentProgress((int)MathF.Clamp(_ownedByPlayerImperialTowns, 0f, _imperialCultureTowns));
 		}
 
 		protected override void RegisterEvents()

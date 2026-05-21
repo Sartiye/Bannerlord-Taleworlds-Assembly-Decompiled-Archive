@@ -65,6 +65,7 @@ public class NativeOptions
 		Occlusion,
 		TextureFiltering,
 		WaterQuality,
+		SSRQuality,
 		Antialiasing,
 		DLSS,
 		LightingQuality,
@@ -154,6 +155,7 @@ public class NativeOptions
 					case NativeOptionsType.Occlusion:
 					case NativeOptionsType.TextureFiltering:
 					case NativeOptionsType.WaterQuality:
+					case NativeOptionsType.SSRQuality:
 					case NativeOptionsType.Antialiasing:
 					case NativeOptionsType.LightingQuality:
 					case NativeOptionsType.DecalQuality:
@@ -180,31 +182,31 @@ public class NativeOptions
 						_graphicsOptions.Add(new NativeBooleanOptionData(nativeOptionsType));
 						break;
 					case NativeOptionsType.PostFXChromaticAberration:
-						if (EngineApplicationInterface.IConfig.CheckGFXSupportStatus(63))
+						if (EngineApplicationInterface.IConfig.CheckGFXSupportStatus(64))
 						{
 							_graphicsOptions.Add(new NativeBooleanOptionData(nativeOptionsType));
 						}
 						break;
 					case NativeOptionsType.PostFXHexagonVignette:
-						if (EngineApplicationInterface.IConfig.CheckGFXSupportStatus(65))
+						if (EngineApplicationInterface.IConfig.CheckGFXSupportStatus(66))
 						{
 							_graphicsOptions.Add(new NativeBooleanOptionData(nativeOptionsType));
 						}
 						break;
 					case NativeOptionsType.PostFXLensFlare:
-						if (EngineApplicationInterface.IConfig.CheckGFXSupportStatus(61))
-						{
-							_graphicsOptions.Add(new NativeBooleanOptionData(nativeOptionsType));
-						}
-						break;
-					case NativeOptionsType.PostFXStreaks:
 						if (EngineApplicationInterface.IConfig.CheckGFXSupportStatus(62))
 						{
 							_graphicsOptions.Add(new NativeBooleanOptionData(nativeOptionsType));
 						}
 						break;
+					case NativeOptionsType.PostFXStreaks:
+						if (EngineApplicationInterface.IConfig.CheckGFXSupportStatus(63))
+						{
+							_graphicsOptions.Add(new NativeBooleanOptionData(nativeOptionsType));
+						}
+						break;
 					case NativeOptionsType.PostFXVignette:
-						if (EngineApplicationInterface.IConfig.CheckGFXSupportStatus(64))
+						if (EngineApplicationInterface.IConfig.CheckGFXSupportStatus(65))
 						{
 							_graphicsOptions.Add(new NativeBooleanOptionData(nativeOptionsType));
 						}
@@ -286,7 +288,7 @@ public class NativeOptions
 
 	public static int GetGameKeys(int keyType, int i)
 	{
-		Debug.FailedAssert("This is not implemented. Changed from Exception to not cause crash.", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine\\Options\\NativeOptions\\NativeOptions.cs", "GetGameKeys", 328);
+		Debug.FailedAssert("This is not implemented. Changed from Exception to not cause crash.", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine\\Options\\NativeOptions\\NativeOptions.cs", "GetGameKeys", 330);
 		return 0;
 	}
 
@@ -398,7 +400,7 @@ public class NativeOptions
 
 	public static void SetGameKeys(int keyType, int index, int key)
 	{
-		Debug.FailedAssert("This is not implemented. Changed from Exception to not cause crash.", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine\\Options\\NativeOptions\\NativeOptions.cs", "SetGameKeys", 441);
+		Debug.FailedAssert("This is not implemented. Changed from Exception to not cause crash.", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine\\Options\\NativeOptions\\NativeOptions.cs", "SetGameKeys", 443);
 	}
 
 	public static void Apply(int texture_budget, int sharpen_amount, int hdr, int dof_mode, int motion_blur, int ssr, int size, int texture_filtering, int trail_amount, int dynamic_resolution_target)
@@ -419,7 +421,7 @@ public class NativeOptions
 
 	public static void SetDefaultGameKeys()
 	{
-		Debug.FailedAssert("This is not implemented. Changed from Exception to not cause crash.", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine\\Options\\NativeOptions\\NativeOptions.cs", "SetDefaultGameKeys", 466);
+		Debug.FailedAssert("This is not implemented. Changed from Exception to not cause crash.", "C:\\BuildAgent\\work\\mb3\\Source\\Engine\\TaleWorlds.Engine\\Options\\NativeOptions\\NativeOptions.cs", "SetDefaultGameKeys", 468);
 	}
 
 	public static void SetDefaultGameConfig()

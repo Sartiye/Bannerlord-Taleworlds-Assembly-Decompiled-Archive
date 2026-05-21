@@ -164,7 +164,7 @@ internal static class EngineCallbacksGenerated
 
 	internal delegate void ScriptComponentBehavior_OnInit_delegate(int thisPointer);
 
-	internal delegate void ScriptComponentBehavior_OnPhysicsCollisionAux_delegate(int thisPointer, ref PhysicsContact contact, UIntPtr entity0, UIntPtr entity1, [MarshalAs(UnmanagedType.U1)] bool isFirstShape);
+	internal delegate void ScriptComponentBehavior_OnPhysicsCollisionAux_delegate(int thisPointer, ref PhysicsContact contact, UIntPtr entity0, UIntPtr entity1);
 
 	internal delegate void ScriptComponentBehavior_OnPreInit_delegate(int thisPointer);
 
@@ -785,9 +785,9 @@ internal static class EngineCallbacksGenerated
 	}
 
 	[MonoPInvokeCallback(typeof(ScriptComponentBehavior_OnPhysicsCollisionAux_delegate))]
-	internal static void ScriptComponentBehavior_OnPhysicsCollisionAux(int thisPointer, ref PhysicsContact contact, UIntPtr entity0, UIntPtr entity1, bool isFirstShape)
+	internal static void ScriptComponentBehavior_OnPhysicsCollisionAux(int thisPointer, ref PhysicsContact contact, UIntPtr entity0, UIntPtr entity1)
 	{
-		(DotNetObject.GetManagedObjectWithId(thisPointer) as ScriptComponentBehavior).OnPhysicsCollisionAux(ref contact, entity0, entity1, isFirstShape);
+		(DotNetObject.GetManagedObjectWithId(thisPointer) as ScriptComponentBehavior).OnPhysicsCollisionAux(ref contact, entity0, entity1);
 	}
 
 	[MonoPInvokeCallback(typeof(ScriptComponentBehavior_OnPreInit_delegate))]

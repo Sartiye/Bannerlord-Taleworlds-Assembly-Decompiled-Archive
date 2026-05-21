@@ -91,7 +91,7 @@ public class VisualShipFactory
 	public static GameEntity CreateVisualShip(string shipPrefab, Scene scene, List<ShipVisualSlotInfo> upgrades, int shipSeed, float hitPointRatio, uint sailColor1 = uint.MaxValue, uint sailColor2 = uint.MaxValue, bool createPhysics = false)
 	{
 		Debug.Print("VisualShipFactory.CreateVisualShip: " + shipPrefab);
-		GameEntity gameEntity = GameEntity.Instantiate(scene, shipPrefab, callScriptCallbacks: false, createPhysics, "ship_visual_only");
+		GameEntity gameEntity = GameEntity.InstantiateWithRestOffset(scene, shipPrefab, createPhysics, MatrixFrame.Identity, -0.1f, callScriptCallbacks: false, "ship_visual_only");
 		if (!createPhysics)
 		{
 			foreach (ScriptComponentBehavior item in gameEntity.GetScriptComponents().ToList())

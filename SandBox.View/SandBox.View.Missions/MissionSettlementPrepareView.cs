@@ -1,5 +1,6 @@
 using System;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
@@ -23,7 +24,12 @@ public class MissionSettlementPrepareView : MissionView
 	private void SetOwnerBanner()
 	{
 		Campaign current = Campaign.Current;
-		if (current == null || current.GameMode != CampaignGameMode.Campaign || Settlement.CurrentSettlement?.OwnerClan?.Banner == null || !(base.Mission.Scene != null))
+		if (current == null || current.GameMode != CampaignGameMode.Campaign)
+		{
+			return;
+		}
+		Clan clan = ((Settlement.CurrentSettlement != null) ? Settlement.CurrentSettlement.OwnerClan : Campaign.Current.GetCampaignBehavior<IParleyCampaignBehavior>().GetParleyedParty()?.Owner?.Clan);
+		if (clan?.Banner == null || !(base.Mission.Scene != null))
 		{
 			return;
 		}
@@ -38,7 +44,7 @@ public class MissionSettlementPrepareView : MissionView
 				material.SetShaderFlags(shaderFlags | num);
 				material.SetTexture(Material.MBTextureType.DiffuseMap2, tex);
 			};
-			Banner banner = Settlement.CurrentSettlement.OwnerClan.Banner;
+			Banner banner = clan.Banner;
 			BannerDebugInfo debugInfo = BannerDebugInfo.CreateManual(GetType().Name);
 			banner.GetTableauTextureLarge(in debugInfo, setAction);
 		}

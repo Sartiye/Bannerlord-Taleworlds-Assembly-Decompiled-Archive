@@ -36,10 +36,10 @@ public class ClickableCharacterTableauWidget : CharacterTableauWidget
 		_mousePressPos = base.EventManager.MousePosition;
 	}
 
-	protected override void OnMouseReleased()
+	protected override void OnMouseReleased(bool isFromInput)
 	{
 		SetTextureProviderProperty("CurrentlyRotating", false);
-		if (!_isDragging)
+		if (!_isDragging && isFromInput)
 		{
 			EventFired("Click");
 		}

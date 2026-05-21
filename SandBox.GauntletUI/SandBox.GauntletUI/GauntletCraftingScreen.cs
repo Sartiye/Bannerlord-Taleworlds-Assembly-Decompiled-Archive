@@ -30,17 +30,20 @@ public class GauntletCraftingScreen : ScreenBase, ICraftingStateHandler, IGameSt
 
 		public float VerticalRotation;
 
+		public float SelfRotation;
+
 		public float Zoom;
 
-		public CameraParameters(float horizontalRotation, float verticalRotation, float zoom)
+		public CameraParameters(float horizontalRotation, float verticalRotation, float selfRotation, float zoom)
 		{
 			HorizontalRotation = horizontalRotation;
 			VerticalRotation = verticalRotation;
+			SelfRotation = selfRotation;
 			Zoom = zoom;
 		}
 	}
 
-	private const float _controllerRotationSensitivity = 2f;
+	private static bool _enableLegacyCraftingCameraControls;
 
 	private Scene _craftingScene;
 
@@ -135,6 +138,8 @@ public class GauntletCraftingScreen : ScreenBase, ICraftingStateHandler, IGameSt
 		Initialize();
 		_sceneLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("Generic"));
 		_gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("Generic"));
+		_sceneLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericPanelGameKeyCategory"));
+		_gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericPanelGameKeyCategory"));
 		_sceneLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("CraftingHotkeyCategory"));
 		_gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("CraftingHotkeyCategory"));
 		InformationManager.HideAllMessages();
@@ -291,7 +296,7 @@ public class GauntletCraftingScreen : ScreenBase, ICraftingStateHandler, IGameSt
 
 	private void OnWeaponCrafted()
 	{
-		_dataSource.WeaponDesign.CraftingResultPopup?.SetDoneInputKey(HotKeyManager.GetCategory("CraftingHotkeyCategory").GetHotKey("Confirm"));
+		_dataSource.WeaponDesign.CraftingResultPopup?.SetDoneInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Confirm"));
 	}
 
 	public void OnCraftingLogicInitialized()
@@ -301,13 +306,13 @@ public class GauntletCraftingScreen : ScreenBase, ICraftingStateHandler, IGameSt
 		{
 			OnItemRefreshed = RefreshItemEntity
 		};
-		_dataSource.WeaponDesign.CraftingHistory.SetDoneKey(HotKeyManager.GetCategory("CraftingHotkeyCategory").GetHotKey("Confirm"));
-		_dataSource.WeaponDesign.CraftingHistory.SetCancelKey(HotKeyManager.GetCategory("CraftingHotkeyCategory").GetHotKey("Exit"));
-		_dataSource.CraftingHeroPopup.SetExitInputKey(HotKeyManager.GetCategory("CraftingHotkeyCategory").GetHotKey("Exit"));
-		_dataSource.SetConfirmInputKey(HotKeyManager.GetCategory("CraftingHotkeyCategory").GetHotKey("Confirm"));
-		_dataSource.SetExitInputKey(HotKeyManager.GetCategory("CraftingHotkeyCategory").GetHotKey("Exit"));
-		_dataSource.SetPreviousTabInputKey(HotKeyManager.GetCategory("CraftingHotkeyCategory").GetHotKey("SwitchToPreviousTab"));
-		_dataSource.SetNextTabInputKey(HotKeyManager.GetCategory("CraftingHotkeyCategory").GetHotKey("SwitchToNextTab"));
+		_dataSource.WeaponDesign.CraftingHistory.SetDoneKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Confirm"));
+		_dataSource.WeaponDesign.CraftingHistory.SetCancelKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Exit"));
+		_dataSource.CraftingHeroPopup.SetExitInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Exit"));
+		_dataSource.SetConfirmInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Confirm"));
+		_dataSource.SetExitInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Exit"));
+		_dataSource.SetPreviousTabInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("SwitchToPreviousTab"));
+		_dataSource.SetNextTabInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("SwitchToNextTab"));
 		_dataSource.AddCameraControlInputKey(HotKeyManager.GetCategory("CraftingHotkeyCategory").GetGameKey(56));
 		_dataSource.AddCameraControlInputKey(HotKeyManager.GetCategory("CraftingHotkeyCategory").GetGameKey(57));
 		_dataSource.AddCameraControlInputKey(HotKeyManager.GetCategory("CraftingHotkeyCategory").RegisteredGameAxisKeys.FirstOrDefault((GameAxisKey x) => x.Id == "CameraAxisX"));
@@ -426,10 +431,12 @@ public class GauntletCraftingScreen : ScreenBase, ICraftingStateHandler, IGameSt
 			ScreenManager.TrySetFocus(_gauntletLayer);
 		}
 		Vec2 vec = new Vec2(_sceneLayer.Input.GetNormalizedMouseMoveX() * 1920f, _sceneLayer.Input.GetNormalizedMouseMoveY() * 1080f);
+		bool num = _enableLegacyCraftingCameraControls && !Input.IsGamepadActive;
 		bool flag = _sceneLayer.Input.IsHotKeyDown("Rotate");
-		bool flag2 = _sceneLayer.Input.IsHotKeyDown("Zoom");
-		bool flag3 = false;
-		if (flag || flag2 || flag3)
+		bool flag2 = !num && _sceneLayer.Input.IsHotKeyDown("Zoom");
+		bool flag3 = num && _sceneLayer.Input.IsHotKeyDown("Zoom");
+		bool flag4 = false;
+		if (flag || flag2 || flag3 || flag4)
 		{
 			MBWindowManager.DontChangeCursorPos();
 			_gauntletLayer.InputRestrictions.SetMouseVisibility(isVisible: false);
@@ -445,46 +452,57 @@ public class GauntletCraftingScreen : ScreenBase, ICraftingStateHandler, IGameSt
 				ResetEntityAndCamera();
 				return;
 			}
-			float num;
+			float num2;
 			if (Input.IsGamepadActive)
 			{
 				float gameKeyState = _sceneLayer.Input.GetGameKeyState(56);
 				float gameKeyState2 = _sceneLayer.Input.GetGameKeyState(57);
 				float inputValue = gameKeyState - gameKeyState2;
 				NormalizeControllerInputForDeadZone(ref inputValue, 0.1f);
-				num = inputValue * 4f * dt;
+				num2 = inputValue * 4f * dt;
 			}
 			else
 			{
 				float deltaMouseScroll = _sceneLayer.Input.GetDeltaMouseScroll();
-				float num2 = (flag2 ? vec.y : 0f);
-				num = deltaMouseScroll * 0.001f + num2 * 0.002f;
+				float num3 = (flag2 ? vec.y : 0f);
+				num2 = deltaMouseScroll * 0.001f + num3 * 0.002f;
 			}
-			_targetCameraValues.Zoom = MBMath.ClampFloat(_targetCameraValues.Zoom + num, -0.5f, 0.5f);
-			float num3;
+			_targetCameraValues.Zoom = MBMath.ClampFloat(_targetCameraValues.Zoom + num2, -0.5f, 0.5f);
+			float num4;
 			if (Input.IsGamepadActive)
 			{
 				float inputValue2 = _sceneLayer.Input.GetGameKeyAxis("CameraAxisX");
 				NormalizeControllerInputForDeadZone(ref inputValue2, 0.1f);
-				num3 = inputValue2 * 400f * dt;
+				num4 = inputValue2 * 400f * dt;
 			}
 			else
 			{
-				num3 = (flag ? vec.x : 0f) * 0.2f;
+				num4 = (flag ? vec.x : 0f) * 0.2f;
 			}
-			_targetCameraValues.HorizontalRotation = MBMath.WrapAngle(_targetCameraValues.HorizontalRotation + num3 * (System.MathF.PI / 180f));
-			float num4;
+			_targetCameraValues.HorizontalRotation = MBMath.WrapAngle(_targetCameraValues.HorizontalRotation + num4 * (System.MathF.PI / 180f));
+			float num5;
 			if (Input.IsGamepadActive)
 			{
 				float inputValue3 = _sceneLayer.Input.GetGameKeyAxis("CameraAxisY");
 				NormalizeControllerInputForDeadZone(ref inputValue3, 0.1f);
-				num4 = inputValue3 * 400f * dt;
+				num5 = inputValue3 * 400f * dt;
 			}
 			else
 			{
-				num4 = (flag ? (vec.y * -1f) : 0f) * 0.2f;
+				num5 = (flag ? (vec.y * -1f) : 0f) * 0.2f;
 			}
-			_targetCameraValues.VerticalRotation = MBMath.WrapAngle(_targetCameraValues.VerticalRotation + num4 * (System.MathF.PI / 180f));
+			_targetCameraValues.VerticalRotation = MBMath.WrapAngle(_targetCameraValues.VerticalRotation + num5 * (System.MathF.PI / 180f));
+			float num6;
+			if (Input.IsGamepadActive)
+			{
+				num6 = 0f;
+			}
+			else
+			{
+				float num7 = ((TaleWorlds.Library.MathF.Abs(vec.x) > TaleWorlds.Library.MathF.Abs(vec.y)) ? vec.x : vec.y);
+				num6 = (flag3 ? num7 : 0f) * 0.2f;
+			}
+			_targetCameraValues.SelfRotation = MBMath.WrapAngle(_targetCameraValues.SelfRotation + num6 * (System.MathF.PI / 180f));
 		}
 		UpdateCamera(dt);
 	}
@@ -504,12 +522,21 @@ public class GauntletCraftingScreen : ScreenBase, ICraftingStateHandler, IGameSt
 	private void UpdateCamera(float dt)
 	{
 		float amount = TaleWorlds.Library.MathF.Min(1f, 10f * dt);
-		CameraParameters currentCameraValues = new CameraParameters(TaleWorlds.Library.MathF.AngleLerp(_currentCameraValues.HorizontalRotation, _targetCameraValues.HorizontalRotation, amount), TaleWorlds.Library.MathF.AngleLerp(_currentCameraValues.VerticalRotation, _targetCameraValues.VerticalRotation, amount), TaleWorlds.Library.MathF.Lerp(_currentCameraValues.Zoom, _targetCameraValues.Zoom, amount));
-		CameraParameters cameraParameters = new CameraParameters(currentCameraValues.HorizontalRotation - _currentCameraValues.HorizontalRotation, currentCameraValues.VerticalRotation - _currentCameraValues.VerticalRotation, currentCameraValues.Zoom - _currentCameraValues.Zoom);
+		CameraParameters currentCameraValues = new CameraParameters(TaleWorlds.Library.MathF.AngleLerp(_currentCameraValues.HorizontalRotation, _targetCameraValues.HorizontalRotation, amount), TaleWorlds.Library.MathF.AngleLerp(_currentCameraValues.VerticalRotation, _targetCameraValues.VerticalRotation, amount), TaleWorlds.Library.MathF.AngleLerp(_currentCameraValues.SelfRotation, _targetCameraValues.SelfRotation, amount), TaleWorlds.Library.MathF.Lerp(_currentCameraValues.Zoom, _targetCameraValues.Zoom, amount));
+		CameraParameters cameraParameters = new CameraParameters(currentCameraValues.HorizontalRotation - _currentCameraValues.HorizontalRotation, currentCameraValues.VerticalRotation - _currentCameraValues.VerticalRotation, currentCameraValues.SelfRotation - _currentCameraValues.SelfRotation, currentCameraValues.Zoom - _currentCameraValues.Zoom);
 		_currentCameraValues = currentCameraValues;
 		MatrixFrame frame = _craftingEntity.GetFrame();
-		frame.rotation.RotateAboutUp(cameraParameters.HorizontalRotation);
-		frame.rotation.RotateAboutSide(cameraParameters.VerticalRotation);
+		if (_enableLegacyCraftingCameraControls && !Input.IsGamepadActive)
+		{
+			frame.rotation.RotateAboutSide(cameraParameters.VerticalRotation);
+			frame.rotation.RotateAboutAnArbitraryVector(in Vec3.Up, cameraParameters.HorizontalRotation);
+			frame.rotation.RotateAboutUp(cameraParameters.SelfRotation);
+		}
+		else
+		{
+			frame.rotation.RotateAboutUp(cameraParameters.HorizontalRotation);
+			frame.rotation.RotateAboutSide(cameraParameters.VerticalRotation);
+		}
 		_craftingEntity.SetFrame(ref frame);
 		MatrixFrame frame2 = _camera.Frame;
 		frame2.origin += _cameraZoomDirection * cameraParameters.Zoom;
@@ -518,8 +545,8 @@ public class GauntletCraftingScreen : ScreenBase, ICraftingStateHandler, IGameSt
 
 	private void ResetEntityAndCamera()
 	{
-		_currentCameraValues = new CameraParameters(0f, 0f, 0f);
-		_targetCameraValues = new CameraParameters(0f, 0f, 0f);
+		_currentCameraValues = new CameraParameters(0f, 0f, 0f, 0f);
+		_targetCameraValues = new CameraParameters(0f, 0f, 0f, 0f);
 		_craftingEntity.SetFrame(ref _initialEntityFrame);
 		_camera.Frame = _initialCameraFrame;
 	}

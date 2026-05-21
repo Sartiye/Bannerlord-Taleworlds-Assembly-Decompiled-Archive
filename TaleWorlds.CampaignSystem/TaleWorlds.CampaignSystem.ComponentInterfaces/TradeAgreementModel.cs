@@ -1,3 +1,4 @@
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 
@@ -5,6 +6,8 @@ namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
 public abstract class TradeAgreementModel : MBGameModel<TradeAgreementModel>
 {
+	public abstract int GetProfitPerCaravanVisit(MobileParty mobileParty);
+
 	public abstract CampaignTime GetTradeAgreementDurationInYears(Kingdom iniatatingKingdom, Kingdom otherKingdom);
 
 	public abstract int GetMaximumTradeAgreementCount(Kingdom kingdom);

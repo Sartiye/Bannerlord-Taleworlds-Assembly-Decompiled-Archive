@@ -122,7 +122,7 @@ public class GameMenuTroopSelection__TaleWorlds_CampaignSystem_ViewModelCollecti
 		_widget_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0.MarginTop = 30f;
-		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0.DoNotAcceptEvents = true;
 		_widget_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0.HeightSizePolicy = SizePolicy.Fixed;
@@ -196,7 +196,7 @@ public class GameMenuTroopSelection__TaleWorlds_CampaignSystem_ViewModelCollecti
 		_widget_0_0_3.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0_0_3.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_0_0_3.MarginBottom = 35f;
-		_widget_0_0_3.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_3.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_3_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_3_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_3_0_0.WidthSizePolicy = SizePolicy.CoverChildren;

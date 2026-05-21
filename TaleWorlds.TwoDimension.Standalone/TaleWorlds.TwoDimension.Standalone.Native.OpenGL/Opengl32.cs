@@ -197,4 +197,7 @@ internal static class Opengl32
 
 	[DllImport("opengl32.dll")]
 	public static extern bool wglDeleteContext(IntPtr hglrc);
+
+	[DllImport("opengl32.dll")]
+	public static extern IntPtr wglGetCurrentContext();
 }

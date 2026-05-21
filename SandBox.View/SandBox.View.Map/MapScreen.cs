@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Helpers;
+using SandBox.Missions.BattleScore;
 using SandBox.View.Map.Managers;
 using SandBox.View.Map.Visuals;
 using SandBox.View.Menu;
@@ -20,6 +21,7 @@ using TaleWorlds.CampaignSystem.Siege;
 using TaleWorlds.CampaignSystem.ViewModelCollection;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
+using TaleWorlds.Engine.Options;
 using TaleWorlds.Engine.Screens;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
@@ -216,9 +218,11 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 
 	public const uint EnemyPartyDecalColor = 4292093218u;
 
-	public const uint AllyPartyDecalColor = 4284183827u;
+	public const uint SameFactionPartyDecalColor = 4284183827u;
 
 	public const uint NeutralPartyDecalColor = 4291596077u;
+
+	public const uint AllyPartyDecalColor = 4279386828u;
 
 	private bool _mapSceneCursorWanted = true;
 
@@ -262,7 +266,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		{
 			if (_navigationHandler != null && value != null && value != _navigationHandler)
 			{
-				Debug.FailedAssert("Navigation handler should not be changed after map bar initialization", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "NavigationHandler", 125);
+				Debug.FailedAssert("Navigation handler should not be changed after map bar initialization", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "NavigationHandler", 127);
 			}
 			else
 			{
@@ -526,7 +530,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		if (!focusGained && BannerlordConfig.StopGameOnFocusLost && !InformationManager.IsAnyInquiryActive())
 		{
 			MapEncyclopediaView encyclopediaScreenManager = EncyclopediaScreenManager;
-			if ((encyclopediaScreenManager == null || !encyclopediaScreenManager.IsEncyclopediaOpen) && _mapViewsContainer.IsOpeningEscapeMenuOnFocusChangeAllowedForAll())
+			if ((encyclopediaScreenManager == null || !encyclopediaScreenManager.IsEncyclopediaOpen) && _mapViewsContainer.IsOpeningEscapeMenuOnFocusChangeAllowedForAll() && !ScreenFadeController.IsFadeActive)
 			{
 				OnEscapeMenuToggled(isOpened: true);
 			}
@@ -539,7 +543,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		T mapViewWithType = _mapViewsContainer.GetMapViewWithType<T>();
 		if (mapViewWithType != null)
 		{
-			Debug.FailedAssert("Map view already added to the list", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "AddMapView", 545);
+			Debug.FailedAssert("Map view already added to the list", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "AddMapView", 549);
 			Debug.Print("Map view already added to the list: " + typeof(T).Name + ". Returning existing view instead of creating new one.");
 			return mapViewWithType;
 		}
@@ -648,7 +652,6 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		AddMapView<MapTrackersView>(Array.Empty<object>());
 		AddMapView<MapSaveView>(Array.Empty<object>());
 		AddMapView<MapGamepadEffectsView>(Array.Empty<object>());
-		AddMapView<MapCameraFadeView>(Array.Empty<object>());
 		EncyclopediaScreenManager = AddMapView<MapEncyclopediaView>(Array.Empty<object>()) as MapEncyclopediaView;
 		_mapReadyView = AddMapView<MapReadyView>(Array.Empty<object>()) as MapReadyView;
 		_mapReadyView.SetIsMapSceneReady(isReady: false);
@@ -779,7 +782,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		}
 		else
 		{
-			Debug.FailedAssert("There is no dirty decision but still demanded one", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "ShowNextKingdomDecisionPopup", 824);
+			Debug.FailedAssert("There is no dirty decision but still demanded one", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "ShowNextKingdomDecisionPopup", 827);
 		}
 	}
 
@@ -921,13 +924,13 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 			{
 				_mapSceneCursorWanted = !_mapSceneCursorWanted;
 			}
-			if (SceneLayer.Input.IsHotKeyPressed("MapClick"))
+			if (IsMapClickPressed())
 			{
 				_secondLastPressTime = _lastPressTime;
 				_lastPressTime = Time.ApplicationTime;
 			}
 			_leftButtonDoubleClickOnSceneWidget = false;
-			if (SceneLayer.Input.IsHotKeyReleased("MapClick"))
+			if (IsMapClickReleased())
 			{
 				Vec2 mousePositionPixel = SceneLayer.Input.GetMousePositionPixel();
 				float applicationTime = Time.ApplicationTime;
@@ -1012,8 +1015,8 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		inputInformation.RotateRightKeyDown = SceneLayer.Input.IsGameKeyDown(59);
 		inputInformation.PartyMoveUpKey = SceneLayer.Input.IsGameKeyDown(50);
 		inputInformation.PartyMoveDownKey = SceneLayer.Input.IsGameKeyDown(51);
-		inputInformation.PartyMoveLeftKey = SceneLayer.Input.IsGameKeyDown(53);
-		inputInformation.PartyMoveRightKey = SceneLayer.Input.IsGameKeyDown(52);
+		inputInformation.PartyMoveLeftKey = SceneLayer.Input.IsGameKeyDown(52);
+		inputInformation.PartyMoveRightKey = SceneLayer.Input.IsGameKeyDown(53);
 		inputInformation.MapZoomIn = SceneLayer.Input.GetGameKeyState(56);
 		inputInformation.MapZoomOut = SceneLayer.Input.GetGameKeyState(57);
 		inputInformation.CameraFollowModeKeyPressed = SceneLayer.Input.IsGameKeyPressed(64);
@@ -1040,19 +1043,19 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		{
 			if (!MapState.AtMenu)
 			{
-				goto IL_0673;
+				goto IL_0655;
 			}
 			if (Campaign.Current.CurrentMenuContext != null)
 			{
 				GameMenu gameMenu = Campaign.Current.CurrentMenuContext.GameMenu;
 				if (gameMenu != null && gameMenu.IsWaitActive)
 				{
-					goto IL_0673;
+					goto IL_0655;
 				}
 			}
 		}
-		goto IL_090e;
-		IL_0673:
+		goto IL_08f0;
+		IL_0655:
 		float applicationTime2 = Time.ApplicationTime;
 		if (SceneLayer.Input.IsGameKeyPressed(63) && _timeToggleTimer == float.MaxValue)
 		{
@@ -1129,8 +1132,8 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 				Campaign.Current.SetTimeSpeed(2);
 			}
 		}
-		goto IL_090e;
-		IL_090e:
+		goto IL_08f0;
+		IL_08f0:
 		if (!flag && CurrentVisualOfTooltip != null)
 		{
 			RemoveMapTooltip();
@@ -1256,7 +1259,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		}
 		if (!IsInMenu)
 		{
-			_menuViewContext = new MenuViewContext(this, menuContext);
+			_menuViewContext = CreateMenuViewContext(menuContext);
 		}
 		else
 		{
@@ -1414,12 +1417,12 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		{
 			MBWindowManager.DontChangeCursorPos();
 		}
-		if (ScreenManager.FirstHitLayer == SceneLayer && SceneLayer.Input.IsHotKeyReleased("MapClick") && !_leftButtonDraggingMode && !_ignoreLeftMouseRelease)
+		if (ScreenManager.FirstHitLayer == SceneLayer && IsMapClickReleased() && !_leftButtonDraggingMode && !_ignoreLeftMouseRelease)
 		{
 			HandleLeftMouseButtonClick(intersectionPoint: new CampaignVec2(intersectionPoint2.AsVec2, isOnland), visualOfSelectedEntity: _leftButtonDoubleClickOnSceneWidget ? _preVisualOfSelectedEntity : selectedVisual, mouseOverFaceIndex: currentFace, isDoubleClick: _leftButtonDoubleClickOnSceneWidget);
 			_preVisualOfSelectedEntity = selectedVisual;
 		}
-		if (Campaign.Current.TimeControlMode == CampaignTimeControlMode.StoppableFastForward && _waitForDoubleClickUntilTime > 0f && _waitForDoubleClickUntilTime < Time.ApplicationTime)
+		if (BannerlordConfig.MapDoubleClickBehavior == 0 && Campaign.Current.TimeControlMode == CampaignTimeControlMode.StoppableFastForward && _waitForDoubleClickUntilTime > 0f && _waitForDoubleClickUntilTime < Time.ApplicationTime)
 		{
 			Campaign.Current.TimeControlMode = CampaignTimeControlMode.StoppablePlay;
 			_waitForDoubleClickUntilTime = 0f;
@@ -1476,6 +1479,32 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		return result;
 	}
 
+	private bool IsMapClickPressed()
+	{
+		if (!SceneLayer.Input.IsHotKeyPressed("MapClick"))
+		{
+			if (SceneLayer.Input.IsHotKeyPressed("MapTouchpadClick"))
+			{
+				return NativeOptions.GetConfig(NativeOptions.NativeOptionsType.EnableTouchpadMouse) != 0f;
+			}
+			return false;
+		}
+		return true;
+	}
+
+	private bool IsMapClickReleased()
+	{
+		if (!SceneLayer.Input.IsHotKeyReleased("MapClick"))
+		{
+			if (SceneLayer.Input.IsHotKeyReleased("MapTouchpadClick"))
+			{
+				return NativeOptions.GetConfig(NativeOptions.NativeOptionsType.EnableTouchpadMouse) != 0f;
+			}
+			return false;
+		}
+		return true;
+	}
+
 	private void HandleLeftMouseButtonClick(MapEntityVisual visualOfSelectedEntity, CampaignVec2 intersectionPoint, PathFaceRecord mouseOverFaceIndex, bool isDoubleClick)
 	{
 		bool flag = false;
@@ -1499,20 +1528,12 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 						flag = visualOfSelectedEntity.OnMapClick(SceneLayer.Input.IsHotKeyDown("MapFollowModifier"));
 						if (flag)
 						{
-							if (!_leftButtonDoubleClickOnSceneWidget && Campaign.Current.TimeControlMode == CampaignTimeControlMode.StoppableFastForward)
-							{
-								_waitForDoubleClickUntilTime = Time.ApplicationTime + 0.3f;
-								Campaign.Current.TimeControlMode = CampaignTimeControlMode.StoppableFastForward;
-							}
-							else
-							{
-								Campaign.Current.TimeControlMode = (_leftButtonDoubleClickOnSceneWidget ? CampaignTimeControlMode.StoppableFastForward : CampaignTimeControlMode.StoppablePlay);
-							}
+							HandleClickTimeChange(isDoubleClick);
 							if (TaleWorlds.InputSystem.Input.IsGamepadActive)
 							{
 								if (visualOfSelectedEntity.IsMobileEntity)
 								{
-									if (visualOfSelectedEntity.IsAllyOf(PartyBase.MainParty.MapFaction))
+									if (visualOfSelectedEntity.IsInSameFaction(PartyBase.MainParty.MapFaction))
 									{
 										UISoundsHelper.PlayUISound("event:/ui/campaign/click_party");
 									}
@@ -1521,7 +1542,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 										UISoundsHelper.PlayUISound("event:/ui/campaign/click_party_enemy");
 									}
 								}
-								else if (visualOfSelectedEntity.IsAllyOf(PartyBase.MainParty.MapFaction))
+								else if (visualOfSelectedEntity.IsInSameFaction(PartyBase.MainParty.MapFaction))
 								{
 									UISoundsHelper.PlayUISound("event:/ui/campaign/click_settlement");
 								}
@@ -1577,15 +1598,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 					{
 						MapState.ProcessTravel(intersectionPoint);
 					}
-					if (!isDoubleClick && Campaign.Current.TimeControlMode == CampaignTimeControlMode.StoppableFastForward)
-					{
-						_waitForDoubleClickUntilTime = Time.ApplicationTime + 0.3f;
-						Campaign.Current.TimeControlMode = CampaignTimeControlMode.StoppableFastForward;
-					}
-					else
-					{
-						Campaign.Current.TimeControlMode = (isDoubleClick ? CampaignTimeControlMode.StoppableFastForward : CampaignTimeControlMode.StoppablePlay);
-					}
+					HandleClickTimeChange(isDoubleClick);
 				}
 				OnTerrainClick();
 			}
@@ -1618,6 +1631,37 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		});
 	}
 
+	private void HandleClickTimeChange(bool isDoubleClick)
+	{
+		switch (BannerlordConfig.MapDoubleClickBehavior)
+		{
+		case 0:
+			if (!isDoubleClick && Campaign.Current.TimeControlMode == CampaignTimeControlMode.StoppableFastForward)
+			{
+				_waitForDoubleClickUntilTime = Time.ApplicationTime + 0.3f;
+				Campaign.Current.TimeControlMode = CampaignTimeControlMode.StoppableFastForward;
+			}
+			else
+			{
+				Campaign.Current.TimeControlMode = (isDoubleClick ? CampaignTimeControlMode.StoppableFastForward : CampaignTimeControlMode.StoppablePlay);
+			}
+			break;
+		case 1:
+			if (isDoubleClick)
+			{
+				Campaign.Current.TimeControlMode = ((Campaign.Current.TimeControlMode == CampaignTimeControlMode.StoppableFastForward) ? CampaignTimeControlMode.StoppablePlay : CampaignTimeControlMode.StoppableFastForward);
+			}
+			else
+			{
+				Campaign.Current.TimeControlMode = ((Campaign.Current.TimeControlMode == CampaignTimeControlMode.StoppableFastForward) ? CampaignTimeControlMode.StoppableFastForward : CampaignTimeControlMode.StoppablePlay);
+			}
+			break;
+		case 2:
+			Campaign.Current.TimeControlMode = ((Campaign.Current.TimeControlMode == CampaignTimeControlMode.StoppableFastForward) ? CampaignTimeControlMode.StoppableFastForward : CampaignTimeControlMode.StoppablePlay);
+			break;
+		}
+	}
+
 	void IMapStateHandler.AfterTick(float dt)
 	{
 		if (ScreenManager.TopScreen == this)
@@ -1630,6 +1674,11 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 			}
 		}
 		base.DebugInput.IsHotKeyPressed("MapScreenHotkeyShowPos");
+	}
+
+	protected virtual MenuViewContext CreateMenuViewContext(MenuContext menuContext)
+	{
+		return new MenuViewContext(this, menuContext);
 	}
 
 	protected virtual bool TickNavigationInput(float dt)
@@ -1681,7 +1730,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		}
 		else if (SceneLayer.Input.IsHotKeyReleased("ToggleEscapeMenu"))
 		{
-			if (!_mapViewsContainer.IsThereAnyViewIsEscaped())
+			if (!_mapViewsContainer.IsThereAnyViewIsEscaped() && !ScreenFadeController.IsFadeActive)
 			{
 				OpenEscapeMenu();
 				flag = true;
@@ -1785,7 +1834,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 
 	protected virtual SPScoreboardVM CreateSimulationScoreboardDatasource(BattleSimulation battleSimulation)
 	{
-		return new SPScoreboardVM(battleSimulation);
+		return new SPScoreboardVM(new SandboxSimulationBattleScoreContext(battleSimulation), battleSimulation);
 	}
 
 	void IMapStateHandler.OnBattleSimulationEnded()
@@ -1810,11 +1859,6 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 
 	void IMapStateHandler.OnPlayerSiegeDeactivated()
 	{
-	}
-
-	public void OnFadeInAndOut(float fadeOutTime, float blackTime, float fadeInTime)
-	{
-		GetMapView<MapCameraFadeView>().BeginFadeOutAndIn(fadeOutTime, blackTime, fadeInTime);
 	}
 
 	public void SetIsMapCheatsActive(bool isMapCheatsActive)
@@ -1967,6 +2011,11 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 
 	private void TickVisuals(float realDt)
 	{
+		if (!MapScene.IsLoadingFinished())
+		{
+			MapScene.HandleCurrentFrameTickEntities();
+			return;
+		}
 		if (DisableVisualTicks)
 		{
 			MapScene.ClearCurrentFrameTickEntities();
@@ -2100,7 +2149,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		}
 		else
 		{
-			Debug.FailedAssert("Requested remove map cheats but cheats is not enabled", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "CloseGameplayCheats", 2536);
+			Debug.FailedAssert("Requested remove map cheats but cheats is not enabled", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "CloseGameplayCheats", 2577);
 		}
 	}
 
@@ -2108,11 +2157,11 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 	{
 		if (_campaignOptionsView == null)
 		{
-			Debug.FailedAssert("Trying to close campaign options when it's not set", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "CloseCampaignOptions", 2544);
+			Debug.FailedAssert("Trying to close campaign options when it's not set", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "CloseCampaignOptions", 2585);
 			_campaignOptionsView = GetMapView<MapCampaignOptionsView>();
 			if (_campaignOptionsView == null)
 			{
-				Debug.FailedAssert("Trying to close campaign options when it's not open", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "CloseCampaignOptions", 2549);
+				Debug.FailedAssert("Trying to close campaign options when it's not open", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "CloseCampaignOptions", 2590);
 				IsInCampaignOptions = false;
 				_campaignOptionsView = null;
 				return;
@@ -2361,8 +2410,6 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 			}
 			if (partyBase != null)
 			{
-				bool flag6 = FactionManager.IsAtWarAgainstFaction(partyBase.MapFaction, Hero.MainHero.MapFaction);
-				bool flag7 = DiplomacyHelper.IsSameFactionAndNotEliminated(partyBase.MapFaction, Hero.MainHero.MapFaction);
 				if (partyBase.IsMobile)
 				{
 					MapEntityVisual<PartyBase> partyVisual = GetPartyVisual(partyBase);
@@ -2376,7 +2423,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 						{
 							num5 = 2.5f;
 						}
-						factor1Linear = (flag6 ? 4292093218u : (flag7 ? 4284183827u : 4291596077u));
+						factor1Linear = GetDecalColorForParty(partyBase);
 						num = frame.rotation.GetScaleVector().x * num5;
 					}
 				}
@@ -2387,14 +2434,14 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 					{
 						flag4 = true;
 						flag2 = true;
-						factor1Linear3 = (flag6 ? 4292093218u : (flag7 ? 4284183827u : 4291596077u));
+						factor1Linear3 = GetDecalColorForParty(partyBase);
 						num = frame.rotation.GetScaleVector().x * 1.3f;
 					}
 					else
 					{
 						flag3 = true;
 						num3 = 5;
-						factor1Linear = (flag6 ? 4292093218u : (flag7 ? 4284183827u : 4291596077u));
+						factor1Linear = GetDecalColorForParty(partyBase);
 						num = frame.rotation.GetScaleVector().x * 1.2f;
 					}
 				}
@@ -2427,9 +2474,8 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		MatrixFrame frame2 = MatrixFrame.Identity;
 		frame2.origin = frame.origin;
 		MobileParty mainParty = MobileParty.MainParty;
-		bool flag8 = mainParty != null && !mainParty.TargetPosition.IsOnLand;
-		bool flag9 = partyBase != null;
-		_ = MobileParty.MainParty?.IsCurrentlyAtSea;
+		bool flag6 = mainParty != null && !mainParty.TargetPosition.IsOnLand;
+		bool flag7 = partyBase != null;
 		frame2.rotation.u = normalAt;
 		MatrixFrame frame3 = frame2;
 		ref Mat3 rotation = ref frame2.rotation;
@@ -2439,12 +2485,12 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		scaleAmountXYZ = new Vec3(num2, num2, num2);
 		rotation2.ApplyScaleLocal(in scaleAmountXYZ);
 		_townCircleDecal.GameEntity.SetVisibilityExcludeParents(flag2);
-		_pointTargetInnerDecal.GameEntity.SetVisibilityExcludeParents(flag3 && (!flag8 || flag9));
-		_pointTargetOuterDecal.GameEntity.SetVisibilityExcludeParents(flag && (!flag8 || flag9));
-		_pointTargetWindDirectionDecal.GameEntity.SetVisibilityExcludeParents(flag3 && flag8 && !flag9);
+		_pointTargetInnerDecal.GameEntity.SetVisibilityExcludeParents(flag3 && (!flag6 || flag7));
+		_pointTargetOuterDecal.GameEntity.SetVisibilityExcludeParents(flag && (!flag6 || flag7));
+		_pointTargetWindDirectionDecal.GameEntity.SetVisibilityExcludeParents(flag3 && flag6 && !flag7);
 		if (flag3)
 		{
-			if (flag8 && !flag9)
+			if (flag6 && !flag7)
 			{
 				float num6 = num + 0.15f;
 				MatrixFrame frame4 = frame2;
@@ -2483,32 +2529,18 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 			Instance.MapCursor.OnAnotherEntityHighlighted();
 			if (mapEntityVisual != null)
 			{
-				bool flag10 = mapEntityVisual.IsEnemyOf(Hero.MainHero.MapFaction);
-				bool flag11 = mapEntityVisual.IsAllyOf(Hero.MainHero.MapFaction);
 				flag4 = mapEntityVisual.MapEntity.IsSettlement && mapEntityVisual.MapEntity.Settlement.IsFortification;
 				if (flag4)
 				{
-					Vec3 origin = _settlementHoverOutlineDecal.GameEntity.GetGlobalFrame().origin;
 					frame5 = mapEntityVisual.CircleLocalFrame;
-					if (flag10)
-					{
-						_settlementHoverOutlineDecal.Decal.SetFactor1Linear(4292093218u);
-					}
-					else if (flag11)
-					{
-						_settlementHoverOutlineDecal.Decal.SetFactor1Linear(4284183827u);
-					}
-					else
-					{
-						_settlementHoverOutlineDecal.Decal.SetFactor1Linear(4291596077u);
-					}
+					_settlementHoverOutlineDecal.Decal.SetFactor1Linear(GetDecalColorForParty(mapEntityVisual.MapEntity));
 				}
 				else
 				{
 					Vec3 origin = _settlementHoverOutlineDecal.GameEntity.GetGlobalFrame().origin;
 					frame5.origin = mapEntityVisual.GetVisualPosition() + mapEntityVisual.CircleLocalFrame.origin;
 					frame5.rotation = mapEntityVisual.CircleLocalFrame.rotation;
-					_partyHoverOutlineDecal.Decal.SetFactor1Linear(flag10 ? 4292093218u : (flag11 ? 4284183827u : 4291596077u));
+					_partyHoverOutlineDecal.Decal.SetFactor1Linear(GetDecalColorForParty(mapEntityVisual.MapEntity));
 					_partyHoverOutlineDecal.Decal.SetVectorArgument(0.166f, 1f, 0.83f, 0f);
 					ref Vec3 origin2 = ref frame5.origin;
 					float z;
@@ -2645,5 +2677,22 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		{
 			MBMapScene.TickStepSound(MapScene, agentVisuals.GetVisuals(), (int)faceTerrainType, soundType, party.AttachedParties.Count);
 		}
+	}
+
+	private uint GetDecalColorForParty(PartyBase targetParty)
+	{
+		if (FactionManager.IsAtWarAgainstFaction(targetParty.MapFaction, Hero.MainHero.MapFaction))
+		{
+			return 4292093218u;
+		}
+		if (DiplomacyHelper.IsSameFactionAndNotEliminated(targetParty.MapFaction, Hero.MainHero.MapFaction))
+		{
+			return 4284183827u;
+		}
+		if (DiplomacyHelper.HasAllianceWithFaction(targetParty.MapFaction, Hero.MainHero.MapFaction))
+		{
+			return 4279386828u;
+		}
+		return 4291596077u;
 	}
 }

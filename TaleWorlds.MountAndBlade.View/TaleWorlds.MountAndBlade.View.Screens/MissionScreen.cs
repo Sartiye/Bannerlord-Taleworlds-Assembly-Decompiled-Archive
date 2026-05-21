@@ -61,6 +61,8 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 
 	private bool _forceCanZoom;
 
+	public bool AllowInputWithCustomCamera;
+
 	private readonly Vec3[] _cameraNearPlanePoints = new Vec3[4];
 
 	private readonly Vec3[] _cameraBoxPoints = new Vec3[8];
@@ -106,6 +108,12 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 	private float _cameraAddedElevation;
 
 	private float _cameraHeightLimit;
+
+	private float _cameraShakeStartTime;
+
+	private float _cameraShakeCurrentTimeWithFrequency;
+
+	private float _cameraShakeIntensity;
 
 	private float _currentViewBlockingBodyCoeff;
 
@@ -233,7 +241,7 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 				}
 				else
 				{
-					Debug.FailedAssert("MyPeer.IsSynchronized but myMissionPeer == null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Screens\\MissionScreen.cs", "LastFollowedAgent", 215);
+					Debug.FailedAssert("MyPeer.IsSynchronized but myMissionPeer == null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Screens\\MissionScreen.cs", "LastFollowedAgent", 219);
 				}
 			}
 			ResetMaxCameraZoom();
@@ -405,11 +413,6 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 		IsFocusLost = !focusGained;
 	}
 
-	float IMissionScreen.GetCameraElevation()
-	{
-		return CameraElevation;
-	}
-
 	public void SetOrderFlagVisibility(bool value)
 	{
 		if (OrderFlag != null)
@@ -452,6 +455,10 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 
 	public bool IsOpeningEscapeMenuOnFocusChangeAllowed()
 	{
+		if (ScreenFadeController.IsFadeActive)
+		{
+			return false;
+		}
 		List<MissionBehavior> list = (from v in Mission?.MissionBehaviors?.Where((MissionBehavior v) => v is MissionView)
 			orderby ((MissionView)v).ViewOrderPriority
 			select v).ToList();
@@ -539,6 +546,7 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 		MBDebug.Print("-------MissionScreen-OnActivate");
 		Mission.OnMainAgentChanged += Mission_OnMainAgentChanged;
 		Mission.OnBeforeAgentRemoved += Mission_OnBeforeAgentRemoved;
+		Mission.OnCameraShakeTriggered += MissionOnCameraShakeTriggered;
 		_cameraBearingDelta = 0f;
 		_cameraElevationDelta = 0f;
 		SetCameraFrameToMapView();
@@ -581,6 +589,15 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 		}
 	}
 
+	private void MissionOnCameraShakeTriggered(in Vec3 position, float radius)
+	{
+		if (CombatCamera.Position.DistanceSquared(position) < radius * radius)
+		{
+			_cameraShakeStartTime = Game.Current.ApplicationTime;
+			_cameraShakeIntensity = Math.Min(1.25f - CombatCamera.Position.Distance(position) / radius, 1f);
+		}
+	}
+
 	public void OnMainAgentWeaponChanged()
 	{
 		ResetMaxCameraZoom();
@@ -611,6 +628,7 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 			}
 			Mission.OnMainAgentChanged -= Mission_OnMainAgentChanged;
 			Mission.OnBeforeAgentRemoved -= Mission_OnBeforeAgentRemoved;
+			Mission.OnCameraShakeTriggered -= MissionOnCameraShakeTriggered;
 			_missionViewsContainer.ForEach(delegate(MissionView missionView)
 			{
 				missionView.OnMissionScreenDeactivate();
@@ -1028,8 +1046,8 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 					}
 				}
 				agentToFollow.AgentVisuals.GetSkeleton().ForceUpdateBoneFrames();
-				MatrixFrame boneEntitialFrame = agentToFollow.AgentVisuals.GetBoneEntitialFrame(agentToFollow.Monster.ThoraxLookDirectionBoneIndex, useBoneMapping: true);
-				MatrixFrame m = agentToFollow.AgentVisuals.GetBoneEntitialFrame(agentToFollow.Monster.HeadLookDirectionBoneIndex, useBoneMapping: true);
+				MatrixFrame boneEntitialFrame = agentToFollow.GetBoneEntitialFrame(agentToFollow.Monster.ThoraxLookDirectionBoneIndex, useBoneMapping: true);
+				MatrixFrame m = agentToFollow.GetBoneEntitialFrame(agentToFollow.Monster.HeadLookDirectionBoneIndex, useBoneMapping: true);
 				Vec3 v = agent.Monster.FirstPersonCameraOffsetWrtHead;
 				m.origin = m.TransformToParent(in v);
 				MatrixFrame frame = agentToFollow.AgentVisuals.GetFrame();
@@ -1457,45 +1475,78 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 					cameraSpecialCurrentPositionToAdd += -cameraFrame.rotation.u * (Mission.CustomCameraLocalOffset.y + Mission.CustomCameraLocalOffset2.y);
 					cameraSpecialCurrentPositionToAdd += cameraFrame.rotation.f * (Mission.CustomCameraLocalOffset.z + Mission.CustomCameraLocalOffset2.z);
 				}
+				if (_cameraShakeStartTime > 0f)
+				{
+					float applicationTime = Game.Current.ApplicationTime;
+					if (_cameraShakeStartTime > applicationTime - 2f)
+					{
+						float num35 = 1f - TaleWorlds.Library.MathF.Pow((applicationTime - _cameraShakeStartTime) / 2f, 0.4f);
+						float num36 = num35 * _cameraShakeIntensity * 0.6f;
+						float num37 = num36 * 0.02f;
+						_cameraShakeCurrentTimeWithFrequency += dt * 15f * num35;
+						if (num36 > 0f)
+						{
+							Vec3 vec22 = MBPerlin.NoiseVec3(_cameraShakeCurrentTimeWithFrequency);
+							cameraSpecialCurrentPositionToAdd += cameraFrame.rotation.s * (vec22.x * num36);
+							cameraSpecialCurrentPositionToAdd += cameraFrame.rotation.f * (vec22.z * num36);
+							Mission.SetCustomCameraLocalRotationalOffset(new Vec3(vec22.x * num37, vec22.y * num37));
+						}
+					}
+					else
+					{
+						_cameraShakeStartTime = 0f;
+					}
+				}
 			}
 			vec18 += cameraSpecialCurrentPositionToAdd;
 			vec19 += cameraSpecialCurrentPositionToAdd;
 			vec19.z += _cameraTargetAddedHeight;
-			int num35 = 0;
+			int num38 = 0;
 			bool flag9 = agentToFollow != null;
 			Vec3 supportRaycastPoint = cameraSpecialCurrentPositionToAdd + ((!flag9) ? Vec3.Invalid : ((flag5 && agentToFollow.MountAgent.AgentVisuals.IsValid()) ? agentToFollow.MountAgent.GetChestGlobalPosition() : agentToFollow.GetChestGlobalPosition()));
-			Vec3 vec22 = vec19 + matrixFrame2.rotation.u * num32;
-			if (!Mission.CameraIsFirstPerson && Mission.CustomCameraLocalRotationalOffset.IsNonZero)
+			Vec3 vec23 = vec19 + matrixFrame2.rotation.u * num32;
+			if (!Mission.CameraIsFirstPerson && (Mission.CustomCameraLocalRotationalOffset.IsNonZero || _cameraShakeStartTime > 0f))
 			{
-				cameraFrame.rotation.u = cameraFrame.rotation.u.RotateAboutAnArbitraryVector(cameraFrame.rotation.s, Mission.CustomCameraLocalRotationalOffset.x);
-				cameraFrame.rotation.u = cameraFrame.rotation.u.RotateAboutAnArbitraryVector(cameraFrame.rotation.f, Mission.CustomCameraLocalRotationalOffset.y);
+				Vec2 asVec = Mission.CustomCameraLocalRotationalOffset.AsVec2;
+				if (_cameraShakeStartTime > 0f)
+				{
+					float currentTime = Mission.Current.CurrentTime;
+					float num39 = (1f - TaleWorlds.Library.MathF.Pow((currentTime - _cameraShakeStartTime) / 2f, 0.4f)) * _cameraShakeIntensity * 0.6f * 0.02f;
+					if (num39 > 0f)
+					{
+						Vec3 vec24 = MBPerlin.NoiseVec3(_cameraShakeCurrentTimeWithFrequency);
+						asVec += new Vec2(vec24.x * num39, vec24.y * num39);
+					}
+				}
+				cameraFrame.rotation.u = cameraFrame.rotation.u.RotateAboutAnArbitraryVector(cameraFrame.rotation.s, asVec.x);
+				cameraFrame.rotation.u = cameraFrame.rotation.u.RotateAboutAnArbitraryVector(cameraFrame.rotation.f, asVec.y);
 				cameraFrame.rotation.f = Vec3.CrossProduct(cameraFrame.rotation.u, cameraFrame.rotation.s).NormalizedCopy();
 				cameraFrame.rotation.s = Vec3.CrossProduct(cameraFrame.rotation.f, cameraFrame.rotation.u);
 			}
-			Vec3 vec23 = vec22 - vec19;
-			num32 = vec23.Normalize();
+			Vec3 vec25 = vec23 - vec19;
+			num32 = vec25.Normalize();
 			bool flag10;
 			do
 			{
-				Vec3 vec24 = vec19;
+				Vec3 vec26 = vec19;
 				if (Mission.Mode != MissionMode.Conversation && Mission.Mode != MissionMode.Barter)
 				{
-					float num36 = Math.Max(0f, 1f - (Mission.CustomCameraLocalOffset + Mission.CustomCameraLocalOffset2).Length);
-					if (num36 > 0f)
+					float num40 = Math.Max(0f, 1f - (Mission.CustomCameraLocalOffset + Mission.CustomCameraLocalOffset2).Length);
+					if (num40 > 0f)
 					{
-						vec24 += matrixFrame2.rotation.f * num18 * num36 * (0.7f * TaleWorlds.Library.MathF.Pow(TaleWorlds.Library.MathF.Cos(1f / ((num32 / num18 - 0.2f) * 30f + 20f)), 3500f));
+						vec26 += matrixFrame2.rotation.f * num18 * num40 * (0.7f * TaleWorlds.Library.MathF.Pow(TaleWorlds.Library.MathF.Cos(1f / ((num32 / num18 - 0.2f) * 30f + 20f)), 3500f));
 					}
 				}
-				Vec3 o = vec24 + vec23 * num32;
+				Vec3 o = vec26 + vec25 * num32;
 				if (flag7 || flag8)
 				{
-					float num37 = 0f;
+					float num41 = 0f;
 					if (flag8)
 					{
 						float currentActionProgress = agentToFollow.GetCurrentActionProgress(0);
-						num37 = currentActionProgress * currentActionProgress * 20f;
+						num41 = currentActionProgress * currentActionProgress * 20f;
 					}
-					vec24 = _cameraTarget + (vec24 - _cameraTarget) * (5f + num37) * dt;
+					vec26 = _cameraTarget + (vec26 - _cameraTarget) * (5f + num41) * dt;
 				}
 				flag10 = false;
 				MatrixFrame cameraFrame2 = new MatrixFrame(in cameraFrame.rotation, in o);
@@ -1506,11 +1557,11 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 					zero2 += _cameraNearPlanePoints[i];
 				}
 				zero2 *= 0.25f;
-				Vec3 centerPoint = new Vec3(vec18.AsVec2 + vec17, vec24.z);
-				Vec3 vec25 = centerPoint - zero2;
+				Vec3 centerPoint = new Vec3(vec18.AsVec2 + vec17, vec26.z);
+				Vec3 vec27 = centerPoint - zero2;
 				for (int j = 0; j < 4; j++)
 				{
-					_cameraNearPlanePoints[j] += vec25;
+					_cameraNearPlanePoints[j] += vec27;
 				}
 				_cameraBoxPoints[0] = _cameraNearPlanePoints[3] + cameraFrame2.rotation.u * 0.01f;
 				_cameraBoxPoints[1] = _cameraNearPlanePoints[0];
@@ -1520,42 +1571,42 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 				_cameraBoxPoints[5] = _cameraNearPlanePoints[0] + cameraFrame2.rotation.u * 0.01f;
 				_cameraBoxPoints[6] = _cameraNearPlanePoints[1];
 				_cameraBoxPoints[7] = _cameraNearPlanePoints[2] + cameraFrame2.rotation.u * 0.01f;
-				float num38 = ((IsPhotoModeEnabled && !flag && photoModeOrbit) ? _zoomAmount : 0f);
-				num32 += num38;
+				float num42 = ((IsPhotoModeEnabled && !flag && photoModeOrbit) ? _zoomAmount : 0f);
+				num32 += num42;
 				Vec3 closestPoint = Vec3.Zero;
 				if (!Mission.CustomCameraIgnoreCollision && scene.BoxCastOnlyForCamera(_cameraBoxPoints, in centerPoint, flag9, in supportRaycastPoint, in cameraFrame2.rotation.u, num32 + 0.5f, Mission.IgnoredEntityForCamera?.WeakEntity ?? WeakGameEntity.Invalid, out var collisionDistance2, out closestPoint, out collidedEntity))
 				{
-					collisionDistance2 = TaleWorlds.Library.MathF.Max(Vec3.DotProduct(cameraFrame2.rotation.u, closestPoint - vec24), 0.48f * num18);
+					collisionDistance2 = TaleWorlds.Library.MathF.Max(Vec3.DotProduct(cameraFrame2.rotation.u, closestPoint - vec26), 0.48f * num18);
 					if (collisionDistance2 < num32)
 					{
 						flag10 = true;
 						num32 = collisionDistance2;
 					}
 				}
-				num35++;
+				num38++;
 			}
-			while (!flag6 && num35 < 5 && flag10);
+			while (!flag6 && num38 < 5 && flag10);
 			num15 = num32 - Mission.CameraAddedDistance;
-			if (flag3 || (CameraResultDistanceToTarget > num32 && num35 > 1))
+			if (flag3 || (CameraResultDistanceToTarget > num32 && num38 > 1))
 			{
 				CameraResultDistanceToTarget = num32;
 			}
 			else
 			{
-				float num39 = TaleWorlds.Library.MathF.Max(TaleWorlds.Library.MathF.Abs(Mission.CameraAddedDistance - _lastCameraAddedDistance) * num18, TaleWorlds.Library.MathF.Abs((num15 - (CameraResultDistanceToTarget - _lastCameraAddedDistance)) * dt * 3f * num18));
-				CameraResultDistanceToTarget += MBMath.ClampFloat(num32 - CameraResultDistanceToTarget, 0f - num39, num39);
+				float num43 = TaleWorlds.Library.MathF.Max(TaleWorlds.Library.MathF.Abs(Mission.CameraAddedDistance - _lastCameraAddedDistance) * num18, TaleWorlds.Library.MathF.Abs((num15 - (CameraResultDistanceToTarget - _lastCameraAddedDistance)) * dt * 3f * num18));
+				CameraResultDistanceToTarget += MBMath.ClampFloat(num32 - CameraResultDistanceToTarget, 0f - num43, num43);
 			}
 			_lastCameraAddedDistance = Mission.CameraAddedDistance;
 			_cameraTarget = vec19;
 			if (Mission.Mode != MissionMode.Conversation && Mission.Mode != MissionMode.Barter)
 			{
-				float num40 = Math.Max(0f, 1f - (Mission.CustomCameraLocalOffset + Mission.CustomCameraLocalOffset2).Length);
-				if (num40 > 0f)
+				float num44 = Math.Max(0f, 1f - (Mission.CustomCameraLocalOffset + Mission.CustomCameraLocalOffset2).Length);
+				if (num44 > 0f)
 				{
-					_cameraTarget += matrixFrame2.rotation.f * num18 * num40 * (0.7f * TaleWorlds.Library.MathF.Pow(TaleWorlds.Library.MathF.Cos(1f / ((num32 / num18 - 0.2f) * 30f + 20f)), 3500f));
+					_cameraTarget += matrixFrame2.rotation.f * num18 * num44 * (0.7f * TaleWorlds.Library.MathF.Pow(TaleWorlds.Library.MathF.Cos(1f / ((num32 / num18 - 0.2f) * 30f + 20f)), 3500f));
 				}
 			}
-			cameraFrame.origin = _cameraTarget + vec23 * CameraResultDistanceToTarget;
+			cameraFrame.origin = _cameraTarget + vec25 * CameraResultDistanceToTarget;
 			if (!Mission.CameraIsFirstPerson && agentToFollow != null && agentToFollow.IsPlayerControlled)
 			{
 				cameraFrame.origin += Mission.CustomCameraGlobalOffset;
@@ -1563,14 +1614,14 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 		}
 		if (_cameraSpecialCurrentFOV != _cameraSpecialTargetFOV)
 		{
-			float num41 = _cameraSpecialTargetFOV - _cameraSpecialCurrentFOV;
-			if (flag3 || TaleWorlds.Library.MathF.Abs(num41) < 0.001f)
+			float num45 = _cameraSpecialTargetFOV - _cameraSpecialCurrentFOV;
+			if (flag3 || TaleWorlds.Library.MathF.Abs(num45) < 0.001f)
 			{
 				_cameraSpecialCurrentFOV = _cameraSpecialTargetFOV;
 			}
 			else
 			{
-				_cameraSpecialCurrentFOV += num41 * 3f * dt;
+				_cameraSpecialCurrentFOV += num45 * 3f * dt;
 			}
 		}
 		float newDNear = (Mission.CameraIsFirstPerson ? 0.065f : 0.1f);
@@ -1602,8 +1653,8 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 		Vec3 attenuationPosition = agentToFollow?.GetEyeGlobalPosition() ?? cameraFrame.origin;
 		if (agentToFollow != null && Mission.ListenerAndAttenuationPosBlendFactor > 0f)
 		{
-			Vec3 vec26 = cameraFrame.origin - attenuationPosition;
-			attenuationPosition += vec26 * Mission.ListenerAndAttenuationPosBlendFactor;
+			Vec3 vec28 = cameraFrame.origin - attenuationPosition;
+			attenuationPosition += vec28 * Mission.ListenerAndAttenuationPosBlendFactor;
 		}
 		Mission.SetCameraFrame(ref cameraFrame, 65f / CameraViewAngle, ref attenuationPosition);
 		if (LastFollowedAgent != null && LastFollowedAgent != Mission.MainAgent && (agentToFollow == Mission.MainAgent || agentToFollow == null))
@@ -1660,7 +1711,7 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 			}
 			else
 			{
-				Debug.FailedAssert("Multiplayer scene does not contain a camera frame", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Screens\\MissionScreen.cs", "SetCameraFrameToMapView", 2180);
+				Debug.FailedAssert("Multiplayer scene does not contain a camera frame", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Screens\\MissionScreen.cs", "SetCameraFrameToMapView", 2236);
 				flag = true;
 			}
 		}
@@ -1675,8 +1726,8 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 			}
 			else if (Mission.HasSpawnPath)
 			{
-				float battleSizeOffset = Mission.GetBattleSizeOffset(100, Mission.GetInitialSpawnPath());
-				frame = Mission.GetSpawnPathFrame(Mission.PlayerTeam.Side, battleSizeOffset).ToGroundMatrixFrame();
+				float pathOffset = Mission.ComputeSpawnPathDeploymentOffset(100, Mission.GetInitialSpawnPath());
+				frame = Mission.GetSpawnPathFrame(Mission.PlayerTeam.Side, pathOffset).ToGroundMatrixFrame();
 				frame.origin.z += 25f;
 				frame.origin -= 25f * frame.rotation.f;
 				CameraBearing = frame.rotation.f.RotationZ;
@@ -1762,7 +1813,7 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 		float num3 = dt / 0.0009f;
 		float num4 = 0f;
 		float num5 = 0f;
-		if ((!MBCommon.IsPaused || IsPhotoModeEnabled) && !IsRadialMenuActive && CustomCamera == null && _cameraSpecialTargetFOV > 9f && Mission.Mode != MissionMode.Barter)
+		if ((!MBCommon.IsPaused || IsPhotoModeEnabled) && !IsRadialMenuActive && (CustomCamera == null || AllowInputWithCustomCamera) && _cameraSpecialTargetFOV > 9f && Mission.Mode != MissionMode.Barter)
 		{
 			if (MouseVisible && !SceneLayer.Input.IsKeyDown(InputKey.RightMouseButton))
 			{
@@ -1888,25 +1939,25 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 			}
 		}
 		Mission.CameraAddedDistance = MBMath.ClampFloat(Mission.CameraAddedDistance, 0.7f, 2.4f);
-		_isGamepadActive = !Input.IsMouseActive && Input.IsControllerConnected;
+		_isGamepadActive = Input.IsGamepadActive;
 		if (_isGamepadActive)
 		{
 			Agent mainAgent = Mission.MainAgent;
 			if (mainAgent == null || mainAgent.WieldedWeapon.CurrentUsageItem?.IsRangedWeapon != true)
 			{
-				goto IL_0752;
+				goto IL_0750;
 			}
 		}
 		if (!(CustomCamera == null) || IsRadialMenuActive)
 		{
-			goto IL_0752;
+			goto IL_0750;
 		}
 		int num14 = 1;
-		goto IL_075b;
-		IL_0752:
+		goto IL_0759;
+		IL_0750:
 		num14 = (_forceCanZoom ? 1 : 0);
-		goto IL_075b;
-		IL_075b:
+		goto IL_0759;
+		IL_0759:
 		bool flag3 = (byte)num14 != 0;
 		if (flag3)
 		{
@@ -2778,7 +2829,7 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 
 	public void OnEscape()
 	{
-		if (!IsMissionTickable)
+		if (!IsMissionTickable || ScreenFadeController.IsFadeActive)
 		{
 			return;
 		}
@@ -2818,7 +2869,7 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 	void IMissionListener.OnEquipItemsFromSpawnEquipmentBegin(Agent agent, Agent.CreationType creationType)
 	{
 		agent.ClearEquipment();
-		agent.AgentVisuals.ClearVisualComponents(removeSkeleton: false);
+		agent.AgentVisuals.ClearVisualComponents(removeSkeleton: false, removeLabel: false);
 	}
 
 	void IMissionListener.OnEquipItemsFromSpawnEquipment(Agent agent, Agent.CreationType creationType)
@@ -2853,9 +2904,9 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 					continue;
 				}
 				ItemObject itemObject = agent.SpawnEquipment[equipmentIndex].CosmeticItem ?? agent.SpawnEquipment[equipmentIndex].Item;
-				bool hasGloves = equipmentIndex == EquipmentIndex.Body && agent.SpawnEquipment[EquipmentIndex.Gloves].Item != null;
+				bool useSlimVersion = equipmentIndex == EquipmentIndex.Body && agent.SpawnEquipment[EquipmentIndex.Gloves].Item != null && !agent.SpawnEquipment[EquipmentIndex.Gloves].Item.ArmorComponent.IsNoSlim;
 				bool isFemale = agent.Age >= 14f && agent.IsFemale;
-				MetaMesh multiMesh = agent.SpawnEquipment[equipmentIndex].GetMultiMesh(isFemale, hasGloves, needBatchedVersion: true);
+				MetaMesh multiMesh = agent.SpawnEquipment[equipmentIndex].GetMultiMesh(isFemale, useSlimVersion, needBatchedVersion: true);
 				if (multiMesh != null)
 				{
 					if (randomizeColors)
@@ -3114,7 +3165,7 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 		{
 			return;
 		}
-		MatrixFrame boneEntitialFrame = agentToFollow.AgentVisuals.GetBoneEntitialFrame(agentToFollow.Monster.ThoraxLookDirectionBoneIndex, useBoneMapping: true);
+		MatrixFrame boneEntitialFrame = agentToFollow.GetBoneEntitialFrame(agentToFollow.Monster.ThoraxLookDirectionBoneIndex, useBoneMapping: true);
 		MatrixFrame frame = agentToFollow.AgentVisuals.GetFrame();
 		float num = (flag ? 0f : boneEntitialFrame.rotation.f.RotationZ);
 		float num2 = num + frame.rotation.f.RotationZ;

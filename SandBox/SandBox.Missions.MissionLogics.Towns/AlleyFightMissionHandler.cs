@@ -21,10 +21,17 @@ public class AlleyFightMissionHandler : MissionLogic, IMissionAgentSpawnLogic, I
 
 	private List<Agent> _rivalSideAliveAgents = new List<Agent>();
 
+	public BattleSideEnum PlayerSide => BattleSideEnum.Defender;
+
 	public AlleyFightMissionHandler(TroopRoster playerSideTroops, TroopRoster rivalSideTroops)
 	{
 		_playerSideTroops = playerSideTroops;
 		_rivalSideTroops = rivalSideTroops;
+	}
+
+	public override void OnBehaviorInitialize()
+	{
+		base.Mission.GetAgentTroopClass_Override += GetAlleyFightMissionTroopClass;
 	}
 
 	public override void EarlyStart()
@@ -83,6 +90,11 @@ public class AlleyFightMissionHandler : MissionLogic, IMissionAgentSpawnLogic, I
 		base.Mission.PlayerEnemyTeam.MasterOrderController.SetOrder(OrderType.Charge);
 	}
 
+	public override void OnMissionStateFinalized()
+	{
+		base.Mission.GetAgentTroopClass_Override -= GetAlleyFightMissionTroopClass;
+	}
+
 	private void SpawnAgentsForBothSides()
 	{
 		Mission.Current.PlayerEnemyTeam.SetIsEnemyOf(Mission.Current.PlayerTeam, isEnemyOf: true);
@@ -105,7 +117,7 @@ public class AlleyFightMissionHandler : MissionLogic, IMissionAgentSpawnLogic, I
 	private void SpawnATroop(CharacterObject character, bool isPlayerSide)
 	{
 		SimpleAgentOrigin troopOrigin = new SimpleAgentOrigin(character);
-		Agent agent = Mission.Current.SpawnTroop(troopOrigin, isPlayerSide, hasFormation: true, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: true, wieldInitialWeapons: true, forceDismounted: true, null, null);
+		Agent agent = Mission.Current.SpawnTroop(troopOrigin, isPlayerSide, hasFormation: true, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: true, wieldInitialWeapons: true, null, null);
 		if (isPlayerSide)
 		{
 			_playerSideAliveAgents.Add(agent);
@@ -152,7 +164,7 @@ public class AlleyFightMissionHandler : MissionLogic, IMissionAgentSpawnLogic, I
 		return _rivalSideAliveAgents.Count == 0;
 	}
 
-	public float GetReinforcementInterval()
+	public float GetReinforcementInterval(BattleSideEnum side = BattleSideEnum.None)
 	{
 		return float.MaxValue;
 	}
@@ -170,5 +182,10 @@ public class AlleyFightMissionHandler : MissionLogic, IMissionAgentSpawnLogic, I
 	public bool GetSpawnHorses(BattleSideEnum side)
 	{
 		return false;
+	}
+
+	private FormationClass GetAlleyFightMissionTroopClass(BattleSideEnum battleSide, BasicCharacterObject agentCharacter)
+	{
+		return agentCharacter.GetFormationClass().DismountedClass();
 	}
 }

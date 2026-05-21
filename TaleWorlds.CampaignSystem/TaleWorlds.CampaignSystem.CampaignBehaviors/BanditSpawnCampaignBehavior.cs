@@ -153,36 +153,29 @@ public class BanditSpawnCampaignBehavior : CampaignBehaviorBase
 		{
 			return;
 		}
-		if (!settlement.Hideout.IsSpotted && settlement.Hideout.IsInfested)
+		if (!settlement.Hideout.IsSpotted && settlement.Hideout.IsInfested && mobileParty.IsVisible)
 		{
-			float lengthSquared = (MobileParty.MainParty.Position.ToVec2() - settlement.Position.ToVec2()).LengthSquared;
-			float seeingRange = MobileParty.MainParty.SeeingRange;
-			float num = seeingRange * seeingRange / lengthSquared;
-			float partySpottingDifficulty = Campaign.Current.Models.MapVisibilityModel.GetPartySpottingDifficulty(MobileParty.MainParty, mobileParty);
-			if (num / partySpottingDifficulty >= 1f)
-			{
-				settlement.Hideout.IsSpotted = true;
-				settlement.Party.UpdateVisibilityAndInspected(MobileParty.MainParty.Position);
-				CampaignEventDispatcher.Instance.OnHideoutSpotted(MobileParty.MainParty.Party, settlement.Party);
-			}
+			settlement.Hideout.IsSpotted = true;
+			settlement.Party.UpdateVisibilityAndInspected(MobileParty.MainParty.Position);
+			CampaignEventDispatcher.Instance.OnHideoutSpotted(MobileParty.MainParty.Party, settlement.Party);
 		}
-		int num2 = 0;
+		int num = 0;
 		foreach (ItemRosterElement item in mobileParty.ItemRoster)
 		{
-			int num3 = (item.EquipmentElement.Item.IsFood ? MBRandom.RoundRandomized((float)mobileParty.MemberRoster.TotalManCount * ((3f + 6f * MBRandom.RandomFloat) / (float)item.EquipmentElement.Item.Value)) : 0);
-			if (item.Amount > num3)
+			int num2 = (item.EquipmentElement.Item.IsFood ? MBRandom.RoundRandomized((float)mobileParty.MemberRoster.TotalManCount * ((3f + 6f * MBRandom.RandomFloat) / (float)item.EquipmentElement.Item.Value)) : 0);
+			if (item.Amount > num2)
 			{
-				int num4 = item.Amount - num3;
-				num2 += num4 * item.EquipmentElement.Item.Value;
+				int num3 = item.Amount - num2;
+				num += num3 * item.EquipmentElement.Item.Value;
 			}
 		}
-		if (num2 > 0)
+		if (num > 0)
 		{
 			if (mobileParty.IsPartyTradeActive)
 			{
-				mobileParty.PartyTradeGold += (int)(0.25f * (float)num2);
+				mobileParty.PartyTradeGold += (int)(0.25f * (float)num);
 			}
-			settlement.SettlementComponent.ChangeGold((int)(0.25f * (float)num2));
+			settlement.SettlementComponent.ChangeGold((int)(0.25f * (float)num));
 		}
 	}
 

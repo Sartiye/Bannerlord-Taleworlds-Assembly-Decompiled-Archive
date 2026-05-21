@@ -25,6 +25,8 @@ public class SPScoreboardSideVM : ViewModel
 
 	private BasicTooltipViewModel _moraleHint;
 
+	private bool _isPlayerSide;
+
 	public float CurrentPower { get; private set; }
 
 	public float InitialPower { get; private set; }
@@ -165,12 +167,30 @@ public class SPScoreboardSideVM : ViewModel
 		}
 	}
 
-	public SPScoreboardSideVM(TextObject name, Banner sideFlag, bool isSimulation)
+	[DataSourceProperty]
+	public bool IsPlayerSide
+	{
+		get
+		{
+			return _isPlayerSide;
+		}
+		set
+		{
+			if (value != _isPlayerSide)
+			{
+				_isPlayerSide = value;
+				OnPropertyChangedWithValue(value, "IsPlayerSide");
+			}
+		}
+	}
+
+	public SPScoreboardSideVM(TextObject name, Banner sideFlag, bool isSimulation, bool isPlayerSide)
 	{
 		SPScoreboardSideVM sPScoreboardSideVM = this;
 		Parties = new MBBindingList<SPScoreboardPartyVM>();
 		Ships = new MBBindingList<SPScoreboardShipVM>();
 		Score = new SPScoreboardStatsVM(name);
+		IsPlayerSide = isPlayerSide;
 		MBBindingList<SPScoreboardPartyVM> listToControl = Parties;
 		SortController = new SPScoreboardSortControllerVM(ref listToControl);
 		Parties = listToControl;

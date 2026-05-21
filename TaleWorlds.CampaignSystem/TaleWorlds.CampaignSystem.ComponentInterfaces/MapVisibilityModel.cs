@@ -1,4 +1,3 @@
-using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 
@@ -8,13 +7,11 @@ public abstract class MapVisibilityModel : MBGameModel<MapVisibilityModel>
 {
 	public abstract float MaximumSeeingRange();
 
-	public abstract float GetPartySpottingRangeBase(MobileParty party);
+	public abstract float GetPartySeeingRangeBase(MobileParty party);
 
 	public abstract ExplainedNumber GetPartySpottingRange(MobileParty party, bool includeDescriptions = false);
 
-	public abstract float GetPartyRelativeInspectionRange(IMapPoint party);
-
-	public abstract float GetPartySpottingDifficulty(MobileParty spotterParty, MobileParty party);
+	public abstract float GetPartySpottingRatioForMainPartySeeingRange(MobileParty party);
 
 	public abstract float GetHideoutSpottingDistance();
 }

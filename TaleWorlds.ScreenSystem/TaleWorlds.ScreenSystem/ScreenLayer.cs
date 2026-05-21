@@ -109,17 +109,23 @@ public abstract class ScreenLayer : IComparable
 
 	internal void HandleActivate()
 	{
-		IsActive = true;
-		OnActivate();
-		ScreenLayer.OnLayerActiveStateChanged?.Invoke(this);
+		if (!IsActive)
+		{
+			IsActive = true;
+			OnActivate();
+			ScreenLayer.OnLayerActiveStateChanged?.Invoke(this);
+		}
 	}
 
 	internal void HandleDeactivate()
 	{
-		OnDeactivate();
-		IsActive = false;
-		ScreenManager.TryLoseFocus(this);
-		ScreenLayer.OnLayerActiveStateChanged?.Invoke(this);
+		if (IsActive)
+		{
+			OnDeactivate();
+			IsActive = false;
+			ScreenManager.TryLoseFocus(this);
+			ScreenLayer.OnLayerActiveStateChanged?.Invoke(this);
+		}
 	}
 
 	protected virtual void OnFinalize()

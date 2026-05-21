@@ -366,7 +366,7 @@ public class MapSelectionGroupVM : ViewModel
 		TimeOfDaySelection.ItemList.Clear();
 		foreach (MapItemVM availableMap in _availableMaps)
 		{
-			MapSelection.AddItem(new MapItemVM(availableMap.MapName, availableMap.MapId));
+			MapSelection.AddItem(new MapItemVM(availableMap.MapName, availableMap.MapId, availableMap.ForcedSceneLevel));
 		}
 		foreach (Tuple<string, int> wallHitpoint in CustomBattleData.WallHitpoints)
 		{
@@ -416,7 +416,7 @@ public class MapSelectionGroupVM : ViewModel
 			}
 			foreach (CustomBattleSceneData item2 in enumerable)
 			{
-				MapItemVM item = new MapItemVM(item2.Name.ToString(), item2.SceneID);
+				MapItemVM item = new MapItemVM(item2.Name.ToString(), item2.SceneID, item2.ForcedSceneLevel);
 				if (item2.IsVillageMap)
 				{
 					_villageMaps.Add(item);

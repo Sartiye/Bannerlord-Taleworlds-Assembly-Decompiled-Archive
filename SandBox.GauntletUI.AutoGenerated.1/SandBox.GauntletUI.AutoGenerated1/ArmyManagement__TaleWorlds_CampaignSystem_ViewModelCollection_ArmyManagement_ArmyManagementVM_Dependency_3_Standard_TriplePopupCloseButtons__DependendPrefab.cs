@@ -467,7 +467,7 @@ public class ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyM
 	{
 		if (propertyName == "IsEnabled")
 		{
-			_datasource_Root.CanAffordInfluenceCost = _widget_1_0.IsEnabled;
+			_datasource_Root.CanConfirm = _widget_1_0.IsEnabled;
 		}
 	}
 
@@ -759,8 +759,8 @@ public class ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyM
 		case "CancelText":
 			_widget_0_0.Text = _datasource_Root.CancelText;
 			break;
-		case "CanAffordInfluenceCost":
-			_widget_1_0.IsEnabled = _datasource_Root.CanAffordInfluenceCost;
+		case "CanConfirm":
+			_widget_1_0.IsEnabled = _datasource_Root.CanConfirm;
 			break;
 		case "DoneText":
 			_widget_1_0_0.Text = _datasource_Root.DoneText;
@@ -1137,7 +1137,7 @@ public class ArmyManagement__TaleWorlds_CampaignSystem_ViewModelCollection_ArmyM
 			_widget_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_0;
 			_widget_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_0;
 			_widget_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_0;
-			_widget_1_0.IsEnabled = _datasource_Root.CanAffordInfluenceCost;
+			_widget_1_0.IsEnabled = _datasource_Root.CanConfirm;
 			_widget_1_0.EventFire += EventListenerOf_widget_1_0;
 			_widget_1_0.PropertyChanged += PropertyChangedListenerOf_widget_1_0;
 			_widget_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_0;

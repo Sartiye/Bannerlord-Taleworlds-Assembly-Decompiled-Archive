@@ -139,6 +139,12 @@ public static class MathF
 		return valueFrom + (valueTo - valueFrom) * amount;
 	}
 
+	[Obsolete("Blend amount must be float")]
+	public static float Lerp(float valueFrom, float valueTo, int amount, float minimumDifference = 1E-05f)
+	{
+		return 0f;
+	}
+
 	public static float AngleLerp(float angleFrom, float angleTo, float amount, float minimumDifference = 1E-05f)
 	{
 		float num = (angleTo - angleFrom) % (System.MathF.PI * 2f);

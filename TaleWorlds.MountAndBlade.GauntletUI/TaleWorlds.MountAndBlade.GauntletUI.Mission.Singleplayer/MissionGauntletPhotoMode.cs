@@ -83,7 +83,7 @@ public class MissionGauntletPhotoMode : MissionView
 		}
 		_dataSource.AddTakePictureKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetGameKey(95));
 		_dataSource.AddFasterCameraKey(HotKeyManager.GetCategory("PhotoModeHotKeyCategory").GetHotKey("FasterCamera"));
-		_dataSource.AddHotkeyWithForcedName(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("ToggleEscapeMenu"), new TextObject("{=3CsACce8}Exit"));
+		_dataSource.AddHotkeyWithForcedName(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("ToggleEscapeMenu"), new TextObject("{=exitMenuOption}Exit"));
 	}
 
 	public override void OnMissionScreenTick(float dt)

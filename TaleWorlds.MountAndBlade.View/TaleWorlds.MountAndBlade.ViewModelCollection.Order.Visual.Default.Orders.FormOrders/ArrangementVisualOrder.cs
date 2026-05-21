@@ -24,7 +24,7 @@ public class ArrangementVisualOrder : VisualOrder
 			TaleWorlds.MountAndBlade.ArrangementOrder.ArrangementOrderEnum.Scatter => new TextObject("{=eEf7hE4r}Scatter"), 
 			TaleWorlds.MountAndBlade.ArrangementOrder.ArrangementOrderEnum.ShieldWall => new TextObject("{=rTPnyeJ3}Shield Wall"), 
 			TaleWorlds.MountAndBlade.ArrangementOrder.ArrangementOrderEnum.Skein => new TextObject("{=uCyQNvq1}Skein"), 
-			TaleWorlds.MountAndBlade.ArrangementOrder.ArrangementOrderEnum.Square => new TextObject("{=E3tCWX7w}Square"), 
+			TaleWorlds.MountAndBlade.ArrangementOrder.ArrangementOrderEnum.Square => new TextObject("{=squareOrder}Square"), 
 			_ => TextObject.GetEmpty(), 
 		};
 	}

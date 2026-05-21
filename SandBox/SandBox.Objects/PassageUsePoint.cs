@@ -81,7 +81,7 @@ public class PassageUsePoint : StandingPoint
 
 	public override void AfterMissionStart()
 	{
-		DescriptionMessage = GameTexts.FindText(IsMissionExit ? "str_exit" : "str_ui_door");
+		DescriptionMessage = GameTexts.FindText(IsMissionExit ? "str_mission_exit" : "str_ui_door");
 		ActionMessage = GameTexts.FindText("str_ui_default_door");
 		if (ToLocation != null || IsMissionExit)
 		{

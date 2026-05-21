@@ -29,7 +29,6 @@ public class SandboxAgentStatCalculateModel : AgentStatCalculateModel
 	public override void InitializeAgentStats(Agent agent, Equipment spawnEquipment, AgentDrivenProperties agentDrivenProperties, AgentBuildData agentBuildData)
 	{
 		agentDrivenProperties.ArmorEncumbrance = GetEffectiveArmorEncumbrance(agent, spawnEquipment);
-		agentDrivenProperties.AiShooterErrorWoRangeUpdate = 0f;
 		if (agent.IsHero)
 		{
 			CharacterObject obj = agent.Character as CharacterObject;
@@ -294,13 +293,9 @@ public class SandboxAgentStatCalculateModel : AgentStatCalculateModel
 		{
 			int effectiveSkill = GetEffectiveSkill(agent, DefaultSkills.Roguery);
 			SkillHelper.AddSkillBonusForSkillLevel(DefaultSkillEffects.SneakDamage, ref explainedNumber, effectiveSkill);
-			if (weapon != null && weapon.WeaponClass == WeaponClass.Dagger)
+			if ((weapon != null && weapon.WeaponClass == WeaponClass.Dagger) || (weapon != null && weapon.WeaponClass == WeaponClass.ThrowingKnife))
 			{
 				explainedNumber.AddFactor(2f);
-			}
-			else if (weapon != null && weapon.WeaponClass == WeaponClass.ThrowingKnife)
-			{
-				explainedNumber.AddFactor(1f);
 			}
 		}
 		return explainedNumber.ResultNumber;
@@ -375,7 +370,14 @@ public class SandboxAgentStatCalculateModel : AgentStatCalculateModel
 				}
 				else if (weapon.RelevantSkill == DefaultSkills.Throwing)
 				{
-					SkillHelper.AddSkillBonusForSkillLevel(DefaultSkillEffects.ThrowingAccuracy, ref explainedNumber, weaponSkill);
+					if (weapon.WeaponClass == WeaponClass.Sling)
+					{
+						explainedNumber = new ExplainedNumber(TaleWorlds.Library.MathF.Max(1f - 0.007f * (float)weaponSkill, 0.2f));
+					}
+					else
+					{
+						SkillHelper.AddSkillBonusForSkillLevel(DefaultSkillEffects.ThrowingAccuracy, ref explainedNumber, weaponSkill);
+					}
 				}
 			}
 			a = (100f - (float)weapon.Accuracy) * explainedNumber.ResultNumber * 0.001f;
@@ -678,6 +680,7 @@ public class SandboxAgentStatCalculateModel : AgentStatCalculateModel
 				num += 1.5f * item2.Weight;
 			}
 		}
+		agentDrivenProperties.WeaponExternalAccelerationAccuracyPenalty = 0f;
 		agentDrivenProperties.WeaponsEncumbrance = num;
 		agentDrivenProperties.ArmorEncumbrance = effectiveArmorEncumbrance;
 		float num2 = effectiveArmorEncumbrance + num;
@@ -693,6 +696,7 @@ public class SandboxAgentStatCalculateModel : AgentStatCalculateModel
 		agentDrivenProperties.ReloadSpeed = 0.93f;
 		agentDrivenProperties.MissileSpeedMultiplier = 1f;
 		agentDrivenProperties.ReloadMovementPenaltyFactor = 1f;
+		agentDrivenProperties.DamageMultiplierBonus = 0f;
 		SetAllWeaponInaccuracy(agent, agentDrivenProperties, (int)primaryWieldedItemIndex2, weaponComponentData);
 		int effectiveSkill = GetEffectiveSkill(agent, DefaultSkills.Athletics);
 		int effectiveSkill2 = GetEffectiveSkill(agent, DefaultSkills.Riding);
@@ -733,7 +737,7 @@ public class SandboxAgentStatCalculateModel : AgentStatCalculateModel
 					}
 					else
 					{
-						float value3 = ((float)thrustSpeed - 89f) / 13f;
+						float value3 = ((float)thrustSpeed - 91f) / 14f;
 						value3 = MBMath.ClampFloat(value3, 0f, 1f);
 						agentDrivenProperties.WeaponMaxMovementAccuracyPenalty *= 0.5f;
 						agentDrivenProperties.WeaponMaxUnsteadyAccuracyPenalty *= 1.5f * MBMath.Lerp(1.5f, 0.8f, value3);
@@ -1141,14 +1145,6 @@ public class SandboxAgentStatCalculateModel : AgentStatCalculateModel
 				{
 					PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Athletics.Sprint, characterObject, ref bonuses2);
 				}
-			}
-		}
-		if (agent.IsHero)
-		{
-			ItemObject item = (Mission.Current.DoesMissionRequireCivilianEquipment ? agentCharacter.FirstCivilianEquipment : agentCharacter.FirstBattleEquipment)[EquipmentIndex.Body].Item;
-			if (item != null && item.IsCivilian && agentCharacter.GetPerkValue(DefaultPerks.Roguery.SmugglerConnections))
-			{
-				agentDrivenProperties.ArmorTorso += DefaultPerks.Roguery.SmugglerConnections.PrimaryBonus;
 			}
 		}
 		float num = 0f;

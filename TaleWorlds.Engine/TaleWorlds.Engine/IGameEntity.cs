@@ -21,8 +21,8 @@ internal interface IGameEntity
 	[EngineMethod("call_script_callbacks", false, null, false)]
 	void CallScriptCallbacks(UIntPtr entityPointer, bool registerScriptComponents);
 
-	[EngineMethod("create_from_prefab_with_initial_frame", false, null, false)]
-	GameEntity CreateFromPrefabWithInitialFrame(UIntPtr scenePointer, string prefabid, ref MatrixFrame frame, bool callScriptCallbacks);
+	[EngineMethod("create_from_prefab_with_initial_frame_and_rest_offset", false, null, false)]
+	GameEntity CreateFromPrefabWithInitialFrameAndRestOffset(UIntPtr scenePointer, string prefabId, bool createPhysics, ref MatrixFrame frame, bool hasCustomRestOffset, float restOffset, bool callScriptCallbacks, uint scriptInclusionHashTag);
 
 	[EngineMethod("add_component", false, null, false)]
 	void AddComponent(UIntPtr pointer, UIntPtr componentPointer);
@@ -107,6 +107,9 @@ internal interface IGameEntity
 
 	[EngineMethod("add_capsule_as_body", false, null, false)]
 	void AddCapsuleAsBody(UIntPtr entityId, Vec3 p1, Vec3 p2, float radius, uint bodyFlags, string physicsMaterialName);
+
+	[EngineMethod("update_body_rest_offset", false, null, false)]
+	void UpdateBodyRestOffset(UIntPtr entityId, float restOffset);
 
 	[EngineMethod("push_capsule_shape_to_entity_body", false, null, false)]
 	void PushCapsuleShapeToEntityBody(UIntPtr entityId, Vec3 p1, Vec3 p2, float radius, string physicsMaterialName);

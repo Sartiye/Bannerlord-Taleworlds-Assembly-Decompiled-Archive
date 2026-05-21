@@ -129,6 +129,8 @@ public sealed class CultureObject : BasicCultureObject
 
 	public CharacterObject Shipwright { get; private set; }
 
+	public CharacterObject ShipyardWorker { get; private set; }
+
 	public CharacterObject MilitiaVeteranArcher { get; private set; }
 
 	public CharacterObject GearDummy { get; private set; }
@@ -327,6 +329,7 @@ public sealed class CultureObject : BasicCultureObject
 		FemaleBeggar = objectManager.ReadObjectReferenceFromXml<CharacterObject>("female_beggar", node);
 		FemaleDancer = objectManager.ReadObjectReferenceFromXml<CharacterObject>("female_dancer", node);
 		Shipwright = objectManager.ReadObjectReferenceFromXml<CharacterObject>("shipwright", node);
+		ShipyardWorker = objectManager.ReadObjectReferenceFromXml<CharacterObject>("shipyard_worker", node);
 		MilitiaVeteranArcher = objectManager.ReadObjectReferenceFromXml<CharacterObject>("militia_veteran_archer", node);
 		GearDummy = objectManager.ReadObjectReferenceFromXml<CharacterObject>("gear_dummy", node);
 		BanditBandit = objectManager.ReadObjectReferenceFromXml<CharacterObject>("bandit_bandit", node);

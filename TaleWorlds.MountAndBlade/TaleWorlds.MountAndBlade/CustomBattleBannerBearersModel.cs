@@ -14,7 +14,7 @@ public class CustomBattleBannerBearersModel : BattleBannerBearersModel
 
 	private static List<ItemObject> ReplacementWeapons = null;
 
-	private static MissionAgentSpawnLogic _missionSpawnLogic;
+	private static DefaultBattleMissionAgentSpawnLogic _missionSpawnLogic;
 
 	public override int GetMinimumFormationTroopCountToBearBanners()
 	{
@@ -60,7 +60,7 @@ public class CustomBattleBannerBearersModel : BattleBannerBearersModel
 	{
 		if (_missionSpawnLogic == null)
 		{
-			_missionSpawnLogic = Mission.Current.GetMissionBehavior<MissionAgentSpawnLogic>();
+			_missionSpawnLogic = Mission.Current.GetMissionBehavior<DefaultBattleMissionAgentSpawnLogic>();
 		}
 		if (_missionSpawnLogic != null)
 		{

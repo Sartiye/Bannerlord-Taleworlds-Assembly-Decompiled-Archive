@@ -138,12 +138,12 @@ public class GameKey
 	public override string ToString()
 	{
 		string result = "invalid";
-		bool flag = Input.IsControllerConnected && !Input.IsMouseActive;
-		if (!flag && KeyboardKey != null)
+		bool isGamepadActive = Input.IsGamepadActive;
+		if (!isGamepadActive && KeyboardKey != null)
 		{
 			result = KeyboardKey.ToString();
 		}
-		else if (flag && ControllerKey != null)
+		else if (isGamepadActive && ControllerKey != null)
 		{
 			result = ControllerKey.ToString();
 		}

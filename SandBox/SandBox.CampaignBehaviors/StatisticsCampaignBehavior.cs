@@ -341,7 +341,7 @@ public class StatisticsCampaignBehavior : CampaignBehaviorBase, IStatisticsCampa
 		}
 	}
 
-	private void OnHideoutBattleCompleted(BattleSideEnum winnerSide, HideoutEventComponent hideoutEventComponent)
+	private void OnHideoutBattleCompleted(BattleSideEnum winnerSide, HideoutEventComponent hideoutEventComponent, HideoutEventComponent.HideoutBattleEndState battleEndState)
 	{
 		if (hideoutEventComponent.MapEvent.PlayerSide == winnerSide)
 		{
@@ -388,7 +388,7 @@ public class StatisticsCampaignBehavior : CampaignBehaviorBase, IStatisticsCampa
 
 	private void OnClanDestroyed(Clan clan)
 	{
-		if (clan.IsAtWarWith(Clan.PlayerClan))
+		if (clan.MapFaction.IsAtWarWith(Clan.PlayerClan.MapFaction))
 		{
 			_numberOfEnemyClansDestroyed++;
 		}

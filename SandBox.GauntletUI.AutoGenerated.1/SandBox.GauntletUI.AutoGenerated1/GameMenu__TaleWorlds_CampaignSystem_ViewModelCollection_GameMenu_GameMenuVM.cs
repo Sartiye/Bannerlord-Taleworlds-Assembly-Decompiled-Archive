@@ -265,7 +265,7 @@ public class GameMenu__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Ga
 		_widget_0_3_1_0_0_0.DimensionToSync = DimensionSyncWidget.Dimensions.Vertical;
 		_widget_0_3_1_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_3_1_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_3_1_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_3_1_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_3_1_0_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_3_1_0_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_3_1_0_0_1_0.SuggestedWidth = 850f;
@@ -282,12 +282,12 @@ public class GameMenu__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Ga
 		_widget_0_3_1_0_0_1_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_3_1_0_0_1_1.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0_3_1_0_0_1_1.MarginBottom = 12f;
-		_widget_0_3_1_0_0_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_3_1_0_0_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_3_1_0_0_1_2.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_3_1_0_0_1_2.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_3_1_0_0_1_2.MarginTop = 15f;
 		_widget_0_3_1_0_0_1_2.MarginBottom = 15f;
-		_widget_0_3_1_0_0_1_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_3_1_0_0_1_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_3_1_0_0_1_3.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_3_1_0_0_1_3.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_3_1_0_0_1_3.HorizontalAlignment = HorizontalAlignment.Left;

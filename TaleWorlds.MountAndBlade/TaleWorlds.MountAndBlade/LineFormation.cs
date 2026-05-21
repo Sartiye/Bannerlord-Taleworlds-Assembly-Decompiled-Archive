@@ -66,6 +66,8 @@ public class LineFormation : IFormationArrangement
 
 	private Func<LineFormation, int, int, bool> _shiftUnitsForwardsPredicateDelegate;
 
+	protected Func<Agent, bool> _isFrontUnitDelegate;
+
 	private bool _isCavalry;
 
 	private bool _isStaggered = true;
@@ -222,6 +224,7 @@ public class LineFormation : IFormationArrangement
 		_filledInGapsWorkspace = new MBWorkspace<MBArrayList<Vec2i>>();
 		_toBeEmptiedOutUnitPositionsWorkspace = new MBWorkspace<MBArrayList<Vec2i>>();
 		_filledInUnitPositionsTable = new MBArrayList<bool>();
+		_isFrontUnitDelegate = PreferShieldedUnitsOnFront;
 		ReconstructUnitsFromUnits2D();
 		this.OnShapeChanged?.Invoke();
 	}
@@ -1226,7 +1229,7 @@ public class LineFormation : IFormationArrangement
 		formation._filledInGapsWorkspace.StopUsingWorkspace();
 		static bool ShiftUnitForwardsPredicate(LineFormation localFormation, int fileIndex, int rankIndex)
 		{
-			if (localFormation._units2D[fileIndex, rankIndex] != null)
+			if (localFormation._units2D[fileIndex, rankIndex] != null && localFormation.IsUnitPositionAvailable(fileIndex, rankIndex))
 			{
 				return !localFormation._filledInGapsWorkspace.GetWorkspace().Contains(new Vec2i(fileIndex, rankIndex));
 			}
@@ -1474,9 +1477,9 @@ public class LineFormation : IFormationArrangement
 		static bool ShiftUnitsBackwardsPredicate(LineFormation localFormation, int fileIndex, int rankIndex)
 		{
 			Vec2i vec2i2 = new Vec2i(fileIndex, rankIndex);
-			if (!localFormation._filledInUnitPositionsTable[vec2i2.Item1 + vec2i2.Item2 * localFormation.FileCount])
+			if (!localFormation._filledInUnitPositionsTable[vec2i2.Item1 + vec2i2.Item2 * localFormation.FileCount] && localFormation._units2D[fileIndex, rankIndex] != null)
 			{
-				return localFormation._units2D[fileIndex, rankIndex] != null;
+				return localFormation.IsUnitPositionAvailable(fileIndex, rankIndex);
 			}
 			return false;
 		}
@@ -2006,7 +2009,7 @@ public class LineFormation : IFormationArrangement
 				return formation._units2D[fileIndexOfRightFlank, num];
 			}
 		}
-		TaleWorlds.Library.Debug.FailedAssert("This line should not be reached.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Formation\\LineFormation.cs", "GetUnitToFillIn", 3198);
+		TaleWorlds.Library.Debug.FailedAssert("This line should not be reached.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Formation\\LineFormation.cs", "GetUnitToFillIn", 3202);
 		return null;
 	}
 
@@ -2560,29 +2563,66 @@ public class LineFormation : IFormationArrangement
 		return GetLocalPositionOfUnit(middleFrontUnitPosition.Item1, middleFrontUnitPosition.Item2);
 	}
 
-	public virtual void OnTickOccasionallyOfUnit(IFormationUnit unit, bool arrangementChangeAllowed)
+	private void SwitchFrontUnitTypesToFrontRows()
 	{
-		if (!arrangementChangeAllowed || !(unit is Agent agent) || unit.FormationRankIndex <= 0 || !agent.HasShieldCached || !(_units2D[unit.FormationFileIndex, unit.FormationRankIndex - 1] is Agent { Banner: null } agent2))
+		if (Interval <= 0f)
 		{
 			return;
 		}
-		if (!agent2.HasShieldCached)
+		for (int i = 1; i < RankCount; i++)
 		{
-			SwitchUnitLocations(unit, agent2);
-			return;
+			for (int j = 0; j < FileCount; j++)
+			{
+				Agent agent = _units2D[j, i] as Agent;
+				Agent agent2 = _units2D[j, i - 1] as Agent;
+				if (agent != null && agent2 != null && _isFrontUnitDelegate(agent) && !_isFrontUnitDelegate(agent2))
+				{
+					SwitchUnitLocations(agent, agent2);
+				}
+			}
 		}
-		for (int i = 1; unit.FormationFileIndex - i >= 0 || unit.FormationFileIndex + i < FileCount; i++)
+		for (int num = RankCount - 1; num > 0; num--)
 		{
-			if (unit.FormationFileIndex - i >= 0 && _units2D[unit.FormationFileIndex - i, unit.FormationRankIndex - 1] is Agent { HasShieldCached: false, Banner: null } agent3)
+			for (int k = 0; k < FileCount; k++)
 			{
-				SwitchUnitLocations(unit, agent3);
-				break;
+				if (!(_units2D[k, num] is Agent agent3) || !_isFrontUnitDelegate(agent3))
+				{
+					continue;
+				}
+				bool flag = false;
+				int index = num - 1;
+				for (int l = 0; l < FileCount; l++)
+				{
+					if (_units2D[l, index] is Agent agent4 && !_isFrontUnitDelegate(agent4))
+					{
+						SwitchUnitLocations(agent3, agent4);
+						flag = true;
+						break;
+					}
+				}
+				if (!flag)
+				{
+					return;
+				}
 			}
-			if (unit.FormationFileIndex + i < FileCount && _units2D[unit.FormationFileIndex + i, unit.FormationRankIndex - 1] is Agent { HasShieldCached: false, Banner: null } agent4)
-			{
-				SwitchUnitLocations(unit, agent4);
-				break;
-			}
+		}
+	}
+
+	public void OnTickOccasionally()
+	{
+		SwitchFrontUnitTypesToFrontRows();
+		UpdateFrontUnitTypeDelegate();
+	}
+
+	protected virtual void UpdateFrontUnitTypeDelegate()
+	{
+		if ((owner as Formation).QuerySystem.IsUnderCavalryChargeFromFront)
+		{
+			_isFrontUnitDelegate = PreferBracerUnitsOnFront;
+		}
+		else
+		{
+			_isFrontUnitDelegate = PreferShieldedUnitsOnFront;
 		}
 	}
 
@@ -2608,6 +2648,16 @@ public class LineFormation : IFormationArrangement
 	public WorldPosition GetGlobalPositionAtIndex(int indexX, int indexY)
 	{
 		return _globalPositions[indexX, indexY];
+	}
+
+	protected bool PreferShieldedUnitsOnFront(Agent agent)
+	{
+		return agent.HasShieldCached;
+	}
+
+	protected bool PreferBracerUnitsOnFront(Agent agent)
+	{
+		return agent.CanPerformBraceCached;
 	}
 
 	void IFormationArrangement.GetAllUnits(in MBList<IFormationUnit> allUnitsListToBeFilledIn)

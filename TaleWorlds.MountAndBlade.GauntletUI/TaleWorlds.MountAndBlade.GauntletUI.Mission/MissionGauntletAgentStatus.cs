@@ -170,9 +170,13 @@ public class MissionGauntletAgentStatus : MissionAgentStatusUIHandler
 
 	private void OnGenerateCombatLog(CombatLogData logData)
 	{
-		if (logData.IsVictimAgentMine && logData.TotalDamage > 0 && logData.BodyPartHit != BoneBodyPartType.None)
+		if (logData.IsVictimAgentMine && logData.TotalDamage > 0)
 		{
 			_dataSource?.OnMainAgentHit(logData.TotalDamage, logData.IsRangedAttack ? 1 : 0);
+		}
+		else if (logData.IsAttackerAgentMine && logData.ReflectedDamage > 0)
+		{
+			_dataSource?.OnMainAgentHit(logData.ReflectedDamage, logData.IsRangedAttack ? 1 : 0);
 		}
 	}
 

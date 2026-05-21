@@ -24,7 +24,7 @@ public interface IAllianceCampaignBehavior
 
 	bool HasCalledToWar(Kingdom callingKingdom, Kingdom calledKingdom);
 
-	bool IsAtWarByCallToWarAgreement(Kingdom calledKingdom, Kingdom kingdomToCallToWarAgainst);
+	bool IsAtWarByCallToWarAgreement(Kingdom calledKingdom, Kingdom kingdomToCallToWarAgainst, out Kingdom callingKingdom);
 
 	void StartCallToWarAgreement(Kingdom callingKingdom, Kingdom calledKingdom, Kingdom kingdomToCallToWarAgainst, int callToWarCost, bool isPlayerPaying = false);
 
@@ -33,4 +33,6 @@ public interface IAllianceCampaignBehavior
 	List<Kingdom> GetKingdomsToCallToWarAgainst(Kingdom callingKingdom, Kingdom calledKingdom);
 
 	CampaignTime GetAllianceEndDate(Kingdom kingdom1, Kingdom kingdom2);
+
+	void DenyCallToWarAgreement(Kingdom callingKingdom, Kingdom calledKingdom);
 }

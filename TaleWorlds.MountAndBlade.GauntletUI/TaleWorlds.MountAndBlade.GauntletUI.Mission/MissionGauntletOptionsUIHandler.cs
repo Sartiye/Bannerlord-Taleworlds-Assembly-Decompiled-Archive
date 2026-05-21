@@ -200,34 +200,26 @@ public class MissionGauntletOptionsUIHandler : MissionView
 
 	private void SetHotKey(Key key)
 	{
-		GameKeyOptionVM gameKey;
-		AuxiliaryKeyOptionVM auxiliaryKey;
 		if (key.IsControllerInput)
 		{
-			Debug.FailedAssert("Trying to use SetHotKey with a controller input", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\Mission\\MissionGauntletOptionsUIHandler.cs", "SetHotKey", 235);
 			MBInformationManager.AddQuickInformation(new TextObject("{=B41vvGuo}Invalid key"));
 			_keybindingPopup.OnToggle(isActive: false);
+			return;
 		}
-		else if ((gameKey = _currentKey as GameKeyOptionVM) != null)
+		GameKeyOptionVM gameKey;
+		AuxiliaryKeyOptionVM auxiliaryKey;
+		if ((gameKey = _currentKey as GameKeyOptionVM) != null)
 		{
-			GameKeyGroupVM gameKeyGroupVM = _dataSource.GameKeyOptionGroups.GameKeyGroups.FirstOrDefault((GameKeyGroupVM g) => g.GameKeys.Contains(gameKey));
-			if (gameKeyGroupVM == null)
+			if (_dataSource.GameKeyOptionGroups.GameKeyGroups.FirstOrDefault((GameKeyGroupVM g) => g.GameKeys.Contains(gameKey)) == null)
 			{
-				Debug.FailedAssert("Could not find GameKeyGroup during SetHotKey", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\Mission\\MissionGauntletOptionsUIHandler.cs", "SetHotKey", 247);
+				Debug.FailedAssert("Could not find GameKeyGroup during SetHotKey", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\Mission\\MissionGauntletOptionsUIHandler.cs", "SetHotKey", 246);
 				MBInformationManager.AddQuickInformation(new TextObject("{=oZrVNUOk}Error"));
 				_keybindingPopup.OnToggle(isActive: false);
+				return;
 			}
-			else if (_gauntletLayer.Input.IsHotKeyReleased("Exit"))
+			if (_gauntletLayer.Input.IsHotKeyReleased("Exit") || key.InputKey == gameKey.CurrentKey.InputKey)
 			{
 				_keybindingPopup.OnToggle(isActive: false);
-			}
-			else if (key.InputKey == gameKey.CurrentKey.InputKey)
-			{
-				_keybindingPopup.OnToggle(isActive: false);
-			}
-			else if (gameKeyGroupVM.GameKeys.Any((GameKeyOptionVM k) => k.CurrentKey.InputKey == key.InputKey))
-			{
-				MBInformationManager.AddQuickInformation(new TextObject("{=n4UUrd1p}Already in use"));
 			}
 			else
 			{
@@ -238,24 +230,16 @@ public class MissionGauntletOptionsUIHandler : MissionView
 		}
 		else if ((auxiliaryKey = _currentKey as AuxiliaryKeyOptionVM) != null)
 		{
-			AuxiliaryKeyGroupVM auxiliaryKeyGroupVM = _dataSource.GameKeyOptionGroups.AuxiliaryKeyGroups.FirstOrDefault((AuxiliaryKeyGroupVM g) => g.HotKeys.Contains(auxiliaryKey));
-			if (auxiliaryKeyGroupVM == null)
+			if (_dataSource.GameKeyOptionGroups.AuxiliaryKeyGroups.FirstOrDefault((AuxiliaryKeyGroupVM g) => g.HotKeys.Contains(auxiliaryKey)) == null)
 			{
-				Debug.FailedAssert("Could not find AuxiliaryKeyGroup during SetHotKey", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\Mission\\MissionGauntletOptionsUIHandler.cs", "SetHotKey", 278);
+				Debug.FailedAssert("Could not find AuxiliaryKeyGroup during SetHotKey", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\Mission\\MissionGauntletOptionsUIHandler.cs", "SetHotKey", 269);
 				MBInformationManager.AddQuickInformation(new TextObject("{=oZrVNUOk}Error"));
 				_keybindingPopup.OnToggle(isActive: false);
+				return;
 			}
-			else if (_gauntletLayer.Input.IsHotKeyReleased("Exit"))
+			if (_gauntletLayer.Input.IsHotKeyReleased("Exit") || key.InputKey == auxiliaryKey.CurrentKey.InputKey)
 			{
 				_keybindingPopup.OnToggle(isActive: false);
-			}
-			else if (key.InputKey == auxiliaryKey.CurrentKey.InputKey)
-			{
-				_keybindingPopup.OnToggle(isActive: false);
-			}
-			else if (auxiliaryKeyGroupVM.HotKeys.Any((AuxiliaryKeyOptionVM k) => k.CurrentKey.InputKey == key.InputKey && k.CurrentHotKey.HasSameModifiers(auxiliaryKey.CurrentHotKey)))
-			{
-				MBInformationManager.AddQuickInformation(new TextObject("{=n4UUrd1p}Already in use"));
 			}
 			else
 			{
@@ -264,5 +248,6 @@ public class MissionGauntletOptionsUIHandler : MissionView
 				_keybindingPopup.OnToggle(isActive: false);
 			}
 		}
+		_dataSource?.GameKeyOptionGroups?.RefreshValues();
 	}
 }

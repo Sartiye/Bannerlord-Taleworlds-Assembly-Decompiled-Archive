@@ -201,6 +201,8 @@ public class WeaponDesignVM : ViewModel
 
 	private HintViewModel _showOnlyUnlockedPiecesHint;
 
+	private BasicTooltipViewModel _difficultyExplanationHint;
+
 	private BasicTooltipViewModel _orderDisabledReasonHint;
 
 	private CraftingOrderItemVM _activeCraftingOrder;
@@ -874,6 +876,23 @@ public class WeaponDesignVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public BasicTooltipViewModel DifficultyExplanationHint
+	{
+		get
+		{
+			return _difficultyExplanationHint;
+		}
+		set
+		{
+			if (value != _difficultyExplanationHint)
+			{
+				_difficultyExplanationHint = value;
+				OnPropertyChangedWithValue(value, "DifficultyExplanationHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public CraftingPieceListVM ActivePieceList
 	{
 		get
@@ -1380,6 +1399,7 @@ public class WeaponDesignVM : ViewModel
 		RandomizeHint = new HintViewModel(GameTexts.FindText("str_randomize"));
 		UndoHint = new HintViewModel(GameTexts.FindText("str_undo"));
 		RedoHint = new HintViewModel(GameTexts.FindText("str_redo"));
+		DifficultyExplanationHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetSmithingDifficultyTooltip());
 		OrderDisabledReasonHint = new BasicTooltipViewModel(() => CampaignUIHelper.GetOrdersDisabledReasonTooltip(CraftingOrderPopup.CraftingOrders, _getCurrentCraftingHero().Hero));
 		_primaryPropertyList.ApplyActionOnAllItems(delegate(CraftingListPropertyItem x)
 		{
@@ -1437,7 +1457,7 @@ public class WeaponDesignVM : ViewModel
 			list.AddRange(new int[5] { 1, 2, 3, 4, 5 });
 			break;
 		default:
-			Debug.FailedAssert("Invalid tier filter", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Crafting\\WeaponDesign\\WeaponDesignVM.cs", "FilterPieces", 217);
+			Debug.FailedAssert("Invalid tier filter", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Crafting\\WeaponDesign\\WeaponDesignVM.cs", "FilterPieces", 218);
 			break;
 		case CraftingPieceTierFilter.None:
 			break;
@@ -1490,7 +1510,7 @@ public class WeaponDesignVM : ViewModel
 		TaleWorlds.Core.WeaponDesign design = selector.Design;
 		if (design == null)
 		{
-			Debug.FailedAssert("History design returned null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Crafting\\WeaponDesign\\WeaponDesignVM.cs", "OnSelectItemFromHistory", 283);
+			Debug.FailedAssert("History design returned null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Crafting\\WeaponDesign\\WeaponDesignVM.cs", "OnSelectItemFromHistory", 284);
 			return;
 		}
 		(CraftingPiece, int)[] array = new(CraftingPiece, int)[design.UsedPieces.Length];

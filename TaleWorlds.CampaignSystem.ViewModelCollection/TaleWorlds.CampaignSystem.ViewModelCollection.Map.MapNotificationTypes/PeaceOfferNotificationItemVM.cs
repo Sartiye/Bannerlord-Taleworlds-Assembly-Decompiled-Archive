@@ -82,7 +82,7 @@ public class PeaceOfferNotificationItemVM : MapNotificationItemBaseVM
 		if (!flag)
 		{
 			MakePeaceKingdomDecision kingdomDecision = new MakePeaceKingdomDecision(Hero.MainHero.MapFaction.Leader.Clan, _opponentFaction, -_tributeAmount, _tributeDurationInDays, applyResults: true, isProposedByOpponent: true);
-			((Kingdom)Hero.MainHero.MapFaction).AddDecision(kingdomDecision);
+			((Kingdom)Hero.MainHero.MapFaction).AddDecision(kingdomDecision, ignoreInfluenceCost: true);
 		}
 	}
 }

@@ -281,6 +281,11 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 		{
 			flag = true;
 		}
+		if (villagerParty.DefaultBehavior == AiBehavior.GoToSettlement && villagerParty.TargetSettlement == villagerParty.HomeSettlement && villagerParty.HomeSettlement.IsUnderRaid && ((villagerParty.CurrentSettlement != null) ? Campaign.Current.Models.MapDistanceModel.GetDistance(villagerParty.CurrentSettlement, villagerParty.HomeSettlement, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) : Campaign.Current.Models.MapDistanceModel.GetDistance(villagerParty, villagerParty.HomeSettlement, isTargetingPort: false, MobileParty.NavigationType.Default, out var _)) < Campaign.Current.EstimatedAverageVillagerPartySpeed * 2.5f)
+		{
+			villagerParty.SetMoveModeHold();
+			flag = false;
+		}
 		if (flag && (villagerParty.CurrentSettlement == null || !villagerParty.CurrentSettlement.IsUnderSiege))
 		{
 			if (villagerParty.ItemRoster.Count > 1)
@@ -289,14 +294,22 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 			}
 			else
 			{
-				SendVillagerPartyToVillage(villagerParty);
+				TrySendingVillagerPartyToVillage(villagerParty);
 			}
 		}
 	}
 
-	private void SendVillagerPartyToVillage(MobileParty villagerParty)
+	private void TrySendingVillagerPartyToVillage(MobileParty villagerParty)
 	{
-		MoveVillagersToSettlementWithBestNavigationType(villagerParty, villagerParty.HomeSettlement);
+		bool flag = true;
+		if (villagerParty.HomeSettlement.IsUnderRaid && ((villagerParty.CurrentSettlement != null) ? Campaign.Current.Models.MapDistanceModel.GetDistance(villagerParty.CurrentSettlement, villagerParty.HomeSettlement, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) : Campaign.Current.Models.MapDistanceModel.GetDistance(villagerParty, villagerParty.HomeSettlement, isTargetingPort: false, MobileParty.NavigationType.Default, out var _)) < Campaign.Current.EstimatedAverageVillagerPartySpeed * 2.5f)
+		{
+			flag = false;
+		}
+		if (flag)
+		{
+			MoveVillagersToSettlementWithBestNavigationType(villagerParty, villagerParty.HomeSettlement);
+		}
 	}
 
 	private void SendVillagerPartyToTradeBoundTown(MobileParty villagerParty)
@@ -450,17 +463,38 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 		starter.AddDialogLine("village_farmer_accepted_to_give_everything", "player_wants_everything_villagers", "player_decision_to_take_prisoner_villagers", "{=33mKghKQ}Please don't kill us. We surrender.[rf:idle_angry][ib:nervous]", conversation_village_farmer_give_goods_on_condition, null);
 		starter.AddPlayerLine("player_do_not_take_prisoner_villagers", "player_decision_to_take_prisoner_villagers", "village_farmer_end_talk_surrender", "{=6kaia5qP}Give me all your wares!", null, null, 100, delegate(out TextObject explanation)
 		{
-			explanation = new TextObject("{=1LlH1Jof}This action will start a war.");
+			if (!Hero.MainHero.MapFaction.IsAtWarWith(MobileParty.ConversationParty.MapFaction))
+			{
+				explanation = new TextObject("{=1LlH1Jof}This action will start a war.");
+			}
+			else
+			{
+				explanation = null;
+			}
 			return true;
 		});
 		starter.AddPlayerLine("player_decided_to_take_prisoner_2", "player_decision_to_take_prisoner_villagers", "villager_taken_prisoner_warning", "{=g5G8AJ5n}You are my prisoner now.", null, null, 100, delegate(out TextObject explanation)
 		{
-			explanation = new TextObject("{=1LlH1Jof}This action will start a war.");
+			if (!Hero.MainHero.MapFaction.IsAtWarWith(MobileParty.ConversationParty.MapFaction))
+			{
+				explanation = new TextObject("{=1LlH1Jof}This action will start a war.");
+			}
+			else
+			{
+				explanation = null;
+			}
 			return true;
 		});
 		starter.AddPlayerLine("player_decided_to_take_prisoner_2", "player_decision_to_take_prisoner_villagers", "villager_start_encounter", "{=ha53qb7v}Don't bother pleading for your lives. At them, lads!", null, null, 100, delegate(out TextObject explanation)
 		{
-			explanation = new TextObject("{=1LlH1Jof}This action will start a war.");
+			if (!Hero.MainHero.MapFaction.IsAtWarWith(MobileParty.ConversationParty.MapFaction))
+			{
+				explanation = new TextObject("{=1LlH1Jof}This action will start a war.");
+			}
+			else
+			{
+				explanation = null;
+			}
 			return true;
 		});
 		starter.AddDialogLine("villager_warn_player_to_take_prisoner", "villager_taken_prisoner_warning", "villager_taken_prisoner_warning_answer", "{=dPOOmYGQ}You think the lords and warriors of the {KINGDOM} won't just stand by idly when their people are kidnapped? You'd best let us go!", conversation_warn_player_on_condition, null);
@@ -713,7 +747,7 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 				TextObject textObject = ((items.Count == 1) ? GameTexts.FindText("str_LEFT_RIGHT") : GameTexts.FindText("str_LEFT_comma_RIGHT"));
 				TextObject textObject2 = GameTexts.FindText("str_looted_party_have_money");
 				textObject2.SetTextVariable("MONEY", gold);
-				textObject2.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject2.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				textObject2.SetTextVariable("ITEM_LIST", textObject);
 				for (int i = 0; i < items.Count; i++)
 				{
@@ -745,7 +779,7 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 			{
 				TextObject textObject6 = GameTexts.FindText("str_looted_party_have_money_but_no_item");
 				textObject6.SetTextVariable("MONEY", gold);
-				textObject6.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject6.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				MBTextManager.SetTextVariable("TAKE_MONEY_AND_PRODUCT_STRING", textObject6);
 			}
 		}

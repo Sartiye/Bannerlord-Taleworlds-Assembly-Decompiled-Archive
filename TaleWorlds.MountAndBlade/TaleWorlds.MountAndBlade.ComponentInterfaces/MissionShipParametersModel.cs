@@ -4,7 +4,7 @@ namespace TaleWorlds.MountAndBlade.ComponentInterfaces;
 
 public abstract class MissionShipParametersModel : MBGameModel<MissionShipParametersModel>
 {
-	public abstract int CalculateMainDeckCrewSize(IShipOrigin shipOrigin, Agent captain);
+	public abstract int CalculateMainDeckCrewSize(IShipOrigin shipOrigin, Agent formationUnit);
 
 	public abstract float CalculateWindBonus(IShipOrigin shipOrigin, Agent captain, float baseSailForceMagnitude);
 

@@ -52,7 +52,7 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 		base.HorizontalAlignment = HorizontalAlignment.Center;
 		base.VerticalAlignment = VerticalAlignment.Bottom;
 		base.MarginBottom = 100f;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.VerticalAlignment = VerticalAlignment.Center;

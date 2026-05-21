@@ -473,7 +473,7 @@ public class RichText : IText
 					float num11 = 0f;
 					if (sprite != null)
 					{
-						num11 = ((float)fontData.Font.Base + 0f) * num * ((float)sprite.Height / (float)sprite.Width) + 8f * renderScale;
+						num11 = ((float)fontData.Font.Base + 0f) * num * ((float)sprite.Width / (float)sprite.Height) + 8f * renderScale;
 					}
 					bool flag7 = TextOutput.LastLineWidth + num11 > width;
 					float num12 = TextOutput.TextHeight + num2;
@@ -670,7 +670,7 @@ public class RichText : IText
 						float num13 = 0f;
 						if (sprite != null)
 						{
-							num13 = ((float)font2.Base + 0f) * num10 * ((float)sprite.Height / (float)sprite.Width) + 8f * renderScale;
+							num13 = ((float)font2.Base + 0f) * num10 * ((float)sprite.Width / (float)sprite.Height) + 8f * renderScale;
 						}
 						num += num13;
 					}
@@ -802,23 +802,27 @@ public class RichText : IText
 					}
 					string attribute2 = tag.GetAttribute("src");
 					Sprite sprite = null;
-					float num6 = (float)font.Base * num * 0.2f;
-					num6 -= num5 * renderScale;
-					float num7 = (float)font.Base * num * 0.1f;
-					num7 -= num5 * renderScale;
-					num7 += 4f * renderScale;
 					if (!string.IsNullOrEmpty(attribute2))
 					{
 						sprite = spriteData.GetSprite(attribute2);
 					}
-					float x3 = x + num7;
-					float y3 = y + num6;
-					RichTextPart richTextPart = new RichTextPart();
-					richTextPart.Sprite = sprite;
-					richTextPart.SpritePosition = new Vector2(x3, y3);
-					richTextPart.Type = RichTextPartType.Sprite;
-					richTextPart.Extend = num5;
-					_richTextParts.Add(richTextPart);
+					if (sprite != null)
+					{
+						float num6 = (float)font.Base * num * 0.2f;
+						num6 -= num5 * renderScale;
+						float num7 = (float)sprite.Width / (float)sprite.Height;
+						float num8 = (float)font.Base * num * 0.1f;
+						num8 -= num5 * renderScale * num7;
+						num8 += 4f * renderScale;
+						float x3 = x + num8;
+						float y3 = y + num6;
+						RichTextPart richTextPart = new RichTextPart();
+						richTextPart.Sprite = sprite;
+						richTextPart.SpritePosition = new Vector2(x3, y3);
+						richTextPart.Type = RichTextPartType.Sprite;
+						richTextPart.Extend = num5;
+						_richTextParts.Add(richTextPart);
+					}
 				}
 			}
 		}
@@ -836,7 +840,7 @@ public class RichText : IText
 				StyleFontContainer.FontData fontData = StyleFontContainer.GetFontData(richTextPart.Style);
 				float num = fontData.FontSize / (float)fontData.Font.Size;
 				float num2 = (float)fontData.Font.Base * num * 0.8f + richTextPart.Extend * 2f * renderScale;
-				float x = num2 * ((float)sprite.Height / (float)sprite.Width);
+				float x = num2 * ((float)sprite.Width / (float)sprite.Height);
 				Rectangle2D rectangle = Rectangle2D.Create();
 				rectangle.LocalScale = new Vector2(x, num2);
 				Vec2 uvMin = sprite.GetMinUvs();

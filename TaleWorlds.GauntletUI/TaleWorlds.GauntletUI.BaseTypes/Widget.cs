@@ -2112,7 +2112,7 @@ public class Widget : PropertyOwnerObject
 
 	private void ParallelUpdateChildPositions()
 	{
-		TWParallel.For(0, _children.Count, UpdateChildPositionMT);
+		TWParallel.ForWithoutRenderThread(0, _children.Count, UpdateChildPositionMT);
 		void UpdateChildPositionMT(int startInclusive, int endExclusive)
 		{
 			for (int i = startInclusive; i < endExclusive; i++)
@@ -2510,7 +2510,7 @@ public class Widget : PropertyOwnerObject
 		EventFired("MouseDown");
 	}
 
-	protected internal virtual void OnMouseReleased()
+	protected internal virtual void OnMouseReleased(bool isFromInput)
 	{
 		IsPressed = false;
 		EventFired("MouseUp");
@@ -2521,7 +2521,7 @@ public class Widget : PropertyOwnerObject
 		EventFired("MouseAlternateDown");
 	}
 
-	protected internal virtual void OnMouseAlternateReleased()
+	protected internal virtual void OnMouseAlternateReleased(bool isFromInput)
 	{
 		EventFired("MouseAlternateUp");
 	}

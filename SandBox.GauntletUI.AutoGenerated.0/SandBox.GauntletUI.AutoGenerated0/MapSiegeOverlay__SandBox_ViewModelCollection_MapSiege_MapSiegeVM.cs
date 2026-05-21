@@ -96,7 +96,7 @@ public class MapSiegeOverlay__SandBox_ViewModelCollection_MapSiege_MapSiegeVM : 
 		_widget_1.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_1.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_1.MarginBottom = 200f;
-		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -158,7 +158,7 @@ public class MapSiegeOverlay__SandBox_ViewModelCollection_MapSiege_MapSiegeVM : 
 		_widget_2.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 	}
 
 	public void RefreshBindingWithChildren()

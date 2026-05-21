@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem.Actions;
@@ -12,6 +11,20 @@ namespace TaleWorlds.CampaignSystem.Election;
 
 public class KingdomElection
 {
+	public enum ElectionOutcomeSupport
+	{
+		LowSupport,
+		SlightSupport,
+		GoodSupport,
+		StrongSupport
+	}
+
+	private const float StrongSupportThreshold = 0.75f;
+
+	private const float GoodSupportThreshold = 0.5f;
+
+	private const float SlightSupportThreshold = 0.2f;
+
 	[SaveableField(0)]
 	private readonly KingdomDecision _decision;
 
@@ -79,6 +92,8 @@ public class KingdomElection
 		{
 			Debug.Print(string.Concat("SELIM_DEBUG - ", _decision.GetSupportTitle(), " has been cancelled"));
 			IsCancelled = true;
+			bool isPlayerInvolved = _decision.DetermineChooser().Leader.IsHumanPlayerCharacter || _decision.DetermineSupporters().Any((Supporter x) => x.IsPlayer);
+			CampaignEventDispatcher.Instance.OnKingdomDecisionCancelled(_decision, isPlayerInvolved);
 		}
 		else if (!IsPlayerSupporter || _ignorePlayerSupport)
 		{
@@ -93,6 +108,21 @@ public class KingdomElection
 		}
 	}
 
+	public static ElectionOutcomeSupport GetElectionOutcomeSupport(KingdomDecision decision, Clan sponsor)
+	{
+		KingdomElection kingdomElection = new KingdomElection(decision);
+		kingdomElection.SetupResultWithoutPlayerSupport();
+		return kingdomElection.GetDecisionOutcomeSupportForSponsor(sponsor);
+	}
+
+	public void SetupResultWithoutPlayerSupport()
+	{
+		DetermineSupport(_possibleOutcomes, calculateRelationshipEffect: false);
+		_decision.DetermineSponsors(_possibleOutcomes);
+		UpdateSupport(_possibleOutcomes);
+		DetermineOfficialSupport();
+	}
+
 	private float DetermineInitialSupport(DecisionOutcome possibleOutcome)
 	{
 		float num = 0f;
@@ -100,7 +130,7 @@ public class KingdomElection
 		{
 			if (!supporter.IsPlayer)
 			{
-				num += TaleWorlds.Library.MathF.Clamp(_decision.DetermineSupport(supporter.Clan, possibleOutcome), 0f, 100f);
+				num += MathF.Clamp(_decision.DetermineSupport(supporter.Clan, possibleOutcome), 0f, 100f);
 			}
 		}
 		return num;
@@ -121,8 +151,39 @@ public class KingdomElection
 				return possibleOutcome.Likelihood;
 			}
 		}
-		Debug.FailedAssert("This clan is not a sponsor of any of the outcomes.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Election\\KingdomDecisionMaker.cs", "GetLikelihoodForSponsor", 139);
+		Debug.FailedAssert("This clan is not a sponsor of any of the outcomes.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Election\\KingdomDecisionMaker.cs", "GetLikelihoodForSponsor", 174);
 		return -1f;
+	}
+
+	public float GetWinChanceForSponsor(Clan sponsor)
+	{
+		foreach (DecisionOutcome possibleOutcome in _possibleOutcomes)
+		{
+			if (possibleOutcome.SponsorClan == sponsor)
+			{
+				return possibleOutcome.WinChance;
+			}
+		}
+		Debug.FailedAssert("This clan is not a sponsor of any of the outcomes.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Election\\KingdomDecisionMaker.cs", "GetWinChanceForSponsor", 189);
+		return -1f;
+	}
+
+	public ElectionOutcomeSupport GetDecisionOutcomeSupportForSponsor(Clan sponsor)
+	{
+		float winChanceForSponsor = GetWinChanceForSponsor(sponsor);
+		if (winChanceForSponsor > 0.75f)
+		{
+			return ElectionOutcomeSupport.StrongSupport;
+		}
+		if (winChanceForSponsor > 0.5f)
+		{
+			return ElectionOutcomeSupport.GoodSupport;
+		}
+		if (winChanceForSponsor > 0.2f)
+		{
+			return ElectionOutcomeSupport.SlightSupport;
+		}
+		return ElectionOutcomeSupport.LowSupport;
 	}
 
 	private void DetermineSupport(MBReadOnlyList<DecisionOutcome> possibleOutcomes, bool calculateRelationshipEffect)
@@ -291,7 +352,7 @@ public class KingdomElection
 			float num = _decision.DetermineSupport(_chooser, decisionOutcome3);
 			float num2 = _decision.DetermineSupport(_chooser, decisionOutcome2);
 			float a = num - num2;
-			a = TaleWorlds.Library.MathF.Min(a, _chooser.Influence);
+			a = MathF.Min(a, _chooser.Influence);
 			if (a > 10f)
 			{
 				float num3 = 300f + (float)GetInfluenceRequiredToOverrideDecision(decisionOutcome2, decisionOutcome3);
@@ -331,14 +392,13 @@ public class KingdomElection
 
 	public void DetermineOfficialSupport()
 	{
-		new List<Tuple<DecisionOutcome, float>>();
 		float num = 0.001f;
 		foreach (DecisionOutcome possibleOutcome in _possibleOutcomes)
 		{
 			float num2 = 0f;
 			foreach (Supporter supporter in possibleOutcome.SupporterList)
 			{
-				num2 += (float)TaleWorlds.Library.MathF.Max(0, (int)(supporter.SupportWeight - 1));
+				num2 += (float)MathF.Max(0, (int)(supporter.SupportWeight - 1));
 			}
 			possibleOutcome.TotalSupportPoints = num2;
 			num += possibleOutcome.TotalSupportPoints;
@@ -347,6 +407,20 @@ public class KingdomElection
 		{
 			possibleOutcome2.WinChance = possibleOutcome2.TotalSupportPoints / num;
 		}
+	}
+
+	public float GetWinChanceWithPlayerSupport(DecisionOutcome supportedOutcome, Supporter.SupportWeights supportWeight)
+	{
+		if (_possibleOutcomes.Contains(supportedOutcome))
+		{
+			float num = 0f;
+			num = ((supportedOutcome.WinChance == 0f) ? _possibleOutcomes.First((DecisionOutcome x) => x != supportedOutcome).TotalSupportPoints : (supportedOutcome.TotalSupportPoints / supportedOutcome.WinChance));
+			int num2 = MathF.Max(0, (int)(supportWeight - 1));
+			supportedOutcome.TotalSupportPoints += num2;
+			num += (float)num2;
+			return supportedOutcome.TotalSupportPoints / num;
+		}
+		return 0f;
 	}
 
 	public int GetInfluenceCostOfOutcome(DecisionOutcome outcome, Clan supporter, Supporter.SupportWeights weight)
@@ -378,6 +452,11 @@ public class KingdomElection
 		{
 			_chosenOutcome = decisionOutcome;
 		}
+	}
+
+	public void OnPlayerAbstainedAsRuler()
+	{
+		_chosenOutcome = GetAiChoice(_possibleOutcomes);
 	}
 
 	public void ApplySelection()

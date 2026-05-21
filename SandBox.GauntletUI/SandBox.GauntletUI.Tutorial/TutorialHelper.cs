@@ -253,7 +253,7 @@ public static class TutorialHelper
 			for (int i = 0; i < mBList.Count; i++)
 			{
 				TroopRosterElement troopRosterElement = mBList[i];
-				if (troopRosterElement.Character.IsHero && !troopRosterElement.Character.IsPlayerCharacter && MobileParty.MainParty.GetHeroPartyRole(troopRosterElement.Character.HeroObject) == PartyRole.None)
+				if (troopRosterElement.Character.IsHero && !troopRosterElement.Character.IsPlayerCharacter && MobileParty.MainParty.GetHeroPartyRoles(troopRosterElement.Character.HeroObject).Count == 0)
 				{
 					flag = true;
 					break;

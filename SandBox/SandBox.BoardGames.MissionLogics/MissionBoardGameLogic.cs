@@ -227,40 +227,37 @@ public class MissionBoardGameLogic : MissionLogic
 
 	public void SetGameOver(GameOverEnum gameOverInfo)
 	{
-		if (IsGameInProgress)
+		base.Mission.MainAgent.ClearTargetFrame();
+		if (Handler != null && gameOverInfo != GameOverEnum.PlayerCanceledTheGame)
 		{
-			base.Mission.MainAgent.ClearTargetFrame();
-			if (Handler != null && gameOverInfo != GameOverEnum.PlayerCanceledTheGame)
-			{
-				Handler.Uninstall();
-			}
-			Hero opposingHero = (OpposingAgent.IsHero ? ((CharacterObject)OpposingAgent.Character).HeroObject : null);
-			switch (gameOverInfo)
-			{
-			case GameOverEnum.PlayerOneWon:
-				_boardGameState = BoardGameHelper.BoardGameState.Win;
-				break;
-			case GameOverEnum.PlayerTwoWon:
-				_boardGameState = BoardGameHelper.BoardGameState.Loss;
-				break;
-			case GameOverEnum.Draw:
-				_boardGameState = BoardGameHelper.BoardGameState.Draw;
-				break;
-			case GameOverEnum.PlayerCanceledTheGame:
-				_boardGameState = BoardGameHelper.BoardGameState.None;
-				break;
-			}
-			if (gameOverInfo != GameOverEnum.PlayerCanceledTheGame)
-			{
-				CampaignEventDispatcher.Instance.OnPlayerBoardGameOver(opposingHero, _boardGameState);
-			}
-			this.GameEnded?.Invoke();
-			BoardGameAgentBehavior.RemoveBoardGameBehaviorOfAgent(OpposingAgent);
-			OpposingAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.SpecialTargetTag = _specialTagCacheOfOpposingHero;
-			OpposingAgent = null;
-			IsGameInProgress = false;
-			AIOpponent?.OnSetGameOver();
+			Handler.Uninstall();
 		}
+		Hero opposingHero = (OpposingAgent.IsHero ? ((CharacterObject)OpposingAgent.Character).HeroObject : null);
+		switch (gameOverInfo)
+		{
+		case GameOverEnum.PlayerOneWon:
+			_boardGameState = BoardGameHelper.BoardGameState.Win;
+			break;
+		case GameOverEnum.PlayerTwoWon:
+			_boardGameState = BoardGameHelper.BoardGameState.Loss;
+			break;
+		case GameOverEnum.Draw:
+			_boardGameState = BoardGameHelper.BoardGameState.Draw;
+			break;
+		case GameOverEnum.PlayerCanceledTheGame:
+			_boardGameState = BoardGameHelper.BoardGameState.None;
+			break;
+		}
+		if (gameOverInfo != GameOverEnum.PlayerCanceledTheGame)
+		{
+			CampaignEventDispatcher.Instance.OnPlayerBoardGameOver(opposingHero, _boardGameState);
+		}
+		this.GameEnded?.Invoke();
+		BoardGameAgentBehavior.RemoveBoardGameBehaviorOfAgent(OpposingAgent);
+		OpposingAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.SpecialTargetTag = _specialTagCacheOfOpposingHero;
+		OpposingAgent = null;
+		IsGameInProgress = false;
+		AIOpponent?.OnSetGameOver();
 	}
 
 	public void ForfeitGame()
@@ -314,7 +311,10 @@ public class MissionBoardGameLogic : MissionLogic
 	protected override void OnEndMission()
 	{
 		base.OnEndMission();
-		SetGameOver(GameOverEnum.PlayerCanceledTheGame);
+		if (IsGameInProgress)
+		{
+			SetGameOver(GameOverEnum.PlayerCanceledTheGame);
+		}
 	}
 
 	public override InquiryData OnEndMissionRequest(out bool canLeave)

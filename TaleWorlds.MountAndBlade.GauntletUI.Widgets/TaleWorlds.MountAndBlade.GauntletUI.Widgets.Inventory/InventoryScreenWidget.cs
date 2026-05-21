@@ -400,9 +400,9 @@ public class InventoryScreenWidget : Widget
 
 	private InventoryListPanel GetCurrentHoveredListPanel()
 	{
-		for (int i = 0; i < base.EventManager.MouseOveredViews.Count; i++)
+		for (int i = 0; i < base.EventManager.MouseOveredWidgets.Count; i++)
 		{
-			if (base.EventManager.MouseOveredViews[i] is InventoryListPanel result)
+			if (base.EventManager.MouseOveredWidgets[i] is InventoryListPanel result)
 			{
 				return result;
 			}
@@ -438,11 +438,11 @@ public class InventoryScreenWidget : Widget
 				EventFired("OnEmptyClick");
 			}
 		}
-		Widget hoveredView = base.EventManager.HoveredView;
-		if (hoveredView != null)
+		Widget hoveredWidget = base.EventManager.HoveredWidget;
+		if (hoveredWidget != null)
 		{
-			InventoryItemButtonWidget inventoryItemButtonWidget = IsWidgetChildOfType<InventoryItemButtonWidget>(hoveredView);
-			bool flag3 = IsWidgetChildOfId("InventoryTooltip", hoveredView);
+			InventoryItemButtonWidget inventoryItemButtonWidget = IsWidgetChildOfType<InventoryItemButtonWidget>(hoveredWidget);
+			bool flag3 = IsWidgetChildOfId("InventoryTooltip", hoveredWidget);
 			if (inventoryItemButtonWidget != null)
 			{
 				ItemWidgetHoverBegin(inventoryItemButtonWidget);
@@ -451,7 +451,7 @@ public class InventoryScreenWidget : Widget
 			{
 				ItemWidgetHoverEnd(null);
 			}
-			else if (!flag3 && hoveredView.ParentWidget != null)
+			else if (!flag3 && hoveredWidget.ParentWidget != null)
 			{
 				ItemWidgetHoverEnd(null);
 			}

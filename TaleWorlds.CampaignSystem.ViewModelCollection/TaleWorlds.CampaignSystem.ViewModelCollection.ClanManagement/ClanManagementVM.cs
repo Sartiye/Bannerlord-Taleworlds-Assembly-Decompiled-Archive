@@ -1256,7 +1256,7 @@ public class ClanManagementVM : ViewModel
 	public void UpdateBannerVisuals()
 	{
 		ClanBanner = new BannerImageIdentifierVM(_clan.Banner, nineGrid: true);
-		ClanBannerHint = new HintViewModel(new TextObject("{=t1lSXN9O}Your clan's standard carried into battle"));
+		ClanBannerHint = new HintViewModel(new TextObject("{=Nkue5MX8}Click to edit your clan's banner"));
 		RefreshValues();
 	}
 
@@ -1362,6 +1362,7 @@ public class ClanManagementVM : ViewModel
 		ClanMembers.RefreshMembersList();
 		ClanParties.RefreshPartiesList();
 		ClanIncome.RefreshList();
+		RefreshDailyValues();
 	}
 
 	public void ExecuteChangeClanName()

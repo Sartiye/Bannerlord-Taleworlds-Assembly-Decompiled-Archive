@@ -403,7 +403,7 @@ public class CampaignMissionComponent : MissionLogic, ICampaignMission
 		}
 	}
 
-	private void EndConversationAnimations(IAgent iAgent)
+	private void EndConversationAnimations(IAgent iAgent, bool ignorePriority = false)
 	{
 		Agent agent = (Agent)iAgent;
 		if (agent.IsHuman)
@@ -412,7 +412,7 @@ public class CampaignMissionComponent : MissionLogic, ICampaignMission
 			agent.SetAgentFacialAnimation(Agent.FacialAnimChannel.Mid, "", loop: false);
 			if (agent.HasMount)
 			{
-				EndConversationAnimations(agent.MountAgent);
+				EndConversationAnimations(agent.MountAgent, ignorePriority: true);
 			}
 		}
 		int num = -1;
@@ -428,7 +428,7 @@ public class CampaignMissionComponent : MissionLogic, ICampaignMission
 			{
 				if (agentConversationState.IsChannelModified(j))
 				{
-					agent.SetActionChannel(j, in ActionIndexCache.act_none, ignorePriority: false, (AnimFlags)Math.Min(agent.GetCurrentActionPriority(j), 73));
+					agent.SetActionChannel(j, in ActionIndexCache.act_none, ignorePriority, (AnimFlags)Math.Min(agent.GetCurrentActionPriority(j), 73));
 				}
 			}
 			if (agent.IsUsingGameObject)

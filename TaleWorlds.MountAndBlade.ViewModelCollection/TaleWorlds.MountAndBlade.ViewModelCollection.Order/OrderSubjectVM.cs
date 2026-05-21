@@ -221,7 +221,7 @@ public abstract class OrderSubjectVM : ViewModel
 	public override void RefreshValues()
 	{
 		base.RefreshValues();
-		SelectionText = new TextObject("{=*}Select").ToString();
+		SelectionText = new TextObject("{=xbk1WAt6}Select").ToString();
 	}
 
 	protected abstract void OnSelectionStateChanged(bool isSelected);

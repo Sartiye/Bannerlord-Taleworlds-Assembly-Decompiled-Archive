@@ -55,6 +55,8 @@ public class ItemMenuVM : ViewModel
 
 	private readonly TextObject _damageText = new TextObject("{=c9c5dfed2ca6bcb7a73d905004c97b23}Damage: ");
 
+	private readonly TextObject _bonusDamageText = new TextObject("{=LIYoQWOB}Bonus Damage: ");
+
 	private readonly TextObject _missileSpeedText = GameTexts.FindText("str_missile_speed");
 
 	private readonly TextObject _accuracyText = new TextObject("{=5dec16fa0be433ade3c4cb0074ef366d}Accuracy: ");
@@ -91,7 +93,7 @@ public class ItemMenuVM : ViewModel
 
 	private readonly TextObject _noneText = new TextObject("{=koX9okuG}None");
 
-	private readonly string GoldIcon = "<img src=\"General\\Icons\\Coin@2x\" extend=\"8\"/>";
+	private readonly string GoldIcon = "<img src=\"General\\Icons\\Coin@2x\" extend=\"6\"/>";
 
 	private readonly Color ConsumableColor = Color.FromUint(4290873921u);
 
@@ -642,7 +644,7 @@ public class ItemMenuVM : ViewModel
 		{
 			definition = _requiresText.ToString();
 		}
-		CreateColoredProperty(itemProperties, definition, value, GetColorFromBool(_character == null || CharacterHelper.CanUseItemBasedOnSkill(_character, itemVm.ItemRosterElement.EquipmentElement)));
+		CreateColoredProperty(itemProperties, definition, value, GetColorFromBool(_character == null || CharacterHelper.CanUseItem(_character, itemVm.ItemRosterElement.EquipmentElement)));
 	}
 
 	private void AddGeneralItemFlags(MBBindingList<ItemFlagVM> list, ItemObject item)
@@ -678,7 +680,7 @@ public class ItemMenuVM : ViewModel
 	{
 		if (weapon == null)
 		{
-			Debug.FailedAssert("Trying to add flags for a null weapon", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\ItemMenuVM.cs", "AddWeaponItemFlags", 429);
+			Debug.FailedAssert("Trying to add flags for a null weapon", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\ItemMenuVM.cs", "AddWeaponItemFlags", 430);
 			return;
 		}
 		ItemObject.ItemUsageSetFlags itemUsageFlags = _getItemUsageSetFlags(weapon);
@@ -874,12 +876,12 @@ public class ItemMenuVM : ViewModel
 		{
 			if (weaponWithUsageIndex.SwingDamageType != DamageTypes.Invalid)
 			{
-				AddIntProperty(_swingSpeedText, targetWeapon.GetModifiedSwingSpeedForUsage(targetWeaponUsageIndex), comparedWeapon.IsEmpty ? null : new int?(comparedWeapon.GetModifiedSwingSpeedForUsage(comparedWeaponUsageIndex)));
+				AddSwingSpeedProperty(_swingSpeedText, in targetWeapon, targetWeaponUsageIndex, in comparedWeapon, comparedWeaponUsageIndex);
 				AddSwingDamageProperty(_swingDamageText, in targetWeapon, targetWeaponUsageIndex, in comparedWeapon, comparedWeaponUsageIndex);
 			}
 			if (weaponWithUsageIndex.ThrustDamageType != DamageTypes.Invalid)
 			{
-				AddIntProperty(_thrustSpeedText, targetWeapon.GetModifiedThrustSpeedForUsage(targetWeaponUsageIndex), comparedWeapon.IsEmpty ? null : new int?(comparedWeapon.GetModifiedThrustSpeedForUsage(comparedWeaponUsageIndex)));
+				AddThrustSpeedProperty(_thrustSpeedText, in targetWeapon, targetWeaponUsageIndex, in comparedWeapon, comparedWeaponUsageIndex);
 				AddThrustDamageProperty(_thrustDamageText, in targetWeapon, targetWeaponUsageIndex, in comparedWeapon, comparedWeaponUsageIndex);
 			}
 			AddIntProperty(_lengthText, weaponWithUsageIndex.WeaponLength, weaponComponentData?.WeaponLength);
@@ -889,21 +891,21 @@ public class ItemMenuVM : ViewModel
 		{
 			AddIntProperty(_weaponLengthText, weaponWithUsageIndex.WeaponLength, weaponComponentData?.WeaponLength);
 			AddMissileDamageProperty(_damageText, in targetWeapon, targetWeaponUsageIndex, in comparedWeapon, comparedWeaponUsageIndex);
-			AddIntProperty(_missileSpeedText, targetWeapon.GetModifiedMissileSpeedForUsage(targetWeaponUsageIndex), comparedWeapon.IsEmpty ? null : new int?(comparedWeapon.GetModifiedMissileSpeedForUsage(comparedWeaponUsageIndex)));
+			AddMissileSpeedProperty(_missileSpeedText, in targetWeapon, targetWeaponUsageIndex, in comparedWeapon, comparedWeaponUsageIndex);
 			AddIntProperty(_accuracyText, weaponWithUsageIndex.Accuracy, weaponComponentData?.Accuracy);
-			AddIntProperty(_stackAmountText, targetWeapon.GetModifiedStackCountForUsage(targetWeaponUsageIndex), comparedWeapon.IsEmpty ? null : new int?(comparedWeapon.GetModifiedStackCountForUsage(comparedWeaponUsageIndex)));
+			AddStackAmountProperty(_stackAmountText, in targetWeapon, targetWeaponUsageIndex, in comparedWeapon, comparedWeaponUsageIndex);
 		}
 		if (itemTypeFromWeaponClass == ItemObject.ItemTypeEnum.Shield || itemTypeEnum == ItemObject.ItemTypeEnum.Shield)
 		{
-			AddIntProperty(_speedText, targetWeapon.GetModifiedSwingSpeedForUsage(targetWeaponUsageIndex), comparedWeapon.IsEmpty ? null : new int?(comparedWeapon.GetModifiedSwingSpeedForUsage(comparedWeaponUsageIndex)));
-			AddIntProperty(_hitPointsText, targetWeapon.GetModifiedMaximumHitPointsForUsage(targetWeaponUsageIndex), comparedWeapon.IsEmpty ? null : new int?(comparedWeapon.GetModifiedMaximumHitPointsForUsage(comparedWeaponUsageIndex)));
+			AddSwingSpeedProperty(_swingSpeedText, in targetWeapon, targetWeaponUsageIndex, in comparedWeapon, comparedWeaponUsageIndex);
+			AddHitPointsProperty(_hitPointsText, in targetWeapon, targetWeaponUsageIndex, in comparedWeapon, comparedWeaponUsageIndex);
 		}
 		if (itemTypeFromWeaponClass == ItemObject.ItemTypeEnum.Bow || itemTypeFromWeaponClass == ItemObject.ItemTypeEnum.Crossbow || itemTypeFromWeaponClass == ItemObject.ItemTypeEnum.Sling || itemTypeEnum == ItemObject.ItemTypeEnum.Bow || itemTypeEnum == ItemObject.ItemTypeEnum.Crossbow || itemTypeEnum == ItemObject.ItemTypeEnum.Sling)
 		{
-			AddIntProperty(_speedText, targetWeapon.GetModifiedSwingSpeedForUsage(targetWeaponUsageIndex), comparedWeapon.IsEmpty ? null : new int?(comparedWeapon.GetModifiedSwingSpeedForUsage(comparedWeaponUsageIndex)));
+			AddSwingSpeedProperty(_swingSpeedText, in targetWeapon, targetWeaponUsageIndex, in comparedWeapon, comparedWeaponUsageIndex);
 			AddThrustDamageProperty(_damageText, in targetWeapon, targetWeaponUsageIndex, in comparedWeapon, comparedWeaponUsageIndex);
 			AddIntProperty(_accuracyText, weaponWithUsageIndex.Accuracy, weaponComponentData?.Accuracy);
-			AddIntProperty(_missileSpeedText, targetWeapon.GetModifiedMissileSpeedForUsage(targetWeaponUsageIndex), comparedWeapon.IsEmpty ? null : new int?(comparedWeapon.GetModifiedMissileSpeedForUsage(comparedWeaponUsageIndex)));
+			AddMissileSpeedProperty(_missileSpeedText, in targetWeapon, targetWeaponUsageIndex, in comparedWeapon, comparedWeaponUsageIndex);
 			if (itemTypeFromWeaponClass == ItemObject.ItemTypeEnum.Crossbow || itemTypeEnum == ItemObject.ItemTypeEnum.Crossbow)
 			{
 				AddIntProperty(_ammoLimitText, weaponWithUsageIndex.MaxDataValue, weaponComponentData?.MaxDataValue);
@@ -915,8 +917,8 @@ public class ItemMenuVM : ViewModel
 			{
 				AddIntProperty(_accuracyText, weaponWithUsageIndex.Accuracy, weaponComponentData?.Accuracy);
 			}
-			AddThrustDamageProperty(_damageText, in targetWeapon, targetWeaponUsageIndex, in comparedWeapon, comparedWeaponUsageIndex);
-			AddIntProperty(_stackAmountText, targetWeapon.GetModifiedStackCountForUsage(targetWeaponUsageIndex), comparedWeapon.IsEmpty ? null : new int?(comparedWeapon.GetModifiedStackCountForUsage(comparedWeaponUsageIndex)));
+			AddThrustDamageProperty(_bonusDamageText, in targetWeapon, targetWeaponUsageIndex, in comparedWeapon, comparedWeaponUsageIndex);
+			AddStackAmountProperty(_stackAmountText, in targetWeapon, targetWeaponUsageIndex, in comparedWeapon, comparedWeaponUsageIndex);
 		}
 		ItemObject item = targetWeapon.Item;
 		if (item == null || !item.HasBannerComponent)
@@ -924,7 +926,7 @@ public class ItemMenuVM : ViewModel
 			ItemObject item2 = comparedWeapon.Item;
 			if (item2 == null || !item2.HasBannerComponent)
 			{
-				goto IL_06b9;
+				goto IL_051e;
 			}
 		}
 		Func<EquipmentElement, string> valueAsStringFunc = delegate(EquipmentElement x)
@@ -949,8 +951,8 @@ public class ItemMenuVM : ViewModel
 			return _noneText.ToString();
 		};
 		AddComparableStringProperty(_bannerEffectText, valueAsStringFunc, (EquipmentElement x) => 0);
-		goto IL_06b9;
-		IL_06b9:
+		goto IL_051e;
+		IL_051e:
 		AddDonationXpTooltip();
 	}
 
@@ -1021,54 +1023,134 @@ public class ItemMenuVM : ViewModel
 	private void AddSwingDamageProperty(TextObject description, in EquipmentElement targetWeapon, int targetWeaponUsageIndex, in EquipmentElement comparedWeapon, int comparedWeaponUsageIndex)
 	{
 		int modifiedSwingDamageForUsage = targetWeapon.GetModifiedSwingDamageForUsage(targetWeaponUsageIndex);
-		string value = ItemHelper.GetSwingDamageText(targetWeapon.Item.GetWeaponWithUsageIndex(targetWeaponUsageIndex), targetWeapon.ItemModifier).ToString();
+		string text = ItemHelper.GetSwingDamageText(targetWeapon.Item.GetWeaponWithUsageIndex(targetWeaponUsageIndex), targetWeapon.ItemModifier).ToString();
 		if (IsComparing && !comparedWeapon.IsEmpty)
 		{
 			int modifiedSwingDamageForUsage2 = comparedWeapon.GetModifiedSwingDamageForUsage(comparedWeaponUsageIndex);
-			string value2 = ItemHelper.GetSwingDamageText(comparedWeapon.Item.GetWeaponWithUsageIndex(comparedWeaponUsageIndex), comparedWeapon.ItemModifier).ToString();
+			string value = ItemHelper.GetSwingDamageText(comparedWeapon.Item.GetWeaponWithUsageIndex(comparedWeaponUsageIndex), comparedWeapon.ItemModifier).ToString();
 			int result = CompareValues(modifiedSwingDamageForUsage, modifiedSwingDamageForUsage2);
-			CreateColoredProperty(TargetItemProperties, description.ToString(), value, GetColorFromComparison(result, isCompared: false));
-			CreateColoredProperty(ComparedItemProperties, " ", value2, GetColorFromComparison(result, isCompared: true));
+			CreateColoredProperty(TargetItemProperties, description.ToString(), text.ToString(), GetColorFromComparison(result, isCompared: false));
+			CreateColoredProperty(ComparedItemProperties, " ", value, GetColorFromComparison(result, isCompared: true));
 		}
 		else
 		{
-			CreateColoredProperty(TargetItemProperties, description.ToString(), value, GetColorFromComparison(0, isCompared: true));
+			CreateColoredProperty(TargetItemProperties, description.ToString(), text.ToString(), GetColorFromComparison(0, isCompared: true));
+		}
+	}
+
+	private void AddHitPointsProperty(TextObject description, in EquipmentElement targetWeapon, int targetWeaponUsageIndex, in EquipmentElement comparedWeapon, int comparedWeaponUsageIndex)
+	{
+		short modifiedMaximumHitPointsForUsage = targetWeapon.GetModifiedMaximumHitPointsForUsage(targetWeaponUsageIndex);
+		if (IsComparing && !comparedWeapon.IsEmpty)
+		{
+			short modifiedMaximumHitPointsForUsage2 = comparedWeapon.GetModifiedMaximumHitPointsForUsage(comparedWeaponUsageIndex);
+			int result = CompareValues(modifiedMaximumHitPointsForUsage, modifiedMaximumHitPointsForUsage2);
+			CreateColoredProperty(TargetItemProperties, description.ToString(), modifiedMaximumHitPointsForUsage.ToString(), GetColorFromComparison(result, isCompared: false));
+			CreateColoredProperty(ComparedItemProperties, " ", modifiedMaximumHitPointsForUsage2.ToString(), GetColorFromComparison(result, isCompared: true));
+		}
+		else
+		{
+			CreateColoredProperty(TargetItemProperties, description.ToString(), modifiedMaximumHitPointsForUsage.ToString(), GetColorFromComparison(0, isCompared: true));
+		}
+	}
+
+	private void AddStackAmountProperty(TextObject description, in EquipmentElement targetWeapon, int targetWeaponUsageIndex, in EquipmentElement comparedWeapon, int comparedWeaponUsageIndex)
+	{
+		short modifiedStackCountForUsage = targetWeapon.GetModifiedStackCountForUsage(targetWeaponUsageIndex);
+		if (IsComparing && !comparedWeapon.IsEmpty)
+		{
+			short modifiedStackCountForUsage2 = comparedWeapon.GetModifiedStackCountForUsage(comparedWeaponUsageIndex);
+			int result = CompareValues(modifiedStackCountForUsage, modifiedStackCountForUsage2);
+			CreateColoredProperty(TargetItemProperties, description.ToString(), modifiedStackCountForUsage.ToString(), GetColorFromComparison(result, isCompared: false));
+			CreateColoredProperty(ComparedItemProperties, " ", modifiedStackCountForUsage2.ToString(), GetColorFromComparison(result, isCompared: true));
+		}
+		else
+		{
+			CreateColoredProperty(TargetItemProperties, description.ToString(), modifiedStackCountForUsage.ToString(), GetColorFromComparison(0, isCompared: true));
+		}
+	}
+
+	private void AddThrustSpeedProperty(TextObject description, in EquipmentElement targetWeapon, int targetWeaponUsageIndex, in EquipmentElement comparedWeapon, int comparedWeaponUsageIndex)
+	{
+		int modifiedThrustSpeedForUsage = targetWeapon.GetModifiedThrustSpeedForUsage(targetWeaponUsageIndex);
+		if (IsComparing && !comparedWeapon.IsEmpty)
+		{
+			int modifiedThrustSpeedForUsage2 = comparedWeapon.GetModifiedThrustSpeedForUsage(comparedWeaponUsageIndex);
+			int result = CompareValues(modifiedThrustSpeedForUsage, modifiedThrustSpeedForUsage2);
+			CreateColoredProperty(TargetItemProperties, description.ToString(), modifiedThrustSpeedForUsage.ToString(), GetColorFromComparison(result, isCompared: false));
+			CreateColoredProperty(ComparedItemProperties, " ", modifiedThrustSpeedForUsage2.ToString(), GetColorFromComparison(result, isCompared: true));
+		}
+		else
+		{
+			CreateColoredProperty(TargetItemProperties, description.ToString(), modifiedThrustSpeedForUsage.ToString(), GetColorFromComparison(0, isCompared: true));
+		}
+	}
+
+	private void AddSwingSpeedProperty(TextObject description, in EquipmentElement targetWeapon, int targetWeaponUsageIndex, in EquipmentElement comparedWeapon, int comparedWeaponUsageIndex)
+	{
+		int modifiedSwingSpeedForUsage = targetWeapon.GetModifiedSwingSpeedForUsage(targetWeaponUsageIndex);
+		if (IsComparing && !comparedWeapon.IsEmpty)
+		{
+			int modifiedSwingSpeedForUsage2 = comparedWeapon.GetModifiedSwingSpeedForUsage(comparedWeaponUsageIndex);
+			int result = CompareValues(modifiedSwingSpeedForUsage, modifiedSwingSpeedForUsage2);
+			CreateColoredProperty(TargetItemProperties, description.ToString(), modifiedSwingSpeedForUsage.ToString(), GetColorFromComparison(result, isCompared: false));
+			CreateColoredProperty(ComparedItemProperties, " ", modifiedSwingSpeedForUsage2.ToString(), GetColorFromComparison(result, isCompared: true));
+		}
+		else
+		{
+			CreateColoredProperty(TargetItemProperties, description.ToString(), modifiedSwingSpeedForUsage.ToString(), GetColorFromComparison(0, isCompared: true));
+		}
+	}
+
+	private void AddMissileSpeedProperty(TextObject description, in EquipmentElement targetWeapon, int targetWeaponUsageIndex, in EquipmentElement comparedWeapon, int comparedWeaponUsageIndex)
+	{
+		int modifiedMissileSpeedForUsage = targetWeapon.GetModifiedMissileSpeedForUsage(targetWeaponUsageIndex);
+		if (IsComparing && !comparedWeapon.IsEmpty)
+		{
+			int modifiedMissileSpeedForUsage2 = comparedWeapon.GetModifiedMissileSpeedForUsage(comparedWeaponUsageIndex);
+			int result = CompareValues(modifiedMissileSpeedForUsage, modifiedMissileSpeedForUsage2);
+			CreateColoredProperty(TargetItemProperties, description.ToString(), modifiedMissileSpeedForUsage.ToString(), GetColorFromComparison(result, isCompared: false));
+			CreateColoredProperty(ComparedItemProperties, " ", modifiedMissileSpeedForUsage2.ToString(), GetColorFromComparison(result, isCompared: true));
+		}
+		else
+		{
+			CreateColoredProperty(TargetItemProperties, description.ToString(), modifiedMissileSpeedForUsage.ToString(), GetColorFromComparison(0, isCompared: true));
 		}
 	}
 
 	private void AddMissileDamageProperty(TextObject description, in EquipmentElement targetWeapon, int targetWeaponUsageIndex, in EquipmentElement comparedWeapon, int comparedWeaponUsageIndex)
 	{
 		int modifiedMissileDamageForUsage = targetWeapon.GetModifiedMissileDamageForUsage(targetWeaponUsageIndex);
-		string value = ItemHelper.GetMissileDamageText(targetWeapon.Item.GetWeaponWithUsageIndex(targetWeaponUsageIndex), targetWeapon.ItemModifier).ToString();
+		string text = ItemHelper.GetMissileDamageText(targetWeapon.Item.GetWeaponWithUsageIndex(targetWeaponUsageIndex), targetWeapon.ItemModifier).ToString();
 		if (IsComparing && !comparedWeapon.IsEmpty)
 		{
 			int modifiedMissileDamageForUsage2 = comparedWeapon.GetModifiedMissileDamageForUsage(comparedWeaponUsageIndex);
-			string value2 = ItemHelper.GetMissileDamageText(comparedWeapon.Item.GetWeaponWithUsageIndex(comparedWeaponUsageIndex), comparedWeapon.ItemModifier).ToString();
+			string value = ItemHelper.GetMissileDamageText(comparedWeapon.Item.GetWeaponWithUsageIndex(comparedWeaponUsageIndex), comparedWeapon.ItemModifier).ToString();
 			int result = CompareValues(modifiedMissileDamageForUsage, modifiedMissileDamageForUsage2);
-			CreateColoredProperty(TargetItemProperties, description.ToString(), value, GetColorFromComparison(result, isCompared: false));
-			CreateColoredProperty(ComparedItemProperties, " ", value2, GetColorFromComparison(result, isCompared: true));
+			CreateColoredProperty(TargetItemProperties, description.ToString(), text.ToString(), GetColorFromComparison(result, isCompared: false));
+			CreateColoredProperty(ComparedItemProperties, " ", value, GetColorFromComparison(result, isCompared: true));
 		}
 		else
 		{
-			CreateColoredProperty(TargetItemProperties, description.ToString(), value, GetColorFromComparison(0, isCompared: true));
+			CreateColoredProperty(TargetItemProperties, description.ToString(), text.ToString(), GetColorFromComparison(0, isCompared: true));
 		}
 	}
 
 	private void AddThrustDamageProperty(TextObject description, in EquipmentElement targetWeapon, int targetWeaponUsageIndex, in EquipmentElement comparedWeapon, int comparedWeaponUsageIndex)
 	{
 		int modifiedThrustDamageForUsage = targetWeapon.GetModifiedThrustDamageForUsage(targetWeaponUsageIndex);
-		string value = ItemHelper.GetThrustDamageText(targetWeapon.Item.GetWeaponWithUsageIndex(targetWeaponUsageIndex), targetWeapon.ItemModifier).ToString();
+		TextObject thrustDamageText = ItemHelper.GetThrustDamageText(targetWeapon.Item.GetWeaponWithUsageIndex(targetWeaponUsageIndex), targetWeapon.ItemModifier);
 		if (IsComparing && !comparedWeapon.IsEmpty)
 		{
 			int modifiedThrustDamageForUsage2 = comparedWeapon.GetModifiedThrustDamageForUsage(comparedWeaponUsageIndex);
-			string value2 = ItemHelper.GetThrustDamageText(comparedWeapon.Item.GetWeaponWithUsageIndex(comparedWeaponUsageIndex), comparedWeapon.ItemModifier).ToString();
+			string value = ItemHelper.GetThrustDamageText(comparedWeapon.Item.GetWeaponWithUsageIndex(comparedWeaponUsageIndex), comparedWeapon.ItemModifier).ToString();
 			int result = CompareValues(modifiedThrustDamageForUsage, modifiedThrustDamageForUsage2);
-			CreateColoredProperty(TargetItemProperties, description.ToString(), value, GetColorFromComparison(result, isCompared: false));
-			CreateColoredProperty(ComparedItemProperties, " ", value2, GetColorFromComparison(result, isCompared: true));
+			CreateColoredProperty(TargetItemProperties, description.ToString(), thrustDamageText.ToString(), GetColorFromComparison(result, isCompared: false));
+			CreateColoredProperty(ComparedItemProperties, " ", value, GetColorFromComparison(result, isCompared: true));
 		}
 		else
 		{
-			CreateColoredProperty(TargetItemProperties, description.ToString(), value, GetColorFromComparison(0, isCompared: true));
+			CreateColoredProperty(TargetItemProperties, description.ToString(), thrustDamageText.ToString(), GetColorFromComparison(0, isCompared: true));
 		}
 	}
 
@@ -1158,7 +1240,7 @@ public class ItemMenuVM : ViewModel
 			return;
 		}
 		InventoryLogic inventoryLogic = _inventoryLogic;
-		if (inventoryLogic != null && inventoryLogic.IsDiscardDonating)
+		if (inventoryLogic != null && inventoryLogic.CanGainXpFromDiscarding)
 		{
 			MBTextManager.SetTextVariable("LEFT", GameTexts.FindText("str_inventory_donation_item_hint").ToString());
 			int result = (IsComparing ? CompareValues(xpBonusForDiscardingItem, num) : 0);
@@ -1212,7 +1294,7 @@ public class ItemMenuVM : ViewModel
 				return 4;
 			}
 		}
-		Debug.FailedAssert("This horse item category is not defined", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\ItemMenuVM.cs", "GetHorseCategoryValue", 1446);
+		Debug.FailedAssert("This horse item category is not defined", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Inventory\\ItemMenuVM.cs", "GetHorseCategoryValue", 1536);
 		return -1;
 	}
 

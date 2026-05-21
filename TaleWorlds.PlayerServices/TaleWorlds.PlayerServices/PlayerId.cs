@@ -1,5 +1,4 @@
 using System;
-using System.Text;
 using Newtonsoft.Json;
 using TaleWorlds.Library;
 
@@ -203,15 +202,7 @@ public struct PlayerId : IComparable<PlayerId>, IEquatable<PlayerId>
 
 	public override string ToString()
 	{
-		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.Append(Part1);
-		stringBuilder.Append('.');
-		stringBuilder.Append(Part2);
-		stringBuilder.Append('.');
-		stringBuilder.Append(Part3);
-		stringBuilder.Append('.');
-		stringBuilder.Append(Part4);
-		return stringBuilder.ToString();
+		return $"{Part1}.{Part2}.{Part3}.{Part4}";
 	}
 
 	public static bool operator ==(PlayerId a, PlayerId b)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Xml;
 using TaleWorlds.Library;
 
@@ -15,11 +16,21 @@ public static class HotKeyManager
 
 	private static readonly float _versionOfHotkeys = 5.1f;
 
+	private static XmlNodeList _loadedCategories;
+
 	private static bool _hotkeyEditEnabled = false;
 
 	private static bool _notifyDocumentVersionDifferent = false;
 
 	private static PlatformFilePath _savePath;
+
+	private static bool _needsLoading;
+
+	private static bool _needsSaving;
+
+	private static bool _needsKeybindsChangedEvent;
+
+	private static bool _isSaveLoadInProgress;
 
 	public static event OnKeybindsChangedEvent OnKeybindsChanged;
 
@@ -29,7 +40,7 @@ public static class HotKeyManager
 		{
 			return value.GetHotKeyId(hotKeyId);
 		}
-		Debug.FailedAssert("Key category with id \"" + categoryName + "\" doesn't exsist.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\HotkeyManager.cs", "GetHotKeyId", 29);
+		Debug.FailedAssert("Key category with id \"" + categoryName + "\" doesn't exsist.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\HotkeyManager.cs", "GetHotKeyId", 36);
 		return "";
 	}
 
@@ -39,7 +50,7 @@ public static class HotKeyManager
 		{
 			return value.GetHotKeyId(hotKeyId);
 		}
-		Debug.FailedAssert("Key category with id \"" + categoryName + "\" doesn't exsist.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\HotkeyManager.cs", "GetHotKeyId", 40);
+		Debug.FailedAssert("Key category with id \"" + categoryName + "\" doesn't exsist.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\HotkeyManager.cs", "GetHotKeyId", 47);
 		return "invalid";
 	}
 
@@ -55,6 +66,34 @@ public static class HotKeyManager
 
 	public static void Tick(float dt)
 	{
+		if (!_isSaveLoadInProgress)
+		{
+			HandleSaveLoad();
+		}
+		if (!_isSaveLoadInProgress && _needsKeybindsChangedEvent)
+		{
+			HotKeyManager.OnKeybindsChanged?.Invoke();
+			_needsKeybindsChangedEvent = false;
+		}
+	}
+
+	private static async void HandleSaveLoad()
+	{
+		if (_needsLoading || _needsSaving)
+		{
+			_isSaveLoadInProgress = true;
+			if (_needsLoading)
+			{
+				await LoadAsync();
+				_needsLoading = false;
+			}
+			if (_needsSaving)
+			{
+				await SaveAsync();
+				_needsSaving = false;
+			}
+			_isSaveLoadInProgress = false;
+		}
 	}
 
 	public static void Initialize(PlatformFilePath savePath, bool isRDownSwappedWithRRight)
@@ -63,32 +102,26 @@ public static class HotKeyManager
 		_savePath = savePath;
 	}
 
-	public static void RegisterInitialContexts(IEnumerable<GameKeyContext> contexts, bool loadKeys)
+	public static void RegisterInitialContexts(IEnumerable<GameKeyContext> contexts)
 	{
 		_categories.Clear();
 		foreach (GameKeyContext context in contexts)
 		{
 			RegisterContext(context, context.Type == GameKeyContext.GameKeyContextType.AuxiliaryNotSerialized);
 		}
-		if (loadKeys)
-		{
-			LoadAsync();
-		}
 	}
 
-	public static void RegisterContext(GameKeyContext context, bool ignoreSerialize = false, bool loadKeys = false)
+	public static void RegisterContext(GameKeyContext context, bool ignoreSerialize = false)
 	{
 		if (!_categories.ContainsKey(context.GameKeyCategoryId))
 		{
 			_categories.Add(context.GameKeyCategoryId, context);
+			_needsLoading = true;
 		}
 		if (ignoreSerialize && !_serializeIgnoredCategories.Contains(context.GameKeyCategoryId))
 		{
 			_serializeIgnoredCategories.Add(context.GameKeyCategoryId);
-		}
-		if (loadKeys)
-		{
-			LoadAsync();
+			_needsLoading = true;
 		}
 	}
 
@@ -130,8 +163,9 @@ public static class HotKeyManager
 		}
 	}
 
-	public static async void LoadAsync()
+	private static async Task LoadAsync()
 	{
+		_loadedCategories = null;
 		if (!FileHelper.FileExists(_savePath))
 		{
 			return;
@@ -153,9 +187,10 @@ public static class HotKeyManager
 			if (num != _versionOfHotkeys)
 			{
 				_notifyDocumentVersionDifferent = true;
-				SaveAsync(throwEvent: false);
+				await SaveAsync();
 				return;
 			}
+			_loadedCategories = documentElement.ChildNodes;
 			foreach (XmlNode childNode in documentElement.ChildNodes)
 			{
 				string attribute = ((XmlElement)childNode).GetAttribute("name");
@@ -292,98 +327,116 @@ public static class HotKeyManager
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Couldn't load key bindings: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\HotkeyManager.cs", "LoadAsync", 354);
+			Debug.FailedAssert("Couldn't load key bindings: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\HotkeyManager.cs", "LoadAsync", 390);
+			_loadedCategories = null;
 		}
 	}
 
-	public static async void SaveAsync(bool throwEvent)
+	public static void MarkForSave()
+	{
+		_needsSaving = true;
+	}
+
+	private static async Task SaveAsync()
 	{
 		try
 		{
-			XmlDocument xmlDocument = new XmlDocument();
-			XmlDeclaration newChild = xmlDocument.CreateXmlDeclaration("1.0", "UTF-8", null);
-			XmlElement documentElement = xmlDocument.DocumentElement;
-			xmlDocument.InsertBefore(newChild, documentElement);
-			XmlComment newChild2 = xmlDocument.CreateComment("To override values other than GameKeys, change hotkeyEditEnabled to True.");
-			xmlDocument.InsertBefore(newChild2, documentElement);
-			XmlElement xmlElement = xmlDocument.CreateElement("HotKeyCategories");
+			XmlDocument document = new XmlDocument();
+			XmlDeclaration newChild = document.CreateXmlDeclaration("1.0", "UTF-8", null);
+			XmlElement documentElement = document.DocumentElement;
+			document.InsertBefore(newChild, documentElement);
+			XmlComment newChild2 = document.CreateComment("To override values other than GameKeys, change hotkeyEditEnabled to True.");
+			document.InsertBefore(newChild2, documentElement);
+			XmlElement xmlElement = document.CreateElement("HotKeyCategories");
 			xmlElement.SetAttribute("hotkeyEditEnabled", _hotkeyEditEnabled.ToString());
 			float versionOfHotkeys = _versionOfHotkeys;
 			xmlElement.SetAttribute("version", versionOfHotkeys.ToString());
-			xmlDocument.AppendChild(xmlElement);
+			document.AppendChild(xmlElement);
 			foreach (KeyValuePair<string, GameKeyContext> category in _categories)
 			{
-				if (_serializeIgnoredCategories.Contains(category.Key))
+				if (!_serializeIgnoredCategories.Contains(category.Key))
 				{
-					continue;
-				}
-				XmlElement xmlElement2 = xmlDocument.CreateElement("HotKeyCategory");
-				xmlElement.AppendChild(xmlElement2);
-				xmlElement2.SetAttribute("name", category.Key);
-				foreach (GameKey registeredGameKey in category.Value.RegisteredGameKeys)
-				{
-					if (registeredGameKey != null)
-					{
-						XmlElement xmlElement3 = xmlDocument.CreateElement("GameKey");
-						xmlElement2.AppendChild(xmlElement3);
-						XmlElement xmlElement4 = xmlDocument.CreateElement("Id");
-						xmlElement3.AppendChild(xmlElement4);
-						xmlElement4.InnerText = registeredGameKey.StringId;
-						XmlElement xmlElement5 = xmlDocument.CreateElement("Keys");
-						xmlElement3.AppendChild(xmlElement5);
-						XmlElement xmlElement6 = xmlDocument.CreateElement("KeyboardKey");
-						xmlElement5.AppendChild(xmlElement6);
-						xmlElement6.InnerText = ((registeredGameKey.KeyboardKey != null) ? registeredGameKey.KeyboardKey.InputKey.ToString() : "None");
-						XmlElement xmlElement7 = xmlDocument.CreateElement("ControllerKey");
-						xmlElement5.AppendChild(xmlElement7);
-						xmlElement7.InnerText = ((registeredGameKey.ControllerKey != null) ? registeredGameKey.ControllerKey.InputKey.ToString() : "None");
-					}
-				}
-				foreach (GameAxisKey registeredGameAxisKey in category.Value.RegisteredGameAxisKeys)
-				{
-					XmlElement xmlElement8 = xmlDocument.CreateElement("GameAxisKey");
-					xmlElement2.AppendChild(xmlElement8);
-					XmlElement xmlElement9 = xmlDocument.CreateElement("Id");
-					xmlElement8.AppendChild(xmlElement9);
-					xmlElement9.InnerText = registeredGameAxisKey.Id;
-					XmlElement xmlElement10 = xmlDocument.CreateElement("Keys");
-					xmlElement8.AppendChild(xmlElement10);
-					XmlElement xmlElement11 = xmlDocument.CreateElement("PositiveKey");
-					xmlElement10.AppendChild(xmlElement11);
-					xmlElement11.InnerText = ((registeredGameAxisKey.PositiveKey != null) ? registeredGameAxisKey.PositiveKey.KeyboardKey.InputKey.ToString() : "None");
-					XmlElement xmlElement12 = xmlDocument.CreateElement("NegativeKey");
-					xmlElement10.AppendChild(xmlElement12);
-					xmlElement12.InnerText = ((registeredGameAxisKey.NegativeKey != null) ? registeredGameAxisKey.NegativeKey.KeyboardKey.InputKey.ToString() : "None");
-					XmlElement xmlElement13 = xmlDocument.CreateElement("AxisKey");
-					xmlElement10.AppendChild(xmlElement13);
-					xmlElement13.InnerText = ((registeredGameAxisKey.AxisKey != null) ? registeredGameAxisKey.AxisKey.InputKey.ToString() : "None");
-				}
-				foreach (HotKey registeredHotKey in category.Value.RegisteredHotKeys)
-				{
-					XmlElement xmlElement14 = xmlDocument.CreateElement("HotKey");
-					xmlElement2.AppendChild(xmlElement14);
-					XmlElement xmlElement15 = xmlDocument.CreateElement("Id");
-					xmlElement14.AppendChild(xmlElement15);
-					xmlElement15.InnerText = registeredHotKey.Id;
-					XmlElement xmlElement16 = xmlDocument.CreateElement("Keys");
-					xmlElement14.AppendChild(xmlElement16);
-					foreach (Key key in registeredHotKey.Keys)
-					{
-						XmlElement xmlElement17 = xmlDocument.CreateElement("Key");
-						xmlElement16.AppendChild(xmlElement17);
-						xmlElement17.InnerText = key.InputKey.ToString();
-					}
+					XmlElement newChild3 = CreateGameKeyContextNode(category.Key, category.Value, ref document);
+					xmlElement.AppendChild(newChild3);
 				}
 			}
-			await xmlDocument.SaveAsync(_savePath);
-			if (throwEvent)
+			if (_loadedCategories != null)
 			{
-				HotKeyManager.OnKeybindsChanged?.Invoke();
+				foreach (XmlElement loadedCategory in _loadedCategories)
+				{
+					if (!_categories.TryGetValue(loadedCategory.GetAttribute("name"), out var _))
+					{
+						xmlElement.AppendChild(document.ImportNode(loadedCategory, deep: true));
+					}
+				}
+			}
+			await document.SaveAsync(_savePath);
+			_needsKeybindsChangedEvent = true;
+		}
+		catch (Exception ex)
+		{
+			Debug.FailedAssert("Couldn't save key bindings: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\HotkeyManager.cs", "SaveAsync", 447);
+		}
+	}
+
+	private static XmlElement CreateGameKeyContextNode(string name, GameKeyContext context, ref XmlDocument document)
+	{
+		XmlElement xmlElement = document.CreateElement("HotKeyCategory");
+		xmlElement.SetAttribute("name", name);
+		foreach (GameKey registeredGameKey in context.RegisteredGameKeys)
+		{
+			if (registeredGameKey != null)
+			{
+				XmlElement xmlElement2 = document.CreateElement("GameKey");
+				xmlElement.AppendChild(xmlElement2);
+				XmlElement xmlElement3 = document.CreateElement("Id");
+				xmlElement2.AppendChild(xmlElement3);
+				xmlElement3.InnerText = registeredGameKey.StringId;
+				XmlElement xmlElement4 = document.CreateElement("Keys");
+				xmlElement2.AppendChild(xmlElement4);
+				XmlElement xmlElement5 = document.CreateElement("KeyboardKey");
+				xmlElement4.AppendChild(xmlElement5);
+				xmlElement5.InnerText = ((registeredGameKey.KeyboardKey != null) ? registeredGameKey.KeyboardKey.InputKey.ToString() : "None");
+				XmlElement xmlElement6 = document.CreateElement("ControllerKey");
+				xmlElement4.AppendChild(xmlElement6);
+				xmlElement6.InnerText = ((registeredGameKey.ControllerKey != null) ? registeredGameKey.ControllerKey.InputKey.ToString() : "None");
 			}
 		}
-		catch
+		foreach (GameAxisKey registeredGameAxisKey in context.RegisteredGameAxisKeys)
 		{
-			Debug.FailedAssert("Couldn't save key bindings.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.InputSystem\\HotkeyManager.cs", "SaveAsync", 466);
+			XmlElement xmlElement7 = document.CreateElement("GameAxisKey");
+			xmlElement.AppendChild(xmlElement7);
+			XmlElement xmlElement8 = document.CreateElement("Id");
+			xmlElement7.AppendChild(xmlElement8);
+			xmlElement8.InnerText = registeredGameAxisKey.Id;
+			XmlElement xmlElement9 = document.CreateElement("Keys");
+			xmlElement7.AppendChild(xmlElement9);
+			XmlElement xmlElement10 = document.CreateElement("PositiveKey");
+			xmlElement9.AppendChild(xmlElement10);
+			xmlElement10.InnerText = ((registeredGameAxisKey.PositiveKey != null) ? registeredGameAxisKey.PositiveKey.KeyboardKey.InputKey.ToString() : "None");
+			XmlElement xmlElement11 = document.CreateElement("NegativeKey");
+			xmlElement9.AppendChild(xmlElement11);
+			xmlElement11.InnerText = ((registeredGameAxisKey.NegativeKey != null) ? registeredGameAxisKey.NegativeKey.KeyboardKey.InputKey.ToString() : "None");
+			XmlElement xmlElement12 = document.CreateElement("AxisKey");
+			xmlElement9.AppendChild(xmlElement12);
+			xmlElement12.InnerText = ((registeredGameAxisKey.AxisKey != null) ? registeredGameAxisKey.AxisKey.InputKey.ToString() : "None");
 		}
+		foreach (HotKey registeredHotKey in context.RegisteredHotKeys)
+		{
+			XmlElement xmlElement13 = document.CreateElement("HotKey");
+			xmlElement.AppendChild(xmlElement13);
+			XmlElement xmlElement14 = document.CreateElement("Id");
+			xmlElement13.AppendChild(xmlElement14);
+			xmlElement14.InnerText = registeredHotKey.Id;
+			XmlElement xmlElement15 = document.CreateElement("Keys");
+			xmlElement13.AppendChild(xmlElement15);
+			foreach (Key key in registeredHotKey.Keys)
+			{
+				XmlElement xmlElement16 = document.CreateElement("Key");
+				xmlElement15.AppendChild(xmlElement16);
+				xmlElement16.InnerText = key.InputKey.ToString();
+			}
+		}
+		return xmlElement;
 	}
 }

@@ -602,7 +602,7 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		_widget_2_0_0_3_5.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_2_0_0_3_5.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_2_0_0_3_5.MarginBottom = 10f;
-		_widget_2_0_0_3_5.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_0_3_5.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_0_3_5_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0_3_5_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0_3_5_0.HorizontalAlignment = HorizontalAlignment.Right;
@@ -618,7 +618,7 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		_widget_2_0_0_3_6.MarginBottom = 7f;
 		_widget_2_0_0_3_6_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0_3_6_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_2_0_0_3_6_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_0_3_6_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_0_3_6_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_0_0_3_6_0_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_2_0_0_3_6_0_0.SuggestedWidth = 50f;
@@ -664,7 +664,7 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		_widget_3.Brush = base.Context.GetBrush("Scoreboard.ContextMenu.Background");
 		_widget_3_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_3_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_3_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_3_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_3_0.MarginLeft = 5f;
 		_widget_3_0.MarginRight = 5f;
 		_widget_3_0.MarginTop = 5f;

@@ -82,7 +82,8 @@ public class MissionCombatantsLogic : MissionLogic
 		{
 			AddEnemyTeam(oppositeSide);
 		}
-		if (SupportsAllyTeamOnPlayerSide(BattleCombatants.Where((IBattleCombatant cmbt) => cmbt.Side == playerSide), PlayerBattleCombatant, IsPlayerSergeant, out var allyCombatant))
+		bool isNavalLandHybridMission = TeamAIType == Mission.MissionTeamAITypeEnum.NavalRaid;
+		if (SupportsAllyTeamOnPlayerSide(BattleCombatants.Where((IBattleCombatant cmbt) => cmbt.Side == playerSide), PlayerBattleCombatant, IsPlayerSergeant, isNavalLandHybridMission, out var allyCombatant))
 		{
 			AddPlayerAllyTeam(playerSide, allyCombatant);
 		}
@@ -257,12 +258,17 @@ public class MissionCombatantsLogic : MissionLogic
 		}
 	}
 
-	public static bool SupportsAllyTeamOnPlayerSide(IEnumerable<IBattleCombatant> playerSideBattleCombatants, IBattleCombatant playerBattleCombatant, bool isPlayerSergeant, out IBattleCombatant allyCombatant)
+	public static bool SupportsAllyTeamOnPlayerSide(IEnumerable<IBattleCombatant> playerSideBattleCombatants, IBattleCombatant playerBattleCombatant, bool isPlayerSergeant, bool isNavalLandHybridMission, out IBattleCombatant allyCombatant)
 	{
 		allyCombatant = null;
+		if (isNavalLandHybridMission)
+		{
+			return false;
+		}
+		BasicCharacterObject general = playerBattleCombatant.General;
 		foreach (IBattleCombatant playerSideBattleCombatant in playerSideBattleCombatants)
 		{
-			if (playerSideBattleCombatant != playerBattleCombatant && playerSideBattleCombatant.Side == playerBattleCombatant.Side && !isPlayerSergeant)
+			if (playerSideBattleCombatant != playerBattleCombatant && (!isPlayerSergeant || playerSideBattleCombatant.General != general) && !playerSideBattleCombatant.IsUnderPlayersCommand(playerBattleCombatant.Side))
 			{
 				allyCombatant = playerSideBattleCombatant;
 				return true;

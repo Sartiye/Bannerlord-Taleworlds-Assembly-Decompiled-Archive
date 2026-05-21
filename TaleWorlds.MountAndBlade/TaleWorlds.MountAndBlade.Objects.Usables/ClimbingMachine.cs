@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.InputSystem;
@@ -29,7 +30,7 @@ public class ClimbingMachine : UsableMachine
 
 	private GameEntity _climbEndingPoint;
 
-	private float _usageDuration;
+	private List<float> _standingPointUsageDurations = new List<float>();
 
 	public override float SinkingReferenceOffset => base.GameEntity.GetGlobalScale().z * -1.5f;
 
@@ -52,7 +53,11 @@ public class ClimbingMachine : UsableMachine
 		_climbingEnd = ActionIndexCache.Create("act_climb_net_ending");
 		_climbingEndContinue = ActionIndexCache.Create("act_climb_net_ending_continue");
 		_climbEndingPoint = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(base.GameEntity.GetFirstChildEntityWithTag("climb_end"));
-		base.PilotStandingPoint.AutoEquipWeaponsOnUseStopped = true;
+		foreach (StandingPoint standingPoint in base.StandingPoints)
+		{
+			standingPoint.AutoEquipWeaponsOnUseStopped = true;
+			_standingPointUsageDurations.Add(0f);
+		}
 		SetScriptComponentToTick(GetTickRequirement());
 	}
 
@@ -68,64 +73,92 @@ public class ClimbingMachine : UsableMachine
 
 	public override void OnDeploymentFinished()
 	{
-		base.PilotStandingPoint.AddComponent(new ResetGravityExclusionAndEntityAttachmentOnStopUsageComponent(OnUseAction));
-		base.PilotStandingPoint.AddComponent(new ResetAnimationOnStopUsageComponent(ActionIndexCache.act_none, alwaysResetWithAction: false));
-		base.PilotStandingPoint.SetAreUserPositionsUpdatedInTheMachineTick(value: true);
+		foreach (StandingPoint standingPoint in base.StandingPoints)
+		{
+			standingPoint.AddComponent(new ResetGravityExclusionAndEntityAttachmentOnStopUsageComponent(OnUseAction));
+			standingPoint.AddComponent(new ResetAnimationOnStopUsageComponent(ActionIndexCache.act_none, alwaysResetWithAction: false));
+			standingPoint.SetAreUserPositionsUpdatedInTheMachineTick(value: true);
+		}
 	}
 
 	protected internal override void OnTick(float dt)
 	{
 		base.OnTick(dt);
-		if (base.PilotStandingPoint.HasUser)
+		bool isDeactivated = false;
+		for (int i = 0; i < base.StandingPoints.Count; i++)
 		{
-			Agent userAgent = base.PilotStandingPoint.UserAgent;
-			ActionIndexCache currentAction = userAgent.GetCurrentAction(0);
-			_usageDuration += dt;
-			if (currentAction == _climbingLoop || currentAction == _climbingEnd)
+			StandingPoint standingPoint = base.StandingPoints[i];
+			float num = _standingPointUsageDurations[i];
+			if (standingPoint.HasUser)
 			{
-				Vec3 vec = base.PilotStandingPoint.GameEntity.GetGlobalFrame().origin + base.PilotStandingPoint.GameEntity.GetGlobalFrame().rotation.u.NormalizedCopy() * _usageDuration * 1.4f;
-				if (currentAction == _climbingEnd)
+				Agent userAgent = standingPoint.UserAgent;
+				ActionIndexCache currentAction = userAgent.GetCurrentAction(0);
+				num += dt;
+				if (currentAction == _climbingLoop || currentAction == _climbingEnd)
 				{
-					vec += new Vec3(base.PilotStandingPoint.GameEntity.GetGlobalFrame().rotation.f.AsVec2.Normalized() * (Math.Min(userAgent.GetCurrentActionProgress(0) * 1f, 1f) * 0.3f));
+					MatrixFrame globalFrame = standingPoint.GameEntity.GetGlobalFrame();
+					Vec3 vec = globalFrame.origin + globalFrame.rotation.u.NormalizedCopy() * num * 1.4f;
+					if (currentAction == _climbingEnd)
+					{
+						vec += new Vec3(globalFrame.rotation.f.AsVec2.Normalized() * (Math.Min(userAgent.GetCurrentActionProgress(0) * 1f, 1f) * 0.3f));
+					}
+					userAgent.SetTargetZ(vec.z);
+					Vec2 targetPosition = vec.AsVec2;
+					Vec3 targetDirection = globalFrame.rotation.f.NormalizedCopy();
+					userAgent.SetTargetPositionAndDirection(in targetPosition, in targetDirection);
+					Vec3 targetUp = globalFrame.rotation.u.NormalizedCopy();
+					userAgent.SetTargetUp(in targetUp);
+					float num2 = Vec3.DotProduct(targetUp, _climbEndingPoint.GlobalPosition - vec);
+					if (currentAction == _climbingLoop && num2 < 1.8f && !userAgent.SetActionChannel(0, in _climbingEnd, ignorePriority: false, (AnimFlags)0uL))
+					{
+						userAgent.StopUsingGameObject();
+						num = 0f;
+					}
+					else if (num2 > Vec3.DotProduct(targetUp, _climbEndingPoint.GlobalPosition - globalFrame.origin) - 1.5f)
+					{
+						isDeactivated = true;
+					}
 				}
-				userAgent.SetTargetZ(vec.z);
-				Vec2 targetPosition = vec.AsVec2;
-				Vec3 targetDirection = base.PilotStandingPoint.GameEntity.GetGlobalFrame().rotation.f.NormalizedCopy();
-				userAgent.SetTargetPositionAndDirection(in targetPosition, in targetDirection);
-				Vec3 targetUp = base.PilotStandingPoint.GameEntity.GetGlobalFrame().rotation.u.NormalizedCopy();
-				userAgent.SetTargetUp(in targetUp);
-				float num = Vec3.DotProduct(targetUp, _climbEndingPoint.GlobalPosition - vec);
-				if (currentAction == _climbingLoop && num < 1.8f && !userAgent.SetActionChannel(0, in _climbingEnd, ignorePriority: false, (AnimFlags)0uL))
+				else if (currentAction == _climbingEndContinue)
+				{
+					userAgent.ClearTargetFrame();
+					userAgent.SetTargetZ(_climbEndingPoint.GlobalPosition.z);
+					userAgent.SetTargetUp(in Vec3.Zero);
+					if (userAgent.GetCurrentActionProgress(0) > 0.95f)
+					{
+						userAgent.SetExcludedFromGravity(exclude: false, applyAverageGlobalVelocity: true);
+						userAgent.StopUsingGameObject(isSuccessful: false);
+						num = 0f;
+					}
+				}
+				else if (userAgent.SetActionChannel(0, in _climbingLoop, ignorePriority: false, (AnimFlags)0uL))
+				{
+					userAgent.SetExcludedFromGravity(exclude: true, applyAverageGlobalVelocity: false);
+					isDeactivated = true;
+				}
+				else
 				{
 					userAgent.StopUsingGameObject();
-					_usageDuration = 0f;
+					num = 0f;
 				}
-			}
-			else if (currentAction == _climbingEndContinue)
-			{
-				userAgent.ClearTargetFrame();
-				userAgent.SetTargetZ(_climbEndingPoint.GlobalPosition.z);
-				userAgent.SetTargetUp(in Vec3.Zero);
-				if (userAgent.GetCurrentActionProgress(0) > 0.95f)
-				{
-					userAgent.SetExcludedFromGravity(exclude: false, applyAverageGlobalVelocity: true);
-					userAgent.StopUsingGameObject(isSuccessful: false);
-					_usageDuration = 0f;
-				}
-			}
-			else if (userAgent.SetActionChannel(0, in _climbingLoop, ignorePriority: false, (AnimFlags)0uL))
-			{
-				userAgent.SetExcludedFromGravity(exclude: true, applyAverageGlobalVelocity: false);
 			}
 			else
 			{
-				userAgent.StopUsingGameObject();
-				_usageDuration = 0f;
+				num = 0f;
+			}
+			_standingPointUsageDurations[i] = num;
+		}
+		foreach (StandingPoint standingPoint2 in base.StandingPoints)
+		{
+			if (!standingPoint2.HasUser)
+			{
+				standingPoint2.IsDeactivated = isDeactivated;
+				isDeactivated = true;
 			}
 		}
-		else
-		{
-			_usageDuration = 0f;
-		}
+	}
+
+	public override void OnMissionEnded()
+	{
 	}
 }

@@ -33,7 +33,7 @@ public class ProposeCallToWarOfferNotificationItemVM : MapNotificationItemBaseVM
 			}
 			if (flag)
 			{
-				Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>().OnCallToWarAgreementProposedByPlayer(data.OfferedKingdom, data.KingdomToCallToWarAgainst);
+				Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>()?.OnCallToWarAgreementProposedByPlayer(data.OfferedKingdom, data.KingdomToCallToWarAgainst);
 				proposeCallToWarOfferNotificationItemVM.RemoveProposeCallToWarOfferNotification(shouldDecisionCreatedOnClosed: false);
 			}
 			else

@@ -179,6 +179,8 @@ internal static class CoreCallbacksGenerated
 
 	internal delegate UIntPtr Module_CreateProcessedAnimationsXMLForNative_delegate(out string animationsXmlPaths);
 
+	internal delegate UIntPtr Module_CreateProcessedItemHolstersXMLForNative_delegate(out string baseItemHolstersPath);
+
 	internal delegate UIntPtr Module_CreateProcessedModuleDataXMLForNative_delegate(IntPtr xmlType);
 
 	internal delegate UIntPtr Module_CreateProcessedSkinsXMLForNative_delegate(out string baseSkinsXmlPath);
@@ -240,7 +242,7 @@ internal static class CoreCallbacksGenerated
 
 	public static void Initialize()
 	{
-		Delegates = new Delegate[110];
+		Delegates = new Delegate[111];
 		Delegates[0] = new Agent_DebugGetHealth_delegate(Agent_DebugGetHealth);
 		Delegates[1] = new Agent_GetFormationUnitSpacing_delegate(Agent_GetFormationUnitSpacing);
 		Delegates[2] = new Agent_GetMissileRangeWithHeightDifferenceAux_delegate(Agent_GetMissileRangeWithHeightDifferenceAux);
@@ -323,34 +325,35 @@ internal static class CoreCallbacksGenerated
 		Delegates[79] = new Module_CreateProcessedActionSetsXMLForNative_delegate(Module_CreateProcessedActionSetsXMLForNative);
 		Delegates[80] = new Module_CreateProcessedActionTypesXMLForNative_delegate(Module_CreateProcessedActionTypesXMLForNative);
 		Delegates[81] = new Module_CreateProcessedAnimationsXMLForNative_delegate(Module_CreateProcessedAnimationsXMLForNative);
-		Delegates[82] = new Module_CreateProcessedModuleDataXMLForNative_delegate(Module_CreateProcessedModuleDataXMLForNative);
-		Delegates[83] = new Module_CreateProcessedSkinsXMLForNative_delegate(Module_CreateProcessedSkinsXMLForNative);
-		Delegates[84] = new Module_CreateProcessedSoundEventDataXMLForNative_delegate(Module_CreateProcessedSoundEventDataXMLForNative);
-		Delegates[85] = new Module_CreateProcessedSoundParamsXMLForNative_delegate(Module_CreateProcessedSoundParamsXMLForNative);
-		Delegates[86] = new Module_CreateProcessedVoiceDefinitionsXMLForNative_delegate(Module_CreateProcessedVoiceDefinitionsXMLForNative);
-		Delegates[87] = new Module_GetGameStatus_delegate(Module_GetGameStatus);
-		Delegates[88] = new Module_GetHorseMaterialNames_delegate(Module_GetHorseMaterialNames);
-		Delegates[89] = new Module_GetInstance_delegate(Module_GetInstance);
-		Delegates[90] = new Module_GetItemMeshNames_delegate(Module_GetItemMeshNames);
-		Delegates[91] = new Module_GetMetaMeshPackageMapping_delegate(Module_GetMetaMeshPackageMapping);
-		Delegates[92] = new Module_GetMissionControllerClassNames_delegate(Module_GetMissionControllerClassNames);
-		Delegates[93] = new Module_Initialize_delegate(Module_Initialize);
-		Delegates[94] = new Module_LoadSingleModule_delegate(Module_LoadSingleModule);
-		Delegates[95] = new Module_MBThrowException_delegate(Module_MBThrowException);
-		Delegates[96] = new Module_OnCloseSceneEditorPresentation_delegate(Module_OnCloseSceneEditorPresentation);
-		Delegates[97] = new Module_OnDumpCreated_delegate(Module_OnDumpCreated);
-		Delegates[98] = new Module_OnDumpCreationStarted_delegate(Module_OnDumpCreationStarted);
-		Delegates[99] = new Module_OnEnterEditMode_delegate(Module_OnEnterEditMode);
-		Delegates[100] = new Module_OnImguiProfilerTick_delegate(Module_OnImguiProfilerTick);
-		Delegates[101] = new Module_OnSceneEditorModeOver_delegate(Module_OnSceneEditorModeOver);
-		Delegates[102] = new Module_OnSkinsXMLHasChanged_delegate(Module_OnSkinsXMLHasChanged);
-		Delegates[103] = new Module_RunTest_delegate(Module_RunTest);
-		Delegates[104] = new Module_SetEditorScreenAsRootScreen_delegate(Module_SetEditorScreenAsRootScreen);
-		Delegates[105] = new Module_SetLoadingFinished_delegate(Module_SetLoadingFinished);
-		Delegates[106] = new Module_StartMissionForEditor_delegate(Module_StartMissionForEditor);
-		Delegates[107] = new Module_StartMissionForReplayEditor_delegate(Module_StartMissionForReplayEditor);
-		Delegates[108] = new Module_TickTest_delegate(Module_TickTest);
-		Delegates[109] = new WeaponComponentMissionExtensions_CalculateCenterOfMass_delegate(WeaponComponentMissionExtensions_CalculateCenterOfMass);
+		Delegates[82] = new Module_CreateProcessedItemHolstersXMLForNative_delegate(Module_CreateProcessedItemHolstersXMLForNative);
+		Delegates[83] = new Module_CreateProcessedModuleDataXMLForNative_delegate(Module_CreateProcessedModuleDataXMLForNative);
+		Delegates[84] = new Module_CreateProcessedSkinsXMLForNative_delegate(Module_CreateProcessedSkinsXMLForNative);
+		Delegates[85] = new Module_CreateProcessedSoundEventDataXMLForNative_delegate(Module_CreateProcessedSoundEventDataXMLForNative);
+		Delegates[86] = new Module_CreateProcessedSoundParamsXMLForNative_delegate(Module_CreateProcessedSoundParamsXMLForNative);
+		Delegates[87] = new Module_CreateProcessedVoiceDefinitionsXMLForNative_delegate(Module_CreateProcessedVoiceDefinitionsXMLForNative);
+		Delegates[88] = new Module_GetGameStatus_delegate(Module_GetGameStatus);
+		Delegates[89] = new Module_GetHorseMaterialNames_delegate(Module_GetHorseMaterialNames);
+		Delegates[90] = new Module_GetInstance_delegate(Module_GetInstance);
+		Delegates[91] = new Module_GetItemMeshNames_delegate(Module_GetItemMeshNames);
+		Delegates[92] = new Module_GetMetaMeshPackageMapping_delegate(Module_GetMetaMeshPackageMapping);
+		Delegates[93] = new Module_GetMissionControllerClassNames_delegate(Module_GetMissionControllerClassNames);
+		Delegates[94] = new Module_Initialize_delegate(Module_Initialize);
+		Delegates[95] = new Module_LoadSingleModule_delegate(Module_LoadSingleModule);
+		Delegates[96] = new Module_MBThrowException_delegate(Module_MBThrowException);
+		Delegates[97] = new Module_OnCloseSceneEditorPresentation_delegate(Module_OnCloseSceneEditorPresentation);
+		Delegates[98] = new Module_OnDumpCreated_delegate(Module_OnDumpCreated);
+		Delegates[99] = new Module_OnDumpCreationStarted_delegate(Module_OnDumpCreationStarted);
+		Delegates[100] = new Module_OnEnterEditMode_delegate(Module_OnEnterEditMode);
+		Delegates[101] = new Module_OnImguiProfilerTick_delegate(Module_OnImguiProfilerTick);
+		Delegates[102] = new Module_OnSceneEditorModeOver_delegate(Module_OnSceneEditorModeOver);
+		Delegates[103] = new Module_OnSkinsXMLHasChanged_delegate(Module_OnSkinsXMLHasChanged);
+		Delegates[104] = new Module_RunTest_delegate(Module_RunTest);
+		Delegates[105] = new Module_SetEditorScreenAsRootScreen_delegate(Module_SetEditorScreenAsRootScreen);
+		Delegates[106] = new Module_SetLoadingFinished_delegate(Module_SetLoadingFinished);
+		Delegates[107] = new Module_StartMissionForEditor_delegate(Module_StartMissionForEditor);
+		Delegates[108] = new Module_StartMissionForReplayEditor_delegate(Module_StartMissionForReplayEditor);
+		Delegates[109] = new Module_TickTest_delegate(Module_TickTest);
+		Delegates[110] = new WeaponComponentMissionExtensions_CalculateCenterOfMass_delegate(WeaponComponentMissionExtensions_CalculateCenterOfMass);
 	}
 
 	[MonoPInvokeCallback(typeof(Agent_DebugGetHealth_delegate))]
@@ -964,6 +967,15 @@ internal static class CoreCallbacksGenerated
 	internal static UIntPtr Module_CreateProcessedAnimationsXMLForNative(out string animationsXmlPaths)
 	{
 		string text = Module.CreateProcessedAnimationsXMLForNative(out animationsXmlPaths);
+		UIntPtr threadLocalCachedRglVarString = NativeStringHelper.GetThreadLocalCachedRglVarString();
+		NativeStringHelper.SetRglVarString(threadLocalCachedRglVarString, text);
+		return threadLocalCachedRglVarString;
+	}
+
+	[MonoPInvokeCallback(typeof(Module_CreateProcessedItemHolstersXMLForNative_delegate))]
+	internal static UIntPtr Module_CreateProcessedItemHolstersXMLForNative(out string baseItemHolstersPath)
+	{
+		string text = Module.CreateProcessedItemHolstersXMLForNative(out baseItemHolstersPath);
 		UIntPtr threadLocalCachedRglVarString = NativeStringHelper.GetThreadLocalCachedRglVarString();
 		NativeStringHelper.SetRglVarString(threadLocalCachedRglVarString, text);
 		return threadLocalCachedRglVarString;

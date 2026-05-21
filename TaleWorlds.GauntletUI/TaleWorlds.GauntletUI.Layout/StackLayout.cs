@@ -54,7 +54,7 @@ public class StackLayout : ILayout
 					result.X += 20f;
 				}
 			}
-			else if (LayoutMethod == LayoutMethod.VerticalBottomToTop || LayoutMethod == LayoutMethod.VerticalTopToBottom || LayoutMethod == LayoutMethod.VerticalCentered)
+			else if (LayoutMethod == LayoutMethod.VerticalTopToBottom || LayoutMethod == LayoutMethod.VerticalBottomToTop || LayoutMethod == LayoutMethod.VerticalCentered || LayoutMethod == LayoutMethod.VerticalSpaced)
 			{
 				result = MeasureLinear(widget, measureSpec, AlignmentAxis.Vertical);
 				if (container != null && container.IsDragHovering)
@@ -70,9 +70,9 @@ public class StackLayout : ILayout
 	{
 		if (LayoutMethod == LayoutMethod.HorizontalLeftToRight || LayoutMethod == LayoutMethod.HorizontalRightToLeft || LayoutMethod == LayoutMethod.HorizontalCentered || LayoutMethod == LayoutMethod.HorizontalSpaced)
 		{
-			LayoutLinearHorizontalLocal(widget, left, bottom, right, top);
+			LayoutLinearHorizontal(widget, left, bottom, right, top);
 		}
-		else if (LayoutMethod == LayoutMethod.VerticalBottomToTop || LayoutMethod == LayoutMethod.VerticalTopToBottom || LayoutMethod == LayoutMethod.VerticalCentered)
+		else if (LayoutMethod == LayoutMethod.VerticalTopToBottom || LayoutMethod == LayoutMethod.VerticalBottomToTop || LayoutMethod == LayoutMethod.VerticalCentered || LayoutMethod == LayoutMethod.VerticalSpaced)
 		{
 			LayoutLinearVertical(widget, left, bottom, right, top);
 		}
@@ -99,11 +99,11 @@ public class StackLayout : ILayout
 	public int GetIndexForDrop(Container widget, Vector2 draggedWidgetPosition)
 	{
 		int row = 0;
-		if (LayoutMethod == LayoutMethod.VerticalBottomToTop || LayoutMethod == LayoutMethod.VerticalTopToBottom || LayoutMethod == LayoutMethod.VerticalCentered)
+		if (LayoutMethod == LayoutMethod.VerticalTopToBottom || LayoutMethod == LayoutMethod.VerticalBottomToTop || LayoutMethod == LayoutMethod.VerticalCentered || LayoutMethod == LayoutMethod.VerticalSpaced)
 		{
 			row = 1;
 		}
-		bool flag = LayoutMethod == LayoutMethod.HorizontalRightToLeft || LayoutMethod == LayoutMethod.VerticalTopToBottom || LayoutMethod == LayoutMethod.VerticalCentered;
+		bool flag = LayoutMethod == LayoutMethod.HorizontalRightToLeft || LayoutMethod == LayoutMethod.VerticalBottomToTop;
 		float data = GetData(draggedWidgetPosition, row);
 		int result = 0;
 		bool flag2 = false;
@@ -149,7 +149,7 @@ public class StackLayout : ILayout
 			Widget child = _parallelMeasureBasicChildWidget.GetChild(i);
 			if (child == null)
 			{
-				Debug.FailedAssert("Trying to measure a null child for parent" + _parallelMeasureBasicChildWidget.GetFullIDPath(), "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "ParallelMeasureBasicChild", 184);
+				Debug.FailedAssert("Trying to measure a null child for parent" + _parallelMeasureBasicChildWidget.GetFullIDPath(), "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "ParallelMeasureBasicChild", 185);
 			}
 			else
 			{
@@ -181,7 +181,7 @@ public class StackLayout : ILayout
 		_parallelMeasureBasicChildWidget = widget;
 		_parallelMeasureBasicChildMeasureSpec = measureSpec;
 		_parallelMeasureBasicChildAlignmentAxis = alignmentAxis;
-		TWParallel.For(0, widget.ChildCount, _parallelMeasureBasicChildDelegate, 64);
+		TWParallel.ForWithoutRenderThread(0, widget.ChildCount, _parallelMeasureBasicChildDelegate, 64);
 		_parallelMeasureBasicChildWidget = null;
 		float num = 0f;
 		float num2 = 0f;
@@ -192,7 +192,7 @@ public class StackLayout : ILayout
 			Widget child = widget.GetChild(i);
 			if (child == null)
 			{
-				Debug.FailedAssert("Trying to measure a null child for parent" + widget.GetFullIDPath(), "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "MeasureLinear", 234);
+				Debug.FailedAssert("Trying to measure a null child for parent" + widget.GetFullIDPath(), "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "MeasureLinear", 235);
 			}
 			else
 			{
@@ -249,7 +249,7 @@ public class StackLayout : ILayout
 				Widget child2 = widget.GetChild(j);
 				if (child2 == null)
 				{
-					Debug.FailedAssert("Trying to measure a null child for parent" + widget.GetFullIDPath(), "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "MeasureLinear", 296);
+					Debug.FailedAssert("Trying to measure a null child for parent" + widget.GetFullIDPath(), "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "MeasureLinear", 297);
 				}
 				else
 				{
@@ -325,7 +325,7 @@ public class StackLayout : ILayout
 
 	private void ParallelUpdateLayouts(Widget widget)
 	{
-		TWParallel.For(0, widget.ChildCount, UpdateChildLayoutMT);
+		TWParallel.ForWithoutRenderThread(0, widget.ChildCount, UpdateChildLayoutMT);
 		void UpdateChildLayoutMT(int startInclusive, int endExclusive)
 		{
 			for (int i = startInclusive; i < endExclusive; i++)
@@ -340,115 +340,97 @@ public class StackLayout : ILayout
 		}
 	}
 
-	private void LayoutLinearHorizontalLocal(Widget widget, float left, float bottom, float right, float top)
+	private void LayoutLinearHorizontal(Widget widget, float left, float bottom, float right, float top)
 	{
 		Container container = widget as Container;
 		float num = 0f;
 		float top2 = 0f;
 		float num2 = right - left;
 		float bottom2 = bottom - top;
-		if (LayoutMethod != LayoutMethod.HorizontalRightToLeft && LayoutMethod == LayoutMethod.HorizontalCentered)
-		{
-			float num3 = 0f;
-			for (int i = 0; i < widget.ChildCount; i++)
-			{
-				Widget child = widget.GetChild(i);
-				if (child == null)
-				{
-					Debug.FailedAssert("Trying to measure a null child for parent" + widget.GetFullIDPath(), "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "LayoutLinearHorizontalLocal", 422);
-				}
-				else if (child.IsVisible)
-				{
-					num3 += child.MeasuredSize.X + child.ScaledMarginLeft + child.ScaledMarginRight;
-				}
-			}
-			num = (right - left) / 2f - num3 / 2f;
-		}
 		_layoutBoxes.Clear();
-		int num4 = 0;
-		for (int j = 0; j < widget.ChildCount; j++)
+		int num3 = 0;
+		float num4 = 0f;
+		for (int i = 0; i < widget.ChildCount; i++)
 		{
-			if (widget.Children[j].IsVisible)
+			Widget child = widget.GetChild(i);
+			if (child == null)
 			{
-				num4++;
+				Debug.FailedAssert("Trying to measure a null child for parent" + widget.GetFullIDPath(), "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "LayoutLinearHorizontal", 418);
+			}
+			else if (child.IsVisible)
+			{
+				num3++;
+				num4 += child.MeasuredSize.X + child.ScaledMarginLeft + child.ScaledMarginRight;
 			}
 		}
-		if (num4 > 0)
+		if (container != null && container.IsDragHovering)
 		{
-			for (int k = 0; k < widget.ChildCount; k++)
+			num4 += 20f;
+		}
+		if (LayoutMethod == LayoutMethod.HorizontalCentered || (LayoutMethod == LayoutMethod.HorizontalSpaced && num3 == 1))
+		{
+			num = (right - left) / 2f - num4 / 2f;
+		}
+		if (num3 > 0)
+		{
+			float num5 = right - left - num4;
+			float num6 = ((num3 > 1) ? (num5 / (float)(num3 - 1)) : 0f);
+			for (int j = 0; j < widget.ChildCount; j++)
 			{
-				Widget widget2 = widget.Children[k];
-				if (widget2 == null)
+				Widget child2 = widget.GetChild(j);
+				if (child2 == null)
 				{
-					Debug.FailedAssert("Trying to measure a null child for parent" + widget.GetFullIDPath(), "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "LayoutLinearHorizontalLocal", 453);
+					Debug.FailedAssert("Trying to measure a null child for parent" + widget.GetFullIDPath(), "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "LayoutLinearHorizontal", 451);
+					continue;
 				}
-				else if (widget2.IsVisible)
+				if (container != null && container.IsDragHovering && j == container.DragHoverInsertionIndex)
 				{
-					float num5 = widget2.MeasuredSize.X + widget2.ScaledMarginLeft + widget2.ScaledMarginRight;
-					if (container != null && container.IsDragHovering && k == container.DragHoverInsertionIndex)
-					{
-						num5 += 20f;
-					}
 					if (LayoutMethod == LayoutMethod.HorizontalRightToLeft)
 					{
-						num = num2 - num5;
-					}
-					else if (LayoutMethod == LayoutMethod.HorizontalSpaced)
-					{
-						if (num4 > 1)
-						{
-							if (k == 0)
-							{
-								num = 0f;
-								num2 = left + widget2.MeasuredSize.X;
-							}
-							else if (k == widget.ChildCount - 1)
-							{
-								num2 = right - left;
-								num = num2 - widget2.MeasuredSize.X;
-							}
-							else
-							{
-								float num6 = (widget.MeasuredSize.X - widget2.MeasuredSize.X * (float)num4) / (float)(num4 - 1);
-								num += widget2.MeasuredSize.X + num6;
-								num2 = num + widget2.MeasuredSize.X;
-							}
-						}
-						else
-						{
-							num = widget.MeasuredSize.X / 2f - widget2.MeasuredSize.X / 2f;
-							num2 = num + widget2.MeasuredSize.X / 2f;
-						}
+						num2 -= 20f;
 					}
 					else
 					{
-						num2 = num + num5;
+						num += 20f;
+					}
+				}
+				if (child2.IsVisible)
+				{
+					float num7 = child2.MeasuredSize.X + child2.ScaledMarginLeft + child2.ScaledMarginRight;
+					if (LayoutMethod == LayoutMethod.HorizontalRightToLeft)
+					{
+						num = num2 - num7;
+					}
+					else
+					{
+						num2 = num + num7;
 					}
 					if (widget.ChildCount < 64)
 					{
-						widget2.Layout(num, bottom2, num2, top2);
+						child2.Layout(num, bottom2, num2, top2);
 					}
 					else
 					{
-						LayoutBox value = default(LayoutBox);
-						value.Left = num;
-						value.Right = num2;
-						value.Bottom = bottom2;
-						value.Top = top2;
-						_layoutBoxes.Add(k, value);
+						LayoutBox layoutBox = default(LayoutBox);
+						layoutBox.Left = num;
+						layoutBox.Right = num2;
+						layoutBox.Bottom = bottom2;
+						layoutBox.Top = top2;
+						LayoutBox value = layoutBox;
+						_layoutBoxes.Add(j, value);
 					}
 					if (LayoutMethod == LayoutMethod.HorizontalRightToLeft)
 					{
 						num2 = num;
 					}
-					else if (LayoutMethod == LayoutMethod.HorizontalLeftToRight || LayoutMethod == LayoutMethod.HorizontalCentered)
+					else
 					{
-						num = num2;
+						num = ((LayoutMethod != LayoutMethod.HorizontalSpaced) ? num2 : (num2 + num6));
 					}
 				}
 				else
 				{
-					_layoutBoxes.Add(k, default(LayoutBox));
+					_layoutBoxes.Add(j, default(LayoutBox));
 				}
 			}
 		}
@@ -465,73 +447,91 @@ public class StackLayout : ILayout
 		float num = 0f;
 		float num2 = bottom - top;
 		float right2 = right - left;
-		if (LayoutMethod != LayoutMethod.VerticalTopToBottom && LayoutMethod == LayoutMethod.VerticalCentered)
-		{
-			float num3 = 0f;
-			for (int i = 0; i < widget.ChildCount; i++)
-			{
-				Widget child = widget.GetChild(i);
-				if (child != null && child.IsVisible)
-				{
-					num3 += child.MeasuredSize.Y + child.ScaledMarginTop + child.ScaledMarginBottom;
-				}
-			}
-			float num4 = (bottom - top) * 0.5f;
-			float num5 = num3 * 0.5f;
-			num2 = num4 + num5;
-			num = num4 - num5;
-		}
 		_layoutBoxes.Clear();
-		for (int j = 0; j < widget.ChildCount; j++)
+		int num3 = 0;
+		float num4 = 0f;
+		for (int i = 0; i < widget.ChildCount; i++)
 		{
-			Widget child2 = widget.GetChild(j);
-			if (child2 != null && child2.IsVisible)
+			Widget child = widget.GetChild(i);
+			if (child == null)
 			{
+				Debug.FailedAssert("Trying to measure a null child for parent" + widget.GetFullIDPath(), "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "LayoutLinearVertical", 543);
+			}
+			else if (child.IsVisible)
+			{
+				num3++;
+				num4 += child.MeasuredSize.Y + child.ScaledMarginTop + child.ScaledMarginBottom;
+			}
+		}
+		if (container != null && container.IsDragHovering)
+		{
+			num4 += 20f;
+		}
+		if (LayoutMethod == LayoutMethod.VerticalCentered || (LayoutMethod == LayoutMethod.VerticalSpaced && num3 == 1))
+		{
+			num = (bottom - top) / 2f - num4 / 2f;
+		}
+		if (num3 > 0)
+		{
+			float num5 = bottom - top - num4;
+			float num6 = ((num3 > 1) ? (num5 / (float)(num3 - 1)) : 0f);
+			for (int j = 0; j < widget.ChildCount; j++)
+			{
+				Widget child2 = widget.GetChild(j);
+				if (child2 == null)
+				{
+					Debug.FailedAssert("Trying to measure a null child for parent" + widget.GetFullIDPath(), "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.GauntletUI\\Layout\\StackLayout.cs", "LayoutLinearVertical", 576);
+					continue;
+				}
 				if (container != null && container.IsDragHovering && j == container.DragHoverInsertionIndex)
 				{
 					if (LayoutMethod == LayoutMethod.VerticalBottomToTop)
 					{
-						num += 20f;
+						num2 -= 20f;
 					}
 					else
 					{
-						num2 -= 20f;
+						num += 20f;
 					}
 				}
-				float num6 = child2.MeasuredSize.Y + child2.ScaledMarginTop + child2.ScaledMarginBottom;
-				if (LayoutMethod == LayoutMethod.VerticalBottomToTop || LayoutMethod == LayoutMethod.VerticalCentered)
+				if (child2.IsVisible)
 				{
-					num2 = num + num6;
-				}
-				else if (LayoutMethod == LayoutMethod.VerticalTopToBottom)
-				{
-					num = num2 - num6;
-				}
-				if (widget.ChildCount < 64)
-				{
-					child2.Layout(left2, num2, right2, num);
+					float num7 = child2.MeasuredSize.Y + child2.ScaledMarginTop + child2.ScaledMarginBottom;
+					if (LayoutMethod == LayoutMethod.VerticalBottomToTop)
+					{
+						num = num2 - num7;
+					}
+					else
+					{
+						num2 = num + num7;
+					}
+					if (widget.ChildCount < 64)
+					{
+						child2.Layout(left2, num2, right2, num);
+					}
+					else
+					{
+						LayoutBox layoutBox = default(LayoutBox);
+						layoutBox.Left = left2;
+						layoutBox.Right = right2;
+						layoutBox.Bottom = num2;
+						layoutBox.Top = num;
+						LayoutBox value = layoutBox;
+						_layoutBoxes.Add(j, value);
+					}
+					if (LayoutMethod == LayoutMethod.VerticalBottomToTop)
+					{
+						num2 = num;
+					}
+					else
+					{
+						num = ((LayoutMethod != LayoutMethod.VerticalSpaced) ? num2 : (num2 + num6));
+					}
 				}
 				else
 				{
-					LayoutBox value = default(LayoutBox);
-					value.Left = left2;
-					value.Right = right2;
-					value.Bottom = num2;
-					value.Top = num;
-					_layoutBoxes.Add(j, value);
+					_layoutBoxes.Add(j, default(LayoutBox));
 				}
-				if (LayoutMethod == LayoutMethod.VerticalBottomToTop || LayoutMethod == LayoutMethod.VerticalCentered)
-				{
-					num = num2;
-				}
-				else
-				{
-					num2 = num;
-				}
-			}
-			else
-			{
-				_layoutBoxes.Add(j, default(LayoutBox));
 			}
 		}
 		if (widget.ChildCount >= 64)
@@ -543,11 +543,11 @@ public class StackLayout : ILayout
 	public Vector2 GetDropGizmoPosition(Container widget, Vector2 draggedWidgetPosition)
 	{
 		int row = 0;
-		if (LayoutMethod == LayoutMethod.VerticalBottomToTop || LayoutMethod == LayoutMethod.VerticalTopToBottom || LayoutMethod == LayoutMethod.VerticalCentered)
+		if (LayoutMethod == LayoutMethod.VerticalTopToBottom || LayoutMethod == LayoutMethod.VerticalBottomToTop || LayoutMethod == LayoutMethod.VerticalCentered || LayoutMethod == LayoutMethod.VerticalSpaced)
 		{
 			row = 1;
 		}
-		bool num = LayoutMethod == LayoutMethod.HorizontalRightToLeft || LayoutMethod == LayoutMethod.VerticalTopToBottom || LayoutMethod == LayoutMethod.VerticalCentered;
+		bool num = LayoutMethod == LayoutMethod.HorizontalRightToLeft || LayoutMethod == LayoutMethod.VerticalBottomToTop;
 		int indexForDrop = GetIndexForDrop(widget, draggedWidgetPosition);
 		int num2 = indexForDrop - 1;
 		Vector2 vector = widget.GlobalPosition;

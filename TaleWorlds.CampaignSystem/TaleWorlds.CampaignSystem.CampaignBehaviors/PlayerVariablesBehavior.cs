@@ -35,7 +35,6 @@ public class PlayerVariablesBehavior : CampaignBehaviorBase
 
 	private void OnPlayerBattleEnd(MapEvent mapEvent)
 	{
-		float playerPartyContributionRate = (mapEvent.AttackerSide.IsMainPartyAmongParties() ? mapEvent.AttackerSide : mapEvent.DefenderSide).GetPlayerPartyContributionRate();
-		TraitLevelingHelper.OnBattleWon(mapEvent, playerPartyContributionRate);
+		TraitLevelingHelper.OnBattleWon(mapEvent, mapEvent.GetPlayerBattleContributionRate());
 	}
 }

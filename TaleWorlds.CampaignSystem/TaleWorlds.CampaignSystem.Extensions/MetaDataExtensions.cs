@@ -58,6 +58,15 @@ public static class MetaDataExtensions
 		return int.Parse(value);
 	}
 
+	public static int GetMainPartyShipCount(this MetaData metaData)
+	{
+		if (metaData == null || !metaData.TryGetValue("MainPartyShipCount", out var value))
+		{
+			return 0;
+		}
+		return int.Parse(value);
+	}
+
 	public static int GetMainPartyHealthyMemberCount(this MetaData metaData)
 	{
 		if (metaData == null || !metaData.TryGetValue("MainPartyHealthyMemberCount", out var value))

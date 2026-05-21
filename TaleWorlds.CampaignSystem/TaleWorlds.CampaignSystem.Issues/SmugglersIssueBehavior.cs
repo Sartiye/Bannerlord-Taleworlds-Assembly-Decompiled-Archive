@@ -240,10 +240,11 @@ public class SmugglersIssueBehavior : CampaignBehaviorBase
 			return false;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			flag = PreconditionFlags.None;
 			relationHero = issueGiver;
+			requiredGold = 0;
 			skill = null;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -904,7 +905,7 @@ public class SmugglersIssueBehavior : CampaignBehaviorBase
 
 		private void OnClanChangedKingdom(Clan clan, Kingdom oldKingdom, Kingdom newKingdom, ChangeKingdomAction.ChangeKingdomActionDetail detail, bool showNotification = true)
 		{
-			if ((clan == base.QuestGiver.Clan && newKingdom.IsAtWarWith(Clan.PlayerClan.MapFaction)) || (clan == Clan.PlayerClan && newKingdom.IsAtWarWith(base.QuestGiver.Clan.MapFaction)))
+			if (newKingdom != null && ((clan == base.QuestGiver.Clan && newKingdom.IsAtWarWith(Clan.PlayerClan.MapFaction)) || (clan == Clan.PlayerClan && newKingdom.IsAtWarWith(base.QuestGiver.Clan.MapFaction))))
 			{
 				CompleteQuestWithCancel(QuestCanceledWarDeclaredLog);
 			}

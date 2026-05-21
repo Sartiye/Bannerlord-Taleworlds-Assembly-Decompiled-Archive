@@ -70,7 +70,7 @@ public class OrderBar__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Missio
 		_widget_2.MarginLeft = 115f;
 		_widget_2_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 	}
 
 	public virtual void DestroyDataSource()

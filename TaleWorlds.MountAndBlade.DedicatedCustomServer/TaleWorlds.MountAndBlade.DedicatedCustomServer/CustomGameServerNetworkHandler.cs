@@ -57,18 +57,9 @@ public class CustomGameServerNetworkHandler : IUdpNetworkHandler
 		if (_customBattleServer != null && _customBattleServer.IsRegistered)
 		{
 			PlayerId playerId = networkPeer.PlayerConnectionInfo.GetParameter<PlayerData>("PlayerData")?.PlayerId ?? PlayerId.Empty;
-			if (networkPeer.QuitFromMission)
-			{
-				GameLog gameLog = new GameLog(GameLogType.PlayerDisconnect, playerId, MBCommon.GetTotalMissionTime());
-				gameLog.Data.Add("Reason", DisconnectType.QuitFromGame.ToString());
-				_gameLogger.Log(gameLog);
-			}
-			else
+			if (!networkPeer.QuitFromMission)
 			{
 				DisconnectType disconnectType = networkPeer.PlayerConnectionInfo.GetParameter<DisconnectInfo>("DisconnectInfo")?.Type ?? DisconnectType.Unknown;
-				GameLog gameLog2 = new GameLog(GameLogType.PlayerDisconnect, playerId, MBCommon.GetTotalMissionTime());
-				gameLog2.Data.Add("Reason", DisconnectType.QuitFromGame.ToString());
-				_gameLogger.Log(gameLog2);
 				_customBattleServer.HandlePlayerDisconnect(playerId, disconnectType);
 			}
 		}

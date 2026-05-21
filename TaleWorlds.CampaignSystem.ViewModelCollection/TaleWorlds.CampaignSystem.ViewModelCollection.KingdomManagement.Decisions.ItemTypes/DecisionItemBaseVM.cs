@@ -409,11 +409,8 @@ public class DecisionItemBaseVM : ViewModel
 			};
 			DecisionOptionsList.Add(item);
 		}
-		if (IsPlayerSupporter)
-		{
-			DecisionOptionVM item2 = new DecisionOptionVM(null, null, KingdomDecisionMaker, OnAbstain, OnSupportStrengthChange);
-			DecisionOptionsList.Add(item2);
-		}
+		DecisionOptionVM item2 = new DecisionOptionVM(null, null, KingdomDecisionMaker, OnChangeVote, OnSupportStrengthChange);
+		DecisionOptionsList.Add(item2);
 		TitleText = KingdomDecisionMaker.GetTitle().ToString();
 		DescriptionText = KingdomDecisionMaker.GetDescription().ToString();
 		RefreshInfluenceCost();
@@ -432,25 +429,14 @@ public class DecisionItemBaseVM : ViewModel
 			}
 			_currentSelectedOption = target;
 			_currentSelectedOption.IsSelected = true;
-			KingdomDecisionMaker.OnPlayerSupport((!_currentSelectedOption.IsOptionForAbstain) ? _currentSelectedOption.Option : null, _currentSelectedOption.CurrentSupportWeight);
-			RefreshWinPercentages();
-			RefreshInfluenceCost();
-			RefreshCanEndDecision();
-			RefreshRelationChangeText();
-		}
-	}
-
-	private void OnAbstain(DecisionOptionVM target)
-	{
-		if (_currentSelectedOption != target)
-		{
-			if (_currentSelectedOption != null)
+			if (_currentSelectedOption.IsOptionForAbstain && !IsPlayerSupporter)
 			{
-				_currentSelectedOption.IsSelected = false;
+				KingdomDecisionMaker.OnPlayerAbstainedAsRuler();
 			}
-			_currentSelectedOption = target;
-			_currentSelectedOption.IsSelected = true;
-			KingdomDecisionMaker.OnPlayerSupport((!_currentSelectedOption.IsOptionForAbstain) ? _currentSelectedOption.Option : null, _currentSelectedOption.CurrentSupportWeight);
+			else
+			{
+				KingdomDecisionMaker.OnPlayerSupport(_currentSelectedOption.Option, _currentSelectedOption.CurrentSupportWeight);
+			}
 			RefreshWinPercentages();
 			RefreshInfluenceCost();
 			RefreshCanEndDecision();
@@ -474,7 +460,7 @@ public class DecisionItemBaseVM : ViewModel
 			DecisionOptionVM decisionOptionVM = DecisionOptionsList.FirstOrDefault((DecisionOptionVM c) => c.Option == option);
 			if (decisionOptionVM == null)
 			{
-				Debug.FailedAssert("Couldn't find option to update win chance for!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\KingdomManagement\\Decisions\\ItemTypes\\DecisionItemBaseVM.cs", "RefreshWinPercentages", 213);
+				Debug.FailedAssert("Couldn't find option to update win chance for!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\KingdomManagement\\Decisions\\ItemTypes\\DecisionItemBaseVM.cs", "RefreshWinPercentages", 190);
 			}
 			else
 			{
@@ -514,8 +500,8 @@ public class DecisionItemBaseVM : ViewModel
 		if (_currentInfluenceCost > 0f)
 		{
 			GameTexts.SetVariable("AMOUNT", _currentInfluenceCost);
-			GameTexts.SetVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"7\">");
-			InfluenceCostText = GameTexts.FindText("str_decision_influence_cost").ToString();
+			GameTexts.SetVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"5\">");
+			InfluenceCostText = GameTexts.FindText(IsPlayerSupporter ? "str_decision_influence_cost" : "str_decision_ruler_influence_cost").ToString();
 		}
 		else
 		{

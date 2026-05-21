@@ -629,6 +629,9 @@ internal interface IMBAgent
 	[EngineMethod("handle_blow_aux", false, null, false)]
 	void HandleBlowAux(UIntPtr agentPointer, ref Blow blow);
 
+	[EngineMethod("get_quick_bone_entitial_frame", false, null, false)]
+	void GetBoneEntitialFrame(UIntPtr agentPointer, sbyte boneIndex, bool useBoneMapping, ref MatrixFrame outFrame);
+
 	[EngineMethod("make_voice", false, null, false)]
 	void MakeVoice(UIntPtr agentPointer, int voiceType, int predictionType);
 

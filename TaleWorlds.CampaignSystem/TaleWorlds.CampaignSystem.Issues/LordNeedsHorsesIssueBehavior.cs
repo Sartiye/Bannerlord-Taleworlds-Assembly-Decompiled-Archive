@@ -103,7 +103,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 				textObject.SetTextVariable("MOUNT_TYPE_IS_CAMEL", IsMountCamel(_mountObjectToBeDelivered) ? 1 : 0);
 				textObject.SetTextVariable("MOUNT_COUNT", IssueNumMountsToBeDelivered);
 				textObject.SetTextVariable("REWARD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				textObject.SetTextVariable("MOUNT_NAME", _mountObjectToBeDelivered.Name);
 				return textObject;
 			}
@@ -129,7 +129,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 				textObject.SetTextVariable("MOUNT_TYPE_IS_CAMEL", IsMountCamel(_mountObjectToBeDelivered) ? 1 : 0);
 				textObject.SetTextVariable("REQUIRED_GOLD_AMOUNT", AlternativeSolutionGoldRequirement);
 				textObject.SetTextVariable("REWARD_GOLD_AMOUNT", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -165,7 +165,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 				StringHelpers.SetCharacterProperties("COMPANION", base.AlternativeSolutionHero.CharacterObject, textObject);
 				textObject.SetTextVariable("MOUNT_TYPE_IS_CAMEL", IsMountCamel(_mountObjectToBeDelivered) ? 1 : 0);
 				textObject.SetTextVariable("REWARD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				textObject.SetTextVariable("TROOP_COUNT", AlternativeSolutionSentTroops.TotalManCount - 1);
 				textObject.SetTextVariable("MOUNT_COUNT", IssueNumMountsToBeDelivered);
 				textObject.SetTextVariable("MOUNT_NAME", _mountObjectToBeDelivered.Name);
@@ -181,7 +181,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 				TextObject textObject = new TextObject("{=tJc5mZua}Your companion has successfully delivered the {?MOUNT_TYPE_IS_CAMEL}camels{?}horses{\\?} {QUEST_GIVER.LINK} requested. You received {QUEST_REWARD}{GOLD_ICON} gold in return for your service.");
 				textObject.SetTextVariable("MOUNT_TYPE_IS_CAMEL", IsMountCamel(_mountObjectToBeDelivered) ? 1 : 0);
 				textObject.SetTextVariable("QUEST_REWARD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.IssueOwner.CharacterObject, textObject);
 				return textObject;
 			}
@@ -293,10 +293,11 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 			return IssueFrequency.VeryCommon;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			flag = PreconditionFlags.None;
 			skill = null;
+			requiredGold = 0;
 			relationHero = null;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -414,7 +415,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 				TextObject textObject = new TextObject("{=GQ96SX4M}{QUEST_GIVER.LINK} told you that {?QUEST_GIVER.GENDER}she{?}he{\\?} needs {?MOUNT_TYPE_IS_CAMEL}camels{?}horses{\\?} for {?QUEST_GIVER.GENDER}her{?}his{\\?} party. {?QUEST_GIVER.GENDER}She{?}He{\\?} asked you to bring {MOUNT_COUNT} {PLURAL(MOUNT_NAME)} to {?QUEST_GIVER.GENDER}her{?}him{\\?} or one of {?QUEST_GIVER.GENDER}her{?}his{\\?} garrison commanders. {?QUEST_GIVER.GENDER}She{?}He{\\?} will pay you {REWARD_GOLD}{GOLD_ICON} denars when the task is done.");
 				textObject.SetTextVariable("MOUNT_TYPE_IS_CAMEL", IsMountCamel(_mountObjectToBeDelivered) ? 1 : 0);
 				textObject.SetTextVariable("MOUNT_COUNT", _numMountsToBeDelivered);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				textObject.SetTextVariable("MOUNT_NAME", _mountObjectToBeDelivered.Name);
 				textObject.SetTextVariable("REWARD_GOLD", RewardGold);
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
@@ -431,7 +432,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 				textObject.SetTextVariable("MOUNT_COUNT", _numMountsToBeDelivered);
 				textObject.SetTextVariable("MOUNT_NAME", _mountObjectToBeDelivered.Name);
 				textObject.SetTextVariable("GOLD_REWARD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -902,7 +903,7 @@ public class LordNeedsHorsesIssueBehavior : CampaignBehaviorBase
 	{
 		if (issueParty == null)
 		{
-			Debug.FailedAssert("Cannot compute mounts over infantry ratio as related party is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Issues\\LordNeedsHorsesIssueBehavior.cs", "ComputeMountsOverInfantryCountRatio", 916);
+			Debug.FailedAssert("Cannot compute mounts over infantry ratio as related party is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Issues\\LordNeedsHorsesIssueBehavior.cs", "ComputeMountsOverInfantryCountRatio", 917);
 			numInfantry = 0;
 			return float.MaxValue;
 		}

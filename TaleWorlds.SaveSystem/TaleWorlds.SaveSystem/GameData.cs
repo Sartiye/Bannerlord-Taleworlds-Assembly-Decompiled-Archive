@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.SaveSystem;
@@ -104,8 +105,13 @@ public class GameData
 
 	public static void Write(System.IO.BinaryWriter writer, GameData gameData)
 	{
+		Debug.Print("---------------SAVE STATISTICS---------------");
+		Debug.Print($"[GameData.Write] WRITING LITTLE ENDIAN: {BitConverter.IsLittleEndian}");
+		Debug.Print($"[GameData.Write] Header Length: {gameData.Header.Length}");
 		writer.Write(gameData.Header.Length);
 		writer.Write(gameData.Header);
+		Debug.Print($"[GameData.Write] ObjectData Length: {gameData.ObjectData.Length}");
+		Debug.Print($"[GameData.Write] ObjectData Total Size: {gameData.ObjectData.Sum((byte[] x) => x.Length)}");
 		writer.Write(gameData.ObjectData.Length);
 		byte[][] objectData = gameData.ObjectData;
 		foreach (byte[] array in objectData)
@@ -113,6 +119,8 @@ public class GameData
 			writer.Write(array.Length);
 			writer.Write(array);
 		}
+		Debug.Print($"[GameData.Write] ContainerData Length: {gameData.ContainerData.Length}");
+		Debug.Print($"[GameData.Write] ContainerData Total Size: {gameData.ContainerData.Sum((byte[] x) => x.Length)}");
 		writer.Write(gameData.ContainerData.Length);
 		objectData = gameData.ContainerData;
 		foreach (byte[] array2 in objectData)
@@ -120,30 +128,39 @@ public class GameData
 			writer.Write(array2.Length);
 			writer.Write(array2);
 		}
+		Debug.Print($"[GameData.Write] Strings Length: {gameData.Strings.Length}");
 		writer.Write(gameData.Strings.Length);
 		writer.Write(gameData.Strings);
+		Debug.Print("---------------SAVE STATISTICS---------------");
 	}
 
 	public static GameData Read(System.IO.BinaryReader reader)
 	{
-		int count = reader.ReadInt32();
-		byte[] header = reader.ReadBytes(count);
+		Debug.Print("---------------LOAD STATISTICS---------------");
 		int num = reader.ReadInt32();
-		byte[][] array = new byte[num][];
-		for (int i = 0; i < num; i++)
+		Debug.Print($"[GameData.Read] Header Length: {num}");
+		byte[] header = reader.ReadBytes(num);
+		int num2 = reader.ReadInt32();
+		Debug.Print($"[GameData.Read] Object Length: {num2}");
+		byte[][] array = new byte[num2][];
+		for (int i = 0; i < num2; i++)
+		{
+			int count = reader.ReadInt32();
+			array[i] = reader.ReadBytes(count);
+		}
+		Debug.Print($"[GameData.Read] ObjectData Total Size: {array.Sum((byte[] x) => x.Length)}");
+		int num3 = reader.ReadInt32();
+		Debug.Print($"[GameData.Read] Container Length: {num3}");
+		byte[][] array2 = new byte[num3][];
+		for (int j = 0; j < num3; j++)
 		{
 			int count2 = reader.ReadInt32();
-			array[i] = reader.ReadBytes(count2);
+			array2[j] = reader.ReadBytes(count2);
 		}
-		int num2 = reader.ReadInt32();
-		byte[][] array2 = new byte[num2][];
-		for (int j = 0; j < num2; j++)
-		{
-			int count3 = reader.ReadInt32();
-			array2[j] = reader.ReadBytes(count3);
-		}
-		int count4 = reader.ReadInt32();
-		byte[] strings = reader.ReadBytes(count4);
+		Debug.Print($"[GameData.Read] ContainerData Total Size: {array2.Sum((byte[] x) => x.Length)}");
+		int num4 = reader.ReadInt32();
+		Debug.Print($"[GameData.Read] String Length: {num4}");
+		byte[] strings = reader.ReadBytes(num4);
 		return new GameData(header, strings, array, array2);
 	}
 
@@ -160,14 +177,14 @@ public class GameData
 	{
 		if (arr1.Length != arr2.Length)
 		{
-			Debug.FailedAssert(name + " failed length comparison.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\GameData.cs", "CompareByteArrays", 192);
+			Debug.FailedAssert(name + " failed length comparison.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\GameData.cs", "CompareByteArrays", 212);
 			return false;
 		}
 		for (int i = 0; i < arr1.Length; i++)
 		{
 			if (arr1[i] != arr2[i])
 			{
-				Debug.FailedAssert($"{name} failed byte comparison at index {i}.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\GameData.cs", "CompareByteArrays", 200);
+				Debug.FailedAssert($"{name} failed byte comparison at index {i}.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\GameData.cs", "CompareByteArrays", 220);
 				return false;
 			}
 		}
@@ -178,22 +195,14 @@ public class GameData
 	{
 		if (arr1.Length != arr2.Length)
 		{
-			Debug.FailedAssert(name + " failed length comparison.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\GameData.cs", "CompareByteArrays", 211);
+			Debug.FailedAssert(name + " failed length comparison.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\GameData.cs", "CompareByteArrays", 231);
 			return false;
 		}
 		for (int i = 0; i < arr1.Length; i++)
 		{
-			if (arr1[i].Length != arr2[i].Length)
+			if (!CompareByteArrays(arr1[i], arr2[i], name + $" Index: {i}"))
 			{
-				Debug.FailedAssert(name + " failed length comparison.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\GameData.cs", "CompareByteArrays", 218);
 				return false;
-			}
-			for (int j = 0; j < arr1[i].Length; j++)
-			{
-				if (arr1[i][j] != arr2[i][j])
-				{
-					Debug.FailedAssert($"{name} failed byte comparison at index {i}-{j}.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\GameData.cs", "CompareByteArrays", 226);
-				}
 			}
 		}
 		return true;

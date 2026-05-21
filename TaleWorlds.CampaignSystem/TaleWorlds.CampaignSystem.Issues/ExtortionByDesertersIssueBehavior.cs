@@ -237,10 +237,11 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			return IssueFrequency.Common;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			flag = PreconditionFlags.None;
 			skill = null;
+			requiredGold = 0;
 			relationHero = null;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -730,18 +731,37 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			CampaignEvents.GameMenuOpened.AddNonSerializedListener(this, GameMenuOpened);
 			CampaignEvents.WarDeclared.AddNonSerializedListener(this, OnWarDeclared);
 			CampaignEvents.OnClanChangedKingdomEvent.AddNonSerializedListener(this, OnClanChangedKingdom);
-			CampaignEvents.SettlementEntered.AddNonSerializedListener(this, SettlementEntered);
 			CampaignEvents.GameMenuOptionSelectedEvent.AddNonSerializedListener(this, GameMenuOptionSelected);
 			CampaignEvents.VillageBeingRaided.AddNonSerializedListener(this, OnVillageBeingRaided);
 			CampaignEvents.MapEventStarted.AddNonSerializedListener(this, OnMapEventStarted);
 			CampaignEvents.OnGameLoadFinishedEvent.AddNonSerializedListener(this, OnGameLoadFinished);
+			CampaignEvents.OnSettlementLeftEvent.AddNonSerializedListener(this, OnSettlementLeft);
+			CampaignEvents.BattleStarted.AddNonSerializedListener(this, OnBattleStarted);
+		}
+
+		private void OnBattleStarted(PartyBase attackerParty, PartyBase defenderParty, object subject, bool showNotification)
+		{
+			if (attackerParty == _deserterMobileParty?.Party && attackerParty.MapEvent != null && attackerParty.MapEvent.IsRaid && attackerParty.MapEvent.DefenderSide.LeaderParty == QuestSettlement.Party)
+			{
+				StartAmbushEncounter();
+			}
+		}
+
+		private void OnSettlementLeft(MobileParty party, Settlement settlement)
+		{
+			if (party.IsMainParty && settlement == QuestSettlement && settlement.Party.MapEvent != null && settlement.Party.MapEvent.IsRaid && settlement.Party.MapEvent.AttackerSide.LeaderParty == _deserterMobileParty.Party)
+			{
+				ExtortionByDesertersQuestResult result = _questResultFail2;
+				ApplyQuestResult(in result);
+				CompleteQuestWithFail(OnQuestFailed2LogText);
+			}
 		}
 
 		private void OnMapEventStarted(MapEvent mapEvent, PartyBase attackerParty, PartyBase defenderParty)
 		{
 			if (attackerParty == PartyBase.MainParty)
 			{
-				if (mapEvent.IsFieldBattle && defenderParty.IsMobile && defenderParty.MobileParty.HomeSettlement == QuestSettlement)
+				if (mapEvent.IsFieldBattle && defenderParty.IsMobile && defenderParty.MobileParty.HomeSettlement == QuestSettlement && defenderParty != _deserterMobileParty.Party)
 				{
 					CompleteQuestWithFail(OnQuestFailed3LogText);
 					ExtortionByDesertersQuestResult result = _questResultFail3;
@@ -788,9 +808,9 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 						_playerAwayFromSettlementNotificationSent = true;
 					}
 				}
-				else if (_deserterMobileParty.DefaultBehavior != AiBehavior.GoToSettlement)
+				else if (_deserterMobileParty.DefaultBehavior != AiBehavior.RaidSettlement)
 				{
-					SetPartyAiAction.GetActionForVisitingSettlement(_deserterMobileParty, QuestSettlement, MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
+					SetPartyAiAction.GetActionForRaidingSettlement(_deserterMobileParty, QuestSettlement, MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
 				}
 				break;
 			}
@@ -814,9 +834,9 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 				}
 				break;
 			case ExtortionByDesertersQuestState.DesertersDefeatedPlayer:
-				if (_deserterMobileParty.DefaultBehavior != AiBehavior.GoToSettlement)
+				if (_deserterMobileParty.DefaultBehavior != AiBehavior.RaidSettlement)
 				{
-					SetPartyAiAction.GetActionForVisitingSettlement(_deserterMobileParty, QuestSettlement, MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
+					SetPartyAiAction.GetActionForRaidingSettlement(_deserterMobileParty, QuestSettlement, MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
 				}
 				break;
 			}
@@ -850,9 +870,9 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			}
 			else
 			{
-				if (_deserterMobileParty.DefaultBehavior != AiBehavior.GoToSettlement)
+				if (_deserterMobileParty.DefaultBehavior != AiBehavior.RaidSettlement)
 				{
-					SetPartyAiAction.GetActionForVisitingSettlement(_deserterMobileParty, QuestSettlement, MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
+					SetPartyAiAction.GetActionForRaidingSettlement(_deserterMobileParty, QuestSettlement, MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
 				}
 				_currentState = ExtortionByDesertersQuestState.DesertersDefeatedPlayer;
 			}
@@ -888,36 +908,30 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 
 		private void OnVillageBeingRaided(Village village)
 		{
-			if (village.Settlement == QuestSettlement)
+			if (village.Settlement != QuestSettlement)
 			{
-				if (village.Settlement.Party.MapEvent.AttackerSide.LeaderParty == PartyBase.MainParty)
+				return;
+			}
+			if (village.Settlement.Party.MapEvent.AttackerSide.LeaderParty == _deserterMobileParty.Party)
+			{
+				if (PlayerEncounter.Current == null || PlayerEncounter.EncounterSettlement != QuestSettlement)
 				{
-					ExtortionByDesertersQuestResult result = _questResultFail3;
+					ExtortionByDesertersQuestResult result = _questResultFail2;
 					ApplyQuestResult(in result);
-					CompleteQuestWithFail(OnQuestFailed3LogText);
-				}
-				else
-				{
-					ExtortionByDesertersQuestResult result = _questResultCancel2;
-					ApplyQuestResult(in result);
-					CompleteQuestWithCancel(OnQuestCancel2LogText);
+					CompleteQuestWithFail(OnQuestFailed2LogText);
 				}
 			}
-		}
-
-		private void SettlementEntered(MobileParty party, Settlement settlement, Hero hero)
-		{
-			if (party == _deserterMobileParty && settlement == QuestSettlement)
+			else if (village.Settlement.Party.MapEvent.AttackerSide.LeaderParty == PartyBase.MainParty)
 			{
-				bool flag = PlayerEncounter.Current != null && PlayerEncounter.EncounterSettlement == QuestSettlement;
-				if (_currentState != ExtortionByDesertersQuestState.DesertersDefeatedPlayer && flag)
-				{
-					StartAmbushEncounter();
-					return;
-				}
-				ExtortionByDesertersQuestResult result = _questResultFail2;
+				ExtortionByDesertersQuestResult result = _questResultFail3;
 				ApplyQuestResult(in result);
-				CompleteQuestWithFail(OnQuestFailed2LogText);
+				CompleteQuestWithFail(OnQuestFailed3LogText);
+			}
+			else
+			{
+				ExtortionByDesertersQuestResult result = _questResultCancel2;
+				ApplyQuestResult(in result);
+				CompleteQuestWithCancel(OnQuestCancel2LogText);
 			}
 		}
 
@@ -1005,7 +1019,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			_deserterMobileParty.Aggressiveness = 0f;
 			_deserterMobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: true);
 			_deserterMobileParty.Party.SetVisualAsDirty();
-			SetPartyAiAction.GetActionForVisitingSettlement(_deserterMobileParty, QuestSettlement, MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
+			SetPartyAiAction.GetActionForRaidingSettlement(_deserterMobileParty, QuestSettlement, MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
 		}
 
 		private void DestroyDeserterParty()
@@ -1024,12 +1038,16 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 				_deserterMobileParty.SetPartyUsedByQuest(isActivelyUsed: false);
 				_deserterMobileParty.IgnoreByOtherPartiesTill(CampaignTime.HoursFromNow(0f));
 				_deserterMobileParty.Aggressiveness = 1f;
+				if (_deserterMobileParty.MapEvent != null)
+				{
+					_deserterMobileParty.MapEvent.FinalizeEvent();
+				}
 				if (_deserterMobileParty.CurrentSettlement != null)
 				{
 					LeaveSettlementAction.ApplyForParty(_deserterMobileParty);
 				}
 				_deserterMobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: false);
-				_deserterMobileParty.Party.SetCustomName(null);
+				_deserterMobileParty.Party.SetCustomName(new TextObject(_deserterMobileParty.ActualClan.StringId + "_1"));
 				_deserterMobileParty.Party.SetVisualAsDirty();
 			}
 		}
@@ -1088,9 +1106,22 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 
 		private void StartAmbushEncounter()
 		{
+			PlayerEncounter.Finish();
+			PlayerEncounter.Start();
+			EnterSettlementAction.ApplyForParty(MobileParty.MainParty, QuestSettlement);
+			PlayerEncounter.Current.Init(_deserterMobileParty.Party, QuestSettlement.Party, QuestSettlement);
 			CreateDefenderParty();
+			_defenderMobileParty.MapEventSide = MobileParty.MainParty.MapEventSide;
 			_deserterMobileParty.IgnoreByOtherPartiesTill(CampaignTime.Now - CampaignTime.Hours(1f));
-			EncounterManager.StartPartyEncounter(_deserterMobileParty.Party, MobileParty.MainParty.Party);
+			if (QuestSettlement.MilitiaPartyComponent != null)
+			{
+				QuestSettlement.MilitiaPartyComponent.MobileParty.MapEventSide = null;
+			}
+			CharacterObject conversationCharacterPartyLeader = ConversationHelper.GetConversationCharacterPartyLeader(_deserterMobileParty.Party);
+			ConversationCharacterData playerCharacterData = new ConversationCharacterData(CharacterObject.PlayerCharacter, PartyBase.MainParty, noHorse: true);
+			ConversationCharacterData conversationPartnerData = new ConversationCharacterData(conversationCharacterPartyLeader, _deserterMobileParty.Party, noHorse: true);
+			GameMenu.ActivateGameMenu("encounter_meeting");
+			CampaignMapConversation.OpenConversation(playerCharacterData, conversationPartnerData);
 		}
 
 		private CampaignVec2 FindFreePositionBetweenPointAndParty(MobileParty party, in CampaignVec2 point, out float distance, float maxIterations = 10f, float acceptThres = 1E-05f, float maxPathDistance = 1000f, float euclideanThressholdFactor = 1.5f)
@@ -1102,7 +1133,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			distance = 0f;
 			if (!NavigationHelper.IsPositionValidForNavigationType(position, MobileParty.NavigationType.Default))
 			{
-				Debug.FailedAssert("Origin point not valid!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Issues\\ExtortionByDesertersIssueBehavior.cs", "FindFreePositionBetweenPointAndParty", 1355);
+				Debug.FailedAssert("Origin point not valid!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Issues\\ExtortionByDesertersIssueBehavior.cs", "FindFreePositionBetweenPointAndParty", 1397);
 			}
 			else
 			{

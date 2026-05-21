@@ -274,6 +274,7 @@ public class GarrisonTroopsCampaignBehavior : CampaignBehaviorBase
 		{
 			TryToTakeTroopsFromGarrisonForArmy(in armyGarrionTransferDataArgs);
 		}
+		_newlyConqueredFortification = null;
 	}
 
 	private void CollectArmyGarrisonTransferDataArgs(MobileParty armyLeaderParty, Settlement settlement, out ArmyGarrisonTransferDataArgs armyGarrionTransferDataArgs)
@@ -307,7 +308,6 @@ public class GarrisonTroopsCampaignBehavior : CampaignBehaviorBase
 		{
 			armyGarrionTransferDataArgs.IsLeavingTroopsToGarrison = false;
 		}
-		_newlyConqueredFortification = null;
 	}
 
 	private void TryToLeaveTroopsToGarrisonForArmy(in ArmyGarrisonTransferDataArgs armyGarrisonTransferDataArgs)
@@ -350,6 +350,7 @@ public class GarrisonTroopsCampaignBehavior : CampaignBehaviorBase
 		{
 			TryToTakeTroopsFromGarrisonForParty(in partyGarrisonTransferDataArgs);
 		}
+		_newlyConqueredFortification = null;
 	}
 
 	private void CollectPartyGarrisonTransferData(MobileParty mobileParty, Settlement settlement, out PartyGarrisonTransferDataArgs partyGarrisonTransferDataArgs)
@@ -377,11 +378,10 @@ public class GarrisonTroopsCampaignBehavior : CampaignBehaviorBase
 		partyGarrisonTransferDataArgs.TotalMenCount = num5;
 		partyGarrisonTransferDataArgs.SettlementFinalMenCount = val;
 		partyGarrisonTransferDataArgs.IsLeavingTroopsToGarrison = val > num4;
-		if (settlement.Town.GarrisonParty != null && settlement.Town.GarrisonParty.IsWageLimitExceeded())
+		if ((settlement.Town.GarrisonParty != null && settlement.Town.GarrisonParty.IsWageLimitExceeded()) || (mobileParty.LeaderHero.Clan == Clan.PlayerClan && _newlyConqueredFortification == null))
 		{
 			partyGarrisonTransferDataArgs.IsLeavingTroopsToGarrison = false;
 		}
-		_newlyConqueredFortification = null;
 	}
 
 	private void TryToLeaveTroopsToGarrisonForParty(in PartyGarrisonTransferDataArgs partyGarrisonTransferDataArgs)
@@ -406,13 +406,13 @@ public class GarrisonTroopsCampaignBehavior : CampaignBehaviorBase
 	{
 		List<(MobileParty, int)> list = new List<(MobileParty, int)>();
 		List<MobileParty> list2 = new List<MobileParty>();
-		if (armyLeaderParty != MobileParty.MainParty)
+		if (armyLeaderParty != MobileParty.MainParty && (armyLeaderParty.LeaderHero.Clan != Clan.PlayerClan || _newlyConqueredFortification != null))
 		{
 			list2.Add(armyLeaderParty);
 		}
 		foreach (MobileParty attachedParty in armyLeaderParty.AttachedParties)
 		{
-			if (attachedParty != MobileParty.MainParty && attachedParty.LeaderHero != null)
+			if (attachedParty != MobileParty.MainParty && attachedParty.LeaderHero != null && (attachedParty.LeaderHero.Clan != Clan.PlayerClan || _newlyConqueredFortification != null))
 			{
 				list2.Add(attachedParty);
 			}

@@ -41,8 +41,8 @@ public class DefaultDifficultyModel : DifficultyModel
 	{
 		return CampaignOptions.StealthAndDisguiseDifficulty switch
 		{
-			CampaignOptions.Difficulty.VeryEasy => 0.35f, 
-			CampaignOptions.Difficulty.Easy => 0.55f, 
+			CampaignOptions.Difficulty.VeryEasy => 0.5f, 
+			CampaignOptions.Difficulty.Easy => 0.75f, 
 			CampaignOptions.Difficulty.Realistic => 1f, 
 			_ => 0f, 
 		};

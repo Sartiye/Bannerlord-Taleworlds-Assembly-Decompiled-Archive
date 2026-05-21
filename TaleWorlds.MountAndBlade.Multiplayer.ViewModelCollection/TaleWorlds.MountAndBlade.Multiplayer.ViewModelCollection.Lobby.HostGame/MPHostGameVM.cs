@@ -10,28 +10,9 @@ public class MPHostGameVM : ViewModel
 
 	private MPCustomGameVM.CustomGameMode _customGameMode;
 
-	private bool _isEnabled;
-
 	private MPHostGameOptionsVM _hostGameOptions;
 
 	private string _createText;
-
-	[DataSourceProperty]
-	public bool IsEnabled
-	{
-		get
-		{
-			return _isEnabled;
-		}
-		set
-		{
-			if (value != _isEnabled)
-			{
-				_isEnabled = value;
-				OnPropertyChangedWithValue(value, "IsEnabled");
-			}
-		}
-	}
 
 	[DataSourceProperty]
 	public MPHostGameOptionsVM HostGameOptions

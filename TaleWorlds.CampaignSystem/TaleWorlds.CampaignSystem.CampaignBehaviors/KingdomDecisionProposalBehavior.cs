@@ -21,6 +21,8 @@ public class KingdomDecisionProposalBehavior : CampaignBehaviorBase
 
 	private ITradeAgreementsCampaignBehavior _tradeAgreementsBehavior;
 
+	private IAllianceCampaignBehavior _allianceCampaignBehavior;
+
 	public ITradeAgreementsCampaignBehavior TradeAgreementsCampaignBehavior
 	{
 		get
@@ -30,6 +32,18 @@ public class KingdomDecisionProposalBehavior : CampaignBehaviorBase
 				_tradeAgreementsBehavior = Campaign.Current.GetCampaignBehavior<ITradeAgreementsCampaignBehavior>();
 			}
 			return _tradeAgreementsBehavior;
+		}
+	}
+
+	private IAllianceCampaignBehavior AllianceCampaignBehavior
+	{
+		get
+		{
+			if (_allianceCampaignBehavior == null)
+			{
+				_allianceCampaignBehavior = Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>();
+			}
+			return _allianceCampaignBehavior;
 		}
 	}
 
@@ -239,7 +253,7 @@ public class KingdomDecisionProposalBehavior : CampaignBehaviorBase
 		return result;
 	}
 
-	private static KingdomDecision GetRandomPeaceDecision(Clan clan)
+	private KingdomDecision GetRandomPeaceDecision(Clan clan)
 	{
 		KingdomDecision result = null;
 		Kingdom kingdom = clan.Kingdom;
@@ -247,20 +261,19 @@ public class KingdomDecisionProposalBehavior : CampaignBehaviorBase
 		{
 			return null;
 		}
-		IAllianceCampaignBehavior allianceCampaignBehavior = Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>();
 		Kingdom randomElementWithPredicate = Kingdom.All.GetRandomElementWithPredicate(delegate(Kingdom x)
 		{
 			if (x.IsAtWarWith(kingdom) && !x.IsAtConstantWarWith(kingdom))
 			{
-				IAllianceCampaignBehavior allianceCampaignBehavior2 = allianceCampaignBehavior;
-				if (allianceCampaignBehavior2 == null || !allianceCampaignBehavior2.IsAtWarByCallToWarAgreement(kingdom, x))
+				IAllianceCampaignBehavior allianceCampaignBehavior = AllianceCampaignBehavior;
+				if (allianceCampaignBehavior == null || !allianceCampaignBehavior.IsAtWarByCallToWarAgreement(kingdom, x, out var callingKingdom))
 				{
-					IAllianceCampaignBehavior allianceCampaignBehavior3 = allianceCampaignBehavior;
-					if (allianceCampaignBehavior3 == null)
+					IAllianceCampaignBehavior allianceCampaignBehavior2 = AllianceCampaignBehavior;
+					if (allianceCampaignBehavior2 == null)
 					{
 						return true;
 					}
-					return !allianceCampaignBehavior3.IsAtWarByCallToWarAgreement(x, kingdom);
+					return !allianceCampaignBehavior2.IsAtWarByCallToWarAgreement(x, kingdom, out callingKingdom);
 				}
 			}
 			return false;
@@ -298,11 +311,6 @@ public class KingdomDecisionProposalBehavior : CampaignBehaviorBase
 			}
 		}
 		return false;
-	}
-
-	private float GetKingdomSupportForWar(Clan clan, Kingdom kingdom, IFaction otherFaction)
-	{
-		return new KingdomElection(new DeclareWarDecision(clan, otherFaction)).GetLikelihoodForSponsor(clan);
 	}
 
 	private static bool ConsiderPeace(Clan clan, Clan otherClan, IFaction otherFaction, out MakePeaceKingdomDecision decision)
@@ -463,26 +471,17 @@ public class KingdomDecisionProposalBehavior : CampaignBehaviorBase
 
 	private bool ConsiderTradeAgreement(Clan clan, Kingdom kingdom, Kingdom otherKingdom)
 	{
-		if (Campaign.Current.Models.TradeAgreementModel.CanMakeTradeAgreement(kingdom, otherKingdom, Clan.PlayerClan.Kingdom != otherKingdom, out var _))
+		if (Campaign.Current.Models.TradeAgreementModel.CanMakeTradeAgreement(kingdom, otherKingdom, checkOtherSideTradeSupport: true, out var reason))
 		{
 			TradeAgreementDecision tradeAgreementDecision = new TradeAgreementDecision(clan, otherKingdom);
-			if (tradeAgreementDecision.CalculateSupport(clan) > 50f)
+			if (kingdom != Clan.PlayerClan.Kingdom)
 			{
-				KingdomElection kingdomElection = new KingdomElection(tradeAgreementDecision);
-				float num = 0f;
-				foreach (DecisionOutcome possibleOutcome in kingdomElection.PossibleOutcomes)
-				{
-					if (possibleOutcome is TradeAgreementDecision.TradeAgreementDecisionOutcome { ShouldTradeAgreementStart: not false } tradeAgreementDecisionOutcome)
-					{
-						num = tradeAgreementDecisionOutcome.Likelihood;
-						break;
-					}
-				}
-				if (MBRandom.RandomFloat < num)
-				{
-					return true;
-				}
+				return tradeAgreementDecision.CalculateSupport(clan, out reason) > 50f;
 			}
+			KingdomElection kingdomElection = new KingdomElection(tradeAgreementDecision);
+			kingdomElection.SetupResultWithoutPlayerSupport();
+			DecisionOutcome supportedOutcome = kingdomElection.PossibleOutcomes.FirstOrDefault((DecisionOutcome x) => x is TradeAgreementDecision.TradeAgreementDecisionOutcome tradeAgreementDecisionOutcome && tradeAgreementDecisionOutcome.ShouldTradeAgreementStart);
+			return kingdomElection.GetWinChanceWithPlayerSupport(supportedOutcome, Supporter.SupportWeights.FullyPush) > 0.5f;
 		}
 		return false;
 	}

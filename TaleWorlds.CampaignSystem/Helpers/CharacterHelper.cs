@@ -68,27 +68,33 @@ public static class CharacterHelper
 		return textObject;
 	}
 
-	public static (uint color1, uint color2) GetDeterministicColorsForCharacter(CharacterObject character)
+	public static (uint color1, uint color2) GetDeterministicColorsForCharacter(CharacterObject character, PartyBase partyBelongsTo)
 	{
-		CultureObject cultureObject = ((character.HeroObject?.MapFaction != null) ? character.HeroObject.MapFaction.Culture : character.Culture);
 		if (character.IsHero)
 		{
 			if (character.Occupation == Occupation.Lord)
 			{
 				return (color1: (uint)(((int?)character.HeroObject.MapFaction?.Color) ?? (-3357781)), color2: (uint)(((int?)character.HeroObject.MapFaction?.Color2) ?? (-3357781)));
 			}
-			return cultureObject.StringId switch
+			if (character.HeroObject.MapFaction == null)
 			{
-				"empire" => (color1: (uint)(((int?)character.HeroObject.MapFaction?.Color) ?? (-3357781)), color2: GetDeterministicColorFromListForHero(character.HeroObject, CampaignData.EmpireHeroClothColors)), 
-				"sturgia" => (color1: (uint)(((int?)character.HeroObject.MapFaction?.Color) ?? (-3357781)), color2: GetDeterministicColorFromListForHero(character.HeroObject, CampaignData.SturgiaHeroClothColors)), 
-				"aserai" => (color1: (uint)(((int?)character.HeroObject.MapFaction?.Color) ?? (-3357781)), color2: GetDeterministicColorFromListForHero(character.HeroObject, CampaignData.AseraiHeroClothColors)), 
-				"vlandia" => (color1: (uint)(((int?)character.HeroObject.MapFaction?.Color) ?? (-3357781)), color2: GetDeterministicColorFromListForHero(character.HeroObject, CampaignData.VlandiaHeroClothColors)), 
-				"battania" => (color1: (uint)(((int?)character.HeroObject.MapFaction?.Color) ?? (-3357781)), color2: GetDeterministicColorFromListForHero(character.HeroObject, CampaignData.BattaniaHeroClothColors)), 
-				"khuzait" => (color1: (uint)(((int?)character.HeroObject.MapFaction?.Color) ?? (-3357781)), color2: GetDeterministicColorFromListForHero(character.HeroObject, CampaignData.KhuzaitHeroClothColors)), 
-				_ => (color1: (uint)(((int?)character.HeroObject.MapFaction?.Color) ?? (-3357781)), color2: GetDeterministicColorFromListForHero(character.HeroObject, CampaignData.EmpireHeroClothColors)), 
+				return (color1: 4291609515u, color2: 4291609515u);
+			}
+			uint[] colors = character.HeroObject.MapFaction.Culture.StringId switch
+			{
+				"empire" => CampaignData.EmpireHeroClothColors, 
+				"sturgia" => CampaignData.SturgiaHeroClothColors, 
+				"aserai" => CampaignData.AseraiHeroClothColors, 
+				"vlandia" => CampaignData.VlandiaHeroClothColors, 
+				"battania" => CampaignData.BattaniaHeroClothColors, 
+				"khuzait" => CampaignData.KhuzaitHeroClothColors, 
+				_ => CampaignData.EmpireHeroClothColors, 
 			};
+			return (color1: character.HeroObject.MapFaction.Color, color2: GetDeterministicColorFromListForHero(character.HeroObject, colors));
 		}
-		return (color1: cultureObject.Color, color2: cultureObject.Color2);
+		int item = ((int?)partyBelongsTo?.MapFaction?.Color) ?? (-3357781);
+		uint item2 = (uint)(((int?)partyBelongsTo?.MapFaction?.Color2) ?? (-3357781));
+		return (color1: (uint)item, color2: item2);
 	}
 
 	private static uint GetDeterministicColorFromListForHero(Hero hero, uint[] colors)
@@ -551,23 +557,33 @@ public static class CharacterHelper
 		return null;
 	}
 
-	public static bool CanUseItemBasedOnSkill(BasicCharacterObject currentCharacter, EquipmentElement itemRosterElement)
+	public static bool CanUseItem(BasicCharacterObject currentCharacter, EquipmentElement itemRosterElement)
 	{
+		TextObject reason;
+		return CanUseItem(currentCharacter, itemRosterElement, out reason);
+	}
+
+	public static bool CanUseItem(BasicCharacterObject currentCharacter, EquipmentElement itemRosterElement, out TextObject reason)
+	{
+		bool result = true;
+		reason = null;
 		ItemObject item = itemRosterElement.Item;
 		SkillObject relevantSkill = item.RelevantSkill;
 		if (relevantSkill != null && currentCharacter.GetSkillValue(relevantSkill) < item.Difficulty)
 		{
-			return false;
+			reason = new TextObject("{=rgqA29b8}You don't have enough {SKILL_NAME} skill to equip this item");
+			reason.SetTextVariable("SKILL_NAME", itemRosterElement.Item.RelevantSkill.Name);
+			result = false;
 		}
-		if (!currentCharacter.IsFemale || !item.ItemFlags.HasAnyFlag(ItemFlags.NotUsableByFemale))
+		bool num = (!currentCharacter.IsFemale || !item.ItemFlags.HasAnyFlag(ItemFlags.NotUsableByFemale)) && (currentCharacter.IsFemale || !item.ItemFlags.HasAnyFlag(ItemFlags.NotUsableByMale));
+		bool flag = item.StringId.Equals("dragon_banner_center") || item.StringId.Equals("dragon_banner_dragonhead") || item.StringId.Equals("dragon_banner_handle");
+		if (!num || flag || (itemRosterElement.Item.HasHorseComponent && !itemRosterElement.Item.HorseComponent.IsRideable))
 		{
-			if (!currentCharacter.IsFemale)
-			{
-				return !item.ItemFlags.HasAnyFlag(ItemFlags.NotUsableByMale);
-			}
-			return true;
+			reason = new TextObject("{=ITKb4cKv}{ITEM_NAME} is not equippable.");
+			reason.SetTextVariable("ITEM_NAME", itemRosterElement.GetModifiedItemName());
+			result = false;
 		}
-		return false;
+		return result;
 	}
 
 	public static int GetPartyMemberFaceSeed(PartyBase party, BasicCharacterObject character, int rank)

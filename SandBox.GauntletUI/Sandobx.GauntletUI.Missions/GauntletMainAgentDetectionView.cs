@@ -131,7 +131,7 @@ public class GauntletMainAgentDetectionView : MissionMainAgentDetectionView
 				Vec3 origin = base.MissionScreen.CombatCamera.Frame.origin;
 				Vec3 eyeGlobalPosition = hostileAgent3.OffenseInfo.Agent.GetEyeGlobalPosition();
 				float collisionDistance;
-				bool flag2 = !base.Mission.Scene.RayCastForClosestEntityOrTerrain(origin, eyeGlobalPosition, out collisionDistance, 0.035f);
+				bool flag2 = isInStealthMode || !base.Mission.Scene.RayCastForClosestEntityOrTerrain(origin, eyeGlobalPosition, out collisionDistance, 0.035f);
 				hostileAgent3.OffenseInfo.SetCanPlayerCameraSeeTheAgent(flag2);
 				hostileAgent3.IsInVision = flag2;
 				hostileAgent3.IsInVisibilityRange = SandBoxUIHelper.IsAgentInVisibilityRangeApproximate(Agent.Main, hostileAgent3.OffenseInfo.Agent);

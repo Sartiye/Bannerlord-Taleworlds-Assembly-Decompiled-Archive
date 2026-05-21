@@ -98,8 +98,7 @@ public class GraphicsForm : IMessageCommunicator
 		DXGI.IDXGIFactory iDXGIFactory = (DXGI.IDXGIFactory)Marshal.GetObjectForIUnknown(factory);
 		MBList<Tuple<uint, DXGI.DXGI_ADAPTER_DESC>> mBList = new MBList<Tuple<uint, DXGI.DXGI_ADAPTER_DESC>>();
 		DXGI.IDXGIAdapter adapter;
-		uint num;
-		for (num = 0u; iDXGIFactory.EnumAdapters(num, out adapter) == 0; num++)
+		for (uint num = 0u; iDXGIFactory.EnumAdapters(num, out adapter) == 0; num++)
 		{
 			adapter.GetDesc(out var desc);
 			if ((long)(ulong)desc.DedicatedVideoMemory > 0L)
@@ -113,11 +112,9 @@ public class GraphicsForm : IMessageCommunicator
 			return rECT2;
 		}
 		mBList.Sort((Tuple<uint, DXGI.DXGI_ADAPTER_DESC> x, Tuple<uint, DXGI.DXGI_ADAPTER_DESC> y) => ((ulong)x.Item2.DedicatedVideoMemory <= (ulong)y.Item2.DedicatedVideoMemory) ? 1 : (-1));
-		num = 0u;
 		foreach (Tuple<uint, DXGI.DXGI_ADAPTER_DESC> item in mBList)
 		{
-			_ = item;
-			iDXGIFactory.EnumAdapters(num, out var adapter2);
+			iDXGIFactory.EnumAdapters(item.Item1, out var adapter2);
 			DXGI.IDXGIOutput ppOutput;
 			for (uint num2 = 0u; adapter2.EnumOutputs(num2, out ppOutput) == 0; num2++)
 			{
@@ -129,11 +126,9 @@ public class GraphicsForm : IMessageCommunicator
 				}
 			}
 		}
-		num = 0u;
 		foreach (Tuple<uint, DXGI.DXGI_ADAPTER_DESC> item2 in mBList)
 		{
-			_ = item2;
-			iDXGIFactory.EnumAdapters(num, out var adapter3);
+			iDXGIFactory.EnumAdapters(item2.Item1, out var adapter3);
 			DXGI.IDXGIOutput ppOutput2;
 			for (uint num3 = 0u; adapter3.EnumOutputs(num3, out ppOutput2) == 0; num3++)
 			{
@@ -165,7 +160,7 @@ public class GraphicsForm : IMessageCommunicator
 	{
 		GraphicsContext.Control = _windowsForm;
 		GraphicsContext.CreateContext(resourceDepot);
-		GraphicsContext.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0f, _windowsForm.Width, _windowsForm.Height, 0f, 0f, 1f);
+		GraphicsContext.ProjectionMatrix = MatrixExtensions.CreateOrthographicOffCenter(0f, _windowsForm.Width, _windowsForm.Height, 0f, 0f, 2f);
 	}
 
 	public void BeginFrame()
@@ -174,8 +169,8 @@ public class GraphicsForm : IMessageCommunicator
 		{
 			GraphicsContext.BeginFrame(_windowsForm.Width, _windowsForm.Height);
 			GraphicsContext.Resize(_windowsForm.Width, _windowsForm.Height);
+			GraphicsContext.ProjectionMatrix = MatrixExtensions.CreateOrthographicOffCenter(0f, _windowsForm.Width, _windowsForm.Height, 0f, 0f, 2f);
 		}
-		GraphicsContext.ProjectionMatrix = Matrix4x4.CreateOrthographicOffCenter(0f, _windowsForm.Width, _windowsForm.Height, 0f, 0f, 1f);
 	}
 
 	public void Update()
@@ -336,6 +331,14 @@ public class GraphicsForm : IMessageCommunicator
 		case WindowMessage.Close:
 			Destroy();
 			Environment.Exit(0);
+			break;
+		case WindowMessage.DisplayChange:
+		case WindowMessage.DeviceChange:
+		case WindowMessage.DpiChanged:
+			if (GraphicsContext != null)
+			{
+				GraphicsContext.RequestContextReactivation();
+			}
 			break;
 		case WindowMessage.KeyDown:
 			lock (_inputDataLocker)

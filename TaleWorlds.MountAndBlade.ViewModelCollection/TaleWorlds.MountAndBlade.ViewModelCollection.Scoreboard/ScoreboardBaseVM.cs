@@ -4,6 +4,7 @@ using TaleWorlds.Core.ViewModelCollection;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.MountAndBlade.Missions.BattleScore;
 using TaleWorlds.MountAndBlade.ViewModelCollection.Input;
 
 namespace TaleWorlds.MountAndBlade.ViewModelCollection.Scoreboard;
@@ -60,6 +61,8 @@ public abstract class ScoreboardBaseVM : ViewModel
 	private MouseState _mouseState;
 
 	protected const float MissionEndScoreboardDelayTime = 1.5f;
+
+	protected BattleScoreContext ScoreboardContext;
 
 	private string _quitText;
 
@@ -701,6 +704,11 @@ public abstract class ScoreboardBaseVM : ViewModel
 		}
 	}
 
+	public ScoreboardBaseVM(BattleScoreContext scoreboardContext)
+	{
+		ScoreboardContext = scoreboardContext;
+	}
+
 	public override void RefreshValues()
 	{
 		base.RefreshValues();
@@ -752,7 +760,7 @@ public abstract class ScoreboardBaseVM : ViewModel
 		{
 			_battleEndLogic = _mission.GetMissionBehavior<BattleEndLogic>();
 		}
-		NeutralTroops = new SPScoreboardSideVM(null, null, isSimulation: false);
+		NeutralTroops = new SPScoreboardSideVM(null, null, isSimulation: false, isPlayerSide: false);
 		PowerComparer = new PowerLevelComparer(1.0, 1.0);
 		RefreshValues();
 	}
@@ -777,18 +785,9 @@ public abstract class ScoreboardBaseVM : ViewModel
 	{
 	}
 
-	protected virtual bool IsPowerComparerRelevant()
-	{
-		if (Mission.Current != null)
-		{
-			return Mission.Current.Mode != MissionMode.Deployment;
-		}
-		return false;
-	}
-
 	public void Tick(float dt)
 	{
-		PowerComparer.IsEnabled = IsPowerComparerRelevant();
+		PowerComparer.IsEnabled = ScoreboardContext.IsPowerComparisonRelevant;
 		IsPowerComparerEnabled = PowerComparer.IsEnabled && !BannerlordConfig.HideBattleUI && !MBCommon.IsPaused;
 		OnTick(dt);
 	}

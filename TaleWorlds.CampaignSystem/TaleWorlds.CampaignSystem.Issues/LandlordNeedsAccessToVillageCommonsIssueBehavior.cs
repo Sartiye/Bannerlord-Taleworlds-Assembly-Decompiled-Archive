@@ -126,7 +126,7 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 				TextObject textObject = new TextObject("{=wodLHjnh}You or one of your companions with some {ALTERNATIVE_TROOP_AMOUNT} men should do the job. Either way I am willing to pay you {REWARD}{GOLD_ICON}. I doubt they'd stand up long to real warriors.[if:convo_mocking_teasing][ib:closed2]");
 				textObject.SetTextVariable("REWARD", RewardGold);
 				textObject.SetTextVariable("ALTERNATIVE_TROOP_AMOUNT", GetTotalAlternativeSolutionNeededMenCount());
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -305,10 +305,11 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 			return IssueFrequency.Common;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			skill = null;
 			relationHero = null;
+			requiredGold = 0;
 			flag = PreconditionFlags.None;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -406,7 +407,7 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 			{
 				TextObject textObject = new TextObject("{=avMQKUoJ}You were able to drive the herders from the disputed pasture. The landowner {QUEST_GIVER.LINK}. {?QUEST_GIVER.GENDER}She{?}he{\\?} is grateful and sends {REWARD}{GOLD_ICON} with {?QUEST_GIVER.GENDER}her{?}his{\\?} regards.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				textObject.SetTextVariable("REWARD", _rewardGold);
 				return textObject;
 			}
@@ -419,7 +420,7 @@ public class LandlordNeedsAccessToVillageCommonsIssueBehavior : CampaignBehavior
 				TextObject textObject = new TextObject("{=YbBObxLH}You were able to drive the herders from the disputed pasture. The landowner, {QUEST_GIVER.LINK}, is grateful and sends {REWARD}{GOLD_ICON} with {?QUEST_GIVER.GENDER}her{?}his{\\?} regards.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("QUEST_GIVER_SETTLEMENT", base.QuestGiver.CurrentSettlement.EncyclopediaLinkWithName);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				textObject.SetTextVariable("REWARD", _rewardGold);
 				return textObject;
 			}

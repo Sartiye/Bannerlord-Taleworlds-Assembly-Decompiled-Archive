@@ -250,4 +250,8 @@ public class CircularFormation : LineFormation
 		}
 		return num;
 	}
+
+	protected override void UpdateFrontUnitTypeDelegate()
+	{
+	}
 }

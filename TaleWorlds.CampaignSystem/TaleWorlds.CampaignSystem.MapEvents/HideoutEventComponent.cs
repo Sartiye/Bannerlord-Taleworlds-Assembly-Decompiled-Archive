@@ -7,6 +7,15 @@ namespace TaleWorlds.CampaignSystem.MapEvents;
 
 public class HideoutEventComponent : MapEventComponent
 {
+	public enum HideoutBattleEndState
+	{
+		None,
+		Retreated,
+		Defeated,
+		Victory,
+		SendTroops
+	}
+
 	[SaveableField(1)]
 	public readonly bool IsSendTroops;
 
@@ -49,7 +58,9 @@ public class HideoutEventComponent : MapEventComponent
 
 	protected override void OnBeforeFinalize()
 	{
-		BattleSideEnum winnerSide = ((base.MapEvent.BattleState == BattleState.AttackerVictory) ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
-		CampaignEventDispatcher.Instance.OnHideoutBattleCompleted(winnerSide, this);
+		BattleSideEnum battleSideEnum = ((base.MapEvent.BattleState == BattleState.AttackerVictory) ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
+		HideoutBattleEndState hideoutBattleEndState = HideoutBattleEndState.None;
+		hideoutBattleEndState = ((!base.MapEvent.HasWinner) ? HideoutBattleEndState.Retreated : ((battleSideEnum != base.MapEvent.PlayerSide) ? HideoutBattleEndState.Defeated : ((!IsSendTroops) ? HideoutBattleEndState.Victory : HideoutBattleEndState.SendTroops)));
+		CampaignEventDispatcher.Instance.OnHideoutBattleCompleted(battleSideEnum, this, hideoutBattleEndState);
 	}
 }

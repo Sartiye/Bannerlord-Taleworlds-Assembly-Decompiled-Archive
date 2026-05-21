@@ -49,8 +49,8 @@ public class MultiplayerPlayerBadgeVisualWidget : Widget
 		base.OnLateUpdate(dt);
 		if (_hasForcedSize)
 		{
-			base.ScaledSuggestedWidth = _forcedWidth * base._inverseScaleToUse;
-			base.ScaledSuggestedHeight = _forcedHeight * base._inverseScaleToUse;
+			base.SuggestedWidth = _forcedWidth;
+			base.SuggestedHeight = _forcedHeight;
 		}
 	}
 

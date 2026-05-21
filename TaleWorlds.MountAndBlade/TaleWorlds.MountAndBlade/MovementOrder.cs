@@ -560,7 +560,7 @@ public struct MovementOrder
 				}
 				else
 				{
-					if (Mission.Current.DeploymentPlan.SupportsNavmesh())
+					if (Mission.Current.DeploymentPlan.SupportsNavmesh(f.Team))
 					{
 						Mission.Current.DeploymentPlan.ProjectPositionToDeploymentBoundaries(f.Team, ref orderPosition);
 					}
@@ -1183,7 +1183,7 @@ public struct MovementOrder
 				_engageTargetPositionOffset = 0f;
 			}
 			engageTargetPositionCache = _engageTargetPositionCache;
-			if (engageTargetPositionCache.AsVec2.DistanceSquared(f.CurrentPosition) > num2 && f.Arrangement is LineFormation lineFormation && (double)lineFormation.GetUnavailableUnitPositions().Count() > (double)lineFormation.UnitCount * 0.03)
+			if (engageTargetPositionCache.AsVec2.DistanceSquared(f.CurrentPosition) > num2 && vec.DotProduct(engageTargetPositionCache.AsVec2 - f.CurrentPosition) > 0f && f.Arrangement is LineFormation lineFormation && (double)lineFormation.GetUnavailableUnitPositions().Count() > (double)lineFormation.UnitCount * 0.03)
 			{
 				engageTargetPositionCache.SetVec2(engageTargetPositionCache.AsVec2 - vec * 10f);
 				_engageTargetPositionOffset += 10f;
@@ -1203,7 +1203,7 @@ public struct MovementOrder
 			return cachedMedianPosition;
 		}
 		default:
-			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\MovementOrder.cs", "GetPositionAux", 1844);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\MovementOrder.cs", "GetPositionAux", 1845);
 			return WorldPosition.Invalid;
 		}
 	}

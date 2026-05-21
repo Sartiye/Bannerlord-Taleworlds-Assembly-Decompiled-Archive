@@ -124,6 +124,10 @@ public class BuildingsCampaignBehavior : CampaignBehaviorBase
 
 	private void OnBuildingLevelChanged(Town town, Building building, int levelChange)
 	{
+		if (building.BuildingType.HasEffect(BuildingEffectEnum.GarrisonCapacity))
+		{
+			building.Town.Settlement.Town.GarrisonParty?.Party.MemberRoster.UpdateVersion();
+		}
 		if (building.BuildingType.HasEffect(BuildingEffectEnum.PrisonCapacity))
 		{
 			building.Town.Settlement.Party.PrisonRoster.UpdateVersion();

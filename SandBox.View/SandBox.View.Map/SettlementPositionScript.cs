@@ -761,6 +761,11 @@ public class SettlementPositionScript : ScriptComponentBehavior
 					portPosition = item2.GetGlobalFrame().origin.AsVec2;
 					hasPort = true;
 				}
+				if (item2.HasTag("main_map_village_dropoff"))
+				{
+					portPosition = item2.GetGlobalFrame().origin.AsVec2;
+					hasPort = true;
+				}
 			}
 			bool isFortification = false;
 			foreach (XmlNode childNode in item.ChildNodes)

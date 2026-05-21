@@ -120,4 +120,9 @@ public class ParleyCampaignBehavior : CampaignBehaviorBase, IParleyCampaignBehav
 		args.optionLeaveType = GameMenuOption.LeaveType.Leave;
 		return _parleyedParty.Settlement.IsCastle;
 	}
+
+	public PartyBase GetParleyedParty()
+	{
+		return _parleyedParty;
+	}
 }

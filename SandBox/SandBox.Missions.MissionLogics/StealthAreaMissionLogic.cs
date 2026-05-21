@@ -2,20 +2,16 @@ using System.Collections.Generic;
 using System.Linq;
 using SandBox.Objects.AreaMarkers;
 using SandBox.Objects.Usables;
-using TaleWorlds.CampaignSystem;
-using TaleWorlds.CampaignSystem.AgentOrigins;
-using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
-using TaleWorlds.ObjectSystem;
 
 namespace SandBox.Missions.MissionLogics;
 
 public class StealthAreaMissionLogic : MissionLogic
 {
-	public delegate List<IAgentOriginBase> GetReinforcementAllyTroopsDelegate(StealthAreaData triggeredStealthAreaData, StealthAreaMarker stealthAreaMarker);
+	public delegate MBList<Agent> SpawnReinforcementAllyTroopsDelegate(StealthAreaData triggeredStealthAreaData, StealthAreaMarker stealthAreaMarker);
 
 	public class StealthAreaData
 	{
@@ -62,16 +58,11 @@ public class StealthAreaMissionLogic : MissionLogic
 
 	private readonly MBList<Agent> _allyTroops = new MBList<Agent>();
 
-	public GetReinforcementAllyTroopsDelegate GetReinforcementAllyTroops;
+	public SpawnReinforcementAllyTroopsDelegate SpawnReinforcementAllyTroopsEvent;
 
 	public MBReadOnlyList<Agent> AllyTroops => _allyTroops;
 
 	public bool AllReinforcementsCalled { get; private set; }
-
-	public StealthAreaMissionLogic()
-	{
-		SetAgentSpawnTypes();
-	}
 
 	public bool IsSentry(Agent agent)
 	{
@@ -97,44 +88,9 @@ public class StealthAreaMissionLogic : MissionLogic
 		}
 	}
 
-	public void AddAgentSpawnType(string spawnGroupId, Dictionary<string, int> spawnDictionary)
+	private MBList<Agent> SpawnReinforcementAllyGroupTroops(StealthAreaData triggeredStealthAreaData, StealthAreaMarker stealthAreaMarker)
 	{
-		_agentSpawnTypes[spawnGroupId] = spawnDictionary;
-	}
-
-	private void SetAgentSpawnTypes()
-	{
-		Dictionary<string, int> dictionary = new Dictionary<string, int>();
-		dictionary.Add("deserter", 1);
-		dictionary.Add("forest_bandits_bandit", 2);
-		_agentSpawnTypes.Add("reinforcement_ally_group_1", dictionary);
-		Dictionary<string, int> dictionary2 = new Dictionary<string, int>();
-		dictionary2.Add("aserai_footman", 3);
-		dictionary2.Add("aserai_skirmisher", 2);
-		_agentSpawnTypes.Add("reinforcement_ally_group_cambush", dictionary2);
-	}
-
-	private List<IAgentOriginBase> GetReinforcementAllyGroupTroops(StealthAreaData triggeredStealthAreaData, StealthAreaMarker stealthAreaMarker)
-	{
-		if (GetReinforcementAllyTroops == null)
-		{
-			string reinforcementAllyGroupId = stealthAreaMarker.ReinforcementAllyGroupId;
-			List<IAgentOriginBase> list = new List<IAgentOriginBase>();
-			if (_agentSpawnTypes.TryGetValue(reinforcementAllyGroupId, out var value))
-			{
-				foreach (KeyValuePair<string, int> item in value)
-				{
-					CharacterObject @object = MBObjectManager.Instance.GetObject<CharacterObject>(item.Key);
-					int value2 = item.Value;
-					for (int i = 0; i < value2; i++)
-					{
-						list.Add(new PartyAgentOrigin(PartyBase.MainParty, @object));
-					}
-				}
-			}
-			return list;
-		}
-		return GetReinforcementAllyTroops(triggeredStealthAreaData, stealthAreaMarker);
+		return SpawnReinforcementAllyTroopsEvent?.Invoke(triggeredStealthAreaData, stealthAreaMarker) ?? new MBList<Agent>();
 	}
 
 	public override void OnAgentBuild(Agent agent, Banner banner)
@@ -190,6 +146,10 @@ public class StealthAreaMissionLogic : MissionLogic
 	{
 		if (usedObject is StealthAreaUsePoint)
 		{
+			if (IsInCombat())
+			{
+				return;
+			}
 			StealthAreaData stealthAreaData = null;
 			foreach (StealthAreaData stealthAreaDatum in _stealthAreaData)
 			{
@@ -204,32 +164,30 @@ public class StealthAreaMissionLogic : MissionLogic
 				stealthAreaData.IsReinforcementCalled = true;
 				foreach (KeyValuePair<StealthAreaMarker, List<Agent>> stealthAreaMarker in stealthAreaData.StealthAreaMarkers)
 				{
-					List<IAgentOriginBase> reinforcementAllyGroupTroops = GetReinforcementAllyGroupTroops(stealthAreaData, stealthAreaMarker.Key);
-					if (!reinforcementAllyGroupTroops.IsEmpty())
-					{
-						foreach (IAgentOriginBase item in reinforcementAllyGroupTroops)
-						{
-							SpawnAllyAgent(item, stealthAreaMarker.Key.ReinforcementAllyGroupSpawnPoint, stealthAreaMarker.Key.WaitPoint.GlobalPosition);
-						}
-					}
-					else
-					{
-						Debug.FailedAssert("There is not any troops to spawn as stealth area reinforcement.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\Missions\\MissionLogics\\StealthAreaMissionLogic.cs", "OnObjectUsed", 269);
-					}
+					MBList<Agent> collection = SpawnReinforcementAllyGroupTroops(stealthAreaData, stealthAreaMarker.Key);
+					_allyTroops.AddRange(collection);
 				}
 			}
 		}
 		AllReinforcementsCalled = _stealthAreaData.All((StealthAreaData x) => x.IsReinforcementCalled);
 	}
 
-	private void SpawnAllyAgent(IAgentOriginBase character, GameEntity spawnPoint, Vec3 position)
+	private bool IsInCombat()
 	{
-		MatrixFrame globalFrame = spawnPoint.GetGlobalFrame();
-		Agent agent = Mission.Current.SpawnTroop(character, isPlayerSide: true, hasFormation: false, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: true, wieldInitialWeapons: true, forceDismounted: true, globalFrame.origin, globalFrame.rotation.f.AsVec2.Normalized());
-		Vec3 randomPositionAroundPoint = Mission.Current.GetRandomPositionAroundPoint(position, 0f, 2f, nearFirst: true);
-		WorldPosition position2 = new WorldPosition(spawnPoint.Scene, randomPositionAroundPoint);
-		agent.SetScriptedPosition(ref position2, addHumanLikeDelay: true, Agent.AIScriptedFrameFlags.NoAttack | Agent.AIScriptedFrameFlags.Crouch);
-		_allyTroops.Add(agent);
+		bool result = false;
+		foreach (Agent allAgent in Mission.Current.AllAgents)
+		{
+			if (allAgent.IsActive())
+			{
+				Agent.AIStateFlag aIStateFlag = Agent.AIStateFlag.Alarmed;
+				if ((allAgent.AIStateFlags & aIStateFlag) == aIStateFlag)
+				{
+					result = true;
+					break;
+				}
+			}
+		}
+		return result;
 	}
 
 	public bool CheckIfAllStealthAreasAreTriggered()

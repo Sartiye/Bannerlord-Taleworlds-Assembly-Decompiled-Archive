@@ -514,7 +514,7 @@ public class PatrolPartiesCampaignBehavior : CampaignBehaviorBase, IPatrolPartie
 			return;
 		}
 		AIBehaviorData item = new AIBehaviorData(settlement, AiBehavior.PatrolAroundPoint, bestNavigationType, willGatherArmy: false, isFromPort, isNavalPatrolling);
-		float num = Campaign.Current.Models.TargetScoreCalculatingModel.CalculatePatrollingScoreForSettlement(settlement, isNavalPatrolling, mobilePartyOf);
+		float num = Campaign.Current.Models.TargetScoreCalculatingModel.CalculateDefensivePatrollingScoreForSettlement(settlement, isNavalPatrolling, mobilePartyOf);
 		num *= GetSettlementScoreAdjustment(settlement, bestNavigationType == MobileParty.NavigationType.Naval);
 		num = TaleWorlds.Library.MathF.Max(num, 0.01f);
 		if (1.25f + num > 0f)

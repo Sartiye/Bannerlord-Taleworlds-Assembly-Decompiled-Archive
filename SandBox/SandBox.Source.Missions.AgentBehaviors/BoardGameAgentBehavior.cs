@@ -65,6 +65,12 @@ public class BoardGameAgentBehavior : AgentBehavior
 		}
 	}
 
+	public override void ConversationTick()
+	{
+		base.Navigator.ClearTarget();
+		_state = State.Idle;
+	}
+
 	protected override void OnDeactivate()
 	{
 		base.Navigator.ClearTarget();

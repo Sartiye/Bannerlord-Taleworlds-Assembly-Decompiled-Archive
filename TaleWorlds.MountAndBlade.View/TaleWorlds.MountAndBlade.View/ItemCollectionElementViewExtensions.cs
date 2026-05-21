@@ -19,7 +19,7 @@ public static class ItemCollectionElementViewExtensions
 		return "";
 	}
 
-	public static MetaMesh GetMultiMesh(this ItemObject item, bool isFemale, bool hasGloves, bool needBatchedVersion)
+	public static MetaMesh GetMultiMesh(this ItemObject item, bool isFemale, bool useSlimVersion, bool needBatchedVersion)
 	{
 		MetaMesh metaMesh = null;
 		if (item != null)
@@ -29,7 +29,7 @@ public static class ItemCollectionElementViewExtensions
 			{
 				flag = item.ArmorComponent.MultiMeshHasGenderVariations;
 			}
-			metaMesh = item.GetMultiMeshCopyWithGenderData(flag && isFemale, hasGloves, needBatchedVersion);
+			metaMesh = item.GetMultiMeshCopyWithGenderData(flag && isFemale, useSlimVersion, needBatchedVersion);
 			if (metaMesh == null || metaMesh.MeshCount == 0)
 			{
 				metaMesh = item.GetMultiMeshCopy();
@@ -38,25 +38,25 @@ public static class ItemCollectionElementViewExtensions
 		return metaMesh;
 	}
 
-	public static MetaMesh GetMultiMesh(this EquipmentElement equipmentElement, bool isFemale, bool hasGloves, bool needBatchedVersion)
+	public static MetaMesh GetMultiMesh(this EquipmentElement equipmentElement, bool isFemale, bool useSlimVersion, bool needBatchedVersion)
 	{
 		if (equipmentElement.CosmeticItem == null)
 		{
-			return equipmentElement.Item.GetMultiMesh(isFemale, hasGloves, needBatchedVersion);
+			return equipmentElement.Item.GetMultiMesh(isFemale, useSlimVersion, needBatchedVersion);
 		}
-		return equipmentElement.CosmeticItem.GetMultiMesh(isFemale, hasGloves, needBatchedVersion);
+		return equipmentElement.CosmeticItem.GetMultiMesh(isFemale, useSlimVersion, needBatchedVersion);
 	}
 
-	public static MetaMesh GetMultiMesh(this MissionWeapon weapon, bool isFemale, bool hasGloves, bool needBatchedVersion)
+	public static MetaMesh GetMultiMesh(this MissionWeapon weapon, bool isFemale, bool useSlimVersion, bool needBatchedVersion)
 	{
-		return weapon.Item.GetMultiMesh(isFemale, hasGloves, needBatchedVersion);
+		return weapon.Item.GetMultiMesh(isFemale, useSlimVersion, needBatchedVersion);
 	}
 
 	public static MetaMesh GetItemMeshForInventory(this ItemRosterElement rosterElement, bool isFemale = false)
 	{
 		if (rosterElement.EquipmentElement.Item.ItemType != ItemObject.ItemTypeEnum.Arrows && rosterElement.EquipmentElement.Item.ItemType != ItemObject.ItemTypeEnum.Bolts && rosterElement.EquipmentElement.Item.ItemType != ItemObject.ItemTypeEnum.SlingStones)
 		{
-			return rosterElement.EquipmentElement.GetMultiMesh(isFemale, hasGloves: false, needBatchedVersion: false);
+			return rosterElement.EquipmentElement.GetMultiMesh(isFemale, useSlimVersion: false, needBatchedVersion: false);
 		}
 		return rosterElement.EquipmentElement.Item.GetHolsterMeshCopy();
 	}
@@ -389,7 +389,7 @@ public static class ItemCollectionElementViewExtensions
 
 	public static void OnGetWeaponData(ref WeaponData weaponData, MissionWeapon weapon, bool isFemale, Banner banner, bool needBatchedVersion)
 	{
-		MetaMesh multiMesh = weapon.GetMultiMesh(isFemale, hasGloves: false, needBatchedVersion);
+		MetaMesh multiMesh = weapon.GetMultiMesh(isFemale, useSlimVersion: false, needBatchedVersion);
 		weaponData.WeaponMesh = multiMesh;
 		MetaMesh holsterMeshCopy = weapon.Item.GetHolsterMeshCopy();
 		weaponData.HolsterMesh = holsterMeshCopy;

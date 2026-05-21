@@ -101,7 +101,7 @@ public class EscapeMenu__TaleWorlds_MountAndBlade_ViewModelCollection_EscapeMenu
 		_widget_1.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_1.VerticalAlignment = VerticalAlignment.Center;
 		_widget_1.Sprite = base.Context.SpriteData.GetSprite("SPGeneral\\EscapeMenu\\escape_panel");
-		_widget_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0.MarginTop = 100f;
@@ -110,7 +110,7 @@ public class EscapeMenu__TaleWorlds_MountAndBlade_ViewModelCollection_EscapeMenu
 		_widget_1_0.MaxIndex = 100;
 		_widget_2.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2.HorizontalAlignment = HorizontalAlignment.Left;
 		_widget_2.VerticalAlignment = VerticalAlignment.Center;
 		_widget_2.MarginLeft = 165f;

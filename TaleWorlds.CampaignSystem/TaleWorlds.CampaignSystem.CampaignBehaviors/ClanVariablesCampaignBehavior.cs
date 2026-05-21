@@ -428,7 +428,7 @@ public class ClanVariablesCampaignBehavior : CampaignBehaviorBase
 			{
 				TextObject textObject = new TextObject("{=dPD5zood}Daily Gold Change: {CHANGE}{GOLD_ICON}");
 				textObject.SetTextVariable("CHANGE", num);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				InformationManager.DisplayMessage(new InformationMessage(soundEventPath: (num > 0) ? "event:/ui/notification/coins_positive" : ((num == 0) ? string.Empty : "event:/ui/notification/coins_negative"), information: textObject.ToString()));
 			}
 		}

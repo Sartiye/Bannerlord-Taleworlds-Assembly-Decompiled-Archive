@@ -104,6 +104,7 @@ public class CharacterDeveloper__TaleWorlds_CampaignSystem_ViewModelCollection_C
 	public void SetAttributes()
 	{
 		base.DoNotPassEventsToChildren = true;
+		base.UpdateChildrenStates = true;
 		base.WidthSizePolicy = SizePolicy.Fixed;
 		base.HeightSizePolicy = SizePolicy.Fixed;
 		base.SuggestedWidth = 30f;
@@ -112,11 +113,9 @@ public class CharacterDeveloper__TaleWorlds_CampaignSystem_ViewModelCollection_C
 		base.PerkVisualWidget = _widget_0_0;
 		base.NotEarnedPerkBrush = base.Context.GetBrush("CharacterDeveloper.NotEarnedPerkBrush");
 		base.EarnedNotSelectedPerkBrush = base.Context.GetBrush("CharacterDeveloper.EarnedNotSelectedPerkBrush");
-		base.InSelectionPerkBrush = base.Context.GetBrush("CharacterDeveloper.InSelectionPerkBrush");
 		base.EarnedActivePerkBrush = base.Context.GetBrush("CharacterDeveloper.EarnedActivePerkBrush");
 		base.EarnedNotActivePerkBrush = base.Context.GetBrush("CharacterDeveloper.EarnedNotActivePerkBrush");
 		base.EarnedPreviousPerkNotSelectedPerkBrush = base.Context.GetBrush("CharacterDeveloper.EarnedNotSelectedFollowingPerk.Brush");
-		base.UpdateChildrenStates = true;
 		base.UseGlobalTimeForAnimation = true;
 		base.ExtendCursorAreaLeft = 10f;
 		base.ExtendCursorAreaRight = 10f;
@@ -128,7 +127,6 @@ public class CharacterDeveloper__TaleWorlds_CampaignSystem_ViewModelCollection_C
 		_widget_0.SuggestedHeight = 86f;
 		_widget_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_0.UseGlobalTimeForAnimation = true;
 		_widget_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_0.SuggestedWidth = 30f;

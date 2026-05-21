@@ -86,7 +86,10 @@ public class QuestsScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Quests_
 		_widget_1.GamepadNavigationIndex = -1;
 		_widget_1_0.DoNotAcceptEvents = true;
 		_widget_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_1_0.MaxWidth = 200f;
+		_widget_1_0.MarginTop = 20f;
+		_widget_1_0.MarginBottom = 20f;
 		_widget_1_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_1_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_1_0.PositionYOffset = 13f;
@@ -112,6 +115,9 @@ public class QuestsScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Quests_
 		_widget_2_0.DoNotAcceptEvents = true;
 		_widget_2_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_2_0.MaxWidth = 200f;
+		_widget_2_0.MarginTop = 20f;
+		_widget_2_0.MarginBottom = 20f;
 		_widget_2_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_2_0.PositionYOffset = 13f;

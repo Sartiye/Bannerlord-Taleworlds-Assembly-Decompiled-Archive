@@ -4,6 +4,8 @@ public interface IAgentOriginBase
 {
 	bool IsUnderPlayersCommand { get; }
 
+	bool IsInSameArmyAsPlayer { get; }
+
 	uint FactionColor { get; }
 
 	uint FactionColor2 { get; }

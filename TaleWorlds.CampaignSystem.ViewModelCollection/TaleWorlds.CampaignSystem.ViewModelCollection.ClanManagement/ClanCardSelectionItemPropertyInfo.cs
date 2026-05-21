@@ -37,7 +37,7 @@ public readonly struct ClanCardSelectionItemPropertyInfo
 			string arg = (num ? "PositiveChange" : "NegativeChange");
 			TextObject obj = (num ? new TextObject("{=8N1EdPB3}You will earn {GOLD}{GOLD_ICON}") : new TextObject("{=kjaACKUq}This action will cost {GOLD}{GOLD_ICON}"));
 			obj.SetTextVariable("GOLD", $"<span style=\"{arg}\">{Math.Abs(goldChange)}</span>");
-			obj.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+			obj.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 			return obj;
 		}
 		return TextObject.GetEmpty();

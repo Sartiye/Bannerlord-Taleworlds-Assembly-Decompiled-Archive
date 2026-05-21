@@ -91,12 +91,17 @@ public class MobilePartyVisual : MapEntityVisual<PartyBase>
 
 	public override bool IsEnemyOf(IFaction faction)
 	{
-		return FactionManager.IsAtWarAgainstFaction(base.MapEntity.MapFaction, Hero.MainHero.MapFaction);
+		return FactionManager.IsAtWarAgainstFaction(base.MapEntity.MapFaction, faction.MapFaction);
+	}
+
+	public override bool IsInSameFaction(IFaction faction)
+	{
+		return DiplomacyHelper.IsSameFactionAndNotEliminated(base.MapEntity.MapFaction, faction.MapFaction);
 	}
 
 	public override bool IsAllyOf(IFaction faction)
 	{
-		return DiplomacyHelper.IsSameFactionAndNotEliminated(base.MapEntity.MapFaction, Hero.MainHero.MapFaction);
+		return DiplomacyHelper.HasAllianceWithFaction(base.MapEntity.MapFaction, faction.MapFaction);
 	}
 
 	internal void OnPartyRemoved()
@@ -284,8 +289,7 @@ public class MobilePartyVisual : MapEntityVisual<PartyBase>
 		}
 		if (_cachedBannerComponent.Item2 != null && _cachedBannerComponent.Item2 is ClothSimulatorComponent clothSimulatorComponent)
 		{
-			float num = (IsPartOfBesiegerCamp(base.MapEntity) ? 6f : 1f);
-			clothSimulatorComponent.SetForcedWind(-StrategicEntity.GetGlobalFrame().rotation.f * num, isLocal: false);
+			clothSimulatorComponent.SetForcedWind(-StrategicEntity.GetGlobalFrame().rotation.f, isLocal: false);
 		}
 	}
 
@@ -928,7 +932,6 @@ public class MobilePartyVisual : MapEntityVisual<PartyBase>
 		bool flag = party.MobileParty.Army != null && party.MobileParty.Army.LeaderParty == party.MobileParty;
 		MatrixFrame identity = MatrixFrame.Identity;
 		identity.origin.z += (flag ? 0.2f : 0.15f);
-		identity.rotation.RotateAboutUp(System.MathF.PI / 2f);
 		float scaleAmount = MBMath.Map(party.CalculateCurrentStrength() / 500f * ((party.MobileParty.Army != null && flag) ? 1f : 0.8f), 0f, 1f, 0.15f, 0.5f);
 		identity.rotation.ApplyScaleLocal(scaleAmount);
 		if (!string.IsNullOrEmpty(text))
@@ -938,7 +941,7 @@ public class MobilePartyVisual : MapEntityVisual<PartyBase>
 			if (_cachedBannerComponent.Item1 == text + text2)
 			{
 				_cachedBannerComponent.Item2.GetFirstMetaMesh().Frame = identity;
-				strategicEntity.AddComponent(_cachedBannerComponent.Item2);
+				gameEntity.AddComponent(_cachedBannerComponent.Item2);
 			}
 			else
 			{

@@ -260,7 +260,7 @@ public class MainAgentControllerEquipDrop__TaleWorlds_MountAndBlade_ViewModelCol
 		_widget_0_4.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_4.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0_4.VerticalAlignment = VerticalAlignment.Center;
-		_widget_0_4.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_4.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_4_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_4_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_4_0.HorizontalAlignment = HorizontalAlignment.Center;

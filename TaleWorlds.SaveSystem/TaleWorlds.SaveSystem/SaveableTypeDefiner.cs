@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using TaleWorlds.Library;
 using TaleWorlds.SaveSystem.Definition;
 using TaleWorlds.SaveSystem.Resolvers;
 
@@ -139,6 +140,10 @@ public abstract class SaveableTypeDefiner
 		{
 			Assembly assembly = GetType().Assembly;
 			_definitionContext.ConstructContainerDefinition(type, assembly);
+		}
+		else
+		{
+			Debug.FailedAssert($"There is duplicate definition for {type}", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\SaveableTypeDefiner.cs", "ConstructContainerDefinition", 176);
 		}
 	}
 }

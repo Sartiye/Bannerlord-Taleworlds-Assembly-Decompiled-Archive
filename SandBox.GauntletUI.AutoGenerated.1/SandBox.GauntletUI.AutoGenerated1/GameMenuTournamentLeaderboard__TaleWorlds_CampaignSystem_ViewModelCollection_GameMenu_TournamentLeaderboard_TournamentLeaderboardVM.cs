@@ -177,7 +177,7 @@ public class GameMenuTournamentLeaderboard__TaleWorlds_CampaignSystem_ViewModelC
 		_widget_1_1.MarginLeft = 10f;
 		_widget_1_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_1_0_0.ScopeID = "LeaderboardSortScope";
 		_widget_1_1_0_0.ScopeParent = _widget_1_1_0_1;
 		_widget_1_1_0_0.ScopeMovements = GamepadNavigationTypes.Horizontal;
@@ -269,7 +269,7 @@ public class GameMenuTournamentLeaderboard__TaleWorlds_CampaignSystem_ViewModelC
 		_widget_1_1_0_2_1.ClipContents = true;
 		_widget_1_1_0_2_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_0_2_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_1_0_2_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_1_0_2_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_1_1.SetAttributes();
 		_widget_1_1_1.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_1_1_1.VerticalAlignment = VerticalAlignment.Bottom;

@@ -102,7 +102,12 @@ public class MissionGauntletSingleplayerOrderUIHandler : GauntletOrderUIHandler,
 		GameKeyContext category2 = HotKeyManager.GetCategory("GenericPanelGameKeyCategory");
 		base.MissionScreen.SceneLayer.Input.RegisterHotKeyCategory(category);
 		_orderTroopPlacer = base.Mission.GetMissionBehavior<OrderTroopPlacer>();
+		if (_orderTroopPlacer?.OrderFlag == null)
+		{
+			Debug.FailedAssert("Order troop placer's order flag is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\Mission\\Singleplayer\\MissionGauntletSingleplayerOrderUIHandler.cs", "OnMissionScreenInitialize", 74);
+		}
 		base.MissionScreen.OrderFlag = _orderTroopPlacer.OrderFlag;
+		Debug.Print("MissionScreen.OrderFlag has been set (SP)");
 		base.MissionScreen.SetOrderFlagVisibility(value: false);
 		_siegeDeploymentHandler = base.Mission.GetMissionBehavior<SiegeDeploymentHandler>();
 		_formationTargetHandler = base.Mission.GetMissionBehavior<MissionFormationTargetSelectionHandler>();

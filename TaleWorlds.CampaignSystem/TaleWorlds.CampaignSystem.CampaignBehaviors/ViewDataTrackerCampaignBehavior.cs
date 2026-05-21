@@ -310,7 +310,11 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 
 	public void SetInventoryLocks(IEnumerable<string> locks)
 	{
-		_inventoryItemLocks = locks.ToList();
+		_inventoryItemLocks.Clear();
+		foreach (string @lock in locks)
+		{
+			_inventoryItemLocks.Add(@lock);
+		}
 	}
 
 	public IEnumerable<string> GetInventoryLocks()
@@ -334,12 +338,20 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 
 	public void SetPartyTroopLocks(IEnumerable<string> locks)
 	{
-		_partyTroopLocks = locks.ToList();
+		_partyTroopLocks.Clear();
+		foreach (string @lock in locks)
+		{
+			_partyTroopLocks.Add(@lock);
+		}
 	}
 
 	public void SetPartyPrisonerLocks(IEnumerable<string> locks)
 	{
-		_partyPrisonerLocks = locks.ToList();
+		_partyPrisonerLocks.Clear();
+		foreach (string @lock in locks)
+		{
+			_partyPrisonerLocks.Add(@lock);
+		}
 	}
 
 	public void SetPartySortType(int sortType)

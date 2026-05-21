@@ -31,6 +31,8 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 
 	private CharacterObject _battleEquipmentTemplate;
 
+	private bool _isMariner;
+
 	private Occupation _occupation;
 
 	public override TextObject Name
@@ -251,7 +253,7 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 
 	public static IEnumerable<CharacterObject> ConversationCharacters => Campaign.Current.ConversationManager.ConversationCharacters;
 
-	public bool IsMariner { get; private set; }
+	public bool IsMariner => _isMariner;
 
 	public new CultureObject Culture
 	{
@@ -430,7 +432,7 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 		characterObject._occupation = character._occupation;
 		characterObject._persona = character._persona;
 		characterObject._characterTraits = new PropertyOwner<TraitObject>(character._characterTraits);
-		characterObject.IsMariner = character.IsMariner;
+		characterObject._isMariner = character.IsMariner;
 		characterObject._civilianEquipmentTemplate = character._civilianEquipmentTemplate;
 		characterObject._battleEquipmentTemplate = character._battleEquipmentTemplate;
 		characterObject.HiddenInEncyclopedia = character.HiddenInEncyclopedia;
@@ -525,7 +527,7 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 		UpgradeRequiresItemFromCategory = _originCharacter.UpgradeRequiresItemFromCategory;
 		_civilianEquipmentTemplate = _originCharacter._civilianEquipmentTemplate;
 		_battleEquipmentTemplate = _originCharacter._battleEquipmentTemplate;
-		IsMariner = _originCharacter.IsMariner;
+		_isMariner = _originCharacter._isMariner;
 		_persona = _originCharacter._persona;
 		_characterTraits = _originCharacter._characterTraits;
 		DefaultCharacterSkills = _originCharacter.DefaultCharacterSkills;
@@ -587,13 +589,15 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 		Level = ((xmlNode8 == null) ? 1 : Convert.ToInt32(xmlNode8.InnerText));
 		if (node.Attributes["civilianTemplate"] != null)
 		{
+			Debug.FailedAssert("'civilianTemplate' This should not be used anymore, make sure this is intended", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CharacterObject.cs", "Deserialize", 700);
 			_civilianEquipmentTemplate = objectManager.ReadObjectReferenceFromXml("civilianTemplate", typeof(CharacterObject), node) as CharacterObject;
 		}
 		if (node.Attributes["battleTemplate"] != null)
 		{
+			Debug.FailedAssert("'battleTemplate' This should not be used anymore, make sure this is intended", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CharacterObject.cs", "Deserialize", 708);
 			_battleEquipmentTemplate = objectManager.ReadObjectReferenceFromXml("battleTemplate", typeof(CharacterObject), node) as CharacterObject;
 		}
-		IsMariner = GetTraitLevel(DefaultTraits.NavalSoldier) != 0;
+		_isMariner = GetTraitLevel(DefaultTraits.NavalSoldier) != 0;
 		_originCharacter = null;
 	}
 
@@ -713,7 +717,7 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 		case Equipment.EquipmentType.Stealth:
 			return FirstStealthEquipment;
 		default:
-			Debug.FailedAssert("Wanted EquipmentType doesn't exist", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CharacterObject.cs", "GetEquipmentByType", 896);
+			Debug.FailedAssert("Wanted EquipmentType doesn't exist", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CharacterObject.cs", "GetEquipmentByType", 908);
 			return null;
 		}
 	}

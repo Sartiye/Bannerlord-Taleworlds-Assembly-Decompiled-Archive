@@ -25,6 +25,7 @@ using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.MountAndBlade.Missions.Handlers;
+using TaleWorlds.MountAndBlade.Missions.MissionLogics;
 using TaleWorlds.MountAndBlade.Source.Missions;
 using TaleWorlds.MountAndBlade.Source.Missions.Handlers;
 using TaleWorlds.MountAndBlade.Source.Missions.Handlers.Logic;
@@ -37,11 +38,16 @@ public static class SandBoxMissions
 {
 	public static MissionInitializerRecord CreateSandBoxMissionInitializerRecord(string sceneName, string sceneLevels, bool doNotUseLoadingScreen, DecalAtlasGroup decalAtlasGroup)
 	{
+		CampaignVec2 position = MobileParty.MainParty.Position;
+		if (MobileParty.MainParty.MapEvent != null)
+		{
+			position = MobileParty.MainParty.MapEvent.Position;
+		}
 		MissionInitializerRecord result = new MissionInitializerRecord(sceneName);
 		result.DamageToFriendsMultiplier = Campaign.Current.Models.DifficultyModel.GetPlayerTroopsReceivedDamageMultiplier();
 		result.DamageFromPlayerToFriendsMultiplier = Campaign.Current.Models.DifficultyModel.GetPlayerTroopsReceivedDamageMultiplier();
 		result.PlayingInCampaignMode = Campaign.Current.GameMode == CampaignGameMode.Campaign;
-		result.AtmosphereOnCampaign = ((Campaign.Current.GameMode == CampaignGameMode.Campaign) ? Campaign.Current.Models.MapWeatherModel.GetAtmosphereModel(MobileParty.MainParty.Position) : AtmosphereInfo.GetInvalidAtmosphereInfo());
+		result.AtmosphereOnCampaign = ((Campaign.Current.GameMode == CampaignGameMode.Campaign) ? Campaign.Current.Models.MapWeatherModel.GetAtmosphereModel(position) : AtmosphereInfo.GetInvalidAtmosphereInfo());
 		result.TerrainType = (int)((Campaign.Current.MapSceneWrapper != null) ? Campaign.Current.MapSceneWrapper.GetFaceTerrainType(MobileParty.MainParty.CurrentNavigationFace) : ((TerrainType)0));
 		result.SceneLevels = sceneLevels;
 		result.DoNotUseLoadingScreen = doNotUseLoadingScreen;
@@ -280,7 +286,8 @@ public static class SandBoxMissions
 	[MissionMethod]
 	public static Mission OpenVillageMission(string scene, Location location, CharacterObject talkToChar = null, string sceneLevels = null)
 	{
-		return MissionState.OpenNew("Village", CreateSandBoxMissionInitializerRecord(scene, sceneLevels, doNotUseLoadingScreen: false, DecalAtlasGroup.Town), (Mission mission) => new MissionBehavior[27]
+		string sceneLevels2 = (string.IsNullOrEmpty(sceneLevels) ? "land_raid" : sceneLevels);
+		return MissionState.OpenNew("Village", CreateSandBoxMissionInitializerRecord(scene, sceneLevels2, doNotUseLoadingScreen: false, DecalAtlasGroup.Town), (Mission mission) => new MissionBehavior[27]
 		{
 			new MissionOptionsComponent(),
 			new CampaignMissionComponent(),
@@ -619,9 +626,9 @@ public static class SandBoxMissions
 	}
 
 	[MissionMethod]
-	public static Mission OpenBattleMission(string scene, bool usesTownDecalAtlas)
+	public static Mission OpenBattleMission(string scene, bool usesTownDecalAtlas, string sceneLevels)
 	{
-		return OpenBattleMission(CreateSandBoxMissionInitializerRecord(scene, "", doNotUseLoadingScreen: false, usesTownDecalAtlas ? DecalAtlasGroup.Town : DecalAtlasGroup.Battle));
+		return OpenBattleMission(CreateSandBoxMissionInitializerRecord(scene, sceneLevels, doNotUseLoadingScreen: false, usesTownDecalAtlas ? DecalAtlasGroup.Town : DecalAtlasGroup.Battle));
 	}
 
 	[MissionMethod]
@@ -660,7 +667,7 @@ public static class SandBoxMissions
 				new PartyGroupTroopSupplier(MapEvent.PlayerMapEvent, BattleSideEnum.Defender, banditPriorityList),
 				new PartyGroupTroopSupplier(MapEvent.PlayerMapEvent, BattleSideEnum.Attacker, playerPriorityList)
 			};
-			return new MissionBehavior[21]
+			return new MissionBehavior[22]
 			{
 				new MissionOptionsComponent(),
 				new CampaignMissionComponent(),
@@ -682,15 +689,17 @@ public static class SandBoxMissions
 				new HighlightsController(),
 				new BattleHighlightsController(),
 				new EquipmentControllerLeaveLogic(),
-				new BattleSurgeonLogic()
+				new BattleSurgeonLogic(),
+				new MissionObjectiveLogic()
 			};
 		});
 	}
 
-	[MissionMethod(UsableByEditor = true)]
+	[MissionMethod]
 	public static Mission OpenHideoutAmbushMission(string sceneName, FlattenedTroopRoster playerTroops, Location location)
 	{
-		FlattenedTroopRoster priorAllyTroops = playerTroops ?? MobilePartyHelper.GetStrongestAndPriorTroops(MobileParty.MainParty, Campaign.Current.Models.BanditDensityModel.GetMaximumTroopCountForHideoutMission(MobileParty.MainParty, isAssault: false), includePlayer: true).ToFlattenedRoster();
+		FlattenedTroopRoster priorAllyTroops = playerTroops ?? MobilePartyHelper.GetStrongestAndPriorTroops(MobileParty.MainParty, Campaign.Current.Models.BanditDensityModel.GetMaximumTroopCountForHideoutMission(MobileParty.MainParty, isAssault: false), includePlayer: false).ToFlattenedRoster();
+		priorAllyTroops.RemoveIf((FlattenedTroopRosterElement x) => x.Troop.IsPlayerCharacter);
 		MissionInitializerRecord missionInitializerRecord = new MissionInitializerRecord(sceneName);
 		missionInitializerRecord.DamageToFriendsMultiplier = Campaign.Current.Models.DifficultyModel.GetPlayerTroopsReceivedDamageMultiplier();
 		missionInitializerRecord.DamageFromPlayerToFriendsMultiplier = Campaign.Current.Models.DifficultyModel.GetPlayerTroopsReceivedDamageMultiplier();
@@ -702,38 +711,56 @@ public static class SandBoxMissions
 		missionInitializerRecord.DisableCorpseFadeOut = true;
 		missionInitializerRecord.DecalAtlasGroup = 3;
 		MissionInitializerRecord rec = missionInitializerRecord;
-		return MissionState.OpenNew("HideoutAmbushMission", rec, (Mission mission) => new MissionBehavior[30]
+		FlattenedTroopRoster banditPriorityList = new FlattenedTroopRoster();
+		foreach (MapEventParty item in MapEvent.PlayerMapEvent.PartiesOnSide(BattleSideEnum.Defender))
 		{
-			new MissionOptionsComponent(),
-			new CampaignMissionComponent(),
-			new MissionCombatantsLogic(MobileParty.MainParty.MapEvent.InvolvedParties, PartyBase.MainParty, MobileParty.MainParty.MapEvent.GetLeaderParty(BattleSideEnum.Defender), MobileParty.MainParty.MapEvent.GetLeaderParty(BattleSideEnum.Attacker), Mission.MissionTeamAITypeEnum.NoTeamAI, isPlayerSergeant: false),
-			new AgentHumanAILogic(),
-			new StealthPatrolPointMissionLogic(),
-			new HideoutAmbushMissionController(BattleSideEnum.Attacker, priorAllyTroops),
-			new BattleEndLogic(),
-			new MountAgentLogic(),
-			new HideoutAmbushBossFightCinematicController(),
-			new MissionConversationLogic(),
-			new BattleObserverMissionLogic(),
-			new MissionAgentHandler(),
-			new BattleAgentLogic(),
-			new MissionLocationLogic(location),
-			new AgentVictoryLogic(),
-			new MissionAgentPanicHandler(),
-			new MissionHardBorderPlacer(),
-			new MissionBoundaryPlacer(),
-			new MissionBoundaryCrossingHandler(),
-			new StealthFailCounterMissionLogic(),
-			new HighlightsController(),
-			new BattleHighlightsController(),
-			new AgentMoraleInteractionLogic(),
-			new EquipmentControllerLeaveLogic(),
-			new BattleSurgeonLogic(),
-			new MissionAIActivationDeactivationEventListenerLogic(),
-			new CorpseDraggingMissionLogic(),
-			new ShowQuickInformationEventListenerLogic(),
-			new VisualTrackerMissionBehavior(),
-			new StealthAreaMissionLogic()
+			if (item.Party.IsMobile)
+			{
+				banditPriorityList.Add(item.Party.MemberRoster.GetTroopRoster());
+			}
+		}
+		int playerTroopCount = priorAllyTroops.Count();
+		return MissionState.OpenNew("HideoutAmbushMission", rec, delegate
+		{
+			IMissionTroopSupplier[] suppliers = new IMissionTroopSupplier[2]
+			{
+				new PartyGroupTroopSupplier(MapEvent.PlayerMapEvent, BattleSideEnum.Defender, banditPriorityList),
+				new PartyGroupTroopSupplier(MapEvent.PlayerMapEvent, BattleSideEnum.Attacker, priorAllyTroops)
+			};
+			return new MissionBehavior[31]
+			{
+				new MissionOptionsComponent(),
+				new CampaignMissionComponent(),
+				new MissionCombatantsLogic(MobileParty.MainParty.MapEvent.InvolvedParties, PartyBase.MainParty, MobileParty.MainParty.MapEvent.GetLeaderParty(BattleSideEnum.Defender), MobileParty.MainParty.MapEvent.GetLeaderParty(BattleSideEnum.Attacker), Mission.MissionTeamAITypeEnum.NoTeamAI, isPlayerSergeant: false),
+				new AgentHumanAILogic(),
+				new StealthPatrolPointMissionLogic(),
+				new HideoutAmbushMissionController(suppliers, BattleSideEnum.Attacker, playerTroopCount),
+				new BattleEndLogic(),
+				new MountAgentLogic(),
+				new HideoutAmbushBossFightCinematicController(),
+				new MissionConversationLogic(),
+				new BattleObserverMissionLogic(),
+				new MissionAgentHandler(),
+				new BattleAgentLogic(),
+				new MissionLocationLogic(location),
+				new AgentVictoryLogic(),
+				new MissionAgentPanicHandler(),
+				new MissionHardBorderPlacer(),
+				new MissionBoundaryPlacer(),
+				new MissionBoundaryCrossingHandler(),
+				new StealthFailCounterMissionLogic(),
+				new HighlightsController(),
+				new BattleHighlightsController(),
+				new AgentMoraleInteractionLogic(),
+				new EquipmentControllerLeaveLogic(),
+				new BattleSurgeonLogic(),
+				new MissionAIActivationDeactivationEventListenerLogic(),
+				new CorpseDraggingMissionLogic(),
+				new ShowQuickInformationEventListenerLogic(),
+				new VisualTrackerMissionBehavior(),
+				new StealthAreaMissionLogic(),
+				new MissionObjectiveLogic()
+			};
 		});
 	}
 
@@ -812,7 +839,10 @@ public static class SandBoxMissions
 			list.Add(new MountAgentLogic());
 			list.Add(new BannerBearerLogic());
 			list.Add(new AgentHumanAILogic());
-			list.Add(new AmmoSupplyLogic(new List<BattleSideEnum> { BattleSideEnum.Defender }));
+			if (!isSallyOut)
+			{
+				list.Add(new AmmoSupplyLogic(new List<BattleSideEnum> { BattleSideEnum.Defender }));
+			}
 			list.Add(new AgentVictoryLogic());
 			list.Add(new AssignPlayerRoleInTeamMissionController(!isPlayerSergeant, isPlayerSergeant, isPlayerInArmy, heroesOnPlayerSideByPriority));
 			list.Add(new SandboxGeneralsAndCaptainsAssignmentLogic(MapEvent.PlayerMapEvent.AttackerSide.LeaderParty.LeaderHero?.Name, MapEvent.PlayerMapEvent.DefenderSide.LeaderParty.LeaderHero?.Name, null, null, createBodyguard: false));
@@ -950,36 +980,10 @@ public static class SandBoxMissions
 	}
 
 	[MissionMethod]
-	public static Mission OpenVillageBattleMission(string scene)
-	{
-		bool isPlayerSergeant = MobileParty.MainParty.MapEvent.IsPlayerSergeant();
-		bool isPlayerInArmy = MobileParty.MainParty.Army != null;
-		return MissionState.OpenNew("VillageBattle", CreateSandBoxMissionInitializerRecord(scene, "", doNotUseLoadingScreen: false, DecalAtlasGroup.Town), (Mission mission) => new MissionBehavior[17]
-		{
-			new MissionOptionsComponent(),
-			new CampaignMissionComponent(),
-			new BattleEndLogic(),
-			new BattleReinforcementsSpawnController(),
-			new MissionCombatantsLogic(MobileParty.MainParty.MapEvent.InvolvedParties, PartyBase.MainParty, MobileParty.MainParty.MapEvent.GetLeaderParty(BattleSideEnum.Defender), MobileParty.MainParty.MapEvent.GetLeaderParty(BattleSideEnum.Attacker), Mission.MissionTeamAITypeEnum.FieldBattle, isPlayerSergeant),
-			new AgentHumanAILogic(),
-			new MissionAgentPanicHandler(),
-			new MissionHardBorderPlacer(),
-			new MissionBoundaryPlacer(),
-			new MissionBoundaryCrossingHandler(),
-			new AgentMoraleInteractionLogic(),
-			new HighlightsController(),
-			new BattleHighlightsController(),
-			new EquipmentControllerLeaveLogic(),
-			new AssignPlayerRoleInTeamMissionController(!isPlayerSergeant, isPlayerSergeant, isPlayerInArmy),
-			new SandboxGeneralsAndCaptainsAssignmentLogic(MapEvent.PlayerMapEvent.AttackerSide.LeaderParty.LeaderHero?.Name, MapEvent.PlayerMapEvent.DefenderSide.LeaderParty.LeaderHero?.Name),
-			new BattleSurgeonLogic()
-		});
-	}
-
-	[MissionMethod]
 	public static Mission OpenConversationMission(ConversationCharacterData playerCharacterData, ConversationCharacterData conversationPartnerData, string specialScene = "", string sceneLevels = "", bool isMultiAgentConversation = false)
 	{
-		string sceneName = (specialScene.IsEmpty() ? Campaign.Current.Models.SceneModel.GetConversationSceneForMapPosition(PartyBase.MainParty.Position) : specialScene);
+		CampaignVec2 campaignPosition = conversationPartnerData.Party?.Position ?? PartyBase.MainParty.Position;
+		string sceneName = (specialScene.IsEmpty() ? Campaign.Current.Models.SceneModel.GetConversationSceneForMapPosition(campaignPosition) : specialScene);
 		return MissionState.OpenNew("Conversation", CreateSandBoxMissionInitializerRecord(sceneName, sceneLevels, doNotUseLoadingScreen: true, DecalAtlasGroup.Town), (Mission mission) => new MissionBehavior[5]
 		{
 			new CampaignMissionComponent(),
@@ -1017,9 +1021,9 @@ public static class SandBoxMissions
 		return null;
 	}
 
-	private static MissionAgentSpawnLogic CreateCampaignMissionAgentSpawnLogic(Mission.BattleSizeType battleSizeType, FlattenedTroopRoster priorTroopsForDefenders = null, FlattenedTroopRoster priorTroopsForAttackers = null)
+	private static DefaultBattleMissionAgentSpawnLogic CreateCampaignMissionAgentSpawnLogic(Mission.BattleSizeType battleSizeType, FlattenedTroopRoster priorTroopsForDefenders = null, FlattenedTroopRoster priorTroopsForAttackers = null)
 	{
-		return new MissionAgentSpawnLogic(new IMissionTroopSupplier[2]
+		return new DefaultBattleMissionAgentSpawnLogic(new IMissionTroopSupplier[2]
 		{
 			new PartyGroupTroopSupplier(MapEvent.PlayerMapEvent, BattleSideEnum.Defender, priorTroopsForDefenders),
 			new PartyGroupTroopSupplier(MapEvent.PlayerMapEvent, BattleSideEnum.Attacker, priorTroopsForAttackers)
@@ -1060,6 +1064,22 @@ public static class SandBoxMissions
 			new MissionAgentHandler(),
 			new DisguiseMissionLogic(defaultContractorCharacter, fromLocation, willSetUpContact),
 			new ShowQuickInformationEventListenerLogic()
+		});
+	}
+
+	[MissionMethod(UsableByEditor = true)]
+	public static Mission OpenSimpleMountedPlayerMission(string scene, string sceneLevels)
+	{
+		return MissionState.OpenNew("SimpleMountedPlayer", new MissionInitializerRecord(scene)
+		{
+			PlayingInCampaignMode = (Campaign.Current.GameMode == CampaignGameMode.Campaign),
+			AtmosphereOnCampaign = ((Campaign.Current.GameMode == CampaignGameMode.Campaign) ? Campaign.Current.Models.MapWeatherModel.GetAtmosphereModel(MobileParty.MainParty.Position) : AtmosphereInfo.GetInvalidAtmosphereInfo()),
+			SceneLevels = sceneLevels
+		}, (Mission missionController) => new MissionBehavior[3]
+		{
+			new MissionOptionsComponent(),
+			new SimpleMountedPlayerMissionController(),
+			new EquipmentControllerLeaveLogic()
 		});
 	}
 }

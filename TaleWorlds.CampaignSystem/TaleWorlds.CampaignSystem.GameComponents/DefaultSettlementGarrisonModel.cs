@@ -151,7 +151,7 @@ public class DefaultSettlementGarrisonModel : SettlementGarrisonModel
 		{
 			return 0f;
 		}
-		ExplainedNumber result = new ExplainedNumber(settlement.MaxHitPointsOfOneWallSection * (float)settlement.WallSectionCount * 0.02f);
+		ExplainedNumber result = new ExplainedNumber(settlement.MaxHitPointsOfOneWallSection * (float)settlement.WallSectionCount * 0.04f);
 		if (settlement.IsFortification)
 		{
 			settlement.Town.AddEffectOfBuildings(BuildingEffectEnum.WallRepairSpeed, ref result);

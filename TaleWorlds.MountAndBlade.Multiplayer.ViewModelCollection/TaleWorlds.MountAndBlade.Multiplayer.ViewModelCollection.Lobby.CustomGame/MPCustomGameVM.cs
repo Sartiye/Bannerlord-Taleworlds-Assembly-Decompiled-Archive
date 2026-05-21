@@ -54,6 +54,12 @@ public class MPCustomGameVM : ViewModel
 
 	private bool _isAnyGameSelected;
 
+	private bool _isCreateGamePanelActive;
+
+	private bool _canPlayerCreateGame;
+
+	private bool _isJoinEnabled;
+
 	private MPCustomGameItemVM _selectedGame;
 
 	private MPCustomGameFiltersVM _filtersData;
@@ -69,8 +75,6 @@ public class MPCustomGameVM : ViewModel
 	private string _createServerText;
 
 	private string _closeText;
-
-	private string _serversInfoText;
 
 	private string _refreshText;
 
@@ -152,6 +156,58 @@ public class MPCustomGameVM : ViewModel
 			{
 				_isAnyGameSelected = value;
 				OnPropertyChangedWithValue(value, "IsAnyGameSelected");
+				UpdateIsJoinEnabled();
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsCreateGamePanelActive
+	{
+		get
+		{
+			return _isCreateGamePanelActive;
+		}
+		set
+		{
+			if (value != _isCreateGamePanelActive)
+			{
+				_isCreateGamePanelActive = value;
+				OnPropertyChangedWithValue(value, "IsCreateGamePanelActive");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool CanPlayerCreateGame
+	{
+		get
+		{
+			return _canPlayerCreateGame;
+		}
+		set
+		{
+			if (value != _canPlayerCreateGame)
+			{
+				_canPlayerCreateGame = value;
+				OnPropertyChangedWithValue(value, "CanPlayerCreateGame");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsJoinEnabled
+	{
+		get
+		{
+			return _isJoinEnabled;
+		}
+		set
+		{
+			if (value != _isJoinEnabled)
+			{
+				_isJoinEnabled = value;
+				OnPropertyChangedWithValue(value, "IsJoinEnabled");
 			}
 		}
 	}
@@ -289,6 +345,8 @@ public class MPCustomGameVM : ViewModel
 			{
 				_isPartyLeader = value;
 				OnPropertyChangedWithValue(value, "IsPartyLeader");
+				UpdateCanPlayerCreateGame();
+				UpdateIsJoinEnabled();
 			}
 		}
 	}
@@ -306,6 +364,8 @@ public class MPCustomGameVM : ViewModel
 			{
 				_isInParty = value;
 				OnPropertyChangedWithValue(value, "IsInParty");
+				UpdateCanPlayerCreateGame();
+				UpdateIsJoinEnabled();
 			}
 		}
 	}
@@ -357,23 +417,6 @@ public class MPCustomGameVM : ViewModel
 			{
 				_closeText = value;
 				OnPropertyChangedWithValue(value, "CloseText");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public string ServersInfoText
-	{
-		get
-		{
-			return _serversInfoText;
-		}
-		set
-		{
-			if (value != _serversInfoText)
-			{
-				_serversInfoText = value;
-				OnPropertyChangedWithValue(value, "ServersInfoText");
 			}
 		}
 	}
@@ -615,6 +658,7 @@ public class MPCustomGameVM : ViewModel
 				{
 					_isPlayerBasedCustomBattleEnabled = value;
 					OnPropertyChangedWithValue(value, "IsPlayerBasedCustomBattleEnabled");
+					UpdateCanPlayerCreateGame();
 				}
 			}
 		}
@@ -635,6 +679,7 @@ public class MPCustomGameVM : ViewModel
 				{
 					_isPremadeGameEnabled = value;
 					OnPropertyChangedWithValue(value, "IsPremadeGameEnabled");
+					UpdateCanPlayerCreateGame();
 				}
 			}
 		}
@@ -702,7 +747,6 @@ public class MPCustomGameVM : ViewModel
 		IsPasswordProtectedHint = new HintViewModel(new TextObject("{=dMdmyb3Y}Password Protected"));
 		CreateServerText = new TextObject("{=gzdNEM76}Create a Game").ToString();
 		CloseText = new TextObject("{=6MQaCah5}Join a Game").ToString();
-		ServersInfoText = new TextObject("{=WOQZBmMx}Servers").ToString();
 		RefreshText = new TextObject("{=qFPBhVh4}Refresh").ToString();
 		JoinText = new TextObject("{=lWDq0Uss}JOIN").ToString();
 		PasswordText = new TextObject("{=8nJFaJio}Password").ToString();
@@ -785,7 +829,7 @@ public class MPCustomGameVM : ViewModel
 		}
 		if (IsRefreshing)
 		{
-			Debug.FailedAssert("Trying to refresh game list but list is already being refreshed", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\CustomGame\\MPCustomGameVM.cs", "ExecuteRefresh", 199);
+			Debug.FailedAssert("Trying to refresh game list but list is already being refreshed", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\CustomGame\\MPCustomGameVM.cs", "ExecuteRefresh", 198);
 			return;
 		}
 		IsRefreshing = true;
@@ -865,14 +909,17 @@ public class MPCustomGameVM : ViewModel
 
 	public void ExecuteJoinSelectedGame()
 	{
-		OnJoinGame(_selectedGame);
+		if (IsJoinEnabled)
+		{
+			OnJoinGame(SelectedGame);
+		}
 	}
 
 	public void OnJoinGame(MPCustomGameItemVM gameItem)
 	{
 		if (gameItem == null)
 		{
-			Debug.FailedAssert("Server to join is null.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\CustomGame\\MPCustomGameVM.cs", "OnJoinGame", 297);
+			Debug.FailedAssert("Server to join is null.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\CustomGame\\MPCustomGameVM.cs", "OnJoinGame", 299);
 		}
 		else if (gameItem.IsPasswordProtected)
 		{
@@ -924,7 +971,7 @@ public class MPCustomGameVM : ViewModel
 		}
 		return delegate
 		{
-			Debug.FailedAssert("Fell through game modes, should never happen", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\CustomGame\\MPCustomGameVM.cs", "GetOnTryPasswordForServerAction", 351);
+			Debug.FailedAssert("Fell through game modes, should never happen", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\CustomGame\\MPCustomGameVM.cs", "GetOnTryPasswordForServerAction", 353);
 		};
 	}
 
@@ -970,6 +1017,33 @@ public class MPCustomGameVM : ViewModel
 	private void ExecuteSelectCustomServerAction(object actionParam)
 	{
 		(actionParam as CustomServerAction).Execute();
+	}
+
+	public void ExecuteOpenCreateGamePanel()
+	{
+		if (CanPlayerCreateGame)
+		{
+			IsCreateGamePanelActive = true;
+		}
+	}
+
+	public void ExecuteCloseCreateGamePanel()
+	{
+		IsCreateGamePanelActive = false;
+	}
+
+	private void UpdateCanPlayerCreateGame()
+	{
+		CanPlayerCreateGame = (IsPlayerBasedCustomBattleEnabled || IsPremadeGameEnabled) && (IsPartyLeader || !IsInParty);
+		if (!CanPlayerCreateGame)
+		{
+			IsCreateGamePanelActive = false;
+		}
+	}
+
+	private void UpdateIsJoinEnabled()
+	{
+		IsJoinEnabled = IsAnyGameSelected && (IsPartyLeader || !IsInParty);
 	}
 
 	public void SetRefreshInputKey(HotKey hotKey)

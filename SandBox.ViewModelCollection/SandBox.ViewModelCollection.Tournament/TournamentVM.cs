@@ -912,7 +912,7 @@ public class TournamentVM : ViewModel
 		TournamentWinnerTitle = GameTexts.FindText("str_tournament_winner_title").ToString();
 		BetTitleText = GameTexts.FindText("str_wager").ToString();
 		GameTexts.SetVariable("MAX_AMOUNT", Tournament.GetMaximumBet());
-		GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		BetDescriptionText = GameTexts.FindText("str_tournament_bet_description").ToString();
 		TournamentPrizeText = GameTexts.FindText("str_tournament_prize").ToString();
 		PrizeItemName = Tournament.TournamentGame.Prize.Name.ToString();
@@ -1019,7 +1019,7 @@ public class TournamentVM : ViewModel
 		OnPropertyChanged("IsBetButtonEnabled");
 		MaximumBetValue = TaleWorlds.Library.MathF.Min(Tournament.GetMaximumBet() - _thisRoundBettedAmount, Hero.MainHero.Gold);
 		GameTexts.SetVariable("NORMALIZED_EXPECTED_GOLD", (int)(Tournament.BetOdd * 100f));
-		GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+		GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		BetOddsText = GameTexts.FindText("str_tournament_bet_odd").ToString();
 	}
 
@@ -1080,7 +1080,7 @@ public class TournamentVM : ViewModel
 				float tournamentWinInfluence = Tournament.TournamentGame.TournamentWinInfluence;
 				TextObject textObject = GameTexts.FindText("str_tournament_influence");
 				textObject.SetTextVariable("INFLUENCE", tournamentWinInfluence.ToString("F1"));
-				textObject.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"7\">");
+				textObject.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"5\">");
 				BattleRewards.Add(new TournamentRewardVM(textObject.ToString()));
 			}
 			if (Tournament.TournamentGame.Prize != null)
@@ -1094,7 +1094,7 @@ public class TournamentVM : ViewModel
 				int overallExpectedDenars = Tournament.OverallExpectedDenars;
 				TextObject textObject2 = GameTexts.FindText("str_tournament_bet");
 				textObject2.SetTextVariable("BET", overallExpectedDenars);
-				textObject2.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject2.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				BattleRewards.Add(new TournamentRewardVM(textObject2.ToString()));
 			}
 		}

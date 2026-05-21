@@ -66,7 +66,10 @@ public class MobilePartyVisualManager : EntityVisualManagerBase<PartyBase>
 			UIntPtr uIntPtr = intersectedEntityIDs[num];
 			if (uIntPtr != UIntPtr.Zero && MapScreen.VisualsOfEntities.TryGetValue(uIntPtr, out var value) && value is MobilePartyVisual mobilePartyVisual && value.IsVisibleOrFadingOut() && (!mobilePartyVisual.MapEntity.IsMobile || mobilePartyVisual.MapEntity.MobileParty.IsMainParty || !mobilePartyVisual.MapEntity.MobileParty.IsInRaftState))
 			{
-				hoveredVisual = value.AttachedTo ?? value;
+				if (!mobilePartyVisual.IsMainEntity || !Hero.MainHero.IsPrisoner)
+				{
+					hoveredVisual = value.AttachedTo ?? value;
+				}
 				if (!value.IsMainEntity && (value.AttachedTo == null || !value.AttachedTo.IsMainEntity))
 				{
 					selectedVisual = value.AttachedTo ?? value;

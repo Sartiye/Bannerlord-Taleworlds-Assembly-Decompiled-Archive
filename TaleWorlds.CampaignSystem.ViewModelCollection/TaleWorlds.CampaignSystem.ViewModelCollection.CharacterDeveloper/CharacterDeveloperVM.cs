@@ -51,6 +51,10 @@ public class CharacterDeveloperVM : ViewModel
 
 	private HintViewModel _unspentAttributePointsHint;
 
+	private HintViewModel _levelHint;
+
+	private HintViewModel _unopenedPerksHint;
+
 	private BasicTooltipViewModel _previousCharacterHint;
 
 	private BasicTooltipViewModel _nextCharacterHint;
@@ -73,7 +77,7 @@ public class CharacterDeveloperVM : ViewModel
 
 	private SelectorVM<SelectorItemVM> _characterList;
 
-	private int _unopenedPerksNumForOtherChars;
+	private int _unopenedPerksNumForCurrentCharacter;
 
 	private bool _hasUnopenedPerksForCurrentCharacter;
 
@@ -305,6 +309,40 @@ public class CharacterDeveloperVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public HintViewModel LevelHint
+	{
+		get
+		{
+			return _levelHint;
+		}
+		set
+		{
+			if (value != _levelHint)
+			{
+				_levelHint = value;
+				OnPropertyChangedWithValue(value, "LevelHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public HintViewModel UnopenedPerksHint
+	{
+		get
+		{
+			return _unopenedPerksHint;
+		}
+		set
+		{
+			if (value != _unopenedPerksHint)
+			{
+				_unopenedPerksHint = value;
+				OnPropertyChangedWithValue(value, "UnopenedPerksHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public BasicTooltipViewModel PreviousCharacterHint
 	{
 		get
@@ -441,24 +479,24 @@ public class CharacterDeveloperVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public int UnopenedPerksNumForOtherChars
+	public int UnopenedPerksNumForCurrentCharacter
 	{
 		get
 		{
-			return _unopenedPerksNumForOtherChars;
+			return _unopenedPerksNumForCurrentCharacter;
 		}
 		set
 		{
-			if (value != _unopenedPerksNumForOtherChars)
+			if (value != _unopenedPerksNumForCurrentCharacter)
 			{
-				_unopenedPerksNumForOtherChars = value;
-				OnPropertyChangedWithValue(value, "UnopenedPerksNumForOtherChars");
+				_unopenedPerksNumForCurrentCharacter = value;
+				OnPropertyChangedWithValue(value, "UnopenedPerksNumForCurrentCharacter");
 			}
 		}
 	}
 
 	[DataSourceProperty]
-	public bool HasUnopenedPerksForOtherCharacters
+	public bool HasUnopenedPerksForCurrentCharacter
 	{
 		get
 		{
@@ -469,7 +507,7 @@ public class CharacterDeveloperVM : ViewModel
 			if (value != _hasUnopenedPerksForCurrentCharacter)
 			{
 				_hasUnopenedPerksForCurrentCharacter = value;
-				OnPropertyChangedWithValue(value, "HasUnopenedPerksForOtherCharacters");
+				OnPropertyChangedWithValue(value, "HasUnopenedPerksForCurrentCharacter");
 			}
 		}
 	}
@@ -591,7 +629,7 @@ public class CharacterDeveloperVM : ViewModel
 		IsPlayerAccompanied = _heroList.Count > 1;
 		SetCurrentHero(_heroList[_heroIndex]);
 		_viewDataTracker.ClearCharacterNotification();
-		UnopenedPerksNumForOtherChars = _heroList.Sum((CharacterDeveloperHeroItemVM h) => (h != CurrentCharacter) ? h.GetNumberOfUnselectedPerks() : 0);
+		UnopenedPerksNumForCurrentCharacter = CurrentCharacter.GetNumberOfUnselectedPerks();
 		Game.Current.EventManager.RegisterEvent<TutorialNotificationElementChangeEvent>(OnTutorialNotificationElementIDChange);
 		RefreshValues();
 	}
@@ -614,6 +652,8 @@ public class CharacterDeveloperVM : ViewModel
 		GameTexts.SetVariable("ATTRIBUTE_EVERY_LEVEL", Campaign.Current.Models.CharacterDevelopmentModel.LevelsPerAttributePoint);
 		UnspentCharacterPointsHint = new HintViewModel(GameTexts.FindText("str_character_points_how_to_get"));
 		UnspentAttributePointsHint = new HintViewModel(GameTexts.FindText("str_attribute_points_how_to_get"));
+		LevelHint = new HintViewModel(GameTexts.FindText("str_level_tag"));
+		UnopenedPerksHint = new HintViewModel(new TextObject("{=jmLg6HQh}Number of available perk unlocks."));
 		SetPreviousCharacterHint();
 		SetNextCharacterHint();
 		CharacterList.RefreshValues();
@@ -659,8 +699,8 @@ public class CharacterDeveloperVM : ViewModel
 		{
 			_heroIndex = newIndex.SelectedIndex;
 			SetCurrentHero(_heroList[_heroIndex]);
-			UnopenedPerksNumForOtherChars = _heroList.Sum((CharacterDeveloperHeroItemVM h) => (h != CurrentCharacter) ? h.GetNumberOfUnselectedPerks() : 0);
-			HasUnopenedPerksForOtherCharacters = _heroList[_heroIndex].GetNumberOfUnselectedPerks() > 0;
+			UnopenedPerksNumForCurrentCharacter = CurrentCharacter.GetNumberOfUnselectedPerks();
+			HasUnopenedPerksForCurrentCharacter = _heroList[_heroIndex].GetNumberOfUnselectedPerks() > 0;
 		}
 	}
 
@@ -674,13 +714,7 @@ public class CharacterDeveloperVM : ViewModel
 		List<string> list = new List<string>();
 		for (int i = 0; i < _heroList.Count; i++)
 		{
-			string text = _heroList[i].HeroNameText;
-			if (_heroList[i].GetNumberOfUnselectedPerks() > 0)
-			{
-				text = GameTexts.FindText("str_STR1_space_STR2").SetTextVariable("STR1", text).SetTextVariable("STR2", "{=!}<img src=\"CharacterDeveloper\\UnselectedPerksIcon\" extend=\"2\">")
-					.ToString();
-			}
-			list.Add(text);
+			list.Add(_heroList[i].HeroNameText);
 		}
 		CharacterList.Refresh(list, _heroIndex, OnCharacterSelection);
 	}

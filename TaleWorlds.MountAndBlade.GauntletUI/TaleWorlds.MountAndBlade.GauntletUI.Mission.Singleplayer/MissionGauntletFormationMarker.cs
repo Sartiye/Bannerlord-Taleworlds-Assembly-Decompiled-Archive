@@ -32,7 +32,7 @@ public class MissionGauntletFormationMarker : MissionBattleUIBaseView
 	protected override void OnCreateView()
 	{
 		_dataSource = new MissionFormationMarkerVM(base.Mission);
-		_gauntletLayer = new GauntletLayer("MissionFormationMarker", ViewOrderPriority);
+		_gauntletLayer = new GauntletLayer("MissionFormationMarker", ViewOrderPriority++);
 		_gauntletLayer.LoadMovie("FormationMarker", _dataSource);
 		base.MissionScreen.AddLayer(_gauntletLayer);
 		_formationTargetHandler = base.Mission.GetMissionBehavior<MissionFormationTargetSelectionHandler>();

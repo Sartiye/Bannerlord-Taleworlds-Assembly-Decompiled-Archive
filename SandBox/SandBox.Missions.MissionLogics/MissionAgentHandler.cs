@@ -910,7 +910,7 @@ public class MissionAgentHandler : MissionLogic
 			{
 				return (color1: locationCharacter.AgentData.AgentClothingColor1, color2: locationCharacter.AgentData.AgentClothingColor2);
 			}
-			return CharacterHelper.GetDeterministicColorsForCharacter(character);
+			return CharacterHelper.GetDeterministicColorsForCharacter(character, character.HeroObject.PartyBelongedTo?.Party);
 		}
 		if (character.IsSoldier)
 		{

@@ -146,7 +146,7 @@ public class ClanFinanceAlleyItemVM : ClanFinanceIncomeItemBaseVM
 		base.PopulateStatsList();
 		base.ItemProperties.Clear();
 		string variable = GameTexts.FindText("str_plus_with_number").SetTextVariable("NUMBER", _alleyModel.GetDailyCrimeRatingOfAlley).ToString();
-		string value = new TextObject("{=LuC5ZZMu}{CRIMINAL_RATING} ({INCREASE}){CRIME_ICON}").SetTextVariable("CRIMINAL_RATING", Alley.Settlement.MapFaction.MainHeroCrimeRating).SetTextVariable("INCREASE", variable).SetTextVariable("CRIME_ICON", "{=!}<img src=\"SPGeneral\\MapOverlay\\Settlement\\icon_crime\" extend=\"16\">")
+		string value = new TextObject("{=LuC5ZZMu}{CRIMINAL_RATING} ({INCREASE}){CRIME_ICON}").SetTextVariable("CRIMINAL_RATING", Alley.Settlement.MapFaction.MainHeroCrimeRating).SetTextVariable("INCREASE", variable).SetTextVariable("CRIME_ICON", "{=!}<img src=\"SPGeneral\\MapOverlay\\Settlement\\icon_crime\" extend=\"12\">")
 			.ToString();
 		IncomeTextWithVisual = new TextObject("{=ePmSvu1s}{AMOUNT}{GOLD_ICON}").SetTextVariable("AMOUNT", base.Income).ToString();
 		base.ItemProperties.Add(new SelectableItemPropertyVM(new TextObject("{=FkhJz0po}Location").ToString(), Alley.Settlement.Name.ToString()));

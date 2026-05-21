@@ -106,7 +106,7 @@ public class OrderRadial__TaleWorlds_MountAndBlade_ViewModelCollection_Order_Mis
 		_widget_0.Brush = base.Context.GetBrush("Frame1Brush");
 		_widget_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0.HorizontalAlignment = HorizontalAlignment.Center;

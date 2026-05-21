@@ -262,7 +262,7 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate NativeObjectPointer CreateFromPrefabWithInitialFrameDelegate(UIntPtr scenePointer, byte[] prefabid, ref MatrixFrame frame, [MarshalAs(UnmanagedType.U1)] bool callScriptCallbacks);
+	public delegate NativeObjectPointer CreateFromPrefabWithInitialFrameAndRestOffsetDelegate(UIntPtr scenePointer, byte[] prefabId, [MarshalAs(UnmanagedType.U1)] bool createPhysics, ref MatrixFrame frame, [MarshalAs(UnmanagedType.U1)] bool hasCustomRestOffset, float restOffset, [MarshalAs(UnmanagedType.U1)] bool callScriptCallbacks, uint scriptInclusionHashTag);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -1401,6 +1401,11 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void UpdateBodyRestOffsetDelegate(UIntPtr entityId, float restOffset);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void UpdateGlobalBoundsDelegate(UIntPtr entityPointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -1523,7 +1528,7 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 
 	public static CreateFromPrefabDelegate call_CreateFromPrefabDelegate;
 
-	public static CreateFromPrefabWithInitialFrameDelegate call_CreateFromPrefabWithInitialFrameDelegate;
+	public static CreateFromPrefabWithInitialFrameAndRestOffsetDelegate call_CreateFromPrefabWithInitialFrameAndRestOffsetDelegate;
 
 	public static CreatePhysxCookingInstanceDelegate call_CreatePhysxCookingInstanceDelegate;
 
@@ -1965,6 +1970,8 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 
 	public static UpdateAttachedNavigationMeshFacesDelegate call_UpdateAttachedNavigationMeshFacesDelegate;
 
+	public static UpdateBodyRestOffsetDelegate call_UpdateBodyRestOffsetDelegate;
+
 	public static UpdateGlobalBoundsDelegate call_UpdateGlobalBoundsDelegate;
 
 	public static UpdateHullWaterEffectFramesDelegate call_UpdateHullWaterEffectFramesDelegate;
@@ -2296,17 +2303,17 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		return result;
 	}
 
-	public GameEntity CreateFromPrefabWithInitialFrame(UIntPtr scenePointer, string prefabid, ref MatrixFrame frame, bool callScriptCallbacks)
+	public GameEntity CreateFromPrefabWithInitialFrameAndRestOffset(UIntPtr scenePointer, string prefabId, bool createPhysics, ref MatrixFrame frame, bool hasCustomRestOffset, float restOffset, bool callScriptCallbacks, uint scriptInclusionHashTag)
 	{
 		byte[] array = null;
-		if (prefabid != null)
+		if (prefabId != null)
 		{
-			int byteCount = _utf8.GetByteCount(prefabid);
+			int byteCount = _utf8.GetByteCount(prefabId);
 			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
-			_utf8.GetBytes(prefabid, 0, prefabid.Length, array, 0);
+			_utf8.GetBytes(prefabId, 0, prefabId.Length, array, 0);
 			array[byteCount] = 0;
 		}
-		NativeObjectPointer nativeObjectPointer = call_CreateFromPrefabWithInitialFrameDelegate(scenePointer, array, ref frame, callScriptCallbacks);
+		NativeObjectPointer nativeObjectPointer = call_CreateFromPrefabWithInitialFrameAndRestOffsetDelegate(scenePointer, array, createPhysics, ref frame, hasCustomRestOffset, restOffset, callScriptCallbacks, scriptInclusionHashTag);
 		GameEntity result = null;
 		if (nativeObjectPointer.Pointer != UIntPtr.Zero)
 		{
@@ -3667,6 +3674,11 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	public void UpdateAttachedNavigationMeshFaces(UIntPtr entityId)
 	{
 		call_UpdateAttachedNavigationMeshFacesDelegate(entityId);
+	}
+
+	public void UpdateBodyRestOffset(UIntPtr entityId, float restOffset)
+	{
+		call_UpdateBodyRestOffsetDelegate(entityId, restOffset);
 	}
 
 	public void UpdateGlobalBounds(UIntPtr entityPointer)

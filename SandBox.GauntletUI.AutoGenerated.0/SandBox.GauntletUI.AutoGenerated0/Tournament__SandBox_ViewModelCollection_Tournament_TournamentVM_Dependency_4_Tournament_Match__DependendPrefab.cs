@@ -76,7 +76,7 @@ public class Tournament__SandBox_ViewModelCollection_Tournament_TournamentVM_Dep
 		_widget_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
+		_widget_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
 		_widget_0_0.SetAttributes();
 		_widget_0_1.SetAttributes();
 		_widget_0_2.SetAttributes();

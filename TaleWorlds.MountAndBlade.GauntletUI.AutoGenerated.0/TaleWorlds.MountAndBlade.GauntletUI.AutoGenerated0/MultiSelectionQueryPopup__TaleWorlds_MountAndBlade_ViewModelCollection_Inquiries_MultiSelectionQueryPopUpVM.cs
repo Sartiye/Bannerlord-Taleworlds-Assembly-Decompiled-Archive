@@ -179,7 +179,7 @@ public class MultiSelectionQueryPopup__TaleWorlds_MountAndBlade_ViewModelCollect
 		_widget_0_0.Sprite = base.Context.SpriteData.GetSprite("StdAssets\\Popup\\canvas");
 		_widget_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1_0.MarginLeft = 30f;
@@ -244,7 +244,7 @@ public class MultiSelectionQueryPopup__TaleWorlds_MountAndBlade_ViewModelCollect
 		_widget_0_1_4_0_1.DoneButtonWidget = _widget_0_4;
 		_widget_0_1_4_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1_4_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_1_4_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1_4_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_1_4_0_1_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1_4_0_1_1.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_1_4_0_1_1.SuggestedHeight = 108f;

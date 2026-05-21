@@ -53,23 +53,36 @@ public class PoliticalStagnationAndBorderIncidentCampaignBehavior : CampaignBeha
 
 	public void HourlyTickSettlement(Settlement settlement)
 	{
-		if (!_lastUpdateTimePerSettlement.ContainsKey(settlement) || !(_lastUpdateTimePerSettlement[settlement].ElapsedHoursUntilNow > 3f))
+		if (_lastUpdateTimePerSettlement.ContainsKey(settlement) && _lastUpdateTimePerSettlement[settlement].ElapsedHoursUntilNow > 3f)
 		{
-			return;
+			UpdateNearbyValues(settlement, isCheckingNavalValues: false);
+			settlement.NearbyLandThreatIntensity *= 0.85f;
+			settlement.NearbyLandAllyIntensity *= 0.8f;
+			if (settlement.HasPort)
+			{
+				UpdateNearbyValues(settlement, isCheckingNavalValues: true);
+				settlement.NearbyNavalThreatIntensity *= 0.85f;
+				settlement.NearbyNavalAllyIntensity *= 0.8f;
+			}
+			_lastUpdateTimePerSettlement[settlement] = CampaignTime.Now;
 		}
-		float radius = Campaign.Current.EstimatedMaximumLordPartySpeedExceptPlayer * 0.25f * (float)CampaignTime.HoursInDay * 0.5f;
-		LocatableSearchData<MobileParty> data = MobileParty.StartFindingLocatablesAroundPosition(settlement.Position.ToVec2(), radius);
+	}
+
+	private void UpdateNearbyValues(Settlement settlement, bool isCheckingNavalValues)
+	{
+		float settlementNearbyThreatAndAllyCheckRadius = Campaign.Current.Models.MobilePartyAIModel.GetSettlementNearbyThreatAndAllyCheckRadius(settlement, isCheckingNavalValues);
+		LocatableSearchData<MobileParty> data = MobileParty.StartFindingLocatablesAroundPosition((isCheckingNavalValues ? settlement.PortPosition : settlement.GatePosition).ToVec2(), settlementNearbyThreatAndAllyCheckRadius);
 		for (MobileParty mobileParty = MobileParty.FindNextLocatable(ref data); mobileParty != null; mobileParty = MobileParty.FindNextLocatable(ref data))
 		{
-			if (!mobileParty.IsGarrison && !mobileParty.IsMilitia)
+			if (!mobileParty.IsGarrison && !mobileParty.IsMilitia && mobileParty.IsActive)
 			{
 				if (mobileParty.Ai.IsAlerted && mobileParty.MapFaction == settlement.MapFaction && (mobileParty.IsCaravan || mobileParty.IsVillager))
 				{
-					if (mobileParty.IsCurrentlyAtSea)
+					if (mobileParty.IsCurrentlyAtSea && isCheckingNavalValues)
 					{
 						settlement.NearbyNavalThreatIntensity += 0.6f;
 					}
-					else
+					else if (!isCheckingNavalValues)
 					{
 						settlement.NearbyLandThreatIntensity += 0.6f;
 					}
@@ -79,11 +92,11 @@ public class PoliticalStagnationAndBorderIncidentCampaignBehavior : CampaignBeha
 					if (mobileParty.CurrentSettlement == null && mobileParty.Army == null && (mobileParty.IsBandit || FactionManager.IsAtWarAgainstFaction(mobileParty.MapFaction, settlement.MapFaction)))
 					{
 						float threatValueOfEnemyToSettlement = GetThreatValueOfEnemyToSettlement(mobileParty, settlement);
-						if (mobileParty.IsCurrentlyAtSea)
+						if (mobileParty.IsCurrentlyAtSea && isCheckingNavalValues)
 						{
 							settlement.NearbyNavalThreatIntensity += threatValueOfEnemyToSettlement * 3f;
 						}
-						else
+						else if (!isCheckingNavalValues)
 						{
 							settlement.NearbyLandThreatIntensity += threatValueOfEnemyToSettlement * 3f;
 						}
@@ -96,11 +109,11 @@ public class PoliticalStagnationAndBorderIncidentCampaignBehavior : CampaignBeha
 						{
 							num *= 0.5f;
 						}
-						if (mobileParty.IsCurrentlyAtSea || flag)
+						if ((mobileParty.IsCurrentlyAtSea || flag) && isCheckingNavalValues)
 						{
 							settlement.NearbyNavalAllyIntensity += num * 3f;
 						}
-						else
+						else if (!isCheckingNavalValues)
 						{
 							settlement.NearbyLandAllyIntensity += num * 3f;
 						}
@@ -108,11 +121,6 @@ public class PoliticalStagnationAndBorderIncidentCampaignBehavior : CampaignBeha
 				}
 			}
 		}
-		settlement.NearbyLandThreatIntensity *= 0.85f;
-		settlement.NearbyLandAllyIntensity *= 0.8f;
-		settlement.NearbyNavalThreatIntensity *= 0.85f;
-		settlement.NearbyNavalAllyIntensity *= 0.8f;
-		_lastUpdateTimePerSettlement[settlement] = CampaignTime.Now;
 	}
 
 	private float GetThreatValueOfParty(MobileParty mobileParty)

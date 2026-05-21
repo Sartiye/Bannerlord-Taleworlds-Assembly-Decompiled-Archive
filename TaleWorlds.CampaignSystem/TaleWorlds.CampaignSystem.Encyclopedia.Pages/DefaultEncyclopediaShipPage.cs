@@ -30,7 +30,7 @@ public class DefaultEncyclopediaShipPage : EncyclopediaPage
 				}
 				return shipHull.Type.ToString();
 			}
-			Debug.FailedAssert("Unable to get the class of a ship object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaShipPage.cs", "GetComparedValueText", 165);
+			Debug.FailedAssert("Unable to get the class of a ship object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaShipPage.cs", "GetComparedValueText", 164);
 			return "";
 		}
 	}
@@ -54,7 +54,7 @@ public class DefaultEncyclopediaShipPage : EncyclopediaPage
 				}
 				return shipHull.AvailableSlots.Count.ToString();
 			}
-			Debug.FailedAssert("Unable to get the availableSlotCount of a ship object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaShipPage.cs", "GetComparedValueText", 193);
+			Debug.FailedAssert("Unable to get the availableSlotCount of a ship object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaShipPage.cs", "GetComparedValueText", 192);
 			return "";
 		}
 	}
@@ -80,7 +80,7 @@ public class DefaultEncyclopediaShipPage : EncyclopediaPage
 				MBTextManager.SetTextVariable("NUMBER", maxHitPoints);
 				return maxHitPoints.ToString();
 			}
-			Debug.FailedAssert("Unable to get the hitPoints between a ship object and the player.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaShipPage.cs", "GetComparedValueText", 223);
+			Debug.FailedAssert("Unable to get the hitPoints between a ship object and the player.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaShipPage.cs", "GetComparedValueText", 222);
 			return "";
 		}
 	}
@@ -131,7 +131,7 @@ public class DefaultEncyclopediaShipPage : EncyclopediaPage
 				}
 				return num;
 			}
-			Debug.FailedAssert("Both objects should be shipHull.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaShipPage.cs", "CompareShips", 272);
+			Debug.FailedAssert("Both objects should be shipHull.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaShipPage.cs", "CompareShips", 271);
 			return 0;
 		}
 	}
@@ -183,10 +183,12 @@ public class DefaultEncyclopediaShipPage : EncyclopediaPage
 		List<EncyclopediaFilterGroup> list = new List<EncyclopediaFilterGroup>();
 		List<EncyclopediaFilterItem> list2 = new List<EncyclopediaFilterItem>();
 		foreach (CultureObject culture in (from x in Game.Current.ObjectManager.GetObjectTypeList<CultureObject>()
-			orderby !x.IsMainCulture descending
-			select x).ThenBy((CultureObject f) => f.Name.ToString()).ToList())
+			where x.IsMainCulture
+			select x into f
+			orderby f.Name.ToString()
+			select f).ToList())
 		{
-			if (culture.StringId != "neutral_culture" && culture.CanHaveSettlement && culture.IsMainCulture)
+			if (culture.StringId != "neutral_culture" && culture.CanHaveSettlement)
 			{
 				list2.Add(new EncyclopediaFilterItem(culture.Name, (object c) => culture.AvailableShipHulls.Contains((ShipHull)c)));
 			}
@@ -204,7 +206,7 @@ public class DefaultEncyclopediaShipPage : EncyclopediaPage
 		{
 			new EncyclopediaFilterItem(new TextObject("{=bXJLb0BE}Hybrid"), (object s) => s is ShipHull shipHull3 && (@object = MBObjectManager.Instance.GetObject<MissionShipObject>(shipHull3.MissionShipObjectId)) != null && HasSailOfType(@object, SailType.Square) && HasSailOfType(@object, SailType.Lateen)),
 			new EncyclopediaFilterItem(new TextObject("{=kNxD2oer}Lateen"), (object s) => s is ShipHull shipHull2 && HasSailOfType(MBObjectManager.Instance.GetObject<MissionShipObject>(shipHull2.MissionShipObjectId), SailType.Lateen)),
-			new EncyclopediaFilterItem(new TextObject("{=E3tCWX7w}Square"), (object s) => s is ShipHull shipHull && HasSailOfType(MBObjectManager.Instance.GetObject<MissionShipObject>(shipHull.MissionShipObjectId), SailType.Square))
+			new EncyclopediaFilterItem(new TextObject("{=squareSail}Square"), (object s) => s is ShipHull shipHull && HasSailOfType(MBObjectManager.Instance.GetObject<MissionShipObject>(shipHull.MissionShipObjectId), SailType.Square))
 		};
 		list.Add(new EncyclopediaFilterGroup(filters2, new TextObject("{=UIb3IW3f}Sail Type")));
 		return list;

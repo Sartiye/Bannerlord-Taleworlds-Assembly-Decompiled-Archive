@@ -298,7 +298,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		_widget_0_0.MarginBottom = 9f;
 		_widget_0_0.MarginLeft = 17f;
 		_widget_0_0.Brush = base.Context.GetBrush("Frame1Brush");
-		_widget_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0.ScopeID = "SortButtonsScope";
 		_widget_0_0_0.ScopeParent = _widget_0_0_1;
 		_widget_0_0_0.ScopeMovements = GamepadNavigationTypes.Horizontal;
@@ -405,7 +405,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		_widget_0_0_2_0_1.ClipContents = true;
 		_widget_0_0_2_0_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_2_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0_2_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_2_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_2_0_1_0.MinIndex = 0;
 		_widget_0_0_2_0_1_0.StepSize = 1000;
 		_widget_0_0_2_0_1_0_0.TrackedWidget = _widget_0_0_2_0_1_0_1;
@@ -417,7 +417,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		_widget_0_0_2_0_1_0_2.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_2_0_1_0_2.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_2_0_1_0_2.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_0_0_2_0_1_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_2_0_1_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_2_0_1_0_2.UseSelfIndexForMinimum = true;
 		_widget_0_0_2_0_1_0_3.TrackedWidget = _widget_0_0_2_0_1_0_4;
 		_widget_0_0_2_0_1_0_4.FixedHeader = _widget_0_0_2_0_3;
@@ -428,7 +428,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		_widget_0_0_2_0_1_0_5.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_2_0_1_0_5.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_2_0_1_0_5.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_0_0_2_0_1_0_5.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_2_0_1_0_5.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_2_0_1_0_5.UseSelfIndexForMinimum = true;
 		_widget_0_0_2_0_1_0_6.TrackedWidget = _widget_0_0_2_0_1_0_7;
 		_widget_0_0_2_0_1_0_7.FixedHeader = _widget_0_0_2_0_4;
@@ -440,7 +440,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		_widget_0_0_2_0_1_0_8.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_2_0_1_0_8.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_2_0_1_0_8.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_0_0_2_0_1_0_8.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_2_0_1_0_8.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_2_0_1_0_8.UseSelfIndexForMinimum = true;
 		_widget_0_0_2_0_2.DoNotPassEventsToChildren = true;
 		_widget_0_0_2_0_2.WidthSizePolicy = SizePolicy.Fixed;

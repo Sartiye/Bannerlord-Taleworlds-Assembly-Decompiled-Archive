@@ -180,7 +180,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_1_0_4_2.ClipContents = true;
 		_widget_1_0_4_2_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0_4_2_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_0_4_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_0_4_2_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_0_4_2_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0_4_2_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0_4_2_0_0.StackLayout.LayoutMethod = LayoutMethod.HorizontalLeftToRight;

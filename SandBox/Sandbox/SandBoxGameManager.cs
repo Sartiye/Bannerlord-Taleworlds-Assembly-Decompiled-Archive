@@ -145,7 +145,6 @@ public class SandBoxGameManager : MBGameManager
 				else
 				{
 					PlayerEncounter.Finish();
-					mapState.GameMenuId = null;
 				}
 			}
 			PartyBase.MainParty.SetVisualAsDirty();

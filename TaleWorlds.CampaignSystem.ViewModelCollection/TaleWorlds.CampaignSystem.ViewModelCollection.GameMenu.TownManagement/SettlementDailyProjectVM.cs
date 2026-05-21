@@ -66,7 +66,7 @@ public class SettlementDailyProjectVM : SettlementProjectVM
 		base.ProductionText = new TextObject("{=bd7oAQq6}Daily").ToString();
 	}
 
-	public override void ExecuteAddToQueue()
+	public override void ExecuteAddRemoveToQueue()
 	{
 	}
 

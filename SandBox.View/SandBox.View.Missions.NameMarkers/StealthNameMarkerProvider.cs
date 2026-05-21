@@ -1,11 +1,9 @@
 using System.Collections.Generic;
 using SandBox.Missions.MissionLogics;
 using SandBox.Objects.Usables;
-using SandBox.ViewModelCollection;
 using SandBox.ViewModelCollection.Missions.NameMarker;
 using SandBox.ViewModelCollection.Missions.NameMarker.Targets.Hideout;
 using TaleWorlds.MountAndBlade;
-using TaleWorlds.MountAndBlade.Missions;
 
 namespace SandBox.View.Missions.NameMarkers;
 
@@ -32,38 +30,16 @@ public class StealthNameMarkerProvider : MissionNameMarkerProvider
 
 	private void CreateStealthAreaMarkers(List<MissionNameMarkerTargetBaseVM> markers)
 	{
-		if (_stealthAreaMissionLogic == null)
+		if (_stealthAreaMissionLogic == null || Mission.Current == null || Agent.Main == null)
 		{
 			return;
 		}
-		Mission current = Mission.Current;
-		if (current == null)
+		foreach (StealthAreaUsePoint item2 in Mission.Current.ActiveMissionObjects.FindAllWithType<StealthAreaUsePoint>())
 		{
-			return;
-		}
-		if (Agent.Main != null)
-		{
-			foreach (StealthAreaUsePoint item3 in Mission.Current.ActiveMissionObjects.FindAllWithType<StealthAreaUsePoint>())
+			if (item2.IsUsableByAgent(Agent.Main))
 			{
-				if (item3.IsUsableByAgent(Agent.Main))
-				{
-					MissionStealthAreaUsePointNameMarkerTargetVM item = new MissionStealthAreaUsePointNameMarkerTargetVM(item3);
-					markers.Add(item);
-				}
-			}
-		}
-		AgentReadOnlyList allAgents = current.AllAgents;
-		for (int i = 0; i < allAgents.Count; i++)
-		{
-			Agent agent = allAgents[i];
-			if (SandBoxUIHelper.CanAgentBeAlarmed(agent))
-			{
-				StealthAreaMissionLogic stealthAreaMissionLogic = _stealthAreaMissionLogic;
-				if (stealthAreaMissionLogic != null && stealthAreaMissionLogic.IsSentry(agent))
-				{
-					MissionStealthSentryNameMarkerTargetVM item2 = new MissionStealthSentryNameMarkerTargetVM(agent);
-					markers.Add(item2);
-				}
+				MissionStealthAreaUsePointNameMarkerTargetVM item = new MissionStealthAreaUsePointNameMarkerTargetVM(item2);
+				markers.Add(item);
 			}
 		}
 	}

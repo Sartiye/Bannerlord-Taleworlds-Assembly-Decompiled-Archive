@@ -181,9 +181,9 @@ public class MapTracksCampaignBehavior : CampaignBehaviorBase, IMapTracksCampaig
 			if (campaignVec.DistanceSquared(mobileParty.Position.ToVec2()) > 5f && IsTrackDropped(mobileParty))
 			{
 				CampaignVec2 position = mobileParty.Position;
-				CampaignVec2 campaignVec2 = mobileParty.Position - campaignVec;
-				campaignVec2.Normalize();
-				AddTrack(mobileParty, position, campaignVec2.ToVec2());
+				Vec2 trackDirection = mobileParty.Position.ToVec2() - campaignVec.ToVec2();
+				trackDirection.Normalize();
+				AddTrack(mobileParty, position, trackDirection);
 				_trackDataDictionary[mobileParty] = position;
 			}
 		}

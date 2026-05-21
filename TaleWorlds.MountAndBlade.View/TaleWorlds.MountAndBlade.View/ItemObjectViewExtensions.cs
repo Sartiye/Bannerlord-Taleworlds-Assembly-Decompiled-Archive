@@ -30,7 +30,7 @@ public static class ItemObjectViewExtensions
 		return MetaMesh.GetCopy(itemObject.MultiMeshName);
 	}
 
-	public static MetaMesh GetMultiMeshCopyWithGenderData(this ItemObject itemObject, bool isFemale, bool hasGloves, bool needBatchedVersion)
+	public static MetaMesh GetMultiMeshCopyWithGenderData(this ItemObject itemObject, bool isFemale, bool useSlimVersion, bool needBatchedVersion)
 	{
 		MetaMesh craftedMultiMesh = itemObject.GetCraftedMultiMesh(needBatchedVersion);
 		if (craftedMultiMesh != null)
@@ -48,7 +48,7 @@ public static class ItemObjectViewExtensions
 			return metaMesh;
 		}
 		string multiMeshName = itemObject.MultiMeshName;
-		multiMeshName = ((!isFemale) ? (multiMeshName + (hasGloves ? "_slim" : "")) : (multiMeshName + (hasGloves ? "_converted_slim" : "_converted")));
+		multiMeshName = ((!isFemale) ? (multiMeshName + (useSlimVersion ? "_slim" : "")) : (multiMeshName + (useSlimVersion ? "_converted_slim" : "_converted")));
 		metaMesh = MetaMesh.GetCopy(multiMeshName, showErrors: false, mayReturnNull: true);
 		if (metaMesh != null)
 		{

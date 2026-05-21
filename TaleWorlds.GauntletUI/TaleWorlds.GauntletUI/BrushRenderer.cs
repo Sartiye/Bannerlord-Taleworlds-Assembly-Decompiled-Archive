@@ -604,6 +604,7 @@ public class BrushRenderer
 		}
 		Vector2 vector = new Vector2(rect.LocalPosition.X, rect.LocalPosition.Y);
 		Vector2 containerSize = new Vector2(rect.LocalScale.X, rect.LocalScale.Y);
+		Vector2 vector2 = containerSize / scale;
 		if (ForcePixelPerfectPlacement)
 		{
 			vector.X = TaleWorlds.Library.MathF.Round(vector.X);
@@ -676,24 +677,28 @@ public class BrushRenderer
 					{
 						num4 += GetRandomYOffset();
 					}
-					simpleMaterial.OverlayXOffset = num3 * scale;
-					simpleMaterial.OverlayYOffset = num4 * scale;
-					simpleMaterial.Scale = scale;
+					float num5;
+					float num6;
 					if (overlaySize != default(Vector2))
 					{
-						simpleMaterial.OverlayTextureWidth = overlaySize.X;
-						simpleMaterial.OverlayTextureHeight = overlaySize.Y;
+						num5 = overlaySize.X;
+						num6 = overlaySize.Y;
 					}
 					else if (layer.UseOverlayAlphaAsMask)
 					{
-						simpleMaterial.OverlayTextureWidth = containerSize.X;
-						simpleMaterial.OverlayTextureHeight = containerSize.Y;
+						num5 = vector2.X;
+						num6 = vector2.Y;
 					}
 					else
 					{
-						simpleMaterial.OverlayTextureWidth = overlaySprite.Width;
-						simpleMaterial.OverlayTextureHeight = overlaySprite.Height;
+						num5 = overlaySprite.Width;
+						num6 = overlaySprite.Height;
 					}
+					simpleMaterial.OverlayXOffset = num3 * scale;
+					simpleMaterial.OverlayYOffset = num4 * scale;
+					simpleMaterial.OverlayTextureWidth = num5 * scale;
+					simpleMaterial.OverlayTextureHeight = num6 * scale;
+					simpleMaterial.Scale = scale;
 				}
 			}
 			simpleMaterial.Texture = texture;
@@ -704,8 +709,8 @@ public class BrushRenderer
 			simpleMaterial.HueFactor = brushLayerState.HueFactor;
 			simpleMaterial.SaturationFactor = brushLayerState.SaturationFactor;
 			simpleMaterial.ValueFactor = brushLayerState.ValueFactor;
-			float num5 = 0f;
-			float num6 = 0f;
+			float num7 = 0f;
+			float num8 = 0f;
 			_cachedImageFit.Type = layer.ImageFitType;
 			_cachedImageFit.HorizontalAlignment = layer.ImageFitHorizontalAlignment;
 			_cachedImageFit.VerticalAlignment = layer.ImageFitVerticalAlignment;
@@ -716,56 +721,56 @@ public class BrushRenderer
 			ImageFitResult fittedRectangle = cachedImageFit.GetFittedRectangle(in containerSize, in imageSize);
 			if (layer.WidthPolicy == BrushLayerSizePolicy.StretchToTarget)
 			{
-				float num7 = brushLayerState.ExtendLeft;
+				float num9 = brushLayerState.ExtendLeft;
 				if (layer.HorizontalFlip)
 				{
-					num7 = brushLayerState.ExtendRight;
+					num9 = brushLayerState.ExtendRight;
 				}
-				num5 = fittedRectangle.Width;
-				num5 += (brushLayerState.ExtendRight + brushLayerState.ExtendLeft) * scale;
-				num -= num7 * scale;
+				num7 = fittedRectangle.Width;
+				num7 += (brushLayerState.ExtendRight + brushLayerState.ExtendLeft) * scale;
+				num -= num9 * scale;
 			}
 			else if (layer.WidthPolicy == BrushLayerSizePolicy.Original)
 			{
-				num5 = (float)sprite.Width * scale;
+				num7 = (float)sprite.Width * scale;
 			}
 			else if (layer.WidthPolicy == BrushLayerSizePolicy.Overriden)
 			{
-				num5 = layer.OverridenWidth * scale;
+				num7 = layer.OverridenWidth * scale;
 			}
 			if (layer.HeightPolicy == BrushLayerSizePolicy.StretchToTarget)
 			{
-				float num8 = brushLayerState.ExtendTop;
+				float num10 = brushLayerState.ExtendTop;
 				if (layer.HorizontalFlip)
 				{
-					num8 = brushLayerState.ExtendBottom;
+					num10 = brushLayerState.ExtendBottom;
 				}
-				num6 = fittedRectangle.Height;
-				num6 += (brushLayerState.ExtendTop + brushLayerState.ExtendBottom) * scale;
-				num2 -= num8 * scale;
+				num8 = fittedRectangle.Height;
+				num8 += (brushLayerState.ExtendTop + brushLayerState.ExtendBottom) * scale;
+				num2 -= num10 * scale;
 			}
 			else if (layer.HeightPolicy == BrushLayerSizePolicy.Original)
 			{
-				num6 = (float)sprite.Height * scale;
+				num8 = (float)sprite.Height * scale;
 			}
 			else if (layer.HeightPolicy == BrushLayerSizePolicy.Overriden)
 			{
-				num6 = layer.OverridenHeight * scale;
+				num8 = layer.OverridenHeight * scale;
 			}
 			if (layer.HorizontalFlip)
 			{
-				num5 *= -1f;
+				num7 *= -1f;
 			}
 			if (layer.VerticalFlip)
 			{
-				num6 *= -1f;
+				num8 *= -1f;
 			}
-			float x = ((containerSize.X == 0f) ? 1f : (num5 / containerSize.X));
-			float y = ((containerSize.Y == 0f) ? 1f : (num6 / containerSize.Y));
-			Vector2 vector2 = new Vector2(num - vector.X + fittedRectangle.OffsetX, num2 - vector.Y + fittedRectangle.OffsetY);
-			Vector2 vector3 = new Vector2(x, y);
-			rectangle.AddVisualOffset(vector2.X, vector2.Y);
-			rectangle.AddVisualScale(vector3.X - 1f, vector3.Y - 1f);
+			float x = ((containerSize.X == 0f) ? 1f : (num7 / containerSize.X));
+			float y = ((containerSize.Y == 0f) ? 1f : (num8 / containerSize.Y));
+			Vector2 vector3 = new Vector2(num - vector.X + fittedRectangle.OffsetX, num2 - vector.Y + fittedRectangle.OffsetY);
+			Vector2 vector4 = new Vector2(x, y);
+			rectangle.AddVisualOffset(vector3.X, vector3.Y);
+			rectangle.AddVisualScale(vector4.X - 1f, vector4.Y - 1f);
 			rectangle.AddVisualRotationOffset(brushLayerState.Rotation);
 			rectangle.ValidateVisuals();
 			drawContext.DrawSprite(sprite, simpleMaterial, in rectangle, scale);

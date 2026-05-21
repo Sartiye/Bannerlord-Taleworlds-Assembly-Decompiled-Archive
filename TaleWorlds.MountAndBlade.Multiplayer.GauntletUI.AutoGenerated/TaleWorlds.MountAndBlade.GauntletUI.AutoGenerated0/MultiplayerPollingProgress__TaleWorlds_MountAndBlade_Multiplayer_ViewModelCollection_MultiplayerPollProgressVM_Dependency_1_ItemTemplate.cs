@@ -57,7 +57,7 @@ public class MultiplayerPollingProgress__TaleWorlds_MountAndBlade_Multiplayer_Vi
 		base.HeightSizePolicy = SizePolicy.CoverChildren;
 		base.MarginLeft = 55f;
 		base.MarginRight = 55f;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0.SuggestedWidth = 70f;

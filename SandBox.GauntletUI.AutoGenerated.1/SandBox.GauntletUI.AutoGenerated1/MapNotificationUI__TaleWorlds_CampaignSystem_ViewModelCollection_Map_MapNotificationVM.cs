@@ -63,7 +63,7 @@ public class MapNotificationUI__TaleWorlds_CampaignSystem_ViewModelCollection_Ma
 		base.VerticalAlignment = VerticalAlignment.Bottom;
 		base.MarginBottom = 310f;
 		base.DoNotAcceptEvents = true;
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0.SuggestedWidth = 60f;

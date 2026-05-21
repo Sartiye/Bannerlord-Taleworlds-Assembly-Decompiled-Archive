@@ -70,6 +70,7 @@ public class CircleLoadingAnimWidget : Widget
 			this.SetGlobalAlphaRecursively(0f);
 			_initialized = true;
 		}
+		_totalTime += dt;
 		if (_isChildPositionsDirty)
 		{
 			float num = 360f / (float)base.Children.Count;
@@ -90,12 +91,6 @@ public class CircleLoadingAnimWidget : Widget
 			base.Rotation += dt * 360f * NumOfCirclesInASecond;
 			UpdateAlphaValues(dt);
 		}
-	}
-
-	protected override void OnParallelUpdate(float dt)
-	{
-		base.OnParallelUpdate(dt);
-		_totalTime += dt;
 	}
 
 	private void UpdateAlphaValues(float dt)
@@ -128,7 +123,7 @@ public class CircleLoadingAnimWidget : Widget
 		}
 		else
 		{
-			Debug.FailedAssert("This visual state is not enabled", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\CircleLoadingAnimWidget.cs", "UpdateAlphaValues", 128);
+			Debug.FailedAssert("This visual state is not enabled", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\CircleLoadingAnimWidget.cs", "UpdateAlphaValues", 122);
 		}
 		this.SetGlobalAlphaRecursively(alphaFactor);
 	}

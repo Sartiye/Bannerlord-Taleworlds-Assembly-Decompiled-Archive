@@ -162,7 +162,7 @@ public class MultiplayerDeathCard__TaleWorlds_MountAndBlade_Multiplayer_ViewMode
 		_widget_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0.Sprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
 		_widget_0_0_0.Color = new Color(0f, 0f, 0f, 2f / 3f);
 		_widget_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
@@ -212,7 +212,7 @@ public class MultiplayerDeathCard__TaleWorlds_MountAndBlade_Multiplayer_ViewMode
 		_widget_0_0_0_0_0_0_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0_0_1.MarginLeft = 10f;
 		_widget_0_0_0_0_1.VerticalAlignment = VerticalAlignment.Center;
 		_widget_0_0_0_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
@@ -239,7 +239,7 @@ public class MultiplayerDeathCard__TaleWorlds_MountAndBlade_Multiplayer_ViewMode
 		_widget_0_0_1.Color = new Color(0f, 0f, 0f, 2f / 3f);
 		_widget_0_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_1_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_1_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_1_0_0.HorizontalAlignment = HorizontalAlignment.Center;

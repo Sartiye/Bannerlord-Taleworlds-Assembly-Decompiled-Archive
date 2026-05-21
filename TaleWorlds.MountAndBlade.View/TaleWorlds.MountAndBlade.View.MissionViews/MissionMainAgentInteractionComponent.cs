@@ -1,4 +1,3 @@
-using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
@@ -200,7 +199,7 @@ public class MissionMainAgentInteractionComponent
 				bool flag4 = false;
 				for (int i = 0; i < 2; i++)
 				{
-					float num4 = MathF.Lerp(1f, valueTo, i / 1);
+					float num4 = MathF.Lerp(1f, valueTo, (float)i / 1f);
 					float num5 = 0.2f * (num4 - 1f);
 					if (!CurrentMissionScene.RayCastForClosestEntityOrTerrain(vec2 + vec * num5, vec2 + vec * num, out collisionDistance4, out collidedEntity2, 0.2f * num4, BodyFlags.CommonFocusRayCastExcludeFlags) || !(collisionDistance4 + num5 < num) || !(collisionDistance4 + num5 < num3))
 					{
@@ -210,7 +209,7 @@ public class MissionMainAgentInteractionComponent
 					WeakGameEntity weakGameEntity2 = collidedEntity2;
 					while (weakGameEntity2.IsValid)
 					{
-						if (weakGameEntity2.GetScriptComponents().Any((ScriptComponentBehavior sc) => sc is IFocusable))
+						if (weakGameEntity2.HasScriptWithInterfaceOfType<IFocusable>() && weakGameEntity2.GetFirstScriptWithInterfaceOfType<IFocusable>().IsFocusable)
 						{
 							flag5 = true;
 							break;
@@ -232,17 +231,17 @@ public class MissionMainAgentInteractionComponent
 				}
 				if (flag3)
 				{
-					while (!weakGameEntity.GetScriptComponents().Any((ScriptComponentBehavior sc) => sc is IFocusable) && weakGameEntity.Parent.IsValid)
+					while ((!weakGameEntity.HasScriptWithInterfaceOfType<IFocusable>() || !weakGameEntity.GetFirstScriptWithInterfaceOfType<IFocusable>().IsFocusable) && weakGameEntity.Parent.IsValid)
 					{
 						weakGameEntity = weakGameEntity.Parent;
 					}
 					usableMachine = weakGameEntity.GetFirstScriptOfType<UsableMachine>();
 					if (usableMachine != null && !usableMachine.IsDisabled)
 					{
-						WeakGameEntity validStandingPointForAgent = usableMachine.GetValidStandingPointForAgent(main);
-						if (validStandingPointForAgent.IsValid)
+						WeakGameEntity validVacantReachableStandingPointForAgent = usableMachine.GetValidVacantReachableStandingPointForAgent(main);
+						if (validVacantReachableStandingPointForAgent.IsValid)
 						{
-							weakGameEntity = validStandingPointForAgent;
+							weakGameEntity = validVacantReachableStandingPointForAgent;
 						}
 					}
 					UsableMissionObject firstScriptOfType = weakGameEntity.GetFirstScriptOfType<UsableMissionObject>();
@@ -279,10 +278,14 @@ public class MissionMainAgentInteractionComponent
 							flag = !usableMachine.IsDeactivated;
 						}
 					}
-					else if (weakGameEntity.GetScriptComponents().FirstOrDefault((ScriptComponentBehavior sc) => sc is IFocusable) is IFocusable { IsFocusable: not false } focusable2)
+					else
 					{
-						focusable = focusable2;
-						focusedObjectBoneIndex = -1;
+						IFocusable firstScriptWithInterfaceOfType = weakGameEntity.GetFirstScriptWithInterfaceOfType<IFocusable>();
+						if (firstScriptWithInterfaceOfType != null && firstScriptWithInterfaceOfType.IsFocusable)
+						{
+							focusable = firstScriptWithInterfaceOfType;
+							focusedObjectBoneIndex = -1;
+						}
 					}
 				}
 				if ((focusable == null || !flag) && main.MountAgent != null && main.CanInteractWithAgent(main.MountAgent, CurrentMissionScreen.CameraElevation))

@@ -357,7 +357,7 @@ public class RecruitmentPopup__TaleWorlds_CampaignSystem_ViewModelCollection_Gam
 		_widget_0_1_0_0_1_0.ClipContents = true;
 		_widget_0_1_0_0_1_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1_0_0_1_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_1_0_0_1_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1_0_0_1_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_1_0_0_1_0_0.MarginTop = 2f;
 		_widget_0_1_0_0_1_0_0.MarginLeft = 16f;
 		_widget_0_1_0_0_1_0_0_0.ScopeID = "RecruitmentLeftPanelScope";
@@ -370,7 +370,7 @@ public class RecruitmentPopup__TaleWorlds_CampaignSystem_ViewModelCollection_Gam
 		_widget_0_1_0_0_1_0_0_0.DoNotAutoNavigateAfterSort = true;
 		_widget_0_1_0_0_1_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1_0_0_1_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_1_0_0_1_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1_0_0_1_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_1_0_0_1_0_0_1.MarginTop = 2f;
 		_widget_0_1_0_0_1_0_0_1.MarginLeft = 16f;
 		_widget_0_1_0_0_1_0_0_1.MinIndex = 0;
@@ -445,7 +445,7 @@ public class RecruitmentPopup__TaleWorlds_CampaignSystem_ViewModelCollection_Gam
 		_widget_0_1_1_0_0_0_0_0.ForceGainNavigationOnClosestChild = true;
 		_widget_0_1_1_0_0_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1_1_0_0_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_1_1_0_0_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
+		_widget_0_1_1_0_0_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
 		_widget_0_1_1_0_0_0_0_1.MarginTop = 12f;
 		_widget_0_1_1_0_0_0_0_1.MarginBottom = 12f;
 		_widget_0_1_1_0_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
@@ -469,7 +469,7 @@ public class RecruitmentPopup__TaleWorlds_CampaignSystem_ViewModelCollection_Gam
 		_widget_0_1_1_0_0_1_0.Sprite = base.Context.SpriteData.GetSprite("slider_thin_vertical_9");
 		_widget_0_1_1_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1_1_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_1_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_1_1_1.VerticalAlignment = VerticalAlignment.Top;
 		_widget_0_1_1_1.MarginLeft = 150f;
 		_widget_0_1_1_1.HorizontalAlignment = HorizontalAlignment.Left;

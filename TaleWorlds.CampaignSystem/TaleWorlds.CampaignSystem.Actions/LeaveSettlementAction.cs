@@ -24,10 +24,6 @@ public static class LeaveSettlementAction
 				}
 			}
 		}
-		if (mobileParty == MobileParty.MainParty && (MobileParty.MainParty.Army == null || MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty))
-		{
-			mobileParty.SetMoveModeHold();
-		}
 		mobileParty.CurrentSettlement = null;
 		if (mobileParty.IsCurrentlyAtSea)
 		{

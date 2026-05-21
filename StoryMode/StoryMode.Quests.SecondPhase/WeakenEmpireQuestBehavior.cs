@@ -1,10 +1,8 @@
 using System.Collections.Generic;
-using System.Linq;
 using StoryMode.StoryModeObjects;
 using StoryMode.StoryModePhases;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
-using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Localization;
 using TaleWorlds.SaveSystem;
 
@@ -98,7 +96,7 @@ public class WeakenEmpireQuestBehavior : CampaignBehaviorBase
 
 		private bool QuestConditionsHold()
 		{
-			return StoryModeData.NorthernEmpireKingdom.Fiefs.Count((Town f) => f.IsTown) + StoryModeData.WesternEmpireKingdom.Fiefs.Count((Town f) => f.IsTown) + StoryModeData.SouthernEmpireKingdom.Fiefs.Count((Town f) => f.IsTown) < 4;
+			return StoryModeData.NorthernEmpireKingdom.Towns.Count + StoryModeData.WesternEmpireKingdom.Towns.Count + StoryModeData.SouthernEmpireKingdom.Towns.Count < 4;
 		}
 
 		private void SuccessComplete()

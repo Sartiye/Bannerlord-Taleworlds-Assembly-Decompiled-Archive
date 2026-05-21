@@ -56,7 +56,7 @@ public class CaravanAmbushIssueBehavior : CampaignBehaviorBase
 				TextObject textObject = new TextObject("{=iWWKTOik}I've got a trick up my sleeve. We'll bait them. I've paid some of my workers to spread rumors about a particularly fat caravan laden with silverware heading out towards {TARGET_SETTLEMENT}. It is a trap, of course. I've got a bunch of mercenaries going with it, disguised as packers. But they could use some backup. Go and follow my caravan. Stay at a proper distance, until they are attacked. Then move in to finish the bandits once and for all. My caravan master will pay you {REWARD}{GOLD_ICON} when the fight is over.[if:convo_mocking_revenge][ib:confident2]");
 				textObject.SetTextVariable("TARGET_SETTLEMENT", _targetSettlement.EncyclopediaLinkWithName);
 				textObject.SetTextVariable("REWARD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -113,7 +113,7 @@ public class CaravanAmbushIssueBehavior : CampaignBehaviorBase
 				textObject.SetTextVariable("REWARD_GOLD", RewardGold);
 				textObject.SetTextVariable("TROOP_COUNT", AlternativeSolutionSentTroops.TotalManCount - 1);
 				textObject.SetTextVariable("RETURN_DAYS", GetTotalAlternativeSolutionDurationInDays());
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -125,7 +125,7 @@ public class CaravanAmbushIssueBehavior : CampaignBehaviorBase
 				TextObject textObject = new TextObject("{=PHAm9BIp}{COMPANION.LINK} and the men you sent with {?COMPANION.GENDER}her{?}him{\\?} successfully protected the caravan. {QUEST_GIVER.LINK} is happy and sends you {?QUES_GIVER.GENDER}her{?}him{\\?} regards with {REWARD_GOLD}{GOLD_ICON} he promised.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.IssueOwner.CharacterObject, textObject);
 				StringHelpers.SetCharacterProperties("COMPANION", base.AlternativeSolutionHero.CharacterObject, textObject);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				textObject.SetTextVariable("REWARD_GOLD", RewardGold);
 				return textObject;
 			}
@@ -203,10 +203,11 @@ public class CaravanAmbushIssueBehavior : CampaignBehaviorBase
 			return IssueFrequency.Common;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flag, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			flag = PreconditionFlags.None;
 			relationHero = issueGiver;
+			requiredGold = 0;
 			skill = null;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -345,7 +346,7 @@ public class CaravanAmbushIssueBehavior : CampaignBehaviorBase
 				textObject.SetTextVariable("SETTLEMENT", base.QuestGiver.CurrentSettlement.EncyclopediaLinkWithName);
 				textObject.SetTextVariable("TARGET_SETTLEMENT", _targetSettlement.EncyclopediaLinkWithName);
 				textObject.SetTextVariable("REWARD_GOLD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -357,7 +358,7 @@ public class CaravanAmbushIssueBehavior : CampaignBehaviorBase
 				TextObject textObject = new TextObject("{=g5bRX0dd}You have defeated the large group of bandits that {QUEST_GIVER.LINK} mentioned and {?QUEST_GIVER.GENDER}she{?}he{\\?} sends {?QUEST_GIVER.GENDER}her{?}his{\\?} regards with the {REWARD_GOLD}{GOLD_ICON} {?QUEST_GIVER.GENDER}she{?}he{\\?} promised and some trade goods as reward.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("REWARD_GOLD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -409,7 +410,7 @@ public class CaravanAmbushIssueBehavior : CampaignBehaviorBase
 				TextObject textObject = new TextObject("{=bdab7SmZ}You recruited the bandits who were giving {QUEST_GIVER.LINK} trouble. {?QUEST_GIVER.GENDER}she{?}he{\\?} is satisfied with this outcome, and sends you {REWARD_GOLD}{GOLD_ICON} that {?QUEST_GIVER.GENDER}she{?}he{\\?} promised.");
 				StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 				textObject.SetTextVariable("REWARD_GOLD", RewardGold);
-				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+				textObject.SetTextVariable("GOLD_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 				return textObject;
 			}
 		}
@@ -672,7 +673,7 @@ public class CaravanAmbushIssueBehavior : CampaignBehaviorBase
 		{
 			if (party == _caravanParty)
 			{
-				Debug.FailedAssert("Caravan has arrived at settlement without encountering the bandits", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Issues\\CaravanAmbushIssueBehavior.cs", "OnSettlementEntered", 717);
+				Debug.FailedAssert("Caravan has arrived at settlement without encountering the bandits", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Issues\\CaravanAmbushIssueBehavior.cs", "OnSettlementEntered", 718);
 				DestroyPartyAction.Apply(_caravanParty.Party, _caravanParty);
 				_caravanParty = null;
 				_banditParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: false);

@@ -103,6 +103,14 @@ public class ItemTableauTextureProvider : TextureProvider
 		}
 	}
 
+	public float CurrentZoom
+	{
+		set
+		{
+			_itemTableau.Zoom(value);
+		}
+	}
+
 	public ItemTableauTextureProvider()
 	{
 		_itemTableau = new ItemTableau();

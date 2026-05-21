@@ -32,7 +32,7 @@ public class AiEngagePartyBehavior : CampaignBehaviorBase
 		{
 			return;
 		}
-		float num = Campaign.Current.Models.EncounterModel.NeededMaximumDistanceForEncounteringMobileParty * 45f;
+		float num = (mobileParty.IsCurrentlyAtSea ? Campaign.Current.Models.EncounterModel.NeededMaximumNavalDistanceForEncounteringMobileParty : Campaign.Current.Models.EncounterModel.NeededMaximumLandDistanceForEncounteringMobileParty) * 45f;
 		if ((!mobileParty.MapFaction.IsKingdomFaction && mobileParty.MapFaction != Hero.MainHero.MapFaction) || mobileParty.IsCaravan || (mobileParty.Army != null && mobileParty.Army.LeaderParty != mobileParty) || mobileParty.LeaderHero == null)
 		{
 			return;
@@ -188,14 +188,14 @@ public class AiEngagePartyBehavior : CampaignBehaviorBase
 						IDisbandPartyCampaignBehavior disbandPartyCampaignBehavior = _disbandPartyCampaignBehavior;
 						if (disbandPartyCampaignBehavior == null || !disbandPartyCampaignBehavior.IsPartyWaitingForDisband(mobileParty))
 						{
-							goto IL_0857;
+							goto IL_0875;
 						}
 					}
 					num16 *= 0.25f;
 				}
 			}
-			goto IL_0857;
-			IL_0857:
+			goto IL_0875;
+			IL_0875:
 			p.CurrentObjectiveValue = num16;
 			AiBehavior aiBehavior = AiBehavior.GoAroundParty;
 			AIBehaviorData item = new AIBehaviorData(mobileParty2, aiBehavior, bestNavigationType, willGatherArmy: false, flag2, isTargetingPort: false);

@@ -116,13 +116,22 @@ public class HeroDeveloper
 		UnspentFocusPoints = 0;
 	}
 
+	public void ResetCharacterStats()
+	{
+		ClearFocuses();
+		Hero.ClearAttributes();
+		Hero.ClearPerks();
+		SetupDefaultPoints();
+		SetInitialFocusAndAttributePoints();
+	}
+
 	public void ClearHero()
 	{
+		Hero.ClearPerks();
 		_skillXps.Clear();
 		ClearFocuses();
 		Hero.ClearAttributes();
 		Hero.ClearSkills();
-		Hero.ClearPerks();
 		UnspentFocusPoints = 0;
 		UnspentAttributePoints = 0;
 		Hero.ClearTraits();
@@ -216,12 +225,12 @@ public class HeroDeveloper
 	{
 		if ((long)_totalXp + (long)MathF.Round(rawXp) < Campaign.Current.Models.CharacterDevelopmentModel.GetMaxSkillPoint())
 		{
-			_totalXp += MathF.Round(rawXp);
+			TotalXp += MathF.Round(rawXp);
 			CheckLevel(shouldNotify);
 		}
 		else
 		{
-			_totalXp = Campaign.Current.Models.CharacterDevelopmentModel.GetMaxSkillPoint();
+			TotalXp = Campaign.Current.Models.CharacterDevelopmentModel.GetMaxSkillPoint();
 		}
 	}
 
@@ -243,7 +252,7 @@ public class HeroDeveloper
 	public void CheckLevel(bool shouldNotify)
 	{
 		bool flag = false;
-		int totalXp = _totalXp;
+		int totalXp = TotalXp;
 		while (!flag)
 		{
 			int xpRequiredForLevel = GetXpRequiredForLevel(Hero.Level + 1);
@@ -257,6 +266,11 @@ public class HeroDeveloper
 				flag = true;
 			}
 		}
+	}
+
+	public void ResetTotalXpForPlayerCharacter()
+	{
+		TotalXp = 0;
 	}
 
 	public void SetInitialLevel(int level)

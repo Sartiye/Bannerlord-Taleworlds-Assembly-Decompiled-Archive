@@ -61,6 +61,18 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 		gameSystemInitializer.AddGameMenuOption("siege_aftermath_contextual_summary", "menu_settlement_taken_continue", "{=veWOovVv}Continue...", continue_on_condition, menu_settlement_taken_continue_on_consequence);
 	}
 
+	private MBReadOnlyList<(PartyBase, float)> GetLootPercentagesOfPartiesOnSideForSiegeAftermath(MapEvent mapEvent, BattleSideEnum side)
+	{
+		MBReadOnlyList<MapEventParty> mBReadOnlyList = mapEvent.PartiesOnSide(side);
+		MBList<(PartyBase, float)> mBList = new MBList<(PartyBase, float)>(mBReadOnlyList.Count);
+		int num = mapEvent.GetMapEventSide(side).CalculateTotalContribution();
+		foreach (MapEventParty item in mBReadOnlyList)
+		{
+			mBList.Add((item.Party, (int)(100f * ((float)item.ContributionToBattle / (float)num))));
+		}
+		return mBList;
+	}
+
 	private void OnMapEventEnded(MapEvent mapEvent)
 	{
 		BattleSideEnum battleSideEnum = ((!mapEvent.IsSallyOut && !mapEvent.IsBlockadeSallyOut) ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
@@ -69,12 +81,11 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 			return;
 		}
 		_siegeEventPartyContributions.Clear();
-		foreach (MapEventParty item in mapEvent.PartiesOnSide(battleSideEnum))
+		foreach (var item in GetLootPercentagesOfPartiesOnSideForSiegeAftermath(mapEvent, battleSideEnum))
 		{
-			mapEvent.GetBattleRewards(item.Party, out var _, out var _, out var _, out var _, out var playerEarnedLootPercentage);
-			if (item.Party.IsMobile && !_siegeEventPartyContributions.ContainsKey(item.Party.MobileParty))
+			if (item.Item1.IsMobile && !_siegeEventPartyContributions.ContainsKey(item.Item1.MobileParty))
 			{
-				_siegeEventPartyContributions.Add(item.Party.MobileParty, playerEarnedLootPercentage);
+				_siegeEventPartyContributions.Add(item.Item1.MobileParty, item.Item2);
 			}
 		}
 		if (mapEvent.GetMapEventSide(battleSideEnum).IsMainPartyAmongParties())
@@ -86,6 +97,10 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 			if (_besiegerParty != MobileParty.MainParty)
 			{
 				if (_besiegerParty.Army != null && _besiegerParty.Army.Parties.Contains(MobileParty.MainParty))
+				{
+					_wasPlayerArmyMember = true;
+				}
+				else if (MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty != MobileParty.MainParty)
 				{
 					_wasPlayerArmyMember = true;
 				}
@@ -101,7 +116,7 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 		}
 		else
 		{
-			Debug.FailedAssert("Siege event is null in siege aftermath", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\SiegeAftermathCampaignBehavior.cs", "OnMapEventEnded", 119);
+			Debug.FailedAssert("Siege event is null in siege aftermath", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\SiegeAftermathCampaignBehavior.cs", "OnMapEventEnded", 143);
 		}
 	}
 
@@ -132,7 +147,7 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 			if (previousSettlementOwner.Leader == null)
 			{
 				Debug.Print($"{previousSettlementOwner.StringId}: {previousSettlementOwner} leader was null");
-				Debug.FailedAssert($"{previousSettlementOwner.StringId}: {previousSettlementOwner} leader was null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\SiegeAftermathCampaignBehavior.cs", "OnSiegeAftermathApplied", 161);
+				Debug.FailedAssert($"{previousSettlementOwner.StringId}: {previousSettlementOwner} leader was null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\SiegeAftermathCampaignBehavior.cs", "OnSiegeAftermathApplied", 185);
 			}
 			if (attackerParty.LeaderHero != null)
 			{
@@ -308,11 +323,12 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 	private void menu_settlement_taken_player_army_member_on_init(MenuCallbackArgs args)
 	{
 		bool flag = _besiegerParty.Army != null && _besiegerParty.Army.Parties.Contains(MobileParty.MainParty);
+		Settlement currentSettlement = _besiegerParty.CurrentSettlement;
 		TextObject textObject;
 		if (_playerEncounterAftermath == SiegeAftermathAction.SiegeAftermath.Devastate)
 		{
 			textObject = (flag ? new TextObject("{=peHCARhM}{DEFAULT_TEXT}{ARMY_LEADER.LINK} has ordered that {SETTLEMENT} to be laid waste. {?ARMY_LEADER.GENDER}Her{?}His{\\?} troops sweep through the {?IS_CITY}city{?}fortress{\\?} taking whatever loot they like and setting fire to the rest.") : ((!_wasPlayerArmyMember) ? TextObject.GetEmpty() : new TextObject("{=qeRRWMfU}{DEFAULT_TEXT}{ARMY_LEADER.LINK} fell during the fighting. {?ARMY_LEADER.GENDER}Her{?}His{\\?} vengeful troops sweep through the {?IS_CITY}city{?}fortress{\\?} taking whatever loot they like and setting fire to the rest.")));
-			textObject.SetTextVariable("IS_CITY", Settlement.CurrentSettlement.IsTown ? 1 : 0);
+			textObject.SetTextVariable("IS_CITY", currentSettlement.IsTown ? 1 : 0);
 		}
 		else if (_playerEncounterAftermath == SiegeAftermathAction.SiegeAftermath.Pillage)
 		{
@@ -322,7 +338,7 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 			}
 			else if (_wasPlayerArmyMember)
 			{
-				Debug.FailedAssert("_wasPlayerArmyMember", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\SiegeAftermathCampaignBehavior.cs", "menu_settlement_taken_player_army_member_on_init", 408);
+				Debug.FailedAssert("_wasPlayerArmyMember", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\SiegeAftermathCampaignBehavior.cs", "menu_settlement_taken_player_army_member_on_init", 433);
 				textObject = new TextObject("{=99v8GTTe}{DEFAULT_TEXT}Before {?ARMY_LEADER.GENDER}she{?}he{\\?} fell, {ARMY_LEADER.LINK} granted {?ARMY_LEADER.GENDER}her{?}his{\\?} men their customary right of pillage after a successful siege. They may take property but must spare the townsfolk's lives.");
 			}
 			else
@@ -330,12 +346,12 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 				textObject = TextObject.GetEmpty();
 			}
 		}
-		else if (_besiegerParty.MapFaction?.Culture == Settlement.CurrentSettlement.Culture)
+		else if (_besiegerParty.MapFaction?.Culture == _besiegerParty.CurrentSettlement.Culture)
 		{
 			if (flag)
 			{
 				textObject = new TextObject("{=Wmq47pvL}{DEFAULT_TEXT}{ARMY_LEADER.LINK} had to show mercy to the people of {SETTLEMENT} who were originally descendants of {FACTION}.");
-				textObject.SetTextVariable("FACTION", Settlement.CurrentSettlement.Culture.GetName());
+				textObject.SetTextVariable("FACTION", currentSettlement.Culture.GetName());
 			}
 			else if (_wasPlayerArmyMember)
 			{
@@ -353,7 +369,7 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 		}
 		else if (_wasPlayerArmyMember)
 		{
-			Debug.FailedAssert("_wasPlayerArmyMember", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\SiegeAftermathCampaignBehavior.cs", "menu_settlement_taken_player_army_member_on_init", 443);
+			Debug.FailedAssert("_wasPlayerArmyMember", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\SiegeAftermathCampaignBehavior.cs", "menu_settlement_taken_player_army_member_on_init", 468);
 			textObject = new TextObject("{=ULtzLvXi}{DEFAULT_TEXT}Before {?ARMY_LEADER.GENDER}she{?}he{\\?} fell, {ARMY_LEADER.LINK} gave orders that mercy should be shown to the people of {SETTLEMENT}.");
 		}
 		else
@@ -362,21 +378,22 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 		}
 		TextObject text = args.MenuContext.GameMenu.GetText();
 		TextObject textObject2 = new TextObject("{=hvQUqRSb}{SETTLEMENT} has been taken by an army of which you are a member. ");
-		textObject2.SetTextVariable("SETTLEMENT", Settlement.CurrentSettlement.GetName());
+		textObject2.SetTextVariable("SETTLEMENT", currentSettlement.GetName());
 		textObject.SetTextVariable("DEFAULT_TEXT", textObject2);
 		StringHelpers.SetCharacterProperties("ARMY_LEADER", _besiegerParty.LordPartyComponent?.Owner?.CharacterObject ?? CharacterObject.PlayerCharacter, textObject);
-		textObject.SetTextVariable("SETTLEMENT", Settlement.CurrentSettlement.GetName());
+		textObject.SetTextVariable("SETTLEMENT", currentSettlement.GetName());
 		text.SetTextVariable("LEADER_DECISION_TEXT", textObject);
-		text.SetTextVariable("SETTLEMENT", Settlement.CurrentSettlement.GetName());
+		text.SetTextVariable("SETTLEMENT", currentSettlement.GetName());
 		args.MenuContext.SetBackgroundMeshName("encounter_win");
 	}
 
 	private void menu_settlement_taken_player_participant_on_init(MenuCallbackArgs args)
 	{
+		Settlement currentSettlement = _besiegerParty.CurrentSettlement;
 		TextObject textObject = new TextObject("{=C2KeQd0a}{ENCOUNTER_LEADER.LINK} thanks you for helping in the siege of {SETTLEMENT}. You were able to loot your fallen foes, but you do not participate in the sack of the {?IS_TOWN}town{?}castle{\\?} as you are not part of the army that took it.");
 		StringHelpers.SetCharacterProperties("ENCOUNTER_LEADER", _besiegerParty.LordPartyComponent?.Owner?.CharacterObject ?? CharacterObject.PlayerCharacter, textObject);
-		textObject.SetTextVariable("SETTLEMENT", Settlement.CurrentSettlement.GetName());
-		textObject.SetTextVariable("IS_TOWN", Settlement.CurrentSettlement.IsTown ? 1 : 0);
+		textObject.SetTextVariable("SETTLEMENT", currentSettlement.GetName());
+		textObject.SetTextVariable("IS_TOWN", currentSettlement.IsTown ? 1 : 0);
 		args.MenuContext.GameMenu.GetText().SetTextVariable("PLAYER_PARTICIPANT_TEXT", textObject);
 		args.MenuContext.SetBackgroundMeshName("encounter_win");
 	}
@@ -396,7 +413,7 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 		bool flag2 = currentSettlement.Culture == Hero.MainHero.MapFaction?.Culture;
 		TextObject textObject = new TextObject("{=FPPb7ur6}({INFLUENCE_AMOUNT}{INFLUENCE_ICON})");
 		textObject.SetTextVariable("INFLUENCE_AMOUNT", num);
-		textObject.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"7\">");
+		textObject.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"5\">");
 		MBTextManager.SetTextVariable("DEVASTATE_INFLUENCE_COST_TEXT", flag ? textObject : TextObject.GetEmpty());
 		TextObject textObject2 = new TextObject("{=0FxtNPvV}You cannot devastate a settlement that has your faction culture.{newline}");
 		TextObject textObject3 = new TextObject("{=Q9RXyDBz}{newline} • {HERO.NAME} must use {INFLUENCE_AMOUNT} influence to convince {MERCIFUL_LORD_COUNT} merciful leaders of this action:{newline} {MERCIFUL_LORDS}");
@@ -469,7 +486,7 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 		bool flag2 = (float)num > 0f;
 		TextObject textObject = new TextObject("{=FPPb7ur6}({INFLUENCE_AMOUNT}{INFLUENCE_ICON})");
 		textObject.SetTextVariable("INFLUENCE_AMOUNT", num);
-		textObject.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"7\">");
+		textObject.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"5\">");
 		MBTextManager.SetTextVariable("SHOW_MERCY_INFLUENCE_COST_TEXT", flag2 ? textObject : TextObject.GetEmpty());
 		TextObject textObject2 = new TextObject("{=aXFYyBEQ}Showing mercy to a settlement that shares your faction's culture requires no influence.{newline}");
 		TextObject textObject3 = new TextObject("{=bn5fpYx3}{newline} • {HERO.NAME} must use {INFLUENCE_AMOUNT} influence to convince {CRUEL_LORD_COUNT} non-merciful leaders of this action:{newline} {CRUEL_LORDS}");

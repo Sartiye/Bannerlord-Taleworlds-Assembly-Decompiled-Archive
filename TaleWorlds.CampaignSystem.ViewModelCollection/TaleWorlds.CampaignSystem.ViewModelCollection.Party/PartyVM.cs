@@ -48,11 +48,19 @@ public class PartyVM : ViewModel
 
 	private PartyCharacterVM _currentCharacter;
 
-	private List<string> _lockedTroopIDs;
+	private List<string> _lockedTroopIds;
 
-	private List<string> _lockedPrisonerIDs;
+	private List<string> _lockedPrisonerIds;
 
 	private Func<string, TextObject> _getKeyTextFromKeyId;
+
+	private PartyScreenLogic.TroopSortType _initialSortType;
+
+	private bool _initialSortAscending;
+
+	private List<string> _initialLockedTroopIds;
+
+	private List<string> _initialLockedPrisonerIds;
 
 	public bool IsInConversation;
 
@@ -1929,6 +1937,10 @@ public class PartyVM : ViewModel
 			IsDoneDisabled = !PartyScreenLogic.IsDoneActive();
 			DoneHint.HintText = new TextObject("{=!}" + PartyScreenLogic.DoneReasonString);
 			IsCancelDisabled = !PartyScreenLogic.IsCancelActive();
+			_initialSortType = (PartyScreenLogic.TroopSortType)_viewDataTracker.GetPartySortType();
+			_initialSortAscending = _viewDataTracker.GetIsPartySortAscending();
+			_initialLockedTroopIds = _viewDataTracker.GetPartyTroopLocks().ToList();
+			_initialLockedPrisonerIds = _viewDataTracker.GetPartyPrisonerLocks().ToList();
 			InitializeStaticInformation();
 			InitializeTroopLists();
 			RefreshPartyInformation();
@@ -1940,7 +1952,7 @@ public class PartyVM : ViewModel
 		IsAnyPopUpOpen = false;
 		OtherPartySortController = new PartySortControllerVM(PartyScreenLogic.PartyRosterSide.Left, OnSortTroops);
 		MainPartySortController = new PartySortControllerVM(PartyScreenLogic.PartyRosterSide.Right, OnSortTroops);
-		MainPartySortController.SortWith((PartyScreenLogic.TroopSortType)_viewDataTracker.GetPartySortType(), _viewDataTracker.GetIsPartySortAscending());
+		MainPartySortController.SortWith(_initialSortType, _initialSortAscending);
 		RefreshValues();
 	}
 
@@ -2021,7 +2033,7 @@ public class PartyVM : ViewModel
 	private void OnPartyMoraleChanged()
 	{
 		MBTextManager.SetTextVariable("PAY_OR_GET", (PartyScreenLogic.CurrentData.PartyMoraleChangeAmount > 0) ? 1 : 0);
-		MBTextManager.SetTextVariable("MORALE_ICON", "{=!}<img src=\"General\\Icons\\Morale@2x\" extend=\"8\">");
+		MBTextManager.SetTextVariable("MORALE_ICON", "{=!}<img src=\"General\\Icons\\Morale@2x\" extend=\"4\">");
 		MBTextManager.SetTextVariable("TRADE_AMOUNT", TaleWorlds.Library.MathF.Abs(PartyScreenLogic.CurrentData.PartyMoraleChangeAmount));
 		MoraleChangeText = ((PartyScreenLogic.CurrentData.PartyMoraleChangeAmount == 0) ? "" : GameTexts.FindText("str_party_morale_label").ToString());
 	}
@@ -2030,7 +2042,7 @@ public class PartyVM : ViewModel
 	{
 		int num = PartyScreenLogic.CurrentData.PartyInfluenceChangeAmount.Item1 + PartyScreenLogic.CurrentData.PartyInfluenceChangeAmount.Item2 + PartyScreenLogic.CurrentData.PartyInfluenceChangeAmount.Item3;
 		MBTextManager.SetTextVariable("PAY_OR_GET", (num > 0) ? 1 : 0);
-		MBTextManager.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"7\">");
+		MBTextManager.SetTextVariable("INFLUENCE_ICON", "{=!}<img src=\"General\\Icons\\Influence@2x\" extend=\"5\">");
 		MBTextManager.SetTextVariable("TRADE_AMOUNT", TaleWorlds.Library.MathF.Abs(num));
 		InfluenceChangeText = ((num == 0) ? "" : GameTexts.FindText("str_party_influence_label").ToString());
 	}
@@ -2046,12 +2058,12 @@ public class PartyVM : ViewModel
 	{
 		ArePrisonersRelevantOnCurrentMode = _currentMode != PartyScreenHelper.PartyScreenMode.TroopsManage && _currentMode != PartyScreenHelper.PartyScreenMode.QuestTroopManage;
 		AreMembersRelevantOnCurrentMode = _currentMode != PartyScreenHelper.PartyScreenMode.PrisonerManage && _currentMode != PartyScreenHelper.PartyScreenMode.Ransom;
-		_lockedTroopIDs = _viewDataTracker.GetPartyTroopLocks().ToList();
-		_lockedPrisonerIDs = _viewDataTracker.GetPartyPrisonerLocks().ToList();
-		InitializePartyList(MainPartyPrisoners, PartyScreenLogic.PrisonerRosters[1], PartyScreenLogic.TroopType.Prisoner, 1);
-		InitializePartyList(OtherPartyPrisoners, PartyScreenLogic.PrisonerRosters[0], PartyScreenLogic.TroopType.Prisoner, 0);
-		InitializePartyList(MainPartyTroops, PartyScreenLogic.MemberRosters[1], PartyScreenLogic.TroopType.Member, 1);
-		InitializePartyList(OtherPartyTroops, PartyScreenLogic.MemberRosters[0], PartyScreenLogic.TroopType.Member, 0);
+		_lockedTroopIds = _viewDataTracker.GetPartyTroopLocks().ToList();
+		_lockedPrisonerIds = _viewDataTracker.GetPartyPrisonerLocks().ToList();
+		InitializePartyList(MainPartyPrisoners, PartyScreenLogic.PartyRosterSide.Right, PartyScreenLogic.TroopType.Prisoner);
+		InitializePartyList(OtherPartyPrisoners, PartyScreenLogic.PartyRosterSide.Left, PartyScreenLogic.TroopType.Prisoner);
+		InitializePartyList(MainPartyTroops, PartyScreenLogic.PartyRosterSide.Right, PartyScreenLogic.TroopType.Member);
+		InitializePartyList(OtherPartyTroops, PartyScreenLogic.PartyRosterSide.Left, PartyScreenLogic.TroopType.Member);
 		if (MainPartyTroops.Count > 0)
 		{
 			CurrentCharacter = MainPartyTroops[0];
@@ -2193,7 +2205,7 @@ public class PartyVM : ViewModel
 
 	private void ProcessCharacterLock(PartyCharacterVM troop, bool isLocked)
 	{
-		List<string> list = (troop.IsPrisoner ? _lockedPrisonerIDs : _lockedTroopIDs);
+		List<string> list = (troop.IsPrisoner ? _lockedPrisonerIds : _lockedTroopIds);
 		if (isLocked && !list.Contains(troop.StringId))
 		{
 			list.Add(troop.StringId);
@@ -2225,17 +2237,17 @@ public class PartyVM : ViewModel
 
 	private void SaveCharacterLockStates()
 	{
-		_viewDataTracker.SetPartyTroopLocks(_lockedTroopIDs);
-		_viewDataTracker.SetPartyPrisonerLocks(_lockedPrisonerIDs);
+		_viewDataTracker.SetPartyTroopLocks(_lockedTroopIds);
+		_viewDataTracker.SetPartyPrisonerLocks(_lockedPrisonerIds);
 	}
 
 	private bool IsTroopLocked(TroopRosterElement troop, bool isPrisoner)
 	{
 		if (!isPrisoner)
 		{
-			return _lockedTroopIDs.Contains(troop.Character.StringId);
+			return _lockedTroopIds.Contains(troop.Character.StringId);
 		}
-		return _lockedPrisonerIDs.Contains(troop.Character.StringId);
+		return _lockedPrisonerIds.Contains(troop.Character.StringId);
 	}
 
 	private void UpdateCurrentCharacterFormationClass(SelectorVM<SelectorItemVM> s)
@@ -2243,19 +2255,19 @@ public class PartyVM : ViewModel
 		Campaign.Current.SetPlayerFormationPreference(CurrentCharacter.Character, (FormationClass)s.SelectedIndex);
 	}
 
-	private void InitializePartyList(MBBindingList<PartyCharacterVM> partyList, TroopRoster currentTroopRoster, PartyScreenLogic.TroopType type, int side)
+	private void InitializePartyList(MBBindingList<PartyCharacterVM> partyList, PartyScreenLogic.PartyRosterSide side, PartyScreenLogic.TroopType type)
 	{
 		partyList.Clear();
-		MBList<TroopRosterElement> troopRoster = currentTroopRoster.GetTroopRoster();
-		for (int i = 0; i < troopRoster.Count; i++)
+		TroopRoster roster = PartyScreenLogic.GetRoster(side, type);
+		for (int i = 0; i < roster.Count; i++)
 		{
-			TroopRosterElement troopRosterElement = troopRoster[i];
-			if (troopRosterElement.Character == null)
+			TroopRosterElement elementCopyAtIndex = roster.GetElementCopyAtIndex(i);
+			if (elementCopyAtIndex.Character == null)
 			{
-				TaleWorlds.Library.Debug.FailedAssert("Invalid TroopRosterElement found in InitializePartyList!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "InitializePartyList", 497);
+				TaleWorlds.Library.Debug.FailedAssert("Invalid TroopRosterElement found in InitializePartyList!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "InitializePartyList", 508);
 				continue;
 			}
-			PartyCharacterVM partyCharacterVM = new PartyCharacterVM(PartyScreenLogic, this, currentTroopRoster, currentTroopRoster.FindIndexOfTroop(troopRosterElement.Character), type, (PartyScreenLogic.PartyRosterSide)side, PartyScreenLogic.IsTroopTransferable(type, troopRosterElement.Character, side));
+			PartyCharacterVM partyCharacterVM = new PartyCharacterVM(PartyScreenLogic, this, roster, roster.FindIndexOfTroop(elementCopyAtIndex.Character), type, side, PartyScreenLogic.IsTroopTransferable(type, elementCopyAtIndex.Character, (int)side));
 			partyList.Add(partyCharacterVM);
 			partyCharacterVM.ThrowOnPropertyChanged();
 			partyCharacterVM.IsLocked = partyCharacterVM.Side == PartyScreenLogic.PartyRosterSide.Right && IsTroopLocked(partyCharacterVM.Troop, partyCharacterVM.IsPrisoner);
@@ -2467,6 +2479,17 @@ public class PartyVM : ViewModel
 
 	private void AfterReset(PartyScreenLogic partyScreenLogic, bool fromCancel)
 	{
+		_lockedTroopIds.Clear();
+		for (int i = 0; i < _initialLockedTroopIds.Count; i++)
+		{
+			_lockedTroopIds.Add(_initialLockedTroopIds[i]);
+		}
+		_lockedPrisonerIds.Clear();
+		for (int j = 0; j < _initialLockedPrisonerIds.Count; j++)
+		{
+			_lockedPrisonerIds.Add(_initialLockedPrisonerIds[j]);
+		}
+		SaveCharacterLockStates();
 		if (!fromCancel)
 		{
 			InitializeTroopLists();
@@ -2482,6 +2505,7 @@ public class PartyVM : ViewModel
 			DoneHint.HintText = new TextObject("{=!}" + PartyScreenLogic.DoneReasonString);
 			IsCancelDisabled = !partyScreenLogic.IsCancelActive();
 		}
+		MainPartySortController.SortWith(_initialSortType, _initialSortAscending);
 	}
 
 	private void TransferTroop(PartyScreenLogic.PartyCommand command)
@@ -2754,7 +2778,7 @@ public class PartyVM : ViewModel
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Players can only recruit prisoners", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "RecruitTroop", 1105);
+			TaleWorlds.Library.Debug.FailedAssert("Players can only recruit prisoners", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "RecruitTroop", 1132);
 		}
 		if (num < 0)
 		{
@@ -2789,7 +2813,7 @@ public class PartyVM : ViewModel
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Players can only execute prisoners", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "ExecuteTroop", 1145);
+			TaleWorlds.Library.Debug.FailedAssert("Players can only execute prisoners", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "ExecuteTroop", 1172);
 		}
 		if (num < 0)
 		{
@@ -2799,7 +2823,7 @@ public class PartyVM : ViewModel
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("The prisoner should have been removed from the prisoner roster after execution", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "ExecuteTroop", 1156);
+			TaleWorlds.Library.Debug.FailedAssert("The prisoner should have been removed from the prisoner roster after execution", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "ExecuteTroop", 1183);
 		}
 		RefreshTopInformation();
 		RefreshPartyInformation();
@@ -2807,43 +2831,7 @@ public class PartyVM : ViewModel
 
 	private void TransferAllTroops(PartyScreenLogic.PartyCommand command)
 	{
-		TroopRoster troopRoster = null;
-		TroopRoster troopRoster2 = null;
-		MBBindingList<PartyCharacterVM> mBBindingList = null;
-		MBBindingList<PartyCharacterVM> mBBindingList2 = null;
-		if (command.Type == PartyScreenLogic.TroopType.Member)
-		{
-			troopRoster = PartyScreenLogic.GetRoster(PartyScreenLogic.PartyRosterSide.Left, PartyScreenLogic.TroopType.Member);
-			troopRoster2 = PartyScreenLogic.GetRoster(PartyScreenLogic.PartyRosterSide.Right, PartyScreenLogic.TroopType.Member);
-			mBBindingList = OtherPartyTroops;
-			mBBindingList2 = MainPartyTroops;
-		}
-		if (command.Type == PartyScreenLogic.TroopType.Prisoner)
-		{
-			troopRoster = PartyScreenLogic.GetRoster(PartyScreenLogic.PartyRosterSide.Left, PartyScreenLogic.TroopType.Prisoner);
-			troopRoster2 = PartyScreenLogic.GetRoster(PartyScreenLogic.PartyRosterSide.Right, PartyScreenLogic.TroopType.Prisoner);
-			mBBindingList = OtherPartyPrisoners;
-			mBBindingList2 = MainPartyPrisoners;
-		}
-		mBBindingList.Clear();
-		mBBindingList2.Clear();
-		int side = 0;
-		int side2 = 1;
-		for (int i = 0; i < troopRoster.Count; i++)
-		{
-			CharacterObject characterAtIndex = troopRoster.GetCharacterAtIndex(i);
-			bool isTroopTransferrable = PartyScreenLogic.IsTroopTransferable(command.Type, characterAtIndex, side);
-			mBBindingList.Add(new PartyCharacterVM(PartyScreenLogic, this, troopRoster, i, command.Type, PartyScreenLogic.PartyRosterSide.Left, isTroopTransferrable));
-		}
-		for (int j = 0; j < troopRoster2.Count; j++)
-		{
-			CharacterObject characterAtIndex2 = troopRoster2.GetCharacterAtIndex(j);
-			bool isTroopTransferrable2 = PartyScreenLogic.IsTroopTransferable(command.Type, characterAtIndex2, side2);
-			mBBindingList2.Add(new PartyCharacterVM(PartyScreenLogic, this, troopRoster2, j, command.Type, PartyScreenLogic.PartyRosterSide.Right, isTroopTransferrable2));
-		}
-		OtherPartyComposition.RefreshCounts(OtherPartyTroops);
-		MainPartyComposition.RefreshCounts(MainPartyTroops);
-		RefreshTopInformation();
+		InitializeTroopLists();
 		RefreshPartyInformation();
 	}
 
@@ -3010,6 +2998,7 @@ public class PartyVM : ViewModel
 
 	private void TransferAllCharacters(PartyScreenLogic.PartyRosterSide rosterSide, PartyScreenLogic.TroopType type)
 	{
+		SaveCharacterLockStates();
 		PartyScreenLogic.PartyCommand partyCommand = new PartyScreenLogic.PartyCommand();
 		partyCommand.FillForTransferAllTroops(rosterSide, type);
 		PartyScreenLogic.AddCommand(partyCommand);
@@ -3219,7 +3208,11 @@ public class PartyVM : ViewModel
 			return;
 		}
 		ExecuteRemoveZeroCounts();
-		if (PartyScreenLogic.IsThereAnyChanges() && (IsMainPrisonersLimitWarningEnabled || IsMainTroopsLimitWarningEnabled || IsOtherTroopsLimitWarningEnabled))
+		if (_currentMode == PartyScreenHelper.PartyScreenMode.Loot && ((IsOtherPrisonersHaveTransferableTroops && CanRightPartyTakeMorePrisoners) || (IsOtherTroopsHaveTransferableTroops && CanRightPartyTakeMoreTroops)))
+		{
+			InformationManager.ShowInquiry(new InquiryData("", GameTexts.FindText("str_leaving_troops_behind").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), CloseScreenInternal, null));
+		}
+		else if (PartyScreenLogic.IsThereAnyChanges() && (IsMainPrisonersLimitWarningEnabled || IsMainTroopsLimitWarningEnabled || IsOtherTroopsLimitWarningEnabled))
 		{
 			GameTexts.SetVariable("newline", "\n");
 			string text = string.Empty;
@@ -3236,10 +3229,6 @@ public class PartyVM : ViewModel
 				text = GameTexts.FindText("str_other_party_over_limit_troops").ToString();
 			}
 			InformationManager.ShowInquiry(new InquiryData(new TextObject("{=uJro3Bua}Over Limit").ToString(), text, isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), CloseScreenInternal, null));
-		}
-		else if (_currentMode == PartyScreenHelper.PartyScreenMode.Loot && ((IsOtherPrisonersHaveTransferableTroops && CanRightPartyTakeMorePrisoners) || (IsOtherTroopsHaveTransferableTroops && CanRightPartyTakeMoreTroops)))
-		{
-			InformationManager.ShowInquiry(new InquiryData("", GameTexts.FindText("str_leaving_troops_behind").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), CloseScreenInternal, null));
 		}
 		else
 		{
@@ -3261,13 +3250,18 @@ public class PartyVM : ViewModel
 		CurrentFocusedUpgrade = null;
 	}
 
-	public void ExecuteResetAndCancel()
+	private void ExecuteCancelInternal()
 	{
 		ExecuteReset();
 		PartyScreenHelper.CloseScreen(isForced: false, fromCancel: true);
 	}
 
-	public void ExecuteCancel()
+	public void ExecuteCancelWithoutInquiry()
+	{
+		ExecuteCancel();
+	}
+
+	public void ExecuteCancel(bool showCancelInquiry = false)
 	{
 		if (!PartyScreenLogic.IsCancelActive())
 		{
@@ -3277,20 +3271,24 @@ public class PartyVM : ViewModel
 		{
 			if (PartyScreenLogic.IsThereAnyChanges())
 			{
-				InformationManager.ShowInquiry(new InquiryData("", GameTexts.FindText("str_cancelling_changes").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), ExecuteResetAndCancel, null));
+				InformationManager.ShowInquiry(new InquiryData("", GameTexts.FindText("str_cancelling_changes").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), ExecuteCancelInternal, null));
 			}
 			else if ((IsOtherPrisonersHaveTransferableTroops && CanRightPartyTakeMorePrisoners) || (IsOtherTroopsHaveTransferableTroops && CanRightPartyTakeMoreTroops))
 			{
-				InformationManager.ShowInquiry(new InquiryData("", GameTexts.FindText("str_leaving_troops_behind").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), ExecuteResetAndCancel, null));
+				InformationManager.ShowInquiry(new InquiryData("", GameTexts.FindText("str_leaving_troops_behind").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), ExecuteCancelInternal, null));
 			}
 			else
 			{
-				ExecuteResetAndCancel();
+				ExecuteCancelInternal();
 			}
+		}
+		else if (showCancelInquiry && PartyScreenLogic.IsThereAnyChanges())
+		{
+			InformationManager.ShowInquiry(new InquiryData("", GameTexts.FindText("str_cancelling_changes").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), ExecuteCancelInternal, null));
 		}
 		else
 		{
-			ExecuteResetAndCancel();
+			ExecuteCancelInternal();
 		}
 	}
 
@@ -3315,14 +3313,14 @@ public class PartyVM : ViewModel
 		{
 			if (list[i].Count != list2[i].Count)
 			{
-				TaleWorlds.Library.Debug.FailedAssert("Logic and VM list counts do not match", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "EnsureLogicRostersAreInSyncWithVMLists", 1817);
+				TaleWorlds.Library.Debug.FailedAssert("Logic and VM list counts do not match", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "EnsureLogicRostersAreInSyncWithVMLists", 1818);
 				continue;
 			}
 			for (int j = 0; j < list[i].Count; j++)
 			{
 				if (list[i].GetCharacterAtIndex(j).StringId != list2[i][j].Character.StringId)
 				{
-					TaleWorlds.Library.Debug.FailedAssert("Logic and VM rosters do not match", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "EnsureLogicRostersAreInSyncWithVMLists", 1825);
+					TaleWorlds.Library.Debug.FailedAssert("Logic and VM rosters do not match", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "EnsureLogicRostersAreInSyncWithVMLists", 1826);
 					return;
 				}
 			}

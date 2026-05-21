@@ -13,6 +13,56 @@ public static class PerkHelper
 {
 	public const float NavalMultiplier = 0.5f;
 
+	public static void ClearPerksForSkill(Hero hero, SkillObject skill)
+	{
+		foreach (PerkObject item in PerkObject.All)
+		{
+			if (item.Skill == skill)
+			{
+				ClearPermanentBonusesIfExists(hero, item);
+				hero.SetPerkValueInternal(item, value: false);
+			}
+		}
+		PartyBase.MainParty.MemberRoster.UpdateVersion();
+		hero.HitPoints = MathF.Min(hero.HitPoints, hero.MaxHitPoints);
+	}
+
+	private static void ClearPermanentBonusesIfExists(Hero hero, PerkObject perk)
+	{
+		if (hero.GetPerkValue(perk))
+		{
+			if (perk == DefaultPerks.Crafting.VigorousSmith)
+			{
+				hero.HeroDeveloper.RemoveAttribute(DefaultCharacterAttributes.Vigor, 1);
+			}
+			else if (perk == DefaultPerks.Crafting.StrongSmith)
+			{
+				hero.HeroDeveloper.RemoveAttribute(DefaultCharacterAttributes.Control, 1);
+			}
+			else if (perk == DefaultPerks.Crafting.EnduringSmith)
+			{
+				hero.HeroDeveloper.RemoveAttribute(DefaultCharacterAttributes.Endurance, 1);
+			}
+			else if (perk == DefaultPerks.Crafting.WeaponMasterSmith)
+			{
+				hero.HeroDeveloper.RemoveFocus(DefaultSkills.OneHanded, 1);
+				hero.HeroDeveloper.RemoveFocus(DefaultSkills.TwoHanded, 1);
+			}
+			else if (perk == DefaultPerks.Athletics.Durable)
+			{
+				hero.HeroDeveloper.RemoveAttribute(DefaultCharacterAttributes.Endurance, 1);
+			}
+			else if (perk == DefaultPerks.Athletics.Steady)
+			{
+				hero.HeroDeveloper.RemoveAttribute(DefaultCharacterAttributes.Control, 1);
+			}
+			else if (perk == DefaultPerks.Athletics.Strong)
+			{
+				hero.HeroDeveloper.RemoveAttribute(DefaultCharacterAttributes.Vigor, 1);
+			}
+		}
+	}
+
 	public static IEnumerable<PerkObject> GetCaptainPerksForTroopUsages(TroopUsageFlags troopUsageFlags)
 	{
 		List<PerkObject> list = new List<PerkObject>();

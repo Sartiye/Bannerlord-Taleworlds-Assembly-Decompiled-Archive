@@ -5,7 +5,6 @@ using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
-using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 using TaleWorlds.SaveSystem;
 
@@ -441,7 +440,7 @@ public sealed class Ship : IShipOrigin, IRandomOwner
 
 	private void AddToUnlockedPieces(ShipUpgradePiece upgradePiece)
 	{
-		if (!_unlockedUpgradePieces.ContainsQ(upgradePiece))
+		if (!_unlockedUpgradePieces.Contains(upgradePiece))
 		{
 			_unlockedUpgradePieces.Add(upgradePiece);
 		}
@@ -547,13 +546,12 @@ public sealed class Ship : IShipOrigin, IRandomOwner
 		}
 	}
 
-	void IShipOrigin.OnSailDamaged(float rawDamage)
+	void IShipOrigin.OnSailDamaged(float rawDamage, float inflictedDamage)
 	{
 		if (!(SailHitPoints <= 0f) && !IsInvulnerable && !rawDamage.ApproximatelyEqualsTo(0f))
 		{
-			float shipDamage = Campaign.Current.Models.CampaignShipDamageModel.GetShipDamage(this, null, rawDamage);
-			SailHitPoints -= shipDamage;
-			SkillLevelingManager.OnShipDamaged(this, rawDamage, shipDamage);
+			SailHitPoints -= inflictedDamage;
+			SkillLevelingManager.OnShipDamaged(this, rawDamage, inflictedDamage);
 		}
 	}
 
@@ -589,5 +587,10 @@ public sealed class Ship : IShipOrigin, IRandomOwner
 			list.Add(new ShipSlotAndPieceName(new TextObject("{=YLbBHN0Z}Figurehead").ToString(), Figurehead.GetName().ToString()));
 		}
 		return list;
+	}
+
+	public void OnPlayerCharacterChanged()
+	{
+		ResetUnlockedUpgradePieces();
 	}
 }

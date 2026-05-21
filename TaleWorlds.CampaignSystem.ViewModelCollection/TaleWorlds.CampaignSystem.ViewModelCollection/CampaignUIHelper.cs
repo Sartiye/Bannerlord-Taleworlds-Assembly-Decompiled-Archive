@@ -233,19 +233,19 @@ public static class CampaignUIHelper
 
 	private static readonly TextObject _partyInventoryCapacityStr = new TextObject("{=fI7a7RoE}Inventory Capacity");
 
-	private static readonly TextObject _partyInventoryCargoCapacityStr = new TextObject("{=*}Cargo Capacity");
+	private static readonly TextObject _partyInventoryCargoCapacityStr = new TextObject("{=fI7a7RoE}Cargo Capacity");
 
 	private static readonly TextObject _partyInventoryLandCapacityStr = new TextObject("{=cBqjZjfJ}Inventory Capacity on Land");
 
-	private static readonly TextObject _partyInventorySeaCapacityStr = new TextObject("{=*}Cargo Capacity at Sea");
+	private static readonly TextObject _partyInventorySeaCapacityStr = new TextObject("{=aAqMSU2d}Cargo Capacity at Sea");
 
 	private static readonly TextObject _partyInventoryWeightStr = new TextObject("{=4Dd2xgPm}Weight");
 
-	private static readonly TextObject _partyInventoryCargoStr = new TextObject("{=*}Cargo");
+	private static readonly TextObject _partyInventoryCargoStr = new TextObject("{=cblOOivk}Cargo");
 
 	private static readonly TextObject _partyInventoryLandWeightStr = new TextObject("{=8d23bRmv}Weight on Land");
 
-	private static readonly TextObject _partyInventorySeaWeightStr = new TextObject("{=*}Cargo at Sea");
+	private static readonly TextObject _partyInventorySeaWeightStr = new TextObject("{=Tc5y7Tgd}Cargo at Sea");
 
 	private static readonly TextObject _partyTroopSizeLimitStr = new TextObject("{=2Cq3tViJ}Party Troop Size Limit");
 
@@ -278,6 +278,10 @@ public static class CampaignUIHelper
 	private static readonly TextObject _noDelayText = new TextObject("{=bDwTWrru}No delay");
 
 	private static readonly TextObject _regroupingText = new TextObject("{=KxLoeSEO}Regrouping");
+
+	private static readonly TextObject _partyRolesText = new TextObject("{=RrY2qMan}Party Roles");
+
+	private static readonly TextObject _governerEffectsText = new TextObject("{=J8ddrAOf}Governor Effects");
 
 	public static readonly MobilePartyPrecedenceComparer MobilePartyPrecedenceComparerInstance = new MobilePartyPrecedenceComparer();
 
@@ -1132,7 +1136,8 @@ public static class CampaignUIHelper
 		}
 		else
 		{
-			TooltipAddPropertyTitleWithValue(list, _partyInventoryCapacityStr.ToString(), party.InventoryCapacity);
+			TextObject textObject = (party.IsCurrentlyAtSea ? _partyInventoryCargoCapacityStr : _partyInventoryCapacityStr);
+			TooltipAddPropertyTitleWithValue(list, textObject.ToString(), party.InventoryCapacity);
 			TooltipAddSeperator(list);
 			ExplainedNumber explainedNumber3 = party.InventoryCapacityExplainedNumber;
 			TooltipAddExplanation(list, ref explainedNumber3);
@@ -1159,7 +1164,8 @@ public static class CampaignUIHelper
 		}
 		else
 		{
-			TooltipAddPropertyTitleWithValue(list, _partyInventoryWeightStr.ToString(), party.TotalWeightCarried);
+			TextObject textObject = (party.IsCurrentlyAtSea ? _partyInventoryCargoStr : _partyInventoryWeightStr);
+			TooltipAddPropertyTitleWithValue(list, textObject.ToString(), party.TotalWeightCarried);
 			TooltipAddSeperator(list);
 			ExplainedNumber explainedNumber3 = party.TotalWeightCarriedExplainedNumber;
 			TooltipAddExplanation(list, ref explainedNumber3);
@@ -1332,7 +1338,7 @@ public static class CampaignUIHelper
 		}
 		else
 		{
-			Debug.FailedAssert("Only towns' consumptions are tracked", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetSettlementConsumptionTooltip", 1384);
+			Debug.FailedAssert("Only towns' consumptions are tracked", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetSettlementConsumptionTooltip", 1388);
 		}
 		return list;
 	}
@@ -1483,7 +1489,7 @@ public static class CampaignUIHelper
 		{
 			return new StringItemWithHintVM("", TextObject.GetEmpty());
 		}
-		bool isMariner = character.IsMariner;
+		bool flag = !character.IsHero && character.IsMariner;
 		TextObject textObject = new TextObject("{=!}{TYPENAME}{MARINER}{BIG}");
 		TextObject textObject2;
 		if (character.IsRanged && character.IsMounted)
@@ -1494,7 +1500,7 @@ public static class CampaignUIHelper
 		else if (character.IsRanged)
 		{
 			textObject.SetTextVariable("TYPENAME", "bow");
-			string variation = (isMariner ? "Ranged_Mariner" : "Ranged");
+			string variation = (flag ? "Ranged_Mariner" : "Ranged");
 			textObject2 = GameTexts.FindText("str_troop_type_name", variation);
 		}
 		else if (character.IsMounted)
@@ -1509,10 +1515,10 @@ public static class CampaignUIHelper
 				return new StringItemWithHintVM("", TextObject.GetEmpty());
 			}
 			textObject.SetTextVariable("TYPENAME", "infantry");
-			string variation2 = (isMariner ? "Infantry_Mariner" : "Infantry");
+			string variation2 = (flag ? "Infantry_Mariner" : "Infantry");
 			textObject2 = GameTexts.FindText("str_troop_type_name", variation2);
 		}
-		textObject.SetTextVariable("MARINER", isMariner ? "_mariner" : "");
+		textObject.SetTextVariable("MARINER", flag ? "_mariner" : "");
 		textObject.SetTextVariable("BIG", isBig ? "_big" : "");
 		return new StringItemWithHintVM("General\\TroopTypeIcons\\icon_troop_type_" + textObject.ToString(), new TextObject("{=!}" + textObject2.ToString()));
 	}
@@ -1601,14 +1607,18 @@ public static class CampaignUIHelper
 		MBTextManager.SetTextVariable("LEFT", GameTexts.FindText("str_tooltip_label_culture"));
 		string definition3 = GameTexts.FindText("str_LEFT_ONLY").ToString();
 		list.Add(new TooltipProperty(definition3, hero.Culture.Name.ToString(), 0));
-		PartyRole? partyRole = hero.PartyBelongedTo?.GetHeroPartyRole(hero);
-		if (partyRole.HasValue && partyRole != PartyRole.None)
+		list.Add(new TooltipProperty(_partyRolesText.ToString(), "", 0));
+		List<PartyRole> list2 = hero.PartyBelongedTo?.GetHeroPartyRoles(hero);
+		if (list2 != null)
 		{
-			TextObject textObject = GameTexts.FindText("role", partyRole.Value.ToString());
-			list.Add(new TooltipProperty(new TextObject("{=9FJi2SaE}Party Role").ToString(), textObject.ToString(), 0));
+			foreach (PartyRole item in list2)
+			{
+				TextObject textObject = GameTexts.FindText("role", item.ToString());
+				list.Add(new TooltipProperty("", textObject.ToString(), 0));
+			}
 		}
 		TooltipAddEmptyLine(list);
-		list.Add(new TooltipProperty(new TextObject("{=J8ddrAOf}Governor Effects").ToString(), " ", 0));
+		list.Add(new TooltipProperty(_governerEffectsText.ToString(), "", 0));
 		TooltipAddSeperator(list);
 		(TextObject, TextObject) governorEngineeringSkillEffectForHero = PerkHelper.GetGovernorEngineeringSkillEffectForHero(hero);
 		list.Add(new TooltipProperty(governorEngineeringSkillEffectForHero.Item1.ToString(), governorEngineeringSkillEffectForHero.Item2.ToString(), 0));
@@ -1811,6 +1821,7 @@ public static class CampaignUIHelper
 		{
 			list.Add(new TooltipProperty(new TextObject("{=cUUI8u2G}Smithy Stamina").ToString(), campaignBehavior.GetHeroCraftingStamina(hero) + " / " + campaignBehavior.GetMaxHeroCraftingStamina(hero), 0));
 			list.Add(new TooltipProperty(new TextObject("{=lVuGCYPC}Smithing Skill").ToString(), hero.GetSkillValue(DefaultSkills.Crafting).ToString(), 0));
+			list.Add(new TooltipProperty(new TextObject("{=ZU4dlbym}Click to change the smith").ToString(), "", 0));
 		}
 		return list;
 	}
@@ -2235,6 +2246,15 @@ public static class CampaignUIHelper
 		return string.Empty;
 	}
 
+	public static List<TooltipProperty> GetSmithingDifficultyTooltip()
+	{
+		return new List<TooltipProperty>
+		{
+			new TooltipProperty("", new TextObject("{=JfmiJEHG}Smithing Difficulty").ToString(), 0, onlyShowWhenExtended: false, TooltipProperty.TooltipPropertyFlags.Title),
+			new TooltipProperty("", new TextObject("{=w1jJqTaJ}Determines how difficult the design is to forge. Difficulties lower than the Smithing skill of the forger will produce at least adequate results while difficulties higher than the Smithing skill of the forger will use more stamina and may result in poor craftsmanship.").ToString(), 0, onlyShowWhenExtended: false, TooltipProperty.TooltipPropertyFlags.MultiLine)
+		};
+	}
+
 	public static bool IsSettlementInformationHidden(Settlement settlement, out TextObject disableReason)
 	{
 		bool flag = !Campaign.Current.Models.InformationRestrictionModel.DoesPlayerKnowDetailsOf(settlement);
@@ -2322,7 +2342,7 @@ public static class CampaignUIHelper
 			TextObject textObject4 = new TextObject((Hero.MainHero.Gold + partyGoldChangeAmount < upgradeCoinCost) ? "{=63Ic1Ahe}Cost: {UPGRADE_COST} (You don't have)" : "{=McJjNM50}Cost: {UPGRADE_COST}");
 			textObject4.SetTextVariable("UPGRADE_COST", upgradeCoinCost);
 			GameTexts.SetVariable("STR1", textObject4);
-			GameTexts.SetVariable("STR2", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"8\">");
+			GameTexts.SetVariable("STR2", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 			string content = GameTexts.FindText("str_STR1_STR2").ToString();
 			GameTexts.SetVariable("STR1", text);
 			GameTexts.SetVariable("STR2", content);
@@ -2583,7 +2603,7 @@ public static class CampaignUIHelper
 		if (effect.Role != 0)
 		{
 			TextObject textObject = GameTexts.FindText("role", effect.Role.ToString());
-			return $"({textObject.ToString()}) {effectDescriptionForSkillLevel} ";
+			return $"• {textObject.ToString()}: {effectDescriptionForSkillLevel} ";
 		}
 		return effectDescriptionForSkillLevel.ToString();
 	}
@@ -2869,7 +2889,7 @@ public static class CampaignUIHelper
 	{
 		if (traitObject != DefaultTraits.Mercy && traitObject != DefaultTraits.Valor && traitObject != DefaultTraits.Honor && traitObject != DefaultTraits.Generosity && traitObject != DefaultTraits.Calculating)
 		{
-			Debug.FailedAssert("Cannot show this trait as text.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetTraitNameText", 3303);
+			Debug.FailedAssert("Cannot show this trait as text.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetTraitNameText", 3326);
 			return "";
 		}
 		int traitLevel = hero.GetTraitLevel(traitObject);
@@ -2884,7 +2904,7 @@ public static class CampaignUIHelper
 	{
 		if (traitObject != DefaultTraits.Mercy && traitObject != DefaultTraits.Valor && traitObject != DefaultTraits.Honor && traitObject != DefaultTraits.Generosity && traitObject != DefaultTraits.Calculating)
 		{
-			Debug.FailedAssert("Cannot show this trait's tooltip.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetTraitTooltipText", 3328);
+			Debug.FailedAssert("Cannot show this trait's tooltip.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetTraitTooltipText", 3351);
 			return null;
 		}
 		GameTexts.SetVariable("NEWLINE", "\n");
@@ -2997,7 +3017,17 @@ public static class CampaignUIHelper
 
 	public static string GetHeroClanRoleText(Hero hero, Clan clan)
 	{
-		return GameTexts.FindText("role", MobileParty.MainParty.GetHeroPartyRole(hero).ToString()).ToString();
+		List<PartyRole> heroPartyRoles = MobileParty.MainParty.GetHeroPartyRoles(hero);
+		if (heroPartyRoles.Count == 1)
+		{
+			return GameTexts.FindText("role", heroPartyRoles.First().ToString()).ToString();
+		}
+		List<TextObject> list = new List<TextObject>();
+		foreach (PartyRole item in heroPartyRoles)
+		{
+			list.Add(GameTexts.FindText("role", item.ToString()));
+		}
+		return GameTexts.GameTextHelper.MergeTextObjectsWithComma(list, includeAnd: true).ToString();
 	}
 
 	public static int GetItemObjectTypeSortIndex(ItemObject item)
@@ -3188,7 +3218,7 @@ public static class CampaignUIHelper
 		{
 			Hero hero = trackedObject.Key as Hero;
 			MobileParty mobileParty = trackedObject.Key as MobileParty;
-			if ((hero == null || hero.CurrentSettlement != settlement) && (mobileParty == null || mobileParty.CurrentSettlement != settlement))
+			if ((hero == null || hero.PartyBelongedTo == MobileParty.MainParty || hero.PartyBelongedToAsPrisoner == PartyBase.MainParty || hero.CurrentSettlement != settlement) && (mobileParty == null || mobileParty.CurrentSettlement != settlement))
 			{
 				continue;
 			}

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Map;
+using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Library;
@@ -341,16 +342,23 @@ public class CampaignTickCacheDataStore
 
 	private void UpdateVisibilitiesAroundMainParty()
 	{
-		if (MobileParty.MainParty.Position.IsValid() && Campaign.Current.GetSimplifiedTimeControlMode() != 0)
+		if (!MobileParty.MainParty.Position.IsValid() || Campaign.Current.GetSimplifiedTimeControlMode() == CampaignTimeControlMode.Stop)
 		{
-			if (MobileParty.MainParty.SiegeEvent != null && MobileParty.MainParty.SiegeEvent.BesiegedSettlement.HasPort)
-			{
-				UpdateVisibilitiesBasedOnPoint(MobileParty.MainParty.SiegeEvent.BesiegedSettlement.Position, MobileParty.MainParty.SeeingRange * 1.35f);
-			}
-			else
-			{
-				UpdateVisibilitiesBasedOnPoint(MobileParty.MainParty.Position, MobileParty.MainParty.SeeingRange);
-			}
+			return;
+		}
+		if (MobileParty.MainParty.SiegeEvent != null && MobileParty.MainParty.SiegeEvent.BesiegedSettlement.HasPort)
+		{
+			UpdateVisibilitiesBasedOnPoint(MobileParty.MainParty.SiegeEvent.BesiegedSettlement.Position, MobileParty.MainParty.SeeingRange * 1.35f);
+			return;
+		}
+		MapEvent mapEvent = MobileParty.MainParty.MapEvent;
+		if (mapEvent != null && mapEvent.IsRaid && MobileParty.MainParty.MapEvent.MapEventSettlement.HasPort)
+		{
+			UpdateVisibilitiesBasedOnPoint(MobileParty.MainParty.MapEvent.MapEventSettlement.Position, MobileParty.MainParty.SeeingRange * 1.35f);
+		}
+		else
+		{
+			UpdateVisibilitiesBasedOnPoint(MobileParty.MainParty.Position, MobileParty.MainParty.SeeingRange);
 		}
 	}
 

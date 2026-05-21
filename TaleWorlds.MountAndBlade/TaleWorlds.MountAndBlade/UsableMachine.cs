@@ -24,13 +24,9 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 
 	private readonly List<UsableMissionObjectComponent> _components;
 
-	private DestructableComponent _destructionComponent;
+	protected bool AreUsableStandingPointsVacant = true;
 
-	protected bool _areUsableStandingPointsVacant = true;
-
-	protected List<(int, StandingPoint)> _usableStandingPoints;
-
-	protected bool _isDetachmentRecentlyEvaluated;
+	protected List<(int, StandingPoint)> UsableStandingPoints;
 
 	private int _reevaluatedCount;
 
@@ -52,7 +48,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 
 	protected QueryData<bool> IsDisabledForDefenderAIDueToEnemyInRange;
 
-	protected MBList<Formation> _userFormations;
+	private MBList<Formation> _userFormations;
 
 	private bool _isMachineDeactivated;
 
@@ -66,7 +62,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 
 	protected List<GameEntity> WaitStandingPoints { get; private set; }
 
-	public DestructableComponent DestructionComponent => _destructionComponent;
+	public DestructableComponent DestructionComponent { get; private set; }
 
 	public bool IsDestructible => DestructionComponent != null;
 
@@ -81,6 +77,8 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 			return false;
 		}
 	}
+
+	protected bool IsDetachmentRecentlyEvaluated { get; private set; }
 
 	public Agent PilotAgent => PilotStandingPoint?.UserAgent;
 
@@ -226,7 +224,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 		return null;
 	}
 
-	public WeakGameEntity GetValidStandingPointForAgent(Agent agent)
+	public WeakGameEntity GetValidVacantReachableStandingPointForAgent(Agent agent)
 	{
 		float num = float.MaxValue;
 		StandingPoint standingPoint = null;
@@ -386,7 +384,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 		}, 1f);
 		CollectAndSetStandingPoints();
 		AmmoPickUpPoints = new List<StandingPoint>();
-		_destructionComponent = base.GameEntity.GetFirstScriptOfType<DestructableComponent>();
+		DestructionComponent = base.GameEntity.GetFirstScriptOfType<DestructableComponent>();
 		PilotStandingPoint = null;
 		for (int i = 0; i < StandingPoints.Count; i++)
 		{
@@ -408,7 +406,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 			ActiveWaitStandingPoint = WaitStandingPoints[0];
 		}
 		_userFormations = new MBList<Formation>();
-		_usableStandingPoints = new List<(int, StandingPoint)>();
+		UsableStandingPoints = new List<(int, StandingPoint)>();
 		SetScriptComponentToTick(GetTickRequirement());
 	}
 
@@ -565,7 +563,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 
 	public virtual void OnPilotAssignedDuringSpawn()
 	{
-		TaleWorlds.Library.Debug.FailedAssert("This method must have been overridden", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Usables\\UsableMachine.cs", "OnPilotAssignedDuringSpawn", 624);
+		TaleWorlds.Library.Debug.FailedAssert("This method must have been overridden", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Usables\\UsableMachine.cs", "OnPilotAssignedDuringSpawn", 615);
 	}
 
 	public virtual TextObject GetInfoTextForBeingNotInteractable(Agent userAgent)
@@ -648,19 +646,30 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 
 	public virtual void Disable()
 	{
+		foreach (StandingPoint standingPoint in StandingPoints)
+		{
+			if (standingPoint.HasUser)
+			{
+				standingPoint.UserAgent.StopUsingGameObject();
+			}
+			if (standingPoint.HasAIMovingTo)
+			{
+				standingPoint.MovingAgent.StopUsingGameObject();
+			}
+		}
 		foreach (Team item in Mission.Current.Teams.Where((Team t) => t.DetachmentManager.ContainsDetachment(this)))
 		{
 			item.DetachmentManager.DestroyDetachment(this);
 		}
-		foreach (StandingPoint standingPoint in StandingPoints)
+		foreach (StandingPoint standingPoint2 in StandingPoints)
 		{
-			if (!standingPoint.GameEntity.HasTag(AmmoPickUpTag))
+			if (!standingPoint2.GameEntity.HasTag(AmmoPickUpTag))
 			{
-				if (standingPoint.HasUser)
+				if (standingPoint2.HasUser)
 				{
-					standingPoint.UserAgent.StopUsingGameObject();
+					standingPoint2.UserAgent.StopUsingGameObject();
 				}
-				standingPoint.SetIsDeactivatedSynched(value: true);
+				standingPoint2.SetIsDeactivatedSynched(value: true);
 			}
 		}
 		foreach (UsableMissionObjectComponent component in _components)
@@ -769,7 +778,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 		{
 			return float.MinValue;
 		}
-		_usableStandingPoints.Clear();
+		UsableStandingPoints.Clear();
 		bool flag = false;
 		bool flag2 = false;
 		for (int i = 0; i < StandingPoints.Count; i++)
@@ -783,7 +792,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 			{
 				if (!flag2)
 				{
-					_usableStandingPoints.Clear();
+					UsableStandingPoints.Clear();
 				}
 				flag2 = true;
 			}
@@ -792,9 +801,9 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 				continue;
 			}
 			flag = true;
-			_usableStandingPoints.Add((i, standingPoint));
+			UsableStandingPoints.Add((i, standingPoint));
 		}
-		_areUsableStandingPointsVacant = flag2;
+		AreUsableStandingPointsVacant = flag2;
 		if (!flag)
 		{
 			return float.MinValue;
@@ -803,7 +812,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 		{
 			return 1f;
 		}
-		if (!_isDetachmentRecentlyEvaluated)
+		if (!IsDetachmentRecentlyEvaluated)
 		{
 			return 0.1f;
 		}
@@ -812,10 +821,10 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 
 	void IDetachment.GetSlotIndexWeightTuples(List<(int, float)> slotIndexWeightTuples)
 	{
-		foreach (var usableStandingPoint in _usableStandingPoints)
+		foreach (var usableStandingPoint in UsableStandingPoints)
 		{
 			StandingPoint item = usableStandingPoint.Item2;
-			slotIndexWeightTuples.Add((usableStandingPoint.Item1, GetWeightOfStandingPoint(item) * ((!_areUsableStandingPointsVacant && item.HasRecentlyBeenRechecked) ? 0.1f : 1f)));
+			slotIndexWeightTuples.Add((usableStandingPoint.Item1, GetWeightOfStandingPoint(item) * ((!AreUsableStandingPointsVacant && item.HasRecentlyBeenRechecked) ? 0.1f : 1f)));
 		}
 	}
 
@@ -906,24 +915,24 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 
 	bool IDetachment.IsDetachmentRecentlyEvaluated()
 	{
-		return _isDetachmentRecentlyEvaluated;
+		return IsDetachmentRecentlyEvaluated;
 	}
 
 	void IDetachment.UnmarkDetachment()
 	{
-		_isDetachmentRecentlyEvaluated = false;
+		IsDetachmentRecentlyEvaluated = false;
 	}
 
 	void IDetachment.MarkSlotAtIndex(int slotIndex)
 	{
-		int count = _usableStandingPoints.Count;
+		int count = UsableStandingPoints.Count;
 		if (++_reevaluatedCount >= count)
 		{
-			foreach (var usableStandingPoint in _usableStandingPoints)
+			foreach (var usableStandingPoint in UsableStandingPoints)
 			{
 				usableStandingPoint.Item2.HasRecentlyBeenRechecked = false;
 			}
-			_isDetachmentRecentlyEvaluated = true;
+			IsDetachmentRecentlyEvaluated = true;
 			_reevaluatedCount = 0;
 		}
 		else
@@ -966,7 +975,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 		{
 			list.Add(float.MaxValue);
 		}
-		foreach (var usableStandingPoint in _usableStandingPoints)
+		foreach (var usableStandingPoint in UsableStandingPoints)
 		{
 			float num = usableStandingPoint.Item2.GameEntity.GlobalPosition.Distance(candidate.Position);
 			list[usableStandingPoint.Item1] = num * MissionGameModels.Current.AgentStatCalculateModel.GetDetachmentCostMultiplierOfAgent(candidate, this);
@@ -1004,7 +1013,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 
 	public int GetNumberOfUsableSlots()
 	{
-		return _usableStandingPoints.Count;
+		return UsableStandingPoints.Count;
 	}
 
 	public bool IsStandingPointAvailableForAgent(Agent agent)
@@ -1100,7 +1109,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Usables\\UsableMachine.cs", "AddAgent", 1445);
+			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Usables\\UsableMachine.cs", "AddAgent", 1449);
 		}
 	}
 

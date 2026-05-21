@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Numerics;
+using TaleWorlds.CampaignSystem.ViewModelCollection.ClanManagement;
 using TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu.Overlay;
 using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
@@ -203,7 +204,9 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 
 	private HintWidget _widget_2_2_2_1_0;
 
-	private SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_5_OverlayPopup__DependendPrefab _widget_3;
+	private SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_5_ClanCardSelectionPopup__DependendPrefab _widget_3;
+
+	private SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_6_OverlayPopup__DependendPrefab _widget_4;
 
 	private SettlementMenuOverlayVM _datasource_Root;
 
@@ -231,11 +234,13 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 
 	private BasicTooltipViewModel _datasource_Root_CrimeHint;
 
-	private HintViewModel _datasource_Root_LeaveMembersHint;
+	private HintViewModel _datasource_Root_AssignMembersHint;
 
 	private HintViewModel _datasource_Root_CharacterFilterHint;
 
 	private HintViewModel _datasource_Root_PartyFilterHint;
+
+	private ClanCardSelectionPopupVM _datasource_Root_CardSelectionPopup;
 
 	public SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM(UIContext context)
 		: base(context)
@@ -455,9 +460,12 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_2_2_2.AddChild(_widget_2_2_2_1);
 		_widget_2_2_2_1_0 = new HintWidget(base.Context);
 		_widget_2_2_2_1.AddChild(_widget_2_2_2_1_0);
-		_widget_3 = new SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_5_OverlayPopup__DependendPrefab(base.Context);
+		_widget_3 = new SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_5_ClanCardSelectionPopup__DependendPrefab(base.Context);
 		_widget.AddChild(_widget_3);
 		_widget_3.CreateWidgets();
+		_widget_4 = new SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu_Overlay_SettlementMenuOverlayVM_Dependency_6_OverlayPopup__DependendPrefab(base.Context);
+		_widget.AddChild(_widget_4);
+		_widget_4.CreateWidgets();
 	}
 
 	public void SetIds()
@@ -484,7 +492,8 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_2_2_2_0.Id = "CharacterListButton";
 		_widget_2_2_2_1.Id = "PartyListButton";
 		_widget_3.SetIds();
-		_widget_3.Id = "PopupParent";
+		_widget_4.SetIds();
+		_widget_4.Id = "PopupParent";
 	}
 
 	public void SetAttributes()
@@ -492,7 +501,7 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		base.DoNotAcceptEvents = true;
 		base.WidthSizePolicy = SizePolicy.StretchToParent;
 		base.HeightSizePolicy = SizePolicy.StretchToParent;
-		base.PopupWidget = _widget_3.FindChild("Popup") as OverlayPopupWidget;
+		base.PopupWidget = _widget_4.FindChild("Popup") as OverlayPopupWidget;
 		_widget_0.ScopeID = "SettlementOverlayToggleScope";
 		_widget_0.ScopeParent = _widget_1;
 		_widget_0.ScopeMovements = GamepadNavigationTypes.Horizontal;
@@ -582,7 +591,7 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_2_0_1_0_2.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_2.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2_0_1_0_2.MarginTop = 5f;
-		_widget_2_0_1_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_1_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_1_0_2_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_0_1_0_2_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_2_0_1_0_2_0.SuggestedWidth = 28f;
@@ -606,7 +615,7 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_2_0_1_0_3.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2_0_1_0_3.MarginTop = 5f;
 		_widget_2_0_1_0_3.MarginLeft = 20f;
-		_widget_2_0_1_0_3.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_1_0_3.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_1_0_3_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_0_1_0_3_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_2_0_1_0_3_0.SuggestedWidth = 40f;
@@ -630,7 +639,7 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_2_0_1_0_4.DoNotPassEventsToChildren = true;
 		_widget_2_0_1_0_4.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_4.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_2_0_1_0_4.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_1_0_4.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_1_0_4.MarginLeft = 20f;
 		_widget_2_0_1_0_4.MarginTop = 5f;
 		_widget_2_0_1_0_4_0.WidthSizePolicy = SizePolicy.Fixed;
@@ -639,11 +648,14 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_2_0_1_0_4_0.SuggestedHeight = 40f;
 		_widget_2_0_1_0_4_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2_0_1_0_4_0.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Garrison");
+		_widget_2_0_1_0_4_0.ExtendLeft = -5f;
+		_widget_2_0_1_0_4_0.ExtendRight = -5f;
+		_widget_2_0_1_0_4_0.ExtendTop = -4f;
 		_widget_2_0_1_0_4_0.GamepadNavigationIndex = 2;
 		_widget_2_0_1_0_4_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_4_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_4_1.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_2_0_1_0_4_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_1_0_4_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_1_0_4_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_4_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_4_1_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -662,7 +674,7 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_2_0_1_0_5.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_5.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_5.MarginLeft = 20f;
-		_widget_2_0_1_0_5.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_1_0_5.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_1_0_5.MarginTop = 5f;
 		_widget_2_0_1_0_5_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_0_1_0_5_0.HeightSizePolicy = SizePolicy.Fixed;
@@ -670,12 +682,15 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_2_0_1_0_5_0.SuggestedHeight = 40f;
 		_widget_2_0_1_0_5_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2_0_1_0_5_0.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Militia");
+		_widget_2_0_1_0_5_0.ExtendLeft = -5f;
+		_widget_2_0_1_0_5_0.ExtendRight = -5f;
+		_widget_2_0_1_0_5_0.ExtendTop = -6f;
 		_widget_2_0_1_0_5_0.GamepadNavigationIndex = 3;
 		_widget_2_0_1_0_5_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_5_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_5_1.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2_0_1_0_5_1.VerticalAlignment = VerticalAlignment.Top;
-		_widget_2_0_1_0_5_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_1_0_5_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_1_0_5_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_5_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_5_1_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -694,7 +709,7 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_2_0_1_0_6.DoNotPassEventsToChildren = true;
 		_widget_2_0_1_0_6.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_6.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_2_0_1_0_6.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_1_0_6.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_1_0_6.MarginLeft = 20f;
 		_widget_2_0_1_0_6.MarginTop = 5f;
 		_widget_2_0_1_0_6_0.WidthSizePolicy = SizePolicy.Fixed;
@@ -703,11 +718,15 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_2_0_1_0_6_0.SuggestedHeight = 40f;
 		_widget_2_0_1_0_6_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2_0_1_0_6_0.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Food");
+		_widget_2_0_1_0_6_0.ExtendLeft = -4f;
+		_widget_2_0_1_0_6_0.ExtendRight = -4f;
+		_widget_2_0_1_0_6_0.ExtendTop = -8f;
+		_widget_2_0_1_0_6_0.ExtendBottom = -2f;
 		_widget_2_0_1_0_6_0.GamepadNavigationIndex = 4;
 		_widget_2_0_1_0_6_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_6_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_6_1.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_2_0_1_0_6_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_1_0_6_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_1_0_6_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_6_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_6_1_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -725,7 +744,7 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_2_0_1_0_7.DoNotPassEventsToChildren = true;
 		_widget_2_0_1_0_7.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_7.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_2_0_1_0_7.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_1_0_7.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_1_0_7.MarginLeft = 20f;
 		_widget_2_0_1_0_7.MarginTop = 5f;
 		_widget_2_0_1_0_7_0.WidthSizePolicy = SizePolicy.Fixed;
@@ -734,11 +753,14 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_2_0_1_0_7_0.SuggestedHeight = 40f;
 		_widget_2_0_1_0_7_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2_0_1_0_7_0.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Prosperity");
+		_widget_2_0_1_0_7_0.ExtendLeft = -4f;
+		_widget_2_0_1_0_7_0.ExtendRight = -4f;
+		_widget_2_0_1_0_7_0.ExtendTop = -6f;
 		_widget_2_0_1_0_7_0.GamepadNavigationIndex = 5;
 		_widget_2_0_1_0_7_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_7_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_7_1.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_2_0_1_0_7_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_1_0_7_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_1_0_7_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_7_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_7_1_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -757,7 +779,7 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_2_0_1_0_8.DoNotPassEventsToChildren = true;
 		_widget_2_0_1_0_8.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_8.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_2_0_1_0_8.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_1_0_8.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_1_0_8.MarginLeft = 20f;
 		_widget_2_0_1_0_8.MarginTop = 5f;
 		_widget_2_0_1_0_8_0.WidthSizePolicy = SizePolicy.Fixed;
@@ -766,11 +788,14 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_2_0_1_0_8_0.SuggestedHeight = 40f;
 		_widget_2_0_1_0_8_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2_0_1_0_8_0.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Morale");
+		_widget_2_0_1_0_8_0.ExtendLeft = -4f;
+		_widget_2_0_1_0_8_0.ExtendRight = -4f;
+		_widget_2_0_1_0_8_0.ExtendTop = -4f;
 		_widget_2_0_1_0_8_0.GamepadNavigationIndex = 6;
 		_widget_2_0_1_0_8_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_8_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_8_1.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_2_0_1_0_8_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_1_0_8_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_1_0_8_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_8_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_8_1_0.SuggestedWidth = 20f;
@@ -789,7 +814,7 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_2_0_1_0_9.DoNotPassEventsToChildren = true;
 		_widget_2_0_1_0_9.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_9.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_2_0_1_0_9.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_1_0_9.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_1_0_9.MarginLeft = 20f;
 		_widget_2_0_1_0_9.MarginTop = 5f;
 		_widget_2_0_1_0_9_0.WidthSizePolicy = SizePolicy.Fixed;
@@ -798,11 +823,12 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_2_0_1_0_9_0.SuggestedHeight = 40f;
 		_widget_2_0_1_0_9_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2_0_1_0_9_0.Sprite = base.Context.SpriteData.GetSprite("SPGeneral\\MapOverlay\\Settlement\\icon_security");
+		_widget_2_0_1_0_9_0.ExtendBottom = 4f;
 		_widget_2_0_1_0_9_0.GamepadNavigationIndex = 7;
 		_widget_2_0_1_0_9_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_9_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_9_1.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_2_0_1_0_9_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_1_0_9_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_1_0_9_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_9_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_9_1_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -824,7 +850,7 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_2_0_1_0_10_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_10_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_10_0.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_2_0_1_0_10_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_1_0_10_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_1_0_10_0.MarginLeft = 10f;
 		_widget_2_0_1_0_10_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_0_1_0_10_0_0.HeightSizePolicy = SizePolicy.Fixed;
@@ -836,7 +862,7 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_2_0_1_0_10_0_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_10_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_10_0_1.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_2_0_1_0_10_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_0_1_0_10_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_1_0_10_0_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_10_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_1_0_10_0_1_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -1056,7 +1082,7 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_2_2_2.FirstList = _widget_2_2_0;
 		_widget_2_2_2.FirstListButton = _widget_2_2_2_0;
 		_widget_2_2_2.IsVisible = false;
-		_widget_2_2_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_2_2_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_2_2.SecondList = _widget_2_2_1;
 		_widget_2_2_2.SecondListButton = _widget_2_2_2_1;
 		_widget_2_2_2_0.WidthSizePolicy = SizePolicy.Fixed;
@@ -1081,6 +1107,7 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_2_2_2_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_2_2_2_1_0.IsDisabled = true;
 		_widget_3.SetAttributes();
+		_widget_4.SetAttributes();
 	}
 
 	public void RefreshBindingWithChildren()
@@ -1096,7 +1123,7 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		{
 			return;
 		}
-		_widget_3.DestroyDataSource();
+		_widget_4.DestroyDataSource();
 		_datasource_Root.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root;
@@ -1532,20 +1559,20 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 			_widget_2_0_1_0_10_0.EventFire -= EventListenerOf_widget_2_0_1_0_10_0;
 			_datasource_Root_CrimeHint = null;
 		}
-		if (_datasource_Root_LeaveMembersHint != null)
+		if (_datasource_Root_AssignMembersHint != null)
 		{
-			_datasource_Root_LeaveMembersHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_LeaveMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_AssignMembersHint;
 			_widget_2_2_0_4_0_0.EventFire -= EventListenerOf_widget_2_2_0_4_0_0;
 			_widget_2_2_0_4_1.EventFire -= EventListenerOf_widget_2_2_0_4_1;
-			_datasource_Root_LeaveMembersHint = null;
+			_datasource_Root_AssignMembersHint = null;
 		}
 		if (_datasource_Root_CharacterFilterHint != null)
 		{
@@ -1574,6 +1601,20 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 			_datasource_Root_PartyFilterHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_PartyFilterHint;
 			_widget_2_2_2_1_0.EventFire -= EventListenerOf_widget_2_2_2_1_0;
 			_datasource_Root_PartyFilterHint = null;
+		}
+		if (_datasource_Root_CardSelectionPopup != null)
+		{
+			_widget_3.DestroyDataSource();
+			_datasource_Root_CardSelectionPopup.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup = null;
 		}
 		_datasource_Root = null;
 	}
@@ -1703,11 +1744,11 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 	{
 		if (commandName == "HoverBegin")
 		{
-			_datasource_Root_LeaveMembersHint.ExecuteBeginHint();
+			_datasource_Root_AssignMembersHint.ExecuteBeginHint();
 		}
 		if (commandName == "HoverEnd")
 		{
-			_datasource_Root_LeaveMembersHint.ExecuteEndHint();
+			_datasource_Root_AssignMembersHint.ExecuteEndHint();
 		}
 	}
 
@@ -1715,11 +1756,11 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 	{
 		if (commandName == "HoverBegin")
 		{
-			_datasource_Root_LeaveMembersHint.ExecuteBeginHint();
+			_datasource_Root_AssignMembersHint.ExecuteBeginHint();
 		}
 		if (commandName == "HoverEnd")
 		{
-			_datasource_Root_LeaveMembersHint.ExecuteEndHint();
+			_datasource_Root_AssignMembersHint.ExecuteEndHint();
 		}
 	}
 
@@ -3214,7 +3255,7 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 	{
 		if (propertyName == "IsEnabled")
 		{
-			_datasource_Root.CanLeaveMembers = _widget_2_2_0_4_0.IsEnabled;
+			_datasource_Root.CanAssignMembers = _widget_2_2_0_4_0.IsEnabled;
 		}
 	}
 
@@ -3364,14 +3405,17 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		case "CrimeHint":
 			RefreshDataSource_datasource_Root_CrimeHint(_datasource_Root.CrimeHint);
 			break;
-		case "LeaveMembersHint":
-			RefreshDataSource_datasource_Root_LeaveMembersHint(_datasource_Root.LeaveMembersHint);
+		case "AssignMembersHint":
+			RefreshDataSource_datasource_Root_AssignMembersHint(_datasource_Root.AssignMembersHint);
 			break;
 		case "CharacterFilterHint":
 			RefreshDataSource_datasource_Root_CharacterFilterHint(_datasource_Root.CharacterFilterHint);
 			break;
 		case "PartyFilterHint":
 			RefreshDataSource_datasource_Root_PartyFilterHint(_datasource_Root.PartyFilterHint);
+			break;
+		case "CardSelectionPopup":
+			RefreshDataSource_datasource_Root_CardSelectionPopup(_datasource_Root.CardSelectionPopup);
 			break;
 		case "SettlementNameLbl":
 			_widget_2_0_1_0_1.Text = _datasource_Root.SettlementNameLbl;
@@ -3455,8 +3499,8 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		case "IsCrimeLabelHighlightEnabled":
 			_widget_2_0_1_0_10_1.IsHighlightEnabled = _datasource_Root.IsCrimeLabelHighlightEnabled;
 			break;
-		case "CanLeaveMembers":
-			_widget_2_2_0_4_0.IsEnabled = _datasource_Root.CanLeaveMembers;
+		case "CanAssignMembers":
+			_widget_2_2_0_4_0.IsEnabled = _datasource_Root.CanAssignMembers;
 			break;
 		}
 	}
@@ -3963,52 +4007,52 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 	{
 	}
 
-	private void ViewModelPropertyChangedListenerOf_datasource_Root_LeaveMembersHint(object sender, PropertyChangedEventArgs e)
+	private void ViewModelPropertyChangedListenerOf_datasource_Root_AssignMembersHint(object sender, PropertyChangedEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_LeaveMembersHint(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_AssignMembersHint(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_LeaveMembersHint(object sender, PropertyChangedWithValueEventArgs e)
+	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_AssignMembersHint(object sender, PropertyChangedWithValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_LeaveMembersHint(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_AssignMembersHint(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_LeaveMembersHint(object sender, PropertyChangedWithBoolValueEventArgs e)
+	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_AssignMembersHint(object sender, PropertyChangedWithBoolValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_LeaveMembersHint(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_AssignMembersHint(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_LeaveMembersHint(object sender, PropertyChangedWithIntValueEventArgs e)
+	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_AssignMembersHint(object sender, PropertyChangedWithIntValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_LeaveMembersHint(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_AssignMembersHint(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_LeaveMembersHint(object sender, PropertyChangedWithFloatValueEventArgs e)
+	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_AssignMembersHint(object sender, PropertyChangedWithFloatValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_LeaveMembersHint(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_AssignMembersHint(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_LeaveMembersHint(object sender, PropertyChangedWithUIntValueEventArgs e)
+	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_AssignMembersHint(object sender, PropertyChangedWithUIntValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_LeaveMembersHint(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_AssignMembersHint(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_LeaveMembersHint(object sender, PropertyChangedWithColorValueEventArgs e)
+	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_AssignMembersHint(object sender, PropertyChangedWithColorValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_LeaveMembersHint(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_AssignMembersHint(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_LeaveMembersHint(object sender, PropertyChangedWithDoubleValueEventArgs e)
+	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_AssignMembersHint(object sender, PropertyChangedWithDoubleValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_LeaveMembersHint(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_AssignMembersHint(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_LeaveMembersHint(object sender, PropertyChangedWithVec2ValueEventArgs e)
+	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_AssignMembersHint(object sender, PropertyChangedWithVec2ValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_LeaveMembersHint(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_AssignMembersHint(e.PropertyName);
 	}
 
-	private void HandleViewModelPropertyChangeOf_datasource_Root_LeaveMembersHint(string propertyName)
+	private void HandleViewModelPropertyChangeOf_datasource_Root_AssignMembersHint(string propertyName)
 	{
 	}
 
@@ -4107,6 +4151,55 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 	}
 
 	private void HandleViewModelPropertyChangeOf_datasource_Root_PartyFilterHint(string propertyName)
+	{
+	}
+
+	private void ViewModelPropertyChangedListenerOf_datasource_Root_CardSelectionPopup(object sender, PropertyChangedEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_CardSelectionPopup(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_CardSelectionPopup(object sender, PropertyChangedWithValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_CardSelectionPopup(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_CardSelectionPopup(object sender, PropertyChangedWithBoolValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_CardSelectionPopup(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_CardSelectionPopup(object sender, PropertyChangedWithIntValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_CardSelectionPopup(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_CardSelectionPopup(object sender, PropertyChangedWithFloatValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_CardSelectionPopup(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_CardSelectionPopup(object sender, PropertyChangedWithUIntValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_CardSelectionPopup(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_CardSelectionPopup(object sender, PropertyChangedWithColorValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_CardSelectionPopup(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_CardSelectionPopup(object sender, PropertyChangedWithDoubleValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_CardSelectionPopup(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_CardSelectionPopup(object sender, PropertyChangedWithVec2ValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_CardSelectionPopup(e.PropertyName);
+	}
+
+	private void HandleViewModelPropertyChangeOf_datasource_Root_CardSelectionPopup(string propertyName)
 	{
 	}
 
@@ -4272,7 +4365,7 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 	{
 		if (_datasource_Root != null)
 		{
-			_widget_3.SetDataSource(null);
+			_widget_4.SetDataSource(null);
 			_datasource_Root.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root;
@@ -4716,20 +4809,20 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 				_widget_2_0_1_0_10_0.EventFire -= EventListenerOf_widget_2_0_1_0_10_0;
 				_datasource_Root_CrimeHint = null;
 			}
-			if (_datasource_Root_LeaveMembersHint != null)
+			if (_datasource_Root_AssignMembersHint != null)
 			{
-				_datasource_Root_LeaveMembersHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_LeaveMembersHint;
-				_datasource_Root_LeaveMembersHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_LeaveMembersHint;
-				_datasource_Root_LeaveMembersHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_LeaveMembersHint;
-				_datasource_Root_LeaveMembersHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_LeaveMembersHint;
-				_datasource_Root_LeaveMembersHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_LeaveMembersHint;
-				_datasource_Root_LeaveMembersHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_LeaveMembersHint;
-				_datasource_Root_LeaveMembersHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_LeaveMembersHint;
-				_datasource_Root_LeaveMembersHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_LeaveMembersHint;
-				_datasource_Root_LeaveMembersHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_LeaveMembersHint;
+				_datasource_Root_AssignMembersHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_AssignMembersHint;
+				_datasource_Root_AssignMembersHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_AssignMembersHint;
+				_datasource_Root_AssignMembersHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_AssignMembersHint;
+				_datasource_Root_AssignMembersHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_AssignMembersHint;
+				_datasource_Root_AssignMembersHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_AssignMembersHint;
+				_datasource_Root_AssignMembersHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_AssignMembersHint;
+				_datasource_Root_AssignMembersHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_AssignMembersHint;
+				_datasource_Root_AssignMembersHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_AssignMembersHint;
+				_datasource_Root_AssignMembersHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_AssignMembersHint;
 				_widget_2_2_0_4_0_0.EventFire -= EventListenerOf_widget_2_2_0_4_0_0;
 				_widget_2_2_0_4_1.EventFire -= EventListenerOf_widget_2_2_0_4_1;
-				_datasource_Root_LeaveMembersHint = null;
+				_datasource_Root_AssignMembersHint = null;
 			}
 			if (_datasource_Root_CharacterFilterHint != null)
 			{
@@ -4758,6 +4851,20 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 				_datasource_Root_PartyFilterHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_PartyFilterHint;
 				_widget_2_2_2_1_0.EventFire -= EventListenerOf_widget_2_2_2_1_0;
 				_datasource_Root_PartyFilterHint = null;
+			}
+			if (_datasource_Root_CardSelectionPopup != null)
+			{
+				_widget_3.SetDataSource(null);
+				_datasource_Root_CardSelectionPopup.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_CardSelectionPopup;
+				_datasource_Root_CardSelectionPopup.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_CardSelectionPopup;
+				_datasource_Root_CardSelectionPopup.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_CardSelectionPopup;
+				_datasource_Root_CardSelectionPopup.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_CardSelectionPopup;
+				_datasource_Root_CardSelectionPopup.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_CardSelectionPopup;
+				_datasource_Root_CardSelectionPopup.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_CardSelectionPopup;
+				_datasource_Root_CardSelectionPopup.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_CardSelectionPopup;
+				_datasource_Root_CardSelectionPopup.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_CardSelectionPopup;
+				_datasource_Root_CardSelectionPopup.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_CardSelectionPopup;
+				_datasource_Root_CardSelectionPopup = null;
 			}
 			_datasource_Root = null;
 		}
@@ -5045,7 +5152,7 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_2_0_1_0_10_1.intPropertyChanged += intPropertyChangedListenerOf_widget_2_0_1_0_10_1;
 		_widget_2_0_1_0_10_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_2_0_1_0_10_1;
 		_widget_2_0_1_0_10_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_2_0_1_0_10_1;
-		_widget_2_2_0_4_0.IsEnabled = _datasource_Root.CanLeaveMembers;
+		_widget_2_2_0_4_0.IsEnabled = _datasource_Root.CanAssignMembers;
 		_widget_2_2_0_4_0.EventFire += EventListenerOf_widget_2_2_0_4_0;
 		_widget_2_2_0_4_0.PropertyChanged += PropertyChangedListenerOf_widget_2_2_0_4_0;
 		_widget_2_2_0_4_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_2_2_0_4_0;
@@ -5265,18 +5372,18 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 			_datasource_Root_CrimeHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_CrimeHint;
 			_widget_2_0_1_0_10_0.EventFire += EventListenerOf_widget_2_0_1_0_10_0;
 		}
-		_datasource_Root_LeaveMembersHint = _datasource_Root.LeaveMembersHint;
-		if (_datasource_Root_LeaveMembersHint != null)
+		_datasource_Root_AssignMembersHint = _datasource_Root.AssignMembersHint;
+		if (_datasource_Root_AssignMembersHint != null)
 		{
-			_datasource_Root_LeaveMembersHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_LeaveMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_AssignMembersHint;
 			_widget_2_2_0_4_0_0.EventFire += EventListenerOf_widget_2_2_0_4_0_0;
 			_widget_2_2_0_4_1.EventFire += EventListenerOf_widget_2_2_0_4_1;
 		}
@@ -5308,7 +5415,21 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 			_datasource_Root_PartyFilterHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_PartyFilterHint;
 			_widget_2_2_2_1_0.EventFire += EventListenerOf_widget_2_2_2_1_0;
 		}
-		_widget_3.SetDataSource(_datasource_Root);
+		_datasource_Root_CardSelectionPopup = _datasource_Root.CardSelectionPopup;
+		if (_datasource_Root_CardSelectionPopup != null)
+		{
+			_datasource_Root_CardSelectionPopup.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_CardSelectionPopup;
+			_widget_3.SetDataSource(_datasource_Root_CardSelectionPopup);
+		}
+		_widget_4.SetDataSource(_datasource_Root);
 	}
 
 	private void RefreshDataSource_datasource_Root_PartyList(MBBindingList<GameMenuPartyItemVM> newDataSource)
@@ -5770,36 +5891,36 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_LeaveMembersHint(HintViewModel newDataSource)
+	private void RefreshDataSource_datasource_Root_AssignMembersHint(HintViewModel newDataSource)
 	{
-		if (_datasource_Root_LeaveMembersHint != null)
+		if (_datasource_Root_AssignMembersHint != null)
 		{
-			_datasource_Root_LeaveMembersHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_LeaveMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_AssignMembersHint;
 			_widget_2_2_0_4_0_0.EventFire -= EventListenerOf_widget_2_2_0_4_0_0;
 			_widget_2_2_0_4_1.EventFire -= EventListenerOf_widget_2_2_0_4_1;
-			_datasource_Root_LeaveMembersHint = null;
+			_datasource_Root_AssignMembersHint = null;
 		}
-		_datasource_Root_LeaveMembersHint = newDataSource;
-		_datasource_Root_LeaveMembersHint = _datasource_Root.LeaveMembersHint;
-		if (_datasource_Root_LeaveMembersHint != null)
+		_datasource_Root_AssignMembersHint = newDataSource;
+		_datasource_Root_AssignMembersHint = _datasource_Root.AssignMembersHint;
+		if (_datasource_Root_AssignMembersHint != null)
 		{
-			_datasource_Root_LeaveMembersHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_LeaveMembersHint;
-			_datasource_Root_LeaveMembersHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_LeaveMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_AssignMembersHint;
+			_datasource_Root_AssignMembersHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_AssignMembersHint;
 			_widget_2_2_0_4_0_0.EventFire += EventListenerOf_widget_2_2_0_4_0_0;
 			_widget_2_2_0_4_1.EventFire += EventListenerOf_widget_2_2_0_4_1;
 		}
@@ -5868,6 +5989,39 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 			_datasource_Root_PartyFilterHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_PartyFilterHint;
 			_datasource_Root_PartyFilterHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_PartyFilterHint;
 			_widget_2_2_2_1_0.EventFire += EventListenerOf_widget_2_2_2_1_0;
+		}
+	}
+
+	private void RefreshDataSource_datasource_Root_CardSelectionPopup(ClanCardSelectionPopupVM newDataSource)
+	{
+		if (_datasource_Root_CardSelectionPopup != null)
+		{
+			_widget_3.SetDataSource(null);
+			_datasource_Root_CardSelectionPopup.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup = null;
+		}
+		_datasource_Root_CardSelectionPopup = newDataSource;
+		_datasource_Root_CardSelectionPopup = _datasource_Root.CardSelectionPopup;
+		if (_datasource_Root_CardSelectionPopup != null)
+		{
+			_datasource_Root_CardSelectionPopup.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_CardSelectionPopup;
+			_datasource_Root_CardSelectionPopup.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_CardSelectionPopup;
+			_widget_3.SetDataSource(_datasource_Root_CardSelectionPopup);
 		}
 	}
 }

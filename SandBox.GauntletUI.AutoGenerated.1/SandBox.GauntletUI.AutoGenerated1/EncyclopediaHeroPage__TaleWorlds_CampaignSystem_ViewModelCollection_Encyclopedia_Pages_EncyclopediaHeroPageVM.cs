@@ -430,7 +430,7 @@ public class EncyclopediaHeroPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0_0_1.MarginBottom = 25f;
 		_widget_0_0_0_2.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0_2.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_0_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0_2.MarginLeft = 20f;
 		_widget_0_0_0_2.MarginRight = 20f;
 		_widget_0_0_0_2_0.DoNotAcceptEvents = true;
@@ -472,7 +472,7 @@ public class EncyclopediaHeroPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0_0_3.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0_3.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_0_0_0_3.MarginLeft = 10f;
-		_widget_0_0_0_3.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_0_3.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0_3_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0_3_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0_3_0.HorizontalAlignment = HorizontalAlignment.Center;
@@ -539,7 +539,7 @@ public class EncyclopediaHeroPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0_1_0_0_0_0.DoNotAcceptEvents = true;
 		_widget_0_0_1_0_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_1_0_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_0_1_0_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_1_0_0_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_1_0_0_0_0_0.DoNotAcceptEvents = true;
 		_widget_0_0_1_0_0_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_1_0_0_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
@@ -567,7 +567,7 @@ public class EncyclopediaHeroPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0_1_0_0_0_0_0_3_0.MarginLeft = 15f;
 		_widget_0_0_1_0_0_0_0_0_3_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_1_0_0_0_0_0_3_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0_1_0_0_0_0_0_3_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_1_0_0_0_0_0_3_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_1_0_0_0_0_0_3_1.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_0_0_1_0_0_0_0_0_3_1.VerticalAlignment = VerticalAlignment.Center;
 		_widget_0_0_1_0_0_0_0_0_3_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
@@ -676,7 +676,7 @@ public class EncyclopediaHeroPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0_1_0_0_0_0_0_10.AutoScrollBottomOffset = 35;
 		_widget_0_0_1_0_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_1_0_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_0_1_0_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_1_0_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_1_0_0_0_1.MarginTop = 34f;
 		_widget_0_0_1_0_0_0_1.MarginLeft = 30f;
 		_widget_0_0_1_0_0_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
@@ -690,7 +690,7 @@ public class EncyclopediaHeroPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0_1_0_0_0_1_1.Sprite = base.Context.SpriteData.GetSprite("Encyclopedia\\list_filters_divider");
 		_widget_0_0_1_0_0_0_1_2.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_1_0_0_0_1_2.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_0_1_0_0_0_1_2.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0_1_0_0_0_1_2.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_1_0_0_0_1_2.PositionXOffset = -12f;
 		_widget_0_0_1_0_0_0_1_2.MarginRight = -10f;
 		_widget_0_0_1_0_0_0_1_2.MarginBottom = 55f;

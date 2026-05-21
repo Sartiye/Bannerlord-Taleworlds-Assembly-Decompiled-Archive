@@ -45,8 +45,7 @@ public class TauntCircleActionSelectorWidget : CircleActionSelectorWidget
 			Widget widget = buttonWidget?.FindChild("InputKeyContainer", includeAllChildren: true);
 			if (widget != null && !widget.IsVisible)
 			{
-				base.EventManager.SetHoveredView(null);
-				base.EventManager.SetHoveredView(buttonWidget);
+				base.EventManager.HoveredWidget = buttonWidget;
 			}
 		}
 	}

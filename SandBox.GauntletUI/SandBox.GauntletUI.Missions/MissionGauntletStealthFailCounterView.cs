@@ -42,7 +42,7 @@ public class MissionGauntletStealthFailCounterView : MissionStealthFailCounterVi
 		base.OnMissionScreenTick(dt);
 		if (_stealthFailCounterMissionLogic != null)
 		{
-			_countdownCounterVM.UpdateFailCounter(_stealthFailCounterMissionLogic.FailCounterElapsedTime, _stealthFailCounterMissionLogic.FailCounterSeconds);
+			_countdownCounterVM.UpdateFailCounter(_stealthFailCounterMissionLogic.FailCounterElapsedTime, _stealthFailCounterMissionLogic.FailCounterSeconds, _stealthFailCounterMissionLogic.IsActive);
 		}
 	}
 }

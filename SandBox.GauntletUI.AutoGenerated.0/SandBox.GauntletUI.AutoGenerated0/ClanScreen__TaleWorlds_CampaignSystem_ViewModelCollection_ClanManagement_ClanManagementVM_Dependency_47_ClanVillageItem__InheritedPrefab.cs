@@ -58,7 +58,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		_widget_0.Brush = base.Context.GetBrush("Encyclopedia.NoAudioButton");
 		_widget_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_0_0.DoNotPassEventsToChildren = true;
 		_widget_0_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_0.HeightSizePolicy = SizePolicy.Fixed;

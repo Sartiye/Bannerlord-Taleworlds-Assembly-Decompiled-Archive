@@ -54,6 +54,10 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
+	public virtual void OnHeroActivated(Hero hero, Hero.CharacterStates previousState)
+	{
+	}
+
 	public virtual void OnHeroWounded(Hero woundedHero)
 	{
 	}
@@ -482,7 +486,7 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
-	public virtual void OnRulingClanChanged(Kingdom kingdom, Clan newRulingClan)
+	public virtual void OnRulingClanChanged(Kingdom kingdom, Clan oldRulingClan)
 	{
 	}
 
@@ -782,7 +786,7 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
-	public virtual void OnHideoutBattleCompleted(BattleSideEnum winnerSide, HideoutEventComponent hideoutEventComponent)
+	public virtual void OnHideoutBattleCompleted(BattleSideEnum winnerSide, HideoutEventComponent hideoutEventComponent, HideoutEventComponent.HideoutBattleEndState battleEndState)
 	{
 	}
 
@@ -935,6 +939,10 @@ public abstract class CampaignEventReceiver
 	}
 
 	public virtual void OnSaveOver(bool isSuccessful, string saveName)
+	{
+	}
+
+	public virtual void CollectMetadataEntries(List<KeyValuePair<string, string>> pairs)
 	{
 	}
 

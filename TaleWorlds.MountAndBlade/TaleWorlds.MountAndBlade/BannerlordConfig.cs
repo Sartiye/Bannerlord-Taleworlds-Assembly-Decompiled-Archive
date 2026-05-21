@@ -69,6 +69,8 @@ public static class BannerlordConfig
 
 	public static double SiegeBattleSizeMultiplier = 0.8;
 
+	public const int DefaultMapDoubleClickBehavior = 0;
+
 	public const int DefaultPlayerReceviedDamageDifficulty = 0;
 
 	public const bool DefaultGyroOverrideForAttackDefend = false;
@@ -224,7 +226,7 @@ public static class BannerlordConfig
 				}
 				else
 				{
-					Debug.FailedAssert("Language cannot be set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\BannerlordConfig.cs", "Language", 390);
+					Debug.FailedAssert("Language cannot be set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\BannerlordConfig.cs", "Language", 391);
 				}
 				MBTextManager.LocalizationDebugMode = NativeConfig.LocalizationDebugMode;
 			}
@@ -252,11 +254,15 @@ public static class BannerlordConfig
 				}
 				else
 				{
-					Debug.FailedAssert("Voice Language cannot be set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\BannerlordConfig.cs", "VoiceLanguage", 417);
+					Debug.FailedAssert("Voice Language cannot be set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\BannerlordConfig.cs", "VoiceLanguage", 418);
 				}
 			}
 		}
 	}
+
+	[ConfigPropertyInt(new int[] { 0, 1, 2 }, false)]
+	public static int MapDoubleClickBehavior { get; set; } = MapDoubleClickBehavior;
+
 
 	[ConfigPropertyInt(new int[] { 0, 1, 2 }, false)]
 	public static int PlayerReceivedDamageDifficulty { get; set; } = 0;
@@ -382,12 +388,12 @@ public static class BannerlordConfig
 	public static int AlwaysShowFriendlyTroopBannersType { get; set; } = 1;
 
 
-	[ConfigPropertyUnbounded]
-	public static bool ShowFormationDistances { get; set; } = false;
-
-
 	[ConfigPropertyInt(new int[] { 0, 1, 2 }, false)]
 	public static int KillFeedVisualType { get; set; } = 1;
+
+
+	[ConfigPropertyUnbounded]
+	public static bool ShowFormationDistances { get; set; } = false;
 
 
 	[ConfigPropertyInt(new int[] { 0, 1, 2 }, false)]

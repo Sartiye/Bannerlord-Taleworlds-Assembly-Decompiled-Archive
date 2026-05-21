@@ -34,7 +34,7 @@ public class FactionManager
 		_stances = new FactionManagerStancesData();
 	}
 
-	internal void AfterLoad()
+	internal void PreAfterLoad()
 	{
 		if (MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.3.0"))
 		{
@@ -58,15 +58,19 @@ public class FactionManager
 				RemoveStance(item2);
 			}
 		}
+	}
+
+	internal void AfterLoad()
+	{
 		if (!MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.2.9.35637")))
 		{
 			return;
 		}
-		foreach (StanceLink stanceLink2 in _stances.GetStanceLinks())
+		foreach (StanceLink stanceLink in _stances.GetStanceLinks())
 		{
-			if (Campaign.Current.Models.DiplomacyModel.IsAtConstantWar(stanceLink2.Faction1, stanceLink2.Faction2) && !stanceLink2.IsAtWar)
+			if (Campaign.Current.Models.DiplomacyModel.IsAtConstantWar(stanceLink.Faction1, stanceLink.Faction2) && !stanceLink.IsAtWar)
 			{
-				stanceLink2.StanceType = StanceType.War;
+				stanceLink.StanceType = StanceType.War;
 			}
 		}
 	}

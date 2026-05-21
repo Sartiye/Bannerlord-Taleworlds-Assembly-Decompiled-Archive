@@ -160,7 +160,6 @@ public static class EncounterManager
 					PartyBase party = mBList[0].Party;
 					PartyBase leaderParty = mapEvent.GetLeaderParty(BattleSideEnum.Attacker);
 					MBReadOnlyList<MapEventParty> mBReadOnlyList = mapEvent.PartiesOnSide(BattleSideEnum.Attacker);
-					mapEvent.FinalizeEvent();
 					StartBattleAction.Apply(party, leaderParty);
 					foreach (MapEventParty item in mBList)
 					{
@@ -317,9 +316,11 @@ public static class EncounterManager
 	private static void RestartPlayerEncounter(PartyBase attackerParty, PartyBase defenderParty)
 	{
 		Settlement settlement = null;
+		bool interruptedWhileLooting = false;
 		if (MobileParty.MainParty.MapEvent != null && MobileParty.MainParty.MapEvent.IsRaid)
 		{
 			settlement = MobileParty.MainParty.MapEvent.MapEventSettlement;
+			interruptedWhileLooting = MobileParty.MainParty.MapEvent.WasEverInLootingPhase;
 		}
 		if (PlayerEncounter.Current != null && (PlayerEncounter.EncounteredParty != attackerParty || PartyBase.MainParty != defenderParty) && (PlayerEncounter.EncounteredParty != defenderParty || PartyBase.MainParty != attackerParty))
 		{
@@ -335,5 +336,6 @@ public static class EncounterManager
 			defenderParty = PartyBase.MainParty;
 		}
 		PlayerEncounter.Current.Init(attackerParty, defenderParty, settlement);
+		PlayerEncounter.Current.InterruptedWhileLooting = interruptedWhileLooting;
 	}
 }

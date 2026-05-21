@@ -195,7 +195,7 @@ public class ArmyOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu
 		_widget_1.ActionButtonsList = _widget_1_0_4;
 		_widget_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0_0.MarginTop = 30f;
@@ -213,7 +213,7 @@ public class ArmyOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu
 		_widget_1_0_0_0_0.MarginBottom = 14f;
 		_widget_1_0_0_0_0.MarginLeft = 3f;
 		_widget_1_0_0_0_0.MarginRight = 4f;
-		_widget_1_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0_0_1.SuggestedHeight = 119f;
@@ -252,7 +252,7 @@ public class ArmyOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu
 		_widget_1_0_1.MarginTop = 15f;
 		_widget_1_0_1.MarginLeft = 30f;
 		_widget_1_0_1.MarginRight = 30f;
-		_widget_1_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_0_1_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0_1_0.SuggestedHeight = 30f;
@@ -261,7 +261,7 @@ public class ArmyOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu
 		_widget_1_0_1_0.Brush = base.Context.GetBrush("OverlayPopup.InfoText");
 		_widget_1_0_1_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_0_1_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_0_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_0_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_0_2.CollectionParent = _widget_1_0;
 		_widget_1_0_3.ScopeID = "OverlayPopupScope";
 		_widget_1_0_3.ScopeParent = _widget_1_0_4;
@@ -270,7 +270,7 @@ public class ArmyOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu
 		_widget_1_0_4.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0_4.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0_4.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_1_0_4.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_1_0_4.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_1_0_4.MarginTop = 15f;
 		_widget_1_0_4.MarginBottom = 35f;
 		_widget_2.DoNotAcceptEvents = true;

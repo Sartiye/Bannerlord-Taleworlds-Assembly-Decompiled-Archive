@@ -63,7 +63,7 @@ public interface IShipOrigin
 
 	void OnShipDamaged(float rawDamage, IShipOrigin rammingShip, out float modifiedDamage);
 
-	void OnSailDamaged(float rawDamage);
+	void OnSailDamaged(float rawDamage, float inflictedDamage);
 
 	List<ShipVisualSlotInfo> GetShipVisualSlotInfos();
 

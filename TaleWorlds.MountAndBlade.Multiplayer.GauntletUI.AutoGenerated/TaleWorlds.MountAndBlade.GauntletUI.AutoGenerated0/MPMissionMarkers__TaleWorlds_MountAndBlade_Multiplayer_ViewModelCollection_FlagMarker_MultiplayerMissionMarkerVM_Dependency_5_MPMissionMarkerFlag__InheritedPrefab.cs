@@ -90,7 +90,7 @@ public class MPMissionMarkers__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCol
 		base.FarDistanceCutoff = 250f;
 		base.FlagWidget = _widget_0;
 		base.SiegeEngineWidget = _widget.FindChild("SiegeEngineWidget");
-		base.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		base.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		base.PeerWidget = _widget.FindChild("PeerWidget");
 		base.SpawnFlagIconWidget = _widget_0_3.FindChild("SpawnFlagIconWidget");
 		base.RemovalTimeVisiblityWidget = _widget_0_3_0;
@@ -150,7 +150,7 @@ public class MPMissionMarkers__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCol
 		_widget_0_3.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_3.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_3.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_0_3.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_3.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_3.PositionYOffset = 75f;
 		_widget_0_3_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_3_0.HeightSizePolicy = SizePolicy.CoverChildren;

@@ -38,6 +38,8 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 
 	private float _timeElapsedAfterLoading;
 
+	private bool _isInitialProjectilePositionUpdated;
+
 	private MatrixFrame[] _standingPointLocalIKFrames;
 
 	private StandingPoint _reloadWithoutPilot;
@@ -267,7 +269,7 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 				ammoPickUpPoint.LockUserFrames = true;
 			}
 		}
-		UpdateProjectilePosition();
+		_isInitialProjectilePositionUpdated = false;
 	}
 
 	protected internal override void OnEditorInit()
@@ -432,6 +434,11 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 		if (!base.GameEntity.IsVisibleIncludeParents())
 		{
 			return;
+		}
+		if (!_isInitialProjectilePositionUpdated)
+		{
+			_isInitialProjectilePositionUpdated = true;
+			UpdateProjectilePosition();
 		}
 		if (base.State == WeaponState.WaitingBeforeProjectileLeaving)
 		{

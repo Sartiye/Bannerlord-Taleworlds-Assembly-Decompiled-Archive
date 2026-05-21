@@ -193,7 +193,7 @@ public class SmeltingItemVM : ViewModel
 		EquipmentElement = equipmentElement;
 		Yield = new MBBindingList<CraftingResourceItemVM>();
 		InputMaterials = new MBBindingList<CraftingResourceItemVM>();
-		LockHint = new HintViewModel(GameTexts.FindText("str_inventory_lock"));
+		LockHint = new HintViewModel(GameTexts.FindText("str_lock_in_inventory").SetTextVariable("TRANSFERABLE", GameTexts.FindText("str_items").ToString()));
 		int[] smeltingOutputForItem = Campaign.Current.Models.SmithingModel.GetSmeltingOutputForItem(equipmentElement.Item);
 		for (int i = 0; i < smeltingOutputForItem.Length; i++)
 		{

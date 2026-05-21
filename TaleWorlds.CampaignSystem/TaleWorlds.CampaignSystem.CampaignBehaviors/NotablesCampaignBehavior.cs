@@ -4,7 +4,6 @@ using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Extensions;
-using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
@@ -103,7 +102,7 @@ public class NotablesCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	public void SetInitialRelationsBetweenNotablesAndLords()
+	private void SetInitialRelationsBetweenNotablesAndLords()
 	{
 		foreach (Settlement item in Settlement.All)
 		{
@@ -112,43 +111,50 @@ public class NotablesCampaignBehavior : CampaignBehaviorBase
 				Hero hero = item.Notables[i];
 				foreach (Hero item2 in item.MapFaction.AliveLords.Union(item.MapFaction.DeadLords))
 				{
-					if (item2 != hero && item2 == item2.Clan.Leader && item2.MapFaction == item.MapFaction)
+					if ((!item2.IsDead || !(item2.DeathDay < hero.BirthDay)) && (!hero.IsDead || !(hero.DeathDay < item2.BirthDay)) && item2 != hero && item2 == item2.Clan.Leader && item2.MapFaction == item.MapFaction)
 					{
-						float chanceOfConflict = (float)HeroHelper.NPCPersonalityClashWithNPC(hero, item2) * 0.01f * 2.5f;
-						float randomFloat = MBRandom.RandomFloat;
-						float num = Campaign.MapDiagonal;
-						foreach (Settlement settlement in item2.Clan.Settlements)
+						float num = 0f;
+						for (int j = 0; j < 4; j++)
 						{
-							float num2 = DistanceHelper.FindClosestDistanceFromSettlementToSettlement(settlement, item, MobileParty.NavigationType.All);
-							if (num2 < num)
-							{
-								num = num2;
-							}
+							num += MBRandom.RandomFloat * 2f - 1f;
 						}
-						float num3 = 0.75f * Campaign.Current.EstimatedAverageLordPartySpeed * (float)CampaignTime.HoursInDay;
-						float num4 = ((num < num3) ? (1f - num / num3) : 0f);
-						float num5 = num4 * MBRandom.RandomFloat + (1f - num4);
-						if (MBRandom.RandomFloat < 0.2f)
+						num = MBMath.ClampFloat(num * 30f, -100f, 100f);
+						int num2 = HeroHelper.NPCPersonalityClashWithNPC(hero, item2);
+						if (num2 == 0)
 						{
-							num5 = 1f / (0.5f + 0.5f * num5);
+							hero.SetPersonalRelation(item2, TaleWorlds.Library.MathF.Round(num));
 						}
-						randomFloat *= num5;
-						if (randomFloat > 1f)
+						else if (num2 < 0)
 						{
-							randomFloat = 1f;
+							hero.SetPersonalRelation(item2, TaleWorlds.Library.MathF.Abs(TaleWorlds.Library.MathF.Round(num)) * -1);
 						}
-						DetermineRelation(hero, item2, randomFloat, chanceOfConflict);
+						else
+						{
+							hero.SetPersonalRelation(item2, TaleWorlds.Library.MathF.Abs(TaleWorlds.Library.MathF.Round(num)));
+						}
 					}
-					for (int j = i + 1; j < item.Notables.Count; j++)
+				}
+				for (int k = i + 1; k < item.Notables.Count; k++)
+				{
+					Hero hero2 = item.Notables[k];
+					float num3 = 0f;
+					for (int l = 0; l < 4; l++)
 					{
-						Hero hero2 = item.Notables[j];
-						float chanceOfConflict2 = (float)HeroHelper.NPCPersonalityClashWithNPC(hero, hero2) * 0.01f * 2.5f;
-						float randomValue = MBRandom.RandomFloat;
-						if (hero.CharacterObject.Occupation == hero2.CharacterObject.Occupation)
-						{
-							randomValue = 1f - 0.25f * MBRandom.RandomFloat;
-						}
-						DetermineRelation(hero, hero2, randomValue, chanceOfConflict2);
+						num3 += MBRandom.RandomFloat * 2f - 1f;
+					}
+					num3 = MBMath.ClampFloat(num3 * 30f, -100f, 100f);
+					int num4 = HeroHelper.NPCPersonalityClashWithNPC(hero, hero2);
+					if (num4 == 0)
+					{
+						hero.SetPersonalRelation(hero2, TaleWorlds.Library.MathF.Round(num3));
+					}
+					else if (num4 < 0)
+					{
+						hero.SetPersonalRelation(hero2, TaleWorlds.Library.MathF.Abs(TaleWorlds.Library.MathF.Round(num3)) * -1);
+					}
+					else
+					{
+						hero.SetPersonalRelation(hero2, TaleWorlds.Library.MathF.Abs(TaleWorlds.Library.MathF.Round(num3)));
 					}
 				}
 			}

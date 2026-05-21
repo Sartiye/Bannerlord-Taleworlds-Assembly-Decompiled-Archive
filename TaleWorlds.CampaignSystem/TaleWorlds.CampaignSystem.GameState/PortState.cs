@@ -65,6 +65,16 @@ public class PortState : TaleWorlds.Core.GameState
 		RightShips = rightShips;
 	}
 
+	public PortState(PartyBase leftOwner, PartyBase rightOwner, MBReadOnlyList<Ship> leftShips, MBReadOnlyList<Ship> rightShips, Action onEndAction, PortScreenModes portScreenMode)
+	{
+		PortScreenMode = portScreenMode;
+		LeftOwner = leftOwner;
+		RightOwner = rightOwner;
+		LeftShips = leftShips;
+		RightShips = rightShips;
+		OnEndAction = onEndAction;
+	}
+
 	public PortState(Settlement settlement, PartyBase rightOwner, PortScreenModes portScreenMode)
 	{
 		PortScreenMode = portScreenMode;

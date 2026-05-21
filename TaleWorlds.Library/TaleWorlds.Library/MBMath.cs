@@ -147,6 +147,11 @@ public static class MBMath
 		return valueFrom + (valueTo - valueFrom) * amount;
 	}
 
+	public static float LerpFPSIndependent(float valueFrom, float valueTo, float amount)
+	{
+		return Lerp(valueTo, valueFrom, MathF.Pow(2f, 0f - amount));
+	}
+
 	public static float LinearExtrapolation(float valueFrom, float valueTo, float amount)
 	{
 		return valueFrom + (valueTo - valueFrom) * amount;

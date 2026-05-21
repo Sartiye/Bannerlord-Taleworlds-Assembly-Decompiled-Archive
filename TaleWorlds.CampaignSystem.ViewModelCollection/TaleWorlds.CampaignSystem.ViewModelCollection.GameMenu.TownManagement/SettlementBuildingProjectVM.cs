@@ -268,7 +268,7 @@ public class SettlementBuildingProjectVM : SettlementProjectVM
 		}
 	}
 
-	public override void ExecuteAddToQueue()
+	public override void ExecuteAddRemoveToQueue()
 	{
 		if (_onSelection != null && CanBuild)
 		{

@@ -1,3 +1,4 @@
+using System;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.GauntletUI.ExtraWidgets;
@@ -8,23 +9,31 @@ namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets.Multiplayer.Scoreboard;
 
 public class MultiplayerScoreboardAnimatedFillBarWidget : FillBarWidget
 {
-	public delegate void FullFillFinishedHandler();
-
-	private float _currentTargetRatioOfChange;
-
-	private float _finalRatio;
-
-	private float _ratioOfChange;
+	public delegate void FullFillFinishedHandler(bool isPositive);
 
 	private bool _isStarted;
 
-	private bool _inFinalFillState;
+	private bool _shouldStopLerping;
 
-	private bool _inFirstFillState = true;
+	private bool _isXPIncreasing;
 
-	private float _timePassed;
+	private bool _isFirstStepCalculated;
+
+	private bool _isProgressCompleted;
 
 	private float _ratioOfChangePerTick;
+
+	private float _lerpRatioPerTick;
+
+	private float _animationDelayTimer;
+
+	private float _highlightedFillFromValue;
+
+	private float _highlightedFillToValue;
+
+	private float _normalFillFromValue;
+
+	private float _normalFillToValue;
 
 	private string _xpBarSoundEventName = "multiplayer/xpbar";
 
@@ -34,9 +43,7 @@ public class MultiplayerScoreboardAnimatedFillBarWidget : FillBarWidget
 
 	private float _animationDelay;
 
-	private float _animationDuration;
-
-	private Widget _changeOverlayWidget;
+	private float _animationFillSpeed;
 
 	private int _timesOfFullFill;
 
@@ -52,6 +59,11 @@ public class MultiplayerScoreboardAnimatedFillBarWidget : FillBarWidget
 			if (value != _isStartRequested)
 			{
 				_isStartRequested = value;
+				if (_isStartRequested)
+				{
+					Reset();
+					StartAnimation();
+				}
 				OnPropertyChanged(value, "IsStartRequested");
 			}
 		}
@@ -75,18 +87,18 @@ public class MultiplayerScoreboardAnimatedFillBarWidget : FillBarWidget
 	}
 
 	[Editor(false)]
-	public float AnimationDuration
+	public float AnimationFillSpeed
 	{
 		get
 		{
-			return _animationDuration;
+			return _animationFillSpeed;
 		}
 		set
 		{
-			if (_animationDuration != value)
+			if (_animationFillSpeed != value)
 			{
-				_animationDuration = value;
-				OnPropertyChanged(value, "AnimationDuration");
+				_animationFillSpeed = value;
+				OnPropertyChanged(value, "AnimationFillSpeed");
 			}
 		}
 	}
@@ -108,23 +120,6 @@ public class MultiplayerScoreboardAnimatedFillBarWidget : FillBarWidget
 		}
 	}
 
-	[Editor(false)]
-	public Widget ChangeOverlayWidget
-	{
-		get
-		{
-			return _changeOverlayWidget;
-		}
-		set
-		{
-			if (_changeOverlayWidget != value)
-			{
-				_changeOverlayWidget = value;
-				OnPropertyChanged(value, "ChangeOverlayWidget");
-			}
-		}
-	}
-
 	public event FullFillFinishedHandler OnFullFillFinished;
 
 	public MultiplayerScoreboardAnimatedFillBarWidget(UIContext context)
@@ -132,120 +127,176 @@ public class MultiplayerScoreboardAnimatedFillBarWidget : FillBarWidget
 	{
 	}
 
-	public void StartAnimation()
+	public void StartAnimation(float animationDelay = 0f)
 	{
-		if (base.FillWidget != null && base.ChangeWidget != null && !(MathF.Abs(AnimationDuration) <= float.Epsilon))
+		if (base.FillWidget != null && base.ChangeWidget != null && !(TaleWorlds.Library.MathF.Abs(AnimationFillSpeed) <= float.Epsilon))
 		{
-			float num = Mathf.Clamp(Mathf.Clamp(base.InitialAmount, 0f, base.MaxAmount) / (float)base.MaxAmount, 0f, 1f);
-			float num2 = Mathf.Clamp((float)(base.CurrentAmount - base.InitialAmount), (float)(-base.MaxAmount), (float)base.MaxAmount);
-			_finalRatio = num + Mathf.Clamp(num2 / (float)base.MaxAmount, -1f, 1f);
+			AnimationDelay = animationDelay;
+			_ratioOfChangePerTick = AnimationFillSpeed;
+			_isXPIncreasing = TimesOfFullFill > 0 || (TimesOfFullFill == 0 && base.CurrentAmountAsFloat > base.InitialAmountAsFloat);
 			if (!_isStarted)
 			{
 				base.Context.TwoDimensionContext.CreateSoundEvent(_xpBarSoundEventName);
 				base.Context.TwoDimensionContext.PlaySoundEvent(_xpBarSoundEventName);
 			}
-			if (TimesOfFullFill > 0)
-			{
-				_currentTargetRatioOfChange = 1f;
-			}
-			else
-			{
-				_currentTargetRatioOfChange = _finalRatio;
-				_inFinalFillState = true;
-			}
-			_inFirstFillState = true;
-			_ratioOfChange = num;
 			_isStarted = true;
-			_timePassed = 0f;
-			_ratioOfChangePerTick = AnimationDuration / ((float)_timesOfFullFill + _finalRatio);
+			CalculateTargetValues();
 		}
 	}
 
 	public void Reset()
 	{
-		_timePassed = 0f;
-		_ratioOfChange = 0f;
-		_currentTargetRatioOfChange = 0f;
-		_ratioOfChangePerTick = 0f;
-		_inFirstFillState = true;
+		_normalFillFromValue = 0f;
+		_normalFillToValue = 0f;
+		_highlightedFillFromValue = 0f;
+		_highlightedFillToValue = 0f;
+		_ratioOfChangePerTick = AnimationFillSpeed;
+		_animationDelayTimer = 0f;
+		_lerpRatioPerTick = 0f;
+		AnimationDelay = 0f;
 		_isStarted = false;
+		_shouldStopLerping = false;
+		_isFirstStepCalculated = false;
+		_isProgressCompleted = false;
 		base.Context.TwoDimensionContext.StopAndRemoveSoundEvent(_xpBarSoundEventName);
 	}
 
 	protected override void OnUpdate(float dt)
 	{
-		if (IsStartRequested && !_isStarted && !_inFinalFillState)
-		{
-			StartAnimation();
-		}
-		if (!_isStarted)
+		if (!_isStarted || _isProgressCompleted)
 		{
 			return;
 		}
-		_timePassed += dt;
-		if (!(_timePassed >= AnimationDelay))
+		_animationDelayTimer += dt;
+		if (_animationDelayTimer >= AnimationDelay)
 		{
-			return;
-		}
-		_ratioOfChange += dt / _ratioOfChangePerTick;
-		if (!(_ratioOfChange > _currentTargetRatioOfChange))
-		{
-			return;
-		}
-		if (_timesOfFullFill > 0)
-		{
-			_currentTargetRatioOfChange = 1f;
-			_ratioOfChange = 0f;
-			_timesOfFullFill--;
-			_inFirstFillState = false;
-			if (_timesOfFullFill == 0)
+			_lerpRatioPerTick += dt * _ratioOfChangePerTick;
+			_lerpRatioPerTick = Mathf.Clamp(_lerpRatioPerTick, 0f, 1f);
+			if (_lerpRatioPerTick >= 1f && !_shouldStopLerping)
 			{
-				_currentTargetRatioOfChange = _finalRatio;
-				_inFinalFillState = true;
+				_lerpRatioPerTick = 0f;
+				CalculateTargetValues();
 			}
-			this.OnFullFillFinished?.Invoke();
-		}
-		else if (_inFinalFillState || _timesOfFullFill == 0)
-		{
-			_inFinalFillState = true;
-			_ratioOfChange = _finalRatio;
-			_isStarted = false;
-			base.Context.TwoDimensionContext.StopAndRemoveSoundEvent(_xpBarSoundEventName);
-			base.Context.TwoDimensionContext.PlaySound(_xpBarStopSoundEventName);
+			else if (_lerpRatioPerTick >= 1f)
+			{
+				_isProgressCompleted = true;
+			}
 		}
 	}
 
-	protected override void OnRender(TwoDimensionContext twoDimensionContext, TwoDimensionDrawContext drawContext)
+	protected override void OnLateUpdate(float dt)
 	{
-		if (base.FillWidget == null)
+		if (base.FillWidget != null)
 		{
-			return;
+			ChangeFillAmountOfWidget(base.FillWidget, _normalFillFromValue, _normalFillToValue, _lerpRatioPerTick);
 		}
-		float x = base.FillWidget.ParentWidget.Size.X;
-		float num = Mathf.Clamp(Mathf.Clamp(base.InitialAmount, 0f, base.MaxAmount) / (float)base.MaxAmount, 0f, 1f);
-		base.FillWidget.ScaledSuggestedWidth = num * x;
-		base.FillWidget.IsVisible = _inFirstFillState;
-		if (base.ChangeWidget == null)
+		if (base.ChangeWidget != null)
 		{
-			return;
-		}
-		if (_ratioOfChange >= 0f)
-		{
-			base.ChangeWidget.ScaledSuggestedWidth = _ratioOfChange * x;
-			base.ChangeWidget.Color = new Color(1f, 1f, 1f);
+			ChangeFillAmountOfWidget(base.ChangeWidget, _highlightedFillFromValue, _highlightedFillToValue, _lerpRatioPerTick);
 		}
 		if (base.DividerWidget != null)
 		{
-			if (_ratioOfChange > 0f)
+			if (_isXPIncreasing && base.ChangeWidget != null)
 			{
-				base.DividerWidget.ScaledPositionXOffset = base.FillWidget.ScaledSuggestedWidth - base.DividerWidget.Size.X;
+				base.DividerWidget.ScaledPositionXOffset = base.ChangeWidget.ScaledSuggestedWidth;
+				base.DividerWidget.Color = Color.FromUint(uint.MaxValue);
 			}
-			base.DividerWidget.IsVisible = _ratioOfChange != 0f;
+			else if (base.FillWidget != null)
+			{
+				base.DividerWidget.ScaledPositionXOffset = base.FillWidget.ScaledSuggestedWidth;
+				base.DividerWidget.Color = Color.FromUint(4293185972u);
+			}
+			base.DividerWidget.ScaledPositionXOffset -= base.DividerWidget.Size.X;
 		}
-		if (ChangeOverlayWidget != null)
+	}
+
+	private void CalculateTargetValues()
+	{
+		SetRegularFromValues();
+		bool isFirstStep = !_isFirstStepCalculated;
+		if (!_isFirstStepCalculated)
 		{
-			ChangeOverlayWidget.ScaledPositionXOffset = base.ChangeWidget.ScaledMarginLeft + base.ChangeWidget.ScaledSuggestedWidth - ChangeOverlayWidget.Size.X;
-			ChangeOverlayWidget.IsVisible = _ratioOfChange != 0f;
+			float inputFromValue = Mathf.Clamp(Mathf.Clamp(base.InitialAmountAsFloat, 0f, base.MaxAmountAsFloat) / base.MaxAmountAsFloat, 0f, 1f);
+			SetRegularFromValues(inputFromValue, useInputFromValue: true);
+			_isFirstStepCalculated = true;
 		}
+		DecideNextStep(isFirstStep);
+	}
+
+	private void DecideNextStep(bool isFirstStep)
+	{
+		if (DoHaveFullFillStep())
+		{
+			FullFillStep();
+		}
+		else
+		{
+			LastFillStep();
+		}
+		if (!isFirstStep)
+		{
+			this.OnFullFillFinished?.Invoke(_isXPIncreasing);
+		}
+	}
+
+	private void LastFillStep()
+	{
+		float num = Mathf.Clamp(Mathf.Clamp(base.CurrentAmountAsFloat, 0f, base.MaxAmountAsFloat) / base.MaxAmountAsFloat, 0f, 1f);
+		if (_isXPIncreasing)
+		{
+			_highlightedFillToValue = num;
+		}
+		else
+		{
+			_normalFillToValue = num;
+		}
+		_shouldStopLerping = true;
+		base.Context.TwoDimensionContext.StopAndRemoveSoundEvent(_xpBarSoundEventName);
+		base.Context.TwoDimensionContext.PlaySound(_xpBarStopSoundEventName);
+	}
+
+	private void FullFillStep()
+	{
+		if (DoHaveFullFillStep())
+		{
+			if (_isXPIncreasing)
+			{
+				_highlightedFillToValue = 1f;
+			}
+			else
+			{
+				_normalFillToValue = 0f;
+			}
+			TimesOfFullFill -= Math.Sign(TimesOfFullFill);
+		}
+	}
+
+	private void SetRegularFromValues(float inputFromValue = 0f, bool useInputFromValue = false)
+	{
+		_highlightedFillFromValue = (_normalFillFromValue = (useInputFromValue ? inputFromValue : ((float)((!_isXPIncreasing) ? 1 : 0))));
+		StopMovementOfFillAmountAtFromValue(!_isXPIncreasing);
+	}
+
+	private bool DoHaveFullFillStep()
+	{
+		return Math.Abs(TimesOfFullFill) > 0;
+	}
+
+	private void StopMovementOfFillAmountAtFromValue(bool stopHighlightedFill)
+	{
+		if (stopHighlightedFill)
+		{
+			_highlightedFillToValue = _highlightedFillFromValue;
+		}
+		else
+		{
+			_normalFillToValue = _normalFillFromValue;
+		}
+	}
+
+	private void ChangeFillAmountOfWidget(Widget fillWidget, float fromValue, float toValue, float stepSize)
+	{
+		float num = Mathf.Lerp(fromValue, toValue, stepSize);
+		fillWidget.ScaledSuggestedWidth = num * fillWidget.ParentWidget.Size.X;
 	}
 }

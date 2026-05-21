@@ -317,7 +317,10 @@ public class OrderOfBattleHeroItemVM : ViewModel
 		{
 			Agent.Formation = InitialFormation;
 			InitialFormation.Refresh();
-			Agent.Team.DetachmentManager.RemoveScoresOfAgentFromDetachments(Agent);
+			if (Agent.IsDetachableFromFormation)
+			{
+				Agent.Team.DetachmentManager.RemoveScoresOfAgentFromDetachments(Agent);
+			}
 		}
 	}
 

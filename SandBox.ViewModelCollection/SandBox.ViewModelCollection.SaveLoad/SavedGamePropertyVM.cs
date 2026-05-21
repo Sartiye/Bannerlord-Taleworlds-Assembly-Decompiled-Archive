@@ -14,7 +14,8 @@ public class SavedGamePropertyVM : ViewModel
 		Influence,
 		PartySize,
 		Food,
-		Fiefs
+		Fiefs,
+		Ships
 	}
 
 	private TextObject _valueText;

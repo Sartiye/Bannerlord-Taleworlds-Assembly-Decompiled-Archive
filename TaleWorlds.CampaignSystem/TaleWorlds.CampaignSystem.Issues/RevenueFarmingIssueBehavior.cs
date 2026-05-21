@@ -123,10 +123,11 @@ public class RevenueFarmingIssueBehavior : CampaignBehaviorBase
 			return false;
 		}
 
-		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flags, out Hero relationHero, out SkillObject skill)
+		protected override bool CanPlayerTakeQuestConditions(Hero issueGiver, out PreconditionFlags flags, out Hero relationHero, out SkillObject skill, out int requiredGold)
 		{
 			flags = PreconditionFlags.None;
 			relationHero = null;
+			requiredGold = 0;
 			skill = null;
 			if (issueGiver.GetRelationWithPlayer() < -10f)
 			{
@@ -857,13 +858,13 @@ public class RevenueFarmingIssueBehavior : CampaignBehaviorBase
 	private void OnAfterSessionLaunchedEvent(CampaignGameStarter gameStarter)
 	{
 		gameStarter.AddGameMenuOption("town_guard", "talk_to_steward_for_revenue_town", "{=voXpzZdH}Hand over the revenue", talk_to_steward_on_condition, talk_to_steward_on_consequence, isLeave: false, 2);
-		gameStarter.AddGameMenuOption("town", "talk_to_steward_for_revenue_town", "{=voXpzZdH}Hand over the revenue", talk_to_steward_on_condition, talk_to_steward_on_consequence, isLeave: false, 9);
+		gameStarter.AddGameMenuOption("town", "talk_to_steward_for_revenue_town", "{=voXpzZdH}Hand over the revenue", talk_to_steward_on_condition, talk_to_steward_on_consequence, isLeave: false, 8);
 		gameStarter.AddGameMenuOption("castle_guard", "talk_to_steward_for_revenue_castle", "{=voXpzZdH}Hand over the revenue", talk_to_steward_on_condition, talk_to_steward_on_consequence, isLeave: false, 2);
 	}
 
 	private void OnSessionLaunched(CampaignGameStarter gameStarter)
 	{
-		gameStarter.AddGameMenuOption("village", "revenue_farming_quest_collect_tax_menu_button", "{=mcrjFxDQ}Collect revenue", collect_revenue_menu_condition, collect_revenue_menu_consequence, isLeave: false, 5);
+		gameStarter.AddGameMenuOption("village", "revenue_farming_quest_collect_tax_menu_button", "{=mcrjFxDQ}Collect revenue", collect_revenue_menu_condition, collect_revenue_menu_consequence, isLeave: false, 4);
 		gameStarter.AddWaitGameMenu("village_collect_revenue", "{=p6swAFWn}Your men started collecting the revenues...", collecting_menu_on_init, null, null, collection_menu_on_tick, GameMenu.MenuAndOptionType.WaitMenuShowOnlyProgressOption, GameMenu.MenuOverlayType.None, 10f);
 		gameStarter.AddGameMenuOption("village_collect_revenue", "village_collect_revenue_back", "{=3sRdGQou}Leave", leave_on_condition, leave_consequence, isLeave: true);
 		AddVillageEvents(gameStarter);

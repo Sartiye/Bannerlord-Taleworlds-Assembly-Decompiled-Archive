@@ -30,24 +30,6 @@ public class MultiplayerAgentStatCalculateModel : AgentStatCalculateModel
 		agentDrivenProperties.OffhandWeaponDefendSpeedMultiplier = 1f;
 	}
 
-	public override float GetWeaponInaccuracy(Agent agent, WeaponComponentData weapon, int weaponSkill)
-	{
-		float num = 0f;
-		if (weapon.IsRangedWeapon)
-		{
-			num = (100f - (float)weapon.Accuracy) * (1f - 0.002f * (float)weaponSkill) * 0.001f;
-			if (weapon.WeaponClass == WeaponClass.ThrowingAxe)
-			{
-				num *= 2f;
-			}
-		}
-		else if (weapon.WeaponFlags.HasAllFlags(WeaponFlags.WideGrip))
-		{
-			num = 1f - (float)weaponSkill * 0.01f;
-		}
-		return Math.Max(num, 0f);
-	}
-
 	private AgentDrivenProperties InitializeHumanAgentStats(Agent agent, AgentDrivenProperties agentDrivenProperties, AgentBuildData agentBuildData)
 	{
 		MultiplayerClassDivisions.MPHeroClass mPHeroClassForCharacter = MultiplayerClassDivisions.GetMPHeroClassForCharacter(agent.Character);
@@ -128,6 +110,33 @@ public class MultiplayerAgentStatCalculateModel : AgentStatCalculateModel
 		return agent.Character.DismountResistance;
 	}
 
+	public override float GetWeaponInaccuracy(Agent agent, WeaponComponentData weapon, int weaponSkill)
+	{
+		float b = 0f;
+		if (weapon != null && weapon.IsRangedWeapon)
+		{
+			float num = 1f;
+			if (weapon.RelevantSkill == DefaultSkills.Throwing && weapon.WeaponClass == WeaponClass.Sling)
+			{
+				num = TaleWorlds.Library.MathF.Max(1f - 0.007f * (float)weaponSkill, 0.2f);
+			}
+			else
+			{
+				num = 1f - 0.002f * (float)weaponSkill;
+				if (weapon.WeaponClass == WeaponClass.ThrowingAxe)
+				{
+					num *= 2f;
+				}
+			}
+			b = (100f - (float)weapon.Accuracy) * num * 0.001f;
+		}
+		else if (weapon != null && weapon.WeaponFlags.HasAllFlags(WeaponFlags.WideGrip))
+		{
+			b = 1f - (float)weaponSkill * 0.01f;
+		}
+		return TaleWorlds.Library.MathF.Max(0f, b);
+	}
+
 	public override float GetBreatheHoldMaxDuration(Agent agent, float baseBreatheHoldMaxDuration)
 	{
 		return baseBreatheHoldMaxDuration;
@@ -202,7 +211,7 @@ public class MultiplayerAgentStatCalculateModel : AgentStatCalculateModel
 			num2 *= 1f + (perkHandler?.GetEncumbrance(isOnBody: false) ?? 0f);
 			totalWeightOfWeapons += num2;
 		}
-		agentDrivenProperties.AiShooterErrorWoRangeUpdate = 0f;
+		agentDrivenProperties.WeaponExternalAccelerationAccuracyPenalty = 0f;
 		agentDrivenProperties.WeaponsEncumbrance = totalWeightOfWeapons;
 		EquipmentIndex primaryWieldedItemIndex2 = agent.GetPrimaryWieldedItemIndex();
 		WeaponComponentData weaponComponentData = ((primaryWieldedItemIndex2 != EquipmentIndex.None) ? equipment[primaryWieldedItemIndex2].CurrentUsageItem : null);
@@ -217,6 +226,7 @@ public class MultiplayerAgentStatCalculateModel : AgentStatCalculateModel
 		agentDrivenProperties.ReloadSpeed = 0.93f + 0.0007f * (float)GetSkillValueForItem(character, primaryItem);
 		agentDrivenProperties.MissileSpeedMultiplier = 1f;
 		agentDrivenProperties.ReloadMovementPenaltyFactor = 1f;
+		agentDrivenProperties.DamageMultiplierBonus = 0f;
 		SetAllWeaponInaccuracy(agent, agentDrivenProperties, (int)primaryWieldedItemIndex2, weaponComponentData);
 		MultiplayerClassDivisions.MPHeroClass mPHeroClassForCharacter = MultiplayerClassDivisions.GetMPHeroClassForCharacter(agent.Character);
 		float num3 = (mPHeroClassForCharacter.IsTroopCharacter(agent.Character) ? mPHeroClassForCharacter.TroopMovementSpeedMultiplier : mPHeroClassForCharacter.HeroMovementSpeedMultiplier);
@@ -278,7 +288,9 @@ public class MultiplayerAgentStatCalculateModel : AgentStatCalculateModel
 					agentDrivenProperties.WeaponMaxMovementAccuracyPenalty *= 2.5f;
 					agentDrivenProperties.WeaponMaxUnsteadyAccuracyPenalty *= 1.2f;
 				}
-				if (weaponComponentData2.WeaponClass == WeaponClass.Bow)
+				switch (weaponComponentData2.WeaponClass)
+				{
+				case WeaponClass.Bow:
 				{
 					flag = true;
 					agentDrivenProperties.WeaponBestAccuracyWaitTime = 0.3f + (95.75f - (float)thrustSpeed) * 0.005f;
@@ -291,9 +303,11 @@ public class MultiplayerAgentStatCalculateModel : AgentStatCalculateModel
 					}
 					agentDrivenProperties.WeaponUnsteadyEndTime = 2f + agentDrivenProperties.WeaponUnsteadyBeginTime;
 					agentDrivenProperties.WeaponRotationalAccuracyPenaltyInRadians = 0.1f;
+					break;
 				}
-				else if (weaponComponentData2.WeaponClass == WeaponClass.Javelin || weaponComponentData2.WeaponClass == WeaponClass.ThrowingAxe || weaponComponentData2.WeaponClass == WeaponClass.ThrowingKnife)
-				{
+				case WeaponClass.ThrowingAxe:
+				case WeaponClass.ThrowingKnife:
+				case WeaponClass.Javelin:
 					agentDrivenProperties.WeaponBestAccuracyWaitTime = 0.2f + (89f - (float)thrustSpeed) * 0.009f;
 					agentDrivenProperties.WeaponUnsteadyBeginTime = 2.5f + (float)effectiveSkillForWeapon * 0.01f;
 					agentDrivenProperties.WeaponUnsteadyEndTime = 10f + agentDrivenProperties.WeaponUnsteadyBeginTime;
@@ -302,20 +316,19 @@ public class MultiplayerAgentStatCalculateModel : AgentStatCalculateModel
 					{
 						agentDrivenProperties.WeaponInaccuracy *= 6.6f;
 					}
-				}
-				else if (weaponComponentData2.WeaponClass == WeaponClass.Sling)
-				{
+					break;
+				case WeaponClass.Sling:
 					agentDrivenProperties.WeaponBestAccuracyWaitTime = 2.6f + (89f - (float)thrustSpeed) * 0.12f;
 					agentDrivenProperties.WeaponUnsteadyBeginTime = 3f + (float)effectiveSkillForWeapon * 0.064f;
 					agentDrivenProperties.WeaponUnsteadyEndTime = 22f + agentDrivenProperties.WeaponUnsteadyBeginTime;
 					agentDrivenProperties.WeaponRotationalAccuracyPenaltyInRadians = 0.2f;
-				}
-				else
-				{
+					break;
+				default:
 					agentDrivenProperties.WeaponBestAccuracyWaitTime = 0.1f;
 					agentDrivenProperties.WeaponUnsteadyBeginTime = 0f;
 					agentDrivenProperties.WeaponUnsteadyEndTime = 0f;
 					agentDrivenProperties.WeaponRotationalAccuracyPenaltyInRadians = 0.1f;
+					break;
 				}
 			}
 			else if (weaponComponentData2.WeaponFlags.HasAllFlags(WeaponFlags.WideGrip))
@@ -333,7 +346,7 @@ public class MultiplayerAgentStatCalculateModel : AgentStatCalculateModel
 		agentDrivenProperties.BipedalRangedReloadSpeedMultiplier = ManagedParameters.Instance.GetManagedParameter(ManagedParametersEnum.BipedalRangedReloadSpeedMultiplier);
 		if (perkHandler != null)
 		{
-			for (int i = 64; i < 97; i++)
+			for (int i = 64; i < 98; i++)
 			{
 				DrivenProperty drivenProperty = (DrivenProperty)i;
 				if (((drivenProperty != DrivenProperty.WeaponUnsteadyBeginTime && drivenProperty != DrivenProperty.WeaponUnsteadyEndTime) || flag || flag2) && (drivenProperty != DrivenProperty.WeaponRotationalAccuracyPenaltyInRadians || flag))

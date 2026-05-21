@@ -141,12 +141,12 @@ public class PreloadHelper
 		}
 		if (!_loadedItems.Contains(item))
 		{
-			RegisterMetaMeshUsageIfValid(item.GetMultiMesh(isFemale: false, hasGloves: false, needBatchedVersion: true), isUsingTableau, isUsingTeamColor);
+			RegisterMetaMeshUsageIfValid(item.GetMultiMesh(isFemale: false, useSlimVersion: false, needBatchedVersion: true), isUsingTableau, isUsingTeamColor);
 			if (item.HasArmorComponent)
 			{
-				RegisterMetaMeshUsageIfValid(item.GetMultiMesh(isFemale: false, hasGloves: true, needBatchedVersion: true), isUsingTableau, isUsingTeamColor);
-				RegisterMetaMeshUsageIfValid(item.GetMultiMesh(isFemale: true, hasGloves: false, needBatchedVersion: true), isUsingTableau, isUsingTeamColor);
-				RegisterMetaMeshUsageIfValid(item.GetMultiMesh(isFemale: true, hasGloves: true, needBatchedVersion: true), isUsingTableau, isUsingTeamColor);
+				RegisterMetaMeshUsageIfValid(item.GetMultiMesh(isFemale: false, useSlimVersion: true, needBatchedVersion: true), isUsingTableau, isUsingTeamColor);
+				RegisterMetaMeshUsageIfValid(item.GetMultiMesh(isFemale: true, useSlimVersion: false, needBatchedVersion: true), isUsingTableau, isUsingTeamColor);
+				RegisterMetaMeshUsageIfValid(item.GetMultiMesh(isFemale: true, useSlimVersion: true, needBatchedVersion: true), isUsingTableau, isUsingTeamColor);
 			}
 			_loadedItems.Add(item);
 		}

@@ -1,5 +1,6 @@
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
+using TaleWorlds.InputSystem;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets;
 
@@ -114,6 +115,17 @@ public class ItemTableauWidget : TextureWidget
 		base.TextureProviderName = "ItemTableauTextureProvider";
 	}
 
+	protected override bool OnPreviewMouseScroll()
+	{
+		return true;
+	}
+
+	protected override void OnMouseScroll()
+	{
+		base.OnMouseScroll();
+		SetTextureProviderProperty("CurrentZoom", Input.DeltaMouseScroll * 0.1f);
+	}
+
 	protected override void OnMousePressed()
 	{
 		SetTextureProviderProperty("CurrentlyRotating", true);
@@ -126,7 +138,7 @@ public class ItemTableauWidget : TextureWidget
 		SetTextureProviderProperty("RotateItemHorizontal", base.EventManager.RightStickHorizontalScrollAmount);
 	}
 
-	protected override void OnMouseReleased()
+	protected override void OnMouseReleased(bool isFromInput)
 	{
 		SetTextureProviderProperty("CurrentlyRotating", false);
 	}

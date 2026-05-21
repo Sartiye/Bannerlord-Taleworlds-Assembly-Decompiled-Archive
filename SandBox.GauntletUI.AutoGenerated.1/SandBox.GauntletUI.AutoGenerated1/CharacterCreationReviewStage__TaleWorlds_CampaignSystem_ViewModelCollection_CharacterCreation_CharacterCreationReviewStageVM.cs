@@ -232,7 +232,7 @@ public class CharacterCreationReviewStage__TaleWorlds_CampaignSystem_ViewModelCo
 		_widget_0_1_0_0_1.MarginLeft = 40f;
 		_widget_0_1_0_0_1.MarginRight = 40f;
 		_widget_0_1_0_0_1.MarginTop = 20f;
-		_widget_0_1_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_1_0_0_1_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_1_0_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1_0_0_1_0.SuggestedWidth = 550f;
@@ -279,7 +279,7 @@ public class CharacterCreationReviewStage__TaleWorlds_CampaignSystem_ViewModelCo
 		_widget_0_1_0_0_1_3.MarginRight = 0f;
 		_widget_0_1_0_0_1_3.MarginTop = 40f;
 		_widget_0_1_0_0_1_3.MarginBottom = 50f;
-		_widget_0_1_0_0_1_3.StackLayout.LayoutMethod = LayoutMethod.VerticalBottomToTop;
+		_widget_0_1_0_0_1_3.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_1_0_1.DoNotAcceptEvents = true;
 		_widget_0_1_0_1.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_1_0_1.HeightSizePolicy = SizePolicy.Fixed;

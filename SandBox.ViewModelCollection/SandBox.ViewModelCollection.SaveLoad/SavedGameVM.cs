@@ -8,6 +8,7 @@ using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.ModuleManager;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.SaveSystem;
 using TaleWorlds.SaveSystem.Load;
@@ -560,7 +561,7 @@ public class SavedGameVM : ViewModel
 		_gameVersion = MBSaveLoad.CurrentVersion;
 		_saveVersion = Save.MetaData.GetApplicationVersion();
 		_moduleCheckResults = SandBoxSaveHelper.CheckMetaDataCompatibilityErrors(save.MetaData);
-		IsModuleDiscrepancyDetected = isCorruptedSave || _moduleCheckResults.Any((SandBoxSaveHelper.ModuleCheckResult x) => x.Type != ModuleCheckResultType.VersionMismatch);
+		IsModuleDiscrepancyDetected = isCorruptedSave || _moduleCheckResults.Any((SandBoxSaveHelper.ModuleCheckResult x) => (x.Type == ModuleCheckResultType.ModuleAddedToGame && ModuleHelper.ModulesDisablingLoadingAfterBeingAdded.Contains(x.ModuleId)) || (x.Type == ModuleCheckResultType.ModuleRemovedFromGame && ModuleHelper.ModulesDisablingLoadingAfterBeingRemoved.Contains(x.ModuleId)));
 		MainHeroVisualCode = (IsModuleDiscrepancyDetected ? string.Empty : Save.MetaData.GetCharacterVisualCode());
 		BannerTextCode = (IsModuleDiscrepancyDetected ? string.Empty : Save.MetaData.GetClanBannerCode());
 		IsDisabled = SandBoxSaveHelper.GetIsDisabledWithReason(Save, out var reason);
@@ -599,6 +600,11 @@ public class SavedGameVM : ViewModel
 		SavedGameProperties.Add(new SavedGamePropertyVM(SavedGamePropertyVM.SavedGameProperty.Gold, GetAbbreviatedValueTextFromValue(mainHeroGold), new TextObject("{=Hxf6bzmR}Current Denars")));
 		int valueAmount = (int)Save.MetaData.GetClanInfluence();
 		SavedGameProperties.Add(new SavedGamePropertyVM(SavedGamePropertyVM.SavedGameProperty.Influence, GetAbbreviatedValueTextFromValue(valueAmount), new TextObject("{=RVPidk5a}Influence")));
+		if (HasNavalDLC(Save.MetaData))
+		{
+			int mainPartyShipCount = Save.MetaData.GetMainPartyShipCount();
+			SavedGameProperties.Add(new SavedGamePropertyVM(SavedGamePropertyVM.SavedGameProperty.Ships, GetAbbreviatedValueTextFromValue(mainPartyShipCount), new TextObject("{=2zD7LFSj}Ships Owned")));
+		}
 		int num = Save.MetaData.GetMainPartyHealthyMemberCount() + Save.MetaData.GetMainPartyWoundedMemberCount();
 		int mainPartyPrisonerMemberCount = Save.MetaData.GetMainPartyPrisonerMemberCount();
 		TextObject textObject2;
@@ -630,6 +636,12 @@ public class SavedGameVM : ViewModel
 		OverrideSaveText = new TextObject("{=hYL3CFHX}Do you want to overwrite this saved game?").ToString();
 		UpdateSaveText = new TextObject("{=FFiPLPbs}Update Save").ToString();
 		CorruptedSaveText = new TextObject("{=RoYPofhK}Corrupted Save").ToString();
+	}
+
+	private bool HasNavalDLC(MetaData metaData)
+	{
+		string value = "NavalDLC";
+		return metaData.GetModules().Contains(value);
 	}
 
 	public void ExecuteSaveLoad()
