@@ -60,27 +60,27 @@ public class DefaultAllianceModel : AllianceModel
 
 	private readonly TextObject _relationshipText = new TextObject("{=3YVDMg5X}Low relations between rulers.");
 
-	private readonly TextObject _kingdomsNotNeighborsText = new TextObject("{=*}Kingdoms aren't neighbors.");
+	private readonly TextObject _kingdomsNotNeighborsText = new TextObject("{=Bu6YdMme}Kingdoms aren't neighbors.");
 
-	private readonly TextObject _kingdomsNotSeekingAllianceText = new TextObject("{=*}{KINGDOM_NAME} is not seeking alliances at the moment.");
+	private readonly TextObject _kingdomsNotSeekingAllianceText = new TextObject("{=ml9bhOka}{KINGDOM_NAME} is not seeking alliances at the moment.");
 
-	private readonly TextObject _atWarWithAllyText = new TextObject("{=*}Your realm is at war with their ally.");
+	private readonly TextObject _atWarWithAllyText = new TextObject("{=tT91z3AL}Your realm is at war with their ally.");
 
-	private readonly TextObject _sameCultureFiefsText = new TextObject("{=*}Your realm is occupying fiefs belonging to their culture.");
+	private readonly TextObject _sameCultureFiefsText = new TextObject("{=S5lz4aHk}Your realm is occupying fiefs belonging to their culture.");
 
-	private readonly TextObject _atWarText = new TextObject("{=*}Your realm is participating in a war.");
+	private readonly TextObject _atWarText = new TextObject("{=aUStIIWw}Your realm is participating in a war.");
 
-	private readonly TextObject _lowHonorText = new TextObject("{=*}{RULER.NAME} has low honor.");
+	private readonly TextObject _lowHonorText = new TextObject("{=VIkVcmaE}{RULER.NAME} has low honor.");
 
-	private readonly TextObject _kingdomNotConsederingAllianceText = new TextObject("{=*}{KINGDOM} is not considering an alliance with your realm due to:{newline}{newline}{REASONS_BY_LINE}");
+	private readonly TextObject _kingdomNotConsederingAllianceText = new TextObject("{=tbH04aAX}{KINGDOM} is not considering an alliance with your realm due to:{newline}{newline}{REASONS_BY_LINE}");
 
-	private readonly TextObject _allianceNotFormedExplanationText = new TextObject("{=*}An alliance cannot be formed due to:{newline}{newline}{REASON}");
+	private readonly TextObject _allianceNotFormedExplanationText = new TextObject("{=Y20TbMLR}An alliance cannot be formed due to:{newline}{newline}{REASON}");
 
-	private readonly TextObject _tooManyAlliancePlayerPenaltyText = new TextObject("{=*}Number of alliances your realm's already in: {NUMBER_OF_ALLIES}/{MAX_NUMBER_OF_ALLIES}");
+	private readonly TextObject _tooManyAlliancePlayerPenaltyText = new TextObject("{=2RiYKRM8}Number of alliances your realm's already in: {NUMBER_OF_ALLIES}/{MAX_NUMBER_OF_ALLIES}");
 
-	private readonly TextObject _tooManyAllianceAIPenaltyText = new TextObject("{=*}Number of alliances {KINGDOM_NAME} is already in: {NUMBER_OF_ALLIES}/{MAX_NUMBER_OF_ALLIES}");
+	private readonly TextObject _tooManyAllianceAIPenaltyText = new TextObject("{=cFYMdTcr}Number of alliances {KINGDOM_NAME} is already in: {NUMBER_OF_ALLIES}/{MAX_NUMBER_OF_ALLIES}");
 
-	private readonly TextObject _allianceScoreNotEnoughText = new TextObject("{=*}{KINGDOM_NAME} currently does not consider your realm to be a possible ally.");
+	private readonly TextObject _allianceScoreNotEnoughText = new TextObject("{=XnwKgWab}{KINGDOM_NAME} currently does not consider your realm to be a possible ally.");
 
 	private readonly TextObject _threatEffect = new TextObject("{=!}Threat Effect");
 
@@ -303,7 +303,7 @@ public class DefaultAllianceModel : AllianceModel
 		{
 			if (includeReason)
 			{
-				TextObject textObject2 = new TextObject("{=*}Your realm's current number of allies: {NUMBER_OF_ALLIES}/{MAX_NUMBER_OF_ALLIES}");
+				TextObject textObject2 = new TextObject("{=xOJtrGAR}Your realm's current number of allies: {NUMBER_OF_ALLIES}/{MAX_NUMBER_OF_ALLIES}");
 				textObject2.SetTextVariable("NUMBER_OF_ALLIES", kingdom.AlliedKingdoms.Count);
 				textObject2.SetTextVariable("MAX_NUMBER_OF_ALLIES", Campaign.Current.Models.AllianceModel.MaxNumberOfAlliances);
 				reason.SetTextVariable("REASON", textObject2);

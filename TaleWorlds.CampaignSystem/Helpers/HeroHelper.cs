@@ -71,7 +71,7 @@ public static class HeroHelper
 					}
 					else
 					{
-						Debug.FailedAssert("Mobileparty is nowhere to be found", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetClosestSettlement", 2409);
+						Debug.FailedAssert("Mobileparty is nowhere to be found", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetClosestSettlement", 2424);
 					}
 				}
 			}
@@ -536,7 +536,7 @@ public static class HeroHelper
 			}
 			return GameTexts.FindText(id, variation);
 		}
-		Debug.FailedAssert("Given trait is not a personality trait!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetPersonalityTraitChangeName", 2983);
+		Debug.FailedAssert("Given trait is not a personality trait!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetPersonalityTraitChangeName", 2998);
 		return TextObject.GetEmpty();
 	}
 }

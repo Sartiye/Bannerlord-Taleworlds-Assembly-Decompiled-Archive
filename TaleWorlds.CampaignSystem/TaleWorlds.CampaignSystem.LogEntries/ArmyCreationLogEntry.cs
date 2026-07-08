@@ -52,7 +52,7 @@ public class ArmyCreationLogEntry : LogEntry, IEncyclopediaLog, IWarLog
 		return true;
 	}
 
-	public bool IsVisibleInEncyclopediaPageOf<T>(T obj) where T : MBObjectBase
+	public bool IsVisibleInEncyclopediaPageOf(MBObjectBase obj)
 	{
 		return obj == _armyLeader.HeroObject;
 	}

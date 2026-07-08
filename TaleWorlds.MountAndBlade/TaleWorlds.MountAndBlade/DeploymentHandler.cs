@@ -65,9 +65,8 @@ public abstract class DeploymentHandler : MissionLogic
 
 	public virtual void FinishDeployment()
 	{
-		Mission obj = base.Mission ?? Mission.Current;
 		_deploymentMissionController.FinishDeployment();
-		obj.IsTeleportingAgents = false;
+		(base.Mission ?? Mission.Current).IsTeleportingAgents = false;
 	}
 
 	public void InitializeDeploymentPoints()
@@ -99,7 +98,7 @@ public abstract class DeploymentHandler : MissionLogic
 			switch (orderType)
 			{
 			case OrderType.None:
-				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DeploymentHandler.cs", "OrderController_OnOrderIssued_Aux", 158);
+				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DeploymentHandler.cs", "OrderController_OnOrderIssued_Aux", 159);
 				break;
 			case OrderType.Move:
 			case OrderType.MoveToLineSegment:
@@ -160,10 +159,10 @@ public abstract class DeploymentHandler : MissionLogic
 				ForceUpdateFormationParams();
 				break;
 			case OrderType.PointDefence:
-				Debug.FailedAssert("will be removed", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DeploymentHandler.cs", "OrderController_OnOrderIssued_Aux", 230);
+				Debug.FailedAssert("will be removed", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DeploymentHandler.cs", "OrderController_OnOrderIssued_Aux", 231);
 				break;
 			default:
-				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DeploymentHandler.cs", "OrderController_OnOrderIssued_Aux", 233);
+				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DeploymentHandler.cs", "OrderController_OnOrderIssued_Aux", 234);
 				break;
 			case OrderType.CohesionHigh:
 			case OrderType.CohesionMedium:
@@ -201,7 +200,7 @@ public abstract class DeploymentHandler : MissionLogic
 					appliedFormation3.ApplyActionOnEachUnit(delegate(Agent agent)
 					{
 						agent.ForceUpdateCachedAndFormationValues(updateOnlyMovement: true, arrangementChangeAllowed: false);
-					}, flag2 ? Mission.Current.MainAgent : null);
+					}, flag2 ? Mission.Current.InitialPlayerAgent : null);
 					appliedFormation3.SetHasPendingUnitPositions(hasPendingUnitPositions: false);
 					if (num)
 					{

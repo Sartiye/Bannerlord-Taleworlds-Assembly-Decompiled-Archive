@@ -995,6 +995,8 @@ public sealed class Mission : DotNetObject, IMission
 
 	public bool IsInPhotoMode;
 
+	private Agent _initialPlayerAgent;
+
 	private Agent _mainAgent;
 
 	private Action _onLoadingEndedAction;
@@ -1344,6 +1346,8 @@ public sealed class Mission : DotNetObject, IMission
 	public IInputContext InputManager { get; set; }
 
 	public bool NeedsMemoryCleanup { get; private set; }
+
+	public Agent InitialPlayerAgent => _initialPlayerAgent;
 
 	public Agent MainAgent
 	{
@@ -2512,7 +2516,7 @@ public sealed class Mission : DotNetObject, IMission
 		float result = 0f;
 		if (side == BattleSideEnum.NumSides)
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Cannot get removed agent count for side. Invalid battle side passed!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "GetRemovedAgentRatioForSide", 703);
+			TaleWorlds.Library.Debug.FailedAssert("Cannot get removed agent count for side. Invalid battle side passed!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "GetRemovedAgentRatioForSide", 711);
 		}
 		float num = _initialAgentCountPerSide[(int)side];
 		if (num > 0f && _agentCount > 0)
@@ -2734,7 +2738,7 @@ public sealed class Mission : DotNetObject, IMission
 		switch (side)
 		{
 		case BattleSideEnum.NumSides:
-			TaleWorlds.Library.Debug.FailedAssert("Flee position with invalid battle side field found!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "GetFleePositionsForSide", 1267);
+			TaleWorlds.Library.Debug.FailedAssert("Flee position with invalid battle side field found!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "GetFleePositionsForSide", 1275);
 			return null;
 		default:
 			num = (int)(side + 1);
@@ -2812,7 +2816,7 @@ public sealed class Mission : DotNetObject, IMission
 		switch (side)
 		{
 		case BattleSideEnum.NumSides:
-			TaleWorlds.Library.Debug.FailedAssert("Flee position with invalid battle side field found!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "AddFleePosition", 1357);
+			TaleWorlds.Library.Debug.FailedAssert("Flee position with invalid battle side field found!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "AddFleePosition", 1365);
 			break;
 		case BattleSideEnum.None:
 		{
@@ -3022,6 +3026,10 @@ public sealed class Mission : DotNetObject, IMission
 		{
 			affectedAgent.OnMainAgentWieldedItemChange = null;
 			MainAgent = null;
+		}
+		if (_initialPlayerAgent == affectedAgent)
+		{
+			_initialPlayerAgent = null;
 		}
 		affectedAgent.OnAgentWieldedItemChange = null;
 		affectedAgent.OnAgentMountedStateChanged = null;
@@ -3388,7 +3396,7 @@ public sealed class Mission : DotNetObject, IMission
 		PhysicsShape physicsShape = weaponData.Shape;
 		if (physicsShape == null)
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Item has no body! Applying a default body, but this should not happen! Check this!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RecalculateBody", 2192);
+			TaleWorlds.Library.Debug.FailedAssert("Item has no body! Applying a default body, but this should not happen! Check this!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RecalculateBody", 2205);
 			physicsShape = PhysicsShape.GetFromResource("bo_axe_short");
 		}
 		if (!weaponComponent.Item.ItemFlags.HasAnyFlag(ItemFlags.DoNotScaleBodyAccordingToWeaponLength))
@@ -3470,7 +3478,7 @@ public sealed class Mission : DotNetObject, IMission
 					int num8 = physicsShape.CapsuleCount();
 					if (num8 == 0)
 					{
-						TaleWorlds.Library.Debug.FailedAssert("Item has 0 body parts. Applying a default body, but this should not happen! Check this!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RecalculateBody", 2330);
+						TaleWorlds.Library.Debug.FailedAssert("Item has 0 body parts. Applying a default body, but this should not happen! Check this!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RecalculateBody", 2343);
 						return;
 					}
 					switch (weaponComponent.PrimaryWeapon.WeaponClass)
@@ -3521,7 +3529,7 @@ public sealed class Mission : DotNetObject, IMission
 					}
 					case WeaponClass.SmallShield:
 					case WeaponClass.LargeShield:
-						TaleWorlds.Library.Debug.FailedAssert("Shields should not have recalculate body flag.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RecalculateBody", 2404);
+						TaleWorlds.Library.Debug.FailedAssert("Shields should not have recalculate body flag.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RecalculateBody", 2417);
 						break;
 					}
 				}
@@ -4035,6 +4043,10 @@ public sealed class Mission : DotNetObject, IMission
 			throw new MBNullParameterException("agent");
 		}
 		agent.Build(agentBuildData);
+		if (agent.Controller == AgentControllerType.Player)
+		{
+			_initialPlayerAgent = agent;
+		}
 		if (!agent.SpawnEquipment[EquipmentIndex.ArmorItemEndSlot].IsEmpty)
 		{
 			EquipmentElement equipmentElement = agent.SpawnEquipment[EquipmentIndex.ArmorItemEndSlot];
@@ -4407,7 +4419,7 @@ public sealed class Mission : DotNetObject, IMission
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Cannot set initial agent count.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "SetInitialAgentCountForSide", 3953);
+			TaleWorlds.Library.Debug.FailedAssert("Cannot set initial agent count.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "SetInitialAgentCountForSide", 3971);
 		}
 	}
 
@@ -4475,7 +4487,7 @@ public sealed class Mission : DotNetObject, IMission
 			}
 			else
 			{
-				TaleWorlds.Library.Debug.FailedAssert(string.Concat("Passed banner item with name: ", bannerItem.Name, " is not a proper banner item"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "SpawnTroop", 4055);
+				TaleWorlds.Library.Debug.FailedAssert(string.Concat("Passed banner item with name: ", bannerItem.Name, " is not a proper banner item"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "SpawnTroop", 4073);
 				TaleWorlds.Library.Debug.Print(string.Concat("Invalid banner item: ", bannerItem.Name, " is passed to a troop to be spawned"), 0, TaleWorlds.Library.Debug.DebugColor.Yellow);
 			}
 		}
@@ -4672,7 +4684,7 @@ public sealed class Mission : DotNetObject, IMission
 			_otherMissionBehaviors.Remove(missionBehavior);
 			break;
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("Invalid behavior type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RemoveMissionBehavior", 4351);
+			TaleWorlds.Library.Debug.FailedAssert("Invalid behavior type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "RemoveMissionBehavior", 4369);
 			break;
 		}
 		MissionBehaviors.Remove(missionBehavior);
@@ -4709,7 +4721,7 @@ public sealed class Mission : DotNetObject, IMission
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Player is neither attacker nor defender.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "JoinEnemyTeam", 4395);
+			TaleWorlds.Library.Debug.FailedAssert("Player is neither attacker nor defender.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "JoinEnemyTeam", 4413);
 		}
 	}
 
@@ -5199,7 +5211,7 @@ public sealed class Mission : DotNetObject, IMission
 	{
 		if (Current == null)
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Mission current is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "GetAgentTeam", 5086);
+			TaleWorlds.Library.Debug.FailedAssert("Mission current is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "GetAgentTeam", 5104);
 			return null;
 		}
 		if (isPlayerSide)
@@ -5217,7 +5229,7 @@ public sealed class Mission : DotNetObject, IMission
 	{
 		if (Current == null)
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Mission current is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "GetTeam", 5121);
+			TaleWorlds.Library.Debug.FailedAssert("Mission current is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Mission.cs", "GetTeam", 5139);
 			return null;
 		}
 		return teamSide switch

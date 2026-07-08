@@ -217,6 +217,14 @@ public class CharacterTableauTextureProvider : TextureProvider
 		}
 	}
 
+	public bool IsTableauEnabled
+	{
+		set
+		{
+			_characterTableau.SetEnabled(value);
+		}
+	}
+
 	public bool IsHidden
 	{
 		get

@@ -50,7 +50,7 @@ public class LobbyClient : Client<LobbyClient>
 
 	public const string TestRegionCode = "Test";
 
-	private static readonly int ServerStatusCheckDelay = 30000;
+	private static readonly int ServerStatusCheckDelay = 120000;
 
 	private static int _friendListCheckDelay;
 
@@ -63,6 +63,10 @@ public class LobbyClient : Client<LobbyClient>
 	private readonly Stopwatch _serverStatusTimer;
 
 	private readonly Stopwatch _friendListTimer;
+
+	private readonly Stopwatch _recentPlayersTimer;
+
+	private static readonly int RecentPlayersCheckDelay = 40000;
 
 	private List<string> _ownedCosmetics;
 
@@ -386,6 +390,8 @@ public class LobbyClient : Client<LobbyClient>
 		_matchmakerBlockedTime = DateTime.MinValue;
 		_friendListTimer = new Stopwatch();
 		_friendListTimer.Start();
+		_recentPlayersTimer = new Stopwatch();
+		_recentPlayersTimer.Start();
 		PlayersInParty = new List<PartyPlayerInLobbyClient>();
 		PlayersInClan = new List<ClanPlayer>();
 		PlayerInfosInClan = new List<ClanPlayerInfo>();
@@ -728,6 +734,7 @@ public class LobbyClient : Client<LobbyClient>
 		PlayerData = null;
 		PlayersInParty.Clear();
 		PlayersInClan.Clear();
+		ClanHomeInfo = null;
 		_matchmakerBlockedTime = DateTime.MinValue;
 		FriendInfos = new FriendInfo[0];
 		PermaMuteList.SaveMutedPlayers();
@@ -1174,6 +1181,10 @@ public class LobbyClient : Client<LobbyClient>
 		{
 			_friendListTimer.Restart();
 			CheckAndSendMessage(new GetFriendListMessage());
+		}
+		if (_recentPlayersTimer != null && _recentPlayersTimer.ElapsedMilliseconds > RecentPlayersCheckDelay)
+		{
+			_recentPlayersTimer.Restart();
 			RecentPlayersManager.TrimPlayers();
 			PlayerId[] recentPlayerIds = RecentPlayersManager.GetRecentPlayerIds();
 			if (recentPlayerIds.Length != 0)

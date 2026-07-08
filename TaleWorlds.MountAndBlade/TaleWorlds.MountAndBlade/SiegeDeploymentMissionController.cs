@@ -87,7 +87,7 @@ public class SiegeDeploymentMissionController : DeploymentMissionController
 	{
 		foreach (Team team2 in base.Mission.Teams)
 		{
-			if (team2.Side == battleSide && team2.GeneralAgent != null && team2.GeneralAgent != Agent.Main)
+			if (team2.Side == battleSide && team2.GeneralAgent != null && team2.GeneralAgent != base.Mission.InitialPlayerAgent)
 			{
 				team2.GeneralAgent.SetDetachableFromFormation(value: false);
 			}
@@ -126,12 +126,12 @@ public class SiegeDeploymentMissionController : DeploymentMissionController
 	protected override void OnSetupTeamsFinished()
 	{
 		base.Mission.IsTeleportingAgents = true;
-		Agent main = Agent.Main;
-		if (main == null)
+		Agent initialPlayerAgent = base.Mission.InitialPlayerAgent;
+		if (initialPlayerAgent == null)
 		{
 			return;
 		}
-		Team team = main.Team;
+		Team team = initialPlayerAgent.Team;
 		if (team == null)
 		{
 			return;
@@ -141,15 +141,15 @@ public class SiegeDeploymentMissionController : DeploymentMissionController
 			base.Mission.DeploymentPlan.GetPlayerSpawnFrame(team.Side, out var position, out var direction);
 			if (position.GetNavMesh() != UIntPtr.Zero && position.IsValid)
 			{
-				Agent.Main.TrySetFormationFrame(in position, in direction);
+				initialPlayerAgent.TrySetFormationFrame(in position, in direction);
 			}
 		}
-		else if (team.GeneralAgent == main)
+		else if (team.GeneralAgent == initialPlayerAgent)
 		{
 			base.Mission.GetFormationSpawnFrame(team, FormationClass.NumberOfRegularFormations, isReinforcement: false, out var spawnPosition, out var spawnDirection);
 			if (spawnPosition.GetNavMesh() != UIntPtr.Zero && spawnPosition.IsValid)
 			{
-				main.TrySetFormationFrame(in spawnPosition, in spawnDirection);
+				initialPlayerAgent.TrySetFormationFrame(in spawnPosition, in spawnDirection);
 			}
 		}
 	}
@@ -166,7 +166,7 @@ public class SiegeDeploymentMissionController : DeploymentMissionController
 		}
 		foreach (Team team in base.Mission.Teams)
 		{
-			if (team.GeneralAgent != null && team.GeneralAgent != Agent.Main)
+			if (team.GeneralAgent != null && team.GeneralAgent != base.Mission.InitialPlayerAgent)
 			{
 				team.GeneralAgent.SetDetachableFromFormation(value: true);
 			}

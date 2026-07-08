@@ -34,7 +34,7 @@ public class KingdomDestroyedLogEntry : LogEntry, IEncyclopediaLog, IChatNotific
 		_kingdom = kingdom;
 	}
 
-	public bool IsVisibleInEncyclopediaPageOf<T>(T obj) where T : MBObjectBase
+	public bool IsVisibleInEncyclopediaPageOf(MBObjectBase obj)
 	{
 		return obj == _kingdom;
 	}

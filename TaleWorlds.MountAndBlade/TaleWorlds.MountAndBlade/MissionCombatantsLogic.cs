@@ -268,7 +268,7 @@ public class MissionCombatantsLogic : MissionLogic
 		BasicCharacterObject general = playerBattleCombatant.General;
 		foreach (IBattleCombatant playerSideBattleCombatant in playerSideBattleCombatants)
 		{
-			if (playerSideBattleCombatant != playerBattleCombatant && (!isPlayerSergeant || playerSideBattleCombatant.General != general) && !playerSideBattleCombatant.IsUnderPlayersCommand(playerBattleCombatant.Side))
+			if (playerSideBattleCombatant != playerBattleCombatant && (!isPlayerSergeant || playerSideBattleCombatant.General != general) && !playerSideBattleCombatant.IsUnderPlayersCommand(playerBattleCombatant.Side) && playerSideBattleCombatant.GetNumberOfMissionReadyTroops() > 0)
 			{
 				allyCombatant = playerSideBattleCombatant;
 				return true;

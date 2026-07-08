@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -42,6 +43,23 @@ public class Startup
 			app.UseDeveloperExceptionPage();
 		}
 		Console.SetOut(new CacheTextWriter((IMemoryCache)app.ApplicationServices.GetService(typeof(IMemoryCache)), Console.Out));
+		app.Use(async delegate(HttpContext context, Func<Task> next)
+		{
+			try
+			{
+				await next();
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"[WebPanel] Unhandled exception on {context.Request.Method} {context.Request.Path}: {ex.Message}");
+				if (!context.Response.HasStarted)
+				{
+					context.Response.StatusCode = 500;
+					context.Response.ContentType = "text/plain";
+					await context.Response.WriteAsync("Internal server error");
+				}
+			}
+		});
 		app.UseStaticFiles();
 		app.UseRouting();
 		app.UseAuthentication();

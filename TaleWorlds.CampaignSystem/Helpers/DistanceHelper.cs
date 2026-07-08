@@ -69,14 +69,14 @@ public static class DistanceHelper
 		{
 			landRatio = 0f;
 		}
-		bool flag4 = flag2 && mobileParty.Anchor.IsAtSettlement(currentSettlement);
+		bool flag4 = !mobileParty.IsCurrentlyAtSea && !mobileParty.Anchor.IsAtSettlement(currentSettlement);
 		isFromPort = false;
 		isTargetingPort = false;
 		if (flag2 && flag)
 		{
 			float landRatio2;
 			float num3 = Campaign.Current.Models.MapDistanceModel.GetDistance(currentSettlement, toSettlement, isFromPort: true, isTargetingPort: false, navCapabilities, out landRatio2);
-			if (!flag4)
+			if (flag4)
 			{
 				num3 += (float)Campaign.Current.Models.MapDistanceModel.RegionSwitchCostFromLandToSea;
 			}
@@ -104,7 +104,7 @@ public static class DistanceHelper
 		{
 			float landRatio4;
 			float num4 = Campaign.Current.Models.MapDistanceModel.GetDistance(currentSettlement, toSettlement, isFromPort: true, isTargetingPort: true, navCapabilities, out landRatio4);
-			if (!flag4)
+			if (flag4)
 			{
 				num4 += (float)Campaign.Current.Models.MapDistanceModel.RegionSwitchCostFromLandToSea;
 			}

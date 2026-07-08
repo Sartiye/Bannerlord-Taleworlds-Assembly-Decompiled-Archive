@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaleWorlds.MountAndBlade.Diamond;
@@ -60,6 +61,10 @@ public class ManagerController : Controller
 		public string AutomatedBattleCount { get; set; }
 	}
 
+	private static readonly Regex SafeAsciiPattern = new Regex("^[\\x20-\\x7E]+$", RegexOptions.Compiled);
+
+	private const int MaxInputLength = 512;
+
 	private const string SkirmishGameTypeID = "Skirmish";
 
 	private const string CaptainGameTypeID = "Captain";
@@ -71,6 +76,23 @@ public class ManagerController : Controller
 	private const string SiegeGameTypeID = "Siege";
 
 	private const string BattleGameTypeID = "Battle";
+
+	private static bool IsValidAsciiInput(string input, int maxLength = 512)
+	{
+		if (string.IsNullOrEmpty(input))
+		{
+			return false;
+		}
+		if (input.Length > maxLength)
+		{
+			return false;
+		}
+		if (!SafeAsciiPattern.IsMatch(input))
+		{
+			return false;
+		}
+		return true;
+	}
 
 	public IActionResult Index()
 	{
@@ -320,12 +342,24 @@ public class ManagerController : Controller
 	[HttpGet("[controller]/kick_player/{playerId}/{ban}")]
 	public IActionResult KickPlayer(string playerId, bool ban)
 	{
-		if (DedicatedCustomServerSubModule.Instance != null)
+		if (!IsValidAsciiInput(playerId, 128))
 		{
-			DedicatedCustomServerSubModule.Instance.DedicatedCustomGameServer.KickPlayer(PlayerId.FromString(playerId), ban);
-			return Ok();
+			return BadRequest("Invalid player ID");
 		}
-		return NotFound();
+		try
+		{
+			if (DedicatedCustomServerSubModule.Instance != null)
+			{
+				DedicatedCustomServerSubModule.Instance.DedicatedCustomGameServer.KickPlayer(PlayerId.FromString(playerId), ban);
+				return Ok();
+			}
+			return NotFound();
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine("[WebPanel] Error in KickPlayer: " + ex.Message);
+			return BadRequest("Invalid player ID format");
+		}
 	}
 
 	[HttpGet("[controller]/get_chat_messages")]
@@ -403,9 +437,9 @@ public class ManagerController : Controller
 	[HttpGet("[controller]/say/{message}")]
 	public IActionResult Say(string message)
 	{
-		if (string.IsNullOrEmpty(message))
+		if (!IsValidAsciiInput(message))
 		{
-			return BadRequest();
+			return BadRequest("Invalid message: only printable ASCII characters are allowed");
 		}
 		if (ServerSideIntermissionManager.Instance != null)
 		{
@@ -427,9 +461,9 @@ public class ManagerController : Controller
 	[HttpGet("[controller]/add_map_to_automated_battle_pool/{map}")]
 	public IActionResult AddMapToAutomatedBattlePool(string map)
 	{
-		if (string.IsNullOrEmpty(map))
+		if (!IsValidAsciiInput(map, 256))
 		{
-			return BadRequest();
+			return BadRequest("Invalid map name");
 		}
 		if (ServerSideIntermissionManager.Instance != null)
 		{
@@ -495,9 +529,9 @@ public class ManagerController : Controller
 	[HttpGet("[controller]/set_server_name/{name}")]
 	public IActionResult SetServerName(string name)
 	{
-		if (string.IsNullOrEmpty(name))
+		if (!IsValidAsciiInput(name, 256))
 		{
-			return BadRequest();
+			return BadRequest("Invalid server name: only printable ASCII characters are allowed");
 		}
 		if (ServerSideIntermissionManager.Instance != null)
 		{

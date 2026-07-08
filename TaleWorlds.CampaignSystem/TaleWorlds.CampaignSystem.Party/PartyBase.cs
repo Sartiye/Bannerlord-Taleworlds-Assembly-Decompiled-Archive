@@ -301,7 +301,7 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 			}
 			if (value != null && IsMobile && MapEvent != null && MapEvent.DefenderSide.LeaderParty == this)
 			{
-				Debug.FailedAssert($"Double MapEvent For {Name}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyBase.cs", "MapEventSide", 246);
+				Debug.FailedAssert($"Double MapEvent For {Name}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyBase.cs", "MapEventSide", 242);
 			}
 			if (_mapEventSide != null)
 			{
@@ -687,15 +687,6 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 		SetVisualAsDirty();
 	}
 
-	public bool IsUnderPlayersCommand(BattleSideEnum playerSide)
-	{
-		if (playerSide != Side)
-		{
-			return false;
-		}
-		return IsPartyUnderPlayerCommand(this);
-	}
-
 	int IBattleCombatant.GetTacticsSkillAmount()
 	{
 		if (LeaderHero != null)
@@ -703,6 +694,20 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 			return LeaderHero.GetSkillValue(DefaultSkills.Tactics);
 		}
 		return 0;
+	}
+
+	public int GetNumberOfMissionReadyTroops()
+	{
+		return NumberOfHealthyMembers;
+	}
+
+	public bool IsUnderPlayersCommand(BattleSideEnum playerSide)
+	{
+		if (playerSide != Side)
+		{
+			return false;
+		}
+		return IsPartyUnderPlayerCommand(this);
 	}
 
 	internal void AfterLoad()
@@ -797,7 +802,7 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 	{
 		if (tier < 0)
 		{
-			Debug.FailedAssert("Requested men count for negative tier.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyBase.cs", "GetNumberOfHealthyMenOfTier", 652);
+			Debug.FailedAssert("Requested men count for negative tier.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyBase.cs", "GetNumberOfHealthyMenOfTier", 655);
 			return 0;
 		}
 		bool flag = false;

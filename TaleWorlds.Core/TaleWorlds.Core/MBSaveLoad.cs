@@ -314,7 +314,7 @@ public static class MBSaveLoad
 		for (int i = 0; i < otherData.Length; i++)
 		{
 			KeyValuePair<string, string> keyValuePair = otherData[i];
-			metaData.Add(keyValuePair.Key, keyValuePair.Value);
+			metaData[keyValuePair.Key] = keyValuePair.Value;
 		}
 		return metaData;
 	}

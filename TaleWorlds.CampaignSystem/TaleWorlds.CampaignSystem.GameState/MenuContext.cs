@@ -192,8 +192,13 @@ public class MenuContext : MBObjectBase
 		Handler?.OnOpenTournamentLeaderboard();
 	}
 
-	public void OpenTroopSelection(TroopRoster fullRoster, TroopRoster initialSelections, List<Ship> eligibleShips, Func<CharacterObject, bool> canChangeStatusOfTroop, Action<TroopRoster> onDone, int maxSelectableTroopCount, int minSelectableTroopCount = 1, bool isNavalRaid = false)
+	public void OpenTroopSelection(TroopRoster fullRoster, TroopRoster initialSelections, Func<CharacterObject, bool> canChangeStatusOfTroop, Action<TroopRoster> onDone, int maxSelectableTroopCount, int minSelectableTroopCount = 1)
 	{
-		Handler?.OnOpenTroopSelection(fullRoster, initialSelections, eligibleShips, canChangeStatusOfTroop, onDone, maxSelectableTroopCount, minSelectableTroopCount, isNavalRaid);
+		Handler?.OnOpenTroopSelection(fullRoster, initialSelections, canChangeStatusOfTroop, onDone, maxSelectableTroopCount, minSelectableTroopCount);
+	}
+
+	public void OpenNavalTroopSelection(TroopRoster fullRoster, TroopRoster initialTroopSelections, List<Ship> eligibleShips, List<Ship> initialShipSelections, Func<CharacterObject, bool> canChangeStatusOfTroop, Action<TroopRoster, List<Ship>> onDone, int minSelectableTroopCount, int minSelectableShipCount, int maxSelectableShipCount, bool anyOtherPartiesOnPlayerSide)
+	{
+		Handler?.OnOpenNavalTroopSelection(fullRoster, initialTroopSelections, eligibleShips, initialShipSelections, canChangeStatusOfTroop, onDone, minSelectableTroopCount, minSelectableShipCount, maxSelectableShipCount, anyOtherPartiesOnPlayerSide);
 	}
 }

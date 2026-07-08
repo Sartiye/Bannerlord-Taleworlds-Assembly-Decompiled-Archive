@@ -36,6 +36,11 @@ public class MissionViewsContainer
 		return _missionViews.Contains(missionView);
 	}
 
+	public bool Any(Func<MissionView, bool> predicate)
+	{
+		return _missionViews.Any(predicate);
+	}
+
 	public void ForEach(Action<MissionView> action)
 	{
 		foreach (MissionView item in GetMissionViewsCopy())

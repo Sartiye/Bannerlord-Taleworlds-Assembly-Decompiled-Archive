@@ -130,7 +130,7 @@ public class DeclareWarLogEntry : LogEntry, IEncyclopediaLog, IChatNotification,
 		return GetEncyclopediaText().ToString();
 	}
 
-	public bool IsVisibleInEncyclopediaPageOf<T>(T obj) where T : MBObjectBase
+	public bool IsVisibleInEncyclopediaPageOf(MBObjectBase obj)
 	{
 		if (obj != Faction1)
 		{

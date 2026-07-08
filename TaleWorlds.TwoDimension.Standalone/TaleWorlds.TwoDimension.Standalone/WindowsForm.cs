@@ -26,6 +26,8 @@ public class WindowsForm
 
 	public IntPtr Handle { get; set; }
 
+	public bool IsMinimized => User32.IsIconic(Handle);
+
 	public WindowsForm(int x, int y, int width, int height, ResourceDepot resourceDepot, bool borderlessWindow = false, bool enableWindowBlur = false, string name = null)
 		: this(x, y, width, height, resourceDepot, IntPtr.Zero, borderlessWindow, enableWindowBlur, name)
 	{

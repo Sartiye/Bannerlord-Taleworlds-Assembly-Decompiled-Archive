@@ -8,6 +8,7 @@ using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.LogEntries;
 using TaleWorlds.CampaignSystem.MapEvents;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -100,7 +101,7 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		campaignGameSystemStarter.AddGameMenuOption("raiding_village", "leave_army", "{=hSdJ0UUv}Leave Army", wait_menu_end_raiding_at_army_by_leaving_on_condition, wait_menu_end_raiding_at_army_by_leaving_on_consequence, isLeave: true);
 		campaignGameSystemStarter.AddGameMenuOption("raiding_village", "abandon_army", "{=0vnegjxf}Abandon Army", wait_menu_end_raiding_at_army_by_abandoning_on_condition, wait_menu_end_raiding_at_army_by_abandoning_on_consequence, isLeave: true);
 		campaignGameSystemStarter.AddGameMenu("raid_occupied", "{=!}{RAID_OCCUPPIED_TEXT}", raid_occupied_on_init);
-		campaignGameSystemStarter.AddGameMenuOption("raid_occupied", "raid_occuppied_continue", "{=*}Continue", raid_occupied_on_condition, raid_occupied_on_consequence, isLeave: true);
+		campaignGameSystemStarter.AddGameMenuOption("raid_occupied", "raid_occuppied_continue", "{=DM6luo3c}Continue", raid_occupied_on_condition, raid_occupied_on_consequence, isLeave: true);
 		campaignGameSystemStarter.AddGameMenu("raid_village_no_resist_warn_player", "{=!}{RAID_WARN_PLAYER_EXPLANATION}", game_menu_raid_warn_player_on_init);
 		campaignGameSystemStarter.AddGameMenuOption("raid_village_no_resist_warn_player", "raid_village_warn_continue", "{=DM6luo3c}Continue", game_menu_village_hostile_action_raid_village_warn_continue_on_condition, game_menu_village_hostile_action_raid_village_warn_continue_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("raid_village_no_resist_warn_player", "raid_village_warn_leave", "{=sP9ohQTs}Forget it", hostile_action_common_back_on_condition, game_menu_village_hostile_action_warn_leave_on_consequence, isLeave: true);
@@ -126,7 +127,7 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 	{
 		string encounterCultureBackgroundMesh = MenuHelper.GetEncounterCultureBackgroundMesh(PlayerEncounter.EncounteredParty.MapFaction.Culture);
 		args.MenuContext.SetBackgroundMeshName(encounterCultureBackgroundMesh);
-		TextObject textObject = new TextObject("{=*}This village is being raided by {HERO.NAME}.");
+		TextObject textObject = new TextObject("{=kkdkQYVN}This village is being raided by {HERO.NAME}.");
 		MobileParty mobileParty = null;
 		if (PlayerEncounter.Current != null && PlayerEncounter.Current.EncounterSettlementAux != null && PlayerEncounter.Current.EncounterSettlementAux.LastAttackerParty != null)
 		{
@@ -146,7 +147,7 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		}
 		else
 		{
-			textObject.SetTextVariable("HERO", new TextObject("{=*}hostile forces"));
+			textObject.SetTextVariable("HERO", new TextObject("{=C0BEkIZq}hostile forces"));
 		}
 		MBTextManager.SetTextVariable("RAID_OCCUPPIED_TEXT", textObject);
 	}
@@ -197,13 +198,19 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 			if (MobileParty.MainParty.MemberRoster.TotalHealthyCount < minimumNumberOfMenForAttackingVillageViaScene)
 			{
 				args.IsEnabled = false;
-				args.Tooltip = new TextObject("{=*}You should at least have {NUMBER} healthy men in your party to take a hostile action.");
+				args.Tooltip = new TextObject("{=7b4WZVyU}You should at least have {NUMBER} healthy men in your party to take a hostile action.");
 				args.Tooltip.SetTextVariable("NUMBER", minimumNumberOfMenForAttackingVillageViaScene);
 			}
 			else if (!ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().AnyQ())
 			{
 				args.IsEnabled = false;
-				args.Tooltip = new TextObject("{=*}You don't have any shallow draft ship.");
+				args.Tooltip = new TextObject("{=hd626n2z}You don't have any shallow draft ship.");
+			}
+			else if (Math.Min(MobileParty.MainParty.MemberRoster.TotalHealthyCount, ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().SumQ((Ship x) => x.MainDeckCrewCapacity)) < minimumNumberOfMenForAttackingVillageViaScene)
+			{
+				args.IsEnabled = false;
+				args.Tooltip = new TextObject("{=*}Your shallow ship's crew capacity is too low for a hostile action. A minimum of {NUMBER} crew is required. Use a larger or additional vessel.");
+				args.Tooltip.SetTextVariable("NUMBER", minimumNumberOfMenForAttackingVillageViaScene);
 			}
 		}
 		args.optionLeaveType = GameMenuOption.LeaveType.Submenu;
@@ -343,7 +350,7 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		}
 		else
 		{
-			Debug.FailedAssert("Party is in raid but mapevent is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "village_raid_game_menu_init", 404);
+			Debug.FailedAssert("Party is in raid but mapevent is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "village_raid_game_menu_init", 414);
 		}
 	}
 
@@ -359,7 +366,7 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 			MBTextManager.SetTextVariable("SETTLEMENT_NAME", PlayerEncounter.Battle.MapEventSettlement.Name);
 			return true;
 		}
-		Debug.FailedAssert("Party is in raid but mapevent is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "wait_menu_start_raiding_on_condition", 421);
+		Debug.FailedAssert("Party is in raid but mapevent is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "wait_menu_start_raiding_on_condition", 431);
 		return false;
 	}
 
@@ -502,7 +509,7 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		}
 		else
 		{
-			Debug.FailedAssert("Party is in raid but mapEvent is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "wait_menu_raiding_village_on_tick", 585);
+			Debug.FailedAssert("Party is in raid but mapEvent is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "wait_menu_raiding_village_on_tick", 595);
 		}
 	}
 

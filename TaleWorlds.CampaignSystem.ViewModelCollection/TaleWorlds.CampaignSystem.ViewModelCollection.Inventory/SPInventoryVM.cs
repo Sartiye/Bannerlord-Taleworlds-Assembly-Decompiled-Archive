@@ -4034,14 +4034,14 @@ public class SPInventoryVM : ViewModel
 		}
 		if (!itemVM.IsStealthItem && _equipmentMode == EquipmentModes.Stealth)
 		{
-			TextObject textObject = new TextObject("{=*}{ITEM_NAME} cannot be equipped with stealth equipment.");
+			TextObject textObject = new TextObject("{=VEss9aG5}{ITEM_NAME} cannot be equipped with stealth equipment.");
 			textObject.SetTextVariable("ITEM_NAME", itemVM.ItemRosterElement.EquipmentElement.GetModifiedItemName());
 			MBInformationManager.AddQuickInformation(textObject);
 			return false;
 		}
 		if (!itemVM.IsCivilianItem && _equipmentMode == EquipmentModes.Civilian)
 		{
-			TextObject textObject2 = new TextObject("{=*}{ITEM_NAME} cannot be equipped with civilian equipment.");
+			TextObject textObject2 = new TextObject("{=PsMI3Bn5}{ITEM_NAME} cannot be equipped with civilian equipment.");
 			textObject2.SetTextVariable("ITEM_NAME", itemVM.ItemRosterElement.EquipmentElement.GetModifiedItemName());
 			MBInformationManager.AddQuickInformation(textObject2);
 			return false;

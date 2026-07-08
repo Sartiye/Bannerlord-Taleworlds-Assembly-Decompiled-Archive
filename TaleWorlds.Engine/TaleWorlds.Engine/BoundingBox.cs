@@ -278,6 +278,15 @@ public struct BoundingBox
 		return TaleWorlds.Library.MathF.Max(TaleWorlds.Library.MathF.Max(vec.x, vec.y, vec.z), TaleWorlds.Library.MathF.Max(vec2.x, vec2.y, vec2.z));
 	}
 
+	public static bool AreBoundingBoxesIntersecting(BoundingBox a, BoundingBox b)
+	{
+		if (a.min.x <= b.max.x && a.max.x >= b.min.x && a.min.y <= b.max.y && a.max.y >= b.min.y && a.min.z <= b.max.z)
+		{
+			return a.max.z >= b.min.z;
+		}
+		return false;
+	}
+
 	public void RenderBoundingBox()
 	{
 	}

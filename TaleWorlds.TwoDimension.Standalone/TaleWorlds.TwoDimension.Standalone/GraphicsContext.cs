@@ -42,11 +42,17 @@ public class GraphicsContext
 
 	private int _screenHeight;
 
+	private const int FailedRenderFramesFatalThreshold = 180;
+
 	private int _failedRenderFrames;
 
 	private bool _anyInvalidMatricesThisFrame;
 
 	private bool _forceContextReactivation;
+
+	private bool _glContextRecoveredThisFrame;
+
+	private string _lastFailureReason = "";
 
 	private ResourceDepot _resourceDepot;
 
@@ -97,6 +103,8 @@ public class GraphicsContext
 			_modelMatrix = value;
 		}
 	}
+
+	internal bool IsShuttingDown { get; private set; }
 
 	public bool IsActive => Active == this;
 
@@ -222,7 +230,12 @@ public class GraphicsContext
 	public void BeginFrame(int width, int height)
 	{
 		_anyInvalidMatricesThisFrame = false;
+		_glContextRecoveredThisFrame = false;
 		_stopwatch.Start();
+		if (IsShuttingDown)
+		{
+			return;
+		}
 		if (_forceContextReactivation)
 		{
 			TaleWorlds.Library.Debug.Print("[LAUNCHER]: Display or DPI change detected, reactivating GL context.");
@@ -238,9 +251,14 @@ public class GraphicsContext
 			intPtr = Opengl32.wglGetCurrentContext();
 			if (intPtr == IntPtr.Zero)
 			{
-				_anyInvalidMatricesThisFrame = true;
+				if (!IsShuttingDown)
+				{
+					_anyInvalidMatricesThisFrame = true;
+					_lastFailureReason = "GLContextRecoveryFailed";
+				}
 				return;
 			}
+			_glContextRecoveredThisFrame = true;
 		}
 		Resize(width, height);
 		Opengl32.Clear(AttribueMask.ColorBufferBit);
@@ -263,12 +281,21 @@ public class GraphicsContext
 		{
 			Thread.Sleep(num2);
 		}
-		if (!Gdi32.SwapBuffers(_handleDeviceContext))
+		if (!Gdi32.SwapBuffers(_handleDeviceContext) && !IsShuttingDown)
 		{
 			_forceContextReactivation = true;
+			_lastFailureReason = "SwapBuffersFailed";
 		}
 		_stopwatch.Restart();
-		if (_anyInvalidMatricesThisFrame)
+		if (IsShuttingDown)
+		{
+			return;
+		}
+		if (_glContextRecoveredThisFrame && !_anyInvalidMatricesThisFrame)
+		{
+			_failedRenderFrames = 0;
+		}
+		else if (_anyInvalidMatricesThisFrame)
 		{
 			_failedRenderFrames++;
 		}
@@ -276,10 +303,15 @@ public class GraphicsContext
 		{
 			_failedRenderFrames = 0;
 		}
-		if (_failedRenderFrames >= 100)
+		if (_failedRenderFrames >= 180)
 		{
-			TaleWorlds.Library.Debug.ShowMessageBox("Launcher render error", "ERROR", 4u);
-			throw new Exception("[Launcher]: More than 100 consecutive frames had a render fail");
+			Watchdog.LogProperty("crash_tags.txt", "Runtime", "RenderFatal", 180 + " consecutive failed render frames");
+			Watchdog.LogProperty("crash_tags.txt", "Runtime", "RenderFatalLastError", _lastFailureReason);
+			if (!IsShuttingDown)
+			{
+				TaleWorlds.Library.Debug.ShowMessageBox("Launcher render error", "ERROR", 4u);
+			}
+			Environment.Exit(1);
 		}
 	}
 
@@ -290,9 +322,12 @@ public class GraphicsContext
 
 	public void DestroyContext()
 	{
+		IsShuttingDown = true;
 		Opengl32.wglMakeCurrent(IntPtr.Zero, IntPtr.Zero);
 		Opengl32.wglDeleteContext(_handleRenderContext);
+		_handleRenderContext = IntPtr.Zero;
 		User32.ReleaseDC(Control.Handle, _handleDeviceContext);
+		_handleDeviceContext = IntPtr.Zero;
 	}
 
 	public void SetScissor(ScissorTestInfo scissorTestInfo)
@@ -369,12 +404,10 @@ public class GraphicsContext
 		Shader orLoadShader = GetOrLoadShader(material.GetType().Name);
 		if (orLoadShader == null)
 		{
-			_anyInvalidMatricesThisFrame = true;
 			return null;
 		}
 		if (_screenWidth <= 0 || _screenHeight <= 0)
 		{
-			_anyInvalidMatricesThisFrame = true;
 			return null;
 		}
 		MatrixFrame cachedVisualMatrixFrame = rect.GetCachedVisualMatrixFrame();
@@ -385,7 +418,6 @@ public class GraphicsContext
 		else
 		{
 			ModelMatrix = ValidateModelMatrix(cachedVisualMatrixFrame);
-			_anyInvalidMatricesThisFrame = true;
 		}
 		MatrixFrame matrixFrame = ValidateModelMatrix(_modelMatrix);
 		MatrixFrame matrixFrame2 = ValidateViewMatrix(in _viewMatrix);
@@ -393,7 +425,6 @@ public class GraphicsContext
 		orLoadShader.Use();
 		if (Opengl32.GetError() != 0)
 		{
-			_anyInvalidMatricesThisFrame = true;
 			orLoadShader.StopUsing();
 			return null;
 		}

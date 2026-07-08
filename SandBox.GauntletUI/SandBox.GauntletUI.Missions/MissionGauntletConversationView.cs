@@ -83,6 +83,7 @@ public class MissionGauntletConversationView : MissionView, IConversationStateHa
 
 	public override void OnMissionScreenFinalize()
 	{
+		Campaign.Current.ConversationManager.ConversationEndOneShot -= OnConversationEndOneShot;
 		Campaign.Current.ConversationManager.Handler = null;
 		if (_dataSource != null)
 		{
@@ -115,6 +116,11 @@ public class MissionGauntletConversationView : MissionView, IConversationStateHa
 	void IConversationStateHandler.OnConversationInstall()
 	{
 		base.MissionScreen.SetConversationActive(isActive: true);
+		if (base.Mission.HasMissionBehavior<ConversationMissionLogic>())
+		{
+			base.MissionScreen.SetAsConversationMission();
+		}
+		Campaign.Current.ConversationManager.ConversationEndOneShot += OnConversationEndOneShot;
 		_conversationCategory = UIResourceManager.LoadSpriteCategory("ui_conversation");
 		_dataSource = new MissionConversationVM(GetContinueKeyText);
 		_gauntletLayer = new GauntletLayer("MissionConversation", ViewOrderPriority);
@@ -149,9 +155,26 @@ public class MissionGauntletConversationView : MissionView, IConversationStateHa
 		}
 	}
 
+	private void OnConversationEndOneShot()
+	{
+		if (base.MissionScreen.IsConversationMission)
+		{
+			base.MissionScreen.SceneView.SetEnable(value: false);
+			DestroyConversationView();
+		}
+	}
+
 	void IConversationStateHandler.OnConversationUninstall()
 	{
 		base.MissionScreen.SetConversationActive(isActive: false);
+		if (_gauntletLayer != null)
+		{
+			DestroyConversationView();
+		}
+	}
+
+	private void DestroyConversationView()
+	{
 		if (_dataSource != null)
 		{
 			_dataSource?.OnFinalize();

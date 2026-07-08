@@ -34,15 +34,6 @@ public class CustomBattleCombatant : IBattleCombatant
 
 	public int NumberOfHealthyMembers => _characters.Count;
 
-	public int GetTacticsSkillAmount()
-	{
-		if (_characters.Count > 0)
-		{
-			return _characters.Max((BasicCharacterObject h) => h.GetSkillValue(DefaultSkills.Tactics));
-		}
-		return 0;
-	}
-
 	public CustomBattleCombatant(TextObject name, BasicCultureObject culture, Banner banner)
 	{
 		Name = name;
@@ -64,6 +55,20 @@ public class CustomBattleCombatant : IBattleCombatant
 	public void SetGeneral(BasicCharacterObject generalCharacter)
 	{
 		_general = generalCharacter;
+	}
+
+	public int GetTacticsSkillAmount()
+	{
+		if (_characters.Count > 0)
+		{
+			return _characters.Max((BasicCharacterObject h) => h.GetSkillValue(DefaultSkills.Tactics));
+		}
+		return 0;
+	}
+
+	public int GetNumberOfMissionReadyTroops()
+	{
+		return NumberOfHealthyMembers;
 	}
 
 	public bool IsUnderPlayersCommand(BattleSideEnum playerSide)

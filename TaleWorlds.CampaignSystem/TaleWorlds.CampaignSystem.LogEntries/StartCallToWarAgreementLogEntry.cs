@@ -71,7 +71,7 @@ public class StartCallToWarAgreementLogEntry : LogEntry, IEncyclopediaLog, IChat
 		return textObject;
 	}
 
-	public bool IsVisibleInEncyclopediaPageOf<T>(T obj) where T : MBObjectBase
+	public bool IsVisibleInEncyclopediaPageOf(MBObjectBase obj)
 	{
 		if (obj != _callingKingdom)
 		{

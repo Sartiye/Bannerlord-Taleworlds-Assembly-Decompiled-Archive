@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
@@ -11,6 +12,7 @@ using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.Encyclopedia.Pages;
 
@@ -520,33 +522,40 @@ public class EncyclopediaFactionPageVM : EncyclopediaContentPageVM
 		}
 		ProsperityText = num.ToString();
 		StrengthText = num2.ToString();
+		MBObjectBase faction = _faction;
 		for (int num3 = Campaign.Current.LogEntryHistory.GameActionLogs.Count - 1; num3 >= 0; num3--)
 		{
-			if (Campaign.Current.LogEntryHistory.GameActionLogs[num3] is IEncyclopediaLog encyclopediaLog && encyclopediaLog.IsVisibleInEncyclopediaPageOf(_faction))
+			if (Campaign.Current.LogEntryHistory.GameActionLogs[num3] is IEncyclopediaLog encyclopediaLog && encyclopediaLog.IsVisibleInEncyclopediaPageOf(faction))
 			{
 				History.Add(new EncyclopediaHistoryEventVM(encyclopediaLog));
 			}
 		}
 		EncyclopediaPage pageOf2 = Campaign.Current.EncyclopediaManager.GetPageOf(typeof(Clan));
-		IOrderedEnumerable<IFaction> orderedEnumerable = Campaign.Current.Factions.OrderBy((IFaction x) => !x.IsKingdomFaction).ThenBy((IFaction f) => f.Name.ToString());
-		foreach (IFaction factionObject in orderedEnumerable)
+		List<IFaction> list = Campaign.Current.Factions.OrderBy((IFaction x) => !x.IsKingdomFaction).ThenBy((IFaction f) => f.Name.ToString()).ToList();
+		HashSet<IFaction> hashSet = new HashSet<IFaction>();
+		HashSet<IFaction> hashSet2 = new HashSet<IFaction>();
+		HashSet<IFaction> hashSet3 = new HashSet<IFaction>();
+		foreach (IFaction item in list)
 		{
-			if (pageOf2.IsValidEncyclopediaItem(factionObject) && factionObject != _faction && !factionObject.IsBanditFaction && FactionManager.IsAtWarAgainstFaction(_faction, factionObject.MapFaction) && !Enemies.Any((EncyclopediaFactionVM x) => x.Faction == factionObject.MapFaction))
+			if (!pageOf2.IsValidEncyclopediaItem(item) || item == _faction)
 			{
-				Enemies.Add(new EncyclopediaFactionVM(factionObject.MapFaction));
+				continue;
 			}
-		}
-		foreach (IFaction item in orderedEnumerable.Where((IFaction x) => x.IsKingdomFaction))
-		{
-			Kingdom kingdom;
-			if (pageOf2.IsValidEncyclopediaItem(item) && item != _faction && (kingdom = item as Kingdom) != null)
+			if (!item.IsBanditFaction && FactionManager.IsAtWarAgainstFaction(_faction, item.MapFaction) && !hashSet.Contains(item.MapFaction))
 			{
-				if (HasTradeAgreementWithFaction(_faction, kingdom.MapFaction) && !TradeAgreements.Any((EncyclopediaFactionVM x) => x.Faction == kingdom.MapFaction))
+				hashSet.Add(item.MapFaction);
+				Enemies.Add(new EncyclopediaFactionVM(item.MapFaction));
+			}
+			if (item is Kingdom kingdom)
+			{
+				if (HasTradeAgreementWithFaction(_faction, kingdom.MapFaction) && !hashSet2.Contains(kingdom.MapFaction))
 				{
+					hashSet2.Add(kingdom.MapFaction);
 					TradeAgreements.Add(new EncyclopediaFactionVM(kingdom.MapFaction));
 				}
-				if (DiplomacyHelper.HasAllianceWithFaction(_faction, kingdom.MapFaction) && !Alliances.Any((EncyclopediaFactionVM x) => x.Faction == kingdom.MapFaction))
+				if (DiplomacyHelper.HasAllianceWithFaction(_faction, kingdom.MapFaction) && !hashSet3.Contains(kingdom.MapFaction))
 				{
+					hashSet3.Add(kingdom.MapFaction);
 					Alliances.Add(new EncyclopediaFactionVM(kingdom.MapFaction));
 				}
 			}

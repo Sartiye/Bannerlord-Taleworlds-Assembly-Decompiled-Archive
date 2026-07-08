@@ -38,6 +38,8 @@ public class SaveLoadVM : ViewModel
 
 	private readonly TextObject _visualIsDisabledText = new TextObject("{=xlEZ02Qw}Character visual is disabled during 'Save As' on the campaign map.");
 
+	private bool _isFinalized;
+
 	private bool _isLoadingSaves;
 
 	private bool _isBusyWithAnAction;
@@ -463,57 +465,74 @@ public class SaveLoadVM : ViewModel
 		IsVisualDisabled = false;
 	}
 
-	public async void Initialize()
+	public async Task InitializeAsync()
 	{
+		if (IsLoadingSaves)
+		{
+			return;
+		}
 		IsBusyWithAnAction = true;
 		IsLoadingSaves = true;
-		int num = 0;
-		SaveGameFileInfo[] saveFiles = MBSaveLoad.GetSaveFiles();
-		IEnumerable<SaveGameFileInfo> enumerable = saveFiles.Where((SaveGameFileInfo s) => s.IsCorrupted);
-		foreach (IGrouping<string, SaveGameFileInfo> item in from s in saveFiles
-			where !s.IsCorrupted
-			select s into m
-			group m by m.MetaData.GetUniqueGameId() into s
-			orderby GetMostRecentSaveInGroup(s) descending
-			select s)
+		try
 		{
-			SavedGameGroupVM savedGameGroupVM = new SavedGameGroupVM();
-			if (string.IsNullOrWhiteSpace(item.Key))
+			SaveGameFileInfo[] source = await Task.Run(() => MBSaveLoad.GetSaveFiles());
+			if (_isFinalized)
 			{
-				savedGameGroupVM.IdentifierID = _uncategorizedSaveGroupName.ToString();
+				return;
 			}
-			else
+			int num = 0;
+			IEnumerable<SaveGameFileInfo> enumerable = source.Where((SaveGameFileInfo s) => s.IsCorrupted);
+			foreach (IGrouping<string, SaveGameFileInfo> item in from s in source
+				where !s.IsCorrupted
+				select s into m
+				group m by m.MetaData.GetUniqueGameId() into s
+				orderby GetMostRecentSaveInGroup(s) descending
+				select s)
 			{
-				num++;
-				_categorizedSaveGroupName.SetTextVariable("ID", num);
-				savedGameGroupVM.IdentifierID = _categorizedSaveGroupName.ToString();
+				SavedGameGroupVM savedGameGroupVM = new SavedGameGroupVM();
+				if (string.IsNullOrWhiteSpace(item.Key))
+				{
+					savedGameGroupVM.IdentifierID = _uncategorizedSaveGroupName.ToString();
+				}
+				else
+				{
+					num++;
+					_categorizedSaveGroupName.SetTextVariable("ID", num);
+					savedGameGroupVM.IdentifierID = _categorizedSaveGroupName.ToString();
+				}
+				foreach (SaveGameFileInfo item2 in item.OrderByDescending((SaveGameFileInfo s) => s.MetaData.GetCreationTime()))
+				{
+					bool ironmanMode = item2.MetaData.GetIronmanMode();
+					savedGameGroupVM.SavedGamesList.Add(new SavedGameVM(item2, IsSaving, OnDeleteSavedGame, OnSaveSelection, OnCancelLoadSave, ExecuteDone, isCorruptedSave: false, ironmanMode));
+				}
+				SaveGroups.Add(savedGameGroupVM);
 			}
-			foreach (SaveGameFileInfo item2 in item.OrderByDescending((SaveGameFileInfo s) => s.MetaData.GetCreationTime()))
+			if (enumerable.Any())
 			{
-				bool ironmanMode = item2.MetaData.GetIronmanMode();
-				savedGameGroupVM.SavedGamesList.Add(new SavedGameVM(item2, IsSaving, OnDeleteSavedGame, OnSaveSelection, OnCancelLoadSave, ExecuteDone, isCorruptedSave: false, ironmanMode));
+				SavedGameGroupVM savedGameGroupVM2 = new SavedGameGroupVM
+				{
+					IdentifierID = new TextObject("{=o9PIe7am}Corrupted").ToString()
+				};
+				foreach (SaveGameFileInfo item3 in enumerable)
+				{
+					savedGameGroupVM2.SavedGamesList.Add(new SavedGameVM(item3, IsSaving, OnDeleteSavedGame, OnSaveSelection, OnCancelLoadSave, ExecuteDone, isCorruptedSave: true));
+				}
+				SaveGroups.Add(savedGameGroupVM2);
 			}
-			SaveGroups.Add(savedGameGroupVM);
+			RefreshCanCreateNewSave();
+			RefreshCanSearch();
+			OnSaveSelection(GetFirstAvailableSavedGame());
+			RefreshValues();
 		}
-		if (enumerable.Any())
+		catch (Exception ex)
 		{
-			SavedGameGroupVM savedGameGroupVM2 = new SavedGameGroupVM
-			{
-				IdentifierID = new TextObject("{=o9PIe7am}Corrupted").ToString()
-			};
-			foreach (SaveGameFileInfo item3 in enumerable)
-			{
-				savedGameGroupVM2.SavedGamesList.Add(new SavedGameVM(item3, IsSaving, OnDeleteSavedGame, OnSaveSelection, OnCancelLoadSave, ExecuteDone, isCorruptedSave: true));
-			}
-			SaveGroups.Add(savedGameGroupVM2);
+			Debug.Print("SaveLoadVM.InitializeAsync failed: " + ex);
 		}
-		RefreshCanCreateNewSave();
-		RefreshCanSearch();
-		OnSaveSelection(GetFirstAvailableSavedGame());
-		RefreshValues();
-		await Task.Delay(1);
-		IsBusyWithAnAction = false;
-		IsLoadingSaves = false;
+		finally
+		{
+			IsBusyWithAnAction = false;
+			IsLoadingSaves = false;
+		}
 	}
 
 	private SavedGameVM GetFirstAvailableSavedGame()
@@ -732,6 +751,7 @@ public class SaveLoadVM : ViewModel
 
 	public override void OnFinalize()
 	{
+		_isFinalized = true;
 		base.OnFinalize();
 		DoneInputKey?.OnFinalize();
 		CancelInputKey?.OnFinalize();

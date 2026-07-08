@@ -54,6 +54,52 @@ public class GauntletPartyScreen : ScreenBase, IGameStateListener, IChangeableSc
 		InformationManager.HideAllMessages();
 	}
 
+	protected override void OnReady()
+	{
+		base.OnReady();
+		if (_gauntletLayer != null)
+		{
+			ScreenManager.SetSuspendLayer(_gauntletLayer, isSuspended: false);
+			ScreenManager.TrySetFocus(_gauntletLayer);
+			if (_dataSource?.SelectedCharacter != null)
+			{
+				_dataSource.SelectedCharacter.IsTableauEnabled = true;
+			}
+			return;
+		}
+		_partyscreenCategory = UIResourceManager.LoadSpriteCategory("ui_partyscreen");
+		_gauntletLayer = new GauntletLayer("PartyScreen", 1, shouldClear: true);
+		_gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericPanelGameKeyCategory"));
+		_gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericCampaignPanelsGameKeyCategory"));
+		_gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("PartyHotKeyCategory"));
+		_dataSource = new PartyVM(_partyState.PartyScreenLogic);
+		_dataSource.SetGetKeyTextFromKeyIDFunc(Game.Current.GameTextManager.GetHotKeyGameTextFromKeyID);
+		_dataSource.SetResetInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Reset"));
+		_dataSource.SetCancelInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Exit"));
+		_dataSource.SetDoneInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Confirm"));
+		_dataSource.SetTakeAllTroopsInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("TakeAllTroops"));
+		_dataSource.SetDismissAllTroopsInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("GiveAllTroops"));
+		_dataSource.SetTakeAllPrisonersInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("TakeAllPrisoners"));
+		_dataSource.SetDismissAllPrisonersInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("GiveAllPrisoners"));
+		_dataSource.SetOpenUpgradePanelInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("OpenUpgradePopup"));
+		_dataSource.SetOpenRecruitPanelInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("OpenRecruitPopup"));
+		_dataSource.UpgradePopUp.SetPrimaryActionInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("PopupItemPrimaryAction"));
+		_dataSource.UpgradePopUp.SetSecondaryActionInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("PopupItemSecondaryAction"));
+		_dataSource.UpgradePopUp.SetTertiaryActionInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("GiveAllTroops"));
+		_dataSource.RecruitPopUp.SetPrimaryActionInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("PopupItemSecondaryAction"));
+		_gauntletLayer.LoadMovie("PartyScreen", _dataSource);
+		AddLayer(_gauntletLayer);
+		_gauntletLayer.InputRestrictions.SetInputRestrictions();
+		_gauntletLayer.IsFocusLayer = true;
+		ScreenManager.TrySetFocus(_gauntletLayer);
+		ScreenManager.SetSuspendLayer(_gauntletLayer, isSuspended: false);
+		if (_dataSource?.SelectedCharacter != null)
+		{
+			_dataSource.SelectedCharacter.IsTableauEnabled = true;
+		}
+		_gauntletLayer.GamepadNavigationContext.GainNavigationAfterFrames(2, null);
+	}
+
 	protected override void OnFrameTick(float dt)
 	{
 		base.OnFrameTick(dt);
@@ -213,46 +259,27 @@ public class GauntletPartyScreen : ScreenBase, IGameStateListener, IChangeableSc
 	void IGameStateListener.OnActivate()
 	{
 		base.OnActivate();
-		_partyscreenCategory = UIResourceManager.LoadSpriteCategory("ui_partyscreen");
-		_gauntletLayer = new GauntletLayer("PartyScreen", 1, shouldClear: true);
-		_gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericPanelGameKeyCategory"));
-		_gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericCampaignPanelsGameKeyCategory"));
-		_gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("PartyHotKeyCategory"));
-		_dataSource = new PartyVM(_partyState.PartyScreenLogic);
-		_dataSource.SetGetKeyTextFromKeyIDFunc(Game.Current.GameTextManager.GetHotKeyGameTextFromKeyID);
-		_dataSource.SetResetInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Reset"));
-		_dataSource.SetCancelInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Exit"));
-		_dataSource.SetDoneInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Confirm"));
-		_dataSource.SetTakeAllTroopsInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("TakeAllTroops"));
-		_dataSource.SetDismissAllTroopsInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("GiveAllTroops"));
-		_dataSource.SetTakeAllPrisonersInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("TakeAllPrisoners"));
-		_dataSource.SetDismissAllPrisonersInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("GiveAllPrisoners"));
-		_dataSource.SetOpenUpgradePanelInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("OpenUpgradePopup"));
-		_dataSource.SetOpenRecruitPanelInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("OpenRecruitPopup"));
-		_dataSource.UpgradePopUp.SetPrimaryActionInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("PopupItemPrimaryAction"));
-		_dataSource.UpgradePopUp.SetSecondaryActionInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("PopupItemSecondaryAction"));
-		_dataSource.UpgradePopUp.SetTertiaryActionInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("GiveAllTroops"));
-		_dataSource.RecruitPopUp.SetPrimaryActionInputKey(HotKeyManager.GetCategory("PartyHotKeyCategory").GetHotKey("PopupItemSecondaryAction"));
-		_gauntletLayer.LoadMovie("PartyScreen", _dataSource);
-		AddLayer(_gauntletLayer);
-		_gauntletLayer.InputRestrictions.SetInputRestrictions();
-		_gauntletLayer.IsFocusLayer = true;
-		ScreenManager.TrySetFocus(_gauntletLayer);
 		Game.Current.EventManager.TriggerEvent(new TutorialContextChangedEvent(TutorialContexts.PartyScreen));
 		UISoundsHelper.PlayUISound("event:/ui/panels/panel_party_open");
-		ScreenManager.SetSuspendLayer(_gauntletLayer, isSuspended: false);
-		_gauntletLayer.GamepadNavigationContext.GainNavigationAfterFrames(2, null);
 	}
 
 	void IGameStateListener.OnDeactivate()
 	{
 		base.OnDeactivate();
 		PartyBase.MainParty.SetVisualAsDirty();
-		ScreenManager.SetSuspendLayer(_gauntletLayer, isSuspended: true);
-		_gauntletLayer.IsFocusLayer = false;
-		_gauntletLayer.InputRestrictions.ResetInputRestrictions();
-		RemoveLayer(_gauntletLayer);
-		ScreenManager.TryLoseFocus(_gauntletLayer);
+		if (_dataSource?.SelectedCharacter != null)
+		{
+			_dataSource.SelectedCharacter.IsTableauEnabled = false;
+		}
+		if (_gauntletLayer != null)
+		{
+			ScreenManager.SetSuspendLayer(_gauntletLayer, isSuspended: true);
+			_gauntletLayer.IsFocusLayer = false;
+			_gauntletLayer.InputRestrictions.ResetInputRestrictions();
+			RemoveLayer(_gauntletLayer);
+			ScreenManager.TryLoseFocus(_gauntletLayer);
+			_gauntletLayer = null;
+		}
 		Game.Current.EventManager.TriggerEvent(new TutorialContextChangedEvent(TutorialContexts.None));
 		if (Campaign.Current.ConversationManager.IsConversationInProgress && !Campaign.Current.ConversationManager.IsConversationFlowActive)
 		{
@@ -268,9 +295,16 @@ public class GauntletPartyScreen : ScreenBase, IGameStateListener, IChangeableSc
 	void IGameStateListener.OnFinalize()
 	{
 		CampaignEvents.CompanionRemoved.ClearListeners(this);
-		_dataSource.OnFinalize();
-		_partyscreenCategory.Unload();
-		_dataSource = null;
+		if (_dataSource != null)
+		{
+			_dataSource.OnFinalize();
+			_dataSource = null;
+		}
+		if (_partyscreenCategory != null)
+		{
+			_partyscreenCategory.Unload();
+			_partyscreenCategory = null;
+		}
 		_gauntletLayer = null;
 	}
 

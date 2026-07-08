@@ -10,6 +10,7 @@ using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.Encyclopedia.Pages;
 
@@ -614,9 +615,10 @@ public class EncyclopediaClanPageVM : EncyclopediaContentPageVM
 		}
 		ProsperityText = num.ToString();
 		StrengthText = num2.ToString();
+		MBObjectBase obj = _faction as MBObjectBase;
 		for (int num3 = Campaign.Current.LogEntryHistory.GameActionLogs.Count - 1; num3 >= 0; num3--)
 		{
-			if (Campaign.Current.LogEntryHistory.GameActionLogs[num3] is IEncyclopediaLog encyclopediaLog && ((_faction.IsKingdomFaction && encyclopediaLog.IsVisibleInEncyclopediaPageOf((Kingdom)_faction)) || (_faction.IsClan && encyclopediaLog.IsVisibleInEncyclopediaPageOf((Clan)_faction))))
+			if (Campaign.Current.LogEntryHistory.GameActionLogs[num3] is IEncyclopediaLog encyclopediaLog && encyclopediaLog.IsVisibleInEncyclopediaPageOf(obj))
 			{
 				History.Add(new EncyclopediaHistoryEventVM(encyclopediaLog));
 			}

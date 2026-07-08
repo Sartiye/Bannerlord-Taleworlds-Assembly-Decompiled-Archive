@@ -198,6 +198,8 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 
 	public bool IsPhotoModeEnabled { get; private set; }
 
+	public bool IsConversationMission { get; private set; }
+
 	public bool IsConversationActive { get; private set; }
 
 	public bool IsDeploymentActive => Mission.Mode == MissionMode.Deployment;
@@ -241,7 +243,7 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 				}
 				else
 				{
-					Debug.FailedAssert("MyPeer.IsSynchronized but myMissionPeer == null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Screens\\MissionScreen.cs", "LastFollowedAgent", 219);
+					Debug.FailedAssert("MyPeer.IsSynchronized but myMissionPeer == null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Screens\\MissionScreen.cs", "LastFollowedAgent", 221);
 				}
 			}
 			ResetMaxCameraZoom();
@@ -377,7 +379,7 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 	{
 		base.OnActivate();
 		ActivateLoadingScreen();
-		if (Mission != null && Mission.MissionEnded && ScreenManager.TopScreen is MissionScreen missionScreen)
+		if (Mission != null && (Mission.MissionEnded || (IsConversationMission && !IsConversationActive)) && ScreenManager.TopScreen is MissionScreen missionScreen)
 		{
 			ScreenManager.TopScreen.DeactivateAllLayers();
 			missionScreen.SceneView.SetEnable(value: false);
@@ -387,7 +389,7 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 	protected override void OnResume()
 	{
 		base.OnResume();
-		if (Mission != null && Mission.MissionEnded && ScreenManager.TopScreen is MissionScreen missionScreen)
+		if (Mission != null && (Mission.MissionEnded || (IsConversationMission && !IsConversationActive)) && ScreenManager.TopScreen is MissionScreen missionScreen)
 		{
 			ScreenManager.TopScreen.DeactivateAllLayers();
 			missionScreen.SceneView.SetEnable(value: false);
@@ -647,6 +649,7 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 		{
 			Mission.InputManager = null;
 		}
+		SceneLayer?.SceneView?.SetEnable(value: false);
 		Mission = null;
 		OrderFlag = null;
 		SceneLayer = null;
@@ -1711,7 +1714,7 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 			}
 			else
 			{
-				Debug.FailedAssert("Multiplayer scene does not contain a camera frame", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Screens\\MissionScreen.cs", "SetCameraFrameToMapView", 2236);
+				Debug.FailedAssert("Multiplayer scene does not contain a camera frame", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Screens\\MissionScreen.cs", "SetCameraFrameToMapView", 2240);
 				flag = true;
 			}
 		}
@@ -2454,6 +2457,11 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 				missionView.OnConversationEnd();
 			}
 		});
+	}
+
+	public void SetAsConversationMission()
+	{
+		IsConversationMission = true;
 	}
 
 	public void SetCameraLockState(bool isLocked)

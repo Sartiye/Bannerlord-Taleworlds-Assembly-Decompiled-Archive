@@ -89,7 +89,7 @@ public class ArmyDispersionLogEntry : LogEntry, IEncyclopediaLog, IChatNotificat
 		return GetEncyclopediaText();
 	}
 
-	public bool IsVisibleInEncyclopediaPageOf<T>(T obj) where T : MBObjectBase
+	public bool IsVisibleInEncyclopediaPageOf(MBObjectBase obj)
 	{
 		if (_armyLeader != null)
 		{

@@ -72,7 +72,7 @@ public class CharacterMarriedLogEntry : LogEntry, IEncyclopediaLog, IChatNotific
 		return textObject;
 	}
 
-	public bool IsVisibleInEncyclopediaPageOf<T>(T obj) where T : MBObjectBase
+	public bool IsVisibleInEncyclopediaPageOf(MBObjectBase obj)
 	{
 		if (obj != MarriedHero)
 		{

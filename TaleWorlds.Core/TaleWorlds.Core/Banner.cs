@@ -588,10 +588,8 @@ public class Banner
 			bannerDataList.Clear();
 			return false;
 		}
-		if (bannerDataList.Count > 32)
-		{
-			bannerDataList.RemoveRange(31, bannerDataList.Count - 32);
-		}
+		_ = bannerDataList.Count;
+		_ = 32;
 		return true;
 	}
 

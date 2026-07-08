@@ -160,7 +160,7 @@ public class TakePrisonerLogEntry : LogEntry, IEncyclopediaLog, IChatNotificatio
 		return textObject;
 	}
 
-	public bool IsVisibleInEncyclopediaPageOf<T>(T obj) where T : MBObjectBase
+	public bool IsVisibleInEncyclopediaPageOf(MBObjectBase obj)
 	{
 		if (obj != Prisoner && (CapturerSettlement == null || obj != CapturerSettlement))
 		{

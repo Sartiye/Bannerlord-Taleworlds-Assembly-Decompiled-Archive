@@ -611,6 +611,30 @@ public class PlayerEncounter
 			Current.SetupFields(MobileParty.MainParty.Party, PlayerSiege.PlayerSiegeEvent.BesiegedSettlement.Party);
 		}
 		CapturedShipsInEncounter = new List<Ship>();
+		if (!MBSaveLoad.IsUpdatingGameVersion || !MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.4.6")))
+		{
+			return;
+		}
+		bool flag = false;
+		if (EncounteredBattle != null && EncounteredBattle.IsRaid && EncounterSettlementAux == null)
+		{
+			flag = true;
+		}
+		else if (Battle != null && EncounterSettlementAux == null)
+		{
+			foreach (MapEventParty party in Battle.GetMapEventSide(PlayerSide).Parties)
+			{
+				if (party.Party.IsMobile && party.Party.MobileParty.IsVillager && party.Party.MobileParty.CurrentSettlement != null && party.Party.MobileParty.CurrentSettlement.IsVillage)
+				{
+					flag = true;
+					break;
+				}
+			}
+		}
+		if (flag)
+		{
+			Finish();
+		}
 	}
 
 	public static void RestartPlayerEncounter(PartyBase defenderParty, PartyBase attackerParty, bool forcePlayerOutFromSettlement = true, bool isPlayerEncounterRestartedForRaid = false)
@@ -673,12 +697,12 @@ public class PlayerEncounter
 						}
 						else
 						{
-							Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "Init", 532);
+							Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "Init", 561);
 						}
 					}
 					else
 					{
-						Debug.FailedAssert("If there is no map event we should create one in order to join battle", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "Init", 537);
+						Debug.FailedAssert("If there is no map event we should create one in order to join battle", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "Init", 566);
 					}
 				}
 				CheckNearbyPartiesToJoinPlayerMapEvent();
@@ -857,7 +881,7 @@ public class PlayerEncounter
 				}
 				else
 				{
-					Debug.FailedAssert("Proper mapEvent type could not be set for the battle.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "StartBattleInternal", 768);
+					Debug.FailedAssert("Proper mapEvent type could not be set for the battle.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "StartBattleInternal", 797);
 				}
 			}
 			else if (_isSallyOutAmbush)
@@ -1128,7 +1152,7 @@ public class PlayerEncounter
 					DoEnd();
 					break;
 				default:
-					Debug.FailedAssert("[DEBUG]Invalid map event state: " + _mapEventState, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "UpdateInternal", 1073);
+					Debug.FailedAssert("[DEBUG]Invalid map event state: " + _mapEventState, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "UpdateInternal", 1102);
 					break;
 				}
 			}
@@ -1238,7 +1262,7 @@ public class PlayerEncounter
 		_mapEvent.RecalculateStrengthOfSides();
 		if (_mapEvent.IsNavalMapEvent && !_mapEvent.IsRaid && !_mapEvent.IsForcingSupplies && !_mapEvent.IsForcingVolunteers && otherSide.Parties.Sum((MapEventParty x) => x.Ships.Count) == 0)
 		{
-			Debug.FailedAssert("This case should not be called anymore, make sure this is intended", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "ContinueBattle", 1215);
+			Debug.FailedAssert("This case should not be called anymore, make sure this is intended", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "ContinueBattle", 1244);
 			Debug.Print("Player side wins according to the strength ratio.");
 			_mapEvent?.SetOverrideWinner(_mapEvent.PlayerSide);
 			EnemySurrender = true;
@@ -1246,7 +1270,7 @@ public class PlayerEncounter
 		}
 		else if (_mapEvent.IsNavalMapEvent && mapEventSide.Parties.Sum((MapEventParty x) => x.Ships.Count) == 0)
 		{
-			Debug.FailedAssert("This case should not be called anymore, make sure this is intended", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "ContinueBattle", 1224);
+			Debug.FailedAssert("This case should not be called anymore, make sure this is intended", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "ContinueBattle", 1253);
 			Debug.Print("Other side wins according to the strength ratio.");
 			_mapEvent?.SetOverrideWinner(otherSide.MissionSide);
 			EncounterState = PlayerEncounterState.PrepareResults;
@@ -2017,7 +2041,7 @@ public class PlayerEncounter
 		}
 		case Settlement.SiegeState.InTheLordsHall:
 		case Settlement.SiegeState.Invalid:
-			Debug.FailedAssert("Siege state is invalid!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "StartSiegeAmbushMission", 2266);
+			Debug.FailedAssert("Siege state is invalid!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encounters\\PlayerEncounter.cs", "StartSiegeAmbushMission", 2295);
 			break;
 		}
 	}

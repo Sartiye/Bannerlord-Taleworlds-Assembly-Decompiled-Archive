@@ -52,7 +52,7 @@ public static class BuildingHelper
 			}
 			else
 			{
-				Debug.FailedAssert("DefaultProject in building queue", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "ChangeCurrentBuildingQueue", 7222);
+				Debug.FailedAssert("DefaultProject in building queue", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "ChangeCurrentBuildingQueue", 7278);
 			}
 		}
 	}
@@ -66,7 +66,7 @@ public static class BuildingHelper
 				return building.BuildingProgress / (float)building.GetConstructionCost();
 			}
 		}
-		Debug.FailedAssert(string.Concat(building.Name, "is not a project of", town.Name), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetProgressOfBuilding", 7237);
+		Debug.FailedAssert(string.Concat(building.Name, "is not a project of", town.Name), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetProgressOfBuilding", 7293);
 		return 0f;
 	}
 
@@ -99,7 +99,7 @@ public static class BuildingHelper
 			}
 			return -1;
 		}
-		Debug.FailedAssert(string.Concat(building.Name, "is not a project of", town.Name), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetDaysToComplete", 7279);
+		Debug.FailedAssert(string.Concat(building.Name, "is not a project of", town.Name), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetDaysToComplete", 7335);
 		return 0;
 	}
 
@@ -112,7 +112,7 @@ public static class BuildingHelper
 				return building.CurrentLevel;
 			}
 		}
-		Debug.FailedAssert(string.Concat(buildingType.Name, "is not a project of", town.Name), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetTierOfBuilding", 7293);
+		Debug.FailedAssert(string.Concat(buildingType.Name, "is not a project of", town.Name), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetTierOfBuilding", 7349);
 		return 0;
 	}
 

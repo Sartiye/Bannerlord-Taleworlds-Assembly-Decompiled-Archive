@@ -33,6 +33,8 @@ public class Program
 
 	private static bool _gameStarted;
 
+	internal static bool IsShuttingDown { get; private set; }
+
 	static Program()
 	{
 		StarterExecutable = "Bannerlord.exe";
@@ -63,9 +65,9 @@ public class Program
 				{
 					new Watchdog(use_coreclr: true, text);
 				}
-				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Source", "114896");
+				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Source", "117131");
 				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Target", "Public");
-				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Version", "v1.4.5.114896");
+				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Version", "v1.4.7.117131");
 				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Product Name", "Mount and Blade II Bannerlord");
 				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Name", name);
 				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Launcher", "true");
@@ -127,9 +129,10 @@ public class Program
 
 	private static void AuxFinalize()
 	{
+		IsShuttingDown = true;
 		_windowsFramework.UnRegisterMessageCommunicator(_graphicsForm);
-		_graphicsForm.Destroy();
 		_windowsFramework.Stop();
+		_graphicsForm.Destroy();
 		_windowsFramework = null;
 		_graphicsForm = null;
 		(TaleWorlds.Library.Debug.DebugManager as LauncherDebugManager)?.OnFinalize();

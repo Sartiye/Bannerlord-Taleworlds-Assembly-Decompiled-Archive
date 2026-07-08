@@ -34,7 +34,7 @@ public class ClanDestroyedLogEntry : LogEntry, IEncyclopediaLog, IChatNotificati
 		_clan = clan;
 	}
 
-	public bool IsVisibleInEncyclopediaPageOf<T>(T obj) where T : MBObjectBase
+	public bool IsVisibleInEncyclopediaPageOf(MBObjectBase obj)
 	{
 		return obj == _clan;
 	}

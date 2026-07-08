@@ -1365,7 +1365,7 @@ public class OrderOfBattleVM : ViewModel
 		if (playerDeployed)
 		{
 			_isSaving = true;
-			OrderOfBattleFormationItemVM orderOfBattleFormationItemVM = _allFormations.FirstOrDefault((OrderOfBattleFormationItemVM f) => f.Captain.Agent == Agent.Main);
+			OrderOfBattleFormationItemVM orderOfBattleFormationItemVM = _allFormations.FirstOrDefault((OrderOfBattleFormationItemVM f) => f.Captain.Agent == _mission.InitialPlayerAgent);
 			if (orderOfBattleFormationItemVM != null)
 			{
 				AssignPlayerRoleInTeamMissionController missionBehavior = _mission.GetMissionBehavior<AssignPlayerRoleInTeamMissionController>();

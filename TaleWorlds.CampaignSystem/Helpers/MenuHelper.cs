@@ -237,13 +237,19 @@ public static class MenuHelper
 					if (MobileParty.MainParty.MemberRoster.TotalHealthyCount < minimumNumberOfMenForAttackingVillageViaScene)
 					{
 						args.IsEnabled = false;
-						args.Tooltip = new TextObject("{=*}You should at least have {NUMBER} healthy men in your party to take a hostile action.");
+						args.Tooltip = new TextObject("{=7b4WZVyU}You should at least have {NUMBER} healthy men in your party to take a hostile action.");
 						args.Tooltip.SetTextVariable("NUMBER", minimumNumberOfMenForAttackingVillageViaScene);
 					}
 					else if (!ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().AnyQ())
 					{
 						args.IsEnabled = false;
-						args.Tooltip = new TextObject("{=*}You don't have any shallow draft ship.");
+						args.Tooltip = new TextObject("{=hd626n2z}You don't have any shallow draft ship.");
+					}
+					else if (Math.Min(MobileParty.MainParty.MemberRoster.TotalHealthyCount, ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().SumQ((Ship x) => x.MainDeckCrewCapacity)) < minimumNumberOfMenForAttackingVillageViaScene)
+					{
+						args.IsEnabled = false;
+						args.Tooltip = new TextObject("{=*}Your shallow ship's crew capacity is too low for a hostile action. A minimum of {NUMBER} crew is required. Use a larger or additional vessel.");
+						args.Tooltip.SetTextVariable("NUMBER", minimumNumberOfMenForAttackingVillageViaScene);
 					}
 				}
 			}
@@ -305,7 +311,7 @@ public static class MenuHelper
 							flattenedTroopRoster.RemoveIf((FlattenedTroopRosterElement x) => x.IsWounded);
 							troopRoster2.Add(MobilePartyHelper.GetStrongestAndPriorTroops(flattenedTroopRoster, num, includePlayer: true));
 							int minSelectableTroopCount = 1;
-							args.MenuContext.OpenTroopSelection(troopRoster, troopRoster2, null, (CharacterObject character) => !character.IsPlayerCharacter, LordsHallTroopRosterManageDone, num, minSelectableTroopCount);
+							args.MenuContext.OpenTroopSelection(troopRoster, troopRoster2, (CharacterObject character) => !character.IsPlayerCharacter, LordsHallTroopRosterManageDone, num, minSelectableTroopCount);
 						}
 						else
 						{
@@ -410,36 +416,36 @@ public static class MenuHelper
 	{
 		bool num = mapEvent.PlayerSide == navalSide;
 		List<MapEventParty> navalParties = mapEvent.PartiesOnSide(navalSide).ToList();
-		List<Ship> selectedShips = (from x in navalParties.SelectMany((MapEventParty x) => x.Ships)
+		List<Ship> list = (from x in navalParties.SelectMany((MapEventParty x) => x.Ships)
 			where x.ShipHull.CanNavigateShallowWater
 			orderby x.ShipHull.MainDeckCrewCapacity descending
-			select x).Take(3).ToList();
-		int maxSelectableTroopCount = selectedShips.Sum((Ship x) => x.ShipHull.MainDeckCrewCapacity);
-		TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
+			select x).ToList();
+		List<Ship> list2 = list.Take(3).ToList();
+		int num2 = list2.Sum((Ship x) => x.ShipHull.MainDeckCrewCapacity);
 		if (num)
 		{
-			TroopRoster strongestAndPriorTroops = MobilePartyHelper.GetStrongestAndPriorTroops(MobileParty.MainParty, Math.Min(maxSelectableTroopCount, MobileParty.MainParty.MemberRoster.TotalHealthyCount), includePlayer: true);
-			args.MenuContext.OpenTroopSelection(MobileParty.MainParty.MemberRoster, strongestAndPriorTroops, selectedShips, (CharacterObject character) => !character.IsPlayerCharacter, delegate(TroopRoster troops)
+			TroopRoster strongestAndPriorTroops = MobilePartyHelper.GetStrongestAndPriorTroops(MobileParty.MainParty, Math.Min(num2, MobileParty.MainParty.MemberRoster.TotalHealthyCount), includePlayer: true);
+			args.MenuContext.OpenNavalTroopSelection(MobileParty.MainParty.MemberRoster, strongestAndPriorTroops, list, list2, (CharacterObject character) => !character.IsPlayerCharacter, delegate(TroopRoster troops, List<Ship> selectedShips)
 			{
-				int count = maxSelectableTroopCount - troops.TotalHealthyCount;
-				navalParties.RemoveAll((MapEventParty x) => x.Party == PartyBase.MainParty);
-				foreach (FlattenedTroopRosterElement item in (from x in navalParties.SelectMany((MapEventParty x) => x.Troops)
+				int count = selectedShips.Sum((Ship x) => x.ShipHull.MainDeckCrewCapacity) - troops.TotalHealthyCount;
+				foreach (FlattenedTroopRosterElement item in (from x in navalParties.Where((MapEventParty x) => x.Party != PartyBase.MainParty).SelectMany((MapEventParty x) => x.Troops)
 					orderby x.Troop.GetBattlePower() descending
 					select x).Take(count))
 				{
 					troops.AddToCounts(item.Troop, 1);
 				}
 				CampaignMission.OpenNavalRaidMission(troops, navalSide, selectedShips);
-			}, maxSelectableTroopCount, Campaign.Current.Models.EncounterModel.MinimumNumberOfMenForAttackingVillageViaScene, isNavalRaid: true);
+			}, anyOtherPartiesOnPlayerSide: navalParties.Any((MapEventParty x) => x.Party != PartyBase.MainParty), minSelectableTroopCount: Campaign.Current.Models.EncounterModel.MinimumNumberOfMenForAttackingVillageViaScene, minSelectableShipCount: 1, maxSelectableShipCount: 3);
 			return;
 		}
+		TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
 		foreach (FlattenedTroopRosterElement item2 in (from x in navalParties.SelectMany((MapEventParty x) => x.Troops)
 			orderby x.Troop.GetBattlePower() descending
-			select x).Take(maxSelectableTroopCount))
+			select x).Take(num2))
 		{
 			troopRoster.AddToCounts(item2.Troop, 1);
 		}
-		CampaignMission.OpenNavalRaidMission(troopRoster, navalSide, selectedShips);
+		CampaignMission.OpenNavalRaidMission(troopRoster, navalSide, list2);
 	}
 
 	private static void LordsHallTroopRosterManageDone(TroopRoster selectedTroops)
@@ -467,7 +473,8 @@ public static class MenuHelper
 		MapEvent playerMapEvent = MapEvent.PlayerMapEvent;
 		if (playerMapEvent != null)
 		{
-			args.optionLeaveType = ((!playerMapEvent.IsNavalMapEvent) ? GameMenuOption.LeaveType.OrderTroopsToAttack : GameMenuOption.LeaveType.OrderShipsToAttack);
+			bool flag = playerMapEvent.IsNavalMapEvent || (MapEventHelper.IsNavalRaid(playerMapEvent) && playerMapEvent.PlayerSide == BattleSideEnum.Attacker);
+			args.optionLeaveType = (flag ? GameMenuOption.LeaveType.OrderShipsToAttack : GameMenuOption.LeaveType.OrderTroopsToAttack);
 			MobileParty mobileParty = MapEvent.PlayerMapEvent.PartiesOnSide(PlayerEncounter.Current.OpponentSide)[0].Party.MobileParty;
 			if (mobileParty != null && mobileParty.IsInRaftState)
 			{
@@ -491,7 +498,7 @@ public static class MenuHelper
 				}
 				if (num2 > 0)
 				{
-					if (MobileParty.MainParty.MapEvent.IsNavalMapEvent)
+					if (flag)
 					{
 						MBTextManager.SetTextVariable("SEND_TROOPS_TEXT", "{=NFnS5YqQ}Send ships.");
 					}
@@ -533,13 +540,13 @@ public static class MenuHelper
 							if (MobileParty.MainParty.MemberRoster.TotalHealthyCount < minimumNumberOfMenForAttackingVillageViaScene)
 							{
 								args.IsEnabled = false;
-								args.Tooltip = new TextObject("{=*}You should at least have {NUMBER} healthy men in your party to take a hostile action.");
+								args.Tooltip = new TextObject("{=7b4WZVyU}You should at least have {NUMBER} healthy men in your party to take a hostile action.");
 								args.Tooltip.SetTextVariable("NUMBER", minimumNumberOfMenForAttackingVillageViaScene);
 							}
 							else if (!ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().AnyQ())
 							{
 								args.IsEnabled = false;
-								args.Tooltip = new TextObject("{=*}You don't have any shallow draft ship.");
+								args.Tooltip = new TextObject("{=hd626n2z}You don't have any shallow draft ship.");
 							}
 						}
 					}
@@ -616,7 +623,7 @@ public static class MenuHelper
 	{
 		if (string.IsNullOrEmpty(encounterCulture?.EncounterBackgroundMesh))
 		{
-			Debug.FailedAssert("Background mesh is invalid for current encounter", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetEncounterCultureBackgroundMesh", 814);
+			Debug.FailedAssert("Background mesh is invalid for current encounter", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetEncounterCultureBackgroundMesh", 829);
 			return string.Empty;
 		}
 		string text = encounterCulture.EncounterBackgroundMesh;

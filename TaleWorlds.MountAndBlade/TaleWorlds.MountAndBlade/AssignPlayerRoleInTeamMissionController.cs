@@ -50,12 +50,12 @@ public class AssignPlayerRoleInTeamMissionController : MissionLogic
 		{
 			return;
 		}
-		team.PlayerOrderController.Owner = Agent.Main;
+		team.PlayerOrderController.Owner = base.Mission.InitialPlayerAgent;
 		if (team.IsPlayerGeneral)
 		{
 			foreach (Formation item in team.FormationsIncludingEmpty)
 			{
-				item.PlayerOwner = Agent.Main;
+				item.PlayerOwner = base.Mission.InitialPlayerAgent;
 			}
 		}
 		team.PlayerOrderController.SelectAllFormations();
@@ -85,7 +85,7 @@ public class AssignPlayerRoleInTeamMissionController : MissionLogic
 				Agent agent = playerTeam.ActiveAgents.FirstOrDefault((Agent aa) => aa.Character.StringId.Equals(nextAgentNameToProcess));
 				if (agent != null)
 				{
-					if (agent == Agent.Main)
+					if (agent == base.Mission.InitialPlayerAgent)
 					{
 						break;
 					}
@@ -152,7 +152,7 @@ public class AssignPlayerRoleInTeamMissionController : MissionLogic
 	protected virtual void AssignSergeant(Formation formationToLead, Agent sergeant)
 	{
 		sergeant.Formation = formationToLead;
-		if (!sergeant.IsAIControlled || sergeant == Agent.Main)
+		if (!sergeant.IsAIControlled || sergeant == base.Mission.InitialPlayerAgent)
 		{
 			formationToLead.PlayerOwner = sergeant;
 		}

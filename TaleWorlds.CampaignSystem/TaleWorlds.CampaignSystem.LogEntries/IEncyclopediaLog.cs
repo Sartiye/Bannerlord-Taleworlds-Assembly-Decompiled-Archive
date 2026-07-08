@@ -7,7 +7,7 @@ public interface IEncyclopediaLog
 {
 	CampaignTime GameTime { get; }
 
-	bool IsVisibleInEncyclopediaPageOf<T>(T obj) where T : MBObjectBase;
+	bool IsVisibleInEncyclopediaPageOf(MBObjectBase obj);
 
 	TextObject GetEncyclopediaText();
 }

@@ -1652,7 +1652,7 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 				MBReadOnlyList<LogEntry> gameActionLogs = Campaign.Current.LogEntryHistory.GameActionLogs;
 				for (int num = gameActionLogs.Count - 1; num >= 0; num--)
 				{
-					if (gameActionLogs[num] is CharacterMarriedLogEntry characterMarriedLogEntry && (characterMarriedLogEntry.IsVisibleInEncyclopediaPageOf(this) || characterMarriedLogEntry.IsVisibleInEncyclopediaPageOf(this)))
+					if (gameActionLogs[num] is CharacterMarriedLogEntry characterMarriedLogEntry && characterMarriedLogEntry.IsVisibleInEncyclopediaPageOf(this))
 					{
 						Campaign.Current.LogEntryHistory.DeleteLogAtIndex(num);
 					}
@@ -2006,7 +2006,7 @@ public sealed class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBas
 	{
 		if (!IsLord && !IsPlayerCompanion && !IsSpecial)
 		{
-			Debug.FailedAssert("Only lords, companions and special quest heroes can become prisoners! Check CanBecomePrisoner usage.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Hero.cs", "CanBecomePrisoner", 1922);
+			Debug.FailedAssert("Only lords, companions and special quest heroes can become prisoners! Check CanBecomePrisoner usage.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Hero.cs", "CanBecomePrisoner", 1923);
 			return false;
 		}
 		if (this != MainHero)

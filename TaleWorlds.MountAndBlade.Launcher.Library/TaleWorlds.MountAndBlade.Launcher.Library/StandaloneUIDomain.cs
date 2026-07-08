@@ -22,6 +22,10 @@ public class StandaloneUIDomain : FrameworkDomain
 
 	private GraphicsContext _graphicsContext;
 
+	private const int RenderExceptionFatalThreshold = 180;
+
+	private int _consecutiveRenderExceptions;
+
 	private UIContext _gauntletUIContext;
 
 	private TwoDimensionContext _twoDimensionContext;
@@ -55,6 +59,12 @@ public class StandaloneUIDomain : FrameworkDomain
 
 	public override void Update()
 	{
+		UpdateAux();
+		DestroyIfNeeded();
+	}
+
+	private void UpdateAux()
+	{
 		if (_synchronizationContext == null)
 		{
 			_synchronizationContext = new SingleThreadedSynchronizationContext();
@@ -82,29 +92,67 @@ public class StandaloneUIDomain : FrameworkDomain
 			_launcherUI.Initialize();
 			_initialized = true;
 			_graphicsForm.BeginFrame();
-			_graphicsContext.SwapBuffers();
 		}
 		else
 		{
-			_resourceDepot.CheckForChanges();
-			_synchronizationContext.Tick();
-			bool mouseOverDragArea = _launcherUI.CheckMouseOverWindowDragArea();
-			_graphicsForm.UpdateInput(mouseOverDragArea);
-			_graphicsForm.BeginFrame();
-			Input.Update();
-			_graphicsForm.Update();
-			_gauntletUIContext.UpdateInput(InputType.MouseButton | InputType.MouseWheel | InputType.Key);
-			_gauntletUIContext.Update(1f / 60f);
-			_launcherUI.Update();
-			_gauntletUIContext.LateUpdate(1f / 60f);
-			_gauntletUIContext.RenderTick(1f / 60f);
-			_graphicsForm.PostRender();
-			_graphicsContext.SwapBuffers();
-			if (_shouldDestroy)
+			if (Program.IsShuttingDown)
 			{
-				DestroyAux();
-				_shouldDestroy = false;
+				return;
 			}
+			if (!_graphicsForm.IsMinimized)
+			{
+				try
+				{
+					_resourceDepot.CheckForChanges();
+					_synchronizationContext.Tick();
+					bool mouseOverDragArea = _launcherUI.CheckMouseOverWindowDragArea();
+					_graphicsForm.UpdateInput(mouseOverDragArea);
+					_graphicsForm.BeginFrame();
+					Input.Update();
+					_graphicsForm.Update();
+					_gauntletUIContext.UpdateInput(InputType.MouseButton | InputType.MouseWheel | InputType.Key);
+					_gauntletUIContext.Update(1f / 60f);
+					_launcherUI.Update();
+					if (!Program.IsShuttingDown)
+					{
+						_gauntletUIContext.LateUpdate(1f / 60f);
+						_gauntletUIContext.RenderTick(1f / 60f);
+						if (!Program.IsShuttingDown)
+						{
+							_graphicsForm.PostRender();
+							_graphicsContext.SwapBuffers();
+							_consecutiveRenderExceptions = 0;
+						}
+					}
+					return;
+				}
+				catch (Exception ex)
+				{
+					if (!Program.IsShuttingDown)
+					{
+						_consecutiveRenderExceptions++;
+						Watchdog.LogProperty("crash_tags.txt", "Runtime", "RenderException", ex.Message);
+						Watchdog.LogProperty("crash_tags.txt", "Runtime", "RenderExceptionStack", ex.StackTrace ?? "");
+						Watchdog.LogProperty("crash_tags.txt", "Runtime", "RenderExceptionCount", _consecutiveRenderExceptions.ToString());
+						if (_consecutiveRenderExceptions >= 180)
+						{
+							Watchdog.LogProperty("crash_tags.txt", "Runtime", "FatalRenderFailure", "Too many consecutive render exceptions");
+							Environment.Exit(1);
+						}
+					}
+					return;
+				}
+			}
+			Thread.Sleep(_graphicsContext.MaxTimeToRenderOneFrame);
+		}
+	}
+
+	private void DestroyIfNeeded()
+	{
+		if (_shouldDestroy)
+		{
+			DestroyAux();
+			_shouldDestroy = false;
 		}
 	}
 

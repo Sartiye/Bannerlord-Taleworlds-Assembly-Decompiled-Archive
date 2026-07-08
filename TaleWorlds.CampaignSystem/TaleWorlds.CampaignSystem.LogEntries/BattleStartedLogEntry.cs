@@ -151,7 +151,7 @@ public class BattleStartedLogEntry : LogEntry, IEncyclopediaLog, IChatNotificati
 		return GetEncyclopediaText();
 	}
 
-	public bool IsVisibleInEncyclopediaPageOf<T>(T obj) where T : MBObjectBase
+	public bool IsVisibleInEncyclopediaPageOf(MBObjectBase obj)
 	{
 		return obj == _settlement;
 	}

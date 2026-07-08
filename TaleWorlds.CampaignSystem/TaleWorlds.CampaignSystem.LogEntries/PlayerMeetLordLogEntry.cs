@@ -72,7 +72,7 @@ public class PlayerMeetLordLogEntry : LogEntry, IEncyclopediaLog
 		return GetEncyclopediaText().ToString();
 	}
 
-	public bool IsVisibleInEncyclopediaPageOf<T>(T obj) where T : MBObjectBase
+	public bool IsVisibleInEncyclopediaPageOf(MBObjectBase obj)
 	{
 		return obj == Hero;
 	}

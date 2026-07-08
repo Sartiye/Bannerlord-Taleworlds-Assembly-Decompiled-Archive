@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.Linq;
+using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
@@ -12,7 +12,7 @@ public class ForceVolunteersEventComponent : MapEventComponent
 	{
 		get
 		{
-			if (!base.MapEvent.InvolvedParties.Any((PartyBase x) => x.IsMobile && x.MobileParty.IsCurrentlyAtSea))
+			if (!MapEventHelper.IsNavalRaid(base.MapEvent))
 			{
 				return MapEvent.PowerCalculationContext.Village;
 			}

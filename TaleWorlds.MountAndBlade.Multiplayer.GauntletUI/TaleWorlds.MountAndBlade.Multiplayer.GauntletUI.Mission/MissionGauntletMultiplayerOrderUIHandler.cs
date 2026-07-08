@@ -173,12 +173,17 @@ public class MissionGauntletMultiplayerOrderUIHandler : GauntletOrderUIHandler
 
 	public void InitializeInADisgustingManner()
 	{
+		if (_isInitialized)
+		{
+			Debug.Print("InitializeInADisgustingManner called while already initialized!");
+			Debug.FailedAssert("InitializeInADisgustingManner called while already initialized!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.GauntletUI\\Mission\\MissionGauntletMultiplayerOrderUIHandler.cs", "InitializeInADisgustingManner", 191);
+		}
 		Debug.Print($"InitializeInADisgustingManner is called. IsValidForTick: {IsValidForTick}");
 		base.AfterStart();
 		_orderTroopPlacer = base.Mission.GetMissionBehavior<OrderTroopPlacer>();
 		if (_orderTroopPlacer?.OrderFlag == null)
 		{
-			Debug.FailedAssert("Order troop placer's order flag is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.GauntletUI\\Mission\\MissionGauntletMultiplayerOrderUIHandler.cs", "InitializeInADisgustingManner", 194);
+			Debug.FailedAssert("Order troop placer's order flag is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.GauntletUI\\Mission\\MissionGauntletMultiplayerOrderUIHandler.cs", "InitializeInADisgustingManner", 200);
 		}
 		base.MissionScreen.OrderFlag = _orderTroopPlacer.OrderFlag;
 		Debug.Print("MissionScreen.OrderFlag has been set (MP)");

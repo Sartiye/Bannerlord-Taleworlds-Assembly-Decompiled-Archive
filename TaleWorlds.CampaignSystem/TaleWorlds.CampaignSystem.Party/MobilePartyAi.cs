@@ -1426,30 +1426,24 @@ public class MobilePartyAi
 		if (_mobileParty.ShortTermBehavior == AiBehavior.GoToPoint || _mobileParty.ShortTermBehavior == AiBehavior.FleeToPoint || _mobileParty.ShortTermBehavior == AiBehavior.FleeToGate || _mobileParty.ShortTermBehavior == AiBehavior.FleeToParty || _mobileParty.ShortTermBehavior == AiBehavior.MoveToNearestLandOrPort || ((_mobileParty.ShortTermBehavior == AiBehavior.GoToSettlement || _mobileParty.ShortTermBehavior == AiBehavior.RaidSettlement || _mobileParty.ShortTermBehavior == AiBehavior.AssaultSettlement || _mobileParty.ShortTermBehavior == AiBehavior.BesiegeSettlement) && AiBehaviorPartyBase != null && AiBehaviorPartyBase.IsValid))
 		{
 			_mobileParty.SetNavigationModePoint(BehaviorTarget);
+			return;
 		}
-		else
+		switch (_mobileParty.ShortTermBehavior)
 		{
-			switch (_mobileParty.ShortTermBehavior)
-			{
-			case AiBehavior.EngageParty:
-				_mobileParty.SetNavigationModeParty(AiBehaviorPartyBase.MobileParty);
-				break;
-			case AiBehavior.Hold:
-				_mobileParty.SetNavigationModeHold();
-				break;
-			default:
-				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\MobilePartyAi.cs", "UpdateBehavior", 1800);
-				break;
-			case AiBehavior.FleeToPoint:
-			case AiBehavior.FleeToGate:
-			case AiBehavior.FleeToParty:
-			case AiBehavior.DefendSettlement:
-				break;
-			}
-		}
-		if (!_mobileParty.IsMainParty && _mobileParty.BesiegedSettlement != null && _mobileParty.DefaultBehavior != AiBehavior.BesiegeSettlement && _mobileParty.DefaultBehavior != AiBehavior.EscortParty && _mobileParty.DefaultBehavior != AiBehavior.AssaultSettlement)
-		{
-			_mobileParty.BesiegerCamp = null;
+		case AiBehavior.EngageParty:
+			_mobileParty.SetNavigationModeParty(AiBehaviorPartyBase.MobileParty);
+			break;
+		case AiBehavior.Hold:
+			_mobileParty.SetNavigationModeHold();
+			break;
+		default:
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\MobilePartyAi.cs", "UpdateBehavior", 1800);
+			break;
+		case AiBehavior.FleeToPoint:
+		case AiBehavior.FleeToGate:
+		case AiBehavior.FleeToParty:
+		case AiBehavior.DefendSettlement:
+			break;
 		}
 	}
 

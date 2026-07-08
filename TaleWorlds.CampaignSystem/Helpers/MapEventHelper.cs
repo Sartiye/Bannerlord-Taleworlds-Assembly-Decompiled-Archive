@@ -21,17 +21,53 @@ public static class MapEventHelper
 		villageFactionSideHasSeaPresence = false;
 		villageFactionSideHasLandPresence = false;
 		wasEverInLootingPhase = false;
-		if (mapEvent.MapEventSettlement == null || !mapEvent.MapEventSettlement.IsVillage)
+		if (mapEvent == null || mapEvent.MapEventSettlement == null || !mapEvent.MapEventSettlement.IsVillage)
 		{
 			return false;
 		}
 		IFaction mapFaction = mapEvent.MapEventSettlement.MapFaction;
 		raiderSide = (mapEvent.AttackerSide.LeaderParty.MapFaction.IsAtWarWith(mapFaction) ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
 		BattleSideEnum otherSide = mapEvent.GetOtherSide(raiderSide);
-		raiderHasSeaPresence = mapEvent.PartiesOnSide(raiderSide).AnyQ((MapEventParty mapEventParty) => mapEventParty.Party.IsMobile && mapEventParty.Party.NumberOfHealthyMembers > 0 && mapEventParty.Party.MobileParty.IsCurrentlyAtSea);
-		raiderHasLandPresence = mapEvent.PartiesOnSide(raiderSide).AnyQ((MapEventParty mapEventParty) => mapEventParty.Party.IsMobile && mapEventParty.Party.NumberOfHealthyMembers > 0 && !mapEventParty.Party.MobileParty.IsCurrentlyAtSea);
-		villageFactionSideHasSeaPresence = mapEvent.PartiesOnSide(otherSide).AnyQ((MapEventParty mapEventParty) => mapEventParty.Party.IsMobile && mapEventParty.Party.NumberOfHealthyMembers > 0 && mapEventParty.Party.MobileParty.IsCurrentlyAtSea);
-		villageFactionSideHasLandPresence = mapEvent.PartiesOnSide(otherSide).AnyQ((MapEventParty mapEventParty) => mapEventParty.Party.IsMobile && mapEventParty.Party.NumberOfHealthyMembers > 0 && !mapEventParty.Party.MobileParty.IsCurrentlyAtSea);
+		MBReadOnlyList<MapEventParty> mBReadOnlyList = mapEvent.PartiesOnSide(raiderSide);
+		for (int i = 0; i < mBReadOnlyList.Count; i++)
+		{
+			PartyBase party = mBReadOnlyList[i].Party;
+			if (party.IsMobile && party.NumberOfHealthyMembers > 0)
+			{
+				if (party.MobileParty.IsCurrentlyAtSea)
+				{
+					raiderHasSeaPresence = true;
+				}
+				else
+				{
+					raiderHasLandPresence = true;
+				}
+			}
+			if (raiderHasSeaPresence & raiderHasLandPresence)
+			{
+				break;
+			}
+		}
+		MBReadOnlyList<MapEventParty> mBReadOnlyList2 = mapEvent.PartiesOnSide(otherSide);
+		for (int j = 0; j < mBReadOnlyList2.Count; j++)
+		{
+			PartyBase party2 = mBReadOnlyList2[j].Party;
+			if (party2.IsMobile && party2.NumberOfHealthyMembers > 0)
+			{
+				if (party2.MobileParty.IsCurrentlyAtSea)
+				{
+					villageFactionSideHasSeaPresence = true;
+				}
+				else
+				{
+					villageFactionSideHasLandPresence = true;
+				}
+			}
+			if (villageFactionSideHasSeaPresence & villageFactionSideHasLandPresence)
+			{
+				break;
+			}
+		}
 		wasEverInLootingPhase = mapEvent.WasEverInLootingPhase || (mapEvent == MapEvent.PlayerMapEvent && PlayerEncounter.Current != null && PlayerEncounter.Current.InterruptedWhileLooting);
 		return true;
 	}
@@ -72,7 +108,7 @@ public static class MapEventHelper
 
 	public static bool CanMainPartyLeaveBattleCommonCondition()
 	{
-		if (MobileParty.MainParty.MapEvent.PlayerSide == BattleSideEnum.Defender && !MobileParty.MainParty.MapEvent.IsRaid)
+		if (MobileParty.MainParty.MapEvent.PlayerSide == BattleSideEnum.Defender)
 		{
 			if (MobileParty.MainParty.SiegeEvent != null && !MobileParty.MainParty.SiegeEvent.BesiegerCamp.IsBesiegerSideParty(MobileParty.MainParty))
 			{

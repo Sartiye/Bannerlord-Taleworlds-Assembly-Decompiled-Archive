@@ -794,6 +794,10 @@ public sealed class MapEvent : MBObjectBase
 								MapEventSettlement = null;
 							}
 						}
+						if (MapEventSettlement != null)
+						{
+							Position = MapEventSettlement.Position;
+						}
 					}
 				}
 			}
@@ -886,7 +890,7 @@ public sealed class MapEvent : MBObjectBase
 			PartyVisibilityChanged(party, isPartyVisible: false);
 		}
 		ResetUnsuitablePartiesThatWereTargetingThisMapEvent();
-		if (party.IsMobile && !party.MobileParty.IsInRaftState && !party.MobileParty.IsCurrentlyUsedByAQuest && (party.MapEvent == null || (!party.MapEvent.IsRaid && !party.MapEvent.IsForcingVolunteers && !party.MapEvent.IsForcingSupplies)) && party.SiegeEvent == null && (party.MobileParty.Army == null || party.MobileParty.Army.LeaderParty == party.MobileParty))
+		if (party.IsMobile && !party.MobileParty.IsInRaftState && !party.MobileParty.IsCurrentlyUsedByAQuest && party.SiegeEvent == null && (party.MobileParty.Army == null || party.MobileParty.Army.LeaderParty == party.MobileParty))
 		{
 			party.MobileParty.SetMoveModeHold();
 		}

@@ -845,8 +845,12 @@ public class SiegeEvent
 	{
 		if (!(CampaignTime.DeltaTime == CampaignTime.Zero) && BesiegerCamp.LeaderParty.MapEvent == null && BesiegedSettlement.Party.MapEvent == null)
 		{
-			TickSiegeEventSide(BesiegerCamp);
-			TickSiegeEventSide(BesiegedSettlement);
+			BesiegerCamp.CheckBesiegerPartiesAndMakeThemLeave();
+			if (!ReadyToBeRemoved)
+			{
+				TickSiegeEventSide(BesiegerCamp);
+				TickSiegeEventSide(BesiegedSettlement);
+			}
 		}
 	}
 
@@ -1171,7 +1175,7 @@ public class SiegeEvent
 				break;
 			}
 			default:
-				Debug.FailedAssert("Invalid target type on hit", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Siege\\SiegeEvent.cs", "BombardTick", 1015);
+				Debug.FailedAssert("Invalid target type on hit", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Siege\\SiegeEvent.cs", "BombardTick", 1020);
 				break;
 			}
 		}

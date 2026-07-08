@@ -57,8 +57,11 @@ public class MissionFormationTargetSelectionHandler : MissionView
 					Formation formation = team.FormationsIncludingEmpty[j];
 					if (formation.CountOfUnits > 0)
 					{
-						float formationDistanceToCenter = GetFormationDistanceToCenter(formation, position);
-						_distanceCache.Add((formation, formationDistanceToCenter));
+						TryGetFormationDistanceToCenter(formation, position, out var isFormationFocusable, out var distanceToScreenCenter);
+						if (isFormationFocusable)
+						{
+							_distanceCache.Add((formation, distanceToScreenCenter));
+						}
 					}
 				}
 			}
@@ -90,27 +93,35 @@ public class MissionFormationTargetSelectionHandler : MissionView
 		this.OnFormationFocused?.Invoke(_focusedFormationCache);
 	}
 
-	private float GetFormationDistanceToCenter(Formation formation, Vec3 cameraPosition)
+	private void TryGetFormationDistanceToCenter(Formation formation, Vec3 cameraPosition, out bool isFormationFocusable, out float distanceToScreenCenter)
 	{
 		WorldPosition cachedMedianPosition = formation.CachedMedianPosition;
 		float num = cachedMedianPosition.AsVec2.Distance(cameraPosition.AsVec2);
-		if (num >= 1000f)
-		{
-			return 2.1474836E+09f;
-		}
-		if (num <= 10f)
-		{
-			return 0f;
-		}
 		float screenX = 0f;
 		float screenY = 0f;
 		float w = 0f;
 		MBWindowManager.WorldToScreenInsideUsableArea(ActiveCamera, cachedMedianPosition.GetGroundVec3() + new Vec3(0f, 0f, 3f), ref screenX, ref screenY, ref w);
-		if (w <= 0f)
+		bool flag = w <= 0f;
+		if (num >= 1000f)
 		{
-			return 2.1474836E+09f;
+			distanceToScreenCenter = 2.1474836E+09f;
+			isFormationFocusable = false;
 		}
-		return new Vec2(screenX, screenY).Distance(_centerOfScreen);
+		else if (num <= 10f)
+		{
+			isFormationFocusable = !flag;
+			distanceToScreenCenter = 0f;
+		}
+		else if (flag)
+		{
+			isFormationFocusable = false;
+			distanceToScreenCenter = 2.1474836E+09f;
+		}
+		else
+		{
+			isFormationFocusable = true;
+			distanceToScreenCenter = new Vec2(screenX, screenY).Distance(_centerOfScreen);
+		}
 	}
 
 	public void SetIsFormationTargetingDisabled(bool isDisabled)

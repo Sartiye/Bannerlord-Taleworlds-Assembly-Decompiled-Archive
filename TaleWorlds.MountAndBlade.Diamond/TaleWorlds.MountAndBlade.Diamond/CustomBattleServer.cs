@@ -73,6 +73,18 @@ public class CustomBattleServer : Client<CustomBattleServer>
 
 	private Dictionary<PlayerId, int> _latestQueuedPlayerScores;
 
+	private const float DisconnectBatchFlushPeriod = 3f;
+
+	private float _disconnectBatchTimeElapsed;
+
+	private List<PlayerDisconnectData> _pendingDisconnects;
+
+	private const float JoinResponseBatchFlushPeriod = 3f;
+
+	private float _joinResponseBatchTimeElapsed;
+
+	private List<PlayerJoinGameResponseDataFromHost> _pendingJoinResponses;
+
 	public bool Finished => _state == State.Finished;
 
 	public bool IsRegistered
@@ -163,6 +175,8 @@ public class CustomBattleServer : Client<CustomBattleServer>
 		_badgeComponent = null;
 		_badgeComponentPlayers = new List<PlayerData>();
 		BattleResult = new MultipleBattleResult();
+		_pendingDisconnects = new List<PlayerDisconnectData>();
+		_pendingJoinResponses = new List<PlayerJoinGameResponseDataFromHost>();
 		AddMessageHandler<ClientWantsToConnectCustomGameMessage>(OnClientWantsToConnectCustomGameMessage);
 		AddMessageHandler<ClientQuitFromCustomGameMessage>(OnClientQuitFromCustomGameMessage);
 		AddMessageHandler<TerminateOperationCustomMessage>(OnTerminateOperationCustomMessage);
@@ -258,6 +272,18 @@ public class CustomBattleServer : Client<CustomBattleServer>
 			}
 			_battleResultUpdateTimeElapsed = 0f;
 		}
+		_disconnectBatchTimeElapsed += num2;
+		if (_disconnectBatchTimeElapsed >= 3f)
+		{
+			FlushDisconnectBatch();
+			_disconnectBatchTimeElapsed = 0f;
+		}
+		_joinResponseBatchTimeElapsed += num2;
+		if (_joinResponseBatchTimeElapsed >= 3f)
+		{
+			FlushJoinResponseBatch();
+			_joinResponseBatchTimeElapsed = 0f;
+		}
 		State state = _state;
 		if (state == State.Connected)
 		{
@@ -286,13 +312,14 @@ public class CustomBattleServer : Client<CustomBattleServer>
 
 	private async void HandleOnClientWantsToConnectCustomGameMessage(ClientWantsToConnectCustomGameMessage message)
 	{
-		List<PlayerJoinGameResponseDataFromHost> responses = new List<PlayerJoinGameResponseDataFromHost>();
 		if (CurrentState == State.Finished)
 		{
 			PlayerJoinGameData[] playerJoinGameData = message.PlayerJoinGameData;
-			foreach (PlayerJoinGameData playerJoinGameData2 in playerJoinGameData)
+			List<PlayerJoinGameResponseDataFromHost> list = new List<PlayerJoinGameResponseDataFromHost>();
+			PlayerJoinGameData[] array = playerJoinGameData;
+			foreach (PlayerJoinGameData playerJoinGameData2 in array)
 			{
-				responses.Add(new PlayerJoinGameResponseDataFromHost
+				list.Add(new PlayerJoinGameResponseDataFromHost
 				{
 					PlayerId = playerJoinGameData2.PlayerId,
 					PeerIndex = -1,
@@ -300,98 +327,96 @@ public class CustomBattleServer : Client<CustomBattleServer>
 					CustomGameJoinResponse = CustomGameJoinResponse.CustomGameServerFinishing
 				});
 			}
+			ResponseCustomGameClientConnection(list.ToArray());
+			return;
 		}
-		else
+		PlayerJoinGameData[] requestedPlayers = message.PlayerJoinGameData;
+		for (int k = 0; k < requestedPlayers.Length; k++)
 		{
-			PlayerJoinGameData[] requestedPlayers = message.PlayerJoinGameData;
-			for (int k = 0; k < requestedPlayers.Length; k++)
+			if (requestedPlayers[k] != null)
 			{
-				if (requestedPlayers[k] != null)
-				{
-					PlayerJoinGameData playerJoinGameData3 = requestedPlayers[k];
-					TaleWorlds.Library.Debug.Print(string.Concat("Player ", playerJoinGameData3.Name, " - ", playerJoinGameData3.PlayerId, " with IP address ", playerJoinGameData3.IpAddress, " wants to join the game"));
-				}
-			}
-			for (int i = 0; i < requestedPlayers.Length; i++)
-			{
-				if (requestedPlayers[i] == null)
-				{
-					continue;
-				}
-				List<PlayerJoinGameData> requestedGroup = new List<PlayerJoinGameData>();
-				PlayerJoinGameData playerJoinGameData4 = requestedPlayers[i];
-				if (!playerJoinGameData4.PartyId.HasValue)
-				{
-					requestedGroup.Add(playerJoinGameData4);
-				}
-				else
-				{
-					for (int l = i; l < requestedPlayers.Length; l++)
-					{
-						PlayerJoinGameData playerJoinGameData5 = requestedPlayers[l];
-						if (playerJoinGameData4.PartyId.Equals(playerJoinGameData5?.PartyId))
-						{
-							requestedGroup.Add(playerJoinGameData5);
-							requestedPlayers[l] = null;
-						}
-					}
-				}
-				bool flag = true;
-				foreach (PlayerJoinGameData item in requestedGroup)
-				{
-					if (_requestedPlayers.Contains(item.PlayerId) || _customBattlePlayers.Contains(item.PlayerId))
-					{
-						flag = false;
-						break;
-					}
-				}
-				if (flag)
-				{
-					_timeoutTimer.Restart();
-					foreach (PlayerJoinGameData item2 in requestedGroup)
-					{
-						_requestedPlayers.Add(item2.PlayerId);
-					}
-					if (_handler == null)
-					{
-						continue;
-					}
-					PlayerJoinGameResponseDataFromHost[] array = await _handler.OnClientWantsToConnectCustomGame(requestedGroup.ToArray());
-					if (_badgeComponent != null)
-					{
-						PlayerJoinGameResponseDataFromHost[] array2 = array;
-						foreach (PlayerJoinGameResponseDataFromHost playerJoinGameResponseDataFromHost in array2)
-						{
-							if (playerJoinGameResponseDataFromHost.CustomGameJoinResponse != 0)
-							{
-								continue;
-							}
-							foreach (PlayerJoinGameData item3 in requestedGroup)
-							{
-								if (item3.PlayerId.Equals(playerJoinGameResponseDataFromHost.PlayerId))
-								{
-									_badgeComponent.OnPlayerJoin(item3.PlayerData);
-									_badgeComponentPlayers.Add(item3.PlayerData);
-								}
-							}
-						}
-					}
-					responses.AddRange(array);
-					continue;
-				}
-				foreach (PlayerJoinGameData item4 in requestedGroup)
-				{
-					responses.Add(new PlayerJoinGameResponseDataFromHost
-					{
-						PlayerId = item4.PlayerId,
-						PeerIndex = -1,
-						SessionKey = -1,
-						CustomGameJoinResponse = CustomGameJoinResponse.NotAllPlayersReady
-					});
-				}
+				PlayerJoinGameData playerJoinGameData3 = requestedPlayers[k];
+				TaleWorlds.Library.Debug.Print(string.Concat("Player ", playerJoinGameData3.Name, " - ", playerJoinGameData3.PlayerId, " with IP address ", playerJoinGameData3.IpAddress, " wants to join the game"));
 			}
 		}
-		ResponseCustomGameClientConnection(responses.ToArray());
+		for (int i = 0; i < requestedPlayers.Length; i++)
+		{
+			if (requestedPlayers[i] == null)
+			{
+				continue;
+			}
+			List<PlayerJoinGameData> requestedGroup = new List<PlayerJoinGameData>();
+			PlayerJoinGameData playerJoinGameData4 = requestedPlayers[i];
+			if (!playerJoinGameData4.PartyId.HasValue)
+			{
+				requestedGroup.Add(playerJoinGameData4);
+			}
+			else
+			{
+				for (int l = i; l < requestedPlayers.Length; l++)
+				{
+					PlayerJoinGameData playerJoinGameData5 = requestedPlayers[l];
+					if (playerJoinGameData4.PartyId.Equals(playerJoinGameData5?.PartyId))
+					{
+						requestedGroup.Add(playerJoinGameData5);
+						requestedPlayers[l] = null;
+					}
+				}
+			}
+			bool flag = true;
+			foreach (PlayerJoinGameData item in requestedGroup)
+			{
+				if (_requestedPlayers.Contains(item.PlayerId) || _customBattlePlayers.Contains(item.PlayerId))
+				{
+					flag = false;
+					break;
+				}
+			}
+			if (flag)
+			{
+				_timeoutTimer.Restart();
+				foreach (PlayerJoinGameData item2 in requestedGroup)
+				{
+					_requestedPlayers.Add(item2.PlayerId);
+				}
+				if (_handler == null)
+				{
+					continue;
+				}
+				PlayerJoinGameResponseDataFromHost[] array2 = await _handler.OnClientWantsToConnectCustomGame(requestedGroup.ToArray());
+				if (_badgeComponent != null)
+				{
+					PlayerJoinGameResponseDataFromHost[] array3 = array2;
+					foreach (PlayerJoinGameResponseDataFromHost playerJoinGameResponseDataFromHost in array3)
+					{
+						if (playerJoinGameResponseDataFromHost.CustomGameJoinResponse != 0)
+						{
+							continue;
+						}
+						foreach (PlayerJoinGameData item3 in requestedGroup)
+						{
+							if (item3.PlayerId.Equals(playerJoinGameResponseDataFromHost.PlayerId))
+							{
+								_badgeComponent.OnPlayerJoin(item3.PlayerData);
+								_badgeComponentPlayers.Add(item3.PlayerData);
+							}
+						}
+					}
+				}
+				_pendingJoinResponses.AddRange(array2);
+				continue;
+			}
+			foreach (PlayerJoinGameData item4 in requestedGroup)
+			{
+				_pendingJoinResponses.Add(new PlayerJoinGameResponseDataFromHost
+				{
+					PlayerId = item4.PlayerId,
+					PeerIndex = -1,
+					SessionKey = -1,
+					CustomGameJoinResponse = CustomGameJoinResponse.NotAllPlayersReady
+				});
+			}
+		}
 	}
 
 	private void OnClientQuitFromCustomGameMessage(ClientQuitFromCustomGameMessage message)
@@ -486,7 +511,25 @@ public class CustomBattleServer : Client<CustomBattleServer>
 	{
 		_timeoutTimer.Restart();
 		_customBattlePlayers.Remove(playerId);
-		SendMessage(new PlayerDisconnectedMessage(playerId, disconnectType));
+		_pendingDisconnects.Add(new PlayerDisconnectData(playerId, disconnectType));
+	}
+
+	private void FlushDisconnectBatch()
+	{
+		if (_pendingDisconnects.Count != 0)
+		{
+			SendMessage(new PlayersDisconnectedMessage(_pendingDisconnects.ToArray()));
+			_pendingDisconnects.Clear();
+		}
+	}
+
+	private void FlushJoinResponseBatch()
+	{
+		if (_pendingJoinResponses.Count != 0)
+		{
+			ResponseCustomGameClientConnection(_pendingJoinResponses.ToArray());
+			_pendingJoinResponses.Clear();
+		}
 	}
 
 	public void FinishAsIdle(GameLog[] gameLogs)
@@ -502,6 +545,8 @@ public class CustomBattleServer : Client<CustomBattleServer>
 		{
 			_handler.OnGameFinished();
 		}
+		FlushJoinResponseBatch();
+		FlushDisconnectBatch();
 		SendMessage(new CustomBattleServerFinishingMessage(gameLogs, _badgeComponent?.DataDictionary, BattleResult));
 	}
 

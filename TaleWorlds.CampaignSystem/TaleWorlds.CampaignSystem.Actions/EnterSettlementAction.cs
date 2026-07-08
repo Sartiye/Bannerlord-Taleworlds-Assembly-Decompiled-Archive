@@ -74,10 +74,13 @@ public static class EnterSettlementAction
 		{
 			mobileParty.Army.AddPartyToMergedParties(mobileParty);
 		}
-		bool flag = mobileParty.IsCurrentlyAtSea && mobileParty.IsTargetingPort;
-		mobileParty.IsCurrentlyAtSea = !mobileParty.HasLandNavigationCapability || (flag && settlement.IsVillage);
+		bool isCurrentlyAtSea = mobileParty.IsCurrentlyAtSea;
+		if (!settlement.IsVillage && mobileParty.HasLandNavigationCapability)
+		{
+			mobileParty.IsCurrentlyAtSea = false;
+		}
 		mobileParty.CurrentSettlement = settlement;
-		if (flag && mobileParty.Ships.Any() && !mobileParty.Anchor.IsAtSettlement(settlement))
+		if (isCurrentlyAtSea && !mobileParty.IsCurrentlyAtSea && mobileParty.Ships.Any() && !mobileParty.Anchor.IsAtSettlement(settlement))
 		{
 			mobileParty.Anchor.SetSettlement(settlement);
 		}

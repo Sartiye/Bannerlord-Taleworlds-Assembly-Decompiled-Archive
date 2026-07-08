@@ -1,8 +1,6 @@
 using System;
-using System.Diagnostics;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
-using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade;
@@ -10,8 +8,6 @@ namespace TaleWorlds.MountAndBlade;
 public abstract class DeploymentMissionController : MissionLogic
 {
 	protected readonly bool IsPlayerAttacker;
-
-	protected bool IsPlayerControllerSetToNone;
 
 	protected BattleSideEnum PlayerSide;
 
@@ -73,29 +69,15 @@ public abstract class DeploymentMissionController : MissionLogic
 				});
 			}
 		}
-		Agent mainAgent = base.Mission.MainAgent;
-		if (mainAgent != null)
-		{
-			mainAgent.SetDetachableFromFormation(value: true);
-			mainAgent.Controller = AgentControllerType.Player;
-		}
+		Agent initialPlayerAgent = base.Mission.InitialPlayerAgent;
+		initialPlayerAgent.SetDetachableFromFormation(value: true);
+		initialPlayerAgent.Controller = AgentControllerType.Player;
 		base.Mission.AllowAiTicking = true;
 		base.Mission.DisableDying = false;
 		base.Mission.SetFallAvoidSystemActive(fallAvoidActive: false);
 		Mission.Current.OnAfterDeploymentFinished();
 		AfterDeploymentFinished();
 		base.Mission.RemoveMissionBehavior(this);
-	}
-
-	public override void OnAgentControllerSetToPlayer(Agent agent)
-	{
-		if (!IsPlayerControllerSetToNone)
-		{
-			agent.Controller = AgentControllerType.None;
-			agent.SetIsAIPaused(isPaused: true);
-			agent.SetDetachableFromFormation(value: false);
-			IsPlayerControllerSetToNone = true;
-		}
 	}
 
 	public override void OnMissionTick(float dt)
@@ -189,6 +171,10 @@ public abstract class DeploymentMissionController : MissionLogic
 			HideAgentsOfSide(BattleSideEnum.Defender);
 		}
 		OnSetupTeamsOfSide(PlayerSide);
+		Agent initialPlayerAgent = base.Mission.InitialPlayerAgent;
+		initialPlayerAgent.Controller = AgentControllerType.None;
+		initialPlayerAgent.SetIsAIPaused(isPaused: true);
+		initialPlayerAgent.SetDetachableFromFormation(value: false);
 		OnSetupTeamsFinished();
 		base.Mission.AreOrderGesturesEnabled_AdditionalCondition -= AreOrderGesturesEnabled_AdditionalCondition;
 		Utilities.SetLoadingScreenPercentage(0.96f);
@@ -229,21 +215,5 @@ public abstract class DeploymentMissionController : MissionLogic
 	private bool AreOrderGesturesEnabled_AdditionalCondition()
 	{
 		return false;
-	}
-
-	[Conditional("DEBUG")]
-	private void DebugTick()
-	{
-		if (Input.DebugInput.IsHotKeyPressed("SwapToEnemy"))
-		{
-			base.Mission.MainAgent.Controller = AgentControllerType.AI;
-			base.Mission.PlayerEnemyTeam.Leader.Controller = AgentControllerType.Player;
-			SwapTeams();
-		}
-	}
-
-	private void SwapTeams()
-	{
-		base.Mission.PlayerTeam = base.Mission.PlayerEnemyTeam;
 	}
 }

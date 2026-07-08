@@ -290,7 +290,7 @@ public class CharacterTableau
 		}
 	}
 
-	private void SetEnabled(bool enabled)
+	public void SetEnabled(bool enabled)
 	{
 		_isEnabled = enabled;
 		View?.SetEnable(_isEnabled);

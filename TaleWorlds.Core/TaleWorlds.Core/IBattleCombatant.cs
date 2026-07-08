@@ -19,5 +19,7 @@ public interface IBattleCombatant
 
 	int GetTacticsSkillAmount();
 
+	int GetNumberOfMissionReadyTroops();
+
 	bool IsUnderPlayersCommand(BattleSideEnum playerSide);
 }

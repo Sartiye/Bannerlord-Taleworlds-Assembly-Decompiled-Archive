@@ -2081,7 +2081,14 @@ public sealed class MobileParty : CampaignObjectBase, ILocatable<MobileParty>, I
 			{
 				(Game.Current.GameStateManager.ActiveState as MapState)?.OnMainPartyEncounter();
 			}
-			EncounterManager.StartPartyEncounter(engagingParty.Party, mobileParty.Party);
+			if (mobileParty.MapEvent != null && mobileParty.MapEvent.IsRaid)
+			{
+				EncounterManager.StartSettlementEncounter(engagingParty, mobileParty.MapEvent.MapEventSettlement);
+			}
+			else
+			{
+				EncounterManager.StartPartyEncounter(engagingParty.Party, mobileParty.Party);
+			}
 		}
 	}
 
@@ -2492,7 +2499,7 @@ public sealed class MobileParty : CampaignObjectBase, ILocatable<MobileParty>, I
 			}
 			else if (DefaultBehavior == AiBehavior.DefendSettlement)
 			{
-				textObject = ((!(Campaign.Current.Models.MapDistanceModel.GetDistance(this, TargetSettlement, IsTargetingPort, NavigationCapability, out estimatedLandRatio) > Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(NavigationType.All) * 0.2f)) ? new TextObject("{=rGy8vjOv}Defending {TARGET_SETTLEMENT}.") : new TextObject("{=*}Travelling to {TARGET_SETTLEMENT} to defend."));
+				textObject = ((!(Campaign.Current.Models.MapDistanceModel.GetDistance(this, TargetSettlement, IsTargetingPort, NavigationCapability, out estimatedLandRatio) > Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(NavigationType.All) * 0.2f)) ? new TextObject("{=rGy8vjOv}Defending {TARGET_SETTLEMENT}.") : new TextObject("{=02EjT9di}Travelling to {TARGET_SETTLEMENT} to defend."));
 				if (ShortTermBehavior == AiBehavior.GoToPoint)
 				{
 					if (!IsMoving)
@@ -3262,7 +3269,7 @@ public sealed class MobileParty : CampaignObjectBase, ILocatable<MobileParty>, I
 			}
 			return false;
 		case PartyRole.Personal:
-			Debug.FailedAssert("personal perk is called in party", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\MobileParty.cs", "HasPerk", 3195);
+			Debug.FailedAssert("personal perk is called in party", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\MobileParty.cs", "HasPerk", 3203);
 			return LeaderHero?.GetPerkValue(perk) ?? false;
 		case PartyRole.ClanLeader:
 			if (LeaderHero != null)
@@ -3718,7 +3725,7 @@ public sealed class MobileParty : CampaignObjectBase, ILocatable<MobileParty>, I
 			}
 			else
 			{
-				Debug.FailedAssert("Path finding target is not valid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\MobileParty.cs", "ComputePath", 3899);
+				Debug.FailedAssert("Path finding target is not valid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\MobileParty.cs", "ComputePath", 3907);
 			}
 		}
 		PathBegin = 0;

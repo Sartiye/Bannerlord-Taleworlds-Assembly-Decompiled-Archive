@@ -44,7 +44,7 @@ public class PlayerRetiredLogEntry : LogEntry, IEncyclopediaLog
 		return textObject;
 	}
 
-	public bool IsVisibleInEncyclopediaPageOf<T>(T obj) where T : MBObjectBase
+	public bool IsVisibleInEncyclopediaPageOf(MBObjectBase obj)
 	{
 		return obj == Retiree;
 	}

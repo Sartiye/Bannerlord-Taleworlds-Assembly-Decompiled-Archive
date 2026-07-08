@@ -54,7 +54,7 @@ public class VisualShipFactory
 			gameEntity.GetChildrenRecursive(ref children);
 			foreach (GameEntity item3 in children)
 			{
-				if (item3.Name.Equals("state1") || item3.Name.Equals("state2") || item3.Name.Equals("state3") || item3.Name.Equals("destroyed") || item3.Name.Contains("knot_point"))
+				if (item3.Name.Equals("state1") || item3.Name.Equals("state2") || item3.Name.Equals("state3") || item3.Name.Equals("destroyed") || item3.Name.Contains("knot_point") || item3.HasTag("sail_mesh_free_entity"))
 				{
 					list.Add(item3);
 				}
@@ -88,17 +88,27 @@ public class VisualShipFactory
 		_shipEntityCache.Clear();
 	}
 
-	public static GameEntity CreateVisualShip(string shipPrefab, Scene scene, List<ShipVisualSlotInfo> upgrades, int shipSeed, float hitPointRatio, uint sailColor1 = uint.MaxValue, uint sailColor2 = uint.MaxValue, bool createPhysics = false)
+	public static GameEntity CreateVisualShip(string shipPrefab, Scene scene, List<ShipVisualSlotInfo> upgrades, int shipSeed, float hitPointRatio, uint sailColor1 = uint.MaxValue, uint sailColor2 = uint.MaxValue, bool createPhysics = false, bool keepFireEntities = true)
 	{
 		Debug.Print("VisualShipFactory.CreateVisualShip: " + shipPrefab);
 		GameEntity gameEntity = GameEntity.InstantiateWithRestOffset(scene, shipPrefab, createPhysics, MatrixFrame.Identity, -0.1f, callScriptCallbacks: false, "ship_visual_only");
+		if (!keepFireEntities)
+		{
+			List<GameEntity> children = new List<GameEntity>();
+			gameEntity.GetChildrenRecursive(ref children);
+			children.RemoveAll((GameEntity e) => !e.HasTag("sail_mesh_free_entity"));
+			foreach (GameEntity item in children)
+			{
+				item.Parent.RemoveChild(item, keepPhysics: false, keepScenePointer: false, callScriptCallbacks: false, 32);
+			}
+		}
 		if (!createPhysics)
 		{
-			foreach (ScriptComponentBehavior item in gameEntity.GetScriptComponents().ToList())
+			foreach (ScriptComponentBehavior item2 in gameEntity.GetScriptComponents().ToList())
 			{
-				if (item.ScriptComponent.GetName() == "NavalPhysics")
+				if (item2.ScriptComponent.GetName() == "NavalPhysics")
 				{
-					gameEntity.RemoveScriptComponent(item.ScriptComponent.Pointer, 32);
+					gameEntity.RemoveScriptComponent(item2.ScriptComponent.Pointer, 32);
 				}
 			}
 		}
@@ -112,10 +122,10 @@ public class VisualShipFactory
 			firstScriptOfType.Health = hitPointRatio;
 			gameEntity.CallScriptCallbacks(registerScriptComponents: true);
 		}
-		foreach (Mesh item2 in gameEntity.WeakEntity.GetAllMeshesWithTag("faction_color"))
+		foreach (Mesh item3 in gameEntity.WeakEntity.GetAllMeshesWithTag("faction_color"))
 		{
-			item2.Color = sailColor1;
-			item2.Color2 = sailColor2;
+			item3.Color = sailColor1;
+			item3.Color2 = sailColor2;
 		}
 		return gameEntity;
 	}

@@ -14,6 +14,8 @@ public abstract class ScreenBase
 
 	private readonly MBList<ScreenLayer> _layers;
 
+	private bool _onReadyPending;
+
 	public IInputContext DebugInput => Input.DebugInput;
 
 	public MBReadOnlyList<ScreenLayer> Layers => _layers;
@@ -47,7 +49,7 @@ public abstract class ScreenBase
 	{
 		if (IsFinalized)
 		{
-			Debug.FailedAssert("Screen is already finalized", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenBase.cs", "HandleFinalize", 64);
+			Debug.FailedAssert("Screen is already finalized", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenBase.cs", "HandleFinalize", 66);
 			return;
 		}
 		Debug.Print(string.Concat(this, "::HandleFinalize"));
@@ -74,6 +76,7 @@ public abstract class ScreenBase
 			return;
 		}
 		IsActive = true;
+		_onReadyPending = true;
 		for (int num = _layers.Count - 1; num >= 0; num--)
 		{
 			ScreenLayer screenLayer = _layers[num];
@@ -146,6 +149,11 @@ public abstract class ScreenBase
 	{
 		if (IsActive)
 		{
+			if (_onReadyPending)
+			{
+				_onReadyPending = false;
+				OnReady();
+			}
 			OnFrameTick(dt);
 		}
 		if (DebugInput is InputContext inputContext)
@@ -253,6 +261,10 @@ public abstract class ScreenBase
 	{
 	}
 
+	protected virtual void OnReady()
+	{
+	}
+
 	protected virtual void OnPostFrameTick(float dt)
 	{
 	}
@@ -286,7 +298,7 @@ public abstract class ScreenBase
 	{
 		if (layer == null || layer.IsFinalized)
 		{
-			Debug.FailedAssert("Trying to add a null or finalized layer", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenBase.cs", "AddLayer", 337);
+			Debug.FailedAssert("Trying to add a null or finalized layer", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenBase.cs", "AddLayer", 350);
 		}
 		else if (!_layers.Contains(layer))
 		{
@@ -301,7 +313,7 @@ public abstract class ScreenBase
 		}
 		else
 		{
-			Debug.FailedAssert("Layer is already added to the screen!", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenBase.cs", "AddLayer", 356);
+			Debug.FailedAssert("Layer is already added to the screen!", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenBase.cs", "AddLayer", 369);
 		}
 	}
 

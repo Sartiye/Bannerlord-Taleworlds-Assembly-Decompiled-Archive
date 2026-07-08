@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Helpers;
@@ -701,13 +702,19 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 					if (MobileParty.MainParty.MemberRoster.TotalHealthyCount < minimumNumberOfMenForAttackingVillageViaScene)
 					{
 						args.IsEnabled = false;
-						args.Tooltip = new TextObject("{=*}You should at least have {NUMBER} healthy men in your party to take a hostile action.");
+						args.Tooltip = new TextObject("{=7b4WZVyU}You should at least have {NUMBER} healthy men in your party to take a hostile action.");
 						args.Tooltip.SetTextVariable("NUMBER", minimumNumberOfMenForAttackingVillageViaScene);
 					}
 					else if (!ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().AnyQ())
 					{
 						args.IsEnabled = false;
-						args.Tooltip = new TextObject("{=*}You don't have any shallow draft ship.");
+						args.Tooltip = new TextObject("{=hd626n2z}You don't have any shallow draft ship.");
+					}
+					else if (Math.Min(MobileParty.MainParty.MemberRoster.TotalHealthyCount, ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().SumQ((Ship x) => x.MainDeckCrewCapacity)) < minimumNumberOfMenForAttackingVillageViaScene)
+					{
+						args.IsEnabled = false;
+						args.Tooltip = new TextObject("{=*}Your shallow ship's crew capacity is too low for a hostile action. A minimum of {NUMBER} crew is required. Use a larger or additional vessel.");
+						args.Tooltip.SetTextVariable("NUMBER", minimumNumberOfMenForAttackingVillageViaScene);
 					}
 				}
 			}
@@ -849,13 +856,19 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 					if (MobileParty.MainParty.MemberRoster.TotalHealthyCount < minimumNumberOfMenForAttackingVillageViaScene)
 					{
 						args.IsEnabled = false;
-						args.Tooltip = new TextObject("{=*}You should at least have {NUMBER} healthy men in your party to take a hostile action.");
+						args.Tooltip = new TextObject("{=7b4WZVyU}You should at least have {NUMBER} healthy men in your party to take a hostile action.");
 						args.Tooltip.SetTextVariable("NUMBER", minimumNumberOfMenForAttackingVillageViaScene);
 					}
 					else if (!ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().AnyQ())
 					{
 						args.IsEnabled = false;
-						args.Tooltip = new TextObject("{=*}You don't have any shallow draft ship.");
+						args.Tooltip = new TextObject("{=hd626n2z}You don't have any shallow draft ship.");
+					}
+					else if (Math.Min(MobileParty.MainParty.MemberRoster.TotalHealthyCount, ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().SumQ((Ship x) => x.MainDeckCrewCapacity)) < minimumNumberOfMenForAttackingVillageViaScene)
+					{
+						args.IsEnabled = false;
+						args.Tooltip = new TextObject("{=*}Your shallow ship's crew capacity is too low for a hostile action. A minimum of {NUMBER} crew is required. Use a larger or additional vessel.");
+						args.Tooltip.SetTextVariable("NUMBER", minimumNumberOfMenForAttackingVillageViaScene);
 					}
 				}
 			}
@@ -937,7 +950,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 		InitializeAccessDetails();
 		if (PlayerEncounter.EncounterSettlement.IsUnderSiege && PlayerEncounter.Current != null && PlayerEncounter.EncounterSettlement.Party.SiegeEvent == null)
 		{
-			Debug.FailedAssert("naval_town_outside_on_init", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EncounterGameMenuBehavior.cs", "naval_town_outside_on_init", 1125);
+			Debug.FailedAssert("naval_town_outside_on_init", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EncounterGameMenuBehavior.cs", "naval_town_outside_on_init", 1146);
 			PlayerEncounter.Finish();
 		}
 		TextObject textObject = null;
@@ -1024,7 +1037,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 		}
 		else
 		{
-			Debug.FailedAssert("Player should not be able to join this siege.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EncounterGameMenuBehavior.cs", "game_menu_join_siege_event_on_consequence", 1234);
+			Debug.FailedAssert("Player should not be able to join this siege.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EncounterGameMenuBehavior.cs", "game_menu_join_siege_event_on_consequence", 1255);
 		}
 	}
 
@@ -1396,6 +1409,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 		if (PlayerEncounter.LeaveEncounter)
 		{
 			PlayerEncounter.Finish();
+			MobileParty.MainParty.SetMoveModeHold();
 		}
 		else if ((PlayerEncounter.Battle != null && PlayerEncounter.Battle.AttackerSide.LeaderParty != PartyBase.MainParty && PlayerEncounter.Battle.DefenderSide.LeaderParty != PartyBase.MainParty) || PlayerEncounter.MeetingDone)
 		{
@@ -1495,7 +1509,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 		}
 		else if (!battle.AttackerSide.MapFaction.IsAtWarWith(battle.DefenderSide.MapFaction))
 		{
-			Debug.FailedAssert("This case should not be happening anymore, check this case and make sure this is intended", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EncounterGameMenuBehavior.cs", "UpdateVillageHostileActionEncounter", 1754);
+			Debug.FailedAssert("This case should not be happening anymore, check this case and make sure this is intended", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EncounterGameMenuBehavior.cs", "UpdateVillageHostileActionEncounter", 1776);
 		}
 	}
 
@@ -1549,70 +1563,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 	private bool game_menu_encounter_leave_on_condition(MenuCallbackArgs args)
 	{
 		args.optionLeaveType = GameMenuOption.LeaveType.Leave;
-		if (MobileParty.MainParty.IsCurrentlyAtSea)
-		{
-			if (PlayerEncounter.Current.IsPlayerEncounterRestartedForRaid)
-			{
-				goto IL_007a;
-			}
-			MapEvent encounteredBattle = PlayerEncounter.EncounteredBattle;
-			if (encounteredBattle != null && encounteredBattle.IsRaid)
-			{
-				MapEvent encounteredBattle2 = PlayerEncounter.EncounteredBattle;
-				if (encounteredBattle2 != null && encounteredBattle2.MapEventSettlement?.IsVillage == true)
-				{
-					goto IL_007a;
-				}
-			}
-		}
-		if (!MobileParty.MainParty.IsCurrentlyAtSea)
-		{
-			MapEvent encounteredBattle3 = PlayerEncounter.EncounteredBattle;
-			if (encounteredBattle3 != null && encounteredBattle3.IsRaid)
-			{
-				MapEvent encounteredBattle4 = PlayerEncounter.EncounteredBattle;
-				if (encounteredBattle4 != null && encounteredBattle4.MapEventSettlement?.IsVillage == true)
-				{
-					bool flag = false;
-					bool flag2 = false;
-					bool flag3 = false;
-					foreach (MapEventParty item in PlayerEncounter.EncounteredBattle.PartiesOnSide(PlayerEncounter.EncounteredBattle.PlayerSide))
-					{
-						if (item.Party != PartyBase.MainParty && item.Party.IsMobile && item.Party.MobileParty.IsCurrentlyAtSea)
-						{
-							flag = true;
-							break;
-						}
-					}
-					foreach (MapEventParty item2 in PlayerEncounter.EncounteredBattle.PartiesOnSide(PlayerEncounter.EncounteredBattle.GetOtherSide(PlayerEncounter.EncounteredBattle.PlayerSide)))
-					{
-						if (item2.Party.IsMobile && item2.Party.MobileParty.IsCurrentlyAtSea)
-						{
-							flag2 = true;
-						}
-						if (item2.Party.IsMobile && !item2.Party.MobileParty.IsCurrentlyAtSea)
-						{
-							flag3 = true;
-						}
-					}
-					if (flag && flag2 && flag3)
-					{
-						int minimumNumberOfMenForAttackingVillageViaScene = Campaign.Current.Models.EncounterModel.MinimumNumberOfMenForAttackingVillageViaScene;
-						if (MobileParty.MainParty.MemberRoster.TotalHealthyCount < minimumNumberOfMenForAttackingVillageViaScene || !ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().AnyQ())
-						{
-							return true;
-						}
-						if (MobileParty.MainParty.MemberRoster.TotalHealthyCount >= minimumNumberOfMenForAttackingVillageViaScene && ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().AnyQ())
-						{
-							return false;
-						}
-					}
-				}
-			}
-		}
-		goto IL_02ad;
-		IL_02ad:
-		if (MapEventHelper.CanMainPartyLeaveBattleCommonCondition() && (MobileParty.MainParty.Army == null || MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty))
+		if (MapEventHelper.CanMainPartyLeaveBattleCommonCondition() && LeaveOptionVisibilityCheckForNavalRaid() && (MobileParty.MainParty.Army == null || MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty))
 		{
 			if ((MobileParty.MainParty.MapEvent.IsSallyOut || MobileParty.MainParty.MapEvent.IsBlockadeSallyOut) && MobileParty.MainParty.MapEvent.PlayerSide != 0)
 			{
@@ -1621,17 +1572,31 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 			return true;
 		}
 		return false;
-		IL_007a:
-		int minimumNumberOfMenForAttackingVillageViaScene2 = Campaign.Current.Models.EncounterModel.MinimumNumberOfMenForAttackingVillageViaScene;
-		if (MobileParty.MainParty.MemberRoster.TotalHealthyCount < minimumNumberOfMenForAttackingVillageViaScene2 || !ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().AnyQ())
+	}
+
+	private bool LeaveOptionVisibilityCheckForNavalRaid()
+	{
+		if (!PlayerEncounter.Current.IsPlayerEncounterRestartedForRaid)
 		{
+			MapEvent encounteredBattle = PlayerEncounter.EncounteredBattle;
+			if (encounteredBattle != null && encounteredBattle.IsRaid)
+			{
+				MapEvent encounteredBattle2 = PlayerEncounter.EncounteredBattle;
+				if (encounteredBattle2 != null && encounteredBattle2.MapEventSettlement?.IsVillage == true)
+				{
+					goto IL_0063;
+				}
+			}
 			return true;
 		}
-		if (MobileParty.MainParty.MemberRoster.TotalHealthyCount >= minimumNumberOfMenForAttackingVillageViaScene2 && ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().AnyQ())
+		goto IL_0063;
+		IL_0063:
+		if (MapEventHelper.IsNavalRaid(PlayerEncounter.EncounteredBattle))
 		{
-			return false;
+			int minimumNumberOfMenForAttackingVillageViaScene = Campaign.Current.Models.EncounterModel.MinimumNumberOfMenForAttackingVillageViaScene;
+			return Math.Min(MobileParty.MainParty.MemberRoster.TotalHealthyCount, ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().SumQ((Ship x) => x.MainDeckCrewCapacity)) < minimumNumberOfMenForAttackingVillageViaScene;
 		}
-		goto IL_02ad;
+		return false;
 	}
 
 	private bool game_menu_sally_out_go_back_to_settlement_on_condition(MenuCallbackArgs args)
@@ -1864,6 +1829,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 	private void army_encounter_leave_on_consequence(MenuCallbackArgs args)
 	{
 		PlayerEncounter.Finish();
+		MobileParty.MainParty.SetMoveModeHold();
 	}
 
 	private void game_menu_encounter_leave_on_consequence(MenuCallbackArgs args)
@@ -2073,7 +2039,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 
 	private void SacrificeTroopsWithRatio(MobileParty mobileParty, float sacrificeRatio)
 	{
-		int num = MathF.Floor((float)mobileParty.Party.NumberOfRegularMembers * sacrificeRatio);
+		int num = TaleWorlds.Library.MathF.Floor((float)mobileParty.Party.NumberOfRegularMembers * sacrificeRatio);
 		for (int i = 0; i < num; i++)
 		{
 			float num2 = 100f;
@@ -2097,7 +2063,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 		{
 			if (!item.EquipmentElement.Item.NotMerchandise && !item.EquipmentElement.Item.IsBannerItem)
 			{
-				int num = MathF.Floor((float)item.Amount * 0.15f);
+				int num = TaleWorlds.Library.MathF.Floor((float)item.Amount * 0.15f);
 				PartyBase.MainParty.ItemRoster.AddToCounts(item.EquipmentElement, -num);
 			}
 		}
@@ -2492,7 +2458,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 	private bool game_menu_town_disguise_yourself_on_condition(MenuCallbackArgs args)
 	{
 		args.optionLeaveType = GameMenuOption.LeaveType.SneakIn;
-		MBTextManager.SetTextVariable("SNEAK_CHANCE", MathF.Round(Campaign.Current.Models.DisguiseDetectionModel.CalculateDisguiseDetectionProbability(Settlement.CurrentSettlement) * 100f));
+		MBTextManager.SetTextVariable("SNEAK_CHANCE", TaleWorlds.Library.MathF.Round(Campaign.Current.Models.DisguiseDetectionModel.CalculateDisguiseDetectionProbability(Settlement.CurrentSettlement) * 100f));
 		if (_accessDetails.AccessLevel == SettlementAccessModel.AccessLevel.LimitedAccess)
 		{
 			return _accessDetails.LimitedAccessSolution == SettlementAccessModel.LimitedAccessSolution.Disguise;
@@ -2670,6 +2636,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 	private void game_menu_castle_outside_leave_on_consequence(MenuCallbackArgs args)
 	{
 		PlayerEncounter.Finish();
+		MobileParty.MainParty.SetMoveModeHold();
 	}
 
 	private void game_menu_town_naval_outside_leave_on_consequence(MenuCallbackArgs args)
@@ -2808,7 +2775,7 @@ public class EncounterGameMenuBehavior : CampaignBehaviorBase
 				GameMenu.SwitchToMenu("castle");
 				return;
 			}
-			Debug.FailedAssert("non-fortification under siege", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EncounterGameMenuBehavior.cs", "game_menu_town_menu_request_meeting_with_besiegers_on_init", 3258);
+			Debug.FailedAssert("non-fortification under siege", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\EncounterGameMenuBehavior.cs", "game_menu_town_menu_request_meeting_with_besiegers_on_init", 3228);
 		}
 		List<MobileParty> list = new List<MobileParty>();
 		if (currentSettlement.SiegeEvent.BesiegerCamp.LeaderParty.Army != null)

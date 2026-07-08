@@ -468,7 +468,7 @@ public struct MissionWeapon
 	{
 		foreach (WeaponComponentData weapon in _weapons)
 		{
-			if (MBItem.GetItemUsageSetFlags(weapon.ItemUsage).HasAllFlags(flags))
+			if (weapon.ItemUsage != null && !weapon.ItemUsage.IsEmpty() && MBItem.GetItemUsageSetFlags(weapon.ItemUsage).HasAllFlags(flags))
 			{
 				return true;
 			}

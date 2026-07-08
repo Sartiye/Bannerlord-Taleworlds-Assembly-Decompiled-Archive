@@ -84,7 +84,7 @@ public class TournamentWonLogEntry : LogEntry, IEncyclopediaLog, IChatNotificati
 		return textObject;
 	}
 
-	public bool IsVisibleInEncyclopediaPageOf<T>(T obj) where T : MBObjectBase
+	public bool IsVisibleInEncyclopediaPageOf(MBObjectBase obj)
 	{
 		if (obj != Winner && obj != Winner.Clan)
 		{

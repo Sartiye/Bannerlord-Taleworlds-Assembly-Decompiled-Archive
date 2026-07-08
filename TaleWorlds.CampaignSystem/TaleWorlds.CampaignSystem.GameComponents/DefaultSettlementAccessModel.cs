@@ -549,7 +549,7 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 			if (settlement.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
 			{
 				disableOption = true;
-				disabledText = new TextObject("{=*}You cannot wait in a hostile village.");
+				disabledText = new TextObject("{=s7aas7L4}You cannot wait in a hostile village.");
 				return false;
 			}
 		}

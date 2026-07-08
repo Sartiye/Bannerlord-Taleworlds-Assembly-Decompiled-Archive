@@ -19,7 +19,7 @@ public class GameMenuTroopSelectionVM : ViewModel
 
 	private readonly Func<CharacterObject, bool> _canChangeChangeStatusOfTroop;
 
-	private readonly int _maxSelectableTroopCount;
+	private int _maxSelectableTroopCount;
 
 	private readonly int _minSelectableTroopCount;
 
@@ -305,7 +305,7 @@ public class GameMenuTroopSelectionVM : ViewModel
 		RefreshDoneHint();
 	}
 
-	private void RefreshDoneHint()
+	protected virtual void RefreshDoneHint()
 	{
 		if (IsDoneEnabled)
 		{
@@ -378,7 +378,7 @@ public class GameMenuTroopSelectionVM : ViewModel
 		OnCurrentSelectedAmountChange();
 	}
 
-	private void OnCurrentSelectedAmountChange()
+	protected virtual void OnCurrentSelectedAmountChange()
 	{
 		foreach (TroopSelectionItemVM troop in Troops)
 		{
@@ -391,7 +391,7 @@ public class GameMenuTroopSelectionVM : ViewModel
 		RefreshDoneHint();
 	}
 
-	private void OnDone()
+	protected TroopRoster BuildSelectedTroopRoster()
 	{
 		TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
 		foreach (TroopSelectionItemVM troop in Troops)
@@ -401,15 +401,28 @@ public class GameMenuTroopSelectionVM : ViewModel
 				troopRoster.AddToCounts(troop.Troop.Character, troop.CurrentAmount);
 			}
 		}
+		return troopRoster;
+	}
+
+	protected virtual void OnDone()
+	{
+		TroopRoster troopRoster = BuildSelectedTroopRoster();
 		IsEnabled = false;
 		_onDone.DynamicInvokeWithLog(troopRoster);
 	}
 
+	protected void UpdateMaxSelectableTroopCount(int maxValue)
+	{
+		_maxSelectableTroopCount = maxValue;
+		OnCurrentSelectedAmountChange();
+	}
+
 	public void ExecuteDone()
 	{
-		if (GetAvailableSelectableTroopCount() > 0)
+		TextObject warningMessageOnDone = GetWarningMessageOnDone();
+		if (!TextObject.IsNullOrEmpty(warningMessageOnDone))
 		{
-			string text = new TextObject("{=z2Slmx4N}There are still some room for more soldiers. Do you want to proceed?").ToString();
+			string text = warningMessageOnDone.ToString();
 			InformationManager.ShowInquiry(new InquiryData(TitleText, text, isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), OnDone, null));
 		}
 		else
@@ -418,7 +431,16 @@ public class GameMenuTroopSelectionVM : ViewModel
 		}
 	}
 
-	private int GetAvailableSelectableTroopCount()
+	protected virtual TextObject GetWarningMessageOnDone()
+	{
+		if (GetAvailableSelectableTroopCount() > 0)
+		{
+			return new TextObject("{=z2Slmx4N}There are still some room for more soldiers. Do you want to proceed?");
+		}
+		return null;
+	}
+
+	protected int GetAvailableSelectableTroopCount()
 	{
 		int num = 0;
 		foreach (TroopSelectionItemVM troop in Troops)

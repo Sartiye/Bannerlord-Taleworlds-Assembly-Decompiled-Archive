@@ -45,6 +45,10 @@ public class GauntletUISubModule : MBSubModuleBase
 		ScreenManager.OnControllerDisconnected += OnControllerDisconnected;
 		ManagedOptions.OnManagedOptionChanged = (ManagedOptions.OnManagedOptionChangedDelegate)Delegate.Combine(ManagedOptions.OnManagedOptionChanged, new ManagedOptions.OnManagedOptionChangedDelegate(OnManagedOptionChanged));
 		NativeOptions.GetConfig(NativeOptions.NativeOptionsType.DisplayMode);
+		if (GauntletGamepadNavigationManager.Instance != null)
+		{
+			GauntletGamepadNavigationManager.Instance.OnFinalize();
+		}
 		GauntletGamepadNavigationManager.Initialize();
 		GauntletGameVersionView.AddModuleVersionInfo("Bannerlord", Utilities.GetApplicationVersionWithBuildNumber().ToString());
 		Instance = this;

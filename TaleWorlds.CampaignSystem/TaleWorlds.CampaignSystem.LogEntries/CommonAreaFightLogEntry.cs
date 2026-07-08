@@ -58,7 +58,7 @@ public class CommonAreaFightLogEntry : LogEntry, IEncyclopediaLog
 		return GetEncyclopediaText().ToString();
 	}
 
-	public bool IsVisibleInEncyclopediaPageOf<T>(T obj) where T : MBObjectBase
+	public bool IsVisibleInEncyclopediaPageOf(MBObjectBase obj)
 	{
 		return obj == _settlement;
 	}

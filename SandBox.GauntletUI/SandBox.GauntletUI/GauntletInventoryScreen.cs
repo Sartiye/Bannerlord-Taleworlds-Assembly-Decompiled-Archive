@@ -109,6 +109,19 @@ public class GauntletInventoryScreen : ScreenBase, IInventoryStateHandler, IGame
 	protected override void OnInitialize()
 	{
 		base.OnInitialize();
+		UISoundsHelper.PlayUISound("event:/ui/panels/panel_inventory_open");
+		InformationManager.HideAllMessages();
+	}
+
+	protected override void OnReady()
+	{
+		base.OnReady();
+		if (_gauntletLayer != null)
+		{
+			ScreenManager.SetSuspendLayer(_gauntletLayer, isSuspended: false);
+			ScreenManager.TrySetFocus(_gauntletLayer);
+			return;
+		}
 		_inventoryCategory = UIResourceManager.LoadSpriteCategory("ui_inventory");
 		_dataSource = new SPInventoryVM(InventoryState.InventoryLogic, Mission.Current?.DoesMissionRequireCivilianEquipment ?? false, GetItemUsageSetFlag);
 		_dataSource.SetGetKeyTextFromKeyIDFunc(Game.Current.GameTextManager.GetHotKeyGameTextFromKeyID);
@@ -131,9 +144,7 @@ public class GauntletInventoryScreen : ScreenBase, IInventoryStateHandler, IGame
 		_gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("InventoryHotKeyCategory"));
 		_gauntletMovie = _gauntletLayer.LoadMovie("Inventory", _dataSource);
 		_openedFromMission = InventoryState.Predecessor is MissionState;
-		UISoundsHelper.PlayUISound("event:/ui/panels/panel_inventory_open");
 		_gauntletLayer.GamepadNavigationContext.GainNavigationAfterFrames(2, null);
-		InformationManager.HideAllMessages();
 	}
 
 	protected override void OnDeactivate()
@@ -162,9 +173,16 @@ public class GauntletInventoryScreen : ScreenBase, IInventoryStateHandler, IGame
 	{
 		base.OnFinalize();
 		_gauntletMovie = null;
-		_inventoryCategory.Unload();
-		_dataSource.OnFinalize();
-		_dataSource = null;
+		if (_inventoryCategory != null)
+		{
+			_inventoryCategory.Unload();
+			_inventoryCategory = null;
+		}
+		if (_dataSource != null)
+		{
+			_dataSource.OnFinalize();
+			_dataSource = null;
+		}
 		_gauntletLayer = null;
 	}
 

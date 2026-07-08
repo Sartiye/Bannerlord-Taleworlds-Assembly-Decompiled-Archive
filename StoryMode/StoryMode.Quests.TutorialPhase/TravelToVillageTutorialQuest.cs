@@ -125,15 +125,9 @@ public class TravelToVillageTutorialQuest : StoryModeQuestBase
 
 	private void OnGameMenuOpened(MenuCallbackArgs args)
 	{
-		if (!StoryMode.StoryModePhases.TutorialPhase.Instance.IsCompleted && Settlement.CurrentSettlement == null && PlayerEncounter.EncounteredParty != null && args.MenuContext.GameMenu.StringId != "encounter_meeting" && args.MenuContext.GameMenu.StringId != "encounter")
+		if (!StoryMode.StoryModePhases.TutorialPhase.Instance.IsCompleted && Settlement.CurrentSettlement == null && PlayerEncounter.EncounteredParty != null && args.MenuContext.GameMenu.StringId != "encounter_meeting" && args.MenuContext.GameMenu.StringId != "encounter" && _refugeeParties.Contains(PlayerEncounter.EncounteredMobileParty))
 		{
-			if (_refugeeParties.Contains(PlayerEncounter.EncounteredMobileParty))
-			{
-				GameMenu.SwitchToMenu("encounter_meeting");
-				return;
-			}
-			PlayerEncounter.Finish();
-			InformationManager.ShowInquiry(new InquiryData(new TextObject("{=EWD4Op6d}Notification").ToString(), new TextObject("{=pVKkclVk}Interactions are limited during tutorial phase. This interaction is disabled.").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, new TextObject("{=yS7PvrTD}OK").ToString(), null, null, null));
+			GameMenu.SwitchToMenu("encounter_meeting");
 		}
 	}
 

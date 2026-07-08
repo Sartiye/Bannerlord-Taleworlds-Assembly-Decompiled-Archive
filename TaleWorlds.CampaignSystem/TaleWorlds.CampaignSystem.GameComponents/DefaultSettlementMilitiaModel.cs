@@ -94,6 +94,10 @@ public class DefaultSettlementMilitiaModel : SettlementMilitiaModel
 	private static ExplainedNumber CalculateMilitiaChangeInternal(Settlement settlement, bool includeDescriptions = false)
 	{
 		ExplainedNumber result = new ExplainedNumber(0f, includeDescriptions);
+		if (settlement.IsVillage && settlement.Village.VillageState != 0)
+		{
+			return result;
+		}
 		float militia = settlement.Militia;
 		if (settlement.IsFortification)
 		{

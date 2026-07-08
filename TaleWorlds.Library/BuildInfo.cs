@@ -1,8 +1,8 @@
 public static class BuildInfo
 {
-	public const string BuildVersion = "114896";
+	public const string BuildVersion = "117131";
 
-	public const string GameVersion = "v1.4.5.114896";
+	public const string GameVersion = "v1.4.7.117131";
 
 	public const string BuildTarget = "Public";
 

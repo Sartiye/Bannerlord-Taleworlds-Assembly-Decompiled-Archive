@@ -5400,6 +5400,9 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 		case "ArmorColor2":
 			_datasource_Root_SelectedCharacter.ArmorColor2 = _widget_0.ArmorColor2;
 			break;
+		case "IsTableauEnabled":
+			_datasource_Root_SelectedCharacter.IsTableauEnabled = _widget_0.IsTableauEnabled;
+			break;
 		}
 	}
 
@@ -6243,6 +6246,9 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 			break;
 		case "ArmorColor2":
 			_widget_0.ArmorColor2 = _datasource_Root_SelectedCharacter.ArmorColor2;
+			break;
+		case "IsTableauEnabled":
+			_widget_0.IsTableauEnabled = _datasource_Root_SelectedCharacter.IsTableauEnabled;
 			break;
 		}
 	}
@@ -9100,6 +9106,7 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 			_widget_0.StanceIndex = _datasource_Root_SelectedCharacter.StanceIndex;
 			_widget_0.ArmorColor1 = _datasource_Root_SelectedCharacter.ArmorColor1;
 			_widget_0.ArmorColor2 = _datasource_Root_SelectedCharacter.ArmorColor2;
+			_widget_0.IsTableauEnabled = _datasource_Root_SelectedCharacter.IsTableauEnabled;
 			_widget_0.PropertyChanged += PropertyChangedListenerOf_widget_0;
 			_widget_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0;
 			_widget_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0;
@@ -9667,6 +9674,7 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 			_widget_0.StanceIndex = _datasource_Root_SelectedCharacter.StanceIndex;
 			_widget_0.ArmorColor1 = _datasource_Root_SelectedCharacter.ArmorColor1;
 			_widget_0.ArmorColor2 = _datasource_Root_SelectedCharacter.ArmorColor2;
+			_widget_0.IsTableauEnabled = _datasource_Root_SelectedCharacter.IsTableauEnabled;
 			_widget_0.PropertyChanged += PropertyChangedListenerOf_widget_0;
 			_widget_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0;
 			_widget_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0;

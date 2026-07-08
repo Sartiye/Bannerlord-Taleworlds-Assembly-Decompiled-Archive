@@ -262,7 +262,7 @@ public class ArmyOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu
 		_widget_1_1_0_1.IsDisabled = true;
 		_widget_1_1_1.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_1_1.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_1_1_1.SuggestedWidth = 150f;
+		_widget_1_1_1.SuggestedWidth = 125f;
 		_widget_1_1_1.SuggestedHeight = 23f;
 		_widget_1_1_1.HorizontalAlignment = HorizontalAlignment.Left;
 		_widget_1_1_1.VerticalAlignment = VerticalAlignment.Center;
@@ -274,7 +274,7 @@ public class ArmyOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu
 		_widget_1_1_1_0.GamepadNavigationIndex = 1;
 		_widget_1_1_1_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_1_1_0_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_1_1_1_0_0.SuggestedWidth = 144f;
+		_widget_1_1_1_0_0.SuggestedWidth = 119f;
 		_widget_1_1_1_0_0.SuggestedHeight = 20f;
 		_widget_1_1_1_0_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_1_1_1_0_0.VerticalAlignment = VerticalAlignment.Center;
@@ -282,7 +282,7 @@ public class ArmyOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu
 		_widget_1_1_1_0_0.MaxAmount = 100;
 		_widget_1_1_1_0_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_1_1_0_0_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_1_1_1_0_0_0.SuggestedWidth = 144f;
+		_widget_1_1_1_0_0_0.SuggestedWidth = 119f;
 		_widget_1_1_1_0_0_0.SuggestedHeight = 15f;
 		_widget_1_1_1_0_0_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_1_1_1_0_0_0.Brush = base.Context.GetBrush("ArmyOverlay.Cohesion.Fill");
@@ -298,8 +298,8 @@ public class ArmyOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu
 		_widget_1_1_2_0.DoNotAcceptEvents = true;
 		_widget_1_1_2_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_1_2_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_1_1_2_0.SuggestedWidth = 30f;
-		_widget_1_1_2_0.SuggestedHeight = 35f;
+		_widget_1_1_2_0.SuggestedWidth = 25f;
+		_widget_1_1_2_0.SuggestedHeight = 26f;
 		_widget_1_1_2_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_1_1_2_0.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Food");
 		_widget_1_1_2_0.Color = new Color(0.8313726f, 35f / 51f, 0.2156863f);
@@ -318,8 +318,8 @@ public class ArmyOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu
 		_widget_1_1_3.GamepadNavigationIndex = 3;
 		_widget_1_1_3_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_1_3_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_1_1_3_0.SuggestedWidth = 33f;
-		_widget_1_1_3_0.SuggestedHeight = 30f;
+		_widget_1_1_3_0.SuggestedWidth = 30f;
+		_widget_1_1_3_0.SuggestedHeight = 26f;
 		_widget_1_1_3_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_1_1_3_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_1_1_3_0.MarginLeft = 5f;
@@ -327,7 +327,7 @@ public class ArmyOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_GameMenu
 		_widget_1_1_3_0.Color = new Color(0.8313726f, 35f / 51f, 0.2156863f);
 		_widget_1_1_3_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_1_3_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_1_3_1.MaxWidth = 62f;
+		_widget_1_1_3_1.MaxWidth = 55f;
 		_widget_1_1_3_1.MaxHeight = 40f;
 		_widget_1_1_3_1.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_1_1_3_1.VerticalAlignment = VerticalAlignment.Center;

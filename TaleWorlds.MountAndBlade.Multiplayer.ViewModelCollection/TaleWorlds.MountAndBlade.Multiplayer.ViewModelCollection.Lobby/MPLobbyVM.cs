@@ -55,7 +55,7 @@ public class MPLobbyVM : ViewModel
 
 	private LobbyState _lobbyState;
 
-	private const float PlayerCountInQueueTimerInterval = 5f;
+	private const float PlayerCountInQueueTimerInterval = 10f;
 
 	private float _playerCountInQueueTimer;
 
@@ -1193,7 +1193,7 @@ public class MPLobbyVM : ViewModel
 		if (IsSearchingGame)
 		{
 			_playerCountInQueueTimer += dt;
-			if (_playerCountInQueueTimer >= 5f)
+			if (_playerCountInQueueTimer >= 10f)
 			{
 				UpdatePlayerCountInQueue();
 				_playerCountInQueueTimer = 0f;
@@ -1201,7 +1201,7 @@ public class MPLobbyVM : ViewModel
 		}
 		else
 		{
-			_playerCountInQueueTimer = 5f;
+			_playerCountInQueueTimer = 10f;
 		}
 		if (!PartyPlayerSuggestionPopup.IsEnabled && !_partySuggestionQueue.IsEmpty() && !_lobbyClient.IsPartyFull)
 		{

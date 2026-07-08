@@ -44,6 +44,8 @@ public class CharacterViewModel : ViewModel
 
 	private bool _isPlayingCustomAnimations;
 
+	private bool _isTableauEnabled = true;
+
 	private bool _shouldLoopCustomAnimation;
 
 	private float _customAnimationProgressRatio;
@@ -194,6 +196,23 @@ public class CharacterViewModel : ViewModel
 			{
 				_isHidden = value;
 				OnPropertyChangedWithValue(value, "IsHidden");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsTableauEnabled
+	{
+		get
+		{
+			return _isTableauEnabled;
+		}
+		set
+		{
+			if (value != _isTableauEnabled)
+			{
+				_isTableauEnabled = value;
+				OnPropertyChangedWithValue(value, "IsTableauEnabled");
 			}
 		}
 	}

@@ -35,6 +35,8 @@ public class GraphicsForm : IMessageCommunicator
 
 	public int Height => _windowsForm.Height;
 
+	public bool IsMinimized => _windowsForm.IsMinimized;
+
 	public GraphicsForm(int width, int height, ResourceDepot resourceDepot, bool borderlessWindow = false, bool enableWindowBlur = false, bool layeredWindow = false, string name = null)
 	{
 		DXGI.RECT rECT = DecideWindowPosition();
@@ -165,12 +167,25 @@ public class GraphicsForm : IMessageCommunicator
 
 	public void BeginFrame()
 	{
-		if (GraphicsContext != null)
+		if (GraphicsContext == null)
 		{
-			GraphicsContext.BeginFrame(_windowsForm.Width, _windowsForm.Height);
-			GraphicsContext.Resize(_windowsForm.Width, _windowsForm.Height);
-			GraphicsContext.ProjectionMatrix = MatrixExtensions.CreateOrthographicOffCenter(0f, _windowsForm.Width, _windowsForm.Height, 0f, 0f, 2f);
+			return;
 		}
+		int num = _windowsForm.Width;
+		int num2 = _windowsForm.Height;
+		if (User32.GetClientRect(_windowsForm.Handle, out var lpRect))
+		{
+			int width = lpRect.Width;
+			int height = lpRect.Height;
+			if (width > 0 && height > 0)
+			{
+				num = width;
+				num2 = height;
+			}
+		}
+		GraphicsContext.BeginFrame(num, num2);
+		GraphicsContext.Resize(num, num2);
+		GraphicsContext.ProjectionMatrix = MatrixExtensions.CreateOrthographicOffCenter(0f, num, num2, 0f, 0f, 2f);
 	}
 
 	public void Update()
@@ -332,14 +347,44 @@ public class GraphicsForm : IMessageCommunicator
 			Destroy();
 			Environment.Exit(0);
 			break;
+		case WindowMessage.Size:
+		{
+			int num2 = (int)lParam % 65536;
+			int num3 = (int)(lParam / 65536);
+			if (num2 > 0 && num3 > 0)
+			{
+				_layeredWindowController?.SetSize(num2, num3);
+				if (GraphicsContext != null)
+				{
+					GraphicsContext.Resize(num2, num3);
+				}
+			}
+			break;
+		}
 		case WindowMessage.DisplayChange:
 		case WindowMessage.DeviceChange:
 		case WindowMessage.DpiChanged:
+		{
 			if (GraphicsContext != null)
 			{
 				GraphicsContext.RequestContextReactivation();
 			}
+			if (!User32.GetClientRect(_windowsForm.Handle, out var lpRect))
+			{
+				break;
+			}
+			int width = lpRect.Width;
+			int height = lpRect.Height;
+			if (width > 0 && height > 0)
+			{
+				_layeredWindowController?.SetSize(width, height);
+				if (GraphicsContext != null)
+				{
+					GraphicsContext.Resize(width, height);
+				}
+			}
 			break;
+		}
 		case WindowMessage.KeyDown:
 			lock (_inputDataLocker)
 			{

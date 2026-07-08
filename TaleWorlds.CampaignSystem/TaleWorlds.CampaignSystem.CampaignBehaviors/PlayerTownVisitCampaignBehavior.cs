@@ -156,11 +156,11 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 		campaignGameSystemStarter.AddGameMenuOption("village", "village_center", "{=U4azeSib}Take a walk through the lands", game_menu_village_village_center_on_condition, game_menu_village_village_center_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("village", "village_wait", "{=zEoHYEUS}Wait here for some time", game_menu_wait_here_on_condition, game_menu_wait_village_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("village", "village_return_to_army", "{=SK43eB6y}Return to Army", game_menu_return_to_army_on_condition, game_menu_return_to_army_on_consequence);
-		campaignGameSystemStarter.AddGameMenuOption("village", "disembark", "{=*}Disembark", game_menu_village_disembark_on_condition, game_menu_village_disembark_on_consequence);
+		campaignGameSystemStarter.AddGameMenuOption("village", "disembark", "{=kVqzLm5o}Disembark", game_menu_village_disembark_on_condition, game_menu_village_disembark_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("village", "leave_set_sail", "{=fbCbFqyj}Set Sail", game_menu_village_set_sail_leave_on_condition, game_menu_village_set_sail_leave_on_consequence, isLeave: true);
 		campaignGameSystemStarter.AddGameMenuOption("village", "leave_at_sea", "{=3sRdGQou}Leave", game_menu_village_leave_at_sea_on_condition, game_menu_village_set_sail_leave_on_consequence, isLeave: true);
 		campaignGameSystemStarter.AddGameMenuOption("village", "leave", "{=3sRdGQou}Leave", game_menu_town_town_leave_on_condition, game_menu_settlement_leave_on_consequence, isLeave: true);
-		campaignGameSystemStarter.AddGameMenuOption("village_looted", "disembark", "{=*}Disembark", game_menu_village_disembark_on_condition, game_menu_village_disembark_on_consequence);
+		campaignGameSystemStarter.AddGameMenuOption("village_looted", "disembark", "{=kVqzLm5o}Disembark", game_menu_village_disembark_on_condition, game_menu_village_disembark_on_consequence);
 		campaignGameSystemStarter.AddGameMenuOption("village_looted", "leave_set_sail", "{=fbCbFqyj}Set Sail", game_menu_village_set_sail_leave_on_condition, game_menu_village_set_sail_leave_on_consequence, isLeave: true);
 		campaignGameSystemStarter.AddWaitGameMenu("village_wait_menus", "{=lsBuV9W7}You are waiting in the village.", game_menu_settlement_wait_on_init, game_menu_village_wait_on_condition, null, delegate(MenuCallbackArgs args, CampaignTime dt)
 		{
@@ -175,7 +175,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 		args.optionLeaveType = GameMenuOption.LeaveType.Continue;
 		if (Settlement.CurrentSettlement.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction) && Settlement.CurrentSettlement.Village.VillageState != Village.VillageStates.Looted)
 		{
-			args.Tooltip = new TextObject("{=*}You cannot disembark to a hostile village.");
+			args.Tooltip = new TextObject("{=FRbbKXXY}You cannot disembark to a hostile village.");
 			args.IsEnabled = false;
 		}
 		return MobileParty.MainParty.IsCurrentlyAtSea;
@@ -1028,12 +1028,12 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 			{
 				if (!MobileParty.MainParty.HasNavalNavigationCapability)
 				{
-					args.Tooltip = new TextObject("{=*}You don't own any ships! Go to the town center to leave.");
+					args.Tooltip = new TextObject("{=HUUd7Ohd}You don't own any ships! Go to the town center to leave.");
 					args.IsEnabled = false;
 				}
 				else if (Settlement.CurrentSettlement.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction) && Settlement.CurrentSettlement.Village.VillageState != Village.VillageStates.Looted)
 				{
-					args.Tooltip = new TextObject("{=*}You cannot set sail from a hostile village.");
+					args.Tooltip = new TextObject("{=Y9EaZjJm}You cannot set sail from a hostile village.");
 					args.IsEnabled = false;
 				}
 				else if (!MobileParty.MainParty.Anchor.IsAtSettlement(Settlement.CurrentSettlement))
@@ -1077,6 +1077,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 	private void game_menu_village_disembark_on_consequence(MenuCallbackArgs args)
 	{
 		MobileParty.MainParty.DisembarkToPosition(Settlement.CurrentSettlement.GatePosition);
+		MobileParty.MainParty.Anchor.SetSettlement(Settlement.CurrentSettlement);
 		game_menu_settlement_leave_on_consequence(args);
 	}
 
@@ -1219,7 +1220,7 @@ public class PlayerTownVisitCampaignBehavior : CampaignBehaviorBase
 		}
 		else
 		{
-			Debug.FailedAssert("Couldn't set settlementIntro!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\PlayerTownVisitCampaignBehavior.cs", "SetIntroductionText", 1463);
+			Debug.FailedAssert("Couldn't set settlementIntro!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\PlayerTownVisitCampaignBehavior.cs", "SetIntroductionText", 1464);
 			textObject = TextObject.GetEmpty();
 		}
 		settlement.OwnerClan.Leader.SetPropertiesToTextObject(textObject, "LORD");

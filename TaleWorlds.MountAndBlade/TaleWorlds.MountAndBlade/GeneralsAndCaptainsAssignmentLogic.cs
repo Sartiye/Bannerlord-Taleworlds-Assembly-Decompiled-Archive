@@ -74,12 +74,12 @@ public class GeneralsAndCaptainsAssignmentLogic : MissionLogic
 			CreateGeneralFormationForTeam(playerTeam);
 			_isPlayerTeamGeneralFormationSet = true;
 		}
-		Agent mainAgent;
-		if (_isPlayerTeamGeneralFormationSet && (mainAgent = base.Mission.MainAgent) != null && playerTeam.GeneralAgent != mainAgent && !base.Mission.IsNavalBattle)
+		Agent initialPlayerAgent = base.Mission.InitialPlayerAgent;
+		if (_isPlayerTeamGeneralFormationSet && playerTeam.GeneralAgent != initialPlayerAgent && !base.Mission.IsNavalBattle)
 		{
-			mainAgent.SetCanLeadFormationsRemotely(value: true);
-			Formation formation2 = (mainAgent.Formation = playerTeam.GetFormation(FormationClass.NumberOfRegularFormations));
-			mainAgent.Team.TriggerOnFormationsChanged(formation2);
+			initialPlayerAgent.SetCanLeadFormationsRemotely(value: true);
+			Formation formation2 = (initialPlayerAgent.Formation = playerTeam.GetFormation(FormationClass.NumberOfRegularFormations));
+			initialPlayerAgent.Team.TriggerOnFormationsChanged(formation2);
 			formation2.QuerySystem.Expire();
 		}
 	}
@@ -117,7 +117,7 @@ public class GeneralsAndCaptainsAssignmentLogic : MissionLogic
 		Agent generalAgent = team.GeneralAgent;
 		if (generalAgent != null)
 		{
-			if (generalAgent != base.Mission.MainAgent)
+			if (generalAgent != base.Mission.InitialPlayerAgent)
 			{
 				return team.QuerySystem.MemberCount >= 50;
 			}
@@ -179,7 +179,7 @@ public class GeneralsAndCaptainsAssignmentLogic : MissionLogic
 		Agent agent = null;
 		if (team.IsPlayerTeam && team.IsPlayerGeneral)
 		{
-			agent = base.Mission.MainAgent;
+			agent = base.Mission.InitialPlayerAgent;
 		}
 		else
 		{
@@ -216,7 +216,7 @@ public class GeneralsAndCaptainsAssignmentLogic : MissionLogic
 		TacticComponent.SetDefaultBehaviorWeights(formation);
 		formation.AI.SetBehaviorWeight<BehaviorGeneral>(1f);
 		formation.PlayerOwner = null;
-		if (!_createBodyguard || generalAgent == base.Mission.MainAgent)
+		if (!_createBodyguard || generalAgent == base.Mission.InitialPlayerAgent)
 		{
 			return;
 		}

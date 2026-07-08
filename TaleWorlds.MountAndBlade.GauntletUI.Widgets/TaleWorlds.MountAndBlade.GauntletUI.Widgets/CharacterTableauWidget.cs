@@ -48,6 +48,8 @@ public class CharacterTableauWidget : TextureWidget
 
 	private bool _isPlayingCustomAnimations;
 
+	private bool _isTableauEnabled = true;
+
 	private bool _shouldLoopCustomAnimation;
 
 	private float _customAnimationProgressRatio;
@@ -468,6 +470,24 @@ public class CharacterTableauWidget : TextureWidget
 				_shouldLoopCustomAnimation = value;
 				OnPropertyChanged(value, "ShouldLoopCustomAnimation");
 				SetTextureProviderProperty("ShouldLoopCustomAnimation", value);
+			}
+		}
+	}
+
+	[Editor(false)]
+	public bool IsTableauEnabled
+	{
+		get
+		{
+			return _isTableauEnabled;
+		}
+		set
+		{
+			if (value != _isTableauEnabled)
+			{
+				_isTableauEnabled = value;
+				OnPropertyChanged(value, "IsTableauEnabled");
+				SetTextureProviderProperty("IsTableauEnabled", value);
 			}
 		}
 	}

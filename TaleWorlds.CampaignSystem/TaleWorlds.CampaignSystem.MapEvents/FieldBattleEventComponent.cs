@@ -1,7 +1,6 @@
 using System.Collections.Generic;
-using System.Linq;
+using Helpers;
 using TaleWorlds.CampaignSystem.Party;
-using TaleWorlds.CampaignSystem.Settlements;
 
 namespace TaleWorlds.CampaignSystem.MapEvents;
 
@@ -11,20 +10,11 @@ public class FieldBattleEventComponent : MapEventComponent
 	{
 		get
 		{
-			MapEvent.PowerCalculationContext result = Campaign.Current.Models.MilitaryPowerModel.GetContextForPosition(base.MapEvent.Position);
-			Settlement mapEventSettlement = base.MapEvent.MapEventSettlement;
-			if (mapEventSettlement != null && mapEventSettlement.IsVillage)
+			if (MapEventHelper.IsNavalRaid(base.MapEvent))
 			{
-				if (base.MapEvent.AttackerSide.LeaderParty.Position.IsOnLand != base.MapEvent.DefenderSide.LeaderParty.Position.IsOnLand)
-				{
-					result = MapEvent.PowerCalculationContext.NavalRaid;
-				}
-				else if (!base.MapEvent.AttackerSide.LeaderParty.Position.IsOnLand && base.MapEvent.InvolvedParties.Any((PartyBase x) => x.IsMobile && x.MobileParty.Position.IsOnLand))
-				{
-					result = MapEvent.PowerCalculationContext.NavalRaid;
-				}
+				return MapEvent.PowerCalculationContext.NavalRaid;
 			}
-			return result;
+			return Campaign.Current.Models.MilitaryPowerModel.GetContextForPosition(base.MapEvent.Position);
 		}
 	}
 

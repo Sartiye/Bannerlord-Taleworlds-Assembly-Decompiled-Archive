@@ -13,6 +13,7 @@ using TaleWorlds.Core.ViewModelCollection.Generic;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.Encyclopedia.Pages;
 
@@ -1023,9 +1024,10 @@ public class EncyclopediaHeroPageVM : EncyclopediaContentPageVM
 		}
 		string definition2 = GameTexts.FindText("str_enc_sf_age").ToString();
 		Stats.Add(new StringPairItemVM(definition2, IsInformationHidden ? text : ((int)_hero.Age).ToString()));
+		MBObjectBase hero3 = _hero;
 		for (int num = Campaign.Current.LogEntryHistory.GameActionLogs.Count - 1; num >= 0; num--)
 		{
-			if (Campaign.Current.LogEntryHistory.GameActionLogs[num] is IEncyclopediaLog encyclopediaLog && encyclopediaLog.IsVisibleInEncyclopediaPageOf(_hero))
+			if (Campaign.Current.LogEntryHistory.GameActionLogs[num] is IEncyclopediaLog encyclopediaLog && encyclopediaLog.IsVisibleInEncyclopediaPageOf(hero3))
 			{
 				History.Add(new EncyclopediaHistoryEventVM(encyclopediaLog));
 			}

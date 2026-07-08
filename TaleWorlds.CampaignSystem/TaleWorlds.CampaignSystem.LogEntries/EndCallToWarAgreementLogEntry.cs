@@ -62,7 +62,7 @@ public class EndCallToWarAgreementLogEntry : LogEntry, IEncyclopediaLog, IChatNo
 		return GetEncyclopediaText().ToString();
 	}
 
-	public bool IsVisibleInEncyclopediaPageOf<T>(T obj) where T : MBObjectBase
+	public bool IsVisibleInEncyclopediaPageOf(MBObjectBase obj)
 	{
 		if (obj != _callingKingdom)
 		{

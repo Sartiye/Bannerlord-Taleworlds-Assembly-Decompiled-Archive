@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Party;
@@ -42,7 +43,7 @@ public class RaidEventComponent : MapEventComponent
 	{
 		get
 		{
-			if (!base.MapEvent.InvolvedParties.Any((PartyBase x) => x.IsMobile && x.MobileParty.IsCurrentlyAtSea))
+			if (!MapEventHelper.IsNavalRaid(base.MapEvent))
 			{
 				return MapEvent.PowerCalculationContext.Village;
 			}

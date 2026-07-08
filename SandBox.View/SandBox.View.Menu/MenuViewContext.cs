@@ -353,9 +353,14 @@ public class MenuViewContext : IMenuContextHandler
 		_menuTroopSelection = null;
 	}
 
-	protected virtual MenuView CreateTroopSelectionView(TroopRoster fullRoster, TroopRoster initialSelections, List<Ship> eligibleShips, Func<CharacterObject, bool> canChangeStatusOfTroop, Action<TroopRoster> onDone, int maxSelectableTroopCount, int minSelectableTroopCount, bool isNavalRaid)
+	protected virtual MenuView CreateTroopSelectionView(TroopRoster fullRoster, TroopRoster initialSelections, Func<CharacterObject, bool> canChangeStatusOfTroop, Action<TroopRoster> onDone, int maxSelectableTroopCount, int minSelectableTroopCount)
 	{
 		return AddMenuView<MenuTroopSelectionView>(new object[6] { fullRoster, initialSelections, canChangeStatusOfTroop, onDone, maxSelectableTroopCount, minSelectableTroopCount });
+	}
+
+	protected virtual MenuView CreateNavalTroopSelectionView(TroopRoster fullRoster, TroopRoster initialTroopSelections, List<Ship> eligibleShips, List<Ship> initialShipSelections, Func<CharacterObject, bool> canChangeStatusOfTroop, Action<TroopRoster, List<Ship>> onDone, int minSelectableTroopCount, int minSelectableShipCount, int maxSelectableShipCount, bool anyOtherPartiesOnPlayerSide)
+	{
+		return null;
 	}
 
 	void IMenuContextHandler.OnAmbientSoundIDSet(string ambientSoundID)
@@ -440,11 +445,19 @@ public class MenuViewContext : IMenuContextHandler
 		}
 	}
 
-	void IMenuContextHandler.OnOpenTroopSelection(TroopRoster fullRoster, TroopRoster initialSelections, List<Ship> eligibleShips, Func<CharacterObject, bool> canChangeStatusOfTroop, Action<TroopRoster> onDone, int maxSelectableTroopCount, int minSelectableTroopCount, bool isNavalRaid)
+	void IMenuContextHandler.OnOpenTroopSelection(TroopRoster fullRoster, TroopRoster initialSelections, Func<CharacterObject, bool> canChangeStatusOfTroop, Action<TroopRoster> onDone, int maxSelectableTroopCount, int minSelectableTroopCount)
 	{
 		if (_menuTroopSelection == null)
 		{
-			_menuTroopSelection = CreateTroopSelectionView(fullRoster, initialSelections, eligibleShips, canChangeStatusOfTroop, onDone, maxSelectableTroopCount, minSelectableTroopCount, isNavalRaid);
+			_menuTroopSelection = CreateTroopSelectionView(fullRoster, initialSelections, canChangeStatusOfTroop, onDone, maxSelectableTroopCount, minSelectableTroopCount);
+		}
+	}
+
+	void IMenuContextHandler.OnOpenNavalTroopSelection(TroopRoster fullRoster, TroopRoster initialTroopSelections, List<Ship> eligibleShips, List<Ship> initialShipSelections, Func<CharacterObject, bool> canChangeStatusOfTroop, Action<TroopRoster, List<Ship>> onDone, int minSelectableTroopCount, int minSelectableShipCount, int maxSelectableShipCount, bool anyOtherPartiesOnPlayerSide)
+	{
+		if (_menuTroopSelection == null)
+		{
+			_menuTroopSelection = CreateNavalTroopSelectionView(fullRoster, initialTroopSelections, eligibleShips, initialShipSelections, canChangeStatusOfTroop, onDone, minSelectableTroopCount, minSelectableShipCount, maxSelectableShipCount, anyOtherPartiesOnPlayerSide);
 		}
 	}
 

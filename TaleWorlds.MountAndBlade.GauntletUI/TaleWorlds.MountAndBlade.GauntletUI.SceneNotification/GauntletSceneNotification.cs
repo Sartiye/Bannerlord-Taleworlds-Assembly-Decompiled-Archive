@@ -383,7 +383,7 @@ public class GauntletSceneNotification : GlobalLayer
 	{
 		if (_isActive)
 		{
-			Debug.FailedAssert("Trying to create scene notification while another notification is playing", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\SceneNotification\\GauntletSceneNotification.cs", "CreateSceneNotification", 441);
+			Debug.FailedAssert("Trying to create scene notification while another notification is playing", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\SceneNotification\\GauntletSceneNotification.cs", "CreateSceneNotification", 443);
 			return;
 		}
 		_isActive = true;

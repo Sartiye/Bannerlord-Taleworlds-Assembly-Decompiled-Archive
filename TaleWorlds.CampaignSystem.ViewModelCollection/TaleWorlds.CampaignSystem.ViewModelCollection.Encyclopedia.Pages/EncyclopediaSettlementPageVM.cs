@@ -7,6 +7,7 @@ using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Core.ViewModelCollection.Tutorial;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.ObjectSystem;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.Encyclopedia.Pages;
 
@@ -632,9 +633,10 @@ public class EncyclopediaSettlementPageVM : EncyclopediaContentPageVM
 			};
 		}
 		NameText = _settlement.Name.ToString();
+		MBObjectBase settlement = _settlement;
 		for (int num = Campaign.Current.LogEntryHistory.GameActionLogs.Count - 1; num >= 0; num--)
 		{
-			if (Campaign.Current.LogEntryHistory.GameActionLogs[num] is IEncyclopediaLog encyclopediaLog && encyclopediaLog.IsVisibleInEncyclopediaPageOf(_settlement))
+			if (Campaign.Current.LogEntryHistory.GameActionLogs[num] is IEncyclopediaLog encyclopediaLog && encyclopediaLog.IsVisibleInEncyclopediaPageOf(settlement))
 			{
 				History.Add(new EncyclopediaHistoryEventVM(encyclopediaLog));
 			}

@@ -139,7 +139,7 @@ public class ChangeSettlementOwnerLogEntry : LogEntry, IEncyclopediaLog, IWarLog
 		return GetEncyclopediaText().ToString();
 	}
 
-	public bool IsVisibleInEncyclopediaPageOf<T>(T obj) where T : MBObjectBase
+	public bool IsVisibleInEncyclopediaPageOf(MBObjectBase obj)
 	{
 		if (obj == Settlement || obj == NewClan || obj == NewClan.Leader)
 		{

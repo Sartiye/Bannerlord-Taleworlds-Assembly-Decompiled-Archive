@@ -60,7 +60,7 @@ public class EndAllianceLogEntry : LogEntry, IEncyclopediaLog, IChatNotification
 		return textObject;
 	}
 
-	public bool IsVisibleInEncyclopediaPageOf<T>(T obj) where T : MBObjectBase
+	public bool IsVisibleInEncyclopediaPageOf(MBObjectBase obj)
 	{
 		if (obj != _kingdom1)
 		{

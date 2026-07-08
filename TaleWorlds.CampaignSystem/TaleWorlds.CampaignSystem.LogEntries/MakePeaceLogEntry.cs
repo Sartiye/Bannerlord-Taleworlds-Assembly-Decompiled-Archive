@@ -81,7 +81,7 @@ public class MakePeaceLogEntry : LogEntry, IEncyclopediaLog, IChatNotification
 		return textObject;
 	}
 
-	public bool IsVisibleInEncyclopediaPageOf<T>(T obj) where T : MBObjectBase
+	public bool IsVisibleInEncyclopediaPageOf(MBObjectBase obj)
 	{
 		if (obj != Faction1)
 		{

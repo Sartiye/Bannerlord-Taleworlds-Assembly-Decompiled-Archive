@@ -87,19 +87,19 @@ public class DefaultKingdomDecisionPermissionModel : KingdomDecisionPermissionMo
 		TextObject empty = TextObject.GetEmpty();
 		if (calledKingdom == Clan.PlayerClan.Kingdom)
 		{
-			empty = new TextObject("{=*}Your realm is not allowed to negotiate peace with {KINGDOM_TO_CALL_TO_WAR_AGAINST} due to your Call to War Agreement with {CALLING_KINGDOM}.");
+			empty = new TextObject("{=M6wsjpNN}Your realm is not allowed to negotiate peace with {KINGDOM_TO_CALL_TO_WAR_AGAINST} due to your Call to War Agreement with {CALLING_KINGDOM}.");
 			empty.SetTextVariable("KINGDOM_TO_CALL_TO_WAR_AGAINST", kingdomToCallToWarAgainst.Name);
 			empty.SetTextVariable("CALLING_KINGDOM", callingKingdom.Name);
 		}
 		else if (kingdomToCallToWarAgainst == Clan.PlayerClan.Kingdom)
 		{
-			empty = new TextObject("{=*}Your realm is not allowed to negotiate peace with {CALLED_KINGDOM} due to their Call to War Agreement with {CALLING_KINGDOM}.");
+			empty = new TextObject("{=CiFKYMKb}Your realm is not allowed to negotiate peace with {CALLED_KINGDOM} due to their Call to War Agreement with {CALLING_KINGDOM}.");
 			empty.SetTextVariable("CALLED_KINGDOM", calledKingdom.Name);
 			empty.SetTextVariable("CALLING_KINGDOM", callingKingdom.Name);
 		}
 		else
 		{
-			empty = new TextObject("{=*}{KINGDOM_NAME}  is not allowed to negotiate peace with {CALLED_KINGDOM} due to their Call to War Agreement with {CALLING_KINGDOM}.");
+			empty = new TextObject("{=mc0wmdkb}{KINGDOM_NAME} is not allowed to negotiate peace with {CALLED_KINGDOM} due to their Call to War Agreement with {CALLING_KINGDOM}.");
 			empty.SetTextVariable("KINGDOM_NAME", kingdomToCallToWarAgainst.Name);
 			empty.SetTextVariable("CALLED_KINGDOM", calledKingdom.Name);
 			empty.SetTextVariable("CALLING_KINGDOM", callingKingdom.Name);
