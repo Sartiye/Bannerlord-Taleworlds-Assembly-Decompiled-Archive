@@ -838,6 +838,9 @@ internal interface IScene
 	[EngineMethod("clear_decals", false, null, false)]
 	void ClearDecals(UIntPtr scenePointer);
 
+	[EngineMethod("clear_runtime_decals", false, null, false)]
+	void ClearRuntimeDecals(UIntPtr scenePointer);
+
 	[EngineMethod("set_photo_atmosphere_via_tod", false, null, false)]
 	void SetPhotoAtmosphereViaTod(UIntPtr scenePointer, float tod, bool withStorm);
 

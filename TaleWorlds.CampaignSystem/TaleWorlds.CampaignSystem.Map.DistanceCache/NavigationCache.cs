@@ -317,7 +317,7 @@ public abstract class NavigationCache<T> where T : ISettlementDataHolder
 					{
 						AddClosestEntrancePairBase(settlement, isPort1: false, settlement2, isPort2: true);
 					}
-					if (settlement.HasPort)
+					if (settlement.HasPort && i != j)
 					{
 						AddClosestEntrancePairBase(settlement, isPort1: true, settlement2, isPort2: false);
 					}
@@ -436,12 +436,34 @@ public abstract class NavigationCache<T> where T : ISettlementDataHolder
 
 	protected abstract float GetRealPathDistanceFromPositionToSettlement(Vec2 checkPosition, PathFaceRecord currentFaceRecord, float maxDistanceToLookForPathDetection, T currentSettlementToLook, out bool isPort);
 
-	protected T GetClosestSettlementToPosition(Vec2 checkPosition, PathFaceRecord currentFaceRecord, int[] excludedFaceIds, List<T> settlementRecords, int regionSwitchCostTo0, int regionSwitchCostTo1, float minPathScoreEverFound, out bool isPort)
+	protected T GetClosestSettlementToPosition(Vec2 checkPosition, PathFaceRecord currentFaceRecord, int[] excludedFaceIds, List<T> settlementRecords, int regionSwitchCostTo0, int regionSwitchCostTo1, float minPathScoreEverFound, out bool isPort, bool useEarlyOut = false)
 	{
 		isPort = false;
 		T result = default(T);
 		foreach (T item in GetClosestSettlementsToPositionInCache(checkPosition, settlementRecords))
 		{
+			if (useEarlyOut)
+			{
+				CampaignVec2 campaignVec;
+				if (_navigationType == MobileParty.NavigationType.Naval && item.HasPort)
+				{
+					campaignVec = item.PortPosition;
+				}
+				else if (_navigationType == MobileParty.NavigationType.All && item.HasPort)
+				{
+					float num = item.GatePosition.DistanceSquared(checkPosition);
+					campaignVec = ((item.PortPosition.DistanceSquared(checkPosition) < num) ? item.PortPosition : item.GatePosition);
+				}
+				else
+				{
+					campaignVec = item.GatePosition;
+				}
+				float num2 = minPathScoreEverFound + 25f;
+				if (campaignVec.DistanceSquared(checkPosition) > num2 * num2)
+				{
+					break;
+				}
+			}
 			bool isPort2;
 			float realPathDistanceFromPositionToSettlement = GetRealPathDistanceFromPositionToSettlement(checkPosition, currentFaceRecord, minPathScoreEverFound * 2f, item, out isPort2);
 			if (realPathDistanceFromPositionToSettlement < minPathScoreEverFound)

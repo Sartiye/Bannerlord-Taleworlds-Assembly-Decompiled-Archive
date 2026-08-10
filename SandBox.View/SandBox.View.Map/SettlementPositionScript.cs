@@ -243,7 +243,7 @@ public class SettlementPositionScript : ScriptComponentBehavior
 			Scene.GetNavMeshFaceIndex(ref record2, vec2, useGate2, checkIfDisabled: false, ignoreHeight: true);
 			if (!record.IsValid() || !record2.IsValid())
 			{
-				Debug.FailedAssert("Settlement navFace index should not be -1, check here", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\SettlementPositionScript.cs", "CheckBeingNeighbor", 392);
+				Debug.FailedAssert("Settlement navFace index should not be -1, check here", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\SettlementPositionScript.cs", "CheckBeingNeighbor", 393);
 			}
 			NavigationPath navigationPath = new NavigationPath();
 			float num = (((float)(_regionSwitchCostTo0 + _regionSwitchCostTo1) > 0f) ? 2f : 0f);
@@ -286,7 +286,7 @@ public class SettlementPositionScript : ScriptComponentBehavior
 					float num3 = ((realPathDistanceFromPositionToSettlement < realPathDistanceFromPositionToSettlement2) ? realPathDistanceFromPositionToSettlement : realPathDistanceFromPositionToSettlement2);
 					if (record3.FaceIndex != -1)
 					{
-						SettlementRecord closestSettlementToPosition = GetClosestSettlementToPosition(vec4, record3, _excludedFaceIds, settlementsToConsider, _regionSwitchCostTo0, _regionSwitchCostTo1, num3 * 0.8f, out isPort);
+						SettlementRecord closestSettlementToPosition = GetClosestSettlementToPosition(vec4, record3, _excludedFaceIds, settlementsToConsider, _regionSwitchCostTo0, _regionSwitchCostTo1, num3 * 0.8f, out isPort, useEarlyOut: true);
 						if (closestSettlementToPosition != null && closestSettlementToPosition != settlement1 && closestSettlementToPosition != settlement2)
 						{
 							flag = false;
@@ -362,7 +362,7 @@ public class SettlementPositionScript : ScriptComponentBehavior
 		{
 			Debug.Print("Error when reading distance cache " + ex.Message);
 			Debug.Print("SettlementsDistanceCacheFilePath could not be read!. Campaign starting performance will be affected very badly, cache will be initialized now.");
-			Debug.FailedAssert("SettlementsDistanceCacheFilePath could not be read!. Campaign starting performance will be affected very badly, cache will be initialized now.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\SettlementPositionScript.cs", "OnInit", 536);
+			Debug.FailedAssert("SettlementsDistanceCacheFilePath could not be read!. Campaign starting performance will be affected very badly, cache will be initialized now.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\SettlementPositionScript.cs", "OnInit", 538);
 		}
 	}
 
@@ -396,7 +396,7 @@ public class SettlementPositionScript : ScriptComponentBehavior
 		}
 		else
 		{
-			Debug.FailedAssert($"Navigation type with id {navigationCapability} file is not found, this should not be happening, will generate cache (this will take some time)", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\SettlementPositionScript.cs", "ReadNavigationCacheForNavigationTypeOnGameLoad", 576);
+			Debug.FailedAssert($"Navigation type with id {navigationCapability} file is not found, this should not be happening, will generate cache (this will take some time)", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\SettlementPositionScript.cs", "ReadNavigationCacheForNavigationTypeOnGameLoad", 578);
 			sandBoxNavigationCache = new SandBoxNavigationCache(navigationCapability);
 			sandBoxNavigationCache.GenerateCacheData();
 		}
@@ -427,7 +427,8 @@ public class SettlementPositionScript : ScriptComponentBehavior
 		}
 		if (variableName == "ComputeAndSaveSettlementDistanceCache")
 		{
-			SaveSettlementDistanceCacheEditor();
+			bool useNavalNavigation = !GetMapIsSandBox() && ModuleHelper.IsModuleActive("NavalDLC");
+			SaveSettlementDistanceCacheEditor(useNavalNavigation);
 		}
 		if (variableName == "CheckPositions")
 		{
@@ -587,7 +588,7 @@ public class SettlementPositionScript : ScriptComponentBehavior
 		}
 		if (FindClass(_partyNavigationModelOverriddenClassName) == null)
 		{
-			Debug.FailedAssert("Cant find custom navigation model", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\SettlementPositionScript.cs", "GetPartyNavigationModel", 826);
+			Debug.FailedAssert("Cant find custom navigation model", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\SettlementPositionScript.cs", "GetPartyNavigationModel", 829);
 			return CreateBaseNavigationModel(GetMapIsNavalDLC());
 		}
 		return CreateCustomNavigationModel(_partyNavigationModelOverriddenClassName, !GetMapIsSandBox() && ModuleHelper.IsModuleActive("NavalDLC"));
@@ -625,7 +626,7 @@ public class SettlementPositionScript : ScriptComponentBehavior
 		}
 		if (FindClass(_distanceModelOverridenClassName) == null)
 		{
-			Debug.FailedAssert("Cant find custom navigation model", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\SettlementPositionScript.cs", "GetMapDistanceModel", 882);
+			Debug.FailedAssert("Cant find custom navigation model", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\SettlementPositionScript.cs", "GetMapDistanceModel", 885);
 			return CreateBaseDistanceModel(GetMapIsNavalDLC());
 		}
 		return CreateCustomMapDistanceModel(_distanceModelOverridenClassName, !GetMapIsSandBox() && ModuleHelper.IsModuleActive("NavalDLC"));
@@ -640,7 +641,7 @@ public class SettlementPositionScript : ScriptComponentBehavior
 		Type type = FindClass(name);
 		if (type == null)
 		{
-			Debug.FailedAssert("Cant find custom navigation model", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\SettlementPositionScript.cs", "CreateCustomNavigationModel", 903);
+			Debug.FailedAssert("Cant find custom navigation model", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\SettlementPositionScript.cs", "CreateCustomNavigationModel", 906);
 			return CreateBaseNavigationModel(naval);
 		}
 		if (type.GetConstructor(new Type[1] { typeof(PartyNavigationModel) }) != null)
@@ -659,7 +660,7 @@ public class SettlementPositionScript : ScriptComponentBehavior
 		Type type = FindClass(name);
 		if (type == null)
 		{
-			Debug.FailedAssert("Cant find custom navigation model", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\SettlementPositionScript.cs", "CreateCustomMapDistanceModel", 930);
+			Debug.FailedAssert("Cant find custom navigation model", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\SettlementPositionScript.cs", "CreateCustomMapDistanceModel", 933);
 			return CreateBaseDistanceModel(naval);
 		}
 		return (MapDistanceModel)Activator.CreateInstance(type);
@@ -858,12 +859,20 @@ public class SettlementPositionScript : ScriptComponentBehavior
 		xmlDocument.Save(SettlementsXmlPath);
 	}
 
-	private void SaveSettlementDistanceCacheEditor()
+	private void SaveSettlementDistanceCacheEditor(bool useNavalNavigation)
 	{
+		GetSettlementsDistanceCacheFileForCapability(GetMapModuleId(), MobileParty.NavigationType.Default, out var filePath);
+		string directoryName = System.IO.Path.GetDirectoryName(filePath);
+		if (!Directory.Exists(directoryName))
+		{
+			MBDebug.ShowMessageBox("Directory not found:\n" + directoryName + "\n\nPlease create the 'DistanceCaches' folder in your module's ModuleData directory before computing the cache.", "Settlement Distance Cache", 5u);
+			return;
+		}
+		MBDebug.ShowMessageBox("Cache computation is starting. The editor will be unresponsive during this process.\nPlease wait for the completion message.\n\nClick OK to start.", "Settlement Distance Cache", 129u);
 		bool[] regionMapping = SandBoxHelpers.MapSceneHelper.GetRegionMapping(_partyNavigationModel);
 		base.Scene.SetNavMeshRegionMap(regionMapping);
 		List<MobileParty.NavigationType> list = new List<MobileParty.NavigationType> { MobileParty.NavigationType.Default };
-		if (GetMapIsNavalDLC() || (!GetMapIsSandBox() && ModuleHelper.IsModuleActive("NavalDLC")))
+		if (useNavalNavigation)
 		{
 			list.Add(MobileParty.NavigationType.Naval);
 			list.Add(MobileParty.NavigationType.All);
@@ -882,11 +891,12 @@ public class SettlementPositionScript : ScriptComponentBehavior
 				}
 				SettlementPositionScriptNavigationCache settlementPositionScriptNavigationCache = new SettlementPositionScriptNavigationCache(settlementRecords, base.Scene, _mapDistanceModel, _partyNavigationModel, item);
 				settlementPositionScriptNavigationCache.GenerateCacheData();
-				GetSettlementsDistanceCacheFileForCapability(GetMapModuleId(), item, out var filePath);
-				settlementPositionScriptNavigationCache.Serialize(filePath);
+				GetSettlementsDistanceCacheFileForCapability(GetMapModuleId(), item, out var filePath2);
+				settlementPositionScriptNavigationCache.Serialize(filePath2);
 			}
-			catch
+			catch (Exception ex)
 			{
+				MBDebug.ShowMessageBox($"Error computing settlement distance cache for '{item}'.\n\nMessage: {ex.Message}\n\nStackTrace:\n{ex.StackTrace}", "Settlement Distance Cache Error", 5u);
 			}
 			finally
 			{
@@ -897,5 +907,6 @@ public class SettlementPositionScript : ScriptComponentBehavior
 				}
 			}
 		}
+		MBDebug.ShowMessageBox("Settlement distance cache computation completed successfully!", "Settlement Distance Cache", 129u);
 	}
 }

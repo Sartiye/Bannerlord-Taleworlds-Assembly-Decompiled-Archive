@@ -2081,7 +2081,7 @@ public sealed class MobileParty : CampaignObjectBase, ILocatable<MobileParty>, I
 			{
 				(Game.Current.GameStateManager.ActiveState as MapState)?.OnMainPartyEncounter();
 			}
-			if (mobileParty.MapEvent != null && mobileParty.MapEvent.IsRaid)
+			if (mobileParty.MapEvent != null && mobileParty.MapEvent.IsRaid && engagingParty.IsMainParty)
 			{
 				EncounterManager.StartSettlementEncounter(engagingParty, mobileParty.MapEvent.MapEventSettlement);
 			}

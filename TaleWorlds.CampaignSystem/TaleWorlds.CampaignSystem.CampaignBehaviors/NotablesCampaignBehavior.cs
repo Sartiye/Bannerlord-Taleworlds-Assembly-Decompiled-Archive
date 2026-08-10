@@ -35,6 +35,7 @@ public class NotablesCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.DailyTickHeroEvent.AddNonSerializedListener(this, DailyTickHero);
 		CampaignEvents.DailyTickSettlementEvent.AddNonSerializedListener(this, DailyTickSettlement);
 		CampaignEvents.HeroCreated.AddNonSerializedListener(this, OnHeroCreated);
+		CampaignEvents.CanHeroDieEvent.AddNonSerializedListener(this, CanHeroDie);
 	}
 
 	private void OnHeroCreated(Hero hero, bool isBornNaturally)
@@ -79,6 +80,22 @@ public class NotablesCampaignBehavior : CampaignBehaviorBase
 	public void OnNewGameCreated(CampaignGameStarter campaignGameStarter)
 	{
 		SpawnNotablesAtGameStart();
+	}
+
+	private void CanHeroDie(Hero hero, KillCharacterAction.KillCharacterActionDetail causeOfDeath, ref bool result)
+	{
+		if (!hero.IsNotable)
+		{
+			return;
+		}
+		foreach (CaravanPartyComponent ownedCaravan in hero.OwnedCaravans)
+		{
+			if (ownedCaravan.Party.MapEvent != null)
+			{
+				result = false;
+				break;
+			}
+		}
 	}
 
 	private void DetermineRelation(Hero hero1, Hero hero2, float randomValue, float chanceOfConflict)

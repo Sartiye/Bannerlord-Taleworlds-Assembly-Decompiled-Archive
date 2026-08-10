@@ -124,6 +124,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void ClearRuntimeDecalsDelegate(UIntPtr scenePointer);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool ContainsTerrainDelegate(UIntPtr scenePointer);
 
@@ -1618,6 +1623,8 @@ internal class ScriptingInterfaceOfIScene : IScene
 
 	public static ClearNavMeshDelegate call_ClearNavMeshDelegate;
 
+	public static ClearRuntimeDecalsDelegate call_ClearRuntimeDecalsDelegate;
+
 	public static ContainsTerrainDelegate call_ContainsTerrainDelegate;
 
 	public static CreateBurstParticleDelegate call_CreateBurstParticleDelegate;
@@ -2333,6 +2340,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 	public void ClearNavMesh(UIntPtr scenePointer)
 	{
 		call_ClearNavMeshDelegate(scenePointer);
+	}
+
+	public void ClearRuntimeDecals(UIntPtr scenePointer)
+	{
+		call_ClearRuntimeDecalsDelegate(scenePointer);
 	}
 
 	public bool ContainsTerrain(UIntPtr scenePointer)

@@ -1643,6 +1643,11 @@ public sealed class Scene : NativeObject
 		EngineApplicationInterface.IScene.ClearDecals(base.Pointer);
 	}
 
+	public void ClearRuntimeDecals()
+	{
+		EngineApplicationInterface.IScene.ClearRuntimeDecals(base.Pointer);
+	}
+
 	public void SetPhotoAtmosphereViaTod(float tod, bool withStorm)
 	{
 		EngineApplicationInterface.IScene.SetPhotoAtmosphereViaTod(base.Pointer, tod, withStorm);

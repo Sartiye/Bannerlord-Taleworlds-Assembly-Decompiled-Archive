@@ -1806,7 +1806,7 @@ public sealed class Mission : DotNetObject, IMission
 		_activeMissionObjects.Clear();
 		_activeMissionObjects.AddRange(MissionObjects);
 		_tickActions.Clear();
-		Scene.ClearDecals();
+		Scene.ClearRuntimeDecals();
 		this.OnMissionReset?.Invoke(this, null);
 	}
 

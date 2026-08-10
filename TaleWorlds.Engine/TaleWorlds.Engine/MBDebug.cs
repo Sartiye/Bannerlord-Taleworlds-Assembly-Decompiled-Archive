@@ -132,9 +132,9 @@ public static class MBDebug
 		}
 	}
 
-	public static void ShowMessageBox(string lpText, string lpCaption, uint uType)
+	public static int ShowMessageBox(string lpText, string lpCaption, uint uType)
 	{
-		EngineApplicationInterface.IDebug.MessageBox(lpText, lpCaption, uType);
+		return EngineApplicationInterface.IDebug.MessageBox(lpText, lpCaption, uType);
 	}
 
 	[Conditional("_RGL_KEEP_ASSERTS")]

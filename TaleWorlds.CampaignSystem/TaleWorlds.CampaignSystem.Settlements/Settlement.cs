@@ -1235,6 +1235,17 @@ public sealed class Settlement : MBObjectBase, ILocatable<Settlement>, IMapPoint
 		{
 			Town.Prosperity = _oldProsperityObsolete;
 		}
+		if (MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.4.8")) && IsVillage && Party != null && Party.MapEventSide != null)
+		{
+			if (Party.MapEventSide.MapEvent.IsFinalized)
+			{
+				Party.MapEventSide = null;
+			}
+			else if (Party.MapEventSide.MapEvent.IsRaid && Party.MapEventSide.OtherSide.Parties.Any((MapEventParty x) => x.Party.IsMobile && x.Party.MobileParty.IsMilitia))
+			{
+				Party.MapEventSide = Party.MapEventSide.OtherSide;
+			}
+		}
 	}
 
 	private void SpawnMilitiaParty()

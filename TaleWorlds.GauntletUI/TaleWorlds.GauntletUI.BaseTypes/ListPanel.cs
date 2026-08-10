@@ -54,18 +54,18 @@ public class ListPanel : Container
 	{
 		if (base.AcceptDrop && IsDragHovering)
 		{
-			base.DragHoverInsertionIndex = GetIndexForDrop(base.EventManager.MousePosition);
+			base.DragHoverInsertionIndex = GetIndexForDrop(base.EventManager.MousePosition * base.Context.CustomScale);
 		}
 	}
 
-	public override int GetIndexForDrop(Vector2 mousePosition)
+	public override int GetIndexForDrop(Vector2 draggedWidgetPosition)
 	{
-		return StackLayout.GetIndexForDrop(this, mousePosition);
+		return StackLayout.GetIndexForDrop(this, draggedWidgetPosition);
 	}
 
-	public override Vector2 GetDropGizmoPosition(Vector2 mousePosition)
+	public override Vector2 GetDropGizmoPosition(Vector2 draggedWidgetPosition)
 	{
-		return StackLayout.GetDropGizmoPosition(this, mousePosition);
+		return StackLayout.GetDropGizmoPosition(this, draggedWidgetPosition);
 	}
 
 	public override void OnChildSelected(Widget widget)

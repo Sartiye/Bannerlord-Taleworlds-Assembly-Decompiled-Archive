@@ -573,6 +573,17 @@ public sealed class MapEvent : MBObjectBase
 			DiplomaticallyFinished = true;
 			PlayerEncounter.Finish();
 		}
+		if (!MBSaveLoad.IsUpdatingGameVersion || !MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.4.6.116050")))
+		{
+			return;
+		}
+		foreach (PartyBase item in InvolvedParties.ToList())
+		{
+			if (item.MobileParty != null && item.MobileParty.CaravanPartyComponent != null && item.MobileParty.CaravanPartyComponent.MobileParty == null)
+			{
+				item.MapEventSide = null;
+			}
+		}
 	}
 
 	private void AddInsideSettlementParties(Settlement relatedSettlement)
