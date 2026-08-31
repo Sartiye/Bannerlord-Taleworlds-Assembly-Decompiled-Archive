@@ -129,9 +129,9 @@ public class DisruptSupplyLinesConspiracyQuest : ConspiracyQuestBase
 				{
 					if (!StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine)
 					{
-						return !StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom);
+						return StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom);
 					}
-					return StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom);
+					return !StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom);
 				}
 			}
 			return false;
@@ -149,9 +149,9 @@ public class DisruptSupplyLinesConspiracyQuest : ConspiracyQuestBase
 					{
 						if (!StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine)
 						{
-							return !StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom);
+							return StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom);
 						}
-						return StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom);
+						return !StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom);
 					}
 				}
 				return false;
@@ -185,7 +185,7 @@ public class DisruptSupplyLinesConspiracyQuest : ConspiracyQuestBase
 				MapDistanceModel mapDistanceModel3 = Campaign.Current.Models.MapDistanceModel;
 				CampaignVec2 fromPoint3 = s.GatePosition;
 				CampaignVec2 toPoint3 = centralSettlement.GatePosition;
-				if (mapDistanceModel3.PathExistBetweenPoints(in fromPoint3, in toPoint3, MobileParty.NavigationType.Default) && (StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine ? StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom) : (!StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom))) && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) > 100f)
+				if (mapDistanceModel3.PathExistBetweenPoints(in fromPoint3, in toPoint3, MobileParty.NavigationType.Default) && (StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine ? (!StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom)) : StoryModeData.IsKingdomImperial(s.OwnerClan.Kingdom)) && Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) > 100f)
 				{
 					return Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) < 500f;
 				}
@@ -232,6 +232,10 @@ public class DisruptSupplyLinesConspiracyQuest : ConspiracyQuestBase
 	protected override void InitializeQuestOnGameLoad()
 	{
 		SetDialogs();
+		if (_questCaravanMobileParty != null && _questCaravanMobileParty.IsActive && _questCaravanMobileParty.MapEventSide == null && _questCaravanMobileParty.ActualClan != StoryModeManager.Current.MainStoryLine.SecondPhase.ConspiracyClan)
+		{
+			_questCaravanMobileParty.ActualClan = StoryModeManager.Current.MainStoryLine.SecondPhase.ConspiracyClan;
+		}
 	}
 
 	protected override void HourlyTick()
@@ -268,6 +272,7 @@ public class DisruptSupplyLinesConspiracyQuest : ConspiracyQuestBase
 		}
 		int num = Array.IndexOf(_caravanTargetSettlements, settlement) + 1;
 		SetPartyAiAction.GetActionForVisitingSettlement(_questCaravanMobileParty, _caravanTargetSettlements[num], MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
+		_questCaravanMobileParty.ItemRoster.AddToCounts(DefaultItems.Grain, 10);
 		if (IsTracked(settlement))
 		{
 			RemoveTrackedObject(settlement);
@@ -331,21 +336,13 @@ public class DisruptSupplyLinesConspiracyQuest : ConspiracyQuestBase
 		PartyTemplateObject partyTemplateObject = (StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine ? Campaign.Current.ObjectManager.GetObject<PartyTemplateObject>("conspiracy_anti_imperial_special_raider_party_template") : Campaign.Current.ObjectManager.GetObject<PartyTemplateObject>("conspiracy_imperial_special_raider_party_template"));
 		Hero owner = (StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine ? StoryModeHeroes.AntiImperialMentor : StoryModeHeroes.ImperialMentor);
 		GetAdditionalVisualsForParty(QuestFromSettlement.Culture, out var mountStringId, out var harnessStringId);
-		string[] source = new string[5] { "aserai", "battania", "khuzait", "sturgia", "vlandia" };
-		Clan clan = null;
-		foreach (Clan item in Clan.All)
-		{
-			if (!item.IsEliminated && !item.IsBanditFaction && !item.IsMinorFaction && ((StoryModeManager.Current.MainStoryLine.IsOnAntiImperialQuestLine && item.Culture.StringId == "empire") || (StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine && source.Contains(item.Culture.StringId))))
-			{
-				clan = item;
-				break;
-			}
-		}
-		_questCaravanMobileParty = CustomPartyComponent.CreateCustomPartyWithPartyTemplate(QuestFromSettlement.GatePosition, 0f, QuestFromSettlement, new TextObject("{=eVzg5Mtl}Conspiracy Caravan"), clan, partyTemplateObject, owner, mountStringId, harnessStringId, 4f, avoidHostileActions: true);
+		_ = new string[5] { "aserai", "battania", "khuzait", "sturgia", "vlandia" };
+		Clan conspiracyClan = StoryModeManager.Current.MainStoryLine.SecondPhase.ConspiracyClan;
+		_questCaravanMobileParty = CustomPartyComponent.CreateCustomPartyWithPartyTemplate(QuestFromSettlement.GatePosition, 0f, QuestFromSettlement, new TextObject("{=eVzg5Mtl}Conspiracy Caravan"), conspiracyClan, partyTemplateObject, owner, mountStringId, harnessStringId, 4f, avoidHostileActions: true);
 		_questCaravanMobileParty.Aggressiveness = 0f;
 		_questCaravanMobileParty.MemberRoster.Clear();
+		_questCaravanMobileParty.ItemRoster.AddToCounts(DefaultItems.Grain, 40);
 		_questCaravanMobileParty.ItemRoster.AddToCounts(MBObjectManager.Instance.GetObject<ItemObject>("fish"), 20);
-		_questCaravanMobileParty.ItemRoster.AddToCounts(MBObjectManager.Instance.GetObject<ItemObject>("grain"), 40);
 		_questCaravanMobileParty.ItemRoster.AddToCounts(MBObjectManager.Instance.GetObject<ItemObject>("butter"), 20);
 		DistributeConspiracyRaiderTroopsByLevel(partyTemplateObject, _questCaravanMobileParty.Party, CaravanPartySize);
 		_questCaravanMobileParty.IgnoreByOtherPartiesTill(base.QuestDueTime);

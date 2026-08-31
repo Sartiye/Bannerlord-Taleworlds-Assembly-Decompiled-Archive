@@ -42,6 +42,12 @@ public class MapEventParty
 	[SaveableProperty(1)]
 	public PartyBase Party { get; private set; }
 
+	[SaveableProperty(10)]
+	public int PlunderedGold { get; set; }
+
+	[SaveableProperty(11)]
+	public int GoldLost { get; set; }
+
 	public float GainedRenown => GainedRenownExplained.ResultNumber;
 
 	public float GainedInfluence => GainedInfluenceExplained.ResultNumber;
@@ -53,12 +59,6 @@ public class MapEventParty
 	public ExplainedNumber GainedInfluenceExplained { get; private set; }
 
 	public ExplainedNumber GainedMoraleExplained { get; private set; }
-
-	[SaveableProperty(10)]
-	public int PlunderedGold { get; set; }
-
-	[SaveableProperty(11)]
-	public int GoldLost { get; set; }
 
 	public int HealthyManCountAtStart => _healthyManCountAtStart;
 

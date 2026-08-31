@@ -18,7 +18,7 @@ public class NavalDLCSettlementProsperityModel : SettlementProsperityModel
 		ExplainedNumber bonuses = base.BaseModel.CalculateHearthChange(village, includeDescriptions);
 		if (village.Bound.HasPort && village.Bound.IsFortification)
 		{
-			PerkHelper.AddPerkBonusForTown(NavalPerks.Shipmaster.FairWinds, village.Bound.Town, ref bonuses);
+			PerkHelper.AddPerkBonusForTown(NavalPerks.Shipmaster.FairWinds, village.Bound.Town, isPrimaryBonus: false, ref bonuses);
 		}
 		return bonuses;
 	}

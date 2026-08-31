@@ -15,6 +15,8 @@ public class PlayerBattleInfo
 		Fled
 	}
 
+	public const int SpectatorTeamNo = -1;
+
 	private State _state;
 
 	public PlayerId PlayerId { get; set; }
@@ -29,6 +31,8 @@ public class PlayerBattleInfo
 
 	public BattleJoinType JoinType { get; set; }
 
+	public bool IsSpectator { get; set; }
+
 	public int PeerIndex { get; set; }
 
 	public State CurrentState => _state;
@@ -37,20 +41,22 @@ public class PlayerBattleInfo
 	{
 	}
 
-	public PlayerBattleInfo(PlayerId playerId, string name, int teamNo)
+	public PlayerBattleInfo(PlayerId playerId, string name, int teamNo, bool isSpectator)
 	{
 		PlayerId = playerId;
 		Name = name;
 		TeamNo = teamNo;
+		IsSpectator = isSpectator;
 		PeerIndex = -1;
 		_state = State.AssignedToBattle;
 	}
 
-	public PlayerBattleInfo(PlayerId playerId, string name, int teamNo, int peerIndex, State state)
+	public PlayerBattleInfo(PlayerId playerId, string name, int teamNo, int peerIndex, State state, bool isSpectator)
 	{
 		PlayerId = playerId;
 		Name = name;
 		TeamNo = teamNo;
+		IsSpectator = isSpectator;
 		PeerIndex = peerIndex;
 		_state = state;
 	}
@@ -96,6 +102,6 @@ public class PlayerBattleInfo
 
 	public PlayerBattleInfo Clone()
 	{
-		return new PlayerBattleInfo(PlayerId, Name, TeamNo, PeerIndex, _state);
+		return new PlayerBattleInfo(PlayerId, Name, TeamNo, PeerIndex, _state, IsSpectator);
 	}
 }

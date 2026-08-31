@@ -31,6 +31,8 @@ public class ClanFinanceExpenseItemVM : ViewModel
 
 	private string _currentWageLimitValueText;
 
+	private string _currentWageOverLimitText;
+
 	private string _unlimitedWageText;
 
 	private string _titleText;
@@ -156,6 +158,23 @@ public class ClanFinanceExpenseItemVM : ViewModel
 			{
 				_currentWageLimitValueText = value;
 				OnPropertyChangedWithValue(value, "CurrentWageLimitValueText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string CurrentWageOverLimitText
+	{
+		get
+		{
+			return _currentWageOverLimitText;
+		}
+		set
+		{
+			if (value != _currentWageOverLimitText)
+			{
+				_currentWageOverLimitText = value;
+				OnPropertyChangedWithValue(value, "CurrentWageOverLimitText");
 			}
 		}
 	}
@@ -301,7 +320,7 @@ public class ClanFinanceExpenseItemVM : ViewModel
 		CurrentWageText = new TextObject("{=pnFgwLYG}Current Wage").ToString();
 		CurrentWageLimitText = new TextObject("{=sWWxrafa}Current Limit").ToString();
 		TitleText = new TextObject("{=qdoJOH0j}Party Wage").ToString();
-		UnlimitedWageText = new TextObject("{=WySAapWO}Unlimited Wage").ToString();
+		UnlimitedWageText = new TextObject("{=lC5xsoSh}Unlimited").ToString();
 		WageLimitHint = new HintViewModel(new TextObject("{=w0slxNAl}If limit is lower than current wage, party will not recruit troops until wage is reduced to the limit. If limit is higher than current wage, party will keep recruiting."));
 		UpdateCurrentWageLimitText();
 	}
@@ -332,5 +351,6 @@ public class ClanFinanceExpenseItemVM : ViewModel
 	private void UpdateCurrentWageLimitText()
 	{
 		CurrentWageLimitValueText = (IsUnlimitedWage ? new TextObject("{=lC5xsoSh}Unlimited").ToString() : CurrentWageLimit.ToString());
+		CurrentWageOverLimitText = new TextObject("{=!}{CURRENT}/{LIMIT}").SetTextVariable("CURRENT", CurrentWage).SetTextVariable("LIMIT", CurrentWageLimitValueText).ToString();
 	}
 }

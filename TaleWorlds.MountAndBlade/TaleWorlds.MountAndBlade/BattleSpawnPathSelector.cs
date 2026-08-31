@@ -77,7 +77,7 @@ public class BattleSpawnPathSelector
 		return pathPathData.IsValid;
 	}
 
-	public MBReadOnlyList<SpawnPathData> GetReinforcementPathsDataOfSide(BattleSideEnum side)
+	public MBReadOnlyList<(SpawnPathData pathData, float startOffset)> GetReinforcementPathsDataOfSide(BattleSideEnum side)
 	{
 		if (!IsInitialized)
 		{

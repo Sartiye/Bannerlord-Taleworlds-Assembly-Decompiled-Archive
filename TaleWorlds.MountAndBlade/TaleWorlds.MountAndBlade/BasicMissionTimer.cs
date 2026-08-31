@@ -4,20 +4,20 @@ public class BasicMissionTimer
 {
 	private float _startTime;
 
-	public float ElapsedTime => MBCommon.GetTotalMissionTime() - _startTime;
+	public float ElapsedTime => Mission.Current.CurrentTime - _startTime;
 
 	public BasicMissionTimer()
 	{
-		_startTime = MBCommon.GetTotalMissionTime();
+		_startTime = Mission.Current.CurrentTime;
 	}
 
 	public void Reset()
 	{
-		_startTime = MBCommon.GetTotalMissionTime();
+		_startTime = Mission.Current.CurrentTime;
 	}
 
 	public void Set(float newElapsedTime)
 	{
-		_startTime = MBCommon.GetTotalMissionTime() - newElapsedTime;
+		_startTime = Mission.Current.CurrentTime - newElapsedTime;
 	}
 }

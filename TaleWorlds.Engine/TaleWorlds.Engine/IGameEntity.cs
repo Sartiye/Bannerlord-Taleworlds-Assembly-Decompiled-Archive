@@ -268,7 +268,7 @@ internal interface IGameEntity
 	Vec3 GetGlobalScale(UIntPtr pointer);
 
 	[EngineMethod("replace_physics_body_with_quad_physics_body", false, null, false)]
-	void ReplacePhysicsBodyWithQuadPhysicsBody(UIntPtr pointer, UIntPtr quad, int physicsMaterial, BodyFlags bodyFlags, int numberOfVertices, UIntPtr indices, int numberOfIndices);
+	void ReplacePhysicsBodyWithQuadPhysicsBody(UIntPtr pointer, UIntPtr quad, int physicsMaterial, BodyFlags bodyFlags, int numberOfVertices, UIntPtr indices, int numberOfIndices, bool replaceTrianglemeshDescriptions);
 
 	[EngineMethod("get_body_shape", false, null, false)]
 	PhysicsShape GetBodyShape(UIntPtr entityId);

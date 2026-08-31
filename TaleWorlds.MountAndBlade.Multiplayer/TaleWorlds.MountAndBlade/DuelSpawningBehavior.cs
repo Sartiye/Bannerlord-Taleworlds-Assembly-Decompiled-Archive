@@ -36,12 +36,12 @@ public class DuelSpawningBehavior : SpawningBehaviorBase
 	{
 		foreach (NetworkCommunicator networkPeer in GameNetwork.NetworkPeers)
 		{
-			if (!networkPeer.IsSynchronized)
+			if (!networkPeer.IsSynchronized || networkPeer.IsSpectator)
 			{
 				continue;
 			}
 			MissionPeer component = networkPeer.GetComponent<MissionPeer>();
-			if (!(component.Representative is DuelMissionRepresentative) || !networkPeer.IsSynchronized || component.ControlledAgent != null || component.HasSpawnedAgentVisuals || component.Team == null || component.Team == base.Mission.SpectatorTeam || !component.TeamInitialPerkInfoReady || component.Culture == null || !component.SpawnTimer.Check(Mission.Current.CurrentTime))
+			if (component == null || !(component.Representative is DuelMissionRepresentative) || !networkPeer.IsSynchronized || component.ControlledAgent != null || component.HasSpawnedAgentVisuals || component.Team == null || component.Team == base.Mission.SpectatorTeam || !component.TeamInitialPerkInfoReady || component.Culture == null || !component.SpawnTimer.Check(Mission.Current.CurrentTime))
 			{
 				continue;
 			}

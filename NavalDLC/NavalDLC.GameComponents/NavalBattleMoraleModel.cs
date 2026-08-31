@@ -2,10 +2,12 @@ using Helpers;
 using NavalDLC.CharacterDevelopment;
 using NavalDLC.Missions.MissionLogics;
 using NavalDLC.Missions.Objects;
+using SandBox.GameComponents;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.MountAndBlade.ComponentInterfaces;
 
@@ -20,18 +22,13 @@ public class NavalBattleMoraleModel : BattleMoraleModel
 
 	public override (float affectedSideMaxMoraleLoss, float affectorSideMaxMoraleGain) CalculateMaxMoraleChangeDueToAgentIncapacitated(Agent affectedAgent, AgentState affectedAgentState, Agent affectorAgent, in KillingBlow killingBlow)
 	{
-		var (num, num2) = base.BaseModel.CalculateMaxMoraleChangeDueToAgentIncapacitated(affectedAgent, affectedAgentState, affectorAgent, in killingBlow);
-		if (Mission.Current.IsNavalBattle)
+		float casualtiesFactor = CalculateCasualtiesFactor(affectedAgent.Team?.Side ?? BattleSideEnum.None);
+		var (bonuses, explainedNumber) = SandboxBattleMoraleModel.CalculateMaxMoraleChangeDueToAgentIncapacitatedExplained(affectedAgent, affectedAgentState, affectorAgent, in killingBlow, casualtiesFactor);
+		if (affectorAgent?.Character is CharacterObject && affectorAgent?.Formation?.Captain?.Character is CharacterObject captainCharacter)
 		{
-			ExplainedNumber explainedNumber = new ExplainedNumber(num2);
-			ExplainedNumber explainedNumber2 = new ExplainedNumber(num);
-			if (affectorAgent?.Character is CharacterObject && affectorAgent?.Formation?.Captain?.Character is CharacterObject characterObject && characterObject.GetPerkValue(NavalPerks.Mariner.TerrorOfTheSeas))
-			{
-				explainedNumber2.AddFactor(NavalPerks.Mariner.TerrorOfTheSeas.PrimaryBonus);
-			}
-			return (affectedSideMaxMoraleLoss: explainedNumber2.ResultNumber, affectorSideMaxMoraleGain: explainedNumber.ResultNumber);
+			PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.TerrorOfTheSeas, affectorAgent.CurrentBattleEnvironment, captainCharacter, ref bonuses);
 		}
-		return (affectedSideMaxMoraleLoss: num, affectorSideMaxMoraleGain: num2);
+		return (affectedSideMaxMoraleLoss: MathF.Max(bonuses.ResultNumber, 0f), affectorSideMaxMoraleGain: MathF.Max(explainedNumber.ResultNumber, 0f));
 	}
 
 	public override (float affectedSideMaxMoraleLoss, float affectorSideMaxMoraleGain) CalculateMaxMoraleChangeDueToAgentPanicked(Agent agent)
@@ -46,8 +43,7 @@ public class NavalBattleMoraleModel : BattleMoraleModel
 
 	public override float GetEffectiveInitialMorale(Agent agent, float baseMorale)
 	{
-		float effectiveInitialMorale = base.BaseModel.GetEffectiveInitialMorale(agent, baseMorale);
-		ExplainedNumber stat = new ExplainedNumber(effectiveInitialMorale);
+		ExplainedNumber stat = SandboxBattleMoraleModel.GetEffectiveInitialMoraleExplained(agent, baseMorale);
 		PartyBase partyBase = (PartyBase)(agent?.Origin?.BattleCombatant);
 		MobileParty mobileParty = ((partyBase != null && partyBase.IsMobile) ? partyBase.MobileParty : null);
 		CharacterObject characterObject = agent?.Character as CharacterObject;
@@ -55,6 +51,7 @@ public class NavalBattleMoraleModel : BattleMoraleModel
 		Ship ship = null;
 		if (mobileParty != null && characterObject != null)
 		{
+			BattleEnvironment currentBattleEnvironment = agent.CurrentBattleEnvironment;
 			CharacterObject characterObject2 = mobileParty.Army?.LeaderParty?.LeaderHero?.CharacterObject;
 			CharacterObject characterObject3 = mobileParty.LeaderHero?.CharacterObject;
 			CharacterObject characterObject4 = agent.Formation?.Captain?.Character as CharacterObject;
@@ -78,14 +75,14 @@ public class NavalBattleMoraleModel : BattleMoraleModel
 			{
 				if (Mission.Current.IsNavalBattle)
 				{
-					PerkHelper.AddPerkBonusForParty(NavalPerks.Mariner.RallyingCry, mobileParty, isPrimaryBonus: true, ref stat);
+					PerkHelper.AddPerkBonusForParty(NavalPerks.Mariner.RallyingCry, currentBattleEnvironment, mobileParty, isPrimaryBonus: true, ref stat);
 					if (characterObject.IsMariner)
 					{
-						PerkHelper.AddPerkBonusForParty(NavalPerks.Mariner.AxeOfTheNorthwind, mobileParty, isPrimaryBonus: false, ref stat);
+						PerkHelper.AddPerkBonusForParty(NavalPerks.Mariner.AxeOfTheNorthwind, currentBattleEnvironment, mobileParty, isPrimaryBonus: false, ref stat);
 					}
 					else
 					{
-						PerkHelper.AddPerkBonusForParty(NavalPerks.Mariner.SunnyDisposition, mobileParty, isPrimaryBonus: false, ref stat);
+						PerkHelper.AddPerkBonusForParty(NavalPerks.Mariner.SunnyDisposition, currentBattleEnvironment, mobileParty, isPrimaryBonus: false, ref stat);
 					}
 				}
 				if (characterObject3.IsHero && characterObject3.HeroObject.Clan?.Kingdom != null && characterObject3.HeroObject.Clan.Kingdom.HasPolicy(NavalPolicies.FraternalFleetDoctrine))
@@ -161,12 +158,12 @@ public class NavalBattleMoraleModel : BattleMoraleModel
 	{
 		float baseNumber = base.BaseModel.CalculateMoraleOnRamming(agent, rammingShip, rammedShip);
 		ExplainedNumber bonuses = new ExplainedNumber(baseNumber);
-		CharacterObject characterObject = agent.Formation?.Captain?.Character as CharacterObject;
+		CharacterObject characterObject = (agent.Formation?.Captain)?.Character as CharacterObject;
 		if (agent?.Character == characterObject)
 		{
 			characterObject = null;
 		}
-		PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Shipmaster.ShockAndAwe, characterObject, ref bonuses);
+		PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Shipmaster.ShockAndAwe, agent.CurrentBattleEnvironment, characterObject, ref bonuses);
 		Figurehead figurehead = (rammingShip as Ship).Figurehead;
 		if (figurehead != null && figurehead == DefaultFigureheads.Ram)
 		{

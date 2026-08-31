@@ -165,8 +165,8 @@ public class MissionCustomGameServerComponent : MissionLobbyComponent
 		{
 			if (!_isBattleStartEventSent)
 			{
-				string strValue = MultiplayerOptions.OptionType.CultureTeam1.GetStrValue();
-				string strValue2 = MultiplayerOptions.OptionType.CultureTeam2.GetStrValue();
+				string strValue = MultiplayerOptions.OptionType.Map.GetStrValue();
+				string strValue2 = MultiplayerOptions.OptionType.CultureTeam1.GetStrValue();
 				Dictionary<PlayerId, int> playerTeams = _battleResult.GetCurrentBattleResult().PlayerEntries.Select((KeyValuePair<string, BattlePlayerEntry> pe) => (Key: pe.Key, TeamNo: pe.Value.TeamNo)).ToDictionary(((string Key, int TeamNo) kv) => PlayerId.FromString(kv.Key), ((string Key, int TeamNo) kv) => kv.TeamNo);
 				_customBattleServer.BattleStarted(playerTeams, strValue, strValue2);
 				_isBattleStartEventSent = true;
@@ -183,8 +183,8 @@ public class MissionCustomGameServerComponent : MissionLobbyComponent
 		}
 		if (_defenderHasAtLeastOnePlayer && _attackerHasAtLeastOnePlayer && !_isBattleStartEventSent)
 		{
-			string strValue3 = MultiplayerOptions.OptionType.CultureTeam1.GetStrValue();
-			string strValue4 = MultiplayerOptions.OptionType.CultureTeam2.GetStrValue();
+			string strValue3 = MultiplayerOptions.OptionType.Map.GetStrValue();
+			string strValue4 = MultiplayerOptions.OptionType.CultureTeam1.GetStrValue();
 			Dictionary<PlayerId, int> playerTeams2 = _battleResult.GetCurrentBattleResult().PlayerEntries.Select((KeyValuePair<string, BattlePlayerEntry> pe) => (Key: pe.Key, TeamNo: pe.Value.TeamNo)).ToDictionary(((string Key, int TeamNo) kv) => PlayerId.FromString(kv.Key), ((string Key, int TeamNo) kv) => kv.TeamNo);
 			_customBattleServer.BattleStarted(playerTeams2, strValue3, strValue4);
 			_isBattleStartEventSent = true;

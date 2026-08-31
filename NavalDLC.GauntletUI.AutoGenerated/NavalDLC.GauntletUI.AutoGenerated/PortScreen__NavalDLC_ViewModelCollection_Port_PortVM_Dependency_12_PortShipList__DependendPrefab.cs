@@ -298,8 +298,8 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_12_
 				for (int num = _widget_1_0_1_0.ChildCount - 1; num >= 0; num--)
 				{
 					Widget child = _widget_1_0_1_0.GetChild(num);
-					((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate)child).OnBeforeRemovedChild(child);
-					((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate)_widget_1_0_1_0.GetChild(num)).DestroyDataSource();
+					((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate)child).OnBeforeRemovedChild(child);
+					((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate)_widget_1_0_1_0.GetChild(num)).DestroyDataSource();
 				}
 				_datasource_Root_LeftRoster_Ships = null;
 			}
@@ -620,9 +620,9 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_12_
 
 	private void HandleWidgetPropertyChangeOf_widget_2_0(string propertyName)
 	{
-		if (propertyName == "IsHidden")
+		if (propertyName == "IsVisible")
 		{
-			_datasource_Root.IsControllingCamera = _widget_2_0.IsHidden;
+			_datasource_Root.ShowPortScreenGamepadInputs = _widget_2_0.IsVisible;
 		}
 	}
 
@@ -866,8 +866,8 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_12_
 		case "SelectNextShipInputKey":
 			RefreshDataSource_datasource_Root_SelectNextShipInputKey(_datasource_Root.SelectNextShipInputKey);
 			break;
-		case "IsControllingCamera":
-			_widget_2_0.IsHidden = _datasource_Root.IsControllingCamera;
+		case "ShowPortScreenGamepadInputs":
+			_widget_2_0.IsVisible = _datasource_Root.ShowPortScreenGamepadInputs;
 			break;
 		}
 	}
@@ -995,9 +995,9 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_12_
 			for (int num = _widget_1_0_1_0.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child3 = _widget_1_0_1_0.GetChild(num);
-				((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+				((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate)child3).OnBeforeRemovedChild(child3);
 				Widget child4 = _widget_1_0_1_0.GetChild(num);
-				((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate)child4).SetDataSource(null);
+				((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate)child4).SetDataSource(null);
 				_widget_1_0_1_0.RemoveChild(child4);
 			}
 			break;
@@ -1013,27 +1013,27 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_12_
 		}
 		case TaleWorlds.Library.ListChangedType.ItemAdded:
 		{
-			PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate(base.Context);
-			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate);
+			PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate(base.Context);
+			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate);
 			ShipItemVM dataSource = (ShipItemVM)(generatedWidgetData.Data = _datasource_Root_LeftRoster_Ships[e.NewIndex]);
-			portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate.AddComponent(generatedWidgetData);
-			_widget_1_0_1_0.AddChildAtIndex(portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate, e.NewIndex);
-			portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate.CreateWidgets();
-			portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate.SetIds();
-			portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate.SetAttributes();
-			portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate.SetDataSource(dataSource);
+			portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate.AddComponent(generatedWidgetData);
+			_widget_1_0_1_0.AddChildAtIndex(portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate, e.NewIndex);
+			portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate.CreateWidgets();
+			portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate.SetIds();
+			portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate.SetAttributes();
+			portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate.SetDataSource(dataSource);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
 		{
 			Widget child2 = _widget_1_0_1_0.GetChild(e.NewIndex);
-			((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate)child2).OnBeforeRemovedChild(child2);
+			((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate)child2).OnBeforeRemovedChild(child2);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemDeleted:
 		{
 			Widget child = _widget_1_0_1_0.GetChild(e.NewIndex);
-			((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate)child).SetDataSource(null);
+			((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate)child).SetDataSource(null);
 			_widget_1_0_1_0.RemoveChild(child);
 			break;
 		}
@@ -1097,9 +1097,9 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_12_
 				for (int num = _widget_1_0_1_0.ChildCount - 1; num >= 0; num--)
 				{
 					Widget child = _widget_1_0_1_0.GetChild(num);
-					((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate)child).OnBeforeRemovedChild(child);
+					((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate)child).OnBeforeRemovedChild(child);
 					Widget child2 = _widget_1_0_1_0.GetChild(num);
-					((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate)child2).SetDataSource(null);
+					((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate)child2).SetDataSource(null);
 					_widget_1_0_1_0.RemoveChild(child2);
 				}
 				_datasource_Root_LeftRoster_Ships = null;
@@ -1168,15 +1168,15 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_12_
 			_datasource_Root_LeftRoster_Ships.ListChanged += OnList_datasource_Root_LeftRoster_ShipsChanged;
 			for (int i = 0; i < _datasource_Root_LeftRoster_Ships.Count; i++)
 			{
-				PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate);
+				PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate);
 				ShipItemVM dataSource = (ShipItemVM)(generatedWidgetData.Data = _datasource_Root_LeftRoster_Ships[i]);
-				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_1_0_1_0.AddChildAtIndex(portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate, i);
-				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate.CreateWidgets();
-				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate.SetIds();
-				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate.SetAttributes();
-				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate.SetDataSource(dataSource);
+				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_1_0_1_0.AddChildAtIndex(portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate, i);
+				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate.CreateWidgets();
+				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate.SetIds();
+				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate.SetAttributes();
+				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}
@@ -1189,9 +1189,9 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_12_
 			for (int num = _widget_1_0_1_0.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child = _widget_1_0_1_0.GetChild(num);
-				((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate)child).OnBeforeRemovedChild(child);
 				Widget child2 = _widget_1_0_1_0.GetChild(num);
-				((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate)child2).SetDataSource(null);
+				((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate)child2).SetDataSource(null);
 				_widget_1_0_1_0.RemoveChild(child2);
 			}
 			_datasource_Root_LeftRoster_Ships = null;
@@ -1203,15 +1203,15 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_12_
 			_datasource_Root_LeftRoster_Ships.ListChanged += OnList_datasource_Root_LeftRoster_ShipsChanged;
 			for (int i = 0; i < _datasource_Root_LeftRoster_Ships.Count; i++)
 			{
-				PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate);
+				PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate);
 				ShipItemVM dataSource = (ShipItemVM)(generatedWidgetData.Data = _datasource_Root_LeftRoster_Ships[i]);
-				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_1_0_1_0.AddChildAtIndex(portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate, i);
-				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate.CreateWidgets();
-				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate.SetIds();
-				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate.SetAttributes();
-				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate.SetDataSource(dataSource);
+				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_1_0_1_0.AddChildAtIndex(portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate, i);
+				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate.CreateWidgets();
+				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate.SetIds();
+				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate.SetAttributes();
+				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}
@@ -1291,9 +1291,9 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_12_
 					for (int num = _widget_1_0_1_0.ChildCount - 1; num >= 0; num--)
 					{
 						Widget child = _widget_1_0_1_0.GetChild(num);
-						((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate)child).OnBeforeRemovedChild(child);
+						((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate)child).OnBeforeRemovedChild(child);
 						Widget child2 = _widget_1_0_1_0.GetChild(num);
-						((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate)child2).SetDataSource(null);
+						((PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate)child2).SetDataSource(null);
 						_widget_1_0_1_0.RemoveChild(child2);
 					}
 					_datasource_Root_LeftRoster_Ships = null;
@@ -1360,7 +1360,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_12_
 		_datasource_Root.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
-		_widget_2_0.IsHidden = _datasource_Root.IsControllingCamera;
+		_widget_2_0.IsVisible = _datasource_Root.ShowPortScreenGamepadInputs;
 		_widget_2_0.PropertyChanged += PropertyChangedListenerOf_widget_2_0;
 		_widget_2_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_2_0;
 		_widget_2_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_2_0;
@@ -1429,15 +1429,15 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_12_
 				_datasource_Root_LeftRoster_Ships.ListChanged += OnList_datasource_Root_LeftRoster_ShipsChanged;
 				for (int i = 0; i < _datasource_Root_LeftRoster_Ships.Count; i++)
 				{
-					PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate(base.Context);
-					GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate);
+					PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate(base.Context);
+					GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate);
 					ShipItemVM dataSource = (ShipItemVM)(generatedWidgetData.Data = _datasource_Root_LeftRoster_Ships[i]);
-					portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate.AddComponent(generatedWidgetData);
-					_widget_1_0_1_0.AddChildAtIndex(portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate, i);
-					portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate.CreateWidgets();
-					portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate.SetIds();
-					portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate.SetAttributes();
-					portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_25_ItemTemplate.SetDataSource(dataSource);
+					portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate.AddComponent(generatedWidgetData);
+					_widget_1_0_1_0.AddChildAtIndex(portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate, i);
+					portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate.CreateWidgets();
+					portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate.SetIds();
+					portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate.SetAttributes();
+					portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_28_ItemTemplate.SetDataSource(dataSource);
 				}
 			}
 		}

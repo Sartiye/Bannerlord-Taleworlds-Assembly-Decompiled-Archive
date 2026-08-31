@@ -139,5 +139,7 @@ public enum ServerInfoMessage
 	CustomizationCantUpdateBadge,
 	CustomizationInvalidBadge,
 	CustomizationCantDowngradeBadge,
-	CustomizationBadgeNotAvailable
+	CustomizationBadgeNotAvailable,
+	PremadeGameJoinIncorrectStateForSpectator,
+	PremadeGameJoinSpectatorCapacityIsFull
 }

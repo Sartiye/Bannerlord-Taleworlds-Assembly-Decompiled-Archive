@@ -96,8 +96,6 @@ public class ConspiracyBaseOfOperationsDiscoveredConspiracyQuest : ConspiracyQue
 		}
 	}
 
-	private TextObject HideoutSpottedLog => new TextObject("{=nrdl5QaF}My spy spotted some conspirators at the camp, and some local bandits have joined them. My spy does not know if they are expecting an attack, so I implore you to be cautious and to be ready for anything. Needless to say, I'm sure you will send any documents you can find to me so I can study them. Go quickly and return safely.");
-
 	private TextObject HideoutRemovedLog => new TextObject("{=cLZWjrZP}They have moved to another hiding place.");
 
 	private TextObject NotDueledWithHideoutBossAndDefeatLog
@@ -146,11 +144,6 @@ public class ConspiracyBaseOfOperationsDiscoveredConspiracyQuest : ConspiracyQue
 	{
 		_raiderParties = new List<MobileParty>();
 		_hideout = SelectHideout();
-		if (_hideout.Hideout.IsSpotted)
-		{
-			AddLog(HideoutSpottedLog);
-			AddTrackedObject(_hideout);
-		}
 		_baseLocation = SettlementHelper.FindNearestSettlementToSettlement(_hideout, MobileParty.NavigationType.Default, (Settlement p) => p.IsFortification);
 		_conspiracyStrengthDecreaseAmount = 50f;
 		InitializeHideout();
@@ -230,9 +223,7 @@ public class ConspiracyBaseOfOperationsDiscoveredConspiracyQuest : ConspiracyQue
 		mobileParty.Position = hideout.Position;
 		mobileParty.Party.SetVisualAsDirty();
 		EnterSettlementAction.ApplyForParty(mobileParty, hideout);
-		float num = mobileParty.Party.CalculateCurrentStrength();
-		int initialGold = (int)(1f * MBRandom.RandomFloat * 20f * num + 50f);
-		mobileParty.InitializePartyTrade(initialGold);
+		mobileParty.InitializePartyTrade(QuestHelper.CalculateInitialGoldForBanditQuestParty(mobileParty));
 		mobileParty.SetMoveGoToSettlement(hideout, MobileParty.NavigationType.Default, isTargetingThePort: false);
 		EnterSettlementAction.ApplyForParty(mobileParty, hideout);
 		mobileParty.SetPartyUsedByQuest(isActivelyUsed: true);
@@ -244,6 +235,7 @@ public class ConspiracyBaseOfOperationsDiscoveredConspiracyQuest : ConspiracyQue
 		_conspiracyStrengthDecreaseAmount = 50f;
 		_baseLocation = SettlementHelper.FindNearestFortificationToSettlement(_hideout, MobileParty.NavigationType.Default);
 		SetDialogs();
+		InitializeHideout();
 	}
 
 	protected override void HourlyTick()
@@ -252,7 +244,12 @@ public class ConspiracyBaseOfOperationsDiscoveredConspiracyQuest : ConspiracyQue
 
 	private void InitializeHideout()
 	{
-		AddTrackedObject(_baseLocation);
+		_hideout.Hideout.IsSpotted = true;
+		_hideout.IsVisible = true;
+		if (!IsTracked(_hideout))
+		{
+			AddTrackedObject(_hideout);
+		}
 	}
 
 	private void ChangeHideoutParties()
@@ -289,7 +286,6 @@ public class ConspiracyBaseOfOperationsDiscoveredConspiracyQuest : ConspiracyQue
 		CampaignEvents.GameMenuOpened.AddNonSerializedListener(this, OnGameMenuOpened);
 		CampaignEvents.OnMissionStartedEvent.AddNonSerializedListener(this, OnMissionStarted);
 		CampaignEvents.OnMissionEndedEvent.AddNonSerializedListener(this, OnMissionEnded);
-		CampaignEvents.OnHideoutSpottedEvent.AddNonSerializedListener(this, OnHideoutSpotted);
 		CampaignEvents.OnHideoutDeactivatedEvent.AddNonSerializedListener(this, OnHideoutCleared);
 		CampaignEvents.OnHideoutBattleCompletedEvent.AddNonSerializedListener(this, OnHideoutBattleCompleted);
 	}
@@ -379,7 +375,7 @@ public class ConspiracyBaseOfOperationsDiscoveredConspiracyQuest : ConspiracyQue
 		}
 		else
 		{
-			Debug.FailedAssert("Hideout boss can not be set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Quests\\SecondPhase\\ConspiracyQuests\\ConspiracyBaseOfOperationsDiscoveredConspiracyQuest.cs", "OnMissionStarted", 415);
+			Debug.FailedAssert("Hideout boss can not be set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Quests\\SecondPhase\\ConspiracyQuests\\ConspiracyBaseOfOperationsDiscoveredConspiracyQuest.cs", "OnMissionStarted", 404);
 		}
 	}
 
@@ -422,15 +418,6 @@ public class ConspiracyBaseOfOperationsDiscoveredConspiracyQuest : ConspiracyQue
 			_isSuccess = false;
 		}
 		HandleHideoutBattleEnd();
-	}
-
-	private void OnHideoutSpotted(PartyBase party, PartyBase hideoutParty)
-	{
-		if (party == PartyBase.MainParty && hideoutParty.Settlement == _hideout)
-		{
-			AddLog(HideoutSpottedLog);
-			AddTrackedObject(_hideout);
-		}
 	}
 
 	private void OnHideoutCleared(Settlement hideout)

@@ -55,29 +55,40 @@ public class CampaignWarManagerBehavior : CampaignBehaviorBase
 		stanceWith.TroopCasualties2 += ((stanceWith.Faction2 == mapFaction) ? mapEvent.AttackerSide.TroopCasualties : mapEvent.DefenderSide.TroopCasualties);
 		stanceWith.ShipCasualties1 += ((stanceWith.Faction1 == mapFaction) ? mapEvent.AttackerSide.ShipCasualties : mapEvent.DefenderSide.ShipCasualties);
 		stanceWith.ShipCasualties2 += ((stanceWith.Faction2 == mapFaction) ? mapEvent.AttackerSide.ShipCasualties : mapEvent.DefenderSide.ShipCasualties);
-		if (mapEvent.MapEventSettlement == null || mapEvent.BattleState != BattleState.AttackerVictory || !mapEvent.MapEventSettlement.IsFortification || mapEvent.EventType != MapEvent.BattleTypes.Siege)
+		if (mapEvent.MapEventSettlement != null && mapEvent.MapEventSettlement.IsFortification)
 		{
-			return;
-		}
-		if (mapFaction == stanceWith.Faction1)
-		{
-			stanceWith.SuccessfulSieges1++;
-			if (mapEvent.MapEventSettlement.IsTown)
+			if (mapEvent.EventType == MapEvent.BattleTypes.Siege && mapEvent.BattleState == BattleState.AttackerVictory)
 			{
-				stanceWith.SuccessfulTownSieges1++;
+				IncreaseSuccessfulSiegeCount(mapFaction, stanceWith, mapEvent);
 			}
-		}
-		else
-		{
-			stanceWith.SuccessfulSieges2++;
-			if (mapEvent.MapEventSettlement.IsTown)
+			else if (mapEvent.EventType == MapEvent.BattleTypes.SallyOut && mapEvent.BattleState == BattleState.DefenderVictory)
 			{
-				stanceWith.SuccessfulTownSieges2++;
+				IncreaseSuccessfulSiegeCount(mapFaction2, stanceWith, mapEvent);
 			}
 		}
 	}
 
 	public override void SyncData(IDataStore dataStore)
 	{
+	}
+
+	private void IncreaseSuccessfulSiegeCount(IFaction faction, StanceLink stance, MapEvent mapEvent)
+	{
+		if (faction == stance.Faction1)
+		{
+			stance.SuccessfulSieges1++;
+			if (mapEvent.MapEventSettlement.IsTown)
+			{
+				stance.SuccessfulTownSieges1++;
+			}
+		}
+		else
+		{
+			stance.SuccessfulSieges2++;
+			if (mapEvent.MapEventSettlement.IsTown)
+			{
+				stance.SuccessfulTownSieges2++;
+			}
+		}
 	}
 }

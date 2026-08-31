@@ -50,14 +50,14 @@ public class NavalDLCRaidModel : RaidModel
 		return result;
 	}
 
-	public override ExplainedNumber GetRaidLootMultiplier(PartyBase receivingParty)
+	public override float GetRaidLootMultiplier(PartyBase receivingParty)
 	{
-		ExplainedNumber stat = base.BaseModel.GetRaidLootMultiplier(receivingParty);
+		float num = base.BaseModel.GetRaidLootMultiplier(receivingParty);
 		if (receivingParty != null && receivingParty.IsMobile && receivingParty.MobileParty.IsCurrentlyAtSea)
 		{
-			PerkHelper.AddPerkBonusForParty(NavalPerks.Mariner.BruteForce, receivingParty.MobileParty, isPrimaryBonus: false, ref stat);
+			num += NavalPerks.Mariner.BruteForce.PrimaryBonus;
 		}
-		return stat;
+		return num;
 	}
 
 	public override MBReadOnlyList<(ItemObject, float)> GetCommonLootItemScores()

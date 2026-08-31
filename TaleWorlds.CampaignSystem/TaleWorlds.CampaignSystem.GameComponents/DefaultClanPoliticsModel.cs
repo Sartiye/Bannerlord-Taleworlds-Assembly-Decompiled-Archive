@@ -1,4 +1,5 @@
 using System.Linq;
+using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Election;
@@ -38,10 +39,7 @@ public class DefaultClanPoliticsModel : ClanPoliticsModel
 
 	private void CalculateInfluenceChangeInternal(Clan clan, ref ExplainedNumber influenceChange)
 	{
-		if (clan.Leader.GetPerkValue(DefaultPerks.Charm.ImmortalCharm))
-		{
-			influenceChange.Add(DefaultPerks.Charm.ImmortalCharm.PrimaryBonus, DefaultPerks.Charm.ImmortalCharm.Name);
-		}
+		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Charm.ImmortalCharm, BattleEnvironment.Any, clan.Leader.CharacterObject, isPrimaryBonus: true, ref influenceChange);
 		if (clan.IsUnderMercenaryService)
 		{
 			int num = MathF.Ceiling(clan.Influence * (1f / Campaign.Current.Models.ClanFinanceModel.RevenueSmoothenFraction()));

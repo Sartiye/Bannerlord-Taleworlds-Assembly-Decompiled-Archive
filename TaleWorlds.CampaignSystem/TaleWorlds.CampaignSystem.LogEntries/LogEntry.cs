@@ -150,7 +150,7 @@ public abstract class LogEntry
 		return ImportanceEnum.Zero;
 	}
 
-	public virtual void GetConversationScoreAndComment(Hero talkTroop, bool findString, out string comment, out ImportanceEnum score)
+	public virtual void GetConversationScoreAndComment(Hero conversationHero, bool findString, out string comment, out ImportanceEnum score)
 	{
 		comment = "";
 		score = ImportanceEnum.Zero;

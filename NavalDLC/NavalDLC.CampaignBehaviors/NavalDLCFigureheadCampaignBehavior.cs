@@ -94,6 +94,9 @@ public class NavalDLCFigureheadCampaignBehavior : CampaignBehaviorBase
 				return;
 			}
 		}
-		ship.ChangeFigurehead(null);
+		if (changeDetail != ChangeShipOwnerAction.ShipOwnerChangeDetail.ApplyByStashing && changeDetail != ChangeShipOwnerAction.ShipOwnerChangeDetail.ApplyByUnstashing && changeDetail != ChangeShipOwnerAction.ShipOwnerChangeDetail.ApplyByTemporarilyRemovingShipsFromPlayer && changeDetail != ChangeShipOwnerAction.ShipOwnerChangeDetail.ApplyByGivingBackShipsToPlayer)
+		{
+			ship.ChangeFigurehead(null);
+		}
 	}
 }

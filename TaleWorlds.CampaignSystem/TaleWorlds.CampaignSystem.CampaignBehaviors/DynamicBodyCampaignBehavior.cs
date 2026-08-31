@@ -78,6 +78,14 @@ public class DynamicBodyCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
+	private void OnCharacterCreationOver(int index)
+	{
+		if (index == 1)
+		{
+			OnPlayerBodyPropertiesChanged();
+		}
+	}
+
 	private void OnPlayerBodyPropertiesChanged()
 	{
 		_unmodifiedBuild = Hero.MainHero.Build;
@@ -114,7 +122,7 @@ public class DynamicBodyCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.MapEventEnded.AddNonSerializedListener(this, OnMapEventEnded);
 		CampaignEvents.HeroCreated.AddNonSerializedListener(this, OnHeroCreated);
 		CampaignEvents.OnPlayerBodyPropertiesChangedEvent.AddNonSerializedListener(this, OnPlayerBodyPropertiesChanged);
-		CampaignEvents.OnCharacterCreationIsOverEvent.AddNonSerializedListener(this, OnPlayerBodyPropertiesChanged);
+		CampaignEvents.OnCharacterCreationIsOverEvent.AddNonSerializedListener(this, OnCharacterCreationOver);
 		CampaignEvents.OnPlayerCharacterChangedEvent.AddNonSerializedListener(this, OnPlayerCharacterChanged);
 		CampaignEvents.OnNewGameCreatedPartialFollowUpEndEvent.AddNonSerializedListener(this, OnNewGameCreatedPartialFollowUpEnd);
 	}

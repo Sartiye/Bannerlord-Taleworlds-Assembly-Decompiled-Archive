@@ -9,9 +9,21 @@ namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets.Mission;
 
 public class FormationMarkerListPanel : ListPanel
 {
+	public const int VisibilityStateUngated = -1;
+
+	public const int VisibilityStateHidden = 0;
+
+	public const int VisibilityStateDistanceScaled = 1;
+
+	public const int VisibilityStateAlwaysVisible = 2;
+
 	private bool _isMarkersDirty = true;
 
 	private Vec2 _markerDefaultSize = Vec2.Invalid;
+
+	private const float MinimumVisibleAlpha = 0.05f;
+
+	private const float UnevaluatedAlpha = -1f;
 
 	private bool _isMarkerEnabled;
 
@@ -27,6 +39,20 @@ public class FormationMarkerListPanel : ListPanel
 
 	private float _distance;
 
+	private float _farAlphaTarget = 0.2f;
+
+	private float _farDistanceCutoff = 50f;
+
+	private float _closeDistanceCutoff = 25f;
+
+	private float _closestFadeoutRange = 3f;
+
+	private float _visibilityRatioTarget = 1f;
+
+	private float _alwaysOnDistance = 25f;
+
+	private int _visibilityState = -1;
+
 	private string _markerType;
 
 	private Vec2 _position;
@@ -39,17 +65,7 @@ public class FormationMarkerListPanel : ListPanel
 
 	private TextWidget _nameTextWidget;
 
-	public float FarAlphaTarget { get; set; } = 0.2f;
-
-
-	public float FarDistanceCutoff { get; set; } = 50f;
-
-
-	public float CloseDistanceCutoff { get; set; } = 25f;
-
-
-	public float ClosestFadeoutRange { get; set; } = 3f;
-
+	private float _smoothedAlpha = -1f;
 
 	public float FarScaleTarget { get; set; } = 0.5f;
 
@@ -173,6 +189,126 @@ public class FormationMarkerListPanel : ListPanel
 			{
 				_distance = value;
 				OnPropertyChanged(value, "Distance");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float FarAlphaTarget
+	{
+		get
+		{
+			return _farAlphaTarget;
+		}
+		set
+		{
+			if (_farAlphaTarget != value)
+			{
+				_farAlphaTarget = value;
+				OnPropertyChanged(value, "FarAlphaTarget");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float FarDistanceCutoff
+	{
+		get
+		{
+			return _farDistanceCutoff;
+		}
+		set
+		{
+			if (_farDistanceCutoff != value)
+			{
+				_farDistanceCutoff = value;
+				OnPropertyChanged(value, "FarDistanceCutoff");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float CloseDistanceCutoff
+	{
+		get
+		{
+			return _closeDistanceCutoff;
+		}
+		set
+		{
+			if (_closeDistanceCutoff != value)
+			{
+				_closeDistanceCutoff = value;
+				OnPropertyChanged(value, "CloseDistanceCutoff");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float ClosestFadeoutRange
+	{
+		get
+		{
+			return _closestFadeoutRange;
+		}
+		set
+		{
+			if (_closestFadeoutRange != value)
+			{
+				_closestFadeoutRange = value;
+				OnPropertyChanged(value, "ClosestFadeoutRange");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float VisibilityRatio
+	{
+		get
+		{
+			return _visibilityRatioTarget;
+		}
+		set
+		{
+			float num = TaleWorlds.Library.MathF.Clamp(value, 0f, 1f);
+			if (!_visibilityRatioTarget.ApproximatelyEqualsTo(num))
+			{
+				_visibilityRatioTarget = num;
+				OnPropertyChanged(value, "VisibilityRatio");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float AlwaysOnDistance
+	{
+		get
+		{
+			return _alwaysOnDistance;
+		}
+		set
+		{
+			if (!_alwaysOnDistance.ApproximatelyEqualsTo(value))
+			{
+				_alwaysOnDistance = value;
+				OnPropertyChanged(value, "AlwaysOnDistance");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public int VisibilityState
+	{
+		get
+		{
+			return _visibilityState;
+		}
+		set
+		{
+			if (value != _visibilityState)
+			{
+				_visibilityState = value;
+				OnPropertyChanged(value, "VisibilityState");
 			}
 		}
 	}
@@ -304,7 +440,7 @@ public class FormationMarkerListPanel : ListPanel
 			}
 			else
 			{
-				Debug.FailedAssert("Couldn't find formation marker type image", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Mission\\FormationMarkerListPanel.cs", "OnLateUpdate", 51);
+				Debug.FailedAssert("Couldn't find formation marker type image", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Mission\\FormationMarkerListPanel.cs", "OnLateUpdate", 55);
 			}
 			if (TeamTypeMarker != null)
 			{
@@ -324,14 +460,14 @@ public class FormationMarkerListPanel : ListPanel
 			}
 			_isMarkersDirty = false;
 		}
+		float num;
 		if (IsMarkerEnabled)
 		{
-			float num = GetDistanceRelatedAlphaTarget(Distance);
+			num = GetTargetAlpha(Distance);
 			if (!IsActive)
 			{
 				num *= 0.5f;
 			}
-			this.SetGlobalAlphaRecursively(num);
 			if (!_markerDefaultSize.IsValid)
 			{
 				_markerDefaultSize = new Vec2(TeamTypeMarker.SuggestedWidth, TeamTypeMarker.SuggestedHeight);
@@ -342,14 +478,19 @@ public class FormationMarkerListPanel : ListPanel
 		}
 		else
 		{
-			float alphaFactor = TaleWorlds.Library.MathF.Lerp(base.AlphaFactor, 0f, amount);
-			this.SetGlobalAlphaRecursively(alphaFactor);
+			num = 0f;
 		}
-		if ((double)base.AlphaFactor > 0.05)
+		if (_smoothedAlpha == -1f)
 		{
-			UpdateScreenPosition();
+			_smoothedAlpha = num;
 		}
 		else
+		{
+			_smoothedAlpha = TaleWorlds.Library.MathF.Lerp(_smoothedAlpha, num, amount);
+		}
+		this.SetGlobalAlphaRecursively(_smoothedAlpha);
+		UpdateScreenPosition();
+		if (_smoothedAlpha <= 0.05f)
 		{
 			base.IsVisible = false;
 		}
@@ -416,24 +557,73 @@ public class FormationMarkerListPanel : ListPanel
 		}
 		if (distance <= FarDistanceCutoff && distance >= CloseDistanceCutoff)
 		{
+			if (!HasUsableFadeRange())
+			{
+				return FarScaleTarget;
+			}
 			float amount = (float)Math.Pow((distance - CloseDistanceCutoff) / (FarDistanceCutoff - CloseDistanceCutoff), 1.0 / 3.0);
 			return TaleWorlds.Library.MathF.Clamp(TaleWorlds.Library.MathF.Lerp(CloseScaleTarget, FarScaleTarget, amount), FarScaleTarget, CloseScaleTarget);
 		}
 		return CloseScaleTarget;
 	}
 
+	private bool HasUsableFadeRange()
+	{
+		return FarDistanceCutoff - CloseDistanceCutoff > 0f;
+	}
+
+	private float GetTargetAlpha(float distance)
+	{
+		if (VisibilityState == 0)
+		{
+			return 0f;
+		}
+		if (VisibilityState == 2)
+		{
+			return 1f;
+		}
+		if (VisibilityState == -1)
+		{
+			return GetLegacyDistanceAlpha(distance) * _visibilityRatioTarget;
+		}
+		return GetDistanceRelatedAlphaTarget(distance);
+	}
+
 	private float GetDistanceRelatedAlphaTarget(float distance)
+	{
+		if (distance <= AlwaysOnDistance)
+		{
+			return 1f;
+		}
+		if (distance >= FarDistanceCutoff)
+		{
+			return FarAlphaTarget;
+		}
+		float num = FarDistanceCutoff - AlwaysOnDistance;
+		if (num <= 0f)
+		{
+			return FarAlphaTarget;
+		}
+		float amount = (float)Math.Pow((distance - AlwaysOnDistance) / num, 1.0 / 3.0);
+		return TaleWorlds.Library.MathF.Clamp(TaleWorlds.Library.MathF.Lerp(1f, FarAlphaTarget, amount), FarAlphaTarget, 1f);
+	}
+
+	private float GetLegacyDistanceAlpha(float distance)
 	{
 		if (distance > FarDistanceCutoff)
 		{
 			return FarAlphaTarget;
 		}
-		if (distance <= FarDistanceCutoff && distance >= CloseDistanceCutoff)
+		if (distance >= CloseDistanceCutoff)
 		{
+			if (!HasUsableFadeRange())
+			{
+				return FarAlphaTarget;
+			}
 			float amount = (float)Math.Pow((distance - CloseDistanceCutoff) / (FarDistanceCutoff - CloseDistanceCutoff), 1.0 / 3.0);
 			return TaleWorlds.Library.MathF.Clamp(TaleWorlds.Library.MathF.Lerp(1f, FarAlphaTarget, amount), FarAlphaTarget, 1f);
 		}
-		if (distance < CloseDistanceCutoff && distance > CloseDistanceCutoff - ClosestFadeoutRange)
+		if (distance > CloseDistanceCutoff - ClosestFadeoutRange)
 		{
 			float amount2 = (distance - (CloseDistanceCutoff - ClosestFadeoutRange)) / ClosestFadeoutRange;
 			return TaleWorlds.Library.MathF.Lerp(0f, 1f, amount2);

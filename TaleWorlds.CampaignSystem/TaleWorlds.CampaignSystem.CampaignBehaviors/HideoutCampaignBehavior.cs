@@ -19,7 +19,7 @@ using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
 
-public class HideoutCampaignBehavior : CampaignBehaviorBase, IHideoutCampaignBehavior
+public class HideoutCampaignBehavior : CampaignBehaviorBase
 {
 	private const int HideoutClearRelationEffect = 2;
 
@@ -39,8 +39,6 @@ public class HideoutCampaignBehavior : CampaignBehaviorBase, IHideoutCampaignBeh
 
 	private float _hideoutSendTroopsWaitProgressHour;
 
-	private int _initialHideoutPopulation;
-
 	private List<ItemObject> _potentialLootItems = new List<ItemObject>();
 
 	private static float IncreaseRelationWithVillageNotableMaximumDistanceAsDays => 0.5f;
@@ -56,7 +54,6 @@ public class HideoutCampaignBehavior : CampaignBehaviorBase, IHideoutCampaignBeh
 		CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(this, OnGameLoaded);
 		CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
 		CampaignEvents.OnHideoutSpottedEvent.AddNonSerializedListener(this, OnHideoutSpotted);
-		CampaignEvents.OnHideoutBattleCompletedEvent.AddNonSerializedListener(this, OnHideoutBattleCompleted);
 		CampaignEvents.OnCollectLootsItemsEvent.AddNonSerializedListener(this, OnCollectLootItems);
 	}
 
@@ -96,68 +93,63 @@ public class HideoutCampaignBehavior : CampaignBehaviorBase, IHideoutCampaignBeh
 		return Campaign.Current.Models.TradeItemPriceFactorModel.GetTheoreticalMaxItemMarketValue(itemToLoot) + 1;
 	}
 
-	private void OnHideoutBattleCompleted(BattleSideEnum winnerSide, HideoutEventComponent hideoutEventComponent, HideoutEventComponent.HideoutBattleEndState battleEndState)
-	{
-		if (battleEndState != HideoutEventComponent.HideoutBattleEndState.Victory && battleEndState != HideoutEventComponent.HideoutBattleEndState.SendTroops)
-		{
-			_initialHideoutPopulation = 0;
-		}
-	}
-
 	private void OnCollectLootItems(PartyBase winnerParty, ItemRoster gainedLoots)
 	{
-		if (winnerParty == PartyBase.MainParty && !PlayerEncounter.Current.ForceHideoutSendTroops)
+		if (winnerParty != PartyBase.MainParty || PlayerEncounter.Current.ForceHideoutSendTroops)
 		{
-			MapEvent mapEvent = MobileParty.MainParty.MapEvent;
-			if (mapEvent.IsHideoutBattle && mapEvent.MapEventSettlement == Settlement.CurrentSettlement && IsItNighttimeNow())
+			return;
+		}
+		MapEvent mapEvent = MobileParty.MainParty.MapEvent;
+		if (!mapEvent.IsHideoutBattle || mapEvent.MapEventSettlement != Settlement.CurrentSettlement || !IsItNighttimeNow())
+		{
+			return;
+		}
+		int num = 0;
+		foreach (MapEventParty party in mapEvent.GetMapEventSide(mapEvent.PlayerSide).Parties)
+		{
+			if (party.Party == PartyBase.MainParty)
 			{
-				int num = 0;
-				foreach (MapEventParty party in mapEvent.GetMapEventSide(mapEvent.PlayerSide).Parties)
-				{
-					if (party.Party == PartyBase.MainParty)
-					{
-						num = party.PlunderedGold;
-						break;
-					}
-				}
-				int totalLootedValue = 0;
-				float targetValue = num * (_initialHideoutPopulation * 135);
-				targetValue = TaleWorlds.Library.MathF.Clamp(targetValue, _minimumHideoutLootTargetValue, 4750f);
-				if ((float)totalLootedValue < targetValue)
-				{
-					ItemObject itemObject = null;
-					for (int i = 0; i < _potentialLootItems.Count; i++)
-					{
-						if (gainedLoots.Count >= 5)
-						{
-							break;
-						}
-						if (!((float)totalLootedValue < targetValue))
-						{
-							break;
-						}
-						itemObject = _potentialLootItems[i];
-						int itemValueForHideoutLoot = GetItemValueForHideoutLoot(itemObject);
-						if ((float)itemValueForHideoutLoot <= targetValue - (float)totalLootedValue)
-						{
-							gainedLoots.AddToCounts(itemObject, 1);
-							totalLootedValue += itemValueForHideoutLoot;
-						}
-					}
-					do
-					{
-						itemObject = gainedLoots.GetRandomElementWithPredicate((ItemRosterElement x) => !x.EquipmentElement.Item.NotMerchandise && !x.EquipmentElement.IsQuestItem && !x.EquipmentElement.Item.IsBannerItem && (float)GetItemValueForHideoutLoot(x.EquipmentElement.Item) <= targetValue - (float)totalLootedValue).EquipmentElement.Item;
-						if (itemObject != null)
-						{
-							gainedLoots.AddToCounts(itemObject, 1);
-							totalLootedValue += GetItemValueForHideoutLoot(itemObject);
-						}
-					}
-					while (itemObject != null);
-				}
+				num = party.PlunderedGold;
+				break;
 			}
 		}
-		_initialHideoutPopulation = 0;
+		int totalLootedValue = 0;
+		int initialHideoutPopulation = (PlayerEncounter.Battle.Component as HideoutEventComponent).InitialHideoutPopulation;
+		float targetValue = num * (initialHideoutPopulation * 135);
+		targetValue = TaleWorlds.Library.MathF.Clamp(targetValue, _minimumHideoutLootTargetValue, 4750f);
+		if (!((float)totalLootedValue < targetValue))
+		{
+			return;
+		}
+		ItemObject itemObject = null;
+		for (int i = 0; i < _potentialLootItems.Count; i++)
+		{
+			if (gainedLoots.Count >= 5)
+			{
+				break;
+			}
+			if (!((float)totalLootedValue < targetValue))
+			{
+				break;
+			}
+			itemObject = _potentialLootItems[i];
+			int itemValueForHideoutLoot = GetItemValueForHideoutLoot(itemObject);
+			if ((float)itemValueForHideoutLoot <= targetValue - (float)totalLootedValue)
+			{
+				gainedLoots.AddToCounts(itemObject, 1);
+				totalLootedValue += itemValueForHideoutLoot;
+			}
+		}
+		do
+		{
+			itemObject = gainedLoots.GetRandomElementWithPredicate((ItemRosterElement x) => !x.EquipmentElement.Item.NotMerchandise && !x.EquipmentElement.IsQuestItem && !x.EquipmentElement.Item.IsBannerItem && (float)GetItemValueForHideoutLoot(x.EquipmentElement.Item) <= targetValue - (float)totalLootedValue).EquipmentElement.Item;
+			if (itemObject != null)
+			{
+				gainedLoots.AddToCounts(itemObject, 1);
+				totalLootedValue += GetItemValueForHideoutLoot(itemObject);
+			}
+		}
+		while (itemObject != null);
 	}
 
 	public override void SyncData(IDataStore dataStore)
@@ -193,14 +185,14 @@ public class HideoutCampaignBehavior : CampaignBehaviorBase, IHideoutCampaignBeh
 		campaignGameStarter.AddGameMenuOption("hideout_place", "attack", "{=p5GkeK8F}Sneak in now", game_menu_hideout_sneak_in_on_condition, game_menu_encounter_sneak_in_on_consequence);
 		campaignGameStarter.AddGameMenuOption("hideout_place", "assault", "{=b4YsZY5H}Assault hideout", game_menu_assault_hideout_parties_on_condition, game_menu_encounter_assault_on_consequence);
 		campaignGameStarter.AddGameMenuOption("hideout_place", "wait", "{=!}{WAIT_OPTION}", game_menu_wait_until_nightfall_on_condition, game_menu_wait_until_nightfall_on_consequence);
-		campaignGameStarter.AddGameMenuOption("hideout_place", "send_troops", "{=RepcYuoJ}Send troops to clear ({SUCCESS_CHANCE}%)", game_menu_send_troops_hideout_on_condition, game_menu_encounter_send_troops_on_consequence);
+		campaignGameStarter.AddGameMenuOption("hideout_place", "send_troops", "{=RepcYuoJ}Send troops to clear ({SUCCESS_CHANCE}% chance)", game_menu_send_troops_hideout_on_condition, game_menu_encounter_send_troops_on_consequence);
 		campaignGameStarter.AddGameMenuOption("hideout_place", "leave", "{=3sRdGQou}Leave", leave_on_condition, game_menu_hideout_leave_on_consequence, isLeave: true);
 		campaignGameStarter.AddWaitGameMenu("hideout_wait", "{=!}{WAIT_TEXT}", hideout_wait_menu_on_init, hideout_wait_menu_on_condition, hideout_wait_menu_on_consequence, hideout_wait_menu_on_tick, GameMenu.MenuAndOptionType.WaitMenuShowOnlyProgressOption, GameMenu.MenuOverlayType.None, _hideoutWaitTargetHours);
 		campaignGameStarter.AddGameMenuOption("hideout_wait", "leave", "{=3sRdGQou}Leave", leave_on_condition, game_menu_hideout_after_wait_leave_on_consequence, isLeave: true);
 		campaignGameStarter.AddGameMenu("hideout_after_wait", "{=!}{HIDEOUT_TEXT}", hideout_after_wait_menu_on_init);
 		campaignGameStarter.AddGameMenuOption("hideout_after_wait", "attack", "{=Abcgrf4j}Sneak in", game_menu_hideout_sneak_in_on_condition, game_menu_encounter_sneak_in_on_consequence);
 		campaignGameStarter.AddGameMenuOption("hideout_after_wait", "assault", "{=b4YsZY5H}Assault hideout", game_menu_assault_hideout_parties_on_condition, game_menu_encounter_assault_on_consequence);
-		campaignGameStarter.AddGameMenuOption("hideout_after_wait", "send_troops", "{=RepcYuoJ}Send troops to clear ({SUCCESS_CHANCE}%)", game_menu_send_troops_hideout_on_condition, game_menu_encounter_send_troops_on_consequence);
+		campaignGameStarter.AddGameMenuOption("hideout_after_wait", "send_troops", "{=RepcYuoJ}Send troops to clear ({SUCCESS_CHANCE}% chance)", game_menu_send_troops_hideout_on_condition, game_menu_encounter_send_troops_on_consequence);
 		campaignGameStarter.AddGameMenuOption("hideout_after_wait", "leave", "{=3sRdGQou}Leave", leave_on_condition, game_menu_hideout_after_wait_leave_on_consequence, isLeave: true);
 		campaignGameStarter.AddGameMenu("hideout_after_defeated_and_saved", "{=1zLZf5rw}The rest of your men rushed to your help, dragging you out to safety and driving the bandits back into hiding.", game_menu_hideout_after_defeated_and_saved_on_init);
 		campaignGameStarter.AddGameMenuOption("hideout_after_defeated_and_saved", "leave", "{=3sRdGQou}Leave", leave_on_condition, game_menu_hideout_leave_on_consequence, isLeave: true);
@@ -240,11 +232,6 @@ public class HideoutCampaignBehavior : CampaignBehaviorBase, IHideoutCampaignBeh
 	private void hideout_send_troops_result_failure_consequence(MenuCallbackArgs args)
 	{
 		PlayerEncounter.Finish();
-	}
-
-	public int GetInitialHideoutPopulation()
-	{
-		return _initialHideoutPopulation;
 	}
 
 	private void hideout_wait_menu_on_init(MenuCallbackArgs args)
@@ -487,7 +474,7 @@ public class HideoutCampaignBehavior : CampaignBehaviorBase, IHideoutCampaignBeh
 					}
 					else if (!IsItNighttimeNow())
 					{
-						args.Tooltip = new TextObject("{=beDxk5YB}Bandits are awake and too aware to be ambushed.");
+						args.Tooltip = new TextObject("{=vILXBINS}Trying to sneak past the sentries in daylight is not an option.");
 						args.IsEnabled = false;
 					}
 				}
@@ -526,7 +513,7 @@ public class HideoutCampaignBehavior : CampaignBehaviorBase, IHideoutCampaignBeh
 					}
 					else if (IsItNighttimeNow())
 					{
-						args.Tooltip = new TextObject("{=7IXfD2qq}A frontal assault against the hideout is too dangerous.");
+						args.Tooltip = new TextObject("{=rgo5t91d}With bandit sentries on the lookout, a frontal assault against the hideout is too dangerous at night.");
 						args.IsEnabled = false;
 					}
 				}
@@ -598,7 +585,6 @@ public class HideoutCampaignBehavior : CampaignBehaviorBase, IHideoutCampaignBeh
 
 	private void game_menu_encounter_send_troops_on_consequence(MenuCallbackArgs args)
 	{
-		UpdateInitialHideoutPopulation();
 		PlayerEncounter.Current.ForceHideoutSendTroops = true;
 		GameMenu.SwitchToMenu("encounter");
 	}
@@ -678,7 +664,6 @@ public class HideoutCampaignBehavior : CampaignBehaviorBase, IHideoutCampaignBeh
 		{
 			AdjustTroopCountForHideoutAssault();
 		}
-		UpdateInitialHideoutPopulation();
 		Location locationWithId = Settlement.CurrentSettlement.LocationComplex.GetLocationWithId("hideout_center");
 		if (isDirectAssault)
 		{
@@ -713,23 +698,6 @@ public class HideoutCampaignBehavior : CampaignBehaviorBase, IHideoutCampaignBeh
 		}
 	}
 
-	private void UpdateInitialHideoutPopulation()
-	{
-		_initialHideoutPopulation = 0;
-		foreach (MobileParty party in Settlement.CurrentSettlement.Parties)
-		{
-			if (!party.IsBandit)
-			{
-				continue;
-			}
-			foreach (TroopRosterElement item in party.MemberRoster.GetTroopRoster())
-			{
-				int num = item.Number - item.WoundedNumber;
-				_initialHideoutPopulation += num;
-			}
-		}
-	}
-
 	private bool CanChangeStatusOfTroop(CharacterObject character)
 	{
 		if (!character.IsPlayerCharacter)
@@ -760,9 +728,8 @@ public class HideoutCampaignBehavior : CampaignBehaviorBase, IHideoutCampaignBeh
 
 	private bool game_menu_wait_until_nightfall_on_condition(MenuCallbackArgs args)
 	{
-		TextObject empty = TextObject.GetEmpty();
-		empty = ((!IsItNighttimeNow()) ? new TextObject("{=JYH6FF35}Wait until nightfall to sneak in") : new TextObject("{=qr1V1Drj}Wait until morning to begin the assault"));
-		MBTextManager.SetTextVariable("WAIT_OPTION", empty);
+		TextObject text = ((!IsItNighttimeNow()) ? new TextObject("{=JYH6FF35}Wait until nightfall to sneak in") : new TextObject("{=qr1V1Drj}Wait until morning to begin the assault"));
+		MBTextManager.SetTextVariable("WAIT_OPTION", text);
 		args.optionLeaveType = GameMenuOption.LeaveType.Wait;
 		if (Settlement.CurrentSettlement.Parties.Any((MobileParty t) => t != MobileParty.MainParty))
 		{

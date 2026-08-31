@@ -23,6 +23,12 @@ public sealed class RestResponse : RestData
 	[DataMember]
 	public byte[] UserCertificate { get; set; }
 
+	[DataMember]
+	public bool Polled { get; set; }
+
+	[DataMember]
+	public string ErrorDetail { get; set; }
+
 	public int RemainingMessageCount
 	{
 		get
@@ -50,6 +56,14 @@ public sealed class RestResponse : RestData
 	{
 		RestResponse restResponse = new RestResponse();
 		restResponse.SetSuccessful(successful, successfulReason);
+		return restResponse;
+	}
+
+	public static RestResponse CreateFailure(string reason, string errorDetail = null)
+	{
+		RestResponse restResponse = new RestResponse();
+		restResponse.SetSuccessful(successful: false, reason);
+		restResponse.ErrorDetail = errorDetail;
 		return restResponse;
 	}
 

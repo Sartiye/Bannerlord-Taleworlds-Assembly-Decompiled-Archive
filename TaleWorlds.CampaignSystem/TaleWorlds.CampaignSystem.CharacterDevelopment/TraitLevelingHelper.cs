@@ -10,7 +10,11 @@ namespace TaleWorlds.CampaignSystem.CharacterDevelopment;
 
 public static class TraitLevelingHelper
 {
-	private const int LordExecutedHonorPenalty = -1000;
+	private const int HonorableLordExecutedHonorPenalty = -1000;
+
+	private const int DishonorableLordExecutedHonorPenalty = -500;
+
+	private const int LordExecutedMercyPenalty = -500;
 
 	private const int TradeAgreementBrokenPenalty = -1000;
 
@@ -59,9 +63,17 @@ public static class TraitLevelingHelper
 		AddPlayerTraitXPAndLogEntry(DefaultTraits.Valor, -30, ActionNotes.SacrificedTroops, null);
 	}
 
-	public static void OnLordExecuted()
+	public static void OnBloodFeudStarted(Hero executedHero)
 	{
-		AddPlayerTraitXPAndLogEntry(DefaultTraits.Honor, -1000, ActionNotes.SacrificedTroops, null);
+		if (executedHero.GetTraitLevel(DefaultTraits.Honor) >= 0)
+		{
+			AddPlayerTraitXPAndLogEntry(DefaultTraits.Honor, -1000, ActionNotes.SacrificedTroops, null);
+		}
+		else
+		{
+			AddPlayerTraitXPAndLogEntry(DefaultTraits.Mercy, -500, ActionNotes.SacrificedTroops, null);
+		}
+		AddPlayerTraitXPAndLogEntry(DefaultTraits.Mercy, -500, ActionNotes.SacrificedTroops, null);
 	}
 
 	public static void OnTradeAgreementBroken()

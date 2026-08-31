@@ -10,7 +10,7 @@ internal interface IMBMapScene
 	Vec3 GetAccessiblePointNearPosition(UIntPtr scenePointer, Vec2 position, bool isRegionMap0, float radius);
 
 	[EngineMethod("get_nearest_nav_mesh_face_center_position_for_position", false, null, false)]
-	Vec2 GetNearestFaceCenterPositionForPosition(UIntPtr scenePointer, Vec3 position, bool isRegionMap0, int[] excludedFaceIds, int excludedFaceIdCount);
+	Vec2 GetNearestFaceCenterPositionForPosition(UIntPtr scenePointer, Vec3 position, bool isRegionMap0, int[] excludedFaceIds, int excludedFaceIdCount, float heightLimit);
 
 	[EngineMethod("get_nearest_nav_mesh_face_center_position_between_regions_using_path", false, null, false)]
 	Vec2 GetNearestFaceCenterForPositionWithPath(UIntPtr scenePointer, int startFaceIndex, bool targetRegionMap0, float distMax, int[] excludedFaceIds, int excludedFaceIdCount);

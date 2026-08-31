@@ -24,7 +24,7 @@ public class GauntletGameNotification : GlobalLayer
 	{
 		_dataSource = new GameNotificationVM();
 		_dataSource.CurrentNotificationChanged += OnReceiveNewNotification;
-		_layer = new GauntletLayer("GameNotification", 19007);
+		_layer = new GauntletLayer("GameNotification", 19200);
 		_layer.LoadMovie(MovieName, _dataSource);
 		base.Layer = _layer;
 		_layer.InputRestrictions.SetInputRestrictions(isMouseVisible: false, InputUsageMask.Mouse);

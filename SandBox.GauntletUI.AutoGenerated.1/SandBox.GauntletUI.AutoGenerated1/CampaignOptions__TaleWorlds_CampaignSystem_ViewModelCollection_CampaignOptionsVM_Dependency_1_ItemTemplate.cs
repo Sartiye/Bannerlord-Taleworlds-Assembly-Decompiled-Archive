@@ -17,7 +17,7 @@ public class CampaignOptions__TaleWorlds_CampaignSystem_ViewModelCollection_Camp
 
 	private TextWidget _widget_0;
 
-	private HintWidget _widget_1;
+	private Widget _widget_1;
 
 	private NavigationTargetSwitcher _widget_1_0;
 
@@ -71,6 +71,8 @@ public class CampaignOptions__TaleWorlds_CampaignSystem_ViewModelCollection_Camp
 
 	private HintWidget _widget_1_1_7_0_3;
 
+	private HintWidget _widget_1_2;
+
 	private CampaignOptionItemVM _datasource_Root;
 
 	private HintViewModel _datasource_Root_Hint;
@@ -85,7 +87,7 @@ public class CampaignOptions__TaleWorlds_CampaignSystem_ViewModelCollection_Camp
 		_widget = this;
 		_widget_0 = new TextWidget(base.Context);
 		_widget.AddChild(_widget_0);
-		_widget_1 = new HintWidget(base.Context);
+		_widget_1 = new Widget(base.Context);
 		_widget.AddChild(_widget_1);
 		_widget_1_0 = new NavigationTargetSwitcher(base.Context);
 		_widget_1.AddChild(_widget_1_0);
@@ -140,6 +142,8 @@ public class CampaignOptions__TaleWorlds_CampaignSystem_ViewModelCollection_Camp
 		_widget_1_1_7_0.AddChild(_widget_1_1_7_0_2);
 		_widget_1_1_7_0_3 = new HintWidget(base.Context);
 		_widget_1_1_7_0.AddChild(_widget_1_1_7_0_3);
+		_widget_1_2 = new HintWidget(base.Context);
+		_widget_1.AddChild(_widget_1_2);
 	}
 
 	public void SetIds()
@@ -318,6 +322,7 @@ public class CampaignOptions__TaleWorlds_CampaignSystem_ViewModelCollection_Camp
 		_widget_1_1_7_0_3.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_1_7_0_3.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_1_1_7_0_3.IsEnabled = false;
+		_widget_1_2.IsEnabled = false;
 	}
 
 	public void DestroyDataSource()
@@ -400,10 +405,10 @@ public class CampaignOptions__TaleWorlds_CampaignSystem_ViewModelCollection_Camp
 				_datasource_Root_Hint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Hint;
 				_datasource_Root_Hint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Hint;
 				_datasource_Root_Hint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Hint;
-				_widget_1.EventFire -= EventListenerOf_widget_1;
 				_widget_1_1_1_0_1.EventFire -= EventListenerOf_widget_1_1_1_0_1;
 				_widget_1_1_3_0_4.EventFire -= EventListenerOf_widget_1_1_3_0_4;
 				_widget_1_1_7_0_3.EventFire -= EventListenerOf_widget_1_1_7_0_3;
+				_widget_1_2.EventFire -= EventListenerOf_widget_1_2;
 				_datasource_Root_Hint = null;
 			}
 			_datasource_Root = null;
@@ -420,18 +425,6 @@ public class CampaignOptions__TaleWorlds_CampaignSystem_ViewModelCollection_Camp
 		if (commandName == "Click")
 		{
 			_datasource_Root.ExecuteAction();
-		}
-	}
-
-	private void EventListenerOf_widget_1(Widget widget, string commandName, object[] args)
-	{
-		if (commandName == "HoverBegin")
-		{
-			_datasource_Root_Hint.ExecuteBeginHint();
-		}
-		if (commandName == "HoverEnd")
-		{
-			_datasource_Root_Hint.ExecuteEndHint();
 		}
 	}
 
@@ -460,6 +453,18 @@ public class CampaignOptions__TaleWorlds_CampaignSystem_ViewModelCollection_Camp
 	}
 
 	private void EventListenerOf_widget_1_1_7_0_3(Widget widget, string commandName, object[] args)
+	{
+		if (commandName == "HoverBegin")
+		{
+			_datasource_Root_Hint.ExecuteBeginHint();
+		}
+		if (commandName == "HoverEnd")
+		{
+			_datasource_Root_Hint.ExecuteEndHint();
+		}
+	}
+
+	private void EventListenerOf_widget_1_2(Widget widget, string commandName, object[] args)
 	{
 		if (commandName == "HoverBegin")
 		{
@@ -1028,10 +1033,10 @@ public class CampaignOptions__TaleWorlds_CampaignSystem_ViewModelCollection_Camp
 				_datasource_Root_Hint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Hint;
 				_datasource_Root_Hint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Hint;
 				_datasource_Root_Hint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Hint;
-				_widget_1.EventFire -= EventListenerOf_widget_1;
 				_widget_1_1_1_0_1.EventFire -= EventListenerOf_widget_1_1_1_0_1;
 				_widget_1_1_3_0_4.EventFire -= EventListenerOf_widget_1_1_3_0_4;
 				_widget_1_1_7_0_3.EventFire -= EventListenerOf_widget_1_1_7_0_3;
+				_widget_1_2.EventFire -= EventListenerOf_widget_1_2;
 				_datasource_Root_Hint = null;
 			}
 			_datasource_Root = null;
@@ -1127,10 +1132,10 @@ public class CampaignOptions__TaleWorlds_CampaignSystem_ViewModelCollection_Camp
 				_datasource_Root_Hint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Hint;
 				_datasource_Root_Hint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Hint;
 				_datasource_Root_Hint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Hint;
-				_widget_1.EventFire += EventListenerOf_widget_1;
 				_widget_1_1_1_0_1.EventFire += EventListenerOf_widget_1_1_1_0_1;
 				_widget_1_1_3_0_4.EventFire += EventListenerOf_widget_1_1_3_0_4;
 				_widget_1_1_7_0_3.EventFire += EventListenerOf_widget_1_1_7_0_3;
+				_widget_1_2.EventFire += EventListenerOf_widget_1_2;
 			}
 			_widget_1_1_5.SetDataSource(_datasource_Root);
 		}
@@ -1149,10 +1154,10 @@ public class CampaignOptions__TaleWorlds_CampaignSystem_ViewModelCollection_Camp
 			_datasource_Root_Hint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Hint;
 			_datasource_Root_Hint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Hint;
 			_datasource_Root_Hint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Hint;
-			_widget_1.EventFire -= EventListenerOf_widget_1;
 			_widget_1_1_1_0_1.EventFire -= EventListenerOf_widget_1_1_1_0_1;
 			_widget_1_1_3_0_4.EventFire -= EventListenerOf_widget_1_1_3_0_4;
 			_widget_1_1_7_0_3.EventFire -= EventListenerOf_widget_1_1_7_0_3;
+			_widget_1_2.EventFire -= EventListenerOf_widget_1_2;
 			_datasource_Root_Hint = null;
 		}
 		_datasource_Root_Hint = newDataSource;
@@ -1168,10 +1173,10 @@ public class CampaignOptions__TaleWorlds_CampaignSystem_ViewModelCollection_Camp
 			_datasource_Root_Hint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Hint;
 			_datasource_Root_Hint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Hint;
 			_datasource_Root_Hint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Hint;
-			_widget_1.EventFire += EventListenerOf_widget_1;
 			_widget_1_1_1_0_1.EventFire += EventListenerOf_widget_1_1_1_0_1;
 			_widget_1_1_3_0_4.EventFire += EventListenerOf_widget_1_1_3_0_4;
 			_widget_1_1_7_0_3.EventFire += EventListenerOf_widget_1_1_7_0_3;
+			_widget_1_2.EventFire += EventListenerOf_widget_1_2;
 		}
 	}
 }

@@ -15,6 +15,10 @@ public class MobilePartyTrainingBehavior : CampaignBehaviorBase
 		CampaignEvents.PlayerUpgradedTroopsEvent.AddNonSerializedListener(this, OnPlayerUpgradedTroops);
 	}
 
+	public override void SyncData(IDataStore dataStore)
+	{
+	}
+
 	private void OnPlayerUpgradedTroops(CharacterObject troop, CharacterObject upgrade, int number)
 	{
 		SkillLevelingManager.OnUpgradeTroops(PartyBase.MainParty, troop, upgrade, number);
@@ -39,17 +43,41 @@ public class MobilePartyTrainingBehavior : CampaignBehaviorBase
 		}
 	}
 
+	private void WorkSkills(MobileParty mobileParty)
+	{
+		if (!mobileParty.IsMoving)
+		{
+			MobileParty attachedTo = mobileParty.AttachedTo;
+			if (attachedTo == null || !attachedTo.IsMoving)
+			{
+				goto IL_003c;
+			}
+		}
+		CheckScouting(mobileParty);
+		if (CampaignTime.Now.GetHourOfDay % 4 == 1)
+		{
+			CheckMovementSkills(mobileParty);
+		}
+		goto IL_003c;
+		IL_003c:
+		if (mobileParty.Morale >= Campaign.Current.Models.PartyMoraleModel.HighMoraleValue && mobileParty.MemberRoster.TotalRegulars > 0)
+		{
+			SkillLevelingManager.OnHighMorale(mobileParty);
+		}
+	}
+
 	private void OnDailyTickParty(MobileParty mobileParty)
 	{
 		foreach (TroopRosterElement item in mobileParty.MemberRoster.GetTroopRoster())
 		{
-			ExplainedNumber effectiveDailyExperience = Campaign.Current.Models.PartyTrainingModel.GetEffectiveDailyExperience(mobileParty, item);
 			if (!item.Character.IsHero)
 			{
+				ExplainedNumber effectiveDailyExperience = Campaign.Current.Models.PartyTrainingModel.GetEffectiveDailyExperience(mobileParty, item);
 				mobileParty.Party.MemberRoster.AddXpToTroop(item.Character, MathF.Round(effectiveDailyExperience.ResultNumber * (float)item.Number));
 			}
 		}
-		if (mobileParty.IsDisbanding || !mobileParty.HasPerk(DefaultPerks.Bow.Trainer))
+		Hero perkOwnerHero = null;
+		if (mobileParty.IsDisbanding || !mobileParty.HasPerk(DefaultPerks.Bow.Trainer, out perkOwnerHero))
 		{
 			return;
 		}
@@ -83,18 +111,6 @@ public class MobilePartyTrainingBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private void WorkSkills(MobileParty mobileParty)
-	{
-		if (mobileParty.IsMoving)
-		{
-			CheckScouting(mobileParty);
-			if (CampaignTime.Now.GetHourOfDay % 4 == 1)
-			{
-				CheckMovementSkills(mobileParty);
-			}
-		}
-	}
-
 	private void CheckMovementSkills(MobileParty mobileParty)
 	{
 		if (mobileParty == MobileParty.MainParty)
@@ -107,36 +123,35 @@ public class MobilePartyTrainingBehavior : CampaignBehaviorBase
 					{
 						if (item.Character.Equipment.Horse.IsEmpty)
 						{
-							SkillLevelingManager.OnTravelOnFoot(item.Character.HeroObject, mobileParty._lastCalculatedSpeed);
+							SkillLevelingManager.OnTravelOnFoot(item.Character.HeroObject);
 						}
 						else
 						{
-							SkillLevelingManager.OnTravelOnHorse(item.Character.HeroObject, mobileParty._lastCalculatedSpeed);
+							SkillLevelingManager.OnTravelOnHorse(item.Character.HeroObject);
 						}
 					}
 				}
 				return;
 			}
-			SkillLevelingManager.OnTravelOnWater(mobileParty, mobileParty._lastCalculatedSpeed);
+			if (!mobileParty.IsInNavalAutoTravel)
+			{
+				SkillLevelingManager.OnTravelOnWater(mobileParty);
+			}
 		}
 		else if (mobileParty.LeaderHero != null)
 		{
 			if (mobileParty.IsCurrentlyAtSea)
 			{
-				SkillLevelingManager.OnTravelOnWater(mobileParty, mobileParty._lastCalculatedSpeed);
+				SkillLevelingManager.OnTravelOnWater(mobileParty);
 			}
 			else if (mobileParty.LeaderHero.CharacterObject.Equipment.Horse.IsEmpty)
 			{
-				SkillLevelingManager.OnTravelOnFoot(mobileParty.LeaderHero, mobileParty._lastCalculatedSpeed);
+				SkillLevelingManager.OnTravelOnFoot(mobileParty.LeaderHero);
 			}
 			else
 			{
-				SkillLevelingManager.OnTravelOnHorse(mobileParty.LeaderHero, mobileParty._lastCalculatedSpeed);
+				SkillLevelingManager.OnTravelOnHorse(mobileParty.LeaderHero);
 			}
 		}
-	}
-
-	public override void SyncData(IDataStore dataStore)
-	{
 	}
 }

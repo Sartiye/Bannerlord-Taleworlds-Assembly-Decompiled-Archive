@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using TaleWorlds.Library;
@@ -10,25 +12,23 @@ namespace TaleWorlds.Diamond.Rest;
 
 public class ClientRestSession : IClientSession
 {
-	private enum ConnectionResultType
+	private enum RequestResult
 	{
-		None,
-		Connected,
-		Disconnected,
-		CantConnect
+		Success,
+		SessionFatal,
+		TransientFailure,
+		HandlerRejected
 	}
-
-	private static readonly long CriticalStateCheckTime = 1000L;
 
 	private readonly Queue<ClientRestSessionTask> _messageTaskQueue;
 
-	private readonly string _address;
+	private volatile string _address;
 
 	private byte[] _userCertificate;
 
 	private ClientRestSessionTask _currentMessageTask;
 
-	private ConnectionResultType _currentConnectionResultType;
+	private ClientRestSessionTask _aliveTask;
 
 	private Stopwatch _timer;
 
@@ -42,19 +42,70 @@ public class ClientRestSession : IClientSession
 
 	private IHttpDriver _platformNetworkClient;
 
+	private const int MaxMessageRetries = 1;
+
+	private int _consecutiveFailures;
+
+	private static readonly ReadOnlyCollection<string> SessionFatalReasons = new ReadOnlyCollection<string>(new string[6] { "SessionNotFound", "InvalidCredentials", "InvalidCertificate", "UnknownMessageType", "FeatureNotSupported", "PeerTypeMismatch" });
+
 	public bool IsConnected { get; private set; }
 
-	public IClient Client { get; private set; }
+	public int AliveCheckInterval { get; set; }
 
-	public ClientRestSession(IClient client, string address, IHttpDriver platformNetworkClient)
+	public string Address
 	{
-		Client = client;
+		get
+		{
+			return _address;
+		}
+		set
+		{
+			if (string.IsNullOrEmpty(value))
+			{
+				TaleWorlds.Library.Debug.Print("ClientRestSession.Address: ignoring empty address.");
+				return;
+			}
+			if (!IsIdle)
+			{
+				TaleWorlds.Library.Debug.Print("ClientRestSession.Address: ignoring assignment while the session is not idle.");
+				return;
+			}
+			_address = value;
+			_consecutiveFailures = 0;
+		}
+	}
+
+	public bool IsIdle
+	{
+		get
+		{
+			if (!IsConnected && _currentMessageTask == null && _aliveTask == null)
+			{
+				return _messageTaskQueue.Count == 0;
+			}
+			return false;
+		}
+	}
+
+	public int MaxConsecutiveFailuresBeforeDisconnect { get; set; } = 3;
+
+
+	public event MessageHandledDelegate MessageReceived;
+
+	public event ConnectedDelegate Connected;
+
+	public event DisconnectedDelegate Disconnected;
+
+	public event OnCantConnectDelegate ConnectionFailed;
+
+	public ClientRestSession(string address, IHttpDriver platformNetworkClient, int aliveCheckInterval)
+	{
+		AliveCheckInterval = aliveCheckInterval;
 		_sessionInitialized = false;
 		_platformNetworkClient = platformNetworkClient;
 		ResetTimer();
 		_address = address;
 		_messageTaskQueue = new Queue<ClientRestSessionTask>();
-		_currentConnectionResultType = ConnectionResultType.None;
 		_restDataJsonConverter = new RestDataJsonConverter();
 	}
 
@@ -90,8 +141,6 @@ public class ClientRestSession : IClientSession
 		{
 			_currentMessageTask = requestMessageTask;
 			_currentMessageTask.SetRequestData(_userCertificate, _address, _platformNetworkClient);
-			restRequestMessage.SerializeAsJson();
-			_lastRequestOperationTime = _timer.ElapsedMilliseconds;
 		}
 		else
 		{
@@ -102,116 +151,242 @@ public class ClientRestSession : IClientSession
 
 	private void RemoveRequestJob()
 	{
+		_lastRequestOperationTime = _timer.ElapsedMilliseconds;
+		TaleWorlds.Library.Debug.Print($"[AliveChannel] Main-channel response complete ({_currentMessageTask.RestRequestMessage?.TypeName}) — alive timer reset at {_lastRequestOperationTime}ms.");
 		_currentMessageTask = null;
 	}
 
 	void IClientSession.Tick()
 	{
 		TryAssignJob();
-		if (_currentMessageTask == null)
+		if (_currentMessageTask != null)
 		{
-			return;
-		}
-		_currentMessageTask.Tick();
-		if (_currentMessageTask.IsCompletelyFinished)
-		{
-			if (_currentMessageTask.Request.Successful)
+			_currentMessageTask.Tick();
+			if (_currentMessageTask.IsCompletelyFinished)
 			{
-				if (_currentMessageTask.RestRequestMessage is ConnectMessage)
+				ProcessCompletedMessageTask(_currentMessageTask);
+				if (_currentMessageTask != null && _currentMessageTask.Finished)
 				{
-					_currentConnectionResultType = ConnectionResultType.Connected;
-					_currentMessageTask.SetFinishedAsSuccessful(null);
+					RemoveRequestJob();
 				}
-				else if (_currentMessageTask.RestRequestMessage is DisconnectMessage)
-				{
-					_currentConnectionResultType = ConnectionResultType.Disconnected;
-					_currentMessageTask.SetFinishedAsSuccessful(null);
-				}
-				else
-				{
-					string responseData = _currentMessageTask.Request.ResponseData;
-					if (!string.IsNullOrEmpty(responseData))
-					{
-						RestResponse restResponse = JsonConvert.DeserializeObject<RestResponse>(responseData, (JsonConverter[])(object)new JsonConverter[1] { (JsonConverter)_restDataJsonConverter });
-						if (restResponse.Successful)
-						{
-							_userCertificate = restResponse.UserCertificate;
-							_currentMessageTask.SetFinishedAsSuccessful(restResponse);
-							while (restResponse.RemainingMessageCount > 0)
-							{
-								RestResponseMessage restResponseMessage = restResponse.TryDequeueMessage();
-								HandleMessage(restResponseMessage.GetMessage());
-							}
-						}
-						else
-						{
-							_currentConnectionResultType = ConnectionResultType.Disconnected;
-							TaleWorlds.Library.Debug.Print("Setting current request message as failed because server returned unsuccessful response(" + restResponse.SuccessfulReason + ")");
-							_currentMessageTask.SetFinishedAsFailed(restResponse);
-						}
-					}
-					else
-					{
-						_currentConnectionResultType = ConnectionResultType.Disconnected;
-						TaleWorlds.Library.Debug.Print("Setting current request message as failed because server returned empty response");
-						_currentMessageTask.SetFinishedAsFailed();
-					}
-				}
+			}
+		}
+		TryAssignAliveJob();
+		if (_aliveTask != null)
+		{
+			_aliveTask.Tick();
+			if (_aliveTask.IsCompletelyFinished)
+			{
+				ClientRestSessionTask aliveTask = _aliveTask;
+				_aliveTask = null;
+				ProcessCompletedAliveTask(aliveTask);
+			}
+		}
+	}
+
+	private (RequestResult result, RestResponse response) ClassifyRequestResult(ClientRestSessionTask task)
+	{
+		if (!task.Request.Successful)
+		{
+			return (result: RequestResult.TransientFailure, response: null);
+		}
+		string responseData = task.Request.ResponseData;
+		if (string.IsNullOrEmpty(responseData))
+		{
+			return (result: RequestResult.TransientFailure, response: null);
+		}
+		RestResponse restResponse = JsonConvert.DeserializeObject<RestResponse>(responseData, (JsonConverter[])(object)new JsonConverter[1] { (JsonConverter)_restDataJsonConverter });
+		if (!restResponse.Successful)
+		{
+			string successfulReason = restResponse.SuccessfulReason;
+			if (IsSessionFatal(successfulReason))
+			{
+				return (result: RequestResult.SessionFatal, response: restResponse);
+			}
+			if (successfulReason == "HandlerFailed" && task.RestRequestMessage is RestObjectRequestMessage { MessageType: MessageType.Function })
+			{
+				return (result: RequestResult.HandlerRejected, response: restResponse);
+			}
+			return (result: RequestResult.TransientFailure, response: restResponse);
+		}
+		return (result: RequestResult.Success, response: restResponse);
+	}
+
+	private static bool IsSessionFatal(string reason)
+	{
+		if (string.IsNullOrEmpty(reason))
+		{
+			return false;
+		}
+		foreach (string sessionFatalReason in SessionFatalReasons)
+		{
+			if (sessionFatalReason == reason)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private void ProcessCompletedMessageTask(ClientRestSessionTask task)
+	{
+		if (task.RestRequestMessage is ConnectMessage)
+		{
+			if (!task.Request.Successful)
+			{
+				TaleWorlds.Library.Debug.Print("[Resilience] ConnectMessage HTTP transport failure.");
+				task.SetFinishedAsFailed();
+				_userCertificate = null;
+				ResetTimer();
+				this.ConnectionFailed?.Invoke();
 			}
 			else
 			{
-				if (_currentMessageTask.RestRequestMessage is ConnectMessage)
-				{
-					_currentConnectionResultType = ConnectionResultType.CantConnect;
-				}
-				else
-				{
-					_currentConnectionResultType = ConnectionResultType.Disconnected;
-				}
-				TaleWorlds.Library.Debug.Print("Setting current request message as failed because server request is failed");
-				_currentMessageTask.SetFinishedAsFailed();
-			}
-			RemoveRequestJob();
-		}
-		if (_currentConnectionResultType != 0)
-		{
-			switch (_currentConnectionResultType)
-			{
-			case ConnectionResultType.Connected:
+				task.SetFinishedAsSuccessful(null);
 				IsConnected = true;
-				OnConnected();
-				break;
-			case ConnectionResultType.Disconnected:
-				IsConnected = false;
-				ClearMessageTaskQueueDueToDisconnect();
-				_sessionCredentials = null;
-				_sessionInitialized = false;
-				_userCertificate = null;
-				ResetTimer();
-				OnDisconnected();
-				break;
-			case ConnectionResultType.CantConnect:
-				_userCertificate = null;
-				ResetTimer();
-				OnCantConnect();
+				this.Connected?.Invoke();
+			}
+			return;
+		}
+		if (task.RestRequestMessage is DisconnectMessage)
+		{
+			task.SetFinishedAsSuccessful(null);
+			OnDisconnected();
+			return;
+		}
+		(RequestResult result, RestResponse response) tuple = ClassifyRequestResult(task);
+		RequestResult item = tuple.result;
+		RestResponse item2 = tuple.response;
+		string text = task.RestRequestMessage?.TypeName;
+		switch (item)
+		{
+		case RequestResult.Success:
+			_consecutiveFailures = 0;
+			_userCertificate = item2.UserCertificate;
+			task.SetFinishedAsSuccessful(item2);
+			DrainSessionMessages(item2);
+			break;
+		case RequestResult.SessionFatal:
+			TaleWorlds.Library.Debug.Print("[Resilience] Session-fatal (" + item2?.SuccessfulReason + ") for " + text + " — disconnecting.");
+			task.SetFinishedAsFailed(item2);
+			OnDisconnected();
+			break;
+		case RequestResult.HandlerRejected:
+			TaleWorlds.Library.Debug.Print("[Resilience] Handler rejected " + text + " (" + item2?.SuccessfulReason + ") — caller will handle.");
+			task.SetFinishedAsFailed(item2);
+			break;
+		case RequestResult.TransientFailure:
+			if (task.Request.Successful && task.RetryCount < 1)
+			{
+				TaleWorlds.Library.Debug.Print($"[Resilience] Retrying {text} (app retry {task.RetryCount + 1}/{1}).");
+				task.ResetForRetry();
 				break;
 			}
-			_currentConnectionResultType = ConnectionResultType.None;
+			task.SetFinishedAsFailed(item2);
+			_consecutiveFailures++;
+			TaleWorlds.Library.Debug.Print($"[Resilience] Consecutive failures: {_consecutiveFailures}/{MaxConsecutiveFailuresBeforeDisconnect}" + $" — {text}, total HTTP attempts: {task.TotalHttpAttempts}.");
+			if (_consecutiveFailures >= MaxConsecutiveFailuresBeforeDisconnect)
+			{
+				TaleWorlds.Library.Debug.Print("[Resilience] Threshold reached — disconnecting.");
+				OnDisconnected();
+			}
+			break;
 		}
+	}
+
+	private void ProcessCompletedAliveTask(ClientRestSessionTask task)
+	{
+		var (requestResult, restResponse) = ClassifyRequestResult(task);
+		switch (requestResult)
+		{
+		case RequestResult.Success:
+			_consecutiveFailures = 0;
+			_userCertificate = restResponse.UserCertificate;
+			if (restResponse.Polled)
+			{
+				_lastRequestOperationTime = _timer.ElapsedMilliseconds;
+				TaleWorlds.Library.Debug.Print($"[AliveChannel] Polled — timer reset. Messages: {restResponse.RemainingMessageCount}.");
+			}
+			else
+			{
+				TaleWorlds.Library.Debug.Print("[AliveChannel] Polled=false (old server?) — timer not reset.");
+			}
+			DrainSessionMessages(restResponse);
+			break;
+		case RequestResult.SessionFatal:
+			TaleWorlds.Library.Debug.Print("[Resilience][AliveChannel] Session-fatal (" + restResponse?.SuccessfulReason + ") — disconnecting.");
+			OnDisconnected();
+			break;
+		case RequestResult.TransientFailure:
+		case RequestResult.HandlerRejected:
+			_consecutiveFailures++;
+			TaleWorlds.Library.Debug.Print($"[Resilience][AliveChannel] Transient failure — consecutive: {_consecutiveFailures}/{MaxConsecutiveFailuresBeforeDisconnect}" + $", total HTTP attempts: {task.TotalHttpAttempts}.");
+			if (_consecutiveFailures >= MaxConsecutiveFailuresBeforeDisconnect)
+			{
+				TaleWorlds.Library.Debug.Print("[Resilience][AliveChannel] Threshold reached — disconnecting.");
+				OnDisconnected();
+			}
+			break;
+		}
+	}
+
+	private void DrainSessionMessages(RestResponse restResponse)
+	{
+		int num = 0;
+		while (restResponse.RemainingMessageCount > 0)
+		{
+			RestResponseMessage restResponseMessage = restResponse.TryDequeueMessage();
+			try
+			{
+				Message message = restResponseMessage.GetMessage();
+				if (message != null)
+				{
+					HandleMessage(message);
+					num++;
+				}
+			}
+			catch (Exception ex)
+			{
+				TaleWorlds.Library.Debug.Print("[SessionMessages] Failed to deliver session message (" + ex.Message + "); skipping.");
+			}
+		}
+		if (num > 0)
+		{
+			TaleWorlds.Library.Debug.Print($"[SessionMessages] Delivered {num} session message(s).");
+		}
+	}
+
+	private void OnDisconnected()
+	{
+		IsConnected = false;
+		ClearMessageTaskQueueDueToDisconnect();
+		_sessionCredentials = null;
+		_sessionInitialized = false;
+		_userCertificate = null;
+		_aliveTask = null;
+		ResetTimer();
+		this.Disconnected?.Invoke();
 	}
 
 	private void TryAssignJob()
 	{
-		if (_currentMessageTask == null)
+		if (_currentMessageTask == null && _messageTaskQueue.Count > 0)
 		{
-			if (_messageTaskQueue.Count > 0)
+			ClientRestSessionTask requestMessageTask = _messageTaskQueue.Dequeue();
+			AssignRequestJob(requestMessageTask);
+		}
+	}
+
+	private void TryAssignAliveJob()
+	{
+		if (_aliveTask == null && IsConnected && _sessionInitialized && _userCertificate != null)
+		{
+			long num = _timer.ElapsedMilliseconds - _lastRequestOperationTime;
+			if (num > AliveCheckInterval)
 			{
-				ClientRestSessionTask requestMessageTask = _messageTaskQueue.Dequeue();
-				AssignRequestJob(requestMessageTask);
-			}
-			else if (IsConnected && _sessionInitialized && _timer.ElapsedMilliseconds - _lastRequestOperationTime > (Client.IsInCriticalState ? CriticalStateCheckTime : Client.AliveCheckTimeInMiliSeconds) && _userCertificate != null)
-			{
-				AssignRequestJob(new ClientRestSessionTask(new AliveMessage(_sessionCredentials)));
+				TaleWorlds.Library.Debug.Print($"[AliveChannel] Firing AliveMessage — idle {num}ms > interval {AliveCheckInterval}ms. MainTask in-flight: {_currentMessageTask != null}. Queue depth: {_messageTaskQueue.Count}.");
+				_aliveTask = new ClientRestSessionTask(new AliveMessage(_sessionCredentials), new CancellationTokenSource().Token);
+				_aliveTask.SetRequestData(_userCertificate, _address, _platformNetworkClient);
 			}
 		}
 	}
@@ -233,18 +408,18 @@ public class ClientRestSession : IClientSession
 
 	public void Disconnect()
 	{
-		SendMessage(new DisconnectMessage());
+		_messageTaskQueue.Enqueue(new ClientRestSessionTask(new DisconnectMessage(), CancellationToken.None, retry: false));
 		ResetTimer();
 	}
 
 	private void SendMessage(RestRequestMessage message)
 	{
-		_messageTaskQueue.Enqueue(new ClientRestSessionTask(message));
+		_messageTaskQueue.Enqueue(new ClientRestSessionTask(message, CancellationToken.None));
 	}
 
 	async Task<LoginResult> IClientSession.Login(LoginMessage message)
 	{
-		ClientRestSessionTask clientRestSessionTask = new ClientRestSessionTask(new RestObjectRequestMessage(null, message, MessageType.Login));
+		ClientRestSessionTask clientRestSessionTask = new ClientRestSessionTask(new RestObjectRequestMessage(null, message, MessageType.Login), CancellationToken.None);
 		_messageTaskQueue.Enqueue(clientRestSessionTask);
 		await clientRestSessionTask.WaitUntilFinished();
 		if (!clientRestSessionTask.Successful && !clientRestSessionTask.Request.Successful)
@@ -270,36 +445,23 @@ public class ClientRestSession : IClientSession
 		SendMessage(new RestObjectRequestMessage(_sessionCredentials, message, MessageType.Message));
 	}
 
-	async Task<TResult> IClientSession.CallFunction<TResult>(Message message)
+	async Task<CallResult> IClientSession.CallFunction<TResult>(Message message)
 	{
-		ClientRestSessionTask clientRestSessionTask = new ClientRestSessionTask(new RestObjectRequestMessage(_sessionCredentials, message, MessageType.Function));
+		ClientRestSessionTask clientRestSessionTask = new ClientRestSessionTask(new RestObjectRequestMessage(_sessionCredentials, message, MessageType.Function), CancellationToken.None);
 		_messageTaskQueue.Enqueue(clientRestSessionTask);
 		await clientRestSessionTask.WaitUntilFinished();
 		if (clientRestSessionTask.Successful)
 		{
-			return (TResult)clientRestSessionTask.RestResponse.FunctionResult.GetFunctionResult();
+			FunctionResult result = clientRestSessionTask.RestResponse.FunctionResult?.GetFunctionResult();
+			return new CallResult(success: true, result);
 		}
-		throw new Exception("Could not call function with " + message.GetType().Name);
+		string successfulReason = clientRestSessionTask.RestResponse?.SuccessfulReason;
+		return new CallResult(success: false, null, successfulReason);
 	}
 
 	private void HandleMessage(Message message)
 	{
-		Client.HandleMessage(message);
-	}
-
-	private void OnConnected()
-	{
-		Client.OnConnected();
-	}
-
-	private void OnDisconnected()
-	{
-		Client.OnDisconnected();
-	}
-
-	private void OnCantConnect()
-	{
-		Client.OnCantConnect();
+		this.MessageReceived?.Invoke(message);
 	}
 
 	async Task<bool> IClientSession.CheckConnection()

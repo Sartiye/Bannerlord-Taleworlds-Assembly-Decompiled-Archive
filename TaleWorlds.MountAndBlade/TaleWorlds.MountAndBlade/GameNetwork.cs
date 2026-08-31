@@ -694,7 +694,7 @@ public static class GameNetwork
 						}
 						if (flag2)
 						{
-							Debug.FailedAssert("Unknown network messageId " + gameNetworkMessage, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\GameNetwork.cs", "HandleNetworkPacketAsServer", 760);
+							Debug.FailedAssert("Unknown network messageId " + gameNetworkMessage, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\GameNetwork.cs", "HandleNetworkPacketAsServer", 747);
 							bufferReadValid = false;
 						}
 						else if (!flag)
@@ -750,11 +750,11 @@ public static class GameNetwork
 		return MBAPI.IMBNetwork.GetActiveUdpSessionsIpAddress();
 	}
 
-	public static ICommunicator AddNewPlayerOnServer(PlayerConnectionInfo playerConnectionInfo, bool serverPeer, bool isAdmin)
+	public static ICommunicator AddNewPlayerOnServer(PlayerConnectionInfo playerConnectionInfo, bool serverPeer, bool isAdmin, bool isSpectator)
 	{
 		bool flag = playerConnectionInfo == null;
 		int num = (flag ? MBAPI.IMBNetwork.AddNewBotOnServer() : MBAPI.IMBNetwork.AddNewPlayerOnServer(serverPeer));
-		Debug.Print("AddNewPlayerOnServer: " + playerConnectionInfo.Name + " index: " + num, 0, Debug.DebugColor.White, 17179869184uL);
+		Debug.Print("AddNewPlayerOnServer: " + (playerConnectionInfo?.Name ?? "<bot>") + " index: " + num, 0, Debug.DebugColor.White, 17179869184uL);
 		if (num >= 0)
 		{
 			int sessionKey = 0;
@@ -779,7 +779,7 @@ public static class GameNetwork
 						communicator = DisconnectedNetworkPeers[i];
 						NetworkCommunicator networkCommunicator = communicator as NetworkCommunicator;
 						networkCommunicator.UpdateIndexForReconnectingPlayer(num);
-						networkCommunicator.UpdateConnectionInfoForReconnect(playerConnectionInfo, isAdmin);
+						networkCommunicator.UpdateConnectionInfoForReconnect(playerConnectionInfo, isAdmin, isSpectator);
 						MBAPI.IMBPeer.SetUserData(num, new MBNetworkPeer(networkCommunicator));
 						Debug.Print("RemoveFromDisconnectedPeers: " + networkCommunicator.UserName, 0, Debug.DebugColor.White, 17179869184uL);
 						DisconnectedNetworkPeers.RemoveAt(i);
@@ -788,7 +788,7 @@ public static class GameNetwork
 				}
 				if (communicator == null)
 				{
-					communicator = NetworkCommunicator.CreateAsServer(playerConnectionInfo, num, isAdmin);
+					communicator = NetworkCommunicator.CreateAsServer(playerConnectionInfo, num, isAdmin, isSpectator);
 				}
 			}
 			VirtualPlayers[communicator.VirtualPlayer.Index] = communicator.VirtualPlayer;
@@ -811,7 +811,7 @@ public static class GameNetwork
 				if (num2 < 0)
 				{
 					BeginBroadcastModuleEvent();
-					WriteMessage(new CreatePlayer(networkCommunicator2.Index, playerConnectionInfo.Name, num2));
+					WriteMessage(new CreatePlayer(networkCommunicator2.Index, playerConnectionInfo.Name, num2, isNonExistingDisconnectedPeer: false, isReceiverPeer: false, networkCommunicator2.IsSpectator, networkCommunicator2.IsAdmin));
 					EndBroadcastModuleEvent(EventBroadcastFlags.AddToMissionRecord | EventBroadcastFlags.DontSendToPeers);
 				}
 				foreach (NetworkCommunicator networkPeer in NetworkPeers)
@@ -819,14 +819,14 @@ public static class GameNetwork
 					if (networkPeer != networkCommunicator2 && networkPeer != MyPeer)
 					{
 						BeginModuleEventAsServer(networkPeer);
-						WriteMessage(new CreatePlayer(networkCommunicator2.Index, playerConnectionInfo.Name, num2));
+						WriteMessage(new CreatePlayer(networkCommunicator2.Index, playerConnectionInfo.Name, num2, isNonExistingDisconnectedPeer: false, isReceiverPeer: false, networkCommunicator2.IsSpectator, networkCommunicator2.IsAdmin));
 						EndModuleEventAsServer();
 					}
 					if (!serverPeer)
 					{
 						bool isReceiverPeer = networkPeer == networkCommunicator2;
 						BeginModuleEventAsServer(networkCommunicator2);
-						WriteMessage(new CreatePlayer(networkPeer.Index, networkPeer.UserName, -1, isNonExistingDisconnectedPeer: false, isReceiverPeer));
+						WriteMessage(new CreatePlayer(networkPeer.Index, networkPeer.UserName, -1, isNonExistingDisconnectedPeer: false, isReceiverPeer, networkPeer.IsSpectator, networkPeer.IsAdmin));
 						EndModuleEventAsServer();
 					}
 				}
@@ -834,7 +834,7 @@ public static class GameNetwork
 				{
 					NetworkCommunicator networkCommunicator3 = DisconnectedNetworkPeers[j];
 					BeginModuleEventAsServer(networkCommunicator2);
-					WriteMessage(new CreatePlayer(networkCommunicator3.Index, networkCommunicator3.UserName, j, isNonExistingDisconnectedPeer: true));
+					WriteMessage(new CreatePlayer(networkCommunicator3.Index, networkCommunicator3.UserName, j, isNonExistingDisconnectedPeer: true, isReceiverPeer: false, networkCommunicator3.IsSpectator, networkCommunicator3.IsAdmin));
 					EndModuleEventAsServer();
 				}
 				foreach (IUdpNetworkHandler networkHandler in NetworkHandlers)
@@ -856,16 +856,21 @@ public static class GameNetwork
 		{
 			for (int i = 0; i < array.Length; i++)
 			{
-				object parameter = playerConnectionInfos[i].GetParameter<object>("IsAdmin");
-				bool isAdmin = parameter != null && (bool)parameter;
-				ICommunicator communicator = AddNewPlayerOnServer(playerConnectionInfos[i], serverPeer, isAdmin);
+				CustomGameJoinType result = CustomGameJoinType.Player;
+				string parameter = playerConnectionInfos[i].GetParameter<string>("JoinType");
+				if (!string.IsNullOrEmpty(parameter) && !Enum.TryParse<CustomGameJoinType>(parameter, out result))
+				{
+					Debug.FailedAssert("Unrecognized JoinType '" + parameter + "'; treating the peer as a player.", "GameNetwork.cs", "AddNewPlayersOnServer", 992);
+					result = CustomGameJoinType.Player;
+				}
+				ICommunicator communicator = AddNewPlayerOnServer(playerConnectionInfos[i], serverPeer, result == CustomGameJoinType.Admin, result == CustomGameJoinType.Spectator);
 				array[i] = communicator as NetworkCommunicator;
 			}
 		}
-		AddPlayersResult result = default(AddPlayersResult);
-		result.NetworkPeers = array;
-		result.Success = flag;
-		return result;
+		AddPlayersResult result2 = default(AddPlayersResult);
+		result2.NetworkPeers = array;
+		result2.Success = flag;
+		return result2;
 	}
 
 	public static void ClientFinishedLoading(NetworkCommunicator networkPeer)
@@ -1000,7 +1005,7 @@ public static class GameNetwork
 	{
 		if (!TWParallel.IsMainThread())
 		{
-			Debug.FailedAssert("Network messages should be handled from main thread", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\GameNetwork.cs", "HandleNetworkPacketAsClient", 1204);
+			Debug.FailedAssert("Network messages should be handled from main thread", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\GameNetwork.cs", "HandleNetworkPacketAsClient", 1194);
 		}
 		bool bufferReadValid = true;
 		int num = GameNetworkMessage.ReadIntFromPacket(CompressionBasic.NetworkComponentEventTypeFromServerCompressionInfo, ref bufferReadValid);
@@ -1082,9 +1087,9 @@ public static class GameNetwork
 		return new Random(DateTime.Now.Millisecond).Next(1, 4001);
 	}
 
-	public static NetworkCommunicator HandleNewClientConnect(PlayerConnectionInfo playerConnectionInfo, bool isAdmin)
+	public static NetworkCommunicator HandleNewClientConnect(PlayerConnectionInfo playerConnectionInfo, bool isAdmin, bool isSpectator)
 	{
-		NetworkCommunicator networkCommunicator = AddNewPlayerOnServer(playerConnectionInfo, serverPeer: false, isAdmin) as NetworkCommunicator;
+		NetworkCommunicator networkCommunicator = AddNewPlayerOnServer(playerConnectionInfo, serverPeer: false, isAdmin, isSpectator) as NetworkCommunicator;
 		_handler.OnNewPlayerConnect(playerConnectionInfo, networkCommunicator);
 		return networkCommunicator;
 	}
@@ -1128,6 +1133,7 @@ public static class GameNetwork
 			Debug.Print("RemoveFromDisconnectedPeers: " + networkCommunicator.UserName, 0, Debug.DebugColor.White, 17179869184uL);
 			DisconnectedNetworkPeers.RemoveAt(message.DisconnectedPeerIndex);
 		}
+		networkCommunicator.SetJoinFlagsAsClient(message.IsSpectator, message.IsAdmin);
 		if (isReceiverPeer)
 		{
 			MyPeer = networkCommunicator;

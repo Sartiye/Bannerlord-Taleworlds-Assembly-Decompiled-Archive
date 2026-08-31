@@ -52,6 +52,8 @@ public class GauntletInitialScreen : MBInitialScreenBase, IChatLogHandlerScreen
 			{
 				Visible = true
 			};
+			_brightnessOptionDataSource.SetConfirmInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Confirm"));
+			_brightnessOptionDataSource.SetCancelInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Exit"));
 			_gauntletBrightnessLayer = new GauntletLayer("MainMenuBrightness", 2);
 			_gauntletBrightnessLayer.InputRestrictions.SetInputRestrictions(isMouseVisible: true, InputUsageMask.Mouse);
 			_brightnessOptionMovie = _gauntletBrightnessLayer.LoadMovie("BrightnessOption", _brightnessOptionDataSource);
@@ -146,6 +148,7 @@ public class GauntletInitialScreen : MBInitialScreenBase, IChatLogHandlerScreen
 	{
 		_gauntletBrightnessLayer.ReleaseMovie(_brightnessOptionMovie);
 		RemoveLayer(_gauntletBrightnessLayer);
+		_brightnessOptionDataSource?.OnFinalize();
 		_brightnessOptionDataSource = null;
 		_gauntletBrightnessLayer = null;
 		NativeOptions.SaveConfig();
@@ -158,6 +161,8 @@ public class GauntletInitialScreen : MBInitialScreenBase, IChatLogHandlerScreen
 		{
 			Visible = true
 		};
+		_exposureOptionDataSource.SetConfirmInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Confirm"));
+		_exposureOptionDataSource.SetCancelInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Exit"));
 		_gauntletExposureLayer = new GauntletLayer("MainMenuExposure", 2);
 		_gauntletExposureLayer.InputRestrictions.SetInputRestrictions(isMouseVisible: true, InputUsageMask.Mouse);
 		_exposureOptionMovie = _gauntletExposureLayer.LoadMovie("ExposureOption", _exposureOptionDataSource);
@@ -168,6 +173,7 @@ public class GauntletInitialScreen : MBInitialScreenBase, IChatLogHandlerScreen
 	{
 		_gauntletExposureLayer.ReleaseMovie(_exposureOptionMovie);
 		RemoveLayer(_gauntletExposureLayer);
+		_exposureOptionDataSource?.OnFinalize();
 		_exposureOptionDataSource = null;
 		_gauntletExposureLayer = null;
 		NativeOptions.SaveConfig();

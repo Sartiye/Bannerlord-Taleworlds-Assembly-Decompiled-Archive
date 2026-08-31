@@ -116,10 +116,17 @@ public class MPChatVM : ViewModel, IChatHandler
 			{
 				_activeChannelType = ChatChannelType.None;
 			}
-			else if (value != _activeChannelType)
+			else
 			{
-				_activeChannelType = value;
-				RefreshActiveChannelNameData();
+				if (value == ChatChannelType.All && IsLocalPeerSpectator())
+				{
+					value = ChatChannelType.Team;
+				}
+				if (value != _activeChannelType)
+				{
+					_activeChannelType = value;
+					RefreshActiveChannelNameData();
+				}
 			}
 			IsChatDisabled = value == ChatChannelType.None;
 		}
@@ -555,6 +562,11 @@ public class MPChatVM : ViewModel, IChatHandler
 		RefreshActiveChannelNameData();
 	}
 
+	private static bool IsLocalPeerSpectator()
+	{
+		return SpectatorHelper.IsLocalPeerSpectator();
+	}
+
 	private void RefreshActiveChannelNameData()
 	{
 		if (ActiveChannelType == ChatChannelType.None)
@@ -563,7 +575,8 @@ public class MPChatVM : ViewModel, IChatHandler
 			ActiveChannelColor = Color.White;
 			return;
 		}
-		string content = GameTexts.FindText("str_multiplayer_chat_channel", ActiveChannelType.ToString()).ToString();
+		string variation = ((ActiveChannelType == ChatChannelType.Team && IsLocalPeerSpectator()) ? "Spectator" : ActiveChannelType.ToString());
+		string content = GameTexts.FindText("str_multiplayer_chat_channel", variation).ToString();
 		GameTexts.SetVariable("STR", content);
 		ActiveChannelNameText = GameTexts.FindText("str_STR_in_parentheses").ToString();
 		ActiveChannelColor = GetChannelColor(ActiveChannelType);
@@ -849,7 +862,7 @@ public class MPChatVM : ViewModel, IChatHandler
 				CheckSpamAndSendMessage(ActiveChannelType, text);
 				break;
 			default:
-				Debug.FailedAssert("Player in invalid channel", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Multiplayer\\MPChatVM.cs", "ExecuteSendMessage", 496);
+				Debug.FailedAssert("Player in invalid channel", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Multiplayer\\MPChatVM.cs", "ExecuteSendMessage", 514);
 				break;
 			case ChatChannelType.Private:
 				break;
@@ -886,6 +899,10 @@ public class MPChatVM : ViewModel, IChatHandler
 		LobbyClient gameClient = NetworkMain.GameClient;
 		if (gameClient != null && gameClient.Connected)
 		{
+			if (channel == ChatChannelType.All && IsLocalPeerSpectator())
+			{
+				channel = ChatChannelType.Team;
+			}
 			switch (channel)
 			{
 			case ChatChannelType.All:

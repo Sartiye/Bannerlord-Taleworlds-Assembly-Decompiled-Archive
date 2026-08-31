@@ -153,6 +153,8 @@ public class FindHideoutTutorialQuest : StoryModeQuestBase
 		_activeHideoutStringId = _hideout.StringId;
 		_hideout.Party.SetCustomName(new TextObject("{=9xaEPyNV}{RADAGOS.NAME}' Hideout"));
 		StringHelpers.SetCharacterProperties("RADAGOS", StoryModeHeroes.Radagos.CharacterObject, _hideout.Name);
+		StoryModeHeroes.Radagos.CharacterObject.HiddenInEncyclopedia = false;
+		StoryModeHeroes.Radagos.UpdateLastKnownClosestSettlement(_hideout);
 		SetDialogs();
 		AddGameMenus();
 		if (_raiderParties.Count <= 2)
@@ -195,6 +197,8 @@ public class FindHideoutTutorialQuest : StoryModeQuestBase
 		{
 			mapState.Handler.StartCameraAnimation(_hideout.GatePosition, 1f);
 		}
+		StoryModeHeroes.Radagos.CharacterObject.HiddenInEncyclopedia = false;
+		StoryModeHeroes.Radagos.UpdateLastKnownClosestSettlement(_hideout);
 	}
 
 	private void InitializeHideout()
@@ -246,9 +250,7 @@ public class FindHideoutTutorialQuest : StoryModeQuestBase
 		mobileParty.Party.SetCustomOwner(StoryModeHeroes.Radagos);
 		mobileParty.Party.SetVisualAsDirty();
 		EnterSettlementAction.ApplyForParty(mobileParty, _hideout);
-		float num = mobileParty.Party.CalculateCurrentStrength();
-		int initialGold = (int)(1f * MBRandom.RandomFloat * 20f * num + 50f);
-		mobileParty.InitializePartyTrade(initialGold);
+		mobileParty.InitializePartyTrade(QuestHelper.CalculateInitialGoldForBanditQuestParty(mobileParty));
 		mobileParty.SetMoveGoToSettlement(_hideout, MobileParty.NavigationType.Default, isTargetingThePort: false);
 		EnterSettlementAction.ApplyForParty(mobileParty, _hideout);
 		mobileParty.SetPartyUsedByQuest(isActivelyUsed: true);
@@ -380,7 +382,7 @@ public class FindHideoutTutorialQuest : StoryModeQuestBase
 
 	private void SelectClanName()
 	{
-		InformationManager.ShowTextInquiry(new TextInquiryData(new TextObject("{=JJiKk4ow}Select your family name: ").ToString(), string.Empty, isAffirmativeOptionShown: true, isNegativeOptionShown: false, GameTexts.FindText("str_done").ToString(), null, OnChangeClanNameDone, null, shouldInputBeObfuscated: false, FactionHelper.IsClanNameApplicable, "", Clan.PlayerClan.Name.ToString()));
+		InformationManager.ShowTextInquiry(new TextInquiryData(new TextObject("{=RSn1j3tA}Choose your family name: ").ToString(), string.Empty, isAffirmativeOptionShown: true, isNegativeOptionShown: false, GameTexts.FindText("str_done").ToString(), null, OnChangeClanNameDone, null, shouldInputBeObfuscated: false, FactionHelper.IsClanNameApplicable, "", Clan.PlayerClan.Name.ToString()));
 	}
 
 	private void OnChangeClanNameDone(string newClanName)

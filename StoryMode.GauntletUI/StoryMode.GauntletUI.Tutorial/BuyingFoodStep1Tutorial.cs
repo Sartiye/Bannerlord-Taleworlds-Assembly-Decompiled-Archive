@@ -1,5 +1,7 @@
 using SandBox.GauntletUI.Tutorial;
 using SandBox.ViewModelCollection.Tutorial;
+using StoryMode.Quests.TutorialPhase;
+using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 
 namespace StoryMode.GauntletUI.Tutorial;
@@ -23,7 +25,7 @@ public class BuyingFoodStep1Tutorial : TutorialItemBase
 
 	public override bool IsConditionsMetForActivation()
 	{
-		if (!TutorialHelper.IsCharacterPopUpWindowOpen && TutorialHelper.BuyingFoodBaseConditions)
+		if (!TutorialHelper.IsCharacterPopUpWindowOpen && TutorialHelper.BuyingFoodBaseConditions && !Campaign.Current.QuestManager.IsThereActiveQuestWithType(typeof(RecruitTroopsTutorialQuest)))
 		{
 			return TutorialHelper.CurrentContext == TutorialContexts.MapWindow;
 		}

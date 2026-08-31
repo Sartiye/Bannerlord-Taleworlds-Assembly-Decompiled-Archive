@@ -23,16 +23,14 @@ public static class MultiplayerPracticeMissionViews
 			ViewCreator.CreateOptionsUIHandler(),
 			ViewCreator.CreateMissionMainAgentEquipDropView(mission)
 		};
-		MissionView missionView = ViewCreator.CreateMissionOrderUIHandler();
-		obj.Add(missionView);
+		MissionView item = ViewCreator.CreateMissionOrderUIHandler();
+		obj.Add(item);
 		obj.Add(new OrderTroopPlacer(null));
 		obj.Add(ViewCreator.CreateMissionAgentStatusUIHandler(mission));
 		obj.Add(ViewCreator.CreateMissionMainAgentEquipmentController(mission));
 		obj.Add(ViewCreator.CreateMissionMainAgentCheerBarkControllerView(mission));
 		obj.Add(ViewCreator.CreateMissionAgentLockVisualizerView(mission));
 		obj.Add(new DeploymentMissionView());
-		ISiegeDeploymentView siegeDeploymentView = missionView as ISiegeDeploymentView;
-		obj.Add(new MissionEntitySelectionUIHandler(siegeDeploymentView.OnEntitySelection, siegeDeploymentView.OnEntityHover));
 		obj.Add(ViewCreator.CreateMissionBoundaryCrossingView());
 		obj.Add(new MissionBoundaryWallView());
 		obj.Add(new MissionDeploymentBoundaryMarker("swallowtail_banner"));

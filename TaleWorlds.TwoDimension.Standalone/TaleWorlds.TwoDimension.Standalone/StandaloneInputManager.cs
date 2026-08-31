@@ -1,4 +1,3 @@
-using System;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.TwoDimension.Standalone.Native.Windows;
@@ -68,37 +67,37 @@ public class StandaloneInputManager : IInputManager
 
 	float IInputManager.GetMouseMoveX()
 	{
-		throw new NotImplementedException();
+		return 0f;
 	}
 
 	float IInputManager.GetMouseMoveY()
 	{
-		throw new NotImplementedException();
+		return 0f;
 	}
 
 	float IInputManager.GetNormalizedMouseMoveX()
 	{
-		throw new NotImplementedException();
+		return 0f;
 	}
 
 	float IInputManager.GetNormalizedMouseMoveY()
 	{
-		throw new NotImplementedException();
+		return 0f;
 	}
 
 	float IInputManager.GetGyroX()
 	{
-		throw new NotImplementedException();
+		return 0f;
 	}
 
 	float IInputManager.GetGyroY()
 	{
-		throw new NotImplementedException();
+		return 0f;
 	}
 
 	float IInputManager.GetGyroZ()
 	{
-		throw new NotImplementedException();
+		return 0f;
 	}
 
 	float IInputManager.GetMouseSensitivity()

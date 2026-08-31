@@ -12,7 +12,7 @@ public class PlayerJoinGameResponseDataFromHost
 
 	public int SessionKey { get; set; }
 
-	public bool IsAdmin { get; set; }
+	public CustomGameJoinType JoinType { get; set; }
 
 	public CustomGameJoinResponse CustomGameJoinResponse { get; set; }
 }

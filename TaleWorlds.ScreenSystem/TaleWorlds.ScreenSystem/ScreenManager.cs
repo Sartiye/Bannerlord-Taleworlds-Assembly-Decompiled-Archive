@@ -183,11 +183,15 @@ public static class ScreenManager
 		_isRefreshActive = false;
 	}
 
-	public static void RemoveGlobalLayer(GlobalLayer layer)
+	public static void RemoveGlobalLayer(GlobalLayer layer, bool finalizeLayer = true)
 	{
 		TaleWorlds.Library.Debug.Print("RemoveGlobalLayer");
 		_globalLayers.Remove(layer);
 		layer.Layer.HandleDeactivate();
+		if (finalizeLayer)
+		{
+			layer.Layer.HandleFinalize();
+		}
 		_globalOrderDirty = true;
 	}
 
@@ -267,7 +271,7 @@ public static class ScreenManager
 	{
 		if (!TWParallel.IsMainThread())
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Screen should be changed from main thread", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenManager.cs", "DeactivateAndFinalizeAllScreens", 291);
+			TaleWorlds.Library.Debug.FailedAssert("Screen should be changed from main thread", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenManager.cs", "DeactivateAndFinalizeAllScreens", 296);
 		}
 		TaleWorlds.Library.Debug.Print("DeactivateAndFinalizeAllScreens");
 		for (int num = _screenList.Count - 1; num >= 0; num--)
@@ -429,7 +433,7 @@ public static class ScreenManager
 	{
 		if (!TWParallel.IsMainThread())
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Screen should be changed from main thread", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenManager.cs", "CleanAndPushScreen", 517);
+			TaleWorlds.Library.Debug.FailedAssert("Screen should be changed from main thread", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenManager.cs", "CleanAndPushScreen", 522);
 		}
 		TaleWorlds.Library.Debug.Print("CleanAndPushScreen");
 		DeactivateAndFinalizeAllScreens();
@@ -482,7 +486,7 @@ public static class ScreenManager
 	{
 		if (!TWParallel.IsMainThread())
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Screen should be changed from main thread", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenManager.cs", "PushScreen", 594);
+			TaleWorlds.Library.Debug.FailedAssert("Screen should be changed from main thread", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenManager.cs", "PushScreen", 599);
 		}
 		TaleWorlds.Library.Debug.Print("PushScreen");
 		if (_screenList.Count > 0)
@@ -505,7 +509,7 @@ public static class ScreenManager
 	{
 		if (!TWParallel.IsMainThread())
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Screen should be changed from main thread", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenManager.cs", "PopScreen", 625);
+			TaleWorlds.Library.Debug.FailedAssert("Screen should be changed from main thread", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenManager.cs", "PopScreen", 630);
 		}
 		TaleWorlds.Library.Debug.Print("PopScreen");
 		if (_screenList.Count > 0)
@@ -533,7 +537,7 @@ public static class ScreenManager
 	{
 		if (!TWParallel.IsMainThread())
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Screen should be changed from main thread", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenManager.cs", "CleanScreens", 659);
+			TaleWorlds.Library.Debug.FailedAssert("Screen should be changed from main thread", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.ScreenSystem\\ScreenManager.cs", "CleanScreens", 664);
 		}
 		TaleWorlds.Library.Debug.Print("CleanScreens");
 		while (_screenList.Count > 0)

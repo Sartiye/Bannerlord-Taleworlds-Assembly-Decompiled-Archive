@@ -60,7 +60,8 @@ public class GameMenuOption
 		ManageFleet,
 		CallFleet,
 		OrderShipsToAttack,
-		RepairShips
+		RepairShips,
+		TakeFerry
 	}
 
 	[Flags]

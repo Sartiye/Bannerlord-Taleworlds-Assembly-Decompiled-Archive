@@ -40,6 +40,8 @@ public class SceneWidget : TextureWidget
 
 	private TextWidget _titleTextWidget;
 
+	private Widget _descriptionParentWidget;
+
 	private float _endProgress;
 
 	private float _fadeInDuration;
@@ -160,6 +162,23 @@ public class SceneWidget : TextureWidget
 			{
 				_titleTextWidget = value;
 				OnPropertyChanged(value, "TitleTextWidget");
+			}
+		}
+	}
+
+	[Editor(false)]
+	public Widget DescriptionParentWidget
+	{
+		get
+		{
+			return _descriptionParentWidget;
+		}
+		set
+		{
+			if (value != _descriptionParentWidget)
+			{
+				_descriptionParentWidget = value;
+				OnPropertyChanged(value, "DescriptionParentWidget");
 			}
 		}
 	}
@@ -355,12 +374,14 @@ public class SceneWidget : TextureWidget
 			}
 			CancelButton.SetGlobalAlphaRecursively(Mathf.Lerp(CancelButton.ReadOnlyBrush.GlobalAlphaFactor, 0f, dt * 10f));
 			AffirmativeButton.SetGlobalAlphaRecursively(Mathf.Lerp(AffirmativeButton.ReadOnlyBrush.GlobalAlphaFactor, 0f, dt * 10f));
+			DescriptionParentWidget.SetGlobalAlphaRecursively(Mathf.Lerp(DescriptionParentWidget.AlphaFactor, 0f, dt * 10f));
 		}
 		else
 		{
 			ClickToContinueTextWidget.SetGlobalAlphaRecursively(Mathf.Lerp(ClickToContinueTextWidget.ReadOnlyBrush.GlobalAlphaFactor, 0f, dt * 10f));
 			CancelButton.SetGlobalAlphaRecursively(Mathf.Lerp(CancelButton.ReadOnlyBrush.GlobalAlphaFactor, IsCancelShown ? 1 : 0, dt * 10f));
 			AffirmativeButton.SetGlobalAlphaRecursively(Mathf.Lerp(AffirmativeButton.ReadOnlyBrush.GlobalAlphaFactor, IsOkShown ? 1 : 0, dt * 10f));
+			DescriptionParentWidget.SetGlobalAlphaRecursively(Mathf.Lerp(DescriptionParentWidget.AlphaFactor, 1f, dt * 10f));
 		}
 		UpdateVisibilityOfWidgetBasedOnAlpha(ClickToContinueTextWidget);
 		UpdateVisibilityOfWidgetBasedOnAlpha(CancelButton);
@@ -398,7 +419,7 @@ public class SceneWidget : TextureWidget
 		}
 		if (_cachedOverlaySprite == null)
 		{
-			Debug.FailedAssert("Failed to find overlay sprite for scene fade", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\SceneWidget.cs", "RenderFadeOverlay", 118);
+			Debug.FailedAssert("Failed to find overlay sprite for scene fade", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\SceneWidget.cs", "RenderFadeOverlay", 120);
 			return;
 		}
 		Texture texture = _cachedOverlaySprite.Texture;
@@ -481,6 +502,7 @@ public class SceneWidget : TextureWidget
 		AffirmativeButton.SetGlobalAlphaRecursively(IsOkShown ? 1 : 0);
 		ClickToContinueTextWidget.SetGlobalAlphaRecursively(0f);
 		_isInClickToContinueState = !IsCancelShown && !IsOkShown;
+		DescriptionParentWidget.SetGlobalAlphaRecursively((!_isInClickToContinueState) ? 1 : 0);
 		if (_isInClickToContinueState)
 		{
 			_clickToContinueStartTime = base.EventManager.Time;

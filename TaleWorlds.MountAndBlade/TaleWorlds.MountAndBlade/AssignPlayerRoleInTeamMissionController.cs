@@ -43,22 +43,24 @@ public class AssignPlayerRoleInTeamMissionController : MissionLogic
 		Mission.Current.PlayerTeam.SetPlayerRole(IsPlayerGeneral, IsPlayerSergeant);
 	}
 
-	public override void OnTeamDeployed(Team team)
+	public override void OnBattleSideSpawned(BattleSideEnum side)
 	{
-		base.OnTeamDeployed(team);
-		if (team != base.Mission.PlayerTeam)
+		foreach (Team item in Mission.GetTeamsOfSide(side))
 		{
-			return;
-		}
-		team.PlayerOrderController.Owner = base.Mission.InitialPlayerAgent;
-		if (team.IsPlayerGeneral)
-		{
-			foreach (Formation item in team.FormationsIncludingEmpty)
+			if (item != base.Mission.PlayerTeam)
 			{
-				item.PlayerOwner = base.Mission.InitialPlayerAgent;
+				continue;
 			}
+			item.PlayerOrderController.Owner = base.Mission.InitialPlayerAgent;
+			if (item.IsPlayerGeneral)
+			{
+				foreach (Formation item2 in item.FormationsIncludingEmpty)
+				{
+					item2.PlayerOwner = base.Mission.InitialPlayerAgent;
+				}
+			}
+			item.PlayerOrderController.SelectAllFormations();
 		}
-		team.PlayerOrderController.SelectAllFormations();
 	}
 
 	public virtual void OnPlayerTeamDeployed()

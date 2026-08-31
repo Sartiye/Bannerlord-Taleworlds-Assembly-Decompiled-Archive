@@ -770,7 +770,7 @@ public class NotableWantsDaughterFoundIssueBehavior : CampaignBehaviorBase
 
 		protected override void OnTimedOut()
 		{
-			ApplyDeliveryRejectedFailConsequences();
+			OnFailed();
 			TextObject textObject = new TextObject("{=KAvwytDK}You didn't bring {DAUGHTER.NAME} to {QUEST_GIVER.LINK}. {?QUEST_GIVER.GENDER}she{?}he{\\?} must be furious.");
 			StringHelpers.SetCharacterProperties("QUEST_GIVER", base.QuestGiver.CharacterObject, textObject);
 			StringHelpers.SetCharacterProperties("DAUGHTER", _daughterHero.CharacterObject, textObject);
@@ -786,26 +786,6 @@ public class NotableWantsDaughterFoundIssueBehavior : CampaignBehaviorBase
 		{
 			_isDaughterCaptured = true;
 			Mission.Current.SetMissionMode(MissionMode.StartUp, atStart: false);
-		}
-
-		private void ApplyDaughtersEscapeAcceptedFailConsequences()
-		{
-			RelationshipChangeWithQuestGiver = -10;
-			if (base.QuestGiver.CurrentSettlement.Village.Bound != null)
-			{
-				base.QuestGiver.CurrentSettlement.Village.Bound.Town.Security -= 5f;
-				base.QuestGiver.CurrentSettlement.Village.Bound.Town.Prosperity -= 5f;
-			}
-		}
-
-		private void ApplyDeliveryRejectedFailConsequences()
-		{
-			RelationshipChangeWithQuestGiver = -10;
-			if (base.QuestGiver.CurrentSettlement.Village.Bound != null)
-			{
-				base.QuestGiver.CurrentSettlement.Village.Bound.Town.Security -= 5f;
-				base.QuestGiver.CurrentSettlement.Village.Bound.Town.Prosperity -= 5f;
-			}
 		}
 
 		private void ApplyDeliverySuccessConsequences()
@@ -1200,7 +1180,6 @@ public class NotableWantsDaughterFoundIssueBehavior : CampaignBehaviorBase
 				}
 				else if (_acceptedDaughtersEscape)
 				{
-					ApplyDaughtersEscapeAcceptedFailConsequences();
 					CompleteQuestWithFail(FailQuestLogText);
 					RemoveQuestCharacters();
 				}
@@ -1213,22 +1192,11 @@ public class NotableWantsDaughterFoundIssueBehavior : CampaignBehaviorBase
 				}
 				else if (_playerDefeatedByRogue)
 				{
-					ApplyDeliveryFailedDueToDuelLostConsequences();
+					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(Hero.MainHero, _daughterHero, -5);
 					CompleteQuestWithFail();
 					AddLog(PlayerDefeatedByRogueLogText);
 					RemoveQuestCharacters();
 				}
-			}
-		}
-
-		private void ApplyDeliveryFailedDueToDuelLostConsequences()
-		{
-			ChangeRelationAction.ApplyRelationChangeBetweenHeroes(Hero.MainHero, _daughterHero, -5);
-			RelationshipChangeWithQuestGiver = -10;
-			if (base.QuestGiver.CurrentSettlement.Village.Bound != null)
-			{
-				base.QuestGiver.CurrentSettlement.Village.Bound.Town.Security -= 5f;
-				base.QuestGiver.CurrentSettlement.Village.Bound.Town.Prosperity -= 5f;
 			}
 		}
 
@@ -1422,6 +1390,16 @@ public class NotableWantsDaughterFoundIssueBehavior : CampaignBehaviorBase
 			if (_daughterHero != null && _daughterHero.IsAlive)
 			{
 				KillCharacterAction.ApplyByRemove(_daughterHero);
+			}
+		}
+
+		public override void OnFailed()
+		{
+			RelationshipChangeWithQuestGiver = -10;
+			if (base.QuestGiver.CurrentSettlement.Village.Bound != null)
+			{
+				base.QuestGiver.CurrentSettlement.Village.Bound.Town.Security -= 5f;
+				base.QuestGiver.CurrentSettlement.Village.Bound.Town.Prosperity -= 5f;
 			}
 		}
 

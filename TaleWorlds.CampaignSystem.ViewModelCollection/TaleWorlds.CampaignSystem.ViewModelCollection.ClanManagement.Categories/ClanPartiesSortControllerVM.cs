@@ -45,7 +45,11 @@ public class ClanPartiesSortControllerVM : ViewModel
 
 		private float GetDistanceToMainParty(ClanPartyItemVM item)
 		{
-			return item.Party.MobileParty.Position.Distance(Hero.MainHero.GetCampaignPosition());
+			if (!item.Position.IsValid())
+			{
+				return float.MaxValue;
+			}
+			return item.Position.Distance(Hero.MainHero.GetCampaignPosition());
 		}
 	}
 
@@ -53,11 +57,13 @@ public class ClanPartiesSortControllerVM : ViewModel
 	{
 		public override int Compare(ClanPartyItemVM x, ClanPartyItemVM y)
 		{
+			int value = x.Party?.MobileParty.MemberRoster.TotalManCount ?? 0;
+			int num = y.Party?.MobileParty.MemberRoster.TotalManCount ?? 0;
 			if (_isAcending)
 			{
-				return y.Party.MobileParty.MemberRoster.TotalManCount.CompareTo(x.Party.MobileParty.MemberRoster.TotalManCount) * -1;
+				return num.CompareTo(value) * -1;
 			}
-			return y.Party.MobileParty.MemberRoster.TotalManCount.CompareTo(x.Party.MobileParty.MemberRoster.TotalManCount);
+			return num.CompareTo(value);
 		}
 	}
 
@@ -65,11 +71,13 @@ public class ClanPartiesSortControllerVM : ViewModel
 	{
 		public override int Compare(ClanPartyItemVM x, ClanPartyItemVM y)
 		{
+			int value = x.Party?.Ships.Count ?? 0;
+			int num = y.Party?.Ships.Count ?? 0;
 			if (_isAcending)
 			{
-				return y.Party.Ships.Count.CompareTo(x.Party.Ships.Count) * -1;
+				return num.CompareTo(value) * -1;
 			}
-			return y.Party.Ships.Count.CompareTo(x.Party.Ships.Count);
+			return num.CompareTo(value);
 		}
 	}
 
@@ -326,7 +334,7 @@ public class ClanPartiesSortControllerVM : ViewModel
 		NameText = GameTexts.FindText("str_sort_by_name_label").ToString();
 		LocationText = GameTexts.FindText("str_tooltip_label_location").ToString();
 		SizeText = GameTexts.FindText("str_clan_party_size").ToString();
-		ShipCountText = new TextObject("{=URbKirPS}Ship Count").ToString();
+		ShipCountText = new TextObject("{=7Q8ufo5X}Ships").ToString();
 	}
 
 	public void ExecuteSortByName()

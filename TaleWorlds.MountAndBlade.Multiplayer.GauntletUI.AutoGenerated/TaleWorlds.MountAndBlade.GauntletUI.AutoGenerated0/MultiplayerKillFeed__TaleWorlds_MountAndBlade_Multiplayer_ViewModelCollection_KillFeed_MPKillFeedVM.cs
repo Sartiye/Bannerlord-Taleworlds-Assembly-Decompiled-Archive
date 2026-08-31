@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Numerics;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.GauntletUI.Data;
@@ -145,73 +144,6 @@ public class MultiplayerKillFeed__TaleWorlds_MountAndBlade_Multiplayer_ViewModel
 	public void SetDataSource(MPKillFeedVM dataSource)
 	{
 		RefreshDataSource_datasource_Root(dataSource);
-	}
-
-	private void PropertyChangedListenerOf_widget_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_0(string propertyName)
-	{
-		switch (propertyName)
-		{
-		case "MurdererName":
-			return;
-		case "MurdererType":
-			return;
-		case "IsMurdererBot":
-			return;
-		case "VictimName":
-			return;
-		case "VictimType":
-			return;
-		case "IsVictimBot":
-			return;
-		case "Color1":
-			return;
-		}
-		_ = propertyName == "Color2";
 	}
 
 	private void ViewModelPropertyChangedListenerOf_datasource_Root(object sender, PropertyChangedEventArgs e)

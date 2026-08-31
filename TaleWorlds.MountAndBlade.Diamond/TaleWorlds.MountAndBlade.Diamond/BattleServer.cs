@@ -7,11 +7,13 @@ using Messages.FromBattleServer.ToBattleServerManager;
 using Messages.FromBattleServerManager.ToBattleServer;
 using TaleWorlds.Diamond;
 using TaleWorlds.Diamond.ClientApplication;
+using TaleWorlds.ModuleManager;
+using TaleWorlds.MountAndBlade.Diamond.Cosmetics;
 using TaleWorlds.PlayerServices;
 
 namespace TaleWorlds.MountAndBlade.Diamond;
 
-public class BattleServer : Client<BattleServer>
+public class BattleServer : Client
 {
 	private enum State
 	{
@@ -144,7 +146,9 @@ public class BattleServer : Client<BattleServer>
 
 	public bool IsFinished => _state == State.Finished;
 
-	public BattleServer(DiamondClientApplication diamondClientApplication, IClientSessionProvider<BattleServer> provider)
+	public override int MaxConsecutiveFailuresBeforeDisconnect => 15;
+
+	public BattleServer(DiamondClientApplication diamondClientApplication, IClientSessionFactory provider)
 		: base(diamondClientApplication, provider, autoReconnect: false)
 	{
 		_state = State.Idle;
@@ -178,6 +182,7 @@ public class BattleServer : Client<BattleServer>
 		_maxFriendlyDamagePerSingleRound = float.MaxValue;
 		_roundFriendlyDamageLimit = float.MaxValue;
 		_maxRoundsOverLimitCount = int.MaxValue;
+		CosmeticsManager.Initialize(ModuleHelper.GetModuleFullPath("Native") + "ModuleData");
 		AddMessageHandler<NewPlayerMessage>(OnNewPlayerMessage);
 		AddMessageHandler<StartBattleMessage>(OnStartBattleMessage);
 		AddMessageHandler<PlayerFledBattleMessage>(OnPlayerFledBattleMessage);
@@ -317,7 +322,7 @@ public class BattleServer : Client<BattleServer>
 		BattlePeer battlePeer = GetPeer(playerId);
 		if (battlePeer == null)
 		{
-			battlePeer = new BattlePeer(name, playerData, usedCosmetics, teamNo, playerBattleInfo.JoinType);
+			battlePeer = new BattlePeer(name, playerData, usedCosmetics, teamNo, playerBattleInfo.JoinType, playerBattleInfo.IsSpectator);
 			_peers.Add(battlePeer);
 		}
 		else
@@ -513,7 +518,7 @@ public class BattleServer : Client<BattleServer>
 
 	public async void InformGameServerReady()
 	{
-		_shouldReportActivities = (await CallFunction<BattleReadyResponseMessage>(new BattleReadyMessage())).ShouldReportActivities;
+		_shouldReportActivities = ((await CallFunction<BattleReadyResponseMessage>(new BattleReadyMessage())).Result as BattleReadyResponseMessage)?.ShouldReportActivities ?? false;
 		_state = State.Running;
 		_battleBecomeReady = true;
 		while (_newPlayerRequests.Count > 0)
@@ -610,7 +615,7 @@ public class BattleServer : Client<BattleServer>
 	{
 		try
 		{
-			return (await CallFunction<RequestMaxAllowedPriorityResponse>(new RequestMaxAllowedPriorityMessage())).Priority;
+			return ((await CallFunction<RequestMaxAllowedPriorityResponse>(new RequestMaxAllowedPriorityMessage())).Result as RequestMaxAllowedPriorityResponse)?.Priority ?? sbyte.MaxValue;
 		}
 		catch (Exception)
 		{

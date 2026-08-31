@@ -132,8 +132,6 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 
 	private MapView _encounterOverlay;
 
-	public static bool DisableVisualTicks;
-
 	private MapReadyView _mapReadyView;
 
 	private MapView _armyOverlay;
@@ -266,7 +264,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		{
 			if (_navigationHandler != null && value != null && value != _navigationHandler)
 			{
-				Debug.FailedAssert("Navigation handler should not be changed after map bar initialization", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "NavigationHandler", 127);
+				Debug.FailedAssert("Navigation handler should not be changed after map bar initialization", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "NavigationHandler", 129);
 			}
 			else
 			{
@@ -543,7 +541,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		T mapViewWithType = _mapViewsContainer.GetMapViewWithType<T>();
 		if (mapViewWithType != null)
 		{
-			Debug.FailedAssert("Map view already added to the list", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "AddMapView", 549);
+			Debug.FailedAssert("Map view already added to the list", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "AddMapView", 553);
 			Debug.Print("Map view already added to the list: " + typeof(T).Name + ". Returning existing view instead of creating new one.");
 			return mapViewWithType;
 		}
@@ -782,7 +780,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		}
 		else
 		{
-			Debug.FailedAssert("There is no dirty decision but still demanded one", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "ShowNextKingdomDecisionPopup", 827);
+			Debug.FailedAssert("There is no dirty decision but still demanded one", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "ShowNextKingdomDecisionPopup", 831);
 		}
 	}
 
@@ -828,7 +826,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 
 	private void UpdateTutorialContext()
 	{
-		if (!base.IsActive)
+		if (!base.IsActive || MBInformationManager.GetIsAnySceneNotificationActive() == true)
 		{
 			return;
 		}
@@ -1175,7 +1173,10 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 				});
 			}
 		}
-		SandBoxViewVisualManager.OnTick(dt, Campaign.Current.CampaignDt);
+		if (IsReady)
+		{
+			SandBoxViewVisualManager.OnTick(dt, Campaign.Current.CampaignDt);
+		}
 	}
 
 	void IMapStateHandler.OnIdleTick(float dt)
@@ -1200,15 +1201,12 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 			_menuViewContext.OnFrameTick(dt);
 			if (SceneLayer.Input.IsGameKeyPressed(4))
 			{
-				GameMenuOption leaveMenuOption = Campaign.Current.GameMenuManager.GetLeaveMenuOption(_menuViewContext.MenuContext);
-				if (leaveMenuOption != null)
+				MenuContext menuContext = _menuViewContext.MenuContext;
+				int num = menuContext.GameMenu?.GetLeaveMenuOptionIndex(Game.Current, menuContext) ?? (-1);
+				if (num >= 0)
 				{
 					UISoundsHelper.PlayUISound("event:/ui/default");
-					if (_menuViewContext.MenuContext.GameMenu.IsWaitMenu)
-					{
-						_menuViewContext.MenuContext.GameMenu.EndWait();
-					}
-					leaveMenuOption.RunConsequence(_menuViewContext.MenuContext);
+					Campaign.Current.GameMenuManager.RunConsequencesOfMenuOption(menuContext, num);
 				}
 			}
 		}
@@ -1360,10 +1358,11 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		_mouseRay.Reset(clippedMouseNear, vec, maxDistance);
 		intersectionPoint = Vec3.Zero;
 		closestDistanceSquared = 1E+12f;
-		if (SceneLayer.SceneView.RayCastForClosestEntityOrTerrain(clippedMouseNear, clippedMouseFar, out var collisionDistance, out var _, 0.01f, excludedBodyFlags))
+		if (SceneLayer.SceneView.RayCastForClosestEntityOrTerrain(clippedMouseNear, clippedMouseFar, out var collisionDistance, out var closestPoint, 0.01f, excludedBodyFlags))
 		{
 			closestDistanceSquared = collisionDistance * collisionDistance;
 			intersectionPoint = clippedMouseNear + vec * collisionDistance;
+			_mouseRay.Reset(_mouseRay.Origin, _mouseRay.Direction, closestPoint.Distance(_mouseRay.Origin) + 3f);
 		}
 		currentFace = new CampaignVec2(intersectionPoint.AsVec2, isOnLand: true).Face;
 		isOnland = true;
@@ -1405,6 +1404,10 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		if (hoveredVisual != null && !hoveredVisual.IsMobileEntity)
 		{
 			SceneLayer.ActiveCursor = CursorType.Default;
+			if (!hoveredVisual.IsInteractable())
+			{
+				SceneLayer.ActiveCursor = CursorType.Disabled;
+			}
 		}
 		else
 		{
@@ -1558,7 +1561,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 			}
 			else if (mouseOverFaceIndex.IsValid() || flag4)
 			{
-				if (!MobileParty.MainParty.IsInRaftState)
+				if (!MobileParty.MainParty.IsInNavalAutoTravel)
 				{
 					if (flag4)
 					{
@@ -1929,6 +1932,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		SandBoxViewSubModule.SandBoxViewVisualManager.AddEntityComponent<MapAudioManager>();
 		SandBoxViewSubModule.SandBoxViewVisualManager.AddEntityComponent<MobilePartyVisualManager>();
 		SandBoxViewSubModule.SandBoxViewVisualManager.AddEntityComponent<SettlementVisualManager>();
+		SandBoxViewSubModule.SandBoxViewVisualManager.AddEntityComponent<BattleWreckagesVisualManager>();
 		ContourMaskEntity = GameEntity.CreateEmpty(mapScene.Scene);
 		ContourMaskEntity.Name = "aContourMask";
 	}
@@ -2014,11 +2018,6 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		if (!MapScene.IsLoadingFinished())
 		{
 			MapScene.HandleCurrentFrameTickEntities();
-			return;
-		}
-		if (DisableVisualTicks)
-		{
-			MapScene.ClearCurrentFrameTickEntities();
 			return;
 		}
 		MapScene.TimeOfDay = CampaignTime.Now.CurrentHourInDay;
@@ -2149,7 +2148,7 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 		}
 		else
 		{
-			Debug.FailedAssert("Requested remove map cheats but cheats is not enabled", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "CloseGameplayCheats", 2577);
+			Debug.FailedAssert("Requested remove map cheats but cheats is not enabled", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "CloseGameplayCheats", 2581);
 		}
 	}
 
@@ -2157,11 +2156,11 @@ public class MapScreen : ScreenBase, IMapStateHandler, IGameStateListener, IChat
 	{
 		if (_campaignOptionsView == null)
 		{
-			Debug.FailedAssert("Trying to close campaign options when it's not set", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "CloseCampaignOptions", 2585);
+			Debug.FailedAssert("Trying to close campaign options when it's not set", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "CloseCampaignOptions", 2589);
 			_campaignOptionsView = GetMapView<MapCampaignOptionsView>();
 			if (_campaignOptionsView == null)
 			{
-				Debug.FailedAssert("Trying to close campaign options when it's not open", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "CloseCampaignOptions", 2590);
+				Debug.FailedAssert("Trying to close campaign options when it's not open", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\MapScreen.cs", "CloseCampaignOptions", 2594);
 				IsInCampaignOptions = false;
 				_campaignOptionsView = null;
 				return;

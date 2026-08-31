@@ -51,6 +51,8 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 
 	public delegate void OnHitTakenAndDestroyedDelegate(DestructableComponent target, Agent attackerAgent, in MissionWeapon weapon, ScriptComponentBehavior attackerScriptComponentBehavior, int inflictedDamage);
 
+	public delegate void OnHitTakenWithImpactDelegate(DestructableComponent target, Agent attackerAgent, Vec3 impactPosition, Vec3 impactDirection, int inflictedDamage);
+
 	public const string CleanStateTag = "operational";
 
 	public static float MaxBlowMagnitude = 20f;
@@ -148,6 +150,8 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 	public event OnHitTakenAndDestroyedDelegate OnDestroyed;
 
 	public event OnHitTakenAndDestroyedDelegate OnHitTaken;
+
+	public event OnHitTakenWithImpactDelegate OnHitTakenWithImpact;
 
 	protected override void OnRemoved(int removeReason)
 	{
@@ -358,11 +362,13 @@ public class DestructableComponent : SynchedMissionObject, IFocusable
 			if (!IsDestroyed)
 			{
 				this.OnHitTaken?.Invoke(this, attackerAgent, in weapon, attackerScriptComponentBehavior, inflictedDamage);
+				this.OnHitTakenWithImpact?.Invoke(this, attackerAgent, impactPosition, impactDirection, inflictedDamage);
 			}
 			else if (IsDestroyed && !isDestroyed)
 			{
 				Mission.Current.OnObjectDisabled(this);
 				this.OnHitTaken?.Invoke(this, attackerAgent, in weapon, attackerScriptComponentBehavior, inflictedDamage);
+				this.OnHitTakenWithImpact?.Invoke(this, attackerAgent, impactPosition, impactDirection, inflictedDamage);
 				this.OnDestroyed?.Invoke(this, attackerAgent, in weapon, attackerScriptComponentBehavior, inflictedDamage);
 				MatrixFrame globalFrame = base.GameEntity.GetGlobalFrame();
 				globalFrame.origin += globalFrame.rotation.u * SoundAndParticleEffectHeightOffset + globalFrame.rotation.f * SoundAndParticleEffectForwardOffset;

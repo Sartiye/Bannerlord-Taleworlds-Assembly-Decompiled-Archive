@@ -9,12 +9,10 @@ using SandBox.View.Missions;
 using SandBox.ViewModelCollection;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.MountAndBlade;
-using TaleWorlds.MountAndBlade.Missions.BattleScore;
 using TaleWorlds.MountAndBlade.View;
 using TaleWorlds.MountAndBlade.View.MissionViews;
 using TaleWorlds.MountAndBlade.View.MissionViews.Singleplayer;
 using TaleWorlds.MountAndBlade.View.MissionViews.Sound;
-using TaleWorlds.MountAndBlade.ViewModelCollection.Scoreboard;
 
 namespace NavalDLC.View;
 
@@ -155,7 +153,7 @@ public class NavalViews
 		{
 			ViewCreator.CreateMissionSingleplayerEscapeMenu(isIronmanMode: false),
 			ViewCreator.CreateMissionAgentLabelUIHandler(mission),
-			ViewCreator.CreateMissionBattleScoreUIHandler(mission, new CustomBattleScoreboardVM(new CustomBattleScoreContext(mission))),
+			ViewCreator.CreateMissionBattleScoreUIHandler(mission, NavalCustomBattleScoreboardVM.Create(mission)),
 			ViewCreator.CreateOptionsUIHandler(),
 			ViewCreator.CreateMissionMainAgentEquipDropView(mission)
 		};

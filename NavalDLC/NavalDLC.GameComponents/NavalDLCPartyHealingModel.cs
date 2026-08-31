@@ -27,7 +27,7 @@ public class NavalDLCPartyHealingModel : PartyHealingModel
 	public override ExplainedNumber GetDailyHealingForRegulars(PartyBase partyBase, bool isPrisoner, bool includeDescriptions = false)
 	{
 		ExplainedNumber stat = base.BaseModel.GetDailyHealingForRegulars(partyBase, isPrisoner, includeDescriptions);
-		if (partyBase.IsMobile && partyBase.MobileParty.IsCurrentlyAtSea)
+		if (partyBase.IsMobile)
 		{
 			PerkHelper.AddPerkBonusForParty(NavalPerks.Boatswain.Resilience, partyBase.MobileParty, isPrimaryBonus: false, ref stat);
 		}
@@ -37,11 +37,6 @@ public class NavalDLCPartyHealingModel : PartyHealingModel
 	public override ExplainedNumber GetDailyHealingHpForHeroes(PartyBase partyBase, bool isPrisoners, bool includeDescriptions = false)
 	{
 		return base.BaseModel.GetDailyHealingHpForHeroes(partyBase, isPrisoners, includeDescriptions);
-	}
-
-	public override int GetHeroesEffectedHealingAmount(Hero hero, float healingRate)
-	{
-		return base.BaseModel.GetHeroesEffectedHealingAmount(hero, healingRate);
 	}
 
 	public override float GetSiegeBombardmentHitSurgeryChance(PartyBase party)

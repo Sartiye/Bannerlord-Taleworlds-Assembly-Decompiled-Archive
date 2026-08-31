@@ -1,13 +1,13 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.GauntletUI;
+using TaleWorlds.MountAndBlade.GauntletUI.Mission.Singleplayer;
 using TaleWorlds.MountAndBlade.Multiplayer.View.MissionViews;
 using TaleWorlds.MountAndBlade.View;
+using TaleWorlds.MountAndBlade.View.MissionViews;
 using TaleWorlds.MountAndBlade.View.MissionViews.Order;
 using TaleWorlds.MountAndBlade.ViewModelCollection.Order;
 
@@ -23,6 +23,20 @@ public class MissionGauntletMultiplayerOrderUIHandler : GauntletOrderUIHandler
 	private bool _shouldTick;
 
 	private bool _shouldInitializeFormationInfo;
+
+	private const int NotAppliedYet = int.MinValue;
+
+	private int _appliedVisibilityModeInt = int.MinValue;
+
+	private int _appliedVisibilityThreshold = int.MinValue;
+
+	private int _appliedVisibilityAppliesAtCloseRangeInt = int.MinValue;
+
+	private int _appliedMarkerFarDistanceCutoff = int.MinValue;
+
+	private int _appliedMarkerFarAlphaTarget = int.MinValue;
+
+	private int _appliedMarkerAlwaysOnDistance = int.MinValue;
 
 	public override bool IsDeployment => false;
 
@@ -55,10 +69,62 @@ public class MissionGauntletMultiplayerOrderUIHandler : GauntletOrderUIHandler
 		base.AfterStart();
 		MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.NumberOfBotsPerFormation).GetValue(out int value);
 		_shouldTick = value > 0;
+		RefreshFormationTargetingVisibilityConfig();
+	}
+
+	private void RefreshFormationTargetingVisibilityConfig()
+	{
+		RefreshFormationTargetingVisibilityGate();
+		RefreshFormationMarkerDistanceConfig();
+	}
+
+	private void RefreshFormationTargetingVisibilityGate()
+	{
+		MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.FormationTargetingVisibilityMode).GetValue(out int value);
+		MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.FormationTargetingVisibilityThreshold).GetValue(out int value2);
+		MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.FormationTargetingVisibilityAppliesAtCloseRange).GetValue(out int value3);
+		if (_appliedVisibilityModeInt != value || _appliedVisibilityThreshold != value2 || _appliedVisibilityAppliesAtCloseRangeInt != value3)
+		{
+			MissionFormationTargetSelectionHandler missionBehavior = base.Mission.GetMissionBehavior<MissionFormationTargetSelectionHandler>();
+			if (missionBehavior != null)
+			{
+				missionBehavior.SetVisibilityConfig(new MissionFormationTargetSelectionHandler.VisibilityConfig
+				{
+					Mode = (MultiplayerOptions.FormationTargetingVisibilityModes)value,
+					Threshold = value2,
+					AppliesAtCloseRange = (value3 != 0)
+				});
+				_appliedVisibilityModeInt = value;
+				_appliedVisibilityThreshold = value2;
+				_appliedVisibilityAppliesAtCloseRangeInt = value3;
+			}
+		}
+	}
+
+	private void RefreshFormationMarkerDistanceConfig()
+	{
+		MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.FormationMarkerFarDistanceCutoff).GetValue(out int value);
+		MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.FormationMarkerFarAlphaTarget).GetValue(out int value2);
+		MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.FormationMarkerAlwaysOnDistance).GetValue(out int value3);
+		if (_appliedMarkerFarDistanceCutoff != value || _appliedMarkerFarAlphaTarget != value2 || _appliedMarkerAlwaysOnDistance != value3)
+		{
+			MissionGauntletFormationMarker missionBehavior = base.Mission.GetMissionBehavior<MissionGauntletFormationMarker>();
+			if (missionBehavior != null && missionBehavior.IsViewCreated)
+			{
+				float farDistanceCutoff = ((value >= 0) ? ((float)value) : (-1f));
+				float farAlphaTarget = ((value2 >= 0) ? ((float)value2 / 100f) : (-1f));
+				float alwaysOnDistance = ((value3 >= 0) ? ((float)value3) : (-1f));
+				missionBehavior.SetMarkerDistanceConfig(farDistanceCutoff, farAlphaTarget, alwaysOnDistance);
+				_appliedMarkerFarDistanceCutoff = value;
+				_appliedMarkerFarAlphaTarget = value2;
+				_appliedMarkerAlwaysOnDistance = value3;
+			}
+		}
 	}
 
 	public override void OnMissionScreenTick(float dt)
 	{
+		RefreshFormationTargetingVisibilityConfig();
 		if (IsValidForTick)
 		{
 			if (!_isInitialized)
@@ -139,6 +205,11 @@ public class MissionGauntletMultiplayerOrderUIHandler : GauntletOrderUIHandler
 		_orderTroopPlacer = null;
 		MissionPeer.OnTeamChanged -= TeamChange;
 		ManagedOptions.OnManagedOptionChanged = (ManagedOptions.OnManagedOptionChangedDelegate)Delegate.Remove(ManagedOptions.OnManagedOptionChanged, new ManagedOptions.OnManagedOptionChangedDelegate(OnManagedOptionChanged));
+		if (_formationTargetHandler != null)
+		{
+			_formationTargetHandler.OnFormationFocused -= OnFormationFocused;
+			_formationTargetHandler = null;
+		}
 		if (_roundComponent != null)
 		{
 			_roundComponent.OnRoundStarted -= OnRoundStarted;
@@ -155,10 +226,7 @@ public class MissionGauntletMultiplayerOrderUIHandler : GauntletOrderUIHandler
 	{
 		if (isEnabled)
 		{
-			if (_dataSource == null || _dataSource.ActiveTargetState == 0)
-			{
-				_orderTroopPlacer.SuspendTroopPlacer = false;
-			}
+			_orderTroopPlacer.SuspendTroopPlacer = false;
 			base.MissionScreen.SetOrderFlagVisibility(value: true);
 			Game.Current.EventManager.TriggerEvent(new MissionPlayerToggledOrderViewEvent(newIsEnabledState: true));
 		}
@@ -176,30 +244,38 @@ public class MissionGauntletMultiplayerOrderUIHandler : GauntletOrderUIHandler
 		if (_isInitialized)
 		{
 			Debug.Print("InitializeInADisgustingManner called while already initialized!");
-			Debug.FailedAssert("InitializeInADisgustingManner called while already initialized!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.GauntletUI\\Mission\\MissionGauntletMultiplayerOrderUIHandler.cs", "InitializeInADisgustingManner", 191);
+			Debug.FailedAssert("InitializeInADisgustingManner called while already initialized!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.GauntletUI\\Mission\\MissionGauntletMultiplayerOrderUIHandler.cs", "InitializeInADisgustingManner", 274);
 		}
 		Debug.Print($"InitializeInADisgustingManner is called. IsValidForTick: {IsValidForTick}");
 		base.AfterStart();
 		_orderTroopPlacer = base.Mission.GetMissionBehavior<OrderTroopPlacer>();
 		if (_orderTroopPlacer?.OrderFlag == null)
 		{
-			Debug.FailedAssert("Order troop placer's order flag is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.GauntletUI\\Mission\\MissionGauntletMultiplayerOrderUIHandler.cs", "InitializeInADisgustingManner", 200);
+			Debug.FailedAssert("Order troop placer's order flag is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.GauntletUI\\Mission\\MissionGauntletMultiplayerOrderUIHandler.cs", "InitializeInADisgustingManner", 283);
 		}
 		base.MissionScreen.OrderFlag = _orderTroopPlacer.OrderFlag;
 		Debug.Print("MissionScreen.OrderFlag has been set (MP)");
 		base.MissionScreen.SetOrderFlagVisibility(value: false);
+		_formationTargetHandler = base.Mission.GetMissionBehavior<MissionFormationTargetSelectionHandler>();
+		if (_formationTargetHandler != null)
+		{
+			_formationTargetHandler.OnFormationFocused += OnFormationFocused;
+		}
 		MissionPeer.OnTeamChanged += TeamChange;
 		_isInitialized = true;
+	}
+
+	private void OnFormationFocused(MBReadOnlyList<Formation> focusedFormations)
+	{
+		_focusedFormationsCache = focusedFormations;
 	}
 
 	public void ValidateInADisgustingManner()
 	{
 		_dataSource = new MissionOrderVM(base.Mission.PlayerTeam.PlayerOrderController, isDeployment: false, isMultiplayer: true);
-		_dataSource.SetDeploymentParemeters(base.MissionScreen.CombatCamera, IsSiegeDeployment ? _siegeDeploymentHandler.PlayerDeploymentPoints.ToList() : new List<DeploymentPoint>());
 		_dataSource.SetCallbacks(new MissionOrderCallbacks
 		{
 			ToggleMissionInputs = base.ToggleScreenRotation,
-			RefreshVisuals = RefreshVisuals,
 			GetVisualOrderExecutionParameters = base.GetVisualOrderExecutionParameters,
 			SetSuspendTroopPlacer = SetSuspendTroopPlacer,
 			OnActivateToggleOrder = base.OnActivateToggleOrder,
@@ -230,10 +306,6 @@ public class MissionGauntletMultiplayerOrderUIHandler : GauntletOrderUIHandler
 		base.MissionScreen.AddLayer(_gauntletLayer);
 		_dataSource.AfterInitialize();
 		_isValid = true;
-	}
-
-	private void RefreshVisuals()
-	{
 	}
 
 	private void Clear()

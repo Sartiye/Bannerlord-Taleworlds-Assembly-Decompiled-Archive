@@ -32,6 +32,8 @@ public class MPCustomGameVM : ViewModel
 
 	private CustomGameMode _customGameMode;
 
+	private bool _isSpectateMode;
+
 	private bool _canJoinOfficialServersAsAdmin;
 
 	private const string _officialServerAdminBadgeName = "badge_official_server_admin";
@@ -41,6 +43,8 @@ public class MPCustomGameVM : ViewModel
 	private bool _isEnabled;
 
 	private bool _isRefreshing;
+
+	private bool _isSearchingGamesToSpectate;
 
 	private bool _isPlayerBasedCustomBattleEnabled;
 
@@ -59,6 +63,8 @@ public class MPCustomGameVM : ViewModel
 	private bool _canPlayerCreateGame;
 
 	private bool _isJoinEnabled;
+
+	private bool _isSelectedGameWatchable;
 
 	private MPCustomGameItemVM _selectedGame;
 
@@ -213,6 +219,23 @@ public class MPCustomGameVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public bool IsSelectedGameWatchable
+	{
+		get
+		{
+			return _isSelectedGameWatchable;
+		}
+		set
+		{
+			if (value != _isSelectedGameWatchable)
+			{
+				_isSelectedGameWatchable = value;
+				OnPropertyChangedWithValue(value, "IsSelectedGameWatchable");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public MPCustomGameItemVM SelectedGame
 	{
 		get
@@ -328,6 +351,23 @@ public class MPCustomGameVM : ViewModel
 			{
 				_isRefreshing = value;
 				OnPropertyChangedWithValue(value, "IsRefreshing");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsSearchingGamesToSpectate
+	{
+		get
+		{
+			return _isSearchingGamesToSpectate;
+		}
+		set
+		{
+			if (value != _isSearchingGamesToSpectate)
+			{
+				_isSearchingGamesToSpectate = value;
+				OnPropertyChangedWithValue(value, "IsSearchingGamesToSpectate");
 			}
 		}
 	}
@@ -717,7 +757,11 @@ public class MPCustomGameVM : ViewModel
 		_currentCustomGameList = new List<GameServerEntry>();
 		if (customGameMode == CustomGameMode.CustomServer)
 		{
-			_lobbyState.RegisterForCustomServerAction(OnServerActionRequested);
+			_lobbyState.RegisterForCustomServerAction(OnCustomServerActionRequested);
+		}
+		else
+		{
+			_lobbyState.RegisterForPremadeServerAction(OnPremadeServerActionRequested);
 		}
 		UpdateCanJoinOfficialServersAsAdmin();
 		InitializeCallbacks();
@@ -774,7 +818,8 @@ public class MPCustomGameVM : ViewModel
 		base.OnFinalize();
 		if (_lobbyState != null)
 		{
-			_lobbyState.UnregisterForCustomServerAction(OnServerActionRequested);
+			_lobbyState.UnregisterForCustomServerAction(OnCustomServerActionRequested);
+			_lobbyState.UnregisterForPremadeServerAction(OnPremadeServerActionRequested);
 		}
 		RefreshInputKey?.OnFinalize();
 		FinalizeCallbacks();
@@ -812,13 +857,67 @@ public class MPCustomGameVM : ViewModel
 	{
 		OnGameSelected(null);
 		GameList.Clear();
-		List<GameServerEntry> serverList = FiltersData.GetFilteredServerList(_currentCustomGameList);
+		List<GameServerEntry> serverList = ((!_isSpectateMode) ? FiltersData.GetFilteredServerList(_currentCustomGameList) : new List<GameServerEntry>(_currentCustomGameList));
 		GameServerEntry.FilterGameServerEntriesBasedOnCrossplay(ref serverList, _lobbyState.HasCrossplayPrivilege == true);
 		foreach (GameServerEntry item in serverList)
 		{
 			GameList.Add(new MPCustomGameItemVM(item, OnGameSelected, OnJoinGame, OnShowActionsForEntry, OnToggleFavoriteServer));
 		}
 		SortController.SortByCurrentState();
+	}
+
+	public async Task ExecuteAutoWatchGame()
+	{
+		IsSearchingGamesToSpectate = true;
+		while (IsRefreshing)
+		{
+			await Task.Delay(10);
+		}
+		_isSpectateMode = true;
+		RefreshFiltersAndSort();
+		IsRefreshing = true;
+		try
+		{
+			await NetworkMain.GameClient.GetCustomGameServerList();
+		}
+		finally
+		{
+			IsRefreshing = false;
+		}
+		List<GameServerEntry> serverList = new List<GameServerEntry>(_currentCustomGameList);
+		GameServerEntry.FilterGameServerEntriesBasedOnCrossplay(ref serverList, _lobbyState.HasCrossplayPrivilege == true);
+		List<GameServerEntry> list = (from s in serverList
+			where s.EnableSpectators && !s.PasswordProtected && (s.MaxSpectatorCount == 0 || s.SpectatorCount < s.MaxSpectatorCount)
+			orderby s.PlayerCount descending
+			select s).ToList();
+		if (list.Count == 0)
+		{
+			_isSpectateMode = false;
+			RefreshFiltersAndSort();
+			InformationManager.ShowInquiry(new InquiryData(new TextObject("{=V0zs1LfD}Watch Game").ToString(), new TextObject("{=IVrZ9Ua5}No spectatable games found. Browse the list to join one manually.").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, GameTexts.FindText("str_ok").ToString(), "", null, null));
+			IsSearchingGamesToSpectate = false;
+		}
+		else
+		{
+			IsSearchingGamesToSpectate = false;
+			GameServerEntry selectedServer = list[0];
+			PromptToJoinCustomGameAsSpectator(selectedServer);
+		}
+	}
+
+	private void PromptToJoinCustomGameAsSpectator(GameServerEntry selectedServer)
+	{
+		if (selectedServer.SpectatorPasswordProtected || selectedServer.PasswordProtected)
+		{
+			InformationManager.ShowTextInquiry(new TextInquiryData(new TextObject("{=V0zs1LfD}Watch Game").ToString(), new TextObject("{=qcttRnOI}Enter Spectator Password (leave blank if none)").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, new TextObject("{=2SGyFsSa}Watch").ToString(), new TextObject("{=3CpNUnVl}Cancel").ToString(), delegate(string passwordInput)
+			{
+				JoinCustomGame(selectedServer, CustomGameJoinType.Spectator, passwordInput);
+			}, null, shouldInputBeObfuscated: true));
+		}
+		else
+		{
+			JoinCustomGame(selectedServer, CustomGameJoinType.Spectator);
+		}
 	}
 
 	public async void ExecuteRefresh()
@@ -829,9 +928,10 @@ public class MPCustomGameVM : ViewModel
 		}
 		if (IsRefreshing)
 		{
-			Debug.FailedAssert("Trying to refresh game list but list is already being refreshed", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\CustomGame\\MPCustomGameVM.cs", "ExecuteRefresh", 198);
+			Debug.FailedAssert("Trying to refresh game list but list is already being refreshed", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\CustomGame\\MPCustomGameVM.cs", "ExecuteRefresh", 288);
 			return;
 		}
+		_isSpectateMode = false;
 		IsRefreshing = true;
 		OnGameSelected(null);
 		GameList.Clear();
@@ -873,24 +973,40 @@ public class MPCustomGameVM : ViewModel
 
 	private void OnShowActionsForEntry(MPCustomGameItemVM serverVM)
 	{
-		if (serverVM?.GameServerInfo == null)
+		if (serverVM?.GameServerInfo != null)
 		{
-			return;
-		}
-		CustomServerActionsList.Clear();
-		List<CustomServerAction> customActionsForServer = _lobbyState.GetCustomActionsForServer(serverVM.GameServerInfo);
-		if (customActionsForServer.Count > 0)
-		{
-			for (int i = 0; i < customActionsForServer.Count; i++)
+			CustomServerActionsList.Clear();
+			List<CustomServerAction> actionsForCustomServer = _lobbyState.GetActionsForCustomServer(serverVM.GameServerInfo);
+			if (actionsForCustomServer.Count > 0)
 			{
-				CustomServerAction customServerAction = customActionsForServer[i];
-				CustomServerActionsList.Add(new StringPairItemWithActionVM(ExecuteSelectCustomServerAction, customServerAction.Name, customServerAction.Name, customServerAction));
+				for (int i = 0; i < actionsForCustomServer.Count; i++)
+				{
+					CustomServerAction customServerAction = actionsForCustomServer[i];
+					CustomServerActionsList.Add(new StringPairItemWithActionVM(ExecuteSelectCustomServerAction, customServerAction.Name, customServerAction.Name, customServerAction));
+				}
+			}
+			if (CustomServerActionsList.Count > 0)
+			{
+				IsCustomServerActionsActive = false;
+				IsCustomServerActionsActive = true;
 			}
 		}
-		if (CustomServerActionsList.Count > 0)
+		else
 		{
-			IsCustomServerActionsActive = false;
-			IsCustomServerActionsActive = true;
+			if (serverVM?.PremadeGameInfo == null)
+			{
+				return;
+			}
+			CustomServerActionsList.Clear();
+			List<PremadeServerAction> actionsForPremadeServer = _lobbyState.GetActionsForPremadeServer(serverVM.PremadeGameInfo);
+			if (actionsForPremadeServer.Count > 0)
+			{
+				for (int j = 0; j < actionsForPremadeServer.Count; j++)
+				{
+					PremadeServerAction premadeServerAction = actionsForPremadeServer[j];
+					CustomServerActionsList.Add(new StringPairItemWithActionVM(ExecuteSelectPremadeServerAction, premadeServerAction.Name, premadeServerAction.Name, premadeServerAction));
+				}
+			}
 		}
 	}
 
@@ -915,11 +1031,19 @@ public class MPCustomGameVM : ViewModel
 		}
 	}
 
+	public void ExecuteWatchSelectedGame()
+	{
+		if (IsSelectedGameWatchable && SelectedGame?.GameServerInfo != null)
+		{
+			PromptToJoinCustomGameAsSpectator(SelectedGame.GameServerInfo);
+		}
+	}
+
 	public void OnJoinGame(MPCustomGameItemVM gameItem)
 	{
 		if (gameItem == null)
 		{
-			Debug.FailedAssert("Server to join is null.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\CustomGame\\MPCustomGameVM.cs", "OnJoinGame", 299);
+			Debug.FailedAssert("Server to join is null.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\CustomGame\\MPCustomGameVM.cs", "OnJoinGame", 410);
 		}
 		else if (gameItem.IsPasswordProtected)
 		{
@@ -931,7 +1055,7 @@ public class MPCustomGameVM : ViewModel
 		}
 		else if (_customGameMode == CustomGameMode.CustomServer)
 		{
-			JoinCustomGame(gameItem.GameServerInfo);
+			JoinCustomGame(gameItem.GameServerInfo, CustomGameJoinType.Player);
 		}
 		else if (_customGameMode == CustomGameMode.PremadeGame)
 		{
@@ -958,7 +1082,7 @@ public class MPCustomGameVM : ViewModel
 			GameServerEntry serverInfo2 = serverItem.GameServerInfo;
 			return delegate(string passwordInput)
 			{
-				JoinCustomGame(serverInfo2, passwordInput);
+				JoinCustomGame(serverInfo2, CustomGameJoinType.Player, passwordInput);
 			};
 		}
 		if (_customGameMode == CustomGameMode.PremadeGame)
@@ -971,28 +1095,57 @@ public class MPCustomGameVM : ViewModel
 		}
 		return delegate
 		{
-			Debug.FailedAssert("Fell through game modes, should never happen", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\CustomGame\\MPCustomGameVM.cs", "GetOnTryPasswordForServerAction", 353);
+			Debug.FailedAssert("Fell through game modes, should never happen", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\CustomGame\\MPCustomGameVM.cs", "GetOnTryPasswordForServerAction", 464);
 		};
 	}
 
-	private List<CustomServerAction> OnServerActionRequested(GameServerEntry serverEntry)
+	private List<CustomServerAction> OnCustomServerActionRequested(GameServerEntry serverEntry)
 	{
 		List<CustomServerAction> list = new List<CustomServerAction>();
-		if (_canJoinOfficialServersAsAdmin || !serverEntry.IsOfficial)
+		if (false || !serverEntry.IsOfficial)
 		{
 			CustomServerAction item = new CustomServerAction(delegate
 			{
 				InformationManager.ShowTextInquiry(new TextInquiryData(new TextObject("{=FzG3CmEe}Join as Admin").ToString(), new TextObject("{=MNXyaVCT}Enter Admin Password").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, new TextObject("{=es0Y3Bxc}Join").ToString(), new TextObject("{=3CpNUnVl}Cancel").ToString(), delegate(string passwordInput)
 				{
-					JoinCustomGame(serverEntry, passwordInput, isJoinAsAdmin: true);
+					JoinCustomGame(serverEntry, CustomGameJoinType.Admin, passwordInput);
 				}, null, shouldInputBeObfuscated: true));
 			}, serverEntry, new TextObject("{=FzG3CmEe}Join as Admin").ToString());
 			list.Add(item);
 		}
+		if (serverEntry.EnableSpectators)
+		{
+			CustomServerAction item2 = new CustomServerAction(delegate
+			{
+				PromptToJoinCustomGameAsSpectator(serverEntry);
+			}, serverEntry, new TextObject("{=V0zs1LfD}Watch Game").ToString());
+			list.Add(item2);
+		}
 		return list;
 	}
 
-	private async void JoinCustomGame(GameServerEntry selectedServer, string passwordInput = "", bool isJoinAsAdmin = false)
+	private List<PremadeServerAction> OnPremadeServerActionRequested(PremadeGameEntry serverEntry)
+	{
+		List<PremadeServerAction> list = new List<PremadeServerAction>();
+		PremadeServerAction item = new PremadeServerAction(delegate
+		{
+			if (serverEntry.IsSpectatorPasswordProtected || serverEntry.IsPasswordProtected)
+			{
+				InformationManager.ShowTextInquiry(new TextInquiryData(new TextObject("{=V0zs1LfD}Watch Game").ToString(), new TextObject("{=qcttRnOI}Enter Spectator Password (leave blank if none)").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, new TextObject("{=2SGyFsSa}Watch").ToString(), new TextObject("{=3CpNUnVl}Cancel").ToString(), delegate(string passwordInput)
+				{
+					JoinPremadeGame(serverEntry, passwordInput);
+				}, null, shouldInputBeObfuscated: true));
+			}
+			else
+			{
+				JoinPremadeGame(serverEntry);
+			}
+		}, serverEntry, new TextObject("{=V0zs1LfD}Watch Game").ToString());
+		list.Add(item);
+		return list;
+	}
+
+	private async void JoinCustomGame(GameServerEntry selectedServer, CustomGameJoinType joinType, string passwordInput = "")
 	{
 		MPCustomGameVM.OnMapCheckingStateChanged?.Invoke(obj: true);
 		(bool, string) tuple = await MapCheckHelpers.CheckMaps(selectedServer);
@@ -1003,7 +1156,7 @@ public class MPCustomGameVM : ViewModel
 			string text = new TextObject("{=sVVaMyvb}You don't have at least one map ({MAP_NAME}) being played on the server or the local map is not identical. Download all missing maps from the server if you would like to join it.").SetTextVariable("MAP_NAME", tuple.Item2).ToString();
 			InformationManager.ShowInquiry(new InquiryData(GameTexts.FindText("str_couldnt_join_server").ToString(), text, isAffirmativeOptionShown: false, isNegativeOptionShown: true, "", GameTexts.FindText("str_dismiss").ToString(), null, null));
 		}
-		else if (!(await NetworkMain.GameClient.RequestJoinCustomGame(selectedServer.Id, passwordInput, isJoinAsAdmin)))
+		else if (!(await NetworkMain.GameClient.RequestJoinCustomGame(selectedServer.Id, joinType, passwordInput)))
 		{
 			InformationManager.ShowInquiry(new InquiryData("", GameTexts.FindText("str_couldnt_join_server").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, GameTexts.FindText("str_ok").ToString(), "", null, null));
 		}
@@ -1044,6 +1197,12 @@ public class MPCustomGameVM : ViewModel
 	private void UpdateIsJoinEnabled()
 	{
 		IsJoinEnabled = IsAnyGameSelected && (IsPartyLeader || !IsInParty);
+		IsSelectedGameWatchable = IsAnyGameSelected && _selectedGame != null && _selectedGame.EnableSpectators;
+	}
+
+	private void ExecuteSelectPremadeServerAction(object actionParam)
+	{
+		(actionParam as PremadeServerAction).Execute();
 	}
 
 	public void SetRefreshInputKey(HotKey hotKey)

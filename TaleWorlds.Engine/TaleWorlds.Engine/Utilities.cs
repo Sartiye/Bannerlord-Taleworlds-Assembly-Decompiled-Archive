@@ -509,6 +509,16 @@ public static class Utilities
 		return EngineApplicationInterface.IUtil.GetReturnCode();
 	}
 
+	public static int GetUniqueAssertCount()
+	{
+		return EngineApplicationInterface.IUtil.GetUniqueAssertCount();
+	}
+
+	public static int GetUniqueWarningCount()
+	{
+		return EngineApplicationInterface.IUtil.GetUniqueWarningCount();
+	}
+
 	public static void DisableGlobalEditDataCacher()
 	{
 		EngineApplicationInterface.IUtil.DisableGlobalEditDataCacher();
@@ -657,6 +667,11 @@ public static class Utilities
 	public static void TakeScreenshot(string path)
 	{
 		EngineApplicationInterface.IUtil.TakeScreenshotFromStringPath(path);
+	}
+
+	public static void TakeScreenshotAsPng(string path)
+	{
+		EngineApplicationInterface.IUtil.TakeScreenshotAsPng(path);
 	}
 
 	public static void SetAllocationAlwaysValidScene(Scene scene)

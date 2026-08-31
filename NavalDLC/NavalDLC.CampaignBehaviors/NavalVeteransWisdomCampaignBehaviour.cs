@@ -25,7 +25,8 @@ public class NavalVeteransWisdomCampaignBehaviour : CampaignBehaviorBase
 
 	private void OnDailyTickParty(MobileParty party)
 	{
-		if (!party.HasPerk(NavalPerks.Boatswain.VeteransWisdom))
+		Hero perkOwnerHero = null;
+		if (!party.HasPerk(NavalPerks.Boatswain.VeteransWisdom, out perkOwnerHero))
 		{
 			return;
 		}

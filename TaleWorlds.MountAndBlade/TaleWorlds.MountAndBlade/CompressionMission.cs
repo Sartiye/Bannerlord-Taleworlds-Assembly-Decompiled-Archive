@@ -79,6 +79,8 @@ public static class CompressionMission
 
 	public static CompressionInfo.Integer WeaponUsageIndexCompressionInfo;
 
+	public static CompressionInfo.Integer WeaponClassCompressionInfo;
+
 	public static CompressionInfo.Integer TauntIndexCompressionInfo;
 
 	public static CompressionInfo.Integer BarkIndexCompressionInfo;
@@ -194,6 +196,7 @@ public static class CompressionMission
 		ItemDataCompressionInfo = new CompressionInfo.Integer(0, 10);
 		WeaponReloadPhaseCompressionInfo = new CompressionInfo.Integer(0, 9, maximumValueGiven: true);
 		WeaponUsageIndexCompressionInfo = new CompressionInfo.Integer(0, 2);
+		WeaponClassCompressionInfo = new CompressionInfo.Integer(0, 30, maximumValueGiven: true);
 		TauntIndexCompressionInfo = new CompressionInfo.Integer(0, TauntUsageManager.Instance.GetTauntItemCount() - 1, maximumValueGiven: true);
 		BarkIndexCompressionInfo = new CompressionInfo.Integer(0, SkinVoiceManager.VoiceType.MpBarks.Length - 1, maximumValueGiven: true);
 		UsageDirectionCompressionInfo = new CompressionInfo.Integer(-1, 9, maximumValueGiven: true);

@@ -18,5 +18,6 @@ public enum TutorialContexts
 	OptionsScreen,
 	CraftingScreen,
 	GameOverScreen,
-	EscapeMenu
+	EscapeMenu,
+	SceneNotification
 }

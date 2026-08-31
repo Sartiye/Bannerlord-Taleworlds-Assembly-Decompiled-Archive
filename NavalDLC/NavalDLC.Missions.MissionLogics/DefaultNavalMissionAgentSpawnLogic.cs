@@ -229,19 +229,14 @@ public class DefaultNavalMissionAgentSpawnLogic : MissionLogic, IMissionAgentSpa
 
 	internal void OnSideDeploymentOver(BattleSideEnum side)
 	{
-		IEnumerable<Team> teamsOfSide = Mission.GetTeamsOfSide(side);
-		foreach (Team item in teamsOfSide)
+		base.Mission.OnInitialSpawnCompleted(side);
+		foreach (Team item in Mission.GetTeamsOfSide(side))
 		{
-			base.Mission.OnTeamDeployed(item);
-		}
-		base.Mission.OnBattleSideDeployed(side);
-		foreach (Team item2 in teamsOfSide)
-		{
-			foreach (Formation item3 in item2.FormationsIncludingEmpty)
+			foreach (Formation item2 in item.FormationsIncludingEmpty)
 			{
-				if (item3.CountOfUnits > 0)
+				if (item2.CountOfUnits > 0)
 				{
-					item3.QuerySystem.EvaluateAllPreliminaryQueryData();
+					item2.QuerySystem.EvaluateAllPreliminaryQueryData();
 				}
 			}
 		}

@@ -91,6 +91,7 @@ public class SpawnComponent : MissionLogic
 		base.AfterStart();
 		SetNewSpawnFrameBehavior(SpawnFrameBehavior);
 		SetNewSpawningBehavior(SpawningBehavior);
+		base.Mission.OnInitialSpawnCompleted();
 	}
 
 	public override void OnMissionTick(float dt)

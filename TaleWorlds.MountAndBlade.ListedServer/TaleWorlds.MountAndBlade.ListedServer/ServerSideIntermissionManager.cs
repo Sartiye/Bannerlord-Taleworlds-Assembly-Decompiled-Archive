@@ -407,9 +407,9 @@ public class ServerSideIntermissionManager
 
 	private void UpdateCustomGameDataOnLobby()
 	{
-		string strValue = MultiplayerOptions.OptionType.GameType.GetStrValue();
-		int intValue = MultiplayerOptions.OptionType.MaxNumberOfPlayers.GetIntValue();
-		string strValue2 = MultiplayerOptions.OptionType.Map.GetStrValue();
+		string strValue = MultiplayerOptions.OptionType.PremadeMatchGameMode.GetStrValue();
+		int intValue = MultiplayerOptions.OptionType.CultureTeam2.GetIntValue();
+		string strValue2 = MultiplayerOptions.OptionType.PremadeGameType.GetStrValue();
 		if (GameNetwork.IsDedicatedServer)
 		{
 			NetworkMain.CustomBattleServer.UpdateCustomGameData(strValue, strValue2, intValue);
@@ -495,13 +495,13 @@ public class ServerSideIntermissionManager
 		}
 		if (_listedServer.IsRegistered && !_listedServer.IsPlaying)
 		{
-			bool flag = !string.IsNullOrEmpty(MultiplayerOptions.OptionType.Map.GetStrValue());
+			bool flag = !string.IsNullOrEmpty(MultiplayerOptions.OptionType.PremadeGameType.GetStrValue());
 			if (!flag)
 			{
 				MBList<string> mapList = MultiplayerOptions.Instance.GetMapList();
 				if (mapList.Count > 0)
 				{
-					MultiplayerOptions.OptionType.Map.SetValue(mapList.GetRandomElement());
+					MultiplayerOptions.OptionType.PremadeGameType.SetValue(mapList.GetRandomElement());
 					flag = true;
 				}
 			}
@@ -509,8 +509,8 @@ public class ServerSideIntermissionManager
 			{
 				if (GameStateManager.Current.ActiveState is InitialListedGameServerState)
 				{
-					string strValue = MultiplayerOptions.OptionType.GameType.GetStrValue();
-					string strValue2 = MultiplayerOptions.OptionType.Map.GetStrValue();
+					string strValue = MultiplayerOptions.OptionType.PremadeMatchGameMode.GetStrValue();
+					string strValue2 = MultiplayerOptions.OptionType.PremadeGameType.GetStrValue();
 					string uniqueSceneId = null;
 					if (Utilities.TryGetUniqueIdentifiersForScene(strValue2, out var identifiers))
 					{
@@ -525,7 +525,7 @@ public class ServerSideIntermissionManager
 					}
 					string strValue3 = MultiplayerOptions.OptionType.GamePassword.GetStrValue();
 					string strValue4 = MultiplayerOptions.OptionType.AdminPassword.GetStrValue();
-					int intValue = MultiplayerOptions.OptionType.GameDefinitionId.GetIntValue();
+					int intValue = MultiplayerOptions.OptionType.SpectatorPassword.GetIntValue();
 					string value = ((!string.IsNullOrEmpty(strValue3)) ? Common.CalculateMD5Hash(strValue3) : null);
 					string value2 = ((!string.IsNullOrEmpty(strValue4)) ? Common.CalculateMD5Hash(strValue4) : null);
 					MultiplayerOptions.OptionType.GamePassword.SetValue(value);
@@ -596,8 +596,8 @@ public class ServerSideIntermissionManager
 					_currentAutomatedBattleIndex = 0;
 				}
 				GameNetwork.GetNetworkComponent<BaseNetworkComponentData>().UpdateCurrentBattleIndex(_currentAutomatedBattleIndex);
-				MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.Map).GetValue(out string value);
-				MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.GameType).GetValue(out string value2);
+				MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.PremadeGameType).GetValue(out string value);
+				MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.PremadeMatchGameMode).GetValue(out string value2);
 				GameNetwork.BeginBroadcastModuleEvent();
 				GameNetwork.WriteMessage(new LoadMission(value2, value, _currentAutomatedBattleIndex));
 				GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.IncludeUnsynchronizedClients);
@@ -760,7 +760,7 @@ public class ServerSideIntermissionManager
 	{
 		Random random = new Random();
 		string value = _automatedMapPool[random.Next(0, _automatedMapPool.Count)];
-		MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.Map).UpdateValue(value);
+		MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.PremadeGameType).UpdateValue(value);
 	}
 
 	private void SelectRandomCultures()
@@ -769,14 +769,14 @@ public class ServerSideIntermissionManager
 		Random random = new Random();
 		string value = array[random.Next(0, array.Length)];
 		string value2 = array[random.Next(0, array.Length)];
-		MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.CultureTeam1).UpdateValue(value);
-		MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.CultureTeam2).UpdateValue(value2);
+		MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.Map).UpdateValue(value);
+		MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.CultureTeam1).UpdateValue(value2);
 	}
 
 	private void SelectMapAndFactions()
 	{
-		MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.Map).GetValue(out string value);
-		if (!_automatedMapPool.Contains(value) && !MultiplayerIntermissionVotingManager.Instance.GetUsableMaps(MultiplayerOptions.OptionType.GameType.GetStrValue()).Contains(value))
+		MultiplayerOptions.Instance.GetOptionFromOptionType(MultiplayerOptions.OptionType.PremadeGameType).GetValue(out string value);
+		if (!_automatedMapPool.Contains(value) && !MultiplayerIntermissionVotingManager.Instance.GetUsableMaps(MultiplayerOptions.OptionType.PremadeMatchGameMode.GetStrValue()).Contains(value))
 		{
 			value = _automatedMapPool[0];
 		}
@@ -785,7 +785,7 @@ public class ServerSideIntermissionManager
 		{
 			uniqueMapIdentifierString = identifiers.Serialize();
 		}
-		string strValue = MultiplayerOptions.OptionType.GameType.GetStrValue();
+		string strValue = MultiplayerOptions.OptionType.PremadeMatchGameMode.GetStrValue();
 		_handler.OnGameParametersChanged(strValue, value, uniqueMapIdentifierString);
 	}
 

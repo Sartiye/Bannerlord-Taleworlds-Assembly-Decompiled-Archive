@@ -70,15 +70,26 @@ public class MapWeatherCampaignBehavior : CampaignBehaviorBase
 		{
 			for (int j = 0; j < num; j++)
 			{
+				bool flag = false;
 				float a = (float)i / (float)defaultWeatherNodeDimension * terrainSize.X;
 				float b = (float)j / (float)defaultWeatherNodeDimension * terrainSize.Y;
-				Vec2 pos = new Vec2(a, b);
-				CampaignVec2 position = new CampaignVec2(pos, isOnLand: true);
-				if (!position.IsValid())
+				Vec2 vec = new Vec2(a, b);
+				for (int k = 0; k <= 4; k++)
 				{
-					position = new CampaignVec2(pos, isOnLand: false);
+					if (flag)
+					{
+						break;
+					}
+					for (int l = 0; l <= 4; l++)
+					{
+						if (new CampaignVec2(vec + new Vec2((float)(k * defaultWeatherNodeDimension) / 4f, (float)(l * defaultWeatherNodeDimension) / 4f), isOnLand: true).IsValid())
+						{
+							_weatherNodes[i * defaultWeatherNodeDimension + j] = new WeatherNode(new CampaignVec2(vec, isOnLand: true));
+							flag = true;
+							break;
+						}
+					}
 				}
-				_weatherNodes[i * defaultWeatherNodeDimension + j] = new WeatherNode(position);
 			}
 		}
 		AddEventHandler();
@@ -104,16 +115,19 @@ public class MapWeatherCampaignBehavior : CampaignBehaviorBase
 	private void UpdateWeatherNodeWithIndex(int index)
 	{
 		WeatherNode weatherNode = _weatherNodes[index];
-		MapWeatherModel.WeatherEvent currentWeatherEvent = weatherNode.CurrentWeatherEvent;
-		MapWeatherModel.WeatherEvent weatherEvent = Campaign.Current.Models.MapWeatherModel.UpdateWeatherForPosition(weatherNode.Position, CampaignTime.Now);
-		MapWeatherModel.WeatherEventEffectOnTerrain weatherEffectOnTerrainForPosition = Campaign.Current.Models.MapWeatherModel.GetWeatherEffectOnTerrainForPosition(weatherNode.Position.ToVec2());
-		if (currentWeatherEvent != weatherEvent || weatherEffectOnTerrainForPosition == MapWeatherModel.WeatherEventEffectOnTerrain.Wet)
+		if (weatherNode != null)
 		{
-			weatherNode.SetVisualDirty();
-		}
-		else if (currentWeatherEvent == MapWeatherModel.WeatherEvent.Clear && MBRandom.NondeterministicRandomFloat < 0.1f)
-		{
-			weatherNode.SetVisualDirty();
+			MapWeatherModel.WeatherEvent currentWeatherEvent = weatherNode.CurrentWeatherEvent;
+			MapWeatherModel.WeatherEvent weatherEvent = Campaign.Current.Models.MapWeatherModel.UpdateWeatherForPosition(weatherNode.Position, CampaignTime.Now);
+			MapWeatherModel.WeatherEventEffectOnTerrain weatherEffectOnTerrainForPosition = Campaign.Current.Models.MapWeatherModel.GetWeatherEffectOnTerrainForPosition(weatherNode.Position.ToVec2());
+			if (currentWeatherEvent != weatherEvent || weatherEffectOnTerrainForPosition == MapWeatherModel.WeatherEventEffectOnTerrain.Wet)
+			{
+				weatherNode.SetVisualDirty();
+			}
+			else if (currentWeatherEvent == MapWeatherModel.WeatherEvent.Clear && MBRandom.NondeterministicRandomFloat < 0.1f)
+			{
+				weatherNode.SetVisualDirty();
+			}
 		}
 	}
 }

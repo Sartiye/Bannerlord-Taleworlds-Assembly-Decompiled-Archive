@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -8,11 +7,17 @@ namespace NavalDLC.Missions.Deployment;
 
 public class NavalDeploymentPlan
 {
-	public const float HorizontalShipGap = 20f;
+	public const float MaxHorizontalShipGap = 20f;
+
+	public const float ShipRowGap = 20f;
+
+	public const bool ForceSingleRowDeployment = true;
 
 	public readonly Team Team;
 
 	private readonly Mission _mission;
+
+	private readonly NavalFormationDeploymentPlan[] _formationPlans;
 
 	private int _planCount;
 
@@ -22,12 +27,6 @@ public class NavalDeploymentPlan
 
 	private Vec3 _meanPosition;
 
-	private readonly NavalFormationDeploymentPlan[] _formationPlans;
-
-	public bool IsRiverPlan => _isRiverPlan;
-
-	public bool IsRaidPlan => _isRaidPlan;
-
 	public int PlanCount => _planCount;
 
 	public bool IsPlanMade { get; private set; }
@@ -36,19 +35,9 @@ public class NavalDeploymentPlan
 
 	public float TargetOffset { get; private set; }
 
-	public int TroopCount
-	{
-		get
-		{
-			int num = 0;
-			NavalFormationDeploymentPlan[] formationPlans = _formationPlans;
-			foreach (NavalFormationDeploymentPlan navalFormationDeploymentPlan in formationPlans)
-			{
-				num += navalFormationDeploymentPlan.PlannedTroopCount;
-			}
-			return num;
-		}
-	}
+	public bool IsRiverPlan => _isRiverPlan;
+
+	public bool IsRaidPlan => _isRaidPlan;
 
 	public int ShipCount
 	{
@@ -62,6 +51,20 @@ public class NavalDeploymentPlan
 				{
 					num++;
 				}
+			}
+			return num;
+		}
+	}
+
+	public int TroopCount
+	{
+		get
+		{
+			int num = 0;
+			NavalFormationDeploymentPlan[] formationPlans = _formationPlans;
+			foreach (NavalFormationDeploymentPlan navalFormationDeploymentPlan in formationPlans)
+			{
+				num += navalFormationDeploymentPlan.PlannedTroopCount;
 			}
 			return num;
 		}
@@ -93,6 +96,31 @@ public class NavalDeploymentPlan
 		ClearPlan();
 	}
 
+	public void AddShip(FormationClass formationClass, IShipOrigin shipOrigin)
+	{
+		_formationPlans[(int)formationClass].SetShipOrigin(shipOrigin);
+	}
+
+	public bool RemoveShip(FormationClass formationIndex)
+	{
+		NavalFormationDeploymentPlan navalFormationDeploymentPlan = _formationPlans[(int)formationIndex];
+		if (navalFormationDeploymentPlan.ShipObject != null)
+		{
+			navalFormationDeploymentPlan.SetShipOrigin(null);
+			return true;
+		}
+		return false;
+	}
+
+	public void ClearAddedShips()
+	{
+		NavalFormationDeploymentPlan[] formationPlans = _formationPlans;
+		for (int i = 0; i < formationPlans.Length; i++)
+		{
+			formationPlans[i].SetShipOrigin(null);
+		}
+	}
+
 	public void MakeDeploymentPlan(float spawnPathOffset, float targetOffset, FormationSceneSpawnEntry[,] formationSceneSpawnEntries = null)
 	{
 		SpawnPathOffset = spawnPathOffset;
@@ -118,37 +146,27 @@ public class NavalDeploymentPlan
 		IsPlanMade = false;
 	}
 
-	public void ClearAddedShips()
-	{
-		NavalFormationDeploymentPlan[] formationPlans = _formationPlans;
-		for (int i = 0; i < formationPlans.Length; i++)
-		{
-			formationPlans[i].SetShipOrigin(null);
-		}
-	}
-
-	public void AddShip(FormationClass formationClass, IShipOrigin shipOrigin)
-	{
-		_formationPlans[(int)formationClass].SetShipOrigin(shipOrigin);
-	}
-
-	public bool RemoveShip(FormationClass formationIndex)
-	{
-		NavalFormationDeploymentPlan navalFormationDeploymentPlan = _formationPlans[(int)formationIndex];
-		if (navalFormationDeploymentPlan.ShipObject != null)
-		{
-			navalFormationDeploymentPlan.SetShipOrigin(null);
-			return true;
-		}
-		return false;
-	}
-
 	public NavalFormationDeploymentPlan GetFormationPlan(FormationClass fClass)
 	{
 		return _formationPlans[(int)fClass];
 	}
 
-	public bool GetFormationDeploymentFrame(FormationClass fClass, out MatrixFrame frame)
+	public bool GetFirstValidFormationDeploymentFrame(out MatrixFrame frame)
+	{
+		NavalFormationDeploymentPlan[] formationPlans = _formationPlans;
+		foreach (NavalFormationDeploymentPlan navalFormationDeploymentPlan in formationPlans)
+		{
+			if (navalFormationDeploymentPlan.HasFrame())
+			{
+				frame = navalFormationDeploymentPlan.GetFrame();
+				return true;
+			}
+		}
+		frame = MatrixFrame.Identity;
+		return false;
+	}
+
+	public bool GetFormationFrame(FormationClass fClass, out MatrixFrame frame)
 	{
 		NavalFormationDeploymentPlan formationPlan = GetFormationPlan(fClass);
 		if (formationPlan.HasFrame())
@@ -160,12 +178,95 @@ public class NavalDeploymentPlan
 		return false;
 	}
 
-	private void PlanNavalBattleDeploymentFromSpawnPath(float pathOffset, float targetOffset)
+	public MatrixFrame ComputeFormationsCenterFrameAndExtents(bool ignoreDimensionlessFormations, out Vec2 halfExtents)
 	{
-		_mission.GetInitialSpawnPathData(Team.Side).GetSpawnPathFrameFacingTarget(pathOffset, targetOffset, _isRiverPlan, out var spawnPathPosition, out var spawnPathDirection);
-		DeployShips(spawnPathPosition, spawnPathDirection);
-		IsPlanMade = true;
-		_planCount++;
+		GetFirstValidFormationFrame(out var frame, checkDimensions: true);
+		float num = float.MinValue;
+		float num2 = float.MaxValue;
+		float num3 = float.MaxValue;
+		float num4 = float.MinValue;
+		NavalFormationDeploymentPlan[] formationPlans = _formationPlans;
+		foreach (NavalFormationDeploymentPlan navalFormationDeploymentPlan in formationPlans)
+		{
+			if (navalFormationDeploymentPlan.HasFrame() && (!ignoreDimensionlessFormations || navalFormationDeploymentPlan.HasDimensions))
+			{
+				MatrixFrame m = navalFormationDeploymentPlan.GetFrame();
+				MatrixFrame matrixFrame = frame.TransformToLocal(in m);
+				float num5 = navalFormationDeploymentPlan.PlannedWidth * 0.5f;
+				float num6 = navalFormationDeploymentPlan.PlannedDepth * 0.5f;
+				float num7 = MathF.Abs(matrixFrame.rotation.s.x) * num5 + MathF.Abs(matrixFrame.rotation.f.x) * num6;
+				float num8 = MathF.Abs(matrixFrame.rotation.s.y) * num5 + MathF.Abs(matrixFrame.rotation.f.y) * num6;
+				float b = matrixFrame.origin.y + num8;
+				float b2 = matrixFrame.origin.y - num8;
+				float b3 = matrixFrame.origin.x - num7;
+				float b4 = matrixFrame.origin.x + num7;
+				num = MathF.Max(num, b);
+				num2 = MathF.Min(num2, b2);
+				num3 = MathF.Min(num3, b3);
+				num4 = MathF.Max(num4, b4);
+			}
+		}
+		float x = (num3 + num4) * 0.5f;
+		float y = (num2 + num) * 0.5f;
+		halfExtents = new Vec2((num4 - num3) / 2f, (num - num2) / 2f);
+		Vec3 v = new Vec3(x, y);
+		Vec3 o = frame.TransformToParent(in v);
+		o.z = Mission.Current.Scene.GetWaterLevelAtPosition(o.AsVec2, useWaterRenderer: true, checkWaterBodyEntities: false);
+		return new MatrixFrame(in frame.rotation, in o);
+	}
+
+	public bool GetFirstValidFormationFrame(out MatrixFrame frame, bool checkDimensions)
+	{
+		NavalFormationDeploymentPlan[] formationPlans = _formationPlans;
+		foreach (NavalFormationDeploymentPlan navalFormationDeploymentPlan in formationPlans)
+		{
+			if (navalFormationDeploymentPlan.HasFrame() && (!checkDimensions || navalFormationDeploymentPlan.HasDimensions))
+			{
+				frame = navalFormationDeploymentPlan.GetFrame();
+				return true;
+			}
+		}
+		frame = MatrixFrame.Identity;
+		return false;
+	}
+
+	private void DeployShips(in Vec2 deployPosition, in Vec2 deployDirection)
+	{
+		MBList<(int, NavalFormationDeploymentPlan)> mBList = new MBList<(int, NavalFormationDeploymentPlan)>();
+		for (int i = 0; i < _formationPlans.Count(); i++)
+		{
+			NavalFormationDeploymentPlan navalFormationDeploymentPlan = _formationPlans[i];
+			if (navalFormationDeploymentPlan.HasShipObject)
+			{
+				int totalCrewCapacity = navalFormationDeploymentPlan.ShipOrigin.TotalCrewCapacity;
+				mBList.Add((totalCrewCapacity, navalFormationDeploymentPlan));
+			}
+		}
+		mBList.Sort(((int crewCapacity, NavalFormationDeploymentPlan plan) x, (int crewCapacity, NavalFormationDeploymentPlan plan) y) => y.crewCapacity.CompareTo(x.crewCapacity));
+		float desiredTotalWidth = (_isRiverPlan ? 190f : 400f);
+		int num = 4;
+		DeployShipRow(in deployPosition, in deployDirection, mBList, desiredTotalWidth);
+		mBList.Clear();
+	}
+
+	private void ComputeMeanPosition()
+	{
+		_meanPosition = Vec3.Zero;
+		Vec2 zero = Vec2.Zero;
+		int num = 0;
+		NavalFormationDeploymentPlan[] formationPlans = _formationPlans;
+		foreach (NavalFormationDeploymentPlan navalFormationDeploymentPlan in formationPlans)
+		{
+			if (navalFormationDeploymentPlan.HasFrame())
+			{
+				zero += navalFormationDeploymentPlan.GetPosition().AsVec2;
+				num++;
+			}
+		}
+		if (num > 0)
+		{
+			_meanPosition = new Vec2(zero.X / (float)num, zero.Y / (float)num).ToVec3();
+		}
 	}
 
 	private void PlanNavalBattleDeploymentFromSceneData(FormationSceneSpawnEntry[,] formationSceneSpawnEntries)
@@ -190,72 +291,66 @@ public class NavalDeploymentPlan
 		_planCount++;
 	}
 
-	private void DeployShips(Vec2 deployPosition, Vec2 deployDirection)
+	private void PlanNavalBattleDeploymentFromSpawnPath(float pathOffset, float targetOffset)
 	{
-		List<(int, NavalFormationDeploymentPlan)> list = new List<(int, NavalFormationDeploymentPlan)>();
-		for (int i = 0; i < _formationPlans.Count(); i++)
+		_mission.GetInitialSpawnPathData(Team.Side).GetSpawnPathFrameFacingTarget(pathOffset, targetOffset, _isRiverPlan, out var spawnPathPosition, out var spawnPathDirection);
+		DeployShips(in spawnPathPosition, in spawnPathDirection);
+		IsPlanMade = true;
+		_planCount++;
+	}
+
+	private static void DeployShipRow(in Vec2 deployPosition, in Vec2 deployDirection, MBList<(int crewCapacity, NavalFormationDeploymentPlan plan)> sortedPlans, float desiredTotalWidth = 0f)
+	{
+		float num = 20f;
+		if (desiredTotalWidth > 0f && sortedPlans.Count > 1)
 		{
-			NavalFormationDeploymentPlan navalFormationDeploymentPlan = _formationPlans[i];
-			if (navalFormationDeploymentPlan.HasShipObject)
+			float num2 = 0f;
+			for (int i = 0; i < sortedPlans.Count; i++)
 			{
-				int totalCrewCapacity = navalFormationDeploymentPlan.ShipOrigin.TotalCrewCapacity;
-				list.Add((totalCrewCapacity, navalFormationDeploymentPlan));
+				num2 += sortedPlans[i].plan.ShipObject.DeploymentArea.x;
 			}
+			int num3 = sortedPlans.Count - 1;
+			num = (desiredTotalWidth - num2) / (float)num3;
+			num = MathF.Max(num, 0f);
+			num = MathF.Min(num, 20f);
 		}
-		list.Sort(((int crewCapacity, NavalFormationDeploymentPlan plan) x, (int crewCapacity, NavalFormationDeploymentPlan plan) y) => y.crewCapacity.CompareTo(x.crewCapacity));
-		float num = 0f;
-		float num2 = 0f;
+		float num4 = 0f;
+		float num5 = 0f;
 		Vec2 vec = deployDirection.LeftVec().Normalized();
 		Vec2 vec2 = -vec;
 		int j = 0;
-		if (list.Count % 2 != 0)
+		if (sortedPlans.Count % 2 != 0)
 		{
-			NavalFormationDeploymentPlan item = list[j].Item2;
+			NavalFormationDeploymentPlan item = sortedPlans[j].plan;
 			item.SetFrame(in deployPosition, in deployDirection);
-			float num3 = item.ShipObject.DeploymentArea.x / 2f;
-			num += num3;
-			num2 += num3;
+			float num6 = item.ShipObject.DeploymentArea.x * 0.5f;
+			num4 += num6 + num;
+			num5 += num6 + num;
 			j++;
 		}
-		for (; j < list.Count; j++)
+		else
 		{
-			NavalFormationDeploymentPlan item2 = list[j].Item2;
-			float num4 = item2.ShipObject.DeploymentArea.x / 2f;
+			num4 += num * 0.5f;
+			num5 += num * 0.5f;
+		}
+		for (; j < sortedPlans.Count; j++)
+		{
+			NavalFormationDeploymentPlan item2 = sortedPlans[j].plan;
+			float num7 = item2.ShipObject.DeploymentArea.x * 0.5f;
 			if (j % 2 == 0)
 			{
-				num2 += 20f + num4;
-				Vec2 deployPosition2 = deployPosition + vec2 * num2;
+				num5 += num7;
+				Vec2 deployPosition2 = deployPosition + vec2 * num5;
 				item2.SetFrame(in deployPosition2, in deployDirection);
-				num2 += num4;
+				num5 += num7 + num;
 			}
 			else
 			{
-				num += 20f + num4;
-				Vec2 deployPosition3 = deployPosition + vec * num;
+				num4 += num7;
+				Vec2 deployPosition3 = deployPosition + vec * num4;
 				item2.SetFrame(in deployPosition3, in deployDirection);
-				num += num4;
+				num4 += num7 + num;
 			}
-		}
-		list.Clear();
-	}
-
-	private void ComputeMeanPosition()
-	{
-		_meanPosition = Vec3.Zero;
-		Vec2 zero = Vec2.Zero;
-		int num = 0;
-		NavalFormationDeploymentPlan[] formationPlans = _formationPlans;
-		foreach (NavalFormationDeploymentPlan navalFormationDeploymentPlan in formationPlans)
-		{
-			if (navalFormationDeploymentPlan.HasFrame())
-			{
-				zero += navalFormationDeploymentPlan.GetPosition().AsVec2;
-				num++;
-			}
-		}
-		if (num > 0)
-		{
-			_meanPosition = new Vec2(zero.X / (float)num, zero.Y / (float)num).ToVec3();
 		}
 	}
 }

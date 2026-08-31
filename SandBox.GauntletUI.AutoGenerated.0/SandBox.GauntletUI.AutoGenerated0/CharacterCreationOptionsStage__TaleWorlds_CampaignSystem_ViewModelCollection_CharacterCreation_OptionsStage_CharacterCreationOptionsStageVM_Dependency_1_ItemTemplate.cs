@@ -21,7 +21,7 @@ public class CharacterCreationOptionsStage__TaleWorlds_CampaignSystem_ViewModelC
 
 	private TextWidget _widget_2;
 
-	private HintWidget _widget_3;
+	private Widget _widget_3;
 
 	private CharacterCreationOptionsItemWidget _widget_3_0;
 
@@ -75,6 +75,8 @@ public class CharacterCreationOptionsStage__TaleWorlds_CampaignSystem_ViewModelC
 
 	private HintWidget _widget_3_0_7_0_3;
 
+	private HintWidget _widget_3_1;
+
 	private CampaignOptionItemVM _datasource_Root;
 
 	private HintViewModel _datasource_Root_Hint;
@@ -93,7 +95,7 @@ public class CharacterCreationOptionsStage__TaleWorlds_CampaignSystem_ViewModelC
 		_widget.AddChild(_widget_1);
 		_widget_2 = new TextWidget(base.Context);
 		_widget.AddChild(_widget_2);
-		_widget_3 = new HintWidget(base.Context);
+		_widget_3 = new Widget(base.Context);
 		_widget.AddChild(_widget_3);
 		_widget_3_0 = new CharacterCreationOptionsItemWidget(base.Context);
 		_widget_3.AddChild(_widget_3_0);
@@ -148,6 +150,8 @@ public class CharacterCreationOptionsStage__TaleWorlds_CampaignSystem_ViewModelC
 		_widget_3_0_7_0.AddChild(_widget_3_0_7_0_2);
 		_widget_3_0_7_0_3 = new HintWidget(base.Context);
 		_widget_3_0_7_0.AddChild(_widget_3_0_7_0_3);
+		_widget_3_1 = new HintWidget(base.Context);
+		_widget_3.AddChild(_widget_3_1);
 	}
 
 	public void SetIds()
@@ -163,6 +167,7 @@ public class CharacterCreationOptionsStage__TaleWorlds_CampaignSystem_ViewModelC
 		_widget_3_0_5.SetIds();
 		_widget_3_0_5.Id = "SelectionOption";
 		_widget_3_0_7.Id = "ActionOption";
+		_widget_3_1.Id = "OptionContainer";
 	}
 
 	public void SetAttributes()
@@ -334,6 +339,7 @@ public class CharacterCreationOptionsStage__TaleWorlds_CampaignSystem_ViewModelC
 		_widget_3_0_7_0_3.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_3_0_7_0_3.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_3_0_7_0_3.IsEnabled = false;
+		_widget_3_1.IsEnabled = false;
 	}
 
 	public void DestroyDataSource()
@@ -359,6 +365,7 @@ public class CharacterCreationOptionsStage__TaleWorlds_CampaignSystem_ViewModelC
 			_widget_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_2;
 			_widget_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2;
 			_widget_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2;
+			_widget_3.EventFire -= EventListenerOf_widget_3;
 			_widget_3_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0;
 			_widget_3_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0;
 			_widget_3_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0;
@@ -416,10 +423,10 @@ public class CharacterCreationOptionsStage__TaleWorlds_CampaignSystem_ViewModelC
 				_datasource_Root_Hint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Hint;
 				_datasource_Root_Hint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Hint;
 				_datasource_Root_Hint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Hint;
-				_widget_3.EventFire -= EventListenerOf_widget_3;
 				_widget_3_0_1_0_1.EventFire -= EventListenerOf_widget_3_0_1_0_1;
 				_widget_3_0_3_1_4.EventFire -= EventListenerOf_widget_3_0_3_1_4;
 				_widget_3_0_7_0_3.EventFire -= EventListenerOf_widget_3_0_7_0_3;
+				_widget_3_1.EventFire -= EventListenerOf_widget_3_1;
 				_datasource_Root_Hint = null;
 			}
 			_datasource_Root = null;
@@ -431,23 +438,17 @@ public class CharacterCreationOptionsStage__TaleWorlds_CampaignSystem_ViewModelC
 		RefreshDataSource_datasource_Root(dataSource);
 	}
 
+	private void EventListenerOf_widget_3(Widget widget, string commandName, object[] args)
+	{
+		_ = commandName == "HoverBegin";
+		_ = commandName == "HoverEnd";
+	}
+
 	private void EventListenerOf_widget_3_0_7_0(Widget widget, string commandName, object[] args)
 	{
 		if (commandName == "Click")
 		{
 			_datasource_Root.ExecuteAction();
-		}
-	}
-
-	private void EventListenerOf_widget_3(Widget widget, string commandName, object[] args)
-	{
-		if (commandName == "HoverBegin")
-		{
-			_datasource_Root_Hint.ExecuteBeginHint();
-		}
-		if (commandName == "HoverEnd")
-		{
-			_datasource_Root_Hint.ExecuteEndHint();
 		}
 	}
 
@@ -476,6 +477,18 @@ public class CharacterCreationOptionsStage__TaleWorlds_CampaignSystem_ViewModelC
 	}
 
 	private void EventListenerOf_widget_3_0_7_0_3(Widget widget, string commandName, object[] args)
+	{
+		if (commandName == "HoverBegin")
+		{
+			_datasource_Root_Hint.ExecuteBeginHint();
+		}
+		if (commandName == "HoverEnd")
+		{
+			_datasource_Root_Hint.ExecuteEndHint();
+		}
+	}
+
+	private void EventListenerOf_widget_3_1(Widget widget, string commandName, object[] args)
 	{
 		if (commandName == "HoverBegin")
 		{
@@ -985,6 +998,7 @@ public class CharacterCreationOptionsStage__TaleWorlds_CampaignSystem_ViewModelC
 			_widget_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_2;
 			_widget_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2;
 			_widget_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2;
+			_widget_3.EventFire -= EventListenerOf_widget_3;
 			_widget_3_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0;
 			_widget_3_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0;
 			_widget_3_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0;
@@ -1042,10 +1056,10 @@ public class CharacterCreationOptionsStage__TaleWorlds_CampaignSystem_ViewModelC
 				_datasource_Root_Hint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Hint;
 				_datasource_Root_Hint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Hint;
 				_datasource_Root_Hint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Hint;
-				_widget_3.EventFire -= EventListenerOf_widget_3;
 				_widget_3_0_1_0_1.EventFire -= EventListenerOf_widget_3_0_1_0_1;
 				_widget_3_0_3_1_4.EventFire -= EventListenerOf_widget_3_0_3_1_4;
 				_widget_3_0_7_0_3.EventFire -= EventListenerOf_widget_3_0_7_0_3;
+				_widget_3_1.EventFire -= EventListenerOf_widget_3_1;
 				_datasource_Root_Hint = null;
 			}
 			_datasource_Root = null;
@@ -1073,6 +1087,7 @@ public class CharacterCreationOptionsStage__TaleWorlds_CampaignSystem_ViewModelC
 			_widget_2.intPropertyChanged += intPropertyChangedListenerOf_widget_2;
 			_widget_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_2;
 			_widget_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_2;
+			_widget_3.EventFire += EventListenerOf_widget_3;
 			_widget_3_0.Type = _datasource_Root.OptionType;
 			_widget_3_0.IsDisabled = _datasource_Root.IsDisabled;
 			_widget_3_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0;
@@ -1141,10 +1156,10 @@ public class CharacterCreationOptionsStage__TaleWorlds_CampaignSystem_ViewModelC
 				_datasource_Root_Hint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Hint;
 				_datasource_Root_Hint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Hint;
 				_datasource_Root_Hint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Hint;
-				_widget_3.EventFire += EventListenerOf_widget_3;
 				_widget_3_0_1_0_1.EventFire += EventListenerOf_widget_3_0_1_0_1;
 				_widget_3_0_3_1_4.EventFire += EventListenerOf_widget_3_0_3_1_4;
 				_widget_3_0_7_0_3.EventFire += EventListenerOf_widget_3_0_7_0_3;
+				_widget_3_1.EventFire += EventListenerOf_widget_3_1;
 			}
 			_widget_3_0_5.SetDataSource(_datasource_Root);
 		}
@@ -1163,10 +1178,10 @@ public class CharacterCreationOptionsStage__TaleWorlds_CampaignSystem_ViewModelC
 			_datasource_Root_Hint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Hint;
 			_datasource_Root_Hint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Hint;
 			_datasource_Root_Hint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Hint;
-			_widget_3.EventFire -= EventListenerOf_widget_3;
 			_widget_3_0_1_0_1.EventFire -= EventListenerOf_widget_3_0_1_0_1;
 			_widget_3_0_3_1_4.EventFire -= EventListenerOf_widget_3_0_3_1_4;
 			_widget_3_0_7_0_3.EventFire -= EventListenerOf_widget_3_0_7_0_3;
+			_widget_3_1.EventFire -= EventListenerOf_widget_3_1;
 			_datasource_Root_Hint = null;
 		}
 		_datasource_Root_Hint = newDataSource;
@@ -1182,10 +1197,10 @@ public class CharacterCreationOptionsStage__TaleWorlds_CampaignSystem_ViewModelC
 			_datasource_Root_Hint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Hint;
 			_datasource_Root_Hint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Hint;
 			_datasource_Root_Hint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Hint;
-			_widget_3.EventFire += EventListenerOf_widget_3;
 			_widget_3_0_1_0_1.EventFire += EventListenerOf_widget_3_0_1_0_1;
 			_widget_3_0_3_1_4.EventFire += EventListenerOf_widget_3_0_3_1_4;
 			_widget_3_0_7_0_3.EventFire += EventListenerOf_widget_3_0_7_0_3;
+			_widget_3_1.EventFire += EventListenerOf_widget_3_1;
 		}
 	}
 }

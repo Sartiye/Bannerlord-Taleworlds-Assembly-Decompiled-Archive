@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using TaleWorlds.Core;
+using TaleWorlds.Diamond;
 using TaleWorlds.Diamond.ClientApplication;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
@@ -93,7 +94,7 @@ public class DedicatedCustomServerIntermissionManagerHandler : IServerSideInterm
 		}
 		if (DedicatedCustomGameServer != null)
 		{
-			DedicatedCustomGameServer.Update();
+			((Client<CustomBattleServer>)(object)DedicatedCustomGameServer).Update();
 		}
 	}
 
@@ -129,6 +130,6 @@ public class DedicatedCustomServerIntermissionManagerHandler : IServerSideInterm
 
 	async Task IServerSideIntermissionManagerHandler.OnGameStart(string selectedGameType, string selectedScene, string uniqueSceneId, int gameDefinitionId, string gameModule, int portToUse, string regionToUse)
 	{
-		await DedicatedCustomGameServer.RegisterGame(gameDefinitionId, gameModule, selectedGameType, MultiplayerOptions.OptionType.ServerName.GetStrValue(), MultiplayerOptions.OptionType.MaxNumberOfPlayers.GetIntValue(), selectedScene, uniqueSceneId, portToUse, regionToUse, MultiplayerOptions.OptionType.GamePassword.GetStrValue(), MultiplayerOptions.OptionType.AdminPassword.GetStrValue(), Module.CurrentModule.StartupInfo.Permission, Module.CurrentModule.StartupInfo.CustomServerHostIP);
+		await DedicatedCustomGameServer.RegisterGame(gameDefinitionId, gameModule, selectedGameType, MultiplayerOptions.OptionType.ServerName.GetStrValue(), MultiplayerOptions.OptionType.CultureTeam2.GetIntValue(), selectedScene, uniqueSceneId, portToUse, regionToUse, MultiplayerOptions.OptionType.GamePassword.GetStrValue(), MultiplayerOptions.OptionType.AdminPassword.GetStrValue(), Module.CurrentModule.StartupInfo.Permission, Module.CurrentModule.StartupInfo.CustomServerHostIP);
 	}
 }

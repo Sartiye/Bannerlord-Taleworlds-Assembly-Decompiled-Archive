@@ -20,6 +20,8 @@ public class ClientApplicationConfiguration
 
 	public ParameterContainer Parameters { get; set; }
 
+	public static string DefaultConfigurationCategory => _defaultConfigurationCategory;
+
 	public ClientApplicationConfiguration()
 	{
 		Name = "NewlyCreated";

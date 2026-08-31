@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using SandBox.ViewModelCollection.Input;
 using TaleWorlds.CampaignSystem.Incidents;
 using TaleWorlds.Core;
@@ -22,6 +21,8 @@ public class MapIncidentVM : ViewModel
 
 	private bool _hasSelectedOption;
 
+	private bool _showActiveHints;
+
 	private string _title;
 
 	private string _description;
@@ -30,7 +31,9 @@ public class MapIncidentVM : ViewModel
 
 	private string _incidentType;
 
-	private string _activeHint;
+	private MapIncidentHintVM _activeHint;
+
+	private string _inactiveHint;
 
 	private HintViewModel _confirmHint;
 
@@ -89,6 +92,23 @@ public class MapIncidentVM : ViewModel
 			{
 				_hasSelectedOption = value;
 				OnPropertyChangedWithValue(value, "HasSelectedOption");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool ShowActiveHints
+	{
+		get
+		{
+			return _showActiveHints;
+		}
+		set
+		{
+			if (value != _showActiveHints)
+			{
+				_showActiveHints = value;
+				OnPropertyChangedWithValue(value, "ShowActiveHints");
 			}
 		}
 	}
@@ -162,7 +182,7 @@ public class MapIncidentVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public string ActiveHint
+	public MapIncidentHintVM ActiveHint
 	{
 		get
 		{
@@ -174,6 +194,23 @@ public class MapIncidentVM : ViewModel
 			{
 				_activeHint = value;
 				OnPropertyChangedWithValue(value, "ActiveHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string InactiveHint
+	{
+		get
+		{
+			return _inactiveHint;
+		}
+		set
+		{
+			if (value != _inactiveHint)
+			{
+				_inactiveHint = value;
+				OnPropertyChangedWithValue(value, "InactiveHint");
 			}
 		}
 	}
@@ -285,7 +322,7 @@ public class MapIncidentVM : ViewModel
 	{
 		_incident = incident;
 		_onClose = onClose;
-		IncidentType = incident.Type.ToString();
+		IncidentType = incident.TypeId;
 		ConfirmHint = new HintViewModel();
 		Options = new MBBindingList<MapIncidentOptionVM>();
 		PopulateOptions();
@@ -299,10 +336,12 @@ public class MapIncidentVM : ViewModel
 		Title = _incident.Title.ToString();
 		Description = _incident.Description.ToString();
 		ConfirmText = new TextObject("{=WiNRdfsm}Done").ToString();
+		InactiveHint = new TextObject("{=*}No option selected").ToString();
 		Options.ApplyActionOnAllItems(delegate(MapIncidentOptionVM o)
 		{
 			o.RefreshValues();
 		});
+		UpdateActiveHints();
 	}
 
 	public override void OnFinalize()
@@ -328,12 +367,12 @@ public class MapIncidentVM : ViewModel
 			}
 			else
 			{
-				Debug.FailedAssert("Selected incident option is out of bounds. Action won't be invoked", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Map\\Incidents\\MapIncidentVM.cs", "ExecuteConfirm", 69);
+				Debug.FailedAssert("Selected incident option is out of bounds. Action won't be invoked", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Map\\Incidents\\MapIncidentVM.cs", "ExecuteConfirm", 73);
 			}
 		}
 		else
 		{
-			Debug.FailedAssert("An incident option must be selected before confirm", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Map\\Incidents\\MapIncidentVM.cs", "ExecuteConfirm", 74);
+			Debug.FailedAssert("An incident option must be selected before confirm", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Map\\Incidents\\MapIncidentVM.cs", "ExecuteConfirm", 78);
 		}
 		_onClose();
 	}
@@ -344,7 +383,7 @@ public class MapIncidentVM : ViewModel
 		for (int i = 0; i < _incident.NumOfOptions; i++)
 		{
 			TextObject optionText = _incident.GetOptionText(i);
-			List<TextObject> optionHint = _incident.GetOptionHint(i);
+			IncidentHint optionHint = _incident.GetOptionHint(i);
 			MapIncidentOptionVM item = new MapIncidentOptionVM(optionText, optionHint, i, OnOptionSelected, OnOptionFocused);
 			Options.Add(item);
 		}
@@ -353,29 +392,32 @@ public class MapIncidentVM : ViewModel
 	private void OnOptionSelected(MapIncidentOptionVM option)
 	{
 		SelectedOption = option;
-		UpdateActiveHint();
+		UpdateActiveHints();
 		UpdateCanConfirm();
 	}
 
 	private void OnOptionFocused(MapIncidentOptionVM option)
 	{
 		FocusedOption = option;
-		UpdateActiveHint();
+		UpdateActiveHints();
 	}
 
-	private void UpdateActiveHint()
+	private void UpdateActiveHints()
 	{
 		if (FocusedOption != null)
 		{
 			ActiveHint = FocusedOption.Hint;
+			ShowActiveHints = true;
 		}
 		else if (SelectedOption != null)
 		{
 			ActiveHint = SelectedOption.Hint;
+			ShowActiveHints = true;
 		}
 		else
 		{
-			ActiveHint = string.Empty;
+			ActiveHint = null;
+			ShowActiveHints = false;
 		}
 	}
 

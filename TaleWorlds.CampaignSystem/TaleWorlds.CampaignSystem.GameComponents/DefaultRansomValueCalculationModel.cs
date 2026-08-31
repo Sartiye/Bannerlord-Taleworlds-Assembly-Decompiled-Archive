@@ -1,5 +1,7 @@
+using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
+using TaleWorlds.Core;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.GameComponents;
@@ -27,30 +29,31 @@ public class DefaultRansomValueCalculationModel : RansomValueCalculationModel
 			}
 		}
 		float num4 = ((prisoner.HeroObject != null) ? (num + num2) : 0f);
-		int num5 = (int)(((float)roundedResultNumber + num4) * ((!prisoner.IsHero) ? 0.25f : 1f) * num3);
+		ExplainedNumber stat = new ExplainedNumber(((float)roundedResultNumber + num4) * ((!prisoner.IsHero) ? 0.25f : 1f) * num3);
 		if (sellerHero != null)
 		{
 			if (!prisoner.IsHero)
 			{
 				if (sellerHero.GetPerkValue(DefaultPerks.Roguery.Manhunter) && sellerHero.PartyBelongedTo != null && !sellerHero.PartyBelongedTo.IsCurrentlyAtSea)
 				{
-					num5 = MathF.Round((float)num5 + (float)num5 * DefaultPerks.Roguery.Manhunter.PrimaryBonus);
+					PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Roguery.Manhunter, BattleEnvironment.Any, sellerHero.CharacterObject, isPrimaryBonus: true, ref stat);
 				}
+				TraitEffectHelper.ApplyTraitEffect(sellerHero, DefaultPersonalityTraitEffects.MercyTroopRansomEffect, ref stat);
 			}
-			else if (sellerHero.IsPartyLeader && sellerHero.GetPerkValue(DefaultPerks.Roguery.RansomBroker))
+			else
 			{
-				float num6 = DefaultPerks.Roguery.RansomBroker.PrimaryBonus;
-				if (sellerHero.PartyBelongedTo.IsCurrentlyAtSea)
+				if (sellerHero.IsPartyLeader && sellerHero.GetPerkValue(DefaultPerks.Roguery.RansomBroker))
 				{
-					num6 *= 0.5f;
+					PerkHelper.AddPerkBonusForParty(DefaultPerks.Roguery.RansomBroker, sellerHero.PartyBelongedTo, isPrimaryBonus: true, ref stat);
 				}
-				num5 = MathF.Round((float)num5 + (float)num5 * num6);
+				Hero hero = sellerHero.Clan?.Leader;
+				if (hero != null)
+				{
+					TraitEffectHelper.ApplyTraitEffect(hero, DefaultPersonalityTraitEffects.MercyLordRansomEffect, ref stat);
+				}
 			}
 		}
-		if (num5 != 0)
-		{
-			return num5;
-		}
-		return 1;
+		stat.LimitMin(1f);
+		return stat.RoundedResultNumber;
 	}
 }

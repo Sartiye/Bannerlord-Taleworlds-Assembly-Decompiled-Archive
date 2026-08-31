@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Helpers;
-using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
@@ -125,10 +124,6 @@ public static class KillCharacterAction
 		if (victim.GovernorOf != null)
 		{
 			ChangeGovernorAction.RemoveGovernorOf(victim);
-		}
-		if ((actionDetail == KillCharacterActionDetail.Executed || actionDetail == KillCharacterActionDetail.ExecutionAfterMapEvent) && killer == Hero.MainHero && victim.Clan != null && victim.GetTraitLevel(DefaultTraits.Honor) >= 0)
-		{
-			TraitLevelingHelper.OnLordExecuted();
 		}
 		if (victim.Clan != null && !victim.Clan.IsEliminated && !victim.Clan.IsBanditFaction && victim.Clan != Clan.PlayerClan)
 		{
@@ -331,31 +326,16 @@ public static class KillCharacterAction
 		}
 		StringHelpers.SetCharacterProperties("CHARACTER", hero.CharacterObject, textObject, includeDetails: true);
 		TextObject empty = TextObject.GetEmpty();
-		switch (detail)
+		empty = detail switch
 		{
-		case KillCharacterActionDetail.DiedInBattle:
-			empty = new TextObject("{=6pCABUme}{?CHARACTER.GENDER}She{?}He{\\?} died in battle in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}");
-			break;
-		case KillCharacterActionDetail.DiedInLabor:
-			empty = new TextObject("{=7Vw6iYNI}{?CHARACTER.GENDER}She{?}He{\\?} died in childbirth in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}");
-			break;
-		case KillCharacterActionDetail.Executed:
-		case KillCharacterActionDetail.ExecutionAfterMapEvent:
-			empty = new TextObject("{=9Tq3IAiz}{?CHARACTER.GENDER}She{?}He{\\?} was executed in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}");
-			break;
-		case KillCharacterActionDetail.Lost:
-			empty = new TextObject("{=SausWqM5}{?CHARACTER.GENDER}She{?}He{\\?} disappeared in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}");
-			break;
-		case KillCharacterActionDetail.Murdered:
-			empty = new TextObject("{=TUDAvcTR}{?CHARACTER.GENDER}She{?}He{\\?} was assassinated in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}");
-			break;
-		case KillCharacterActionDetail.WoundedInBattle:
-			empty = new TextObject("{=LsBCQtVX}{?CHARACTER.GENDER}She{?}He{\\?} died of war-wounds in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}");
-			break;
-		default:
-			empty = new TextObject("{=HU5n5KTW}{?CHARACTER.GENDER}She{?}He{\\?} died of natural causes in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}");
-			break;
-		}
+			KillCharacterActionDetail.DiedInBattle => new TextObject("{=6pCABUme}{?CHARACTER.GENDER}She{?}He{\\?} died in battle in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}"), 
+			KillCharacterActionDetail.DiedInLabor => new TextObject("{=7Vw6iYNI}{?CHARACTER.GENDER}She{?}He{\\?} died in childbirth in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}"), 
+			KillCharacterActionDetail.Executed => new TextObject("{=9Tq3IAiz}{?CHARACTER.GENDER}She{?}He{\\?} was executed in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}"), 
+			KillCharacterActionDetail.Lost => new TextObject("{=SausWqM5}{?CHARACTER.GENDER}She{?}He{\\?} disappeared in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}"), 
+			KillCharacterActionDetail.Murdered => new TextObject("{=TUDAvcTR}{?CHARACTER.GENDER}She{?}He{\\?} was assassinated in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}"), 
+			KillCharacterActionDetail.WoundedInBattle => new TextObject("{=LsBCQtVX}{?CHARACTER.GENDER}She{?}He{\\?} died of war-wounds in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}"), 
+			_ => new TextObject("{=HU5n5KTW}{?CHARACTER.GENDER}She{?}He{\\?} died of natural causes in {YEAR} at the age of {CHARACTER.AGE}. {?CHARACTER.GENDER}She{?}He{\\?} was reputed to be {REPUTATION}"), 
+		};
 		StringHelpers.SetCharacterProperties("CHARACTER", hero.CharacterObject, empty, includeDetails: true);
 		empty.SetTextVariable("REPUTATION", CharacterHelper.GetReputationDescription(hero.CharacterObject));
 		empty.SetTextVariable("YEAR", CampaignTime.Now.GetYear.ToString());

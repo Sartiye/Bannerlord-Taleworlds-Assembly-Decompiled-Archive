@@ -531,7 +531,7 @@ public struct MovementOrder
 
 	public WorldPosition CreateNewOrderWorldPositionMT(Formation f, WorldPosition.WorldPositionEnforcedCache worldPositionEnforcedCache)
 	{
-		lock (f.OrderPositionLock)
+		lock (f.MovementOrderPositionLock)
 		{
 			if (!IsApplicable(f))
 			{
@@ -1119,7 +1119,7 @@ public struct MovementOrder
 		MovementOrderEnum orderEnum = OrderEnum;
 		if ((uint)(orderEnum - 10) <= 1u)
 		{
-			FormationQuerySystem formationQuerySystem = f.TargetFormation?.QuerySystem ?? f.CachedClosestEnemyFormation;
+			FormationQuerySystem formationQuerySystem = f.TargetFormation?.QuerySystem ?? f.QuerySystem.ClosestSignificantlyLargeEnemyFormation;
 			if (formationQuerySystem != null)
 			{
 				return (formationQuerySystem.Formation.CachedMedianPosition.AsVec2 - f.CachedAveragePosition).Normalized();
@@ -1142,7 +1142,7 @@ public struct MovementOrder
 			}
 			Vec2 vec = f.Direction;
 			FormationQuerySystem querySystem = f.QuerySystem;
-			FormationQuerySystem formationQuerySystem = f.TargetFormation?.QuerySystem ?? f.CachedClosestEnemyFormation;
+			FormationQuerySystem formationQuerySystem = f.TargetFormation?.QuerySystem ?? f.QuerySystem.ClosestSignificantlyLargeEnemyFormation;
 			WorldPosition engageTargetPositionCache;
 			if (formationQuerySystem == null)
 			{
@@ -1160,30 +1160,35 @@ public struct MovementOrder
 			if (querySystem.IsRangedFormation || querySystem.IsRangedCavalryFormation)
 			{
 				vec = GetDirectionAux(f);
-				engageTargetPositionCache.SetVec2(engageTargetPositionCache.AsVec2 - vec * querySystem.MissileRangeAdjusted);
+				engageTargetPositionCache.SetVec2(engageTargetPositionCache.AsVec2 - vec * querySystem.MaximumMissileRange);
+				if (vec.DotProduct(engageTargetPositionCache.AsVec2 - f.CurrentPosition) < 0f)
+				{
+					float num = TaleWorlds.Library.MathF.Min(4f / querySystem.MovementSpeedMaximum * (f.QuerySystem.ClosestSignificantlyLargeEnemyFormation?.Formation.CachedMovementSpeed ?? 1f), 4f);
+					engageTargetPositionCache.SetVec2(f.CurrentPosition - vec * num);
+				}
 			}
 			else if (formationQuerySystem != null)
 			{
 				vec = (formationQuerySystem.Formation.CachedAveragePosition - f.CachedAveragePosition).Normalized();
-				float num = 2f;
+				float num2 = 2f;
 				if (formationQuerySystem.FormationPower < f.QuerySystem.FormationPower * 0.2f)
 				{
-					num = 0.1f;
+					num2 = 0.1f;
 				}
-				engageTargetPositionCache.SetVec2(engageTargetPositionCache.AsVec2 - vec * num);
+				engageTargetPositionCache.SetVec2(engageTargetPositionCache.AsVec2 - vec * num2);
 			}
 			if (!_engageTargetPositionCache.IsValid)
 			{
 				_engageTargetPositionCache = engageTargetPositionCache;
 			}
-			float num2 = f.QuerySystem.MovementSpeedMaximum * f.QuerySystem.MovementSpeedMaximum * 9f * f.Depth;
-			if ((_engageTargetPositionCache.AsVec2 + vec * _engageTargetPositionOffset).DistanceSquared(engageTargetPositionCache.AsVec2) > f.CurrentPosition.DistanceSquared(_engageTargetPositionCache.AsVec2) * 0.1f || engageTargetPositionCache.AsVec2.DistanceSquared(f.CurrentPosition) <= num2)
+			float num3 = f.QuerySystem.MovementSpeedMaximum * f.QuerySystem.MovementSpeedMaximum * 9f * f.Depth;
+			if (_engageTargetPositionCache.AsVec2.DistanceSquared(engageTargetPositionCache.AsVec2) > f.CurrentPosition.DistanceSquared(_engageTargetPositionCache.AsVec2) * 0.1f && engageTargetPositionCache.AsVec2.DistanceSquared(f.CurrentPosition) <= num3)
 			{
 				_engageTargetPositionCache = engageTargetPositionCache;
 				_engageTargetPositionOffset = 0f;
 			}
 			engageTargetPositionCache = _engageTargetPositionCache;
-			if (engageTargetPositionCache.AsVec2.DistanceSquared(f.CurrentPosition) > num2 && vec.DotProduct(engageTargetPositionCache.AsVec2 - f.CurrentPosition) > 0f && f.Arrangement is LineFormation lineFormation && (double)lineFormation.GetUnavailableUnitPositions().Count() > (double)lineFormation.UnitCount * 0.03)
+			if (engageTargetPositionCache.AsVec2.DistanceSquared(f.CurrentPosition) > num3 && vec.DotProduct(engageTargetPositionCache.AsVec2 - f.CurrentPosition) > 0f && f.Arrangement is LineFormation lineFormation && (double)lineFormation.GetUnavailableUnitPositions().Count() > (double)lineFormation.UnitCount * 0.03)
 			{
 				engageTargetPositionCache.SetVec2(engageTargetPositionCache.AsVec2 - vec * 10f);
 				_engageTargetPositionOffset += 10f;
@@ -1203,7 +1208,7 @@ public struct MovementOrder
 			return cachedMedianPosition;
 		}
 		default:
-			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\MovementOrder.cs", "GetPositionAux", 1845);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Orders\\MovementOrder.cs", "GetPositionAux", 1852);
 			return WorldPosition.Invalid;
 		}
 	}

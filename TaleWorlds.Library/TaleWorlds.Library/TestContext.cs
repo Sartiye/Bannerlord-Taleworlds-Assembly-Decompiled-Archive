@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -76,10 +78,19 @@ public class TestContext
 	private ConstructorInfo GetAsyncRunnerConstructor(string asyncRunner)
 	{
 		Assembly[] asyncRunnerAssemblies = GetAsyncRunnerAssemblies();
-		for (int i = 0; i < asyncRunnerAssemblies.Length; i++)
+		foreach (Assembly assembly in asyncRunnerAssemblies)
 		{
-			Type[] types = asyncRunnerAssemblies[i].GetTypes();
-			foreach (Type type in types)
+			Type[] array;
+			try
+			{
+				array = assembly.GetTypes();
+			}
+			catch (ReflectionTypeLoadException ex)
+			{
+				array = ex.Types.Where((Type t) => t != null).ToArray();
+			}
+			Type[] array2 = array;
+			foreach (Type type in array2)
 			{
 				if (type.Name == asyncRunner && (typeof(AsyncRunner).IsAssignableFrom(type) || typeof(AwaitableAsyncRunner).IsAssignableFrom(type)))
 				{
@@ -119,6 +130,7 @@ public class TestContext
 		if (_asyncTask != null && _asyncTask.Status == TaskStatus.Faulted)
 		{
 			string text = "ERROR: Mono exception occurred at async Test Run\n";
+			Exception innerException = _asyncTask.Exception.InnerException;
 			if (_asyncTask.Exception.InnerException != null)
 			{
 				text += _asyncTask.Exception.InnerException.Message;
@@ -127,7 +139,12 @@ public class TestContext
 			}
 			_asyncTask = null;
 			Debug.Print(text, 5);
-			Debug.FailedAssert(text, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\TestContext.cs", "OnApplicationTick", 177);
+			if (innerException != null)
+			{
+				ExceptionDispatchInfo.Capture(innerException).Throw();
+				return;
+			}
+			Debug.FailedAssert(text, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\TestContext.cs", "OnApplicationTick", 195);
 			Debug.DoDelayedexit(5);
 		}
 	}

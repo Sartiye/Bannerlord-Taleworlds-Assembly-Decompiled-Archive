@@ -222,7 +222,6 @@ public class MultiplayerMissionMarkerVM : ViewModel
 				flagTarget.OnRemainingMoraleChanged(remainingMoraleGainsArr[flagIndex]);
 			}
 		}
-		Debug.Print("OnCapturePointRemainingMoraleGainsChanged: " + remainingMoraleGainsArr.Length);
 	}
 
 	private void OnTeamChanged(NetworkCommunicator peer, Team previousTeam, Team newTeam)
@@ -316,11 +315,12 @@ public class MultiplayerMissionMarkerVM : ViewModel
 		{
 			return;
 		}
-		BattleSideEnum battleSideEnum = GameNetwork.MyPeer.ControlledAgent?.Team.Side ?? BattleSideEnum.None;
+		BattleSideEnum battleSideEnum = GameNetwork.MyPeer.GetComponent<MissionPeer>()?.Team?.Side ?? BattleSideEnum.None;
+		bool flag = MultiplayerSpectatorHelper.ShouldShowBothTeamsData();
 		List<MissionPeerMarkerTargetVM> list = PeerTargets.ToList();
 		foreach (MissionPeer missionPeer in VirtualPlayer.Peers<MissionPeer>())
 		{
-			if (missionPeer?.Team == null || missionPeer.IsMine || missionPeer.Team.Side != battleSideEnum)
+			if (missionPeer?.Team == null || missionPeer.IsMine || (missionPeer.Team.Side != battleSideEnum && !flag) || missionPeer.Team == Mission.Current.SpectatorTeam)
 			{
 				continue;
 			}

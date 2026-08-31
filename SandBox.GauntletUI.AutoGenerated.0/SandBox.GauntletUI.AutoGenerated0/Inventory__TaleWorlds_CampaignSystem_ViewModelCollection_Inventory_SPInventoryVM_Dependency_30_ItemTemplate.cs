@@ -27,7 +27,7 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 
 	private RichTextWidget _widget_0_0_1_0;
 
-	private BoolStateChangerWidget _widget_0_0_1_1;
+	private BoolStateChangerBrushWidget _widget_0_0_1_1;
 
 	private TextWidget _widget_0_0_1_1_0;
 
@@ -55,7 +55,7 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget_0_0.AddChild(_widget_0_0_1);
 		_widget_0_0_1_0 = new RichTextWidget(base.Context);
 		_widget_0_0_1.AddChild(_widget_0_0_1_0);
-		_widget_0_0_1_1 = new BoolStateChangerWidget(base.Context);
+		_widget_0_0_1_1 = new BoolStateChangerBrushWidget(base.Context);
 		_widget_0_0_1.AddChild(_widget_0_0_1_1);
 		_widget_0_0_1_1_0 = new TextWidget(base.Context);
 		_widget_0_0_1_1.AddChild(_widget_0_0_1_1_0);

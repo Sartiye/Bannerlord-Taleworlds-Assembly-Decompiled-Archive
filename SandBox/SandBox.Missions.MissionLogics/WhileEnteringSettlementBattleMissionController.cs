@@ -48,6 +48,7 @@ public class WhileEnteringSettlementBattleMissionController : MissionLogic, IMis
 		{
 			SpawnAgents();
 			_isMissionInitialized = true;
+			base.Mission.OnInitialSpawnCompleted();
 		}
 		else
 		{

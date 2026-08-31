@@ -38,9 +38,13 @@ public class SaveLoadVM : ViewModel
 
 	private readonly TextObject _visualIsDisabledText = new TextObject("{=xlEZ02Qw}Character visual is disabled during 'Save As' on the campaign map.");
 
+	private SaveGameFileInfo[] _allSavedGames;
+
 	private bool _isFinalized;
 
 	private bool _isLoadingSaves;
+
+	private bool _isRefreshingSaves;
 
 	private bool _isBusyWithAnAction;
 
@@ -84,7 +88,22 @@ public class SaveLoadVM : ViewModel
 
 	private InputKeyItemVM _deleteInputKey;
 
-	private IEnumerable<SaveGameFileInfo> _allSavedGames => SaveGroups.SelectMany((SavedGameGroupVM s) => s.SavedGamesList.Select((SavedGameVM v) => v.Save));
+	[DataSourceProperty]
+	public bool IsBusyWithAnAction
+	{
+		get
+		{
+			return _isBusyWithAnAction;
+		}
+		set
+		{
+			if (value != _isBusyWithAnAction)
+			{
+				_isBusyWithAnAction = value;
+				OnPropertyChangedWithValue(value, "IsBusyWithAnAction");
+			}
+		}
+	}
 
 	[DataSourceProperty]
 	public bool IsLoadingSaves
@@ -104,18 +123,18 @@ public class SaveLoadVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public bool IsBusyWithAnAction
+	public bool IsRefreshingSaves
 	{
 		get
 		{
-			return _isBusyWithAnAction;
+			return _isRefreshingSaves;
 		}
 		set
 		{
-			if (value != _isBusyWithAnAction)
+			if (value != _isRefreshingSaves)
 			{
-				_isBusyWithAnAction = value;
-				OnPropertyChangedWithValue(value, "IsBusyWithAnAction");
+				_isRefreshingSaves = value;
+				OnPropertyChangedWithValue(value, "IsRefreshingSaves");
 			}
 		}
 	}
@@ -146,11 +165,23 @@ public class SaveLoadVM : ViewModel
 		}
 		set
 		{
-			if (value != _searchText)
+			if (!(value != _searchText))
 			{
-				value.IndexOf(_searchText ?? "");
-				_searchText = value;
-				OnPropertyChangedWithValue(value, "SearchText");
+				return;
+			}
+			bool isAppending = value.IndexOf(_searchText ?? "") >= 0;
+			_searchText = value;
+			OnPropertyChangedWithValue(value, "SearchText");
+			if (IsSearchAvailable)
+			{
+				if (value.Length > 1)
+				{
+					FilterBySearchTerms(value.ToLower(), isAppending);
+				}
+				else
+				{
+					ResetSearchFilters();
+				}
 			}
 		}
 	}
@@ -465,7 +496,7 @@ public class SaveLoadVM : ViewModel
 		IsVisualDisabled = false;
 	}
 
-	public async Task InitializeAsync()
+	public async Task LoadSavesAsync()
 	{
 		if (IsLoadingSaves)
 		{
@@ -475,64 +506,79 @@ public class SaveLoadVM : ViewModel
 		IsLoadingSaves = true;
 		try
 		{
-			SaveGameFileInfo[] source = await Task.Run(() => MBSaveLoad.GetSaveFiles());
-			if (_isFinalized)
+			_allSavedGames = await Task.Run(() => MBSaveLoad.GetSaveFiles());
+			if (!_isFinalized)
 			{
-				return;
 			}
-			int num = 0;
-			IEnumerable<SaveGameFileInfo> enumerable = source.Where((SaveGameFileInfo s) => s.IsCorrupted);
-			foreach (IGrouping<string, SaveGameFileInfo> item in from s in source
-				where !s.IsCorrupted
-				select s into m
-				group m by m.MetaData.GetUniqueGameId() into s
-				orderby GetMostRecentSaveInGroup(s) descending
-				select s)
-			{
-				SavedGameGroupVM savedGameGroupVM = new SavedGameGroupVM();
-				if (string.IsNullOrWhiteSpace(item.Key))
-				{
-					savedGameGroupVM.IdentifierID = _uncategorizedSaveGroupName.ToString();
-				}
-				else
-				{
-					num++;
-					_categorizedSaveGroupName.SetTextVariable("ID", num);
-					savedGameGroupVM.IdentifierID = _categorizedSaveGroupName.ToString();
-				}
-				foreach (SaveGameFileInfo item2 in item.OrderByDescending((SaveGameFileInfo s) => s.MetaData.GetCreationTime()))
-				{
-					bool ironmanMode = item2.MetaData.GetIronmanMode();
-					savedGameGroupVM.SavedGamesList.Add(new SavedGameVM(item2, IsSaving, OnDeleteSavedGame, OnSaveSelection, OnCancelLoadSave, ExecuteDone, isCorruptedSave: false, ironmanMode));
-				}
-				SaveGroups.Add(savedGameGroupVM);
-			}
-			if (enumerable.Any())
-			{
-				SavedGameGroupVM savedGameGroupVM2 = new SavedGameGroupVM
-				{
-					IdentifierID = new TextObject("{=o9PIe7am}Corrupted").ToString()
-				};
-				foreach (SaveGameFileInfo item3 in enumerable)
-				{
-					savedGameGroupVM2.SavedGamesList.Add(new SavedGameVM(item3, IsSaving, OnDeleteSavedGame, OnSaveSelection, OnCancelLoadSave, ExecuteDone, isCorruptedSave: true));
-				}
-				SaveGroups.Add(savedGameGroupVM2);
-			}
-			RefreshCanCreateNewSave();
-			RefreshCanSearch();
-			OnSaveSelection(GetFirstAvailableSavedGame());
-			RefreshValues();
 		}
 		catch (Exception ex)
 		{
-			Debug.Print("SaveLoadVM.InitializeAsync failed: " + ex);
+			Debug.Print("SaveLoadVM.LoadSavesAsync failed: " + ex);
 		}
 		finally
 		{
+			IsRefreshingSaves = true;
 			IsBusyWithAnAction = false;
 			IsLoadingSaves = false;
 		}
+	}
+
+	public void OnTick(float dt)
+	{
+		if (!IsLoadingSaves && IsRefreshingSaves)
+		{
+			RefreshSaves();
+			IsRefreshingSaves = false;
+		}
+	}
+
+	private void RefreshSaves()
+	{
+		SaveGroups.Clear();
+		int num = 0;
+		IEnumerable<SaveGameFileInfo> enumerable = _allSavedGames.Where((SaveGameFileInfo s) => s.IsCorrupted);
+		foreach (IGrouping<string, SaveGameFileInfo> item in from s in _allSavedGames
+			where !s.IsCorrupted
+			select s into m
+			group m by m.MetaData.GetUniqueGameId() into s
+			orderby GetMostRecentSaveInGroup(s) descending
+			select s)
+		{
+			SavedGameGroupVM savedGameGroupVM = new SavedGameGroupVM();
+			if (string.IsNullOrWhiteSpace(item.Key))
+			{
+				savedGameGroupVM.IdentifierID = _uncategorizedSaveGroupName.ToString();
+			}
+			else
+			{
+				num++;
+				_categorizedSaveGroupName.SetTextVariable("ID", num);
+				savedGameGroupVM.IdentifierID = _categorizedSaveGroupName.ToString();
+			}
+			foreach (SaveGameFileInfo item2 in item.OrderByDescending((SaveGameFileInfo s) => s.MetaData.GetCreationTime()))
+			{
+				bool ironmanMode = item2.MetaData.GetIronmanMode();
+				savedGameGroupVM.SavedGamesList.Add(new SavedGameVM(item2, IsSaving, OnDeleteSavedGame, OnSaveSelection, OnCancelLoadSave, ExecuteDone, isCorruptedSave: false, ironmanMode));
+			}
+			SaveGroups.Add(savedGameGroupVM);
+		}
+		if (enumerable.Any())
+		{
+			SavedGameGroupVM savedGameGroupVM2 = new SavedGameGroupVM
+			{
+				IdentifierID = new TextObject("{=o9PIe7am}Corrupted").ToString()
+			};
+			foreach (SaveGameFileInfo item3 in enumerable)
+			{
+				savedGameGroupVM2.SavedGamesList.Add(new SavedGameVM(item3, IsSaving, OnDeleteSavedGame, OnSaveSelection, OnCancelLoadSave, ExecuteDone, isCorruptedSave: true));
+			}
+			SaveGroups.Add(savedGameGroupVM2);
+		}
+		RefreshCanCreateNewSave();
+		RefreshCanSearch();
+		OnSaveSelection(GetFirstAvailableSavedGame());
+		RefreshValues();
+		IsRefreshingSaves = false;
 	}
 
 	private SavedGameVM GetFirstAvailableSavedGame()
@@ -738,6 +784,41 @@ public class SaveLoadVM : ViewModel
 		{
 			BannerlordConfig.LatestSaveGameName = GetFirstAvailableSavedGame()?.Save.Name ?? string.Empty;
 			BannerlordConfig.Save();
+		}
+	}
+
+	private void FilterBySearchTerms(string searchTerms, bool isAppending)
+	{
+		foreach (SavedGameGroupVM saveGroup in SaveGroups)
+		{
+			bool flag = saveGroup.IdentifierID.ToLower().Contains(searchTerms);
+			int num = 0;
+			foreach (SavedGameVM savedGames in saveGroup.SavedGamesList)
+			{
+				if (savedGames.IsFilteredOut && isAppending)
+				{
+					num++;
+					continue;
+				}
+				savedGames.IsFilteredOut = !flag && !savedGames.NameText.ToLower().Contains(searchTerms) && !savedGames.CharacterNameText.ToLower().Contains(searchTerms) && !savedGames.LevelText.ToLower().Contains(searchTerms) && !savedGames.SaveVersionAsString.ToLower().Contains(searchTerms);
+				if (savedGames.IsFilteredOut)
+				{
+					num++;
+				}
+			}
+			saveGroup.IsFilteredOut = num == saveGroup.SavedGamesList.Count && !flag;
+		}
+	}
+
+	private void ResetSearchFilters()
+	{
+		foreach (SavedGameGroupVM saveGroup in SaveGroups)
+		{
+			foreach (SavedGameVM savedGames in saveGroup.SavedGamesList)
+			{
+				savedGames.IsFilteredOut = false;
+			}
+			saveGroup.IsFilteredOut = false;
 		}
 	}
 

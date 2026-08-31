@@ -18,7 +18,8 @@ public class CampaignBattleRecoveryBehavior : CampaignBehaviorBase
 
 	private void DailyTickParty(MobileParty party)
 	{
-		if (party.IsCurrentlyAtSea || !(MBRandom.RandomFloat < DefaultPerks.Medicine.Veterinarian.PrimaryBonus) || !party.HasPerk(DefaultPerks.Medicine.Veterinarian))
+		Hero perkOwnerHero = null;
+		if (party.IsCurrentlyAtSea || !(MBRandom.RandomFloat < DefaultPerks.Medicine.Veterinarian.PrimaryBonus) || !party.HasPerk(DefaultPerks.Medicine.Veterinarian, out perkOwnerHero))
 		{
 			return;
 		}
@@ -66,21 +67,24 @@ public class CampaignBattleRecoveryBehavior : CampaignBehaviorBase
 			{
 				int index = party2.WoundedInBattle.FindIndexOfTroop(item.Character);
 				int elementNumber = party2.WoundedInBattle.GetElementNumber(index);
-				if (mobileParty.HasPerk(DefaultPerks.Medicine.BattleHardened))
+				Hero perkOwnerHero = null;
+				if (mobileParty.HasPerk(DefaultPerks.Medicine.BattleHardened, out perkOwnerHero))
 				{
 					float num = DefaultPerks.Medicine.BattleHardened.PrimaryBonus;
 					if (mobileParty.IsCurrentlyAtSea)
 					{
 						num *= 0.5f;
 					}
-					GiveTroopXp(item, elementNumber, party, MathF.Round(num));
+					int xp = MathF.Round(num);
+					GiveTroopXp(item, elementNumber, party, xp);
 				}
 			}
 			foreach (TroopRosterElement item2 in party2.DiedInBattle.GetTroopRoster())
 			{
 				int index2 = party2.DiedInBattle.FindIndexOfTroop(item2.Character);
 				int elementNumber2 = party2.DiedInBattle.GetElementNumber(index2);
-				if (!mobileParty.IsCurrentlyAtSea && mobileParty.HasPerk(DefaultPerks.Medicine.Veterinarian) && item2.Character.IsMounted)
+				Hero perkOwnerHero2 = null;
+				if (mobileParty.HasPerk(DefaultPerks.Medicine.Veterinarian, out perkOwnerHero2) && item2.Character.IsMounted)
 				{
 					RecoverMountWithChance(item2, elementNumber2, party);
 				}

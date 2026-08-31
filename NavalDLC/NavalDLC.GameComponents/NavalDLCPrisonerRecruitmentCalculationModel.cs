@@ -16,14 +16,14 @@ internal class NavalDLCPrisonerRecruitmentCalculationModel : PrisonerRecruitment
 	public override ExplainedNumber GetConformityChangePerHour(PartyBase party, CharacterObject troopToBoost)
 	{
 		ExplainedNumber stat = base.BaseModel.GetConformityChangePerHour(party, troopToBoost);
-		if (party.IsMobile && party.MobileParty.IsCurrentlyAtSea && troopToBoost.IsPirate())
+		if (party.IsMobile && troopToBoost.IsPirate())
 		{
 			PerkHelper.AddPerkBonusForParty(NavalPerks.Mariner.RollingThunder, party.MobileParty, isPrimaryBonus: false, ref stat);
 		}
 		return stat;
 	}
 
-	public override int GetPrisonerRecruitmentMoraleEffect(PartyBase party, CharacterObject character, int num)
+	public override float GetPrisonerRecruitmentMoraleEffect(PartyBase party, CharacterObject character, int num)
 	{
 		return base.BaseModel.GetPrisonerRecruitmentMoraleEffect(party, character, num);
 	}

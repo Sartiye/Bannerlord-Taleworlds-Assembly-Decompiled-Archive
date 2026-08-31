@@ -1,3 +1,4 @@
+using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Map.Tracker;
 using TaleWorlds.Library;
 
@@ -5,8 +6,6 @@ namespace SandBox.ViewModelCollection.Map.Tracker;
 
 public class MapTrackerCollectionVM : ViewModel
 {
-	private readonly MapTrackerProvider _mapTrackerProvider;
-
 	private MBBindingList<MapTrackerItemVM> _trackers;
 
 	public MBBindingList<MapTrackerItemVM> Trackers
@@ -27,44 +26,59 @@ public class MapTrackerCollectionVM : ViewModel
 
 	public MapTrackerCollectionVM()
 	{
-		_mapTrackerProvider = new MapTrackerProvider();
 		Trackers = new MBBindingList<MapTrackerItemVM>();
-		MapTrackerItemVM[] trackers = _mapTrackerProvider.GetTrackers();
-		foreach (MapTrackerItemVM item in trackers)
-		{
-			Trackers.Add(item);
-		}
-		_mapTrackerProvider.OnTrackerAddedOrRemoved += OnTrackerAddedOrRemoved;
-	}
-
-	private void OnTrackerAddedOrRemoved(MapTrackerItemVM item, bool added)
-	{
-		if (added)
-		{
-			Trackers.Add(item);
-		}
-		else
-		{
-			Trackers.Remove(item);
-		}
-	}
-
-	public void Tick(float dt)
-	{
-		for (int i = 0; i < Trackers.Count; i++)
-		{
-			Trackers[i].RefreshBinding();
-		}
 	}
 
 	public override void OnFinalize()
 	{
 		base.OnFinalize();
-		_mapTrackerProvider.OnTrackerAddedOrRemoved -= OnTrackerAddedOrRemoved;
-		Trackers.ApplyActionOnAllItems(delegate(MapTrackerItemVM t)
+		Trackers.Clear();
+	}
+
+	public bool HasTrackerFor(ITrackableCampaignObject trackable)
+	{
+		return GetTrackerFor(trackable) != null;
+	}
+
+	public MapTrackerItemVM GetTrackerFor(ITrackableCampaignObject trackable)
+	{
+		for (int i = 0; i < Trackers.Count; i++)
 		{
-			t.OnFinalize();
-		});
+			if (Trackers[i].TrackedObject == trackable)
+			{
+				return Trackers[i];
+			}
+		}
+		return null;
+	}
+
+	public void AddTracker(MapTrackerItemVM tracker)
+	{
+		if (HasTrackerFor(tracker.TrackedObject))
+		{
+			Debug.FailedAssert("Trying to add a tracker that was already added", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Map\\Tracker\\MapTrackerCollectionVM.cs", "AddTracker", 43);
+		}
+		else
+		{
+			Trackers.Add(tracker);
+		}
+	}
+
+	public void RemoveTrackerIfExists(ITrackableCampaignObject trackable)
+	{
+		MapTrackerItemVM trackerFor = GetTrackerFor(trackable);
+		if (trackerFor != null)
+		{
+			Trackers.Remove(trackerFor);
+		}
+	}
+
+	public void Update()
+	{
+		for (int i = 0; i < Trackers.Count; i++)
+		{
+			Trackers[i].RefreshBinding();
+		}
 	}
 
 	public void UpdateProperties()

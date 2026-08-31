@@ -106,7 +106,7 @@ public class PortScreenStoryModeHandler : PortScreenHandler
 		}
 		else if (MobileParty.MainParty.Ships.Count > 0 && !MobileParty.MainParty.Anchor.IsValid && _leftParty.IsSettlement)
 		{
-			MobileParty.MainParty.Anchor.SetPosition(_leftParty.Settlement.PortPosition);
+			MobileParty.MainParty.Anchor.Settlement = _leftParty.Settlement;
 		}
 	}
 
@@ -147,6 +147,16 @@ public class PortScreenStoryModeHandler : PortScreenHandler
 	}
 
 	protected override PortActionInfo CanSendToClan(Ship ship)
+	{
+		return PortActionInfo.CreateInvalid();
+	}
+
+	protected override PortActionInfo CanStashShip(Ship ship)
+	{
+		return PortActionInfo.CreateInvalid();
+	}
+
+	protected override PortActionInfo CanViewStash(bool isRightRoster)
 	{
 		return PortActionInfo.CreateInvalid();
 	}

@@ -126,9 +126,7 @@ public class TacticalPosition : MissionObject
 	public override void AfterMissionStart()
 	{
 		base.AfterMissionStart();
-		_linkedTacticalPositions = (from c in base.GameEntity.GetChildren()
-			where c.HasScriptOfType<TacticalPosition>()
-			select c.GetFirstScriptOfType<TacticalPosition>()).ToList();
+		UpdateLinkedTacticalPositions();
 	}
 
 	protected internal override void OnEditorInit()
@@ -141,6 +139,13 @@ public class TacticalPosition : MissionObject
 	{
 		base.OnEditorTick(dt);
 		ApplyChangesFromEditor();
+	}
+
+	public void UpdateLinkedTacticalPositions()
+	{
+		_linkedTacticalPositions = (from c in base.GameEntity.GetChildren()
+			where c.HasScriptOfType<TacticalPosition>()
+			select c.GetFirstScriptOfType<TacticalPosition>()).ToList();
 	}
 
 	private void ApplyChangesFromEditor()

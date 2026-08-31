@@ -23,55 +23,54 @@ public class DefaultPrisonerRecruitmentCalculationModel : PrisonerRecruitmentCal
 		{
 			stat.Add((float)party.LeaderHero.GetSkillValue(DefaultSkills.Leadership) * 0.05f);
 		}
-		if (troopToBoost.Tier <= 3 && party.MobileParty != null && !party.MobileParty.IsCurrentlyAtSea)
+		if (troopToBoost.Tier <= 3)
 		{
 			PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.FerventAttacker, party.MobileParty, isPrimaryBonus: false, ref stat);
 		}
-		if (troopToBoost.Tier >= 4 && !party.MobileParty.IsCurrentlyAtSea && party.MobileParty.HasPerk(DefaultPerks.Leadership.StoutDefender, checkSecondaryRole: true))
+		if (troopToBoost.Tier >= 4)
 		{
-			stat.AddFactor(DefaultPerks.Leadership.StoutDefender.SecondaryBonus);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.StoutDefender, party.MobileParty, isPrimaryBonus: false, ref stat);
 		}
-		if (troopToBoost.Occupation != Occupation.Bandit && !party.MobileParty.IsCurrentlyAtSea && party.MobileParty.HasPerk(DefaultPerks.Leadership.LoyaltyAndHonor, checkSecondaryRole: true))
+		if (troopToBoost.Occupation != Occupation.Bandit)
 		{
-			stat.AddFactor(DefaultPerks.Leadership.LoyaltyAndHonor.SecondaryBonus);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.LoyaltyAndHonor, party.MobileParty, isPrimaryBonus: false, ref stat);
 		}
 		if (troopToBoost.IsInfantry)
 		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.LeadByExample, party.MobileParty, isPrimaryBonus: true, ref stat, party.MobileParty.IsCurrentlyAtSea);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.LeadByExample, party.MobileParty, isPrimaryBonus: true, ref stat);
 		}
 		if (troopToBoost.IsRanged)
 		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.TrustedCommander, party.MobileParty, isPrimaryBonus: true, ref stat, party.MobileParty.IsCurrentlyAtSea);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.TrustedCommander, party.MobileParty, isPrimaryBonus: true, ref stat);
 		}
-		if (troopToBoost.Occupation == Occupation.Bandit && !party.MobileParty.IsCurrentlyAtSea && party.MobileParty.HasPerk(DefaultPerks.Roguery.Promises, checkSecondaryRole: true))
+		if (troopToBoost.Occupation == Occupation.Bandit)
 		{
-			stat.AddFactor(DefaultPerks.Roguery.Promises.SecondaryBonus);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Roguery.Promises, party.MobileParty, isPrimaryBonus: false, ref stat);
 		}
 		return stat;
 	}
 
-	public override int GetPrisonerRecruitmentMoraleEffect(PartyBase party, CharacterObject character, int num)
+	public override float GetPrisonerRecruitmentMoraleEffect(PartyBase party, CharacterObject character, int num)
 	{
-		if (character.Culture == party.LeaderHero?.Culture)
+		Hero perkOwnerHero = null;
+		Hero perkOwnerHero2 = null;
+		bool num2 = character.Culture == party.LeaderHero?.Culture && party.MobileParty != null && party.MobileParty.HasPerk(DefaultPerks.Leadership.Presence, out perkOwnerHero, checkSecondaryRole: true);
+		bool flag = character.Occupation == Occupation.Bandit && party.MobileParty != null && party.MobileParty.HasPerk(DefaultPerks.Roguery.TwoFaced, out perkOwnerHero2, checkSecondaryRole: true);
+		if (num2 || flag)
 		{
-			MobileParty mobileParty = party.MobileParty;
-			if (mobileParty != null && mobileParty.HasPerk(DefaultPerks.Leadership.Presence, checkSecondaryRole: true))
+			return 0f;
+		}
+		float num3 = ((character.Occupation != Occupation.Bandit) ? (-1f) : (-2f));
+		float num4 = num3 * (float)num;
+		if (party.LeaderHero != null)
+		{
+			float traitEffectBonus = TraitEffectHelper.GetTraitEffectBonus(party.LeaderHero, DefaultPersonalityTraitEffects.HonorRecruitPenaltyReductionEffect);
+			if (traitEffectBonus != 0f)
 			{
-				goto IL_0058;
+				num4 *= 1f + traitEffectBonus;
 			}
 		}
-		if (character.Occupation == Occupation.Bandit)
-		{
-			MobileParty mobileParty2 = party.MobileParty;
-			if (mobileParty2 != null && mobileParty2.HasPerk(DefaultPerks.Roguery.TwoFaced, checkSecondaryRole: true))
-			{
-				goto IL_0058;
-			}
-		}
-		int num2 = ((character.Occupation != Occupation.Bandit) ? (-1) : (-2));
-		return num2 * num;
-		IL_0058:
-		return 0;
+		return num4;
 	}
 
 	public override bool IsPrisonerRecruitable(PartyBase party, CharacterObject character, out int conformityNeeded)
@@ -92,7 +91,7 @@ public class DefaultPrisonerRecruitmentCalculationModel : PrisonerRecruitmentCal
 		{
 			if (!(party.MobileParty.Morale > 30f))
 			{
-				return party.MobileParty.HasPerk(DefaultPerks.Leadership.Presence, checkSecondaryRole: true);
+				return ShouldRecruitDueToPresencePerk(party.MobileParty);
 			}
 			return true;
 		}
@@ -108,5 +107,15 @@ public class DefaultPrisonerRecruitmentCalculationModel : PrisonerRecruitmentCal
 		int conformityNeededToRecruitPrisoner = Campaign.Current.Models.PrisonerRecruitmentCalculationModel.GetConformityNeededToRecruitPrisoner(character);
 		int elementXp = party.PrisonRoster.GetElementXp(character);
 		return MathF.Min(b: party.PrisonRoster.GetElementNumber(character), a: elementXp / conformityNeededToRecruitPrisoner);
+	}
+
+	private static bool ShouldRecruitDueToPresencePerk(MobileParty mobileParty)
+	{
+		Hero perkOwnerHero = null;
+		if (mobileParty.HasPerk(DefaultPerks.Leadership.Presence, out perkOwnerHero, checkSecondaryRole: true))
+		{
+			return true;
+		}
+		return false;
 	}
 }

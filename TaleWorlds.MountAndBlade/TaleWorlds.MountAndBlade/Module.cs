@@ -201,9 +201,24 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 	private void InitializeSubModuleBases()
 	{
 		Managed.AddConstructorDelegateOfClass<SpawnedItemEntity>();
-		foreach (MBSubModuleBase value in _subModuleBases.Values)
+		foreach (KeyValuePair<SubModuleInfo, MBSubModuleBase> subModuleBasis in _subModuleBases)
 		{
-			value.OnSubModuleLoad();
+			try
+			{
+				subModuleBasis.Value.OnSubModuleLoad();
+			}
+			catch (Exception ex)
+			{
+				string text = ((subModuleBasis.Key != null) ? (subModuleBasis.Key.Name + " (" + subModuleBasis.Key.DLLName + ")") : "<unknown submodule>");
+				string text2 = "OnSubModuleLoad failed for " + text + ": " + ex.GetType().Name + ": " + ex.Message;
+				if (ex.InnerException != null)
+				{
+					text2 = text2 + "\nInner: " + ex.InnerException.GetType().Name + ": " + ex.InnerException.Message;
+				}
+				MBDebug.Print(text2);
+				TaleWorlds.Library.Debug.SetCrashReportCustomString(text2);
+				throw new Exception();
+			}
 		}
 	}
 
@@ -1241,7 +1256,7 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 	[MBCallback(null, false)]
 	internal static void MBThrowException()
 	{
-		TaleWorlds.Library.Debug.FailedAssert("MBThrowException", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Module.cs", "MBThrowException", 1614);
+		TaleWorlds.Library.Debug.FailedAssert("MBThrowException", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Module.cs", "MBThrowException", 1631);
 	}
 
 	[MBCallback(null, false)]

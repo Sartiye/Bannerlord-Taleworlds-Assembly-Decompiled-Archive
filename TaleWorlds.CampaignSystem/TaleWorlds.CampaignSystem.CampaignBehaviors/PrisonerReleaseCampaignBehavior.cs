@@ -204,6 +204,12 @@ public class PrisonerReleaseCampaignBehavior : CampaignBehaviorBase
 		{
 			return;
 		}
+		bool result = true;
+		CampaignEventDispatcher.Instance.CanHeroBeReleased(hero, ref result);
+		if (!result)
+		{
+			return;
+		}
 		float num = 0.04f;
 		if (hero.PartyBelongedToAsPrisoner.IsMobile && hero.PartyBelongedToAsPrisoner.MobileParty.CurrentSettlement == null)
 		{
@@ -213,46 +219,31 @@ public class PrisonerReleaseCampaignBehavior : CampaignBehaviorBase
 		{
 			num *= 0.5f;
 		}
-		ExplainedNumber stat = new ExplainedNumber(num);
-		if (hero.PartyBelongedToAsPrisoner.IsSettlement && hero.PartyBelongedToAsPrisoner.Settlement.Town != null && hero.PartyBelongedToAsPrisoner.Settlement.Town.Governor != null)
+		ExplainedNumber bonuses = new ExplainedNumber(num);
+		if (hero.PartyBelongedToAsPrisoner.IsSettlement && hero.PartyBelongedToAsPrisoner.Settlement.Town != null)
 		{
 			Town town = hero.PartyBelongedToAsPrisoner.Settlement.Town;
 			if (hero.PartyBelongedToAsPrisoner.Settlement.IsTown || hero.PartyBelongedToAsPrisoner.Settlement.IsCastle)
 			{
-				if (town.Governor.GetPerkValue(DefaultPerks.Roguery.SweetTalker))
-				{
-					stat.AddFactor(DefaultPerks.Roguery.SweetTalker.SecondaryBonus, DefaultPerks.Roguery.SweetTalker.Description);
-				}
-				if (town.Governor.GetPerkValue(DefaultPerks.Engineering.DungeonArchitect))
-				{
-					stat.AddFactor(DefaultPerks.Engineering.DungeonArchitect.SecondaryBonus, DefaultPerks.Engineering.DungeonArchitect.Description);
-				}
-				if (town.Governor.GetPerkValue(DefaultPerks.Riding.MountedPatrols))
-				{
-					stat.AddFactor(DefaultPerks.Riding.MountedPatrols.SecondaryBonus, DefaultPerks.Riding.MountedPatrols.Description);
-				}
+				PerkHelper.AddPerkBonusForTown(DefaultPerks.Roguery.SweetTalker, town, isPrimaryBonus: false, ref bonuses);
+				PerkHelper.AddPerkBonusForTown(DefaultPerks.Engineering.DungeonArchitect, town, isPrimaryBonus: false, ref bonuses);
+				PerkHelper.AddPerkBonusForTown(DefaultPerks.Riding.MountedPatrols, town, isPrimaryBonus: false, ref bonuses);
 			}
 		}
 		if (hero.PartyBelongedToAsPrisoner.IsMobile)
 		{
-			if (hero.GetPerkValue(DefaultPerks.Roguery.FleetFooted))
+			PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Roguery.FleetFooted, BattleEnvironment.Any, hero.CharacterObject, isPrimaryBonus: false, ref bonuses);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Riding.MountedPatrols, hero.PartyBelongedToAsPrisoner.MobileParty, isPrimaryBonus: true, ref bonuses);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Roguery.RansomBroker, hero.PartyBelongedToAsPrisoner.MobileParty, isPrimaryBonus: false, ref bonuses);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.KeenSight, hero.PartyBelongedToAsPrisoner.MobileParty, isPrimaryBonus: false, ref bonuses);
+			MobileParty mobileParty = hero.PartyBelongedToAsPrisoner.MobileParty;
+			Hero hero2 = mobileParty.Army?.LeaderParty?.LeaderHero ?? mobileParty.LeaderHero;
+			if (hero2 != null)
 			{
-				stat.AddFactor(DefaultPerks.Roguery.FleetFooted.SecondaryBonus);
-			}
-			if (hero.PartyBelongedToAsPrisoner.MobileParty.HasPerk(DefaultPerks.Riding.MountedPatrols))
-			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Riding.MountedPatrols, hero.PartyBelongedToAsPrisoner.MobileParty, isPrimaryBonus: true, ref stat);
-			}
-			if (hero.PartyBelongedToAsPrisoner.MobileParty.HasPerk(DefaultPerks.Roguery.RansomBroker))
-			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Roguery.RansomBroker, hero.PartyBelongedToAsPrisoner.MobileParty, isPrimaryBonus: false, ref stat);
+				TraitEffectHelper.ApplyTraitEffect(hero2, DefaultPersonalityTraitEffects.ValorPrisonerEscapeEffect, ref bonuses);
 			}
 		}
-		if (hero.PartyBelongedToAsPrisoner.IsMobile && !hero.PartyBelongedToAsPrisoner.MobileParty.IsCurrentlyAtSea)
-		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.KeenSight, hero.PartyBelongedToAsPrisoner.MobileParty, isPrimaryBonus: false, ref stat);
-		}
-		if (MBRandom.RandomFloat < stat.ResultNumber)
+		if (MBRandom.RandomFloat < bonuses.ResultNumber)
 		{
 			EndCaptivityAction.ApplyByEscape(hero);
 		}
@@ -290,12 +281,21 @@ public class PrisonerReleaseCampaignBehavior : CampaignBehaviorBase
 
 	private void ApplyEscapeChanceToExceededPrisoners(CharacterObject character, MobileParty capturerParty)
 	{
-		ExplainedNumber explainedNumber = new ExplainedNumber(0.1f);
-		if (!capturerParty.IsCurrentlyAtSea && capturerParty.HasPerk(DefaultPerks.Athletics.Stamina, checkSecondaryRole: true))
+		ExplainedNumber result = new ExplainedNumber(0.1f);
+		Hero perkOwnerHero = null;
+		if (capturerParty.HasPerk(DefaultPerks.Athletics.Stamina, out perkOwnerHero, checkSecondaryRole: true))
 		{
-			explainedNumber.AddFactor(-0.1f, DefaultPerks.Athletics.Stamina.Name);
+			result.AddFactor(-0.1f, DefaultPerks.Athletics.Stamina.Name);
 		}
-		if (!capturerParty.IsGarrison && !capturerParty.IsMilitia && !character.IsPlayerCharacter && MBRandom.RandomFloat < explainedNumber.ResultNumber)
+		if (capturerParty.IsGarrison || capturerParty.IsMilitia || character.IsPlayerCharacter)
+		{
+			return;
+		}
+		if ((capturerParty.Army?.LeaderParty?.LeaderHero ?? capturerParty.LeaderHero) != null)
+		{
+			TraitEffectHelper.ApplyTraitEffect(capturerParty.LeaderHero, DefaultPersonalityTraitEffects.ValorPrisonerEscapeEffect, ref result);
+		}
+		if (MBRandom.RandomFloat < result.ResultNumber)
 		{
 			if (character.IsHero)
 			{

@@ -5,6 +5,7 @@ using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -70,6 +71,10 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 		{
 			if (difference != 0)
 			{
+				if (difference < 0 && -difference > Number)
+				{
+					difference = -Number;
+				}
 				int number = Number;
 				Number += difference;
 				CampaignEventDispatcher.Instance.OnMercenaryNumberChangedInTown(_currentTown, number, Number);
@@ -179,7 +184,9 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 	{
 		if (recruiter != null && recruiter.PartyBelongedTo != null && recruiter.GetPerkValue(DefaultPerks.Leadership.FamousCommander))
 		{
-			recruiter.PartyBelongedTo.MemberRoster.AddXpToTroop(troop, (int)DefaultPerks.Leadership.FamousCommander.SecondaryBonus * count);
+			TroopRoster memberRoster = recruiter.PartyBelongedTo.MemberRoster;
+			int xpAmount = (int)DefaultPerks.Leadership.FamousCommander.SecondaryBonus * count;
+			memberRoster.AddXpToTroop(troop, xpAmount);
 		}
 		SkillLevelingManager.OnTroopRecruited(recruiter, count, troop.Tier);
 		if (recruiter != null && recruiter.PartyBelongedTo != null && troop.Occupation == Occupation.Bandit)
@@ -192,7 +199,9 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 	{
 		if (Hero.MainHero.GetPerkValue(DefaultPerks.Leadership.FamousCommander))
 		{
-			MobileParty.MainParty.MemberRoster.AddXpToTroop(troop, (int)DefaultPerks.Leadership.FamousCommander.SecondaryBonus * count);
+			TroopRoster memberRoster = MobileParty.MainParty.MemberRoster;
+			int xpAmount = (int)DefaultPerks.Leadership.FamousCommander.SecondaryBonus * count;
+			memberRoster.AddXpToTroop(troop, xpAmount);
 		}
 		SkillLevelingManager.OnTroopRecruited(Hero.MainHero, count, troop.Tier);
 		if (troop.Occupation == Occupation.Bandit)
@@ -295,6 +304,7 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 			return;
 		}
 		Settlement currentSettlementOfMobilePartyForAICalculation = MobilePartyHelper.GetCurrentSettlementOfMobilePartyForAICalculation(mobileParty);
+		float seeingRange = MobileParty.MainParty.SeeingRange;
 		if (currentSettlementOfMobilePartyForAICalculation != null)
 		{
 			if ((currentSettlementOfMobilePartyForAICalculation.IsVillage && !currentSettlementOfMobilePartyForAICalculation.IsRaided && !currentSettlementOfMobilePartyForAICalculation.IsUnderRaid) || (currentSettlementOfMobilePartyForAICalculation.IsTown && !currentSettlementOfMobilePartyForAICalculation.IsUnderSiege))
@@ -309,7 +319,7 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 				return;
 			}
 			IFaction mapFaction = mobileParty.MapFaction;
-			if (mapFaction == null || !mapFaction.IsMinorFaction || !(MobileParty.MainParty.Position.DistanceSquared(mobileParty.Position) > (MobileParty.MainParty.SeeingRange + 5f) * (MobileParty.MainParty.SeeingRange + 5f)))
+			if (mapFaction == null || !mapFaction.IsMinorFaction || !(MobileParty.MainParty.Position.DistanceSquared(mobileParty.Position) > (seeingRange + 5f) * (seeingRange + 5f)))
 			{
 				return;
 			}
@@ -403,12 +413,12 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 	private int FindNumberOfMercenariesWillBeAdded(CharacterObject character, bool dailyUpdate = false)
 	{
 		int tier = Campaign.Current.Models.CharacterStatsModel.GetTier(character);
-		int maxCharacterTier = Campaign.Current.Models.CharacterStatsModel.MaxCharacterTier;
-		int num = (maxCharacterTier - tier) * 2;
-		int num2 = (maxCharacterTier - tier) * 5;
+		int num = Campaign.Current.Models.CharacterStatsModel.MaxCharacterTier + 1;
+		int num2 = (num - tier) * 2;
+		int num3 = (num - tier) * 5;
 		float randomFloat = MBRandom.RandomFloat;
 		float randomFloat2 = MBRandom.RandomFloat;
-		return MBRandom.RoundRandomized(MBMath.ClampFloat((randomFloat * randomFloat2 * (float)(num2 - num) + (float)num) * (dailyUpdate ? 0.1f : 1f), 1f, num2));
+		return MBRandom.RoundRandomized(MBMath.ClampFloat((randomFloat * randomFloat2 * (float)(num3 - num2) + (float)num2) * (dailyUpdate ? 0.1f : 1f), 1f, num3));
 	}
 
 	private void CheckRecruiting(MobileParty mobileParty, Settlement settlement)
@@ -457,7 +467,7 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 		}
 		else
 		{
-			if (!mobileParty.IsLordParty || mobileParty.IsDisbanding || mobileParty.LeaderHero == null || mobileParty.Party.IsStarving || !mobileParty.Party.LeaderHero.IsAlive || !((float)mobileParty.PartyTradeGold > HeroHelper.StartRecruitingMoneyLimit(mobileParty.LeaderHero)) || (mobileParty.LeaderHero != mobileParty.LeaderHero.Clan.Leader && !((float)mobileParty.LeaderHero.Clan.Gold > HeroHelper.StartRecruitingMoneyLimitForClanLeader(mobileParty.LeaderHero))) || !(((float)mobileParty.Party.NumberOfAllMembers + 0.5f) / (float)mobileParty.Party.PartySizeLimit <= 1f))
+			if (!mobileParty.IsLordParty || mobileParty.IsDisbanding || mobileParty.LeaderHero == null || mobileParty.Party.IsStarving || !mobileParty.Party.LeaderHero.IsAlive || !((float)mobileParty.PartyTradeGold > HeroHelper.StartRecruitingMoneyLimit(mobileParty.LeaderHero)) || (mobileParty.LeaderHero != mobileParty.LeaderHero.Clan.Leader && !((float)mobileParty.LeaderHero.Clan.Gold > HeroHelper.StartRecruitingMoneyLimitForClanLeader(mobileParty.LeaderHero)) && TraitEffectHelper.GetTraitEffectBonus(mobileParty.LeaderHero, DefaultPersonalityTraitEffects.GenerosityMercenaryRecruitmentEffect) == 0f) || !(((float)mobileParty.Party.NumberOfAllMembers + 0.5f) / (float)mobileParty.Party.PartySizeLimit <= 1f))
 			{
 				return;
 			}
@@ -483,6 +493,10 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 							{
 								num12++;
 							}
+						}
+						if (TraitEffectHelper.GetTraitEffectBonus(mobileParty.LeaderHero, DefaultPersonalityTraitEffects.GenerosityMercenaryRecruitmentEffect) != 0f)
+						{
+							num12 = MBRandom.RoundRandomized((float)num12 * 1.5f);
 						}
 						num12 = MathF.Min(num12, mobileParty.Party.PartySizeLimit - mobileParty.Party.NumberOfAllMembers);
 						num12 = (((double)roundedResultNumber2 <= 0.1) ? num12 : MathF.Min(mobileParty.PartyTradeGold / roundedResultNumber2, num12));
@@ -682,9 +696,11 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 			if (Hero.MainHero.Gold >= roundedResultNumber)
 			{
 				int num = MathF.Min(mercenaryData.Number, Hero.MainHero.Gold / roundedResultNumber);
-				MBTextManager.SetTextVariable("MEN_COUNT", num);
+				ExplainedNumber result = new ExplainedNumber(num);
+				TraitEffectHelper.ApplyTraitEffect(Hero.MainHero, DefaultPersonalityTraitEffects.GenerosityMercenaryRecruitmentEffect, ref result);
+				MBTextManager.SetTextVariable("MEN_COUNT", result.RoundedResultNumber);
 				MBTextManager.SetTextVariable("MERCENARY_NAME", mercenaryData.TroopType.Name);
-				MBTextManager.SetTextVariable("TOTAL_AMOUNT", num * roundedResultNumber);
+				MBTextManager.SetTextVariable("TOTAL_AMOUNT", result.RoundedResultNumber * roundedResultNumber);
 			}
 			else
 			{
@@ -709,7 +725,9 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 			int roundedResultNumber = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(mercenaryData.TroopType, Hero.MainHero).RoundedResultNumber;
 			if (Hero.MainHero.Gold >= roundedResultNumber)
 			{
-				int num = MathF.Min(mercenaryData.Number, Hero.MainHero.Gold / roundedResultNumber);
+				ExplainedNumber result = new ExplainedNumber(mercenaryData.Number);
+				TraitEffectHelper.ApplyTraitEffect(Hero.MainHero, DefaultPersonalityTraitEffects.GenerosityMercenaryRecruitmentEffect, ref result);
+				int num = MathF.Min(result.RoundedResultNumber, Hero.MainHero.Gold / roundedResultNumber);
 				MobileParty.MainParty.MemberRoster.AddToCounts(mercenaryData.TroopType, num);
 				GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, -(num * roundedResultNumber));
 				mercenaryData.ChangeMercenaryCount(-num);
@@ -732,9 +750,11 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 			if (num != 0)
 			{
 				int roundedResultNumber = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(mercenaryData.TroopType, Hero.MainHero).RoundedResultNumber;
-				MBTextManager.SetTextVariable("PLURAL", (mercenaryData.Number - 1 > 1) ? 1 : 0);
-				MBTextManager.SetTextVariable("MERCENARY_COUNT", mercenaryData.Number - 1);
-				MBTextManager.SetTextVariable("GOLD_AMOUNT", roundedResultNumber * mercenaryData.Number);
+				ExplainedNumber result = new ExplainedNumber(mercenaryData.Number);
+				TraitEffectHelper.ApplyTraitEffect(Hero.MainHero, DefaultPersonalityTraitEffects.GenerosityMercenaryRecruitmentEffect, ref result);
+				MBTextManager.SetTextVariable("PLURAL", (result.RoundedResultNumber - 1 > 1) ? 1 : 0);
+				MBTextManager.SetTextVariable("MERCENARY_COUNT", result.RoundedResultNumber - 1);
+				MBTextManager.SetTextVariable("GOLD_AMOUNT", roundedResultNumber * result.RoundedResultNumber);
 			}
 		}
 		else
@@ -798,13 +818,19 @@ public class RecruitmentCampaignBehavior : CampaignBehaviorBase
 	private void conversation_mercenary_recruit_accept_on_consequence()
 	{
 		_selectedMercenaryCount = GetMercenaryData(PlayerEncounter.EncounterSettlement.Town).Number;
+		ExplainedNumber result = new ExplainedNumber(_selectedMercenaryCount);
+		TraitEffectHelper.ApplyTraitEffect(Hero.MainHero, DefaultPersonalityTraitEffects.GenerosityMercenaryRecruitmentEffect, ref result);
+		_selectedMercenaryCount = result.RoundedResultNumber;
 		BuyMercenaries();
 	}
 
 	private bool conversation_mercenary_recruit_accept_some_on_condition()
 	{
 		int roundedResultNumber = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(GetMercenaryData(PlayerEncounter.EncounterSettlement.Town).TroopType, Hero.MainHero).RoundedResultNumber;
-		if (Hero.MainHero.Gold >= roundedResultNumber && Hero.MainHero.Gold < GetMercenaryData(PlayerEncounter.EncounterSettlement.Town).Number * roundedResultNumber)
+		int number = GetMercenaryData(PlayerEncounter.EncounterSettlement.Town).Number;
+		ExplainedNumber result = new ExplainedNumber(number);
+		TraitEffectHelper.ApplyTraitEffect(Hero.MainHero, DefaultPersonalityTraitEffects.GenerosityMercenaryRecruitmentEffect, ref result);
+		if (Hero.MainHero.Gold >= roundedResultNumber && Hero.MainHero.Gold < result.RoundedResultNumber * roundedResultNumber)
 		{
 			_selectedMercenaryCount = 0;
 			while (Hero.MainHero.Gold >= roundedResultNumber * (_selectedMercenaryCount + 1))

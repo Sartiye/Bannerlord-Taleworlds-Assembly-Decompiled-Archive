@@ -69,7 +69,7 @@ public static class GainKingdomInfluenceAction
 		if (detail == InfluenceGainingReason.CaptureSettlement && (hero != null || mobileParty.LeaderHero != null))
 		{
 			Hero hero2 = hero ?? mobileParty.LeaderHero;
-			PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Tactics.Besieged, hero2.CharacterObject, isPrimaryBonus: false, ref stat);
+			PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Tactics.Besieged, mobileParty.CurrentBattleEnvironment, hero2.CharacterObject, isPrimaryBonus: false, ref stat);
 		}
 		gainedInfluence = stat.ResultNumber;
 		ChangeClanInfluenceAction.Apply(clan, gainedInfluence);

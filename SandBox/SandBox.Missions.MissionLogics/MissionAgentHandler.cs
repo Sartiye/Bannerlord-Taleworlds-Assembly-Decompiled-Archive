@@ -750,6 +750,7 @@ public class MissionAgentHandler : MissionLogic
 		WeakGameEntity spawnedOnGameEntity = WeakGameEntity.Invalid;
 		bool flag = false;
 		MatrixFrame frame = MatrixFrame.Identity;
+		SandBoxHelpers.MissionHelper.RemapSpecialTagIfNecessary(locationCharacter, this);
 		if (locationCharacter.SpecialTargetTag != null)
 		{
 			flag = GetInitialFrameForSpawnTag(locationCharacter.SpecialTargetTag, ref spawnedOnGameEntity, ref frame);
@@ -840,7 +841,7 @@ public class MissionAgentHandler : MissionLogic
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("delay > 0", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\Missions\\MissionLogics\\MissionAgentHandler.cs", "SpawnWanderingAgentWithDelay", 1035);
+			TaleWorlds.Library.Debug.FailedAssert("delay > 0", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\Missions\\MissionLogics\\MissionAgentHandler.cs", "SpawnWanderingAgentWithDelay", 1037);
 		}
 	}
 

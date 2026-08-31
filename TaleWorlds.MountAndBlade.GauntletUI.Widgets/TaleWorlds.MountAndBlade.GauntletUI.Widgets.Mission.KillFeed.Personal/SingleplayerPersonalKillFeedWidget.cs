@@ -19,7 +19,7 @@ public class SingleplayerPersonalKillFeedWidget : Widget
 		base.OnUpdate(dt);
 		if (_normalWidgetHeight <= 0f && base.ChildCount > 1)
 		{
-			_normalWidgetHeight = GetChild(0).ScaledSuggestedHeight * base._inverseScaleToUse;
+			_normalWidgetHeight = GetChild(0).SuggestedHeight;
 		}
 		for (int i = 0; i < base.ChildCount; i++)
 		{

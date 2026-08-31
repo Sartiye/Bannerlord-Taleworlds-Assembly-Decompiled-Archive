@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.Core;
@@ -125,33 +124,8 @@ public class SiegeDeploymentMissionController : DeploymentMissionController
 
 	protected override void OnSetupTeamsFinished()
 	{
+		_siegeDeploymentHandler.HandleGeneralsDeploymentFrames();
 		base.Mission.IsTeleportingAgents = true;
-		Agent initialPlayerAgent = base.Mission.InitialPlayerAgent;
-		if (initialPlayerAgent == null)
-		{
-			return;
-		}
-		Team team = initialPlayerAgent.Team;
-		if (team == null)
-		{
-			return;
-		}
-		if (base.Mission.DeploymentPlan.HasPlayerSpawnFrame(team.Side))
-		{
-			base.Mission.DeploymentPlan.GetPlayerSpawnFrame(team.Side, out var position, out var direction);
-			if (position.GetNavMesh() != UIntPtr.Zero && position.IsValid)
-			{
-				initialPlayerAgent.TrySetFormationFrame(in position, in direction);
-			}
-		}
-		else if (team.GeneralAgent == initialPlayerAgent)
-		{
-			base.Mission.GetFormationSpawnFrame(team, FormationClass.NumberOfRegularFormations, isReinforcement: false, out var spawnPosition, out var spawnDirection);
-			if (spawnPosition.GetNavMesh() != UIntPtr.Zero && spawnPosition.IsValid)
-			{
-				initialPlayerAgent.TrySetFormationFrame(in spawnPosition, in spawnDirection);
-			}
-		}
 	}
 
 	protected override void BeforeDeploymentFinished()

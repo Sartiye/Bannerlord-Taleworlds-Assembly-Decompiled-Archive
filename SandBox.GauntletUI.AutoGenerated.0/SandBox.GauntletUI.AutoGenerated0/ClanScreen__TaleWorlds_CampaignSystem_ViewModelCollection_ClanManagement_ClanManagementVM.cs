@@ -14,7 +14,6 @@ using TaleWorlds.GauntletUI.ExtraWidgets;
 using TaleWorlds.GauntletUI.GamepadNavigation;
 using TaleWorlds.GauntletUI.Layout;
 using TaleWorlds.Library;
-using TaleWorlds.Library.Information;
 using TaleWorlds.MountAndBlade.GauntletUI.Widgets;
 using TaleWorlds.MountAndBlade.GauntletUI.Widgets.Clan;
 using TaleWorlds.MountAndBlade.GauntletUI.Widgets.Tutorial;
@@ -29,163 +28,103 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 
 	private Widget _widget_1;
 
-	private HintWidget _widget_1_0;
+	private ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_2_ClanMembers__DependendPrefab _widget_1_0;
 
-	private DimensionSyncWidget _widget_1_1;
+	private ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_3_ClanParties__DependendPrefab _widget_1_1;
 
-	private Widget _widget_1_1_0;
+	private ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_4_ClanFiefs__DependendPrefab _widget_1_2;
 
-	private Widget _widget_1_2;
+	private ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_5_ClanIncome__DependendPrefab _widget_1_3;
 
-	private ListPanel _widget_1_3;
+	private NavigationScopeTargeter _widget_2;
 
-	private TextWidget _widget_1_3_0;
+	private Widget _widget_3;
 
-	private Widget _widget_1_3_1;
+	private Widget _widget_3_0;
 
-	private Widget _widget_1_3_2;
+	private ButtonWidget _widget_3_0_0;
 
-	private TextWidget _widget_1_3_2_0;
+	private MaskedTextureWidget _widget_3_0_0_0;
 
-	private TextWidget _widget_1_3_2_1;
+	private HintWidget _widget_3_0_0_1;
 
-	private Widget _widget_1_3_2_2;
+	private ButtonWidget _widget_3_0_1;
 
-	private Widget _widget_1_3_3;
+	private ImageIdentifierWidget _widget_3_0_1_0;
 
-	private TextWidget _widget_1_3_3_0;
+	private TextWidget _widget_3_0_2;
 
-	private TextWidget _widget_1_3_3_1;
+	private Widget _widget_3_0_3;
 
-	private Widget _widget_1_3_3_2;
+	private Widget _widget_3_0_3_0;
 
-	private Widget _widget_1_3_4;
+	private ButtonWidget _widget_3_0_3_0_0;
 
-	private TextWidget _widget_1_3_4_0;
+	private ListPanel _widget_3_0_3_0_0_0;
 
-	private TextWidget _widget_1_3_4_1;
+	private ScrollingTextWidget _widget_3_0_3_0_0_0_0;
 
-	private Widget _widget_1_3_4_2;
+	private BrushWidget _widget_3_0_3_0_0_0_1;
 
-	private Widget _widget_1_3_5;
+	private HintWidget _widget_3_0_3_0_1;
 
-	private TextWidget _widget_1_3_5_0;
+	private Widget _widget_3_0_4;
 
-	private TextWidget _widget_1_3_5_1;
+	private InputKeyVisualWidget _widget_3_0_4_0;
 
-	private Widget _widget_1_3_5_2;
+	private ListPanel _widget_3_0_5;
 
-	private Widget _widget_1_3_6;
+	private ButtonWidget _widget_3_0_5_0;
 
-	private TextWidget _widget_1_3_6_0;
+	private TextWidget _widget_3_0_5_0_0;
 
-	private TextWidget _widget_1_3_6_1;
+	private ButtonWidget _widget_3_0_5_1;
 
-	private Widget _widget_1_3_6_2;
+	private TextWidget _widget_3_0_5_1_0;
 
-	private BrushWidget _widget_1_4;
+	private ButtonWidget _widget_3_0_5_2;
 
-	private Widget _widget_2;
+	private TextWidget _widget_3_0_5_2_0;
 
-	private ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_2_ClanMembers__DependendPrefab _widget_2_0;
+	private ButtonWidget _widget_3_0_5_3;
 
-	private ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_3_ClanParties__DependendPrefab _widget_2_1;
+	private TextWidget _widget_3_0_5_3_0;
 
-	private ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_4_ClanFiefs__DependendPrefab _widget_2_2;
+	private Widget _widget_3_0_6;
 
-	private ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_5_ClanIncome__DependendPrefab _widget_2_3;
+	private InputKeyVisualWidget _widget_3_0_6_0;
 
-	private NavigationScopeTargeter _widget_3;
+	private ListPanel _widget_3_0_7;
 
-	private Widget _widget_4;
+	private TextWidget _widget_3_0_7_0;
 
-	private Widget _widget_4_0;
+	private ListPanel _widget_3_0_7_1;
 
-	private ButtonWidget _widget_4_0_0;
+	private TextWidget _widget_3_0_7_1_0;
 
-	private MaskedTextureWidget _widget_4_0_0_0;
+	private Widget _widget_3_0_7_1_1;
 
-	private HintWidget _widget_4_0_0_1;
+	private FillBarWidget _widget_3_0_7_1_1_0;
 
-	private ButtonWidget _widget_4_0_1;
+	private Widget _widget_3_0_7_1_1_0_0;
 
-	private ImageIdentifierWidget _widget_4_0_1_0;
+	private Widget _widget_3_0_7_1_1_0_0_0;
 
-	private TextWidget _widget_4_0_2;
+	private Widget _widget_3_0_7_1_1_0_0_0_0;
 
-	private Widget _widget_4_0_3;
+	private Widget _widget_3_0_7_1_1_0_1;
 
-	private Widget _widget_4_0_3_0;
+	private AutoHideZeroTextWidget _widget_3_0_7_1_2;
 
-	private ButtonWidget _widget_4_0_3_0_0;
+	private ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_6_Standard_DialogCloseButtons__DependendPrefab _widget_4;
 
-	private ListPanel _widget_4_0_3_0_0_0;
+	private ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_7_ClanCardSelectionPopup__DependendPrefab _widget_5;
 
-	private ScrollingTextWidget _widget_4_0_3_0_0_0_0;
+	private ElementNotificationWidget _widget_6;
 
-	private BrushWidget _widget_4_0_3_0_0_0_1;
-
-	private HintWidget _widget_4_0_3_0_1;
-
-	private Widget _widget_4_0_4;
-
-	private InputKeyVisualWidget _widget_4_0_4_0;
-
-	private ListPanel _widget_4_0_5;
-
-	private ButtonWidget _widget_4_0_5_0;
-
-	private TextWidget _widget_4_0_5_0_0;
-
-	private ButtonWidget _widget_4_0_5_1;
-
-	private TextWidget _widget_4_0_5_1_0;
-
-	private ButtonWidget _widget_4_0_5_2;
-
-	private TextWidget _widget_4_0_5_2_0;
-
-	private ButtonWidget _widget_4_0_5_3;
-
-	private TextWidget _widget_4_0_5_3_0;
-
-	private Widget _widget_4_0_6;
-
-	private InputKeyVisualWidget _widget_4_0_6_0;
-
-	private ListPanel _widget_4_0_7;
-
-	private TextWidget _widget_4_0_7_0;
-
-	private ListPanel _widget_4_0_7_1;
-
-	private TextWidget _widget_4_0_7_1_0;
-
-	private Widget _widget_4_0_7_1_1;
-
-	private FillBarWidget _widget_4_0_7_1_1_0;
-
-	private Widget _widget_4_0_7_1_1_0_0;
-
-	private Widget _widget_4_0_7_1_1_0_0_0;
-
-	private Widget _widget_4_0_7_1_1_0_0_0_0;
-
-	private Widget _widget_4_0_7_1_1_0_1;
-
-	private AutoHideZeroTextWidget _widget_4_0_7_1_2;
-
-	private ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_6_Standard_DialogCloseButtons__DependendPrefab _widget_5;
-
-	private ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_7_ClanCardSelectionPopup__DependendPrefab _widget_6;
-
-	private ElementNotificationWidget _widget_7;
-
-	private TutorialHighlightItemBrushWidget _widget_7_0;
+	private TutorialHighlightItemBrushWidget _widget_6_0;
 
 	private ClanManagementVM _datasource_Root;
-
-	private TooltipTriggerVM _datasource_Root_GoldChangeTooltip;
 
 	private ClanMembersVM _datasource_Root_ClanMembers;
 
@@ -258,187 +197,126 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		_widget_0.CreateWidgets();
 		_widget_1 = new Widget(base.Context);
 		_widget.AddChild(_widget_1);
-		_widget_1_0 = new HintWidget(base.Context);
+		_widget_1_0 = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_2_ClanMembers__DependendPrefab(base.Context);
 		_widget_1.AddChild(_widget_1_0);
-		_widget_1_1 = new DimensionSyncWidget(base.Context);
+		_widget_1_0.CreateWidgets();
+		_widget_1_1 = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_3_ClanParties__DependendPrefab(base.Context);
 		_widget_1.AddChild(_widget_1_1);
-		_widget_1_1_0 = new Widget(base.Context);
-		_widget_1_1.AddChild(_widget_1_1_0);
-		_widget_1_2 = new Widget(base.Context);
+		_widget_1_1.CreateWidgets();
+		_widget_1_2 = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_4_ClanFiefs__DependendPrefab(base.Context);
 		_widget_1.AddChild(_widget_1_2);
-		_widget_1_3 = new ListPanel(base.Context);
+		_widget_1_2.CreateWidgets();
+		_widget_1_3 = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_5_ClanIncome__DependendPrefab(base.Context);
 		_widget_1.AddChild(_widget_1_3);
-		_widget_1_3_0 = new TextWidget(base.Context);
-		_widget_1_3.AddChild(_widget_1_3_0);
-		_widget_1_3_1 = new Widget(base.Context);
-		_widget_1_3.AddChild(_widget_1_3_1);
-		_widget_1_3_2 = new Widget(base.Context);
-		_widget_1_3.AddChild(_widget_1_3_2);
-		_widget_1_3_2_0 = new TextWidget(base.Context);
-		_widget_1_3_2.AddChild(_widget_1_3_2_0);
-		_widget_1_3_2_1 = new TextWidget(base.Context);
-		_widget_1_3_2.AddChild(_widget_1_3_2_1);
-		_widget_1_3_2_2 = new Widget(base.Context);
-		_widget_1_3_2.AddChild(_widget_1_3_2_2);
-		_widget_1_3_3 = new Widget(base.Context);
-		_widget_1_3.AddChild(_widget_1_3_3);
-		_widget_1_3_3_0 = new TextWidget(base.Context);
-		_widget_1_3_3.AddChild(_widget_1_3_3_0);
-		_widget_1_3_3_1 = new TextWidget(base.Context);
-		_widget_1_3_3.AddChild(_widget_1_3_3_1);
-		_widget_1_3_3_2 = new Widget(base.Context);
-		_widget_1_3_3.AddChild(_widget_1_3_3_2);
-		_widget_1_3_4 = new Widget(base.Context);
-		_widget_1_3.AddChild(_widget_1_3_4);
-		_widget_1_3_4_0 = new TextWidget(base.Context);
-		_widget_1_3_4.AddChild(_widget_1_3_4_0);
-		_widget_1_3_4_1 = new TextWidget(base.Context);
-		_widget_1_3_4.AddChild(_widget_1_3_4_1);
-		_widget_1_3_4_2 = new Widget(base.Context);
-		_widget_1_3_4.AddChild(_widget_1_3_4_2);
-		_widget_1_3_5 = new Widget(base.Context);
-		_widget_1_3.AddChild(_widget_1_3_5);
-		_widget_1_3_5_0 = new TextWidget(base.Context);
-		_widget_1_3_5.AddChild(_widget_1_3_5_0);
-		_widget_1_3_5_1 = new TextWidget(base.Context);
-		_widget_1_3_5.AddChild(_widget_1_3_5_1);
-		_widget_1_3_5_2 = new Widget(base.Context);
-		_widget_1_3_5.AddChild(_widget_1_3_5_2);
-		_widget_1_3_6 = new Widget(base.Context);
-		_widget_1_3.AddChild(_widget_1_3_6);
-		_widget_1_3_6_0 = new TextWidget(base.Context);
-		_widget_1_3_6.AddChild(_widget_1_3_6_0);
-		_widget_1_3_6_1 = new TextWidget(base.Context);
-		_widget_1_3_6.AddChild(_widget_1_3_6_1);
-		_widget_1_3_6_2 = new Widget(base.Context);
-		_widget_1_3_6.AddChild(_widget_1_3_6_2);
-		_widget_1_4 = new BrushWidget(base.Context);
-		_widget_1.AddChild(_widget_1_4);
-		_widget_2 = new Widget(base.Context);
+		_widget_1_3.CreateWidgets();
+		_widget_2 = new NavigationScopeTargeter(base.Context);
 		_widget.AddChild(_widget_2);
-		_widget_2_0 = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_2_ClanMembers__DependendPrefab(base.Context);
-		_widget_2.AddChild(_widget_2_0);
-		_widget_2_0.CreateWidgets();
-		_widget_2_1 = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_3_ClanParties__DependendPrefab(base.Context);
-		_widget_2.AddChild(_widget_2_1);
-		_widget_2_1.CreateWidgets();
-		_widget_2_2 = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_4_ClanFiefs__DependendPrefab(base.Context);
-		_widget_2.AddChild(_widget_2_2);
-		_widget_2_2.CreateWidgets();
-		_widget_2_3 = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_5_ClanIncome__DependendPrefab(base.Context);
-		_widget_2.AddChild(_widget_2_3);
-		_widget_2_3.CreateWidgets();
-		_widget_3 = new NavigationScopeTargeter(base.Context);
+		_widget_3 = new Widget(base.Context);
 		_widget.AddChild(_widget_3);
-		_widget_4 = new Widget(base.Context);
+		_widget_3_0 = new Widget(base.Context);
+		_widget_3.AddChild(_widget_3_0);
+		_widget_3_0_0 = new ButtonWidget(base.Context);
+		_widget_3_0.AddChild(_widget_3_0_0);
+		_widget_3_0_0_0 = new MaskedTextureWidget(base.Context);
+		_widget_3_0_0.AddChild(_widget_3_0_0_0);
+		_widget_3_0_0_1 = new HintWidget(base.Context);
+		_widget_3_0_0.AddChild(_widget_3_0_0_1);
+		_widget_3_0_1 = new ButtonWidget(base.Context);
+		_widget_3_0.AddChild(_widget_3_0_1);
+		_widget_3_0_1_0 = new ImageIdentifierWidget(base.Context);
+		_widget_3_0_1.AddChild(_widget_3_0_1_0);
+		_widget_3_0_2 = new TextWidget(base.Context);
+		_widget_3_0.AddChild(_widget_3_0_2);
+		_widget_3_0_3 = new Widget(base.Context);
+		_widget_3_0.AddChild(_widget_3_0_3);
+		_widget_3_0_3_0 = new Widget(base.Context);
+		_widget_3_0_3.AddChild(_widget_3_0_3_0);
+		_widget_3_0_3_0_0 = new ButtonWidget(base.Context);
+		_widget_3_0_3_0.AddChild(_widget_3_0_3_0_0);
+		_widget_3_0_3_0_0_0 = new ListPanel(base.Context);
+		_widget_3_0_3_0_0.AddChild(_widget_3_0_3_0_0_0);
+		_widget_3_0_3_0_0_0_0 = new ScrollingTextWidget(base.Context);
+		_widget_3_0_3_0_0_0.AddChild(_widget_3_0_3_0_0_0_0);
+		_widget_3_0_3_0_0_0_1 = new BrushWidget(base.Context);
+		_widget_3_0_3_0_0_0.AddChild(_widget_3_0_3_0_0_0_1);
+		_widget_3_0_3_0_1 = new HintWidget(base.Context);
+		_widget_3_0_3_0.AddChild(_widget_3_0_3_0_1);
+		_widget_3_0_4 = new Widget(base.Context);
+		_widget_3_0.AddChild(_widget_3_0_4);
+		_widget_3_0_4_0 = new InputKeyVisualWidget(base.Context);
+		_widget_3_0_4.AddChild(_widget_3_0_4_0);
+		_widget_3_0_5 = new ListPanel(base.Context);
+		_widget_3_0.AddChild(_widget_3_0_5);
+		_widget_3_0_5_0 = new ButtonWidget(base.Context);
+		_widget_3_0_5.AddChild(_widget_3_0_5_0);
+		_widget_3_0_5_0_0 = new TextWidget(base.Context);
+		_widget_3_0_5_0.AddChild(_widget_3_0_5_0_0);
+		_widget_3_0_5_1 = new ButtonWidget(base.Context);
+		_widget_3_0_5.AddChild(_widget_3_0_5_1);
+		_widget_3_0_5_1_0 = new TextWidget(base.Context);
+		_widget_3_0_5_1.AddChild(_widget_3_0_5_1_0);
+		_widget_3_0_5_2 = new ButtonWidget(base.Context);
+		_widget_3_0_5.AddChild(_widget_3_0_5_2);
+		_widget_3_0_5_2_0 = new TextWidget(base.Context);
+		_widget_3_0_5_2.AddChild(_widget_3_0_5_2_0);
+		_widget_3_0_5_3 = new ButtonWidget(base.Context);
+		_widget_3_0_5.AddChild(_widget_3_0_5_3);
+		_widget_3_0_5_3_0 = new TextWidget(base.Context);
+		_widget_3_0_5_3.AddChild(_widget_3_0_5_3_0);
+		_widget_3_0_6 = new Widget(base.Context);
+		_widget_3_0.AddChild(_widget_3_0_6);
+		_widget_3_0_6_0 = new InputKeyVisualWidget(base.Context);
+		_widget_3_0_6.AddChild(_widget_3_0_6_0);
+		_widget_3_0_7 = new ListPanel(base.Context);
+		_widget_3_0.AddChild(_widget_3_0_7);
+		_widget_3_0_7_0 = new TextWidget(base.Context);
+		_widget_3_0_7.AddChild(_widget_3_0_7_0);
+		_widget_3_0_7_1 = new ListPanel(base.Context);
+		_widget_3_0_7.AddChild(_widget_3_0_7_1);
+		_widget_3_0_7_1_0 = new TextWidget(base.Context);
+		_widget_3_0_7_1.AddChild(_widget_3_0_7_1_0);
+		_widget_3_0_7_1_1 = new Widget(base.Context);
+		_widget_3_0_7_1.AddChild(_widget_3_0_7_1_1);
+		_widget_3_0_7_1_1_0 = new FillBarWidget(base.Context);
+		_widget_3_0_7_1_1.AddChild(_widget_3_0_7_1_1_0);
+		_widget_3_0_7_1_1_0_0 = new Widget(base.Context);
+		_widget_3_0_7_1_1_0.AddChild(_widget_3_0_7_1_1_0_0);
+		_widget_3_0_7_1_1_0_0_0 = new Widget(base.Context);
+		_widget_3_0_7_1_1_0_0.AddChild(_widget_3_0_7_1_1_0_0_0);
+		_widget_3_0_7_1_1_0_0_0_0 = new Widget(base.Context);
+		_widget_3_0_7_1_1_0_0_0.AddChild(_widget_3_0_7_1_1_0_0_0_0);
+		_widget_3_0_7_1_1_0_1 = new Widget(base.Context);
+		_widget_3_0_7_1_1_0.AddChild(_widget_3_0_7_1_1_0_1);
+		_widget_3_0_7_1_2 = new AutoHideZeroTextWidget(base.Context);
+		_widget_3_0_7_1.AddChild(_widget_3_0_7_1_2);
+		_widget_4 = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_6_Standard_DialogCloseButtons__DependendPrefab(base.Context);
 		_widget.AddChild(_widget_4);
-		_widget_4_0 = new Widget(base.Context);
-		_widget_4.AddChild(_widget_4_0);
-		_widget_4_0_0 = new ButtonWidget(base.Context);
-		_widget_4_0.AddChild(_widget_4_0_0);
-		_widget_4_0_0_0 = new MaskedTextureWidget(base.Context);
-		_widget_4_0_0.AddChild(_widget_4_0_0_0);
-		_widget_4_0_0_1 = new HintWidget(base.Context);
-		_widget_4_0_0.AddChild(_widget_4_0_0_1);
-		_widget_4_0_1 = new ButtonWidget(base.Context);
-		_widget_4_0.AddChild(_widget_4_0_1);
-		_widget_4_0_1_0 = new ImageIdentifierWidget(base.Context);
-		_widget_4_0_1.AddChild(_widget_4_0_1_0);
-		_widget_4_0_2 = new TextWidget(base.Context);
-		_widget_4_0.AddChild(_widget_4_0_2);
-		_widget_4_0_3 = new Widget(base.Context);
-		_widget_4_0.AddChild(_widget_4_0_3);
-		_widget_4_0_3_0 = new Widget(base.Context);
-		_widget_4_0_3.AddChild(_widget_4_0_3_0);
-		_widget_4_0_3_0_0 = new ButtonWidget(base.Context);
-		_widget_4_0_3_0.AddChild(_widget_4_0_3_0_0);
-		_widget_4_0_3_0_0_0 = new ListPanel(base.Context);
-		_widget_4_0_3_0_0.AddChild(_widget_4_0_3_0_0_0);
-		_widget_4_0_3_0_0_0_0 = new ScrollingTextWidget(base.Context);
-		_widget_4_0_3_0_0_0.AddChild(_widget_4_0_3_0_0_0_0);
-		_widget_4_0_3_0_0_0_1 = new BrushWidget(base.Context);
-		_widget_4_0_3_0_0_0.AddChild(_widget_4_0_3_0_0_0_1);
-		_widget_4_0_3_0_1 = new HintWidget(base.Context);
-		_widget_4_0_3_0.AddChild(_widget_4_0_3_0_1);
-		_widget_4_0_4 = new Widget(base.Context);
-		_widget_4_0.AddChild(_widget_4_0_4);
-		_widget_4_0_4_0 = new InputKeyVisualWidget(base.Context);
-		_widget_4_0_4.AddChild(_widget_4_0_4_0);
-		_widget_4_0_5 = new ListPanel(base.Context);
-		_widget_4_0.AddChild(_widget_4_0_5);
-		_widget_4_0_5_0 = new ButtonWidget(base.Context);
-		_widget_4_0_5.AddChild(_widget_4_0_5_0);
-		_widget_4_0_5_0_0 = new TextWidget(base.Context);
-		_widget_4_0_5_0.AddChild(_widget_4_0_5_0_0);
-		_widget_4_0_5_1 = new ButtonWidget(base.Context);
-		_widget_4_0_5.AddChild(_widget_4_0_5_1);
-		_widget_4_0_5_1_0 = new TextWidget(base.Context);
-		_widget_4_0_5_1.AddChild(_widget_4_0_5_1_0);
-		_widget_4_0_5_2 = new ButtonWidget(base.Context);
-		_widget_4_0_5.AddChild(_widget_4_0_5_2);
-		_widget_4_0_5_2_0 = new TextWidget(base.Context);
-		_widget_4_0_5_2.AddChild(_widget_4_0_5_2_0);
-		_widget_4_0_5_3 = new ButtonWidget(base.Context);
-		_widget_4_0_5.AddChild(_widget_4_0_5_3);
-		_widget_4_0_5_3_0 = new TextWidget(base.Context);
-		_widget_4_0_5_3.AddChild(_widget_4_0_5_3_0);
-		_widget_4_0_6 = new Widget(base.Context);
-		_widget_4_0.AddChild(_widget_4_0_6);
-		_widget_4_0_6_0 = new InputKeyVisualWidget(base.Context);
-		_widget_4_0_6.AddChild(_widget_4_0_6_0);
-		_widget_4_0_7 = new ListPanel(base.Context);
-		_widget_4_0.AddChild(_widget_4_0_7);
-		_widget_4_0_7_0 = new TextWidget(base.Context);
-		_widget_4_0_7.AddChild(_widget_4_0_7_0);
-		_widget_4_0_7_1 = new ListPanel(base.Context);
-		_widget_4_0_7.AddChild(_widget_4_0_7_1);
-		_widget_4_0_7_1_0 = new TextWidget(base.Context);
-		_widget_4_0_7_1.AddChild(_widget_4_0_7_1_0);
-		_widget_4_0_7_1_1 = new Widget(base.Context);
-		_widget_4_0_7_1.AddChild(_widget_4_0_7_1_1);
-		_widget_4_0_7_1_1_0 = new FillBarWidget(base.Context);
-		_widget_4_0_7_1_1.AddChild(_widget_4_0_7_1_1_0);
-		_widget_4_0_7_1_1_0_0 = new Widget(base.Context);
-		_widget_4_0_7_1_1_0.AddChild(_widget_4_0_7_1_1_0_0);
-		_widget_4_0_7_1_1_0_0_0 = new Widget(base.Context);
-		_widget_4_0_7_1_1_0_0.AddChild(_widget_4_0_7_1_1_0_0_0);
-		_widget_4_0_7_1_1_0_0_0_0 = new Widget(base.Context);
-		_widget_4_0_7_1_1_0_0_0.AddChild(_widget_4_0_7_1_1_0_0_0_0);
-		_widget_4_0_7_1_1_0_1 = new Widget(base.Context);
-		_widget_4_0_7_1_1_0.AddChild(_widget_4_0_7_1_1_0_1);
-		_widget_4_0_7_1_2 = new AutoHideZeroTextWidget(base.Context);
-		_widget_4_0_7_1.AddChild(_widget_4_0_7_1_2);
-		_widget_5 = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_6_Standard_DialogCloseButtons__DependendPrefab(base.Context);
+		_widget_4.CreateWidgets();
+		_widget_5 = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_7_ClanCardSelectionPopup__DependendPrefab(base.Context);
 		_widget.AddChild(_widget_5);
 		_widget_5.CreateWidgets();
-		_widget_6 = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_7_ClanCardSelectionPopup__DependendPrefab(base.Context);
+		_widget_6 = new ElementNotificationWidget(base.Context);
 		_widget.AddChild(_widget_6);
-		_widget_6.CreateWidgets();
-		_widget_7 = new ElementNotificationWidget(base.Context);
-		_widget.AddChild(_widget_7);
-		_widget_7_0 = new TutorialHighlightItemBrushWidget(base.Context);
-		_widget_7.AddChild(_widget_7_0);
+		_widget_6_0 = new TutorialHighlightItemBrushWidget(base.Context);
+		_widget_6.AddChild(_widget_6_0);
 	}
 
 	public void SetIds()
 	{
 		base.Id = "ClanScreenWidget";
 		_widget_0.SetIds();
-		_widget_1.Id = "FinancePanelWidget";
-		_widget_1_3.Id = "SingleQueryContentList";
-		_widget_1_3_1.Id = "TitleDivider";
-		_widget_2_0.SetIds();
-		_widget_2_1.SetIds();
-		_widget_2_2.SetIds();
-		_widget_2_3.SetIds();
-		_widget_4.Id = "TopPanel";
-		_widget_4_0_7_1_1.Id = "RenownProgressBackground";
-		_widget_4_0_7_1_1_0_0.Id = "FillBarParent";
-		_widget_4_0_7_1_1_0_0_0.Id = "FillWidget";
-		_widget_4_0_7_1_1_0_1.Id = "ContainerWidget";
+		_widget_1_0.SetIds();
+		_widget_1_1.SetIds();
+		_widget_1_2.SetIds();
+		_widget_1_3.SetIds();
+		_widget_3.Id = "TopPanel";
+		_widget_3_0_7_1_1.Id = "RenownProgressBackground";
+		_widget_3_0_7_1_1_0_0.Id = "FillBarParent";
+		_widget_3_0_7_1_1_0_0_0.Id = "FillWidget";
+		_widget_3_0_7_1_1_0_1.Id = "ContainerWidget";
+		_widget_4.SetIds();
 		_widget_5.SetIds();
-		_widget_6.SetIds();
-		_widget_7_0.Id = "TutorialFrameWidget";
+		_widget_6_0.Id = "TutorialFrameWidget";
 	}
 
 	public void SetAttributes()
@@ -446,434 +324,270 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		base.WidthSizePolicy = SizePolicy.StretchToParent;
 		base.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0.SetAttributes();
-		_widget_1.VisualDefinition = CreateVisualDefinitionRightPanel();
-		_widget_1.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_1.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_1.SuggestedWidth = 265f;
-		_widget_1.SuggestedHeight = 280f;
-		_widget_1.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_1.VerticalAlignment = VerticalAlignment.Center;
-		_widget_1.MarginRight = 10f;
-		_widget_1.PositionYOffset = 55f;
-		_widget_1.PositionXOffset = 300f;
-		_widget_1.Sprite = base.Context.SpriteData.GetSprite("StdAssets\\Popup\\canvas");
-		_widget_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_1_0.SuggestedHeight = 25f;
-		_widget_1_0.IsDisabled = true;
-		_widget_1_1.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_1_1.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_1_1.SuggestedWidth = 265f;
-		_widget_1_1.ClipContents = true;
-		_widget_1_1.DimensionToSync = DimensionSyncWidget.Dimensions.Vertical;
-		_widget_1_1.IsEnabled = false;
-		_widget_1_1.WidgetToCopyHeightFrom = _widget_1;
-		_widget_1_1_0.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_1_1_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_1_1_0.SuggestedWidth = 265f;
-		_widget_1_1_0.SuggestedHeight = 645f;
-		_widget_1_1_0.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_1_1_0.VerticalAlignment = VerticalAlignment.Top;
-		_widget_1_1_0.Sprite = base.Context.SpriteData.GetSprite("StdAssets\\Popup\\canvas");
-		_widget_1_2.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_2.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_2.Sprite = base.Context.SpriteData.GetSprite("StdAssets\\Popup\\canvas_gradient");
-		_widget_1_2.IsEnabled = false;
-		_widget_1_3.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_3.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3.MarginLeft = 12f;
-		_widget_1_3.MarginRight = 20f;
-		_widget_1_3.IsEnabled = false;
-		_widget_1_3.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
-		_widget_1_3.MaxHeight = 645f;
-		_widget_1_3_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_3_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_0.MarginTop = 10f;
-		_widget_1_3_0.Brush = base.Context.GetBrush("Popup.Title.Text");
-		_widget_1_3_0.MinHeight = 50f;
-		_widget_1_3_1.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_1_3_1.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_1_3_1.SuggestedWidth = 270f;
-		_widget_1_3_1.SuggestedHeight = 23f;
-		_widget_1_3_1.PositionXOffset = -15f;
-		_widget_1_3_1.Sprite = base.Context.SpriteData.GetSprite("StdAssets\\Popup\\divider");
-		_widget_1_3_2.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_3_2.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_2.MarginTop = 0f;
-		_widget_1_3_2_0.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_2_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_2_0.HorizontalAlignment = HorizontalAlignment.Left;
-		_widget_1_3_2_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_1_3_2_0.Brush = base.Context.GetBrush("Clan.Finance.TotalIncome.Text");
-		_widget_1_3_2_1.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_2_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_2_1.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_1_3_2_1.VerticalAlignment = VerticalAlignment.Center;
-		_widget_1_3_2_1.MarginRight = 35f;
-		_widget_1_3_2_1.Brush = base.Context.GetBrush("Clan.Finance.TotalIncome.Text");
-		_widget_1_3_2_1.Brush.FontColor = new Color(0.6078432f, 0.7764707f, 0.3686275f);
-		_widget_1_3_2_2.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_1_3_2_2.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_1_3_2_2.SuggestedWidth = 30f;
-		_widget_1_3_2_2.SuggestedHeight = 30f;
-		_widget_1_3_2_2.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_1_3_2_2.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_1_3_2_2.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Coin@2x");
-		_widget_1_3_3.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_3_3.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_3.MarginTop = 0f;
-		_widget_1_3_3_0.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_3_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_3_0.HorizontalAlignment = HorizontalAlignment.Left;
-		_widget_1_3_3_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_1_3_3_0.Brush = base.Context.GetBrush("Clan.Finance.TotalExpenses.Text");
-		_widget_1_3_3_1.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_3_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_3_1.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_1_3_3_1.VerticalAlignment = VerticalAlignment.Center;
-		_widget_1_3_3_1.MarginRight = 35f;
-		_widget_1_3_3_1.Brush = base.Context.GetBrush("Clan.Finance.TotalExpenses.Text");
-		_widget_1_3_3_1.Brush.FontColor = new Color(0.8784314f, 0.5137255f, 0.372549f);
-		_widget_1_3_3_2.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_1_3_3_2.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_1_3_3_2.SuggestedWidth = 30f;
-		_widget_1_3_3_2.SuggestedHeight = 30f;
-		_widget_1_3_3_2.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_1_3_3_2.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_1_3_3_2.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Coin@2x");
-		_widget_1_3_4.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_3_4.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_4.MarginTop = 10f;
-		_widget_1_3_4_0.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_4_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_4_0.HorizontalAlignment = HorizontalAlignment.Left;
-		_widget_1_3_4_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_1_3_4_0.Brush = base.Context.GetBrush("Clan.Finance.DailyChange.Text");
-		_widget_1_3_4_1.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_4_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_4_1.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_1_3_4_1.VerticalAlignment = VerticalAlignment.Center;
-		_widget_1_3_4_1.MarginRight = 35f;
-		_widget_1_3_4_1.Brush = base.Context.GetBrush("Clan.Finance.DailyChange.Text");
-		_widget_1_3_4_2.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_1_3_4_2.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_1_3_4_2.SuggestedWidth = 30f;
-		_widget_1_3_4_2.SuggestedHeight = 30f;
-		_widget_1_3_4_2.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_1_3_4_2.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_1_3_4_2.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Coin@2x");
-		_widget_1_3_5.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_3_5.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_5.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_1_3_5.MarginTop = 10f;
-		_widget_1_3_5_0.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_5_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_5_0.HorizontalAlignment = HorizontalAlignment.Left;
-		_widget_1_3_5_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_1_3_5_0.Brush = base.Context.GetBrush("Clan.Finance.CurrentGold.Text");
-		_widget_1_3_5_1.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_5_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_5_1.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_1_3_5_1.VerticalAlignment = VerticalAlignment.Center;
-		_widget_1_3_5_1.MarginRight = 35f;
-		_widget_1_3_5_1.Brush = base.Context.GetBrush("Clan.Finance.CurrentGold.Text");
-		_widget_1_3_5_2.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_1_3_5_2.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_1_3_5_2.SuggestedWidth = 30f;
-		_widget_1_3_5_2.SuggestedHeight = 30f;
-		_widget_1_3_5_2.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_1_3_5_2.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_1_3_5_2.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Coin@2x");
-		_widget_1_3_6.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_3_6.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_6.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_1_3_6.MarginTop = 0f;
-		_widget_1_3_6_0.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_6_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_6_0.HorizontalAlignment = HorizontalAlignment.Left;
-		_widget_1_3_6_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_1_3_6_0.Brush = base.Context.GetBrush("Clan.Finance.CurrentGold.Text");
-		_widget_1_3_6_1.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_6_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_3_6_1.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_1_3_6_1.VerticalAlignment = VerticalAlignment.Center;
-		_widget_1_3_6_1.MarginRight = 35f;
-		_widget_1_3_6_1.Brush = base.Context.GetBrush("Clan.Finance.CurrentGold.Text");
-		_widget_1_3_6_2.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_1_3_6_2.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_1_3_6_2.SuggestedWidth = 30f;
-		_widget_1_3_6_2.SuggestedHeight = 30f;
-		_widget_1_3_6_2.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_1_3_6_2.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_1_3_6_2.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Coin@2x");
-		_widget_1_4.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_4.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_4.Brush = base.Context.GetBrush("Popup.Frame");
-		_widget_1_4.IsEnabled = false;
-		_widget_2.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_2.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_2.MarginTop = 188f;
-		_widget_2.MarginBottom = 75f;
-		_widget_2.DoNotAcceptEvents = true;
-		_widget_2_0.SetAttributes();
-		_widget_2_0.IsVisible = false;
-		_widget_2_1.SetAttributes();
-		_widget_2_1.IsVisible = true;
-		_widget_2_2.SetAttributes();
-		_widget_2_2.IsVisible = true;
-		_widget_2_3.SetAttributes();
-		_widget_2_3.IsVisible = true;
-		_widget_3.ScopeID = "ClanScreenTopPanelScope";
-		_widget_3.ScopeParent = _widget_4;
-		_widget_3.ScopeMovements = GamepadNavigationTypes.Horizontal;
-		_widget_3.RightNavigationScope = "None";
-		_widget_4.VisualDefinition = CreateVisualDefinitionTopPanel();
-		_widget_4.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_4.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4.SuggestedHeight = 196f;
-		_widget_4.PositionYOffset = -196f;
-		_widget_4.Sprite = base.Context.SpriteData.GetSprite("StdAssets\\top_header");
-		_widget_4_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0.MarginBottom = 35f;
-		_widget_4_0_0.DoNotPassEventsToChildren = true;
-		_widget_4_0_0.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_0.SuggestedWidth = 110f;
-		_widget_4_0_0.SuggestedHeight = 180f;
-		_widget_4_0_0.HorizontalAlignment = HorizontalAlignment.Left;
-		_widget_4_0_0.VerticalAlignment = VerticalAlignment.Top;
-		_widget_4_0_0.PositionXOffset = 20f;
-		_widget_4_0_0.PositionYOffset = -8f;
-		_widget_4_0_0.UpdateChildrenStates = true;
-		_widget_4_0_0.GamepadNavigationIndex = 0;
-		_widget_4_0_0_0.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_0_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_0_0.SuggestedWidth = 105f;
-		_widget_4_0_0_0.SuggestedHeight = 126f;
-		_widget_4_0_0_0.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_4_0_0_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_4_0_0_0.Brush = base.Context.GetBrush("Clan.TornBanner");
-		_widget_4_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_0_1.IsDisabled = true;
-		_widget_4_0_1.DoNotPassEventsToChildren = true;
-		_widget_4_0_1.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_1.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_1.SuggestedWidth = 170f;
-		_widget_4_0_1.SuggestedHeight = 130f;
-		_widget_4_0_1.HorizontalAlignment = HorizontalAlignment.Left;
-		_widget_4_0_1.VerticalAlignment = VerticalAlignment.Top;
-		_widget_4_0_1.MarginLeft = 140f;
-		_widget_4_0_1.Sprite = base.Context.SpriteData.GetSprite("leader_slot_9");
-		_widget_4_0_1.GamepadNavigationIndex = 1;
-		_widget_4_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_1_0.SuggestedHeight = 100f;
-		_widget_4_0_1_0.MarginLeft = 17f;
-		_widget_4_0_1_0.MarginRight = 18f;
-		_widget_4_0_1_0.MarginTop = 17f;
-		_widget_4_0_1_0.MarginBottom = 18f;
-		_widget_4_0_2.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_2.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_0_2.SuggestedWidth = 170f;
-		_widget_4_0_2.HorizontalAlignment = HorizontalAlignment.Left;
-		_widget_4_0_2.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_4_0_2.MarginLeft = 140f;
-		_widget_4_0_2.MarginBottom = 0f;
-		_widget_4_0_2.Brush = base.Context.GetBrush("Clan.Leader.Text");
-		_widget_4_0_3.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_3.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_3.SuggestedWidth = 887f;
-		_widget_4_0_3.SuggestedHeight = 150f;
-		_widget_4_0_3.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_4_0_3.VerticalAlignment = VerticalAlignment.Top;
-		_widget_4_0_3.Sprite = base.Context.SpriteData.GetSprite("StdAssets\\tabbar_long");
-		_widget_4_0_3_0.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_0_3_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_0_3_0.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_4_0_3_0.VerticalAlignment = VerticalAlignment.Top;
-		_widget_4_0_3_0.MarginTop = 10f;
-		_widget_4_0_3_0_0.DoNotPassEventsToChildren = true;
-		_widget_4_0_3_0_0.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_3_0_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_3_0_0.SuggestedWidth = 440f;
-		_widget_4_0_3_0_0.SuggestedHeight = 47f;
-		_widget_4_0_3_0_0.Brush = base.Context.GetBrush("Kingdom.Name.Edit.Button");
-		_widget_4_0_3_0_0.UpdateChildrenStates = true;
-		_widget_4_0_3_0_0.GamepadNavigationIndex = 2;
-		_widget_4_0_3_0_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_0_3_0_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_3_0_0_0.StackLayout.LayoutMethod = LayoutMethod.HorizontalLeftToRight;
-		_widget_4_0_3_0_0_0.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_4_0_3_0_0_0.UpdateChildrenStates = true;
-		_widget_4_0_3_0_0_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_0_3_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_0_3_0_0_0_0.MaxWidth = 380f;
-		_widget_4_0_3_0_0_0_0.Brush = base.Context.GetBrush("Kingdom.NameTitle.Text");
-		_widget_4_0_3_0_0_0_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_4_0_3_0_0_0_1.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_3_0_0_0_1.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_3_0_0_0_1.SuggestedWidth = 29f;
-		_widget_4_0_3_0_0_0_1.SuggestedHeight = 37f;
-		_widget_4_0_3_0_0_0_1.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_4_0_3_0_0_0_1.VerticalAlignment = VerticalAlignment.Center;
-		_widget_4_0_3_0_0_0_1.MarginLeft = 10f;
-		_widget_4_0_3_0_0_0_1.Brush = base.Context.GetBrush("Kingdom.Name.Edit.Icon");
-		_widget_4_0_4.DoNotAcceptEvents = true;
-		_widget_4_0_4.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_4.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_4.SuggestedWidth = 60f;
-		_widget_4_0_4.SuggestedHeight = 60f;
-		_widget_4_0_4.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_4_0_4.VerticalAlignment = VerticalAlignment.Center;
-		_widget_4_0_4.PositionXOffset = -560f;
-		_widget_4_0_4.PositionYOffset = 48f;
-		_widget_4_0_4_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_4_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_5.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_0_5.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_0_5.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_4_0_5.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_4_0_5.MarginBottom = 3f;
-		_widget_4_0_5_0.DoNotPassEventsToChildren = true;
-		_widget_4_0_5_0.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_5_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_5_0.SuggestedWidth = 279.9f;
-		_widget_4_0_5_0.SuggestedHeight = 55.8f;
-		_widget_4_0_5_0.Brush = base.Context.GetBrush("Header.Tab.Left");
-		_widget_4_0_5_0.UpdateChildrenStates = true;
-		_widget_4_0_5_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_5_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_5_0_0.PositionXOffset = 10f;
-		_widget_4_0_5_0_0.MarginTop = 3f;
-		_widget_4_0_5_0_0.Brush = base.Context.GetBrush("Clan.TabControl.Text");
-		_widget_4_0_5_1.DoNotPassEventsToChildren = true;
-		_widget_4_0_5_1.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_5_1.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_5_1.SuggestedWidth = 254.7f;
-		_widget_4_0_5_1.SuggestedHeight = 47.7f;
-		_widget_4_0_5_1.PositionYOffset = 6f;
-		_widget_4_0_5_1.Brush = base.Context.GetBrush("Header.Tab.Center");
-		_widget_4_0_5_1.UpdateChildrenStates = true;
-		_widget_4_0_5_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_5_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_5_1_0.Brush = base.Context.GetBrush("Clan.TabControl.Text");
-		_widget_4_0_5_2.DoNotPassEventsToChildren = true;
-		_widget_4_0_5_2.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_5_2.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_5_2.SuggestedWidth = 254.7f;
-		_widget_4_0_5_2.SuggestedHeight = 47.7f;
-		_widget_4_0_5_2.PositionYOffset = 6f;
-		_widget_4_0_5_2.Brush = base.Context.GetBrush("Header.Tab.Center");
-		_widget_4_0_5_2.UpdateChildrenStates = true;
-		_widget_4_0_5_2_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_5_2_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_5_2_0.Brush = base.Context.GetBrush("Clan.TabControl.Text");
-		_widget_4_0_5_3.DoNotPassEventsToChildren = true;
-		_widget_4_0_5_3.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_5_3.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_5_3.SuggestedWidth = 279.9f;
-		_widget_4_0_5_3.SuggestedHeight = 55.8f;
-		_widget_4_0_5_3.Brush = base.Context.GetBrush("Header.Tab.Right");
-		_widget_4_0_5_3.UpdateChildrenStates = true;
-		_widget_4_0_5_3_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_5_3_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_5_3_0.PositionXOffset = -10f;
-		_widget_4_0_5_3_0.MarginTop = 3f;
-		_widget_4_0_5_3_0.Brush = base.Context.GetBrush("Clan.TabControl.Text");
-		_widget_4_0_6.DoNotAcceptEvents = true;
-		_widget_4_0_6.DoNotPassEventsToChildren = true;
-		_widget_4_0_6.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_6.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_6.SuggestedWidth = 60f;
-		_widget_4_0_6.SuggestedHeight = 60f;
-		_widget_4_0_6.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_4_0_6.VerticalAlignment = VerticalAlignment.Center;
-		_widget_4_0_6.PositionXOffset = 560f;
-		_widget_4_0_6.PositionYOffset = 48f;
-		_widget_4_0_6_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_6_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_7.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_0_7.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_0_7.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_4_0_7.VerticalAlignment = VerticalAlignment.Center;
-		_widget_4_0_7.MarginRight = 40f;
-		_widget_4_0_7.MarginTop = 50f;
-		_widget_4_0_7.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
-		_widget_4_0_7_0.DoNotAcceptEvents = true;
-		_widget_4_0_7_0.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_0_7_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_0_7_0.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_4_0_7_0.Brush = base.Context.GetBrush("Clan.Renown.Text");
-		_widget_4_0_7_0.PositionYOffset = 5f;
-		_widget_4_0_7_0.ClipContents = false;
-		_widget_4_0_7_1.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_0_7_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_0_7_1.IsEnabled = false;
-		_widget_4_0_7_1.MarginTop = 10f;
-		_widget_4_0_7_1_0.DoNotAcceptEvents = true;
-		_widget_4_0_7_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_0_7_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_0_7_1_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_4_0_7_1_0.MarginRight = 10f;
-		_widget_4_0_7_1_0.MarginTop = 5f;
-		_widget_4_0_7_1_0.Brush = base.Context.GetBrush("Clan.Renown.Text");
-		_widget_4_0_7_1_0.ClipContents = false;
-		_widget_4_0_7_1_1.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_7_1_1.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_7_1_1.SuggestedWidth = 250f;
-		_widget_4_0_7_1_1.SuggestedHeight = 14f;
-		_widget_4_0_7_1_1.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_4_0_7_1_1.VerticalAlignment = VerticalAlignment.Center;
-		_widget_4_0_7_1_1.Sprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
-		_widget_4_0_7_1_1.Color = new Color(0f, 0f, 0f);
-		_widget_4_0_7_1_1.AlphaFactor = 0.7f;
-		_widget_4_0_7_1_1_0.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_7_1_1_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_7_1_1_0.SuggestedWidth = 266f;
-		_widget_4_0_7_1_1_0.SuggestedHeight = 27f;
-		_widget_4_0_7_1_1_0.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_4_0_7_1_1_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_4_0_7_1_1_0.FillWidget = _widget_4_0_7_1_1_0_0_0;
-		_widget_4_0_7_1_1_0_0.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_7_1_1_0_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_7_1_1_0_0.SuggestedWidth = 250f;
-		_widget_4_0_7_1_1_0_0.SuggestedHeight = 14f;
-		_widget_4_0_7_1_1_0_0.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_4_0_7_1_1_0_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_4_0_7_1_1_0_0.MarginLeft = 13f;
-		_widget_4_0_7_1_1_0_0.MarginRight = 14f;
-		_widget_4_0_7_1_1_0_0_0.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_7_1_1_0_0_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_4_0_7_1_1_0_0_0.SuggestedWidth = 250f;
-		_widget_4_0_7_1_1_0_0_0.SuggestedHeight = 14f;
-		_widget_4_0_7_1_1_0_0_0.Sprite = base.Context.SpriteData.GetSprite("Clan\\progress_bar");
-		_widget_4_0_7_1_1_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_7_1_1_0_0_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_7_1_1_0_0_0_0.HorizontalAlignment = HorizontalAlignment.Right;
-		_widget_4_0_7_1_1_0_0_0_0.Sprite = base.Context.SpriteData.GetSprite("Clan\\progress_bar_glow");
-		_widget_4_0_7_1_1_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_7_1_1_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_4_0_7_1_1_0_1.Sprite = base.Context.SpriteData.GetSprite("Clan\\progress_bar_frame");
-		_widget_4_0_7_1_2.DoNotAcceptEvents = true;
-		_widget_4_0_7_1_2.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_0_7_1_2.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_4_0_7_1_2.VerticalAlignment = VerticalAlignment.Center;
-		_widget_4_0_7_1_2.MarginLeft = 10f;
-		_widget_4_0_7_1_2.MarginTop = 5f;
-		_widget_4_0_7_1_2.Brush = base.Context.GetBrush("Clan.Renown.Text");
-		_widget_4_0_7_1_2.ClipContents = false;
+		_widget_1.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_1.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_1.MarginTop = 188f;
+		_widget_1.MarginBottom = 75f;
+		_widget_1.DoNotAcceptEvents = true;
+		_widget_1_0.SetAttributes();
+		_widget_1_0.IsVisible = false;
+		_widget_1_1.SetAttributes();
+		_widget_1_1.IsVisible = true;
+		_widget_1_2.SetAttributes();
+		_widget_1_2.IsVisible = true;
+		_widget_1_3.SetAttributes();
+		_widget_1_3.IsVisible = true;
+		_widget_2.ScopeID = "ClanScreenTopPanelScope";
+		_widget_2.ScopeParent = _widget_3;
+		_widget_2.ScopeMovements = GamepadNavigationTypes.Horizontal;
+		_widget_2.RightNavigationScope = "None";
+		_widget_3.VisualDefinition = CreateVisualDefinitionTopPanel();
+		_widget_3.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_3.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_3.SuggestedHeight = 196f;
+		_widget_3.PositionYOffset = -196f;
+		_widget_3.Sprite = base.Context.SpriteData.GetSprite("StdAssets\\top_header");
+		_widget_3_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0.MarginBottom = 35f;
+		_widget_3_0_0.DoNotPassEventsToChildren = true;
+		_widget_3_0_0.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_0.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_0.SuggestedWidth = 110f;
+		_widget_3_0_0.SuggestedHeight = 180f;
+		_widget_3_0_0.HorizontalAlignment = HorizontalAlignment.Left;
+		_widget_3_0_0.VerticalAlignment = VerticalAlignment.Top;
+		_widget_3_0_0.PositionXOffset = 20f;
+		_widget_3_0_0.PositionYOffset = -8f;
+		_widget_3_0_0.UpdateChildrenStates = true;
+		_widget_3_0_0.GamepadNavigationIndex = 0;
+		_widget_3_0_0_0.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_0_0.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_0_0.SuggestedWidth = 105f;
+		_widget_3_0_0_0.SuggestedHeight = 126f;
+		_widget_3_0_0_0.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_3_0_0_0.VerticalAlignment = VerticalAlignment.Center;
+		_widget_3_0_0_0.Brush = base.Context.GetBrush("Clan.TornBanner");
+		_widget_3_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0_0_1.IsDisabled = true;
+		_widget_3_0_1.DoNotPassEventsToChildren = true;
+		_widget_3_0_1.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_1.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_1.SuggestedWidth = 170f;
+		_widget_3_0_1.SuggestedHeight = 130f;
+		_widget_3_0_1.HorizontalAlignment = HorizontalAlignment.Left;
+		_widget_3_0_1.VerticalAlignment = VerticalAlignment.Top;
+		_widget_3_0_1.MarginLeft = 140f;
+		_widget_3_0_1.Sprite = base.Context.SpriteData.GetSprite("leader_slot_9");
+		_widget_3_0_1.GamepadNavigationIndex = 1;
+		_widget_3_0_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0_1_0.SuggestedHeight = 100f;
+		_widget_3_0_1_0.MarginLeft = 17f;
+		_widget_3_0_1_0.MarginRight = 18f;
+		_widget_3_0_1_0.MarginTop = 17f;
+		_widget_3_0_1_0.MarginBottom = 18f;
+		_widget_3_0_2.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_2.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_3_0_2.SuggestedWidth = 170f;
+		_widget_3_0_2.HorizontalAlignment = HorizontalAlignment.Left;
+		_widget_3_0_2.VerticalAlignment = VerticalAlignment.Bottom;
+		_widget_3_0_2.MarginLeft = 140f;
+		_widget_3_0_2.MarginBottom = 0f;
+		_widget_3_0_2.Brush = base.Context.GetBrush("Clan.Leader.Text");
+		_widget_3_0_3.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_3.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_3.SuggestedWidth = 887f;
+		_widget_3_0_3.SuggestedHeight = 150f;
+		_widget_3_0_3.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_3_0_3.VerticalAlignment = VerticalAlignment.Top;
+		_widget_3_0_3.Sprite = base.Context.SpriteData.GetSprite("StdAssets\\tabbar_long");
+		_widget_3_0_3_0.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_3_0_3_0.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_3_0_3_0.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_3_0_3_0.VerticalAlignment = VerticalAlignment.Top;
+		_widget_3_0_3_0.MarginTop = 10f;
+		_widget_3_0_3_0_0.DoNotPassEventsToChildren = true;
+		_widget_3_0_3_0_0.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_3_0_0.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_3_0_0.SuggestedWidth = 440f;
+		_widget_3_0_3_0_0.SuggestedHeight = 47f;
+		_widget_3_0_3_0_0.Brush = base.Context.GetBrush("Kingdom.Name.Edit.Button");
+		_widget_3_0_3_0_0.UpdateChildrenStates = true;
+		_widget_3_0_3_0_0.GamepadNavigationIndex = 2;
+		_widget_3_0_3_0_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_3_0_3_0_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0_3_0_0_0.StackLayout.LayoutMethod = LayoutMethod.HorizontalLeftToRight;
+		_widget_3_0_3_0_0_0.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_3_0_3_0_0_0.UpdateChildrenStates = true;
+		_widget_3_0_3_0_0_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_3_0_3_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_3_0_3_0_0_0_0.MaxWidth = 380f;
+		_widget_3_0_3_0_0_0_0.Brush = base.Context.GetBrush("Kingdom.NameTitle.Text");
+		_widget_3_0_3_0_0_0_0.VerticalAlignment = VerticalAlignment.Center;
+		_widget_3_0_3_0_0_0_1.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_3_0_0_0_1.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_3_0_0_0_1.SuggestedWidth = 29f;
+		_widget_3_0_3_0_0_0_1.SuggestedHeight = 37f;
+		_widget_3_0_3_0_0_0_1.HorizontalAlignment = HorizontalAlignment.Right;
+		_widget_3_0_3_0_0_0_1.VerticalAlignment = VerticalAlignment.Center;
+		_widget_3_0_3_0_0_0_1.MarginLeft = 10f;
+		_widget_3_0_3_0_0_0_1.Brush = base.Context.GetBrush("Kingdom.Name.Edit.Icon");
+		_widget_3_0_4.DoNotAcceptEvents = true;
+		_widget_3_0_4.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_4.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_4.SuggestedWidth = 60f;
+		_widget_3_0_4.SuggestedHeight = 60f;
+		_widget_3_0_4.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_3_0_4.VerticalAlignment = VerticalAlignment.Center;
+		_widget_3_0_4.PositionXOffset = -560f;
+		_widget_3_0_4.PositionYOffset = 48f;
+		_widget_3_0_4_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0_4_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0_5.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_3_0_5.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_3_0_5.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_3_0_5.VerticalAlignment = VerticalAlignment.Bottom;
+		_widget_3_0_5.MarginBottom = 3f;
+		_widget_3_0_5_0.DoNotPassEventsToChildren = true;
+		_widget_3_0_5_0.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_5_0.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_5_0.SuggestedWidth = 279.9f;
+		_widget_3_0_5_0.SuggestedHeight = 55.8f;
+		_widget_3_0_5_0.Brush = base.Context.GetBrush("Header.Tab.Left");
+		_widget_3_0_5_0.UpdateChildrenStates = true;
+		_widget_3_0_5_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0_5_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0_5_0_0.PositionXOffset = 10f;
+		_widget_3_0_5_0_0.MarginTop = 3f;
+		_widget_3_0_5_0_0.Brush = base.Context.GetBrush("Clan.TabControl.Text");
+		_widget_3_0_5_1.DoNotPassEventsToChildren = true;
+		_widget_3_0_5_1.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_5_1.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_5_1.SuggestedWidth = 254.7f;
+		_widget_3_0_5_1.SuggestedHeight = 47.7f;
+		_widget_3_0_5_1.PositionYOffset = 6f;
+		_widget_3_0_5_1.Brush = base.Context.GetBrush("Header.Tab.Center");
+		_widget_3_0_5_1.UpdateChildrenStates = true;
+		_widget_3_0_5_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0_5_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0_5_1_0.Brush = base.Context.GetBrush("Clan.TabControl.Text");
+		_widget_3_0_5_2.DoNotPassEventsToChildren = true;
+		_widget_3_0_5_2.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_5_2.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_5_2.SuggestedWidth = 254.7f;
+		_widget_3_0_5_2.SuggestedHeight = 47.7f;
+		_widget_3_0_5_2.PositionYOffset = 6f;
+		_widget_3_0_5_2.Brush = base.Context.GetBrush("Header.Tab.Center");
+		_widget_3_0_5_2.UpdateChildrenStates = true;
+		_widget_3_0_5_2_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0_5_2_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0_5_2_0.Brush = base.Context.GetBrush("Clan.TabControl.Text");
+		_widget_3_0_5_3.DoNotPassEventsToChildren = true;
+		_widget_3_0_5_3.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_5_3.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_5_3.SuggestedWidth = 279.9f;
+		_widget_3_0_5_3.SuggestedHeight = 55.8f;
+		_widget_3_0_5_3.Brush = base.Context.GetBrush("Header.Tab.Right");
+		_widget_3_0_5_3.UpdateChildrenStates = true;
+		_widget_3_0_5_3_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0_5_3_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0_5_3_0.PositionXOffset = -10f;
+		_widget_3_0_5_3_0.MarginTop = 3f;
+		_widget_3_0_5_3_0.Brush = base.Context.GetBrush("Clan.TabControl.Text");
+		_widget_3_0_6.DoNotAcceptEvents = true;
+		_widget_3_0_6.DoNotPassEventsToChildren = true;
+		_widget_3_0_6.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_6.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_6.SuggestedWidth = 60f;
+		_widget_3_0_6.SuggestedHeight = 60f;
+		_widget_3_0_6.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_3_0_6.VerticalAlignment = VerticalAlignment.Center;
+		_widget_3_0_6.PositionXOffset = 560f;
+		_widget_3_0_6.PositionYOffset = 48f;
+		_widget_3_0_6_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0_6_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0_7.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_3_0_7.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_3_0_7.HorizontalAlignment = HorizontalAlignment.Right;
+		_widget_3_0_7.VerticalAlignment = VerticalAlignment.Center;
+		_widget_3_0_7.MarginRight = 40f;
+		_widget_3_0_7.MarginTop = 50f;
+		_widget_3_0_7.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
+		_widget_3_0_7_0.DoNotAcceptEvents = true;
+		_widget_3_0_7_0.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_3_0_7_0.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_3_0_7_0.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_3_0_7_0.Brush = base.Context.GetBrush("Clan.Renown.Text");
+		_widget_3_0_7_0.PositionYOffset = 5f;
+		_widget_3_0_7_0.ClipContents = false;
+		_widget_3_0_7_1.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_3_0_7_1.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_3_0_7_1.IsEnabled = false;
+		_widget_3_0_7_1.MarginTop = 10f;
+		_widget_3_0_7_1_0.DoNotAcceptEvents = true;
+		_widget_3_0_7_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_3_0_7_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_3_0_7_1_0.VerticalAlignment = VerticalAlignment.Center;
+		_widget_3_0_7_1_0.MarginRight = 10f;
+		_widget_3_0_7_1_0.MarginTop = 5f;
+		_widget_3_0_7_1_0.Brush = base.Context.GetBrush("Clan.Renown.Text");
+		_widget_3_0_7_1_0.ClipContents = false;
+		_widget_3_0_7_1_1.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_7_1_1.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_7_1_1.SuggestedWidth = 250f;
+		_widget_3_0_7_1_1.SuggestedHeight = 14f;
+		_widget_3_0_7_1_1.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_3_0_7_1_1.VerticalAlignment = VerticalAlignment.Center;
+		_widget_3_0_7_1_1.Sprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
+		_widget_3_0_7_1_1.Color = new Color(0f, 0f, 0f);
+		_widget_3_0_7_1_1.AlphaFactor = 0.7f;
+		_widget_3_0_7_1_1_0.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_7_1_1_0.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_7_1_1_0.SuggestedWidth = 266f;
+		_widget_3_0_7_1_1_0.SuggestedHeight = 27f;
+		_widget_3_0_7_1_1_0.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_3_0_7_1_1_0.VerticalAlignment = VerticalAlignment.Center;
+		_widget_3_0_7_1_1_0.FillWidget = _widget_3_0_7_1_1_0_0_0;
+		_widget_3_0_7_1_1_0_0.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_7_1_1_0_0.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_7_1_1_0_0.SuggestedWidth = 250f;
+		_widget_3_0_7_1_1_0_0.SuggestedHeight = 14f;
+		_widget_3_0_7_1_1_0_0.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_3_0_7_1_1_0_0.VerticalAlignment = VerticalAlignment.Center;
+		_widget_3_0_7_1_1_0_0.MarginLeft = 13f;
+		_widget_3_0_7_1_1_0_0.MarginRight = 14f;
+		_widget_3_0_7_1_1_0_0_0.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_7_1_1_0_0_0.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_3_0_7_1_1_0_0_0.SuggestedWidth = 250f;
+		_widget_3_0_7_1_1_0_0_0.SuggestedHeight = 14f;
+		_widget_3_0_7_1_1_0_0_0.Sprite = base.Context.SpriteData.GetSprite("Clan\\progress_bar");
+		_widget_3_0_7_1_1_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0_7_1_1_0_0_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0_7_1_1_0_0_0_0.HorizontalAlignment = HorizontalAlignment.Right;
+		_widget_3_0_7_1_1_0_0_0_0.Sprite = base.Context.SpriteData.GetSprite("Clan\\progress_bar_glow");
+		_widget_3_0_7_1_1_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0_7_1_1_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_3_0_7_1_1_0_1.Sprite = base.Context.SpriteData.GetSprite("Clan\\progress_bar_frame");
+		_widget_3_0_7_1_2.DoNotAcceptEvents = true;
+		_widget_3_0_7_1_2.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_3_0_7_1_2.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_3_0_7_1_2.VerticalAlignment = VerticalAlignment.Center;
+		_widget_3_0_7_1_2.MarginLeft = 10f;
+		_widget_3_0_7_1_2.MarginTop = 5f;
+		_widget_3_0_7_1_2.Brush = base.Context.GetBrush("Clan.Renown.Text");
+		_widget_3_0_7_1_2.ClipContents = false;
+		_widget_4.SetAttributes();
+		_widget_4.VisualDefinition = CreateVisualDefinitionBottomMenu();
+		_widget_4.PositionYOffset = 100f;
 		_widget_5.SetAttributes();
-		_widget_5.VisualDefinition = CreateVisualDefinitionBottomMenu();
-		_widget_5.PositionYOffset = 100f;
-		_widget_6.SetAttributes();
-		_widget_7.TutorialFrameWidget = _widget_7_0;
-		_widget_7_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_7_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_7_0.Brush = base.Context.GetBrush("TutorialHighlightBrush");
-		_widget_7_0.IsDisabled = true;
-		_widget_7_0.IsVisible = false;
+		_widget_6.TutorialFrameWidget = _widget_6_0;
+		_widget_6_0.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_6_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_6_0.Brush = base.Context.GetBrush("TutorialHighlightBrush");
+		_widget_6_0.IsDisabled = true;
+		_widget_6_0.IsVisible = false;
 	}
 
 	public void RefreshBindingWithChildren()
@@ -890,7 +604,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			return;
 		}
 		_widget_0.DestroyDataSource();
-		_widget_5.DestroyDataSource();
+		_widget_4.DestroyDataSource();
 		_datasource_Root.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root;
@@ -901,308 +615,195 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		_datasource_Root.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
 		_widget.EventFire -= EventListenerOf_widget;
-		_widget_1_3_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_0;
-		_widget_1_3_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_0;
-		_widget_1_3_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_0;
-		_widget_1_3_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_0;
-		_widget_1_3_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_0;
-		_widget_1_3_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_0;
-		_widget_1_3_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_0;
-		_widget_1_3_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_0;
-		_widget_1_3_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_0;
-		_widget_1_3_2_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_2_0;
-		_widget_1_3_2_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_2_0;
-		_widget_1_3_2_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_2_0;
-		_widget_1_3_2_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_2_0;
-		_widget_1_3_2_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_2_0;
-		_widget_1_3_2_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_2_0;
-		_widget_1_3_2_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_2_0;
-		_widget_1_3_2_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_2_0;
-		_widget_1_3_2_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_2_0;
-		_widget_1_3_2_1.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_2_1;
-		_widget_1_3_2_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_2_1;
-		_widget_1_3_2_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_2_1;
-		_widget_1_3_2_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_2_1;
-		_widget_1_3_2_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_2_1;
-		_widget_1_3_2_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_2_1;
-		_widget_1_3_2_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_2_1;
-		_widget_1_3_2_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_2_1;
-		_widget_1_3_2_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_2_1;
-		_widget_1_3_3_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_3_0;
-		_widget_1_3_3_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_3_0;
-		_widget_1_3_3_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_3_0;
-		_widget_1_3_3_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_3_0;
-		_widget_1_3_3_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_3_0;
-		_widget_1_3_3_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_3_0;
-		_widget_1_3_3_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_3_0;
-		_widget_1_3_3_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_3_0;
-		_widget_1_3_3_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_3_0;
-		_widget_1_3_3_1.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_3_1;
-		_widget_1_3_3_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_3_1;
-		_widget_1_3_3_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_3_1;
-		_widget_1_3_3_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_3_1;
-		_widget_1_3_3_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_3_1;
-		_widget_1_3_3_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_3_1;
-		_widget_1_3_3_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_3_1;
-		_widget_1_3_3_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_3_1;
-		_widget_1_3_3_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_3_1;
-		_widget_1_3_4_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_4_0;
-		_widget_1_3_4_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_4_0;
-		_widget_1_3_4_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_4_0;
-		_widget_1_3_4_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_4_0;
-		_widget_1_3_4_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_4_0;
-		_widget_1_3_4_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_4_0;
-		_widget_1_3_4_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_4_0;
-		_widget_1_3_4_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_4_0;
-		_widget_1_3_4_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_4_0;
-		_widget_1_3_4_1.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_4_1;
-		_widget_1_3_4_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_4_1;
-		_widget_1_3_4_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_4_1;
-		_widget_1_3_4_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_4_1;
-		_widget_1_3_4_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_4_1;
-		_widget_1_3_4_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_4_1;
-		_widget_1_3_4_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_4_1;
-		_widget_1_3_4_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_4_1;
-		_widget_1_3_4_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_4_1;
-		_widget_1_3_5_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_5_0;
-		_widget_1_3_5_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_5_0;
-		_widget_1_3_5_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_5_0;
-		_widget_1_3_5_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_5_0;
-		_widget_1_3_5_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_5_0;
-		_widget_1_3_5_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_5_0;
-		_widget_1_3_5_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_5_0;
-		_widget_1_3_5_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_5_0;
-		_widget_1_3_5_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_5_0;
-		_widget_1_3_5_1.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_5_1;
-		_widget_1_3_5_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_5_1;
-		_widget_1_3_5_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_5_1;
-		_widget_1_3_5_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_5_1;
-		_widget_1_3_5_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_5_1;
-		_widget_1_3_5_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_5_1;
-		_widget_1_3_5_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_5_1;
-		_widget_1_3_5_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_5_1;
-		_widget_1_3_5_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_5_1;
-		_widget_1_3_6_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_6_0;
-		_widget_1_3_6_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_6_0;
-		_widget_1_3_6_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_6_0;
-		_widget_1_3_6_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_6_0;
-		_widget_1_3_6_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_6_0;
-		_widget_1_3_6_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_6_0;
-		_widget_1_3_6_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_6_0;
-		_widget_1_3_6_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_6_0;
-		_widget_1_3_6_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_6_0;
-		_widget_1_3_6_1.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_6_1;
-		_widget_1_3_6_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_6_1;
-		_widget_1_3_6_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_6_1;
-		_widget_1_3_6_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_6_1;
-		_widget_1_3_6_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_6_1;
-		_widget_1_3_6_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_6_1;
-		_widget_1_3_6_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_6_1;
-		_widget_1_3_6_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_6_1;
-		_widget_1_3_6_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_6_1;
-		_widget_4_0_0.EventFire -= EventListenerOf_widget_4_0_0;
-		_widget_4_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_0;
-		_widget_4_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_0;
-		_widget_4_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_0;
-		_widget_4_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_0;
-		_widget_4_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_0;
-		_widget_4_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_0;
-		_widget_4_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_0;
-		_widget_4_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_0;
-		_widget_4_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_0;
-		_widget_4_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_2;
-		_widget_4_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_2;
-		_widget_4_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_2;
-		_widget_4_0_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_2;
-		_widget_4_0_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_2;
-		_widget_4_0_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_2;
-		_widget_4_0_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_2;
-		_widget_4_0_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_2;
-		_widget_4_0_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_2;
-		_widget_4_0_3_0_0.EventFire -= EventListenerOf_widget_4_0_3_0_0;
-		_widget_4_0_3_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_3_0_0;
-		_widget_4_0_3_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_3_0_0;
-		_widget_4_0_3_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_3_0_0;
-		_widget_4_0_3_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_3_0_0;
-		_widget_4_0_3_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_3_0_0;
-		_widget_4_0_3_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_3_0_0;
-		_widget_4_0_3_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_3_0_0;
-		_widget_4_0_3_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_3_0_0;
-		_widget_4_0_3_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_3_0_0;
-		_widget_4_0_3_0_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-		_widget_4_0_3_0_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-		_widget_4_0_3_0_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-		_widget_4_0_3_0_0_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-		_widget_4_0_3_0_0_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-		_widget_4_0_3_0_0_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-		_widget_4_0_3_0_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-		_widget_4_0_3_0_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-		_widget_4_0_3_0_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-		_widget_4_0_3_0_0_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-		_widget_4_0_3_0_0_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-		_widget_4_0_3_0_0_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-		_widget_4_0_3_0_0_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-		_widget_4_0_3_0_0_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-		_widget_4_0_3_0_0_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-		_widget_4_0_3_0_0_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-		_widget_4_0_3_0_0_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-		_widget_4_0_3_0_0_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-		_widget_4_0_4.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_4;
-		_widget_4_0_4.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_4;
-		_widget_4_0_4.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_4;
-		_widget_4_0_4.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_4;
-		_widget_4_0_4.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_4;
-		_widget_4_0_4.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_4;
-		_widget_4_0_4.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_4;
-		_widget_4_0_4.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_4;
-		_widget_4_0_4.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_4;
-		_widget_4_0_5_0.EventFire -= EventListenerOf_widget_4_0_5_0;
-		_widget_4_0_5_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_5_0;
-		_widget_4_0_5_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_5_0;
-		_widget_4_0_5_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_5_0;
-		_widget_4_0_5_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_5_0;
-		_widget_4_0_5_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_5_0;
-		_widget_4_0_5_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_5_0;
-		_widget_4_0_5_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_5_0;
-		_widget_4_0_5_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_5_0;
-		_widget_4_0_5_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_5_0;
-		_widget_4_0_5_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_5_0_0;
-		_widget_4_0_5_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_5_0_0;
-		_widget_4_0_5_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_5_0_0;
-		_widget_4_0_5_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_5_0_0;
-		_widget_4_0_5_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_5_0_0;
-		_widget_4_0_5_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_5_0_0;
-		_widget_4_0_5_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_5_0_0;
-		_widget_4_0_5_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_5_0_0;
-		_widget_4_0_5_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_5_0_0;
-		_widget_4_0_5_1.EventFire -= EventListenerOf_widget_4_0_5_1;
-		_widget_4_0_5_1.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_5_1;
-		_widget_4_0_5_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_5_1;
-		_widget_4_0_5_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_5_1;
-		_widget_4_0_5_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_5_1;
-		_widget_4_0_5_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_5_1;
-		_widget_4_0_5_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_5_1;
-		_widget_4_0_5_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_5_1;
-		_widget_4_0_5_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_5_1;
-		_widget_4_0_5_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_5_1;
-		_widget_4_0_5_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_5_1_0;
-		_widget_4_0_5_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_5_1_0;
-		_widget_4_0_5_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_5_1_0;
-		_widget_4_0_5_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_5_1_0;
-		_widget_4_0_5_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_5_1_0;
-		_widget_4_0_5_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_5_1_0;
-		_widget_4_0_5_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_5_1_0;
-		_widget_4_0_5_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_5_1_0;
-		_widget_4_0_5_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_5_1_0;
-		_widget_4_0_5_2.EventFire -= EventListenerOf_widget_4_0_5_2;
-		_widget_4_0_5_2.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_5_2;
-		_widget_4_0_5_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_5_2;
-		_widget_4_0_5_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_5_2;
-		_widget_4_0_5_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_5_2;
-		_widget_4_0_5_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_5_2;
-		_widget_4_0_5_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_5_2;
-		_widget_4_0_5_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_5_2;
-		_widget_4_0_5_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_5_2;
-		_widget_4_0_5_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_5_2;
-		_widget_4_0_5_2_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_5_2_0;
-		_widget_4_0_5_2_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_5_2_0;
-		_widget_4_0_5_2_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_5_2_0;
-		_widget_4_0_5_2_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_5_2_0;
-		_widget_4_0_5_2_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_5_2_0;
-		_widget_4_0_5_2_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_5_2_0;
-		_widget_4_0_5_2_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_5_2_0;
-		_widget_4_0_5_2_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_5_2_0;
-		_widget_4_0_5_2_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_5_2_0;
-		_widget_4_0_5_3.EventFire -= EventListenerOf_widget_4_0_5_3;
-		_widget_4_0_5_3.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_5_3;
-		_widget_4_0_5_3.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_5_3;
-		_widget_4_0_5_3.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_5_3;
-		_widget_4_0_5_3.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_5_3;
-		_widget_4_0_5_3.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_5_3;
-		_widget_4_0_5_3.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_5_3;
-		_widget_4_0_5_3.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_5_3;
-		_widget_4_0_5_3.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_5_3;
-		_widget_4_0_5_3.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_5_3;
-		_widget_4_0_5_3_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_5_3_0;
-		_widget_4_0_5_3_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_5_3_0;
-		_widget_4_0_5_3_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_5_3_0;
-		_widget_4_0_5_3_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_5_3_0;
-		_widget_4_0_5_3_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_5_3_0;
-		_widget_4_0_5_3_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_5_3_0;
-		_widget_4_0_5_3_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_5_3_0;
-		_widget_4_0_5_3_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_5_3_0;
-		_widget_4_0_5_3_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_5_3_0;
-		_widget_4_0_6.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_6;
-		_widget_4_0_6.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_6;
-		_widget_4_0_6.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_6;
-		_widget_4_0_6.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_6;
-		_widget_4_0_6.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_6;
-		_widget_4_0_6.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_6;
-		_widget_4_0_6.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_6;
-		_widget_4_0_6.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_6;
-		_widget_4_0_6.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_6;
-		_widget_4_0_7_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_7_0;
-		_widget_4_0_7_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_7_0;
-		_widget_4_0_7_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_7_0;
-		_widget_4_0_7_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_7_0;
-		_widget_4_0_7_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_7_0;
-		_widget_4_0_7_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_7_0;
-		_widget_4_0_7_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_7_0;
-		_widget_4_0_7_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_7_0;
-		_widget_4_0_7_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_7_0;
-		_widget_4_0_7_1.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_7_1;
-		_widget_4_0_7_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_7_1;
-		_widget_4_0_7_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_7_1;
-		_widget_4_0_7_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_7_1;
-		_widget_4_0_7_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_7_1;
-		_widget_4_0_7_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_7_1;
-		_widget_4_0_7_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_7_1;
-		_widget_4_0_7_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_7_1;
-		_widget_4_0_7_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_7_1;
-		_widget_4_0_7_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_7_1_0;
-		_widget_4_0_7_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_7_1_0;
-		_widget_4_0_7_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_7_1_0;
-		_widget_4_0_7_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_7_1_0;
-		_widget_4_0_7_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_7_1_0;
-		_widget_4_0_7_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_7_1_0;
-		_widget_4_0_7_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_7_1_0;
-		_widget_4_0_7_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_7_1_0;
-		_widget_4_0_7_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_7_1_0;
-		_widget_4_0_7_1_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_7_1_1_0;
-		_widget_4_0_7_1_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_7_1_1_0;
-		_widget_4_0_7_1_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_7_1_1_0;
-		_widget_4_0_7_1_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_7_1_1_0;
-		_widget_4_0_7_1_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_7_1_1_0;
-		_widget_4_0_7_1_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_7_1_1_0;
-		_widget_4_0_7_1_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_7_1_1_0;
-		_widget_4_0_7_1_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_7_1_1_0;
-		_widget_4_0_7_1_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_7_1_1_0;
-		_widget_4_0_7_1_2.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_7_1_2;
-		_widget_4_0_7_1_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_7_1_2;
-		_widget_4_0_7_1_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_7_1_2;
-		_widget_4_0_7_1_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_7_1_2;
-		_widget_4_0_7_1_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_7_1_2;
-		_widget_4_0_7_1_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_7_1_2;
-		_widget_4_0_7_1_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_7_1_2;
-		_widget_4_0_7_1_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_7_1_2;
-		_widget_4_0_7_1_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_7_1_2;
-		if (_datasource_Root_GoldChangeTooltip != null)
-		{
-			_datasource_Root_GoldChangeTooltip.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_widget_1_0.EventFire -= EventListenerOf_widget_1_0;
-			_datasource_Root_GoldChangeTooltip = null;
-		}
+		_widget_3_0_0.EventFire -= EventListenerOf_widget_3_0_0;
+		_widget_3_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_0;
+		_widget_3_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_0;
+		_widget_3_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_0;
+		_widget_3_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_0;
+		_widget_3_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_0;
+		_widget_3_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_0;
+		_widget_3_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_0;
+		_widget_3_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_0;
+		_widget_3_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_0;
+		_widget_3_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_2;
+		_widget_3_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_2;
+		_widget_3_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_2;
+		_widget_3_0_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_2;
+		_widget_3_0_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_2;
+		_widget_3_0_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_2;
+		_widget_3_0_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_2;
+		_widget_3_0_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_2;
+		_widget_3_0_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_2;
+		_widget_3_0_3_0_0.EventFire -= EventListenerOf_widget_3_0_3_0_0;
+		_widget_3_0_3_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_3_0_0;
+		_widget_3_0_3_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_3_0_0;
+		_widget_3_0_3_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_3_0_0;
+		_widget_3_0_3_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_3_0_0;
+		_widget_3_0_3_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_3_0_0;
+		_widget_3_0_3_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_3_0_0;
+		_widget_3_0_3_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_3_0_0;
+		_widget_3_0_3_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_3_0_0;
+		_widget_3_0_3_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_3_0_0;
+		_widget_3_0_3_0_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+		_widget_3_0_3_0_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+		_widget_3_0_3_0_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+		_widget_3_0_3_0_0_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+		_widget_3_0_3_0_0_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+		_widget_3_0_3_0_0_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+		_widget_3_0_3_0_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+		_widget_3_0_3_0_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+		_widget_3_0_3_0_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+		_widget_3_0_3_0_0_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+		_widget_3_0_3_0_0_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+		_widget_3_0_3_0_0_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+		_widget_3_0_3_0_0_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+		_widget_3_0_3_0_0_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+		_widget_3_0_3_0_0_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+		_widget_3_0_3_0_0_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+		_widget_3_0_3_0_0_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+		_widget_3_0_3_0_0_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+		_widget_3_0_4.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_4;
+		_widget_3_0_4.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_4;
+		_widget_3_0_4.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_4;
+		_widget_3_0_4.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_4;
+		_widget_3_0_4.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_4;
+		_widget_3_0_4.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_4;
+		_widget_3_0_4.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_4;
+		_widget_3_0_4.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_4;
+		_widget_3_0_4.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_4;
+		_widget_3_0_5_0.EventFire -= EventListenerOf_widget_3_0_5_0;
+		_widget_3_0_5_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_5_0;
+		_widget_3_0_5_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_5_0;
+		_widget_3_0_5_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_5_0;
+		_widget_3_0_5_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_5_0;
+		_widget_3_0_5_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_5_0;
+		_widget_3_0_5_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_5_0;
+		_widget_3_0_5_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_5_0;
+		_widget_3_0_5_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_5_0;
+		_widget_3_0_5_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_5_0;
+		_widget_3_0_5_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_5_0_0;
+		_widget_3_0_5_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_5_0_0;
+		_widget_3_0_5_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_5_0_0;
+		_widget_3_0_5_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_5_0_0;
+		_widget_3_0_5_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_5_0_0;
+		_widget_3_0_5_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_5_0_0;
+		_widget_3_0_5_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_5_0_0;
+		_widget_3_0_5_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_5_0_0;
+		_widget_3_0_5_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_5_0_0;
+		_widget_3_0_5_1.EventFire -= EventListenerOf_widget_3_0_5_1;
+		_widget_3_0_5_1.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_5_1;
+		_widget_3_0_5_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_5_1;
+		_widget_3_0_5_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_5_1;
+		_widget_3_0_5_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_5_1;
+		_widget_3_0_5_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_5_1;
+		_widget_3_0_5_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_5_1;
+		_widget_3_0_5_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_5_1;
+		_widget_3_0_5_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_5_1;
+		_widget_3_0_5_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_5_1;
+		_widget_3_0_5_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_5_1_0;
+		_widget_3_0_5_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_5_1_0;
+		_widget_3_0_5_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_5_1_0;
+		_widget_3_0_5_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_5_1_0;
+		_widget_3_0_5_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_5_1_0;
+		_widget_3_0_5_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_5_1_0;
+		_widget_3_0_5_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_5_1_0;
+		_widget_3_0_5_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_5_1_0;
+		_widget_3_0_5_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_5_1_0;
+		_widget_3_0_5_2.EventFire -= EventListenerOf_widget_3_0_5_2;
+		_widget_3_0_5_2.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_5_2;
+		_widget_3_0_5_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_5_2;
+		_widget_3_0_5_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_5_2;
+		_widget_3_0_5_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_5_2;
+		_widget_3_0_5_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_5_2;
+		_widget_3_0_5_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_5_2;
+		_widget_3_0_5_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_5_2;
+		_widget_3_0_5_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_5_2;
+		_widget_3_0_5_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_5_2;
+		_widget_3_0_5_2_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_5_2_0;
+		_widget_3_0_5_2_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_5_2_0;
+		_widget_3_0_5_2_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_5_2_0;
+		_widget_3_0_5_2_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_5_2_0;
+		_widget_3_0_5_2_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_5_2_0;
+		_widget_3_0_5_2_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_5_2_0;
+		_widget_3_0_5_2_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_5_2_0;
+		_widget_3_0_5_2_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_5_2_0;
+		_widget_3_0_5_2_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_5_2_0;
+		_widget_3_0_5_3.EventFire -= EventListenerOf_widget_3_0_5_3;
+		_widget_3_0_5_3.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_5_3;
+		_widget_3_0_5_3.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_5_3;
+		_widget_3_0_5_3.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_5_3;
+		_widget_3_0_5_3.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_5_3;
+		_widget_3_0_5_3.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_5_3;
+		_widget_3_0_5_3.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_5_3;
+		_widget_3_0_5_3.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_5_3;
+		_widget_3_0_5_3.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_5_3;
+		_widget_3_0_5_3.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_5_3;
+		_widget_3_0_5_3_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_5_3_0;
+		_widget_3_0_5_3_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_5_3_0;
+		_widget_3_0_5_3_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_5_3_0;
+		_widget_3_0_5_3_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_5_3_0;
+		_widget_3_0_5_3_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_5_3_0;
+		_widget_3_0_5_3_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_5_3_0;
+		_widget_3_0_5_3_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_5_3_0;
+		_widget_3_0_5_3_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_5_3_0;
+		_widget_3_0_5_3_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_5_3_0;
+		_widget_3_0_6.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_6;
+		_widget_3_0_6.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_6;
+		_widget_3_0_6.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_6;
+		_widget_3_0_6.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_6;
+		_widget_3_0_6.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_6;
+		_widget_3_0_6.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_6;
+		_widget_3_0_6.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_6;
+		_widget_3_0_6.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_6;
+		_widget_3_0_6.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_6;
+		_widget_3_0_7_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_7_0;
+		_widget_3_0_7_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_7_0;
+		_widget_3_0_7_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_7_0;
+		_widget_3_0_7_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_7_0;
+		_widget_3_0_7_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_7_0;
+		_widget_3_0_7_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_7_0;
+		_widget_3_0_7_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_7_0;
+		_widget_3_0_7_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_7_0;
+		_widget_3_0_7_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_7_0;
+		_widget_3_0_7_1.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_7_1;
+		_widget_3_0_7_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_7_1;
+		_widget_3_0_7_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_7_1;
+		_widget_3_0_7_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_7_1;
+		_widget_3_0_7_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_7_1;
+		_widget_3_0_7_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_7_1;
+		_widget_3_0_7_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_7_1;
+		_widget_3_0_7_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_7_1;
+		_widget_3_0_7_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_7_1;
+		_widget_3_0_7_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_7_1_0;
+		_widget_3_0_7_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_7_1_0;
+		_widget_3_0_7_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_7_1_0;
+		_widget_3_0_7_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_7_1_0;
+		_widget_3_0_7_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_7_1_0;
+		_widget_3_0_7_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_7_1_0;
+		_widget_3_0_7_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_7_1_0;
+		_widget_3_0_7_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_7_1_0;
+		_widget_3_0_7_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_7_1_0;
+		_widget_3_0_7_1_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_7_1_1_0;
+		_widget_3_0_7_1_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_7_1_1_0;
+		_widget_3_0_7_1_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_7_1_1_0;
+		_widget_3_0_7_1_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_7_1_1_0;
+		_widget_3_0_7_1_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_7_1_1_0;
+		_widget_3_0_7_1_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_7_1_1_0;
+		_widget_3_0_7_1_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_7_1_1_0;
+		_widget_3_0_7_1_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_7_1_1_0;
+		_widget_3_0_7_1_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_7_1_1_0;
+		_widget_3_0_7_1_2.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_7_1_2;
+		_widget_3_0_7_1_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_7_1_2;
+		_widget_3_0_7_1_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_7_1_2;
+		_widget_3_0_7_1_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_7_1_2;
+		_widget_3_0_7_1_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_7_1_2;
+		_widget_3_0_7_1_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_7_1_2;
+		_widget_3_0_7_1_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_7_1_2;
+		_widget_3_0_7_1_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_7_1_2;
+		_widget_3_0_7_1_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_7_1_2;
 		if (_datasource_Root_ClanMembers != null)
 		{
-			_widget_2_0.DestroyDataSource();
+			_widget_1_0.DestroyDataSource();
 			_datasource_Root_ClanMembers.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ClanMembers;
 			_datasource_Root_ClanMembers.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ClanMembers;
 			_datasource_Root_ClanMembers.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ClanMembers;
@@ -1216,7 +817,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		}
 		if (_datasource_Root_ClanParties != null)
 		{
-			_widget_2_1.DestroyDataSource();
+			_widget_1_1.DestroyDataSource();
 			_datasource_Root_ClanParties.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ClanParties;
 			_datasource_Root_ClanParties.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ClanParties;
 			_datasource_Root_ClanParties.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ClanParties;
@@ -1230,7 +831,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		}
 		if (_datasource_Root_ClanFiefs != null)
 		{
-			_widget_2_2.DestroyDataSource();
+			_widget_1_2.DestroyDataSource();
 			_datasource_Root_ClanFiefs.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ClanFiefs;
 			_datasource_Root_ClanFiefs.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ClanFiefs;
 			_datasource_Root_ClanFiefs.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ClanFiefs;
@@ -1244,7 +845,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		}
 		if (_datasource_Root_ClanIncome != null)
 		{
-			_widget_2_3.DestroyDataSource();
+			_widget_1_3.DestroyDataSource();
 			_datasource_Root_ClanIncome.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ClanIncome;
 			_datasource_Root_ClanIncome.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ClanIncome;
 			_datasource_Root_ClanIncome.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ClanIncome;
@@ -1267,15 +868,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_ClanBanner.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ClanBanner;
 			_datasource_Root_ClanBanner.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ClanBanner;
 			_datasource_Root_ClanBanner.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ClanBanner;
-			_widget_4_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_0_0;
+			_widget_3_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_0_0;
 			_datasource_Root_ClanBanner = null;
 		}
 		if (_datasource_Root_ClanBannerHint != null)
@@ -1289,7 +890,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_ClanBannerHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ClanBannerHint;
 			_datasource_Root_ClanBannerHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ClanBannerHint;
 			_datasource_Root_ClanBannerHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ClanBannerHint;
-			_widget_4_0_0_1.EventFire -= EventListenerOf_widget_4_0_0_1;
+			_widget_3_0_0_1.EventFire -= EventListenerOf_widget_3_0_0_1;
 			_datasource_Root_ClanBannerHint = null;
 		}
 		if (_datasource_Root_Leader != null)
@@ -1303,7 +904,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_Leader.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Leader;
 			_datasource_Root_Leader.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Leader;
 			_datasource_Root_Leader.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Leader;
-			_widget_4_0_1.EventFire -= EventListenerOf_widget_4_0_1;
+			_widget_3_0_1.EventFire -= EventListenerOf_widget_3_0_1;
 			if (_datasource_Root_Leader_ImageIdentifier != null)
 			{
 				_datasource_Root_Leader_ImageIdentifier.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Leader_ImageIdentifier;
@@ -1315,15 +916,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				_datasource_Root_Leader_ImageIdentifier.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Leader_ImageIdentifier;
 				_datasource_Root_Leader_ImageIdentifier.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Leader_ImageIdentifier;
 				_datasource_Root_Leader_ImageIdentifier.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Leader_ImageIdentifier;
-				_widget_4_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_1_0;
+				_widget_3_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_1_0;
 				_datasource_Root_Leader_ImageIdentifier = null;
 			}
 			_datasource_Root_Leader = null;
@@ -1339,7 +940,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_ChangeClanNameHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ChangeClanNameHint;
 			_datasource_Root_ChangeClanNameHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ChangeClanNameHint;
 			_datasource_Root_ChangeClanNameHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ChangeClanNameHint;
-			_widget_4_0_3_0_1.EventFire -= EventListenerOf_widget_4_0_3_0_1;
+			_widget_3_0_3_0_1.EventFire -= EventListenerOf_widget_3_0_3_0_1;
 			_datasource_Root_ChangeClanNameHint = null;
 		}
 		if (_datasource_Root_PreviousTabInputKey != null)
@@ -1353,15 +954,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_PreviousTabInputKey.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_PreviousTabInputKey;
 			_datasource_Root_PreviousTabInputKey.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_PreviousTabInputKey;
 			_datasource_Root_PreviousTabInputKey.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_PreviousTabInputKey;
-			_widget_4_0_4_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_4_0;
+			_widget_3_0_4_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_4_0;
 			_datasource_Root_PreviousTabInputKey = null;
 		}
 		if (_datasource_Root_NextTabInputKey != null)
@@ -1375,15 +976,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_NextTabInputKey.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_NextTabInputKey;
 			_datasource_Root_NextTabInputKey.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_NextTabInputKey;
 			_datasource_Root_NextTabInputKey.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_NextTabInputKey;
-			_widget_4_0_6_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_6_0;
+			_widget_3_0_6_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_6_0;
 			_datasource_Root_NextTabInputKey = null;
 		}
 		if (_datasource_Root_RenownHint != null)
@@ -1397,12 +998,12 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_RenownHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_RenownHint;
 			_datasource_Root_RenownHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_RenownHint;
 			_datasource_Root_RenownHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_RenownHint;
-			_widget_4_0_7.EventFire -= EventListenerOf_widget_4_0_7;
+			_widget_3_0_7.EventFire -= EventListenerOf_widget_3_0_7;
 			_datasource_Root_RenownHint = null;
 		}
 		if (_datasource_Root_CardSelectionPopup != null)
 		{
-			_widget_6.DestroyDataSource();
+			_widget_5.DestroyDataSource();
 			_datasource_Root_CardSelectionPopup.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_CardSelectionPopup;
 			_datasource_Root_CardSelectionPopup.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_CardSelectionPopup;
 			_datasource_Root_CardSelectionPopup.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_CardSelectionPopup;
@@ -1425,15 +1026,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_TutorialNotification.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_TutorialNotification;
 			_datasource_Root_TutorialNotification.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_TutorialNotification;
 			_datasource_Root_TutorialNotification.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TutorialNotification;
-			_widget_7.PropertyChanged -= PropertyChangedListenerOf_widget_7;
-			_widget_7.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_7;
-			_widget_7.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_7;
-			_widget_7.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_7;
-			_widget_7.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_7;
-			_widget_7.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_7;
-			_widget_7.intPropertyChanged -= intPropertyChangedListenerOf_widget_7;
-			_widget_7.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_7;
-			_widget_7.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_7;
+			_widget_6.PropertyChanged -= PropertyChangedListenerOf_widget_6;
+			_widget_6.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_6;
+			_widget_6.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_6;
+			_widget_6.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_6;
+			_widget_6.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_6;
+			_widget_6.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_6;
+			_widget_6.intPropertyChanged -= intPropertyChangedListenerOf_widget_6;
+			_widget_6.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_6;
+			_widget_6.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_6;
 			_datasource_Root_TutorialNotification = null;
 		}
 		_datasource_Root = null;
@@ -1449,7 +1050,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		_ = commandName == "ResetCharacter";
 	}
 
-	private void EventListenerOf_widget_4_0_0(Widget widget, string commandName, object[] args)
+	private void EventListenerOf_widget_3_0_0(Widget widget, string commandName, object[] args)
 	{
 		if (commandName == "Click")
 		{
@@ -1457,7 +1058,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		}
 	}
 
-	private void EventListenerOf_widget_4_0_3_0_0(Widget widget, string commandName, object[] args)
+	private void EventListenerOf_widget_3_0_3_0_0(Widget widget, string commandName, object[] args)
 	{
 		if (commandName == "Click")
 		{
@@ -1465,7 +1066,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		}
 	}
 
-	private void EventListenerOf_widget_4_0_5_0(Widget widget, string commandName, object[] args)
+	private void EventListenerOf_widget_3_0_5_0(Widget widget, string commandName, object[] args)
 	{
 		if (commandName == "Click")
 		{
@@ -1474,7 +1075,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		}
 	}
 
-	private void EventListenerOf_widget_4_0_5_1(Widget widget, string commandName, object[] args)
+	private void EventListenerOf_widget_3_0_5_1(Widget widget, string commandName, object[] args)
 	{
 		if (commandName == "Click")
 		{
@@ -1483,7 +1084,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		}
 	}
 
-	private void EventListenerOf_widget_4_0_5_2(Widget widget, string commandName, object[] args)
+	private void EventListenerOf_widget_3_0_5_2(Widget widget, string commandName, object[] args)
 	{
 		if (commandName == "Click")
 		{
@@ -1492,7 +1093,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		}
 	}
 
-	private void EventListenerOf_widget_4_0_5_3(Widget widget, string commandName, object[] args)
+	private void EventListenerOf_widget_3_0_5_3(Widget widget, string commandName, object[] args)
 	{
 		if (commandName == "Click")
 		{
@@ -1501,19 +1102,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		}
 	}
 
-	private void EventListenerOf_widget_1_0(Widget widget, string commandName, object[] args)
-	{
-		if (commandName == "HoverBegin")
-		{
-			_datasource_Root_GoldChangeTooltip.ExecuteBeginHint();
-		}
-		if (commandName == "HoverEnd")
-		{
-			_datasource_Root_GoldChangeTooltip.ExecuteEndHint();
-		}
-	}
-
-	private void EventListenerOf_widget_4_0_0_1(Widget widget, string commandName, object[] args)
+	private void EventListenerOf_widget_3_0_0_1(Widget widget, string commandName, object[] args)
 	{
 		if (commandName == "HoverBegin")
 		{
@@ -1525,7 +1114,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		}
 	}
 
-	private void EventListenerOf_widget_4_0_1(Widget widget, string commandName, object[] args)
+	private void EventListenerOf_widget_3_0_1(Widget widget, string commandName, object[] args)
 	{
 		if (commandName == "Click")
 		{
@@ -1541,7 +1130,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		}
 	}
 
-	private void EventListenerOf_widget_4_0_3_0_1(Widget widget, string commandName, object[] args)
+	private void EventListenerOf_widget_3_0_3_0_1(Widget widget, string commandName, object[] args)
 	{
 		if (commandName == "HoverBegin")
 		{
@@ -1553,7 +1142,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		}
 	}
 
-	private void EventListenerOf_widget_4_0_7(Widget widget, string commandName, object[] args)
+	private void EventListenerOf_widget_3_0_7(Widget widget, string commandName, object[] args)
 	{
 		if (commandName == "HoverBegin")
 		{
@@ -1565,1939 +1154,1356 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_1_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_3_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_0(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_1_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_3_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_0(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_1_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_3_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_0(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_1_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_3_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_0(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_1_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_3_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_0(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_1_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_3_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_0(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_1_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_3_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_0(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_1_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_3_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_0(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_1_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_3_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_0(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_1_3_0(string propertyName)
-	{
-		if (propertyName == "Text")
-		{
-			_datasource_Root.FinanceText = _widget_1_3_0.Text;
-		}
-	}
-
-	private void PropertyChangedListenerOf_widget_1_3_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_2_0(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_1_3_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_2_0(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_1_3_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_2_0(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_1_3_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_2_0(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_1_3_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_2_0(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_1_3_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_2_0(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_1_3_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_2_0(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_1_3_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_2_0(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_1_3_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_2_0(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_1_3_2_0(string propertyName)
-	{
-		if (propertyName == "Text")
-		{
-			_datasource_Root.TotalIncomeText = _widget_1_3_2_0.Text;
-		}
-	}
-
-	private void PropertyChangedListenerOf_widget_1_3_2_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_2_1(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_1_3_2_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_2_1(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_1_3_2_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_2_1(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_1_3_2_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_2_1(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_1_3_2_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_2_1(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_1_3_2_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_2_1(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_1_3_2_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_2_1(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_1_3_2_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_2_1(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_1_3_2_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_2_1(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_1_3_2_1(string propertyName)
-	{
-		if (propertyName == "Text")
-		{
-			_datasource_Root.TotalIncomeValueText = _widget_1_3_2_1.Text;
-		}
-	}
-
-	private void PropertyChangedListenerOf_widget_1_3_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_3_0(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_1_3_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_3_0(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_1_3_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_3_0(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_1_3_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_3_0(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_1_3_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_3_0(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_1_3_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_3_0(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_1_3_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_3_0(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_1_3_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_3_0(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_1_3_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_3_0(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_1_3_3_0(string propertyName)
-	{
-		if (propertyName == "Text")
-		{
-			_datasource_Root.TotalExpensesText = _widget_1_3_3_0.Text;
-		}
-	}
-
-	private void PropertyChangedListenerOf_widget_1_3_3_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_3_1(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_1_3_3_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_3_1(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_1_3_3_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_3_1(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_1_3_3_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_3_1(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_1_3_3_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_3_1(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_1_3_3_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_3_1(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_1_3_3_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_3_1(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_1_3_3_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_3_1(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_1_3_3_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_3_1(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_1_3_3_1(string propertyName)
-	{
-		if (propertyName == "Text")
-		{
-			_datasource_Root.TotalExpensesValueText = _widget_1_3_3_1.Text;
-		}
-	}
-
-	private void PropertyChangedListenerOf_widget_1_3_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_4_0(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_1_3_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_4_0(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_1_3_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_4_0(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_1_3_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_4_0(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_1_3_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_4_0(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_1_3_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_4_0(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_1_3_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_4_0(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_1_3_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_4_0(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_1_3_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_4_0(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_1_3_4_0(string propertyName)
-	{
-		if (propertyName == "Text")
-		{
-			_datasource_Root.DailyChangeText = _widget_1_3_4_0.Text;
-		}
-	}
-
-	private void PropertyChangedListenerOf_widget_1_3_4_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_4_1(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_1_3_4_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_4_1(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_1_3_4_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_4_1(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_1_3_4_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_4_1(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_1_3_4_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_4_1(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_1_3_4_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_4_1(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_1_3_4_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_4_1(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_1_3_4_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_4_1(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_1_3_4_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_4_1(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_1_3_4_1(string propertyName)
-	{
-		if (propertyName == "Text")
-		{
-			_datasource_Root.DailyChangeValueText = _widget_1_3_4_1.Text;
-		}
-	}
-
-	private void PropertyChangedListenerOf_widget_1_3_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_5_0(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_1_3_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_5_0(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_1_3_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_5_0(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_1_3_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_5_0(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_1_3_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_5_0(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_1_3_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_5_0(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_1_3_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_5_0(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_1_3_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_5_0(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_1_3_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_5_0(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_1_3_5_0(string propertyName)
-	{
-		if (propertyName == "Text")
-		{
-			_datasource_Root.CurrentGoldText = _widget_1_3_5_0.Text;
-		}
-	}
-
-	private void PropertyChangedListenerOf_widget_1_3_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_5_1(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_1_3_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_5_1(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_1_3_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_5_1(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_1_3_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_5_1(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_1_3_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_5_1(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_1_3_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_5_1(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_1_3_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_5_1(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_1_3_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_5_1(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_1_3_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_5_1(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_1_3_5_1(string propertyName)
-	{
-		if (propertyName == "IntText")
-		{
-			_datasource_Root.CurrentGold = _widget_1_3_5_1.IntText;
-		}
-	}
-
-	private void PropertyChangedListenerOf_widget_1_3_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_6_0(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_1_3_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_6_0(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_1_3_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_6_0(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_1_3_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_6_0(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_1_3_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_6_0(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_1_3_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_6_0(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_1_3_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_6_0(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_1_3_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_6_0(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_1_3_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_6_0(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_1_3_6_0(string propertyName)
-	{
-		if (propertyName == "Text")
-		{
-			_datasource_Root.ExpectedGoldText = _widget_1_3_6_0.Text;
-		}
-	}
-
-	private void PropertyChangedListenerOf_widget_1_3_6_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_6_1(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_1_3_6_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_6_1(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_1_3_6_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_6_1(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_1_3_6_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_6_1(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_1_3_6_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_6_1(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_1_3_6_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_6_1(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_1_3_6_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_6_1(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_1_3_6_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_6_1(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_1_3_6_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_1_3_6_1(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_1_3_6_1(string propertyName)
-	{
-		if (propertyName == "IntText")
-		{
-			_datasource_Root.ExpectedGold = _widget_1_3_6_1.IntText;
-		}
-	}
-
-	private void PropertyChangedListenerOf_widget_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_0(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_0(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_0(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_0(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_0(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_0(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_0(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_0(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_4_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_0(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_4_0_0(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_0(string propertyName)
 	{
 		if (propertyName == "IsEnabled")
 		{
-			_datasource_Root.CanChooseBanner = _widget_4_0_0.IsEnabled;
+			_datasource_Root.CanChooseBanner = _widget_3_0_0.IsEnabled;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_2(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_2(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_2(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_2(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_2(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_2(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_2(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_2(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_2(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_2(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_2(string propertyName)
 	{
 		if (propertyName == "Text")
 		{
-			_datasource_Root.LeaderText = _widget_4_0_2.Text;
+			_datasource_Root.LeaderText = _widget_3_0_2.Text;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_3_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_3_0_0(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_3_0_0(string propertyName)
 	{
 		if (propertyName == "IsEnabled")
 		{
-			_datasource_Root.PlayerCanChangeClanName = _widget_4_0_3_0_0.IsEnabled;
+			_datasource_Root.PlayerCanChangeClanName = _widget_3_0_3_0_0.IsEnabled;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_3_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_3_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0_0_0(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_3_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_3_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0_0_0(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_3_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_3_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0_0_0(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_3_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_3_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0_0_0(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_3_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_3_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0_0_0(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_3_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_3_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0_0_0(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_3_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_3_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0_0_0(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_3_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_3_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0_0_0(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_3_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_3_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0_0_0(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_3_0_0_0_0(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_3_0_0_0_0(string propertyName)
 	{
 		if (propertyName == "Text")
 		{
-			_datasource_Root.Name = _widget_4_0_3_0_0_0_0.Text;
+			_datasource_Root.Name = _widget_3_0_3_0_0_0_0.Text;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_3_0_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_3_0_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0_0_1(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_3_0_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_3_0_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0_0_1(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_3_0_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_3_0_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0_0_1(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_3_0_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_3_0_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0_0_1(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_3_0_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_3_0_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0_0_1(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_3_0_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_3_0_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0_0_1(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_3_0_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_3_0_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0_0_1(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_3_0_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_3_0_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0_0_1(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_3_0_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_3_0_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_3_0_0_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_3_0_0_0_1(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_3_0_0_0_1(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_3_0_0_0_1(string propertyName)
 	{
 		if (propertyName == "IsEnabled")
 		{
-			_datasource_Root.PlayerCanChangeClanName = _widget_4_0_3_0_0_0_1.IsEnabled;
+			_datasource_Root.PlayerCanChangeClanName = _widget_3_0_3_0_0_0_1.IsEnabled;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_4(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_4(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_4(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_4(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_4(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_4(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_4(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_4(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_4(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_4(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_4(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_4(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_4(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_4(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_4(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_4(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_4(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_4(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_4(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_4(string propertyName)
 	{
 		if (propertyName == "IsVisible")
 		{
-			_datasource_Root.CanSwitchTabs = _widget_4_0_4.IsVisible;
+			_datasource_Root.CanSwitchTabs = _widget_3_0_4.IsVisible;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_0(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_0(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_0(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_0(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_0(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_0(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_0(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_0(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_5_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_0(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_5_0(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_5_0(string propertyName)
 	{
 		if (propertyName == "IsSelected")
 		{
-			_datasource_Root.IsMembersSelected = _widget_4_0_5_0.IsSelected;
+			_datasource_Root.IsMembersSelected = _widget_3_0_5_0.IsSelected;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_5_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_5_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_0_0(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_5_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_5_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_0_0(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_5_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_5_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_0_0(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_5_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_5_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_0_0(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_5_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_5_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_0_0(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_5_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_5_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_0_0(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_5_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_5_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_0_0(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_5_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_5_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_0_0(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_5_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_5_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_0_0(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_5_0_0(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_5_0_0(string propertyName)
 	{
 		if (propertyName == "Text")
 		{
-			_datasource_Root.MembersText = _widget_4_0_5_0_0.Text;
+			_datasource_Root.MembersText = _widget_3_0_5_0_0.Text;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_1(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_1(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_1(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_1(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_1(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_1(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_1(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_1(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_5_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_1(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_5_1(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_5_1(string propertyName)
 	{
 		if (propertyName == "IsSelected")
 		{
-			_datasource_Root.IsPartiesSelected = _widget_4_0_5_1.IsSelected;
+			_datasource_Root.IsPartiesSelected = _widget_3_0_5_1.IsSelected;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_5_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_5_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_1_0(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_5_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_5_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_1_0(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_5_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_5_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_1_0(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_5_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_5_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_1_0(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_5_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_5_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_1_0(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_5_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_5_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_1_0(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_5_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_5_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_1_0(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_5_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_5_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_1_0(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_5_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_5_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_1_0(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_5_1_0(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_5_1_0(string propertyName)
 	{
 		if (propertyName == "Text")
 		{
-			_datasource_Root.PartiesText = _widget_4_0_5_1_0.Text;
+			_datasource_Root.PartiesText = _widget_3_0_5_1_0.Text;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_2(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_2(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_2(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_2(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_2(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_2(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_2(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_2(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_2(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_5_2(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_5_2(string propertyName)
 	{
 		if (propertyName == "IsSelected")
 		{
-			_datasource_Root.IsFiefsSelected = _widget_4_0_5_2.IsSelected;
+			_datasource_Root.IsFiefsSelected = _widget_3_0_5_2.IsSelected;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_5_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_5_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_2_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_2_0(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_5_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_5_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_2_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_2_0(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_5_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_5_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_2_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_2_0(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_5_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_5_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_2_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_2_0(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_5_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_5_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_2_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_2_0(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_5_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_5_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_2_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_2_0(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_5_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_5_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_2_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_2_0(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_5_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_5_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_2_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_2_0(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_5_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_5_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_2_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_2_0(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_5_2_0(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_5_2_0(string propertyName)
 	{
 		if (propertyName == "Text")
 		{
-			_datasource_Root.FiefsText = _widget_4_0_5_2_0.Text;
+			_datasource_Root.FiefsText = _widget_3_0_5_2_0.Text;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_5_3(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_5_3(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_3(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_3(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_5_3(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_5_3(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_3(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_3(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_5_3(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_5_3(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_3(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_3(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_5_3(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_5_3(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_3(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_3(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_5_3(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_5_3(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_3(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_3(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_5_3(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_5_3(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_3(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_3(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_5_3(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_5_3(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_3(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_3(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_5_3(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_5_3(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_3(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_3(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_5_3(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_5_3(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_3(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_3(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_5_3(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_5_3(string propertyName)
 	{
 		if (propertyName == "IsSelected")
 		{
-			_datasource_Root.IsIncomeSelected = _widget_4_0_5_3.IsSelected;
+			_datasource_Root.IsIncomeSelected = _widget_3_0_5_3.IsSelected;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_5_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_5_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_3_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_3_0(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_5_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_5_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_3_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_3_0(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_5_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_5_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_3_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_3_0(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_5_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_5_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_3_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_3_0(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_5_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_5_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_3_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_3_0(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_5_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_5_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_3_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_3_0(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_5_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_5_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_3_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_3_0(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_5_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_5_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_3_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_3_0(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_5_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_5_3_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_5_3_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_5_3_0(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_5_3_0(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_5_3_0(string propertyName)
 	{
 		if (propertyName == "Text")
 		{
-			_datasource_Root.IncomeText = _widget_4_0_5_3_0.Text;
+			_datasource_Root.IncomeText = _widget_3_0_5_3_0.Text;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_6(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_6(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_6(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_6(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_6(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_6(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_6(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_6(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_6(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_6(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_6(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_6(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_6(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_6(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_6(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_6(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_6(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_6(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_6(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_6(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_6(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_6(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_6(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_6(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_6(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_6(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_6(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_6(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_6(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_6(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_6(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_6(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_6(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_6(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_6(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_6(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_6(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_6(string propertyName)
 	{
 		if (propertyName == "IsVisible")
 		{
-			_datasource_Root.CanSwitchTabs = _widget_4_0_6.IsVisible;
+			_datasource_Root.CanSwitchTabs = _widget_3_0_6.IsVisible;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_7_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_7_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_0(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_7_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_7_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_0(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_7_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_7_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_0(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_7_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_7_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_0(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_7_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_7_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_0(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_7_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_7_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_0(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_7_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_7_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_0(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_7_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_7_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_0(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_7_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_7_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_0(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_7_0(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_7_0(string propertyName)
 	{
 		if (propertyName == "Text")
 		{
-			_datasource_Root.CurrentRenownText = _widget_4_0_7_0.Text;
+			_datasource_Root.CurrentRenownText = _widget_3_0_7_0.Text;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_7_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_7_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_7_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_7_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_7_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_7_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_7_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_7_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_7_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_7_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_7_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_7_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_7_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_7_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_7_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_7_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_7_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_7_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_7_1(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_7_1(string propertyName)
 	{
 		if (propertyName == "IsHidden")
 		{
-			_datasource_Root.IsRenownProgressComplete = _widget_4_0_7_1.IsHidden;
+			_datasource_Root.IsRenownProgressComplete = _widget_3_0_7_1.IsHidden;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_7_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_7_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_0(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_7_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_7_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_0(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_7_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_7_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_0(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_7_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_7_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_0(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_7_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_7_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_0(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_7_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_7_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_0(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_7_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_7_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_0(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_7_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_7_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_0(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_7_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_7_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_0(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_7_1_0(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_7_1_0(string propertyName)
 	{
 		if (propertyName == "IntText")
 		{
-			_datasource_Root.CurrentTier = _widget_4_0_7_1_0.IntText;
+			_datasource_Root.CurrentTier = _widget_3_0_7_1_0.IntText;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_7_1_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_7_1_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_1_0(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_7_1_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_7_1_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_1_0(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_7_1_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_7_1_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_1_0(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_7_1_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_7_1_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_1_0(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_7_1_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_7_1_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_1_0(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_7_1_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_7_1_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_1_0(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_7_1_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_7_1_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_1_0(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_7_1_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_7_1_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_1_0(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_7_1_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_7_1_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_1_0(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_7_1_1_0(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_7_1_1_0(string propertyName)
 	{
 		if (propertyName == "InitialAmount")
 		{
-			_datasource_Root.CurrentRenownOverPreviousTier = _widget_4_0_7_1_1_0.InitialAmount;
+			_datasource_Root.CurrentRenownOverPreviousTier = _widget_3_0_7_1_1_0.InitialAmount;
 		}
 		else if (propertyName == "MaxAmount")
 		{
-			_datasource_Root.CurrentTierRenownRange = _widget_4_0_7_1_1_0.MaxAmount;
+			_datasource_Root.CurrentTierRenownRange = _widget_3_0_7_1_1_0.MaxAmount;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_7_1_2(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_7_1_2(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_2(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_7_1_2(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_7_1_2(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_2(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_7_1_2(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_7_1_2(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_2(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_7_1_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_7_1_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_2(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_7_1_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_7_1_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_2(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_7_1_2(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_7_1_2(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_2(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_7_1_2(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_7_1_2(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_2(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_7_1_2(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_7_1_2(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_2(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_7_1_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_7_1_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_7_1_2(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_7_1_2(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_7_1_2(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_7_1_2(string propertyName)
 	{
 		if (propertyName == "IntText")
 		{
-			_datasource_Root.NextTier = _widget_4_0_7_1_2.IntText;
+			_datasource_Root.NextTier = _widget_3_0_7_1_2.IntText;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_0_0(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_0_0(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_0_0(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_0_0(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_0_0(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_0_0(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_0_0(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_0_0(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_0_0(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_0_0(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_0_0(string propertyName)
 	{
 		switch (propertyName)
 		{
 		case "AdditionalArgs":
-			_datasource_Root_ClanBanner.AdditionalArgs = _widget_4_0_0_0.AdditionalArgs;
+			_datasource_Root_ClanBanner.AdditionalArgs = _widget_3_0_0_0.AdditionalArgs;
 			break;
 		case "ImageId":
-			_datasource_Root_ClanBanner.Id = _widget_4_0_0_0.ImageId;
+			_datasource_Root_ClanBanner.Id = _widget_3_0_0_0.ImageId;
 			break;
 		case "TextureProviderName":
-			_datasource_Root_ClanBanner.TextureProviderName = _widget_4_0_0_0.TextureProviderName;
+			_datasource_Root_ClanBanner.TextureProviderName = _widget_3_0_0_0.TextureProviderName;
 			break;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_1_0(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_1_0(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_1_0(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_1_0(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_1_0(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_1_0(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_1_0(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_1_0(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_1_0(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_1_0(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_1_0(string propertyName)
 	{
 		switch (propertyName)
 		{
 		case "AdditionalArgs":
-			_datasource_Root_Leader_ImageIdentifier.AdditionalArgs = _widget_4_0_1_0.AdditionalArgs;
+			_datasource_Root_Leader_ImageIdentifier.AdditionalArgs = _widget_3_0_1_0.AdditionalArgs;
 			break;
 		case "ImageId":
-			_datasource_Root_Leader_ImageIdentifier.Id = _widget_4_0_1_0.ImageId;
+			_datasource_Root_Leader_ImageIdentifier.Id = _widget_3_0_1_0.ImageId;
 			break;
 		case "TextureProviderName":
-			_datasource_Root_Leader_ImageIdentifier.TextureProviderName = _widget_4_0_1_0.TextureProviderName;
+			_datasource_Root_Leader_ImageIdentifier.TextureProviderName = _widget_3_0_1_0.TextureProviderName;
 			break;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_4_0_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_4_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_4_0(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_4_0_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_4_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_4_0(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_4_0_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_4_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_4_0(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_4_0_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_4_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_4_0(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_4_0_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_4_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_4_0(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_4_0_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_4_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_4_0(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_4_0_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_4_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_4_0(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_4_0_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_4_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_4_0(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_4_0_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_4_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_4_0_4_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_4_0(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_4_0_4_0(string propertyName)
-	{
-		if (propertyName == "KeyID")
-		{
-			_datasource_Root_PreviousTabInputKey.KeyID = _widget_4_0_4_0.KeyID;
-		}
-		else if (propertyName == "IsVisible")
-		{
-			_datasource_Root_PreviousTabInputKey.IsVisible = _widget_4_0_4_0.IsVisible;
-		}
-	}
-
-	private void PropertyChangedListenerOf_widget_4_0_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_6_0(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_4_0_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_6_0(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_4_0_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_6_0(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_4_0_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_6_0(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_4_0_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_6_0(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_4_0_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_6_0(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_4_0_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_6_0(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_4_0_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_6_0(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_4_0_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_4_0_6_0(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_4_0_6_0(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_4_0(string propertyName)
 	{
 		if (propertyName == "KeyID")
 		{
-			_datasource_Root_NextTabInputKey.KeyID = _widget_4_0_6_0.KeyID;
+			_datasource_Root_PreviousTabInputKey.KeyID = _widget_3_0_4_0.KeyID;
 		}
 		else if (propertyName == "IsVisible")
 		{
-			_datasource_Root_NextTabInputKey.IsVisible = _widget_4_0_6_0.IsVisible;
+			_datasource_Root_PreviousTabInputKey.IsVisible = _widget_3_0_4_0.IsVisible;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_7(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_3_0_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_7(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_6_0(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_7(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_3_0_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_7(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_6_0(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_7(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_3_0_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_7(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_6_0(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_7(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_3_0_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_7(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_6_0(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_7(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_3_0_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_7(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_6_0(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_7(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_3_0_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_7(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_6_0(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_7(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_3_0_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_7(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_6_0(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_7(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_3_0_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_7(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_6_0(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_7(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_3_0_6_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_7(propertyName);
+		HandleWidgetPropertyChangeOf_widget_3_0_6_0(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_7(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_3_0_6_0(string propertyName)
+	{
+		if (propertyName == "KeyID")
+		{
+			_datasource_Root_NextTabInputKey.KeyID = _widget_3_0_6_0.KeyID;
+		}
+		else if (propertyName == "IsVisible")
+		{
+			_datasource_Root_NextTabInputKey.IsVisible = _widget_3_0_6_0.IsVisible;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_6(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_6(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_6(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_6(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_6(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_6(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_6(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_6(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_6(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_6(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_6(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_6(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_6(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_6(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_6(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_6(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_6(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_6(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_6(string propertyName)
 	{
 		if (propertyName == "ElementID")
 		{
-			_datasource_Root_TutorialNotification.ElementID = _widget_7.ElementID;
+			_datasource_Root_TutorialNotification.ElementID = _widget_6.ElementID;
 		}
 	}
 
@@ -3550,9 +2556,6 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 	{
 		switch (propertyName)
 		{
-		case "GoldChangeTooltip":
-			RefreshDataSource_datasource_Root_GoldChangeTooltip(_datasource_Root.GoldChangeTooltip);
-			break;
 		case "ClanMembers":
 			RefreshDataSource_datasource_Root_ClanMembers(_datasource_Root.ClanMembers);
 			break;
@@ -3592,148 +2595,66 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		case "TutorialNotification":
 			RefreshDataSource_datasource_Root_TutorialNotification(_datasource_Root.TutorialNotification);
 			break;
-		case "FinanceText":
-			_widget_1_3_0.Text = _datasource_Root.FinanceText;
-			break;
-		case "TotalIncomeText":
-			_widget_1_3_2_0.Text = _datasource_Root.TotalIncomeText;
-			break;
-		case "TotalIncomeValueText":
-			_widget_1_3_2_1.Text = _datasource_Root.TotalIncomeValueText;
-			break;
-		case "TotalExpensesText":
-			_widget_1_3_3_0.Text = _datasource_Root.TotalExpensesText;
-			break;
-		case "TotalExpensesValueText":
-			_widget_1_3_3_1.Text = _datasource_Root.TotalExpensesValueText;
-			break;
-		case "DailyChangeText":
-			_widget_1_3_4_0.Text = _datasource_Root.DailyChangeText;
-			break;
-		case "DailyChangeValueText":
-			_widget_1_3_4_1.Text = _datasource_Root.DailyChangeValueText;
-			break;
-		case "CurrentGoldText":
-			_widget_1_3_5_0.Text = _datasource_Root.CurrentGoldText;
-			break;
-		case "CurrentGold":
-			_widget_1_3_5_1.IntText = _datasource_Root.CurrentGold;
-			break;
-		case "ExpectedGoldText":
-			_widget_1_3_6_0.Text = _datasource_Root.ExpectedGoldText;
-			break;
-		case "ExpectedGold":
-			_widget_1_3_6_1.IntText = _datasource_Root.ExpectedGold;
-			break;
 		case "CanChooseBanner":
-			_widget_4_0_0.IsEnabled = _datasource_Root.CanChooseBanner;
+			_widget_3_0_0.IsEnabled = _datasource_Root.CanChooseBanner;
 			break;
 		case "LeaderText":
-			_widget_4_0_2.Text = _datasource_Root.LeaderText;
+			_widget_3_0_2.Text = _datasource_Root.LeaderText;
 			break;
 		case "PlayerCanChangeClanName":
-			_widget_4_0_3_0_0.IsEnabled = _datasource_Root.PlayerCanChangeClanName;
-			_widget_4_0_3_0_0_0_1.IsEnabled = _datasource_Root.PlayerCanChangeClanName;
+			_widget_3_0_3_0_0.IsEnabled = _datasource_Root.PlayerCanChangeClanName;
+			_widget_3_0_3_0_0_0_1.IsEnabled = _datasource_Root.PlayerCanChangeClanName;
 			break;
 		case "Name":
-			_widget_4_0_3_0_0_0_0.Text = _datasource_Root.Name;
+			_widget_3_0_3_0_0_0_0.Text = _datasource_Root.Name;
 			break;
 		case "CanSwitchTabs":
-			_widget_4_0_4.IsVisible = _datasource_Root.CanSwitchTabs;
-			_widget_4_0_6.IsVisible = _datasource_Root.CanSwitchTabs;
+			_widget_3_0_4.IsVisible = _datasource_Root.CanSwitchTabs;
+			_widget_3_0_6.IsVisible = _datasource_Root.CanSwitchTabs;
 			break;
 		case "IsMembersSelected":
-			_widget_4_0_5_0.IsSelected = _datasource_Root.IsMembersSelected;
+			_widget_3_0_5_0.IsSelected = _datasource_Root.IsMembersSelected;
 			break;
 		case "MembersText":
-			_widget_4_0_5_0_0.Text = _datasource_Root.MembersText;
+			_widget_3_0_5_0_0.Text = _datasource_Root.MembersText;
 			break;
 		case "IsPartiesSelected":
-			_widget_4_0_5_1.IsSelected = _datasource_Root.IsPartiesSelected;
+			_widget_3_0_5_1.IsSelected = _datasource_Root.IsPartiesSelected;
 			break;
 		case "PartiesText":
-			_widget_4_0_5_1_0.Text = _datasource_Root.PartiesText;
+			_widget_3_0_5_1_0.Text = _datasource_Root.PartiesText;
 			break;
 		case "IsFiefsSelected":
-			_widget_4_0_5_2.IsSelected = _datasource_Root.IsFiefsSelected;
+			_widget_3_0_5_2.IsSelected = _datasource_Root.IsFiefsSelected;
 			break;
 		case "FiefsText":
-			_widget_4_0_5_2_0.Text = _datasource_Root.FiefsText;
+			_widget_3_0_5_2_0.Text = _datasource_Root.FiefsText;
 			break;
 		case "IsIncomeSelected":
-			_widget_4_0_5_3.IsSelected = _datasource_Root.IsIncomeSelected;
+			_widget_3_0_5_3.IsSelected = _datasource_Root.IsIncomeSelected;
 			break;
 		case "IncomeText":
-			_widget_4_0_5_3_0.Text = _datasource_Root.IncomeText;
+			_widget_3_0_5_3_0.Text = _datasource_Root.IncomeText;
 			break;
 		case "CurrentRenownText":
-			_widget_4_0_7_0.Text = _datasource_Root.CurrentRenownText;
+			_widget_3_0_7_0.Text = _datasource_Root.CurrentRenownText;
 			break;
 		case "IsRenownProgressComplete":
-			_widget_4_0_7_1.IsHidden = _datasource_Root.IsRenownProgressComplete;
+			_widget_3_0_7_1.IsHidden = _datasource_Root.IsRenownProgressComplete;
 			break;
 		case "CurrentTier":
-			_widget_4_0_7_1_0.IntText = _datasource_Root.CurrentTier;
+			_widget_3_0_7_1_0.IntText = _datasource_Root.CurrentTier;
 			break;
 		case "CurrentRenownOverPreviousTier":
-			_widget_4_0_7_1_1_0.InitialAmount = _datasource_Root.CurrentRenownOverPreviousTier;
+			_widget_3_0_7_1_1_0.InitialAmount = _datasource_Root.CurrentRenownOverPreviousTier;
 			break;
 		case "CurrentTierRenownRange":
-			_widget_4_0_7_1_1_0.MaxAmount = _datasource_Root.CurrentTierRenownRange;
+			_widget_3_0_7_1_1_0.MaxAmount = _datasource_Root.CurrentTierRenownRange;
 			break;
 		case "NextTier":
-			_widget_4_0_7_1_2.IntText = _datasource_Root.NextTier;
+			_widget_3_0_7_1_2.IntText = _datasource_Root.NextTier;
 			break;
 		}
-	}
-
-	private void ViewModelPropertyChangedListenerOf_datasource_Root_GoldChangeTooltip(object sender, PropertyChangedEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_GoldChangeTooltip(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_GoldChangeTooltip(object sender, PropertyChangedWithValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_GoldChangeTooltip(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_GoldChangeTooltip(object sender, PropertyChangedWithBoolValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_GoldChangeTooltip(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_GoldChangeTooltip(object sender, PropertyChangedWithIntValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_GoldChangeTooltip(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_GoldChangeTooltip(object sender, PropertyChangedWithFloatValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_GoldChangeTooltip(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_GoldChangeTooltip(object sender, PropertyChangedWithUIntValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_GoldChangeTooltip(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_GoldChangeTooltip(object sender, PropertyChangedWithColorValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_GoldChangeTooltip(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_GoldChangeTooltip(object sender, PropertyChangedWithDoubleValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_GoldChangeTooltip(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_GoldChangeTooltip(object sender, PropertyChangedWithVec2ValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_GoldChangeTooltip(e.PropertyName);
-	}
-
-	private void HandleViewModelPropertyChangeOf_datasource_Root_GoldChangeTooltip(string propertyName)
-	{
 	}
 
 	private void ViewModelPropertyChangedListenerOf_datasource_Root_ClanMembers(object sender, PropertyChangedEventArgs e)
@@ -3982,13 +2903,13 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		switch (propertyName)
 		{
 		case "AdditionalArgs":
-			_widget_4_0_0_0.AdditionalArgs = _datasource_Root_ClanBanner.AdditionalArgs;
+			_widget_3_0_0_0.AdditionalArgs = _datasource_Root_ClanBanner.AdditionalArgs;
 			break;
 		case "Id":
-			_widget_4_0_0_0.ImageId = _datasource_Root_ClanBanner.Id;
+			_widget_3_0_0_0.ImageId = _datasource_Root_ClanBanner.Id;
 			break;
 		case "TextureProviderName":
-			_widget_4_0_0_0.TextureProviderName = _datasource_Root_ClanBanner.TextureProviderName;
+			_widget_3_0_0_0.TextureProviderName = _datasource_Root_ClanBanner.TextureProviderName;
 			break;
 		}
 	}
@@ -4145,13 +3066,13 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		switch (propertyName)
 		{
 		case "AdditionalArgs":
-			_widget_4_0_1_0.AdditionalArgs = _datasource_Root_Leader_ImageIdentifier.AdditionalArgs;
+			_widget_3_0_1_0.AdditionalArgs = _datasource_Root_Leader_ImageIdentifier.AdditionalArgs;
 			break;
 		case "Id":
-			_widget_4_0_1_0.ImageId = _datasource_Root_Leader_ImageIdentifier.Id;
+			_widget_3_0_1_0.ImageId = _datasource_Root_Leader_ImageIdentifier.Id;
 			break;
 		case "TextureProviderName":
-			_widget_4_0_1_0.TextureProviderName = _datasource_Root_Leader_ImageIdentifier.TextureProviderName;
+			_widget_3_0_1_0.TextureProviderName = _datasource_Root_Leader_ImageIdentifier.TextureProviderName;
 			break;
 		}
 	}
@@ -4254,11 +3175,11 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 	{
 		if (propertyName == "KeyID")
 		{
-			_widget_4_0_4_0.KeyID = _datasource_Root_PreviousTabInputKey.KeyID;
+			_widget_3_0_4_0.KeyID = _datasource_Root_PreviousTabInputKey.KeyID;
 		}
 		else if (propertyName == "IsVisible")
 		{
-			_widget_4_0_4_0.IsVisible = _datasource_Root_PreviousTabInputKey.IsVisible;
+			_widget_3_0_4_0.IsVisible = _datasource_Root_PreviousTabInputKey.IsVisible;
 		}
 	}
 
@@ -4311,11 +3232,11 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 	{
 		if (propertyName == "KeyID")
 		{
-			_widget_4_0_6_0.KeyID = _datasource_Root_NextTabInputKey.KeyID;
+			_widget_3_0_6_0.KeyID = _datasource_Root_NextTabInputKey.KeyID;
 		}
 		else if (propertyName == "IsVisible")
 		{
-			_widget_4_0_6_0.IsVisible = _datasource_Root_NextTabInputKey.IsVisible;
+			_widget_3_0_6_0.IsVisible = _datasource_Root_NextTabInputKey.IsVisible;
 		}
 	}
 
@@ -4466,7 +3387,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 	{
 		if (propertyName == "ElementID")
 		{
-			_widget_7.ElementID = _datasource_Root_TutorialNotification.ElementID;
+			_widget_6.ElementID = _datasource_Root_TutorialNotification.ElementID;
 		}
 	}
 
@@ -4475,7 +3396,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		if (_datasource_Root != null)
 		{
 			_widget_0.SetDataSource(null);
-			_widget_5.SetDataSource(null);
+			_widget_4.SetDataSource(null);
 			_datasource_Root.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root;
@@ -4486,308 +3407,195 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
 			_widget.EventFire -= EventListenerOf_widget;
-			_widget_1_3_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_0;
-			_widget_1_3_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_0;
-			_widget_1_3_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_0;
-			_widget_1_3_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_0;
-			_widget_1_3_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_0;
-			_widget_1_3_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_0;
-			_widget_1_3_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_0;
-			_widget_1_3_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_0;
-			_widget_1_3_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_0;
-			_widget_1_3_2_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_2_0;
-			_widget_1_3_2_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_2_0;
-			_widget_1_3_2_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_2_0;
-			_widget_1_3_2_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_2_0;
-			_widget_1_3_2_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_2_0;
-			_widget_1_3_2_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_2_0;
-			_widget_1_3_2_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_2_0;
-			_widget_1_3_2_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_2_0;
-			_widget_1_3_2_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_2_0;
-			_widget_1_3_2_1.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_2_1;
-			_widget_1_3_2_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_2_1;
-			_widget_1_3_2_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_2_1;
-			_widget_1_3_2_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_2_1;
-			_widget_1_3_2_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_2_1;
-			_widget_1_3_2_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_2_1;
-			_widget_1_3_2_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_2_1;
-			_widget_1_3_2_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_2_1;
-			_widget_1_3_2_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_2_1;
-			_widget_1_3_3_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_3_0;
-			_widget_1_3_3_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_3_0;
-			_widget_1_3_3_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_3_0;
-			_widget_1_3_3_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_3_0;
-			_widget_1_3_3_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_3_0;
-			_widget_1_3_3_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_3_0;
-			_widget_1_3_3_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_3_0;
-			_widget_1_3_3_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_3_0;
-			_widget_1_3_3_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_3_0;
-			_widget_1_3_3_1.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_3_1;
-			_widget_1_3_3_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_3_1;
-			_widget_1_3_3_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_3_1;
-			_widget_1_3_3_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_3_1;
-			_widget_1_3_3_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_3_1;
-			_widget_1_3_3_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_3_1;
-			_widget_1_3_3_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_3_1;
-			_widget_1_3_3_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_3_1;
-			_widget_1_3_3_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_3_1;
-			_widget_1_3_4_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_4_0;
-			_widget_1_3_4_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_4_0;
-			_widget_1_3_4_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_4_0;
-			_widget_1_3_4_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_4_0;
-			_widget_1_3_4_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_4_0;
-			_widget_1_3_4_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_4_0;
-			_widget_1_3_4_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_4_0;
-			_widget_1_3_4_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_4_0;
-			_widget_1_3_4_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_4_0;
-			_widget_1_3_4_1.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_4_1;
-			_widget_1_3_4_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_4_1;
-			_widget_1_3_4_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_4_1;
-			_widget_1_3_4_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_4_1;
-			_widget_1_3_4_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_4_1;
-			_widget_1_3_4_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_4_1;
-			_widget_1_3_4_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_4_1;
-			_widget_1_3_4_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_4_1;
-			_widget_1_3_4_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_4_1;
-			_widget_1_3_5_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_5_0;
-			_widget_1_3_5_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_5_0;
-			_widget_1_3_5_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_5_0;
-			_widget_1_3_5_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_5_0;
-			_widget_1_3_5_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_5_0;
-			_widget_1_3_5_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_5_0;
-			_widget_1_3_5_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_5_0;
-			_widget_1_3_5_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_5_0;
-			_widget_1_3_5_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_5_0;
-			_widget_1_3_5_1.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_5_1;
-			_widget_1_3_5_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_5_1;
-			_widget_1_3_5_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_5_1;
-			_widget_1_3_5_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_5_1;
-			_widget_1_3_5_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_5_1;
-			_widget_1_3_5_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_5_1;
-			_widget_1_3_5_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_5_1;
-			_widget_1_3_5_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_5_1;
-			_widget_1_3_5_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_5_1;
-			_widget_1_3_6_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_6_0;
-			_widget_1_3_6_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_6_0;
-			_widget_1_3_6_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_6_0;
-			_widget_1_3_6_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_6_0;
-			_widget_1_3_6_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_6_0;
-			_widget_1_3_6_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_6_0;
-			_widget_1_3_6_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_6_0;
-			_widget_1_3_6_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_6_0;
-			_widget_1_3_6_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_6_0;
-			_widget_1_3_6_1.PropertyChanged -= PropertyChangedListenerOf_widget_1_3_6_1;
-			_widget_1_3_6_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_3_6_1;
-			_widget_1_3_6_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_3_6_1;
-			_widget_1_3_6_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_3_6_1;
-			_widget_1_3_6_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_3_6_1;
-			_widget_1_3_6_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_3_6_1;
-			_widget_1_3_6_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_3_6_1;
-			_widget_1_3_6_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_3_6_1;
-			_widget_1_3_6_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_3_6_1;
-			_widget_4_0_0.EventFire -= EventListenerOf_widget_4_0_0;
-			_widget_4_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_0;
-			_widget_4_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_0;
-			_widget_4_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_0;
-			_widget_4_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_0;
-			_widget_4_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_0;
-			_widget_4_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_0;
-			_widget_4_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_0;
-			_widget_4_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_0;
-			_widget_4_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_0;
-			_widget_4_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_2;
-			_widget_4_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_2;
-			_widget_4_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_2;
-			_widget_4_0_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_2;
-			_widget_4_0_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_2;
-			_widget_4_0_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_2;
-			_widget_4_0_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_2;
-			_widget_4_0_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_2;
-			_widget_4_0_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_2;
-			_widget_4_0_3_0_0.EventFire -= EventListenerOf_widget_4_0_3_0_0;
-			_widget_4_0_3_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_3_0_0;
-			_widget_4_0_3_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_3_0_0;
-			_widget_4_0_3_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_3_0_0;
-			_widget_4_0_3_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_3_0_0;
-			_widget_4_0_3_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_3_0_0;
-			_widget_4_0_3_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_3_0_0;
-			_widget_4_0_3_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_3_0_0;
-			_widget_4_0_3_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_3_0_0;
-			_widget_4_0_3_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_3_0_0;
-			_widget_4_0_3_0_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-			_widget_4_0_3_0_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-			_widget_4_0_3_0_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-			_widget_4_0_3_0_0_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-			_widget_4_0_3_0_0_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-			_widget_4_0_3_0_0_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-			_widget_4_0_3_0_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-			_widget_4_0_3_0_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-			_widget_4_0_3_0_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-			_widget_4_0_3_0_0_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-			_widget_4_0_3_0_0_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-			_widget_4_0_3_0_0_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-			_widget_4_0_3_0_0_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-			_widget_4_0_3_0_0_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-			_widget_4_0_3_0_0_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-			_widget_4_0_3_0_0_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-			_widget_4_0_3_0_0_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-			_widget_4_0_3_0_0_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-			_widget_4_0_4.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_4;
-			_widget_4_0_4.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_4;
-			_widget_4_0_4.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_4;
-			_widget_4_0_4.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_4;
-			_widget_4_0_4.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_4;
-			_widget_4_0_4.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_4;
-			_widget_4_0_4.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_4;
-			_widget_4_0_4.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_4;
-			_widget_4_0_4.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_4;
-			_widget_4_0_5_0.EventFire -= EventListenerOf_widget_4_0_5_0;
-			_widget_4_0_5_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_5_0;
-			_widget_4_0_5_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_5_0;
-			_widget_4_0_5_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_5_0;
-			_widget_4_0_5_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_5_0;
-			_widget_4_0_5_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_5_0;
-			_widget_4_0_5_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_5_0;
-			_widget_4_0_5_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_5_0;
-			_widget_4_0_5_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_5_0;
-			_widget_4_0_5_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_5_0;
-			_widget_4_0_5_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_5_0_0;
-			_widget_4_0_5_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_5_0_0;
-			_widget_4_0_5_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_5_0_0;
-			_widget_4_0_5_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_5_0_0;
-			_widget_4_0_5_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_5_0_0;
-			_widget_4_0_5_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_5_0_0;
-			_widget_4_0_5_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_5_0_0;
-			_widget_4_0_5_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_5_0_0;
-			_widget_4_0_5_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_5_0_0;
-			_widget_4_0_5_1.EventFire -= EventListenerOf_widget_4_0_5_1;
-			_widget_4_0_5_1.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_5_1;
-			_widget_4_0_5_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_5_1;
-			_widget_4_0_5_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_5_1;
-			_widget_4_0_5_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_5_1;
-			_widget_4_0_5_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_5_1;
-			_widget_4_0_5_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_5_1;
-			_widget_4_0_5_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_5_1;
-			_widget_4_0_5_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_5_1;
-			_widget_4_0_5_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_5_1;
-			_widget_4_0_5_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_5_1_0;
-			_widget_4_0_5_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_5_1_0;
-			_widget_4_0_5_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_5_1_0;
-			_widget_4_0_5_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_5_1_0;
-			_widget_4_0_5_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_5_1_0;
-			_widget_4_0_5_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_5_1_0;
-			_widget_4_0_5_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_5_1_0;
-			_widget_4_0_5_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_5_1_0;
-			_widget_4_0_5_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_5_1_0;
-			_widget_4_0_5_2.EventFire -= EventListenerOf_widget_4_0_5_2;
-			_widget_4_0_5_2.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_5_2;
-			_widget_4_0_5_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_5_2;
-			_widget_4_0_5_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_5_2;
-			_widget_4_0_5_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_5_2;
-			_widget_4_0_5_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_5_2;
-			_widget_4_0_5_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_5_2;
-			_widget_4_0_5_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_5_2;
-			_widget_4_0_5_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_5_2;
-			_widget_4_0_5_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_5_2;
-			_widget_4_0_5_2_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_5_2_0;
-			_widget_4_0_5_2_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_5_2_0;
-			_widget_4_0_5_2_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_5_2_0;
-			_widget_4_0_5_2_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_5_2_0;
-			_widget_4_0_5_2_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_5_2_0;
-			_widget_4_0_5_2_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_5_2_0;
-			_widget_4_0_5_2_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_5_2_0;
-			_widget_4_0_5_2_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_5_2_0;
-			_widget_4_0_5_2_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_5_2_0;
-			_widget_4_0_5_3.EventFire -= EventListenerOf_widget_4_0_5_3;
-			_widget_4_0_5_3.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_5_3;
-			_widget_4_0_5_3.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_5_3;
-			_widget_4_0_5_3.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_5_3;
-			_widget_4_0_5_3.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_5_3;
-			_widget_4_0_5_3.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_5_3;
-			_widget_4_0_5_3.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_5_3;
-			_widget_4_0_5_3.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_5_3;
-			_widget_4_0_5_3.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_5_3;
-			_widget_4_0_5_3.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_5_3;
-			_widget_4_0_5_3_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_5_3_0;
-			_widget_4_0_5_3_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_5_3_0;
-			_widget_4_0_5_3_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_5_3_0;
-			_widget_4_0_5_3_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_5_3_0;
-			_widget_4_0_5_3_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_5_3_0;
-			_widget_4_0_5_3_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_5_3_0;
-			_widget_4_0_5_3_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_5_3_0;
-			_widget_4_0_5_3_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_5_3_0;
-			_widget_4_0_5_3_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_5_3_0;
-			_widget_4_0_6.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_6;
-			_widget_4_0_6.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_6;
-			_widget_4_0_6.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_6;
-			_widget_4_0_6.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_6;
-			_widget_4_0_6.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_6;
-			_widget_4_0_6.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_6;
-			_widget_4_0_6.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_6;
-			_widget_4_0_6.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_6;
-			_widget_4_0_6.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_6;
-			_widget_4_0_7_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_7_0;
-			_widget_4_0_7_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_7_0;
-			_widget_4_0_7_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_7_0;
-			_widget_4_0_7_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_7_0;
-			_widget_4_0_7_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_7_0;
-			_widget_4_0_7_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_7_0;
-			_widget_4_0_7_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_7_0;
-			_widget_4_0_7_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_7_0;
-			_widget_4_0_7_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_7_0;
-			_widget_4_0_7_1.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_7_1;
-			_widget_4_0_7_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_7_1;
-			_widget_4_0_7_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_7_1;
-			_widget_4_0_7_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_7_1;
-			_widget_4_0_7_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_7_1;
-			_widget_4_0_7_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_7_1;
-			_widget_4_0_7_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_7_1;
-			_widget_4_0_7_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_7_1;
-			_widget_4_0_7_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_7_1;
-			_widget_4_0_7_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_7_1_0;
-			_widget_4_0_7_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_7_1_0;
-			_widget_4_0_7_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_7_1_0;
-			_widget_4_0_7_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_7_1_0;
-			_widget_4_0_7_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_7_1_0;
-			_widget_4_0_7_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_7_1_0;
-			_widget_4_0_7_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_7_1_0;
-			_widget_4_0_7_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_7_1_0;
-			_widget_4_0_7_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_7_1_0;
-			_widget_4_0_7_1_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_7_1_1_0;
-			_widget_4_0_7_1_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_7_1_1_0;
-			_widget_4_0_7_1_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_7_1_1_0;
-			_widget_4_0_7_1_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_7_1_1_0;
-			_widget_4_0_7_1_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_7_1_1_0;
-			_widget_4_0_7_1_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_7_1_1_0;
-			_widget_4_0_7_1_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_7_1_1_0;
-			_widget_4_0_7_1_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_7_1_1_0;
-			_widget_4_0_7_1_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_7_1_1_0;
-			_widget_4_0_7_1_2.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_7_1_2;
-			_widget_4_0_7_1_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_7_1_2;
-			_widget_4_0_7_1_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_7_1_2;
-			_widget_4_0_7_1_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_7_1_2;
-			_widget_4_0_7_1_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_7_1_2;
-			_widget_4_0_7_1_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_7_1_2;
-			_widget_4_0_7_1_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_7_1_2;
-			_widget_4_0_7_1_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_7_1_2;
-			_widget_4_0_7_1_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_7_1_2;
-			if (_datasource_Root_GoldChangeTooltip != null)
-			{
-				_datasource_Root_GoldChangeTooltip.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_GoldChangeTooltip;
-				_datasource_Root_GoldChangeTooltip.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_GoldChangeTooltip;
-				_datasource_Root_GoldChangeTooltip.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_GoldChangeTooltip;
-				_datasource_Root_GoldChangeTooltip.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_GoldChangeTooltip;
-				_datasource_Root_GoldChangeTooltip.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_GoldChangeTooltip;
-				_datasource_Root_GoldChangeTooltip.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_GoldChangeTooltip;
-				_datasource_Root_GoldChangeTooltip.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_GoldChangeTooltip;
-				_datasource_Root_GoldChangeTooltip.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_GoldChangeTooltip;
-				_datasource_Root_GoldChangeTooltip.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_GoldChangeTooltip;
-				_widget_1_0.EventFire -= EventListenerOf_widget_1_0;
-				_datasource_Root_GoldChangeTooltip = null;
-			}
+			_widget_3_0_0.EventFire -= EventListenerOf_widget_3_0_0;
+			_widget_3_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_0;
+			_widget_3_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_0;
+			_widget_3_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_0;
+			_widget_3_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_0;
+			_widget_3_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_0;
+			_widget_3_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_0;
+			_widget_3_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_0;
+			_widget_3_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_0;
+			_widget_3_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_0;
+			_widget_3_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_2;
+			_widget_3_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_2;
+			_widget_3_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_2;
+			_widget_3_0_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_2;
+			_widget_3_0_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_2;
+			_widget_3_0_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_2;
+			_widget_3_0_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_2;
+			_widget_3_0_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_2;
+			_widget_3_0_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_2;
+			_widget_3_0_3_0_0.EventFire -= EventListenerOf_widget_3_0_3_0_0;
+			_widget_3_0_3_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_3_0_0;
+			_widget_3_0_3_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_3_0_0;
+			_widget_3_0_3_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_3_0_0;
+			_widget_3_0_3_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_3_0_0;
+			_widget_3_0_3_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_3_0_0;
+			_widget_3_0_3_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_3_0_0;
+			_widget_3_0_3_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_3_0_0;
+			_widget_3_0_3_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_3_0_0;
+			_widget_3_0_3_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_3_0_0;
+			_widget_3_0_3_0_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+			_widget_3_0_3_0_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+			_widget_3_0_3_0_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+			_widget_3_0_3_0_0_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+			_widget_3_0_3_0_0_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+			_widget_3_0_3_0_0_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+			_widget_3_0_3_0_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+			_widget_3_0_3_0_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+			_widget_3_0_3_0_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+			_widget_3_0_3_0_0_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+			_widget_3_0_3_0_0_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+			_widget_3_0_3_0_0_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+			_widget_3_0_3_0_0_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+			_widget_3_0_3_0_0_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+			_widget_3_0_3_0_0_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+			_widget_3_0_3_0_0_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+			_widget_3_0_3_0_0_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+			_widget_3_0_3_0_0_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+			_widget_3_0_4.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_4;
+			_widget_3_0_4.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_4;
+			_widget_3_0_4.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_4;
+			_widget_3_0_4.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_4;
+			_widget_3_0_4.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_4;
+			_widget_3_0_4.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_4;
+			_widget_3_0_4.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_4;
+			_widget_3_0_4.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_4;
+			_widget_3_0_4.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_4;
+			_widget_3_0_5_0.EventFire -= EventListenerOf_widget_3_0_5_0;
+			_widget_3_0_5_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_5_0;
+			_widget_3_0_5_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_5_0;
+			_widget_3_0_5_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_5_0;
+			_widget_3_0_5_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_5_0;
+			_widget_3_0_5_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_5_0;
+			_widget_3_0_5_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_5_0;
+			_widget_3_0_5_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_5_0;
+			_widget_3_0_5_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_5_0;
+			_widget_3_0_5_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_5_0;
+			_widget_3_0_5_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_5_0_0;
+			_widget_3_0_5_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_5_0_0;
+			_widget_3_0_5_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_5_0_0;
+			_widget_3_0_5_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_5_0_0;
+			_widget_3_0_5_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_5_0_0;
+			_widget_3_0_5_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_5_0_0;
+			_widget_3_0_5_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_5_0_0;
+			_widget_3_0_5_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_5_0_0;
+			_widget_3_0_5_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_5_0_0;
+			_widget_3_0_5_1.EventFire -= EventListenerOf_widget_3_0_5_1;
+			_widget_3_0_5_1.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_5_1;
+			_widget_3_0_5_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_5_1;
+			_widget_3_0_5_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_5_1;
+			_widget_3_0_5_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_5_1;
+			_widget_3_0_5_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_5_1;
+			_widget_3_0_5_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_5_1;
+			_widget_3_0_5_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_5_1;
+			_widget_3_0_5_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_5_1;
+			_widget_3_0_5_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_5_1;
+			_widget_3_0_5_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_5_1_0;
+			_widget_3_0_5_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_5_1_0;
+			_widget_3_0_5_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_5_1_0;
+			_widget_3_0_5_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_5_1_0;
+			_widget_3_0_5_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_5_1_0;
+			_widget_3_0_5_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_5_1_0;
+			_widget_3_0_5_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_5_1_0;
+			_widget_3_0_5_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_5_1_0;
+			_widget_3_0_5_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_5_1_0;
+			_widget_3_0_5_2.EventFire -= EventListenerOf_widget_3_0_5_2;
+			_widget_3_0_5_2.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_5_2;
+			_widget_3_0_5_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_5_2;
+			_widget_3_0_5_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_5_2;
+			_widget_3_0_5_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_5_2;
+			_widget_3_0_5_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_5_2;
+			_widget_3_0_5_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_5_2;
+			_widget_3_0_5_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_5_2;
+			_widget_3_0_5_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_5_2;
+			_widget_3_0_5_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_5_2;
+			_widget_3_0_5_2_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_5_2_0;
+			_widget_3_0_5_2_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_5_2_0;
+			_widget_3_0_5_2_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_5_2_0;
+			_widget_3_0_5_2_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_5_2_0;
+			_widget_3_0_5_2_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_5_2_0;
+			_widget_3_0_5_2_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_5_2_0;
+			_widget_3_0_5_2_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_5_2_0;
+			_widget_3_0_5_2_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_5_2_0;
+			_widget_3_0_5_2_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_5_2_0;
+			_widget_3_0_5_3.EventFire -= EventListenerOf_widget_3_0_5_3;
+			_widget_3_0_5_3.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_5_3;
+			_widget_3_0_5_3.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_5_3;
+			_widget_3_0_5_3.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_5_3;
+			_widget_3_0_5_3.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_5_3;
+			_widget_3_0_5_3.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_5_3;
+			_widget_3_0_5_3.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_5_3;
+			_widget_3_0_5_3.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_5_3;
+			_widget_3_0_5_3.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_5_3;
+			_widget_3_0_5_3.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_5_3;
+			_widget_3_0_5_3_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_5_3_0;
+			_widget_3_0_5_3_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_5_3_0;
+			_widget_3_0_5_3_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_5_3_0;
+			_widget_3_0_5_3_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_5_3_0;
+			_widget_3_0_5_3_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_5_3_0;
+			_widget_3_0_5_3_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_5_3_0;
+			_widget_3_0_5_3_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_5_3_0;
+			_widget_3_0_5_3_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_5_3_0;
+			_widget_3_0_5_3_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_5_3_0;
+			_widget_3_0_6.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_6;
+			_widget_3_0_6.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_6;
+			_widget_3_0_6.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_6;
+			_widget_3_0_6.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_6;
+			_widget_3_0_6.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_6;
+			_widget_3_0_6.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_6;
+			_widget_3_0_6.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_6;
+			_widget_3_0_6.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_6;
+			_widget_3_0_6.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_6;
+			_widget_3_0_7_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_7_0;
+			_widget_3_0_7_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_7_0;
+			_widget_3_0_7_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_7_0;
+			_widget_3_0_7_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_7_0;
+			_widget_3_0_7_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_7_0;
+			_widget_3_0_7_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_7_0;
+			_widget_3_0_7_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_7_0;
+			_widget_3_0_7_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_7_0;
+			_widget_3_0_7_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_7_0;
+			_widget_3_0_7_1.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_7_1;
+			_widget_3_0_7_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_7_1;
+			_widget_3_0_7_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_7_1;
+			_widget_3_0_7_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_7_1;
+			_widget_3_0_7_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_7_1;
+			_widget_3_0_7_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_7_1;
+			_widget_3_0_7_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_7_1;
+			_widget_3_0_7_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_7_1;
+			_widget_3_0_7_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_7_1;
+			_widget_3_0_7_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_7_1_0;
+			_widget_3_0_7_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_7_1_0;
+			_widget_3_0_7_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_7_1_0;
+			_widget_3_0_7_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_7_1_0;
+			_widget_3_0_7_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_7_1_0;
+			_widget_3_0_7_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_7_1_0;
+			_widget_3_0_7_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_7_1_0;
+			_widget_3_0_7_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_7_1_0;
+			_widget_3_0_7_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_7_1_0;
+			_widget_3_0_7_1_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_7_1_1_0;
+			_widget_3_0_7_1_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_7_1_1_0;
+			_widget_3_0_7_1_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_7_1_1_0;
+			_widget_3_0_7_1_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_7_1_1_0;
+			_widget_3_0_7_1_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_7_1_1_0;
+			_widget_3_0_7_1_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_7_1_1_0;
+			_widget_3_0_7_1_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_7_1_1_0;
+			_widget_3_0_7_1_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_7_1_1_0;
+			_widget_3_0_7_1_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_7_1_1_0;
+			_widget_3_0_7_1_2.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_7_1_2;
+			_widget_3_0_7_1_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_7_1_2;
+			_widget_3_0_7_1_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_7_1_2;
+			_widget_3_0_7_1_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_7_1_2;
+			_widget_3_0_7_1_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_7_1_2;
+			_widget_3_0_7_1_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_7_1_2;
+			_widget_3_0_7_1_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_7_1_2;
+			_widget_3_0_7_1_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_7_1_2;
+			_widget_3_0_7_1_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_7_1_2;
 			if (_datasource_Root_ClanMembers != null)
 			{
-				_widget_2_0.SetDataSource(null);
+				_widget_1_0.SetDataSource(null);
 				_datasource_Root_ClanMembers.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ClanMembers;
 				_datasource_Root_ClanMembers.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ClanMembers;
 				_datasource_Root_ClanMembers.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ClanMembers;
@@ -4801,7 +3609,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			}
 			if (_datasource_Root_ClanParties != null)
 			{
-				_widget_2_1.SetDataSource(null);
+				_widget_1_1.SetDataSource(null);
 				_datasource_Root_ClanParties.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ClanParties;
 				_datasource_Root_ClanParties.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ClanParties;
 				_datasource_Root_ClanParties.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ClanParties;
@@ -4815,7 +3623,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			}
 			if (_datasource_Root_ClanFiefs != null)
 			{
-				_widget_2_2.SetDataSource(null);
+				_widget_1_2.SetDataSource(null);
 				_datasource_Root_ClanFiefs.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ClanFiefs;
 				_datasource_Root_ClanFiefs.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ClanFiefs;
 				_datasource_Root_ClanFiefs.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ClanFiefs;
@@ -4829,7 +3637,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			}
 			if (_datasource_Root_ClanIncome != null)
 			{
-				_widget_2_3.SetDataSource(null);
+				_widget_1_3.SetDataSource(null);
 				_datasource_Root_ClanIncome.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ClanIncome;
 				_datasource_Root_ClanIncome.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ClanIncome;
 				_datasource_Root_ClanIncome.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ClanIncome;
@@ -4852,15 +3660,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				_datasource_Root_ClanBanner.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ClanBanner;
 				_datasource_Root_ClanBanner.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ClanBanner;
 				_datasource_Root_ClanBanner.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ClanBanner;
-				_widget_4_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_0_0;
-				_widget_4_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_0_0;
-				_widget_4_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_0_0;
-				_widget_4_0_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_0_0;
-				_widget_4_0_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_0_0;
-				_widget_4_0_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_0_0;
-				_widget_4_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_0_0;
-				_widget_4_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_0_0;
-				_widget_4_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_0_0;
+				_widget_3_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_0_0;
+				_widget_3_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_0_0;
+				_widget_3_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_0_0;
+				_widget_3_0_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_0_0;
+				_widget_3_0_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_0_0;
+				_widget_3_0_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_0_0;
+				_widget_3_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_0_0;
+				_widget_3_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_0_0;
+				_widget_3_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_0_0;
 				_datasource_Root_ClanBanner = null;
 			}
 			if (_datasource_Root_ClanBannerHint != null)
@@ -4874,7 +3682,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				_datasource_Root_ClanBannerHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ClanBannerHint;
 				_datasource_Root_ClanBannerHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ClanBannerHint;
 				_datasource_Root_ClanBannerHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ClanBannerHint;
-				_widget_4_0_0_1.EventFire -= EventListenerOf_widget_4_0_0_1;
+				_widget_3_0_0_1.EventFire -= EventListenerOf_widget_3_0_0_1;
 				_datasource_Root_ClanBannerHint = null;
 			}
 			if (_datasource_Root_Leader != null)
@@ -4888,7 +3696,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				_datasource_Root_Leader.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Leader;
 				_datasource_Root_Leader.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Leader;
 				_datasource_Root_Leader.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Leader;
-				_widget_4_0_1.EventFire -= EventListenerOf_widget_4_0_1;
+				_widget_3_0_1.EventFire -= EventListenerOf_widget_3_0_1;
 				if (_datasource_Root_Leader_ImageIdentifier != null)
 				{
 					_datasource_Root_Leader_ImageIdentifier.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Leader_ImageIdentifier;
@@ -4900,15 +3708,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 					_datasource_Root_Leader_ImageIdentifier.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Leader_ImageIdentifier;
 					_datasource_Root_Leader_ImageIdentifier.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Leader_ImageIdentifier;
 					_datasource_Root_Leader_ImageIdentifier.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Leader_ImageIdentifier;
-					_widget_4_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_1_0;
-					_widget_4_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_1_0;
-					_widget_4_0_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_1_0;
-					_widget_4_0_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_1_0;
-					_widget_4_0_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_1_0;
-					_widget_4_0_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_1_0;
-					_widget_4_0_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_1_0;
-					_widget_4_0_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_1_0;
-					_widget_4_0_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_1_0;
+					_widget_3_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_1_0;
+					_widget_3_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_1_0;
+					_widget_3_0_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_1_0;
+					_widget_3_0_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_1_0;
+					_widget_3_0_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_1_0;
+					_widget_3_0_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_1_0;
+					_widget_3_0_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_1_0;
+					_widget_3_0_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_1_0;
+					_widget_3_0_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_1_0;
 					_datasource_Root_Leader_ImageIdentifier = null;
 				}
 				_datasource_Root_Leader = null;
@@ -4924,7 +3732,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				_datasource_Root_ChangeClanNameHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ChangeClanNameHint;
 				_datasource_Root_ChangeClanNameHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ChangeClanNameHint;
 				_datasource_Root_ChangeClanNameHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ChangeClanNameHint;
-				_widget_4_0_3_0_1.EventFire -= EventListenerOf_widget_4_0_3_0_1;
+				_widget_3_0_3_0_1.EventFire -= EventListenerOf_widget_3_0_3_0_1;
 				_datasource_Root_ChangeClanNameHint = null;
 			}
 			if (_datasource_Root_PreviousTabInputKey != null)
@@ -4938,15 +3746,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				_datasource_Root_PreviousTabInputKey.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_PreviousTabInputKey;
 				_datasource_Root_PreviousTabInputKey.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_PreviousTabInputKey;
 				_datasource_Root_PreviousTabInputKey.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_PreviousTabInputKey;
-				_widget_4_0_4_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_4_0;
-				_widget_4_0_4_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_4_0;
-				_widget_4_0_4_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_4_0;
-				_widget_4_0_4_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_4_0;
-				_widget_4_0_4_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_4_0;
-				_widget_4_0_4_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_4_0;
-				_widget_4_0_4_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_4_0;
-				_widget_4_0_4_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_4_0;
-				_widget_4_0_4_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_4_0;
+				_widget_3_0_4_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_4_0;
+				_widget_3_0_4_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_4_0;
+				_widget_3_0_4_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_4_0;
+				_widget_3_0_4_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_4_0;
+				_widget_3_0_4_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_4_0;
+				_widget_3_0_4_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_4_0;
+				_widget_3_0_4_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_4_0;
+				_widget_3_0_4_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_4_0;
+				_widget_3_0_4_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_4_0;
 				_datasource_Root_PreviousTabInputKey = null;
 			}
 			if (_datasource_Root_NextTabInputKey != null)
@@ -4960,15 +3768,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				_datasource_Root_NextTabInputKey.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_NextTabInputKey;
 				_datasource_Root_NextTabInputKey.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_NextTabInputKey;
 				_datasource_Root_NextTabInputKey.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_NextTabInputKey;
-				_widget_4_0_6_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_6_0;
-				_widget_4_0_6_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_6_0;
-				_widget_4_0_6_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_6_0;
-				_widget_4_0_6_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_6_0;
-				_widget_4_0_6_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_6_0;
-				_widget_4_0_6_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_6_0;
-				_widget_4_0_6_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_6_0;
-				_widget_4_0_6_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_6_0;
-				_widget_4_0_6_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_6_0;
+				_widget_3_0_6_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_6_0;
+				_widget_3_0_6_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_6_0;
+				_widget_3_0_6_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_6_0;
+				_widget_3_0_6_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_6_0;
+				_widget_3_0_6_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_6_0;
+				_widget_3_0_6_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_6_0;
+				_widget_3_0_6_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_6_0;
+				_widget_3_0_6_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_6_0;
+				_widget_3_0_6_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_6_0;
 				_datasource_Root_NextTabInputKey = null;
 			}
 			if (_datasource_Root_RenownHint != null)
@@ -4982,12 +3790,12 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				_datasource_Root_RenownHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_RenownHint;
 				_datasource_Root_RenownHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_RenownHint;
 				_datasource_Root_RenownHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_RenownHint;
-				_widget_4_0_7.EventFire -= EventListenerOf_widget_4_0_7;
+				_widget_3_0_7.EventFire -= EventListenerOf_widget_3_0_7;
 				_datasource_Root_RenownHint = null;
 			}
 			if (_datasource_Root_CardSelectionPopup != null)
 			{
-				_widget_6.SetDataSource(null);
+				_widget_5.SetDataSource(null);
 				_datasource_Root_CardSelectionPopup.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_CardSelectionPopup;
 				_datasource_Root_CardSelectionPopup.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_CardSelectionPopup;
 				_datasource_Root_CardSelectionPopup.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_CardSelectionPopup;
@@ -5010,15 +3818,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				_datasource_Root_TutorialNotification.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_TutorialNotification;
 				_datasource_Root_TutorialNotification.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_TutorialNotification;
 				_datasource_Root_TutorialNotification.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TutorialNotification;
-				_widget_7.PropertyChanged -= PropertyChangedListenerOf_widget_7;
-				_widget_7.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_7;
-				_widget_7.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_7;
-				_widget_7.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_7;
-				_widget_7.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_7;
-				_widget_7.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_7;
-				_widget_7.intPropertyChanged -= intPropertyChangedListenerOf_widget_7;
-				_widget_7.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_7;
-				_widget_7.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_7;
+				_widget_6.PropertyChanged -= PropertyChangedListenerOf_widget_6;
+				_widget_6.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_6;
+				_widget_6.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_6;
+				_widget_6.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_6;
+				_widget_6.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_6;
+				_widget_6.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_6;
+				_widget_6.intPropertyChanged -= intPropertyChangedListenerOf_widget_6;
+				_widget_6.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_6;
+				_widget_6.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_6;
 				_datasource_Root_TutorialNotification = null;
 			}
 			_datasource_Root = null;
@@ -5038,337 +3846,213 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		_datasource_Root.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
 		_widget.EventFire += EventListenerOf_widget;
-		_widget_1_3_0.Text = _datasource_Root.FinanceText;
-		_widget_1_3_0.PropertyChanged += PropertyChangedListenerOf_widget_1_3_0;
-		_widget_1_3_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_3_0;
-		_widget_1_3_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_3_0;
-		_widget_1_3_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_3_0;
-		_widget_1_3_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_3_0;
-		_widget_1_3_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_3_0;
-		_widget_1_3_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_3_0;
-		_widget_1_3_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_3_0;
-		_widget_1_3_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_3_0;
-		_widget_1_3_2_0.Text = _datasource_Root.TotalIncomeText;
-		_widget_1_3_2_0.PropertyChanged += PropertyChangedListenerOf_widget_1_3_2_0;
-		_widget_1_3_2_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_3_2_0;
-		_widget_1_3_2_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_3_2_0;
-		_widget_1_3_2_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_3_2_0;
-		_widget_1_3_2_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_3_2_0;
-		_widget_1_3_2_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_3_2_0;
-		_widget_1_3_2_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_3_2_0;
-		_widget_1_3_2_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_3_2_0;
-		_widget_1_3_2_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_3_2_0;
-		_widget_1_3_2_1.Text = _datasource_Root.TotalIncomeValueText;
-		_widget_1_3_2_1.PropertyChanged += PropertyChangedListenerOf_widget_1_3_2_1;
-		_widget_1_3_2_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_3_2_1;
-		_widget_1_3_2_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_3_2_1;
-		_widget_1_3_2_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_3_2_1;
-		_widget_1_3_2_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_3_2_1;
-		_widget_1_3_2_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_3_2_1;
-		_widget_1_3_2_1.intPropertyChanged += intPropertyChangedListenerOf_widget_1_3_2_1;
-		_widget_1_3_2_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_3_2_1;
-		_widget_1_3_2_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_3_2_1;
-		_widget_1_3_3_0.Text = _datasource_Root.TotalExpensesText;
-		_widget_1_3_3_0.PropertyChanged += PropertyChangedListenerOf_widget_1_3_3_0;
-		_widget_1_3_3_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_3_3_0;
-		_widget_1_3_3_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_3_3_0;
-		_widget_1_3_3_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_3_3_0;
-		_widget_1_3_3_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_3_3_0;
-		_widget_1_3_3_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_3_3_0;
-		_widget_1_3_3_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_3_3_0;
-		_widget_1_3_3_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_3_3_0;
-		_widget_1_3_3_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_3_3_0;
-		_widget_1_3_3_1.Text = _datasource_Root.TotalExpensesValueText;
-		_widget_1_3_3_1.PropertyChanged += PropertyChangedListenerOf_widget_1_3_3_1;
-		_widget_1_3_3_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_3_3_1;
-		_widget_1_3_3_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_3_3_1;
-		_widget_1_3_3_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_3_3_1;
-		_widget_1_3_3_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_3_3_1;
-		_widget_1_3_3_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_3_3_1;
-		_widget_1_3_3_1.intPropertyChanged += intPropertyChangedListenerOf_widget_1_3_3_1;
-		_widget_1_3_3_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_3_3_1;
-		_widget_1_3_3_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_3_3_1;
-		_widget_1_3_4_0.Text = _datasource_Root.DailyChangeText;
-		_widget_1_3_4_0.PropertyChanged += PropertyChangedListenerOf_widget_1_3_4_0;
-		_widget_1_3_4_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_3_4_0;
-		_widget_1_3_4_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_3_4_0;
-		_widget_1_3_4_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_3_4_0;
-		_widget_1_3_4_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_3_4_0;
-		_widget_1_3_4_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_3_4_0;
-		_widget_1_3_4_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_3_4_0;
-		_widget_1_3_4_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_3_4_0;
-		_widget_1_3_4_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_3_4_0;
-		_widget_1_3_4_1.Text = _datasource_Root.DailyChangeValueText;
-		_widget_1_3_4_1.PropertyChanged += PropertyChangedListenerOf_widget_1_3_4_1;
-		_widget_1_3_4_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_3_4_1;
-		_widget_1_3_4_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_3_4_1;
-		_widget_1_3_4_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_3_4_1;
-		_widget_1_3_4_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_3_4_1;
-		_widget_1_3_4_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_3_4_1;
-		_widget_1_3_4_1.intPropertyChanged += intPropertyChangedListenerOf_widget_1_3_4_1;
-		_widget_1_3_4_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_3_4_1;
-		_widget_1_3_4_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_3_4_1;
-		_widget_1_3_5_0.Text = _datasource_Root.CurrentGoldText;
-		_widget_1_3_5_0.PropertyChanged += PropertyChangedListenerOf_widget_1_3_5_0;
-		_widget_1_3_5_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_3_5_0;
-		_widget_1_3_5_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_3_5_0;
-		_widget_1_3_5_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_3_5_0;
-		_widget_1_3_5_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_3_5_0;
-		_widget_1_3_5_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_3_5_0;
-		_widget_1_3_5_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_3_5_0;
-		_widget_1_3_5_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_3_5_0;
-		_widget_1_3_5_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_3_5_0;
-		_widget_1_3_5_1.IntText = _datasource_Root.CurrentGold;
-		_widget_1_3_5_1.PropertyChanged += PropertyChangedListenerOf_widget_1_3_5_1;
-		_widget_1_3_5_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_3_5_1;
-		_widget_1_3_5_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_3_5_1;
-		_widget_1_3_5_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_3_5_1;
-		_widget_1_3_5_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_3_5_1;
-		_widget_1_3_5_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_3_5_1;
-		_widget_1_3_5_1.intPropertyChanged += intPropertyChangedListenerOf_widget_1_3_5_1;
-		_widget_1_3_5_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_3_5_1;
-		_widget_1_3_5_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_3_5_1;
-		_widget_1_3_6_0.Text = _datasource_Root.ExpectedGoldText;
-		_widget_1_3_6_0.PropertyChanged += PropertyChangedListenerOf_widget_1_3_6_0;
-		_widget_1_3_6_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_3_6_0;
-		_widget_1_3_6_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_3_6_0;
-		_widget_1_3_6_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_3_6_0;
-		_widget_1_3_6_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_3_6_0;
-		_widget_1_3_6_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_3_6_0;
-		_widget_1_3_6_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_3_6_0;
-		_widget_1_3_6_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_3_6_0;
-		_widget_1_3_6_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_3_6_0;
-		_widget_1_3_6_1.IntText = _datasource_Root.ExpectedGold;
-		_widget_1_3_6_1.PropertyChanged += PropertyChangedListenerOf_widget_1_3_6_1;
-		_widget_1_3_6_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_3_6_1;
-		_widget_1_3_6_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_3_6_1;
-		_widget_1_3_6_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_3_6_1;
-		_widget_1_3_6_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_3_6_1;
-		_widget_1_3_6_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_3_6_1;
-		_widget_1_3_6_1.intPropertyChanged += intPropertyChangedListenerOf_widget_1_3_6_1;
-		_widget_1_3_6_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_3_6_1;
-		_widget_1_3_6_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_3_6_1;
-		_widget_4_0_0.IsEnabled = _datasource_Root.CanChooseBanner;
-		_widget_4_0_0.EventFire += EventListenerOf_widget_4_0_0;
-		_widget_4_0_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0_0;
-		_widget_4_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_0;
-		_widget_4_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_0;
-		_widget_4_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_0;
-		_widget_4_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_0;
-		_widget_4_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_0;
-		_widget_4_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_0;
-		_widget_4_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_0;
-		_widget_4_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_0;
-		_widget_4_0_2.Text = _datasource_Root.LeaderText;
-		_widget_4_0_2.PropertyChanged += PropertyChangedListenerOf_widget_4_0_2;
-		_widget_4_0_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_2;
-		_widget_4_0_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_2;
-		_widget_4_0_2.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_2;
-		_widget_4_0_2.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_2;
-		_widget_4_0_2.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_2;
-		_widget_4_0_2.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_2;
-		_widget_4_0_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_2;
-		_widget_4_0_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_2;
-		_widget_4_0_3_0_0.IsEnabled = _datasource_Root.PlayerCanChangeClanName;
-		_widget_4_0_3_0_0.EventFire += EventListenerOf_widget_4_0_3_0_0;
-		_widget_4_0_3_0_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0_3_0_0;
-		_widget_4_0_3_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_3_0_0;
-		_widget_4_0_3_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_3_0_0;
-		_widget_4_0_3_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_3_0_0;
-		_widget_4_0_3_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_3_0_0;
-		_widget_4_0_3_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_3_0_0;
-		_widget_4_0_3_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_3_0_0;
-		_widget_4_0_3_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_3_0_0;
-		_widget_4_0_3_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_3_0_0;
-		_widget_4_0_3_0_0_0_0.Text = _datasource_Root.Name;
-		_widget_4_0_3_0_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-		_widget_4_0_3_0_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-		_widget_4_0_3_0_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-		_widget_4_0_3_0_0_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-		_widget_4_0_3_0_0_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-		_widget_4_0_3_0_0_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-		_widget_4_0_3_0_0_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-		_widget_4_0_3_0_0_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-		_widget_4_0_3_0_0_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_3_0_0_0_0;
-		_widget_4_0_3_0_0_0_1.IsEnabled = _datasource_Root.PlayerCanChangeClanName;
-		_widget_4_0_3_0_0_0_1.PropertyChanged += PropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-		_widget_4_0_3_0_0_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-		_widget_4_0_3_0_0_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-		_widget_4_0_3_0_0_0_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-		_widget_4_0_3_0_0_0_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-		_widget_4_0_3_0_0_0_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-		_widget_4_0_3_0_0_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-		_widget_4_0_3_0_0_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-		_widget_4_0_3_0_0_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_3_0_0_0_1;
-		_widget_4_0_4.IsVisible = _datasource_Root.CanSwitchTabs;
-		_widget_4_0_4.PropertyChanged += PropertyChangedListenerOf_widget_4_0_4;
-		_widget_4_0_4.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_4;
-		_widget_4_0_4.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_4;
-		_widget_4_0_4.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_4;
-		_widget_4_0_4.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_4;
-		_widget_4_0_4.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_4;
-		_widget_4_0_4.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_4;
-		_widget_4_0_4.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_4;
-		_widget_4_0_4.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_4;
-		_widget_4_0_5_0.IsSelected = _datasource_Root.IsMembersSelected;
-		_widget_4_0_5_0.EventFire += EventListenerOf_widget_4_0_5_0;
-		_widget_4_0_5_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0_5_0;
-		_widget_4_0_5_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_5_0;
-		_widget_4_0_5_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_5_0;
-		_widget_4_0_5_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_5_0;
-		_widget_4_0_5_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_5_0;
-		_widget_4_0_5_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_5_0;
-		_widget_4_0_5_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_5_0;
-		_widget_4_0_5_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_5_0;
-		_widget_4_0_5_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_5_0;
-		_widget_4_0_5_0_0.Text = _datasource_Root.MembersText;
-		_widget_4_0_5_0_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0_5_0_0;
-		_widget_4_0_5_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_5_0_0;
-		_widget_4_0_5_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_5_0_0;
-		_widget_4_0_5_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_5_0_0;
-		_widget_4_0_5_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_5_0_0;
-		_widget_4_0_5_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_5_0_0;
-		_widget_4_0_5_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_5_0_0;
-		_widget_4_0_5_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_5_0_0;
-		_widget_4_0_5_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_5_0_0;
-		_widget_4_0_5_1.IsSelected = _datasource_Root.IsPartiesSelected;
-		_widget_4_0_5_1.EventFire += EventListenerOf_widget_4_0_5_1;
-		_widget_4_0_5_1.PropertyChanged += PropertyChangedListenerOf_widget_4_0_5_1;
-		_widget_4_0_5_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_5_1;
-		_widget_4_0_5_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_5_1;
-		_widget_4_0_5_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_5_1;
-		_widget_4_0_5_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_5_1;
-		_widget_4_0_5_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_5_1;
-		_widget_4_0_5_1.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_5_1;
-		_widget_4_0_5_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_5_1;
-		_widget_4_0_5_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_5_1;
-		_widget_4_0_5_1_0.Text = _datasource_Root.PartiesText;
-		_widget_4_0_5_1_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0_5_1_0;
-		_widget_4_0_5_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_5_1_0;
-		_widget_4_0_5_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_5_1_0;
-		_widget_4_0_5_1_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_5_1_0;
-		_widget_4_0_5_1_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_5_1_0;
-		_widget_4_0_5_1_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_5_1_0;
-		_widget_4_0_5_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_5_1_0;
-		_widget_4_0_5_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_5_1_0;
-		_widget_4_0_5_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_5_1_0;
-		_widget_4_0_5_2.IsSelected = _datasource_Root.IsFiefsSelected;
-		_widget_4_0_5_2.EventFire += EventListenerOf_widget_4_0_5_2;
-		_widget_4_0_5_2.PropertyChanged += PropertyChangedListenerOf_widget_4_0_5_2;
-		_widget_4_0_5_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_5_2;
-		_widget_4_0_5_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_5_2;
-		_widget_4_0_5_2.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_5_2;
-		_widget_4_0_5_2.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_5_2;
-		_widget_4_0_5_2.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_5_2;
-		_widget_4_0_5_2.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_5_2;
-		_widget_4_0_5_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_5_2;
-		_widget_4_0_5_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_5_2;
-		_widget_4_0_5_2_0.Text = _datasource_Root.FiefsText;
-		_widget_4_0_5_2_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0_5_2_0;
-		_widget_4_0_5_2_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_5_2_0;
-		_widget_4_0_5_2_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_5_2_0;
-		_widget_4_0_5_2_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_5_2_0;
-		_widget_4_0_5_2_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_5_2_0;
-		_widget_4_0_5_2_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_5_2_0;
-		_widget_4_0_5_2_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_5_2_0;
-		_widget_4_0_5_2_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_5_2_0;
-		_widget_4_0_5_2_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_5_2_0;
-		_widget_4_0_5_3.IsSelected = _datasource_Root.IsIncomeSelected;
-		_widget_4_0_5_3.EventFire += EventListenerOf_widget_4_0_5_3;
-		_widget_4_0_5_3.PropertyChanged += PropertyChangedListenerOf_widget_4_0_5_3;
-		_widget_4_0_5_3.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_5_3;
-		_widget_4_0_5_3.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_5_3;
-		_widget_4_0_5_3.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_5_3;
-		_widget_4_0_5_3.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_5_3;
-		_widget_4_0_5_3.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_5_3;
-		_widget_4_0_5_3.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_5_3;
-		_widget_4_0_5_3.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_5_3;
-		_widget_4_0_5_3.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_5_3;
-		_widget_4_0_5_3_0.Text = _datasource_Root.IncomeText;
-		_widget_4_0_5_3_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0_5_3_0;
-		_widget_4_0_5_3_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_5_3_0;
-		_widget_4_0_5_3_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_5_3_0;
-		_widget_4_0_5_3_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_5_3_0;
-		_widget_4_0_5_3_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_5_3_0;
-		_widget_4_0_5_3_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_5_3_0;
-		_widget_4_0_5_3_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_5_3_0;
-		_widget_4_0_5_3_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_5_3_0;
-		_widget_4_0_5_3_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_5_3_0;
-		_widget_4_0_6.IsVisible = _datasource_Root.CanSwitchTabs;
-		_widget_4_0_6.PropertyChanged += PropertyChangedListenerOf_widget_4_0_6;
-		_widget_4_0_6.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_6;
-		_widget_4_0_6.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_6;
-		_widget_4_0_6.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_6;
-		_widget_4_0_6.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_6;
-		_widget_4_0_6.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_6;
-		_widget_4_0_6.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_6;
-		_widget_4_0_6.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_6;
-		_widget_4_0_6.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_6;
-		_widget_4_0_7_0.Text = _datasource_Root.CurrentRenownText;
-		_widget_4_0_7_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0_7_0;
-		_widget_4_0_7_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_7_0;
-		_widget_4_0_7_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_7_0;
-		_widget_4_0_7_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_7_0;
-		_widget_4_0_7_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_7_0;
-		_widget_4_0_7_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_7_0;
-		_widget_4_0_7_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_7_0;
-		_widget_4_0_7_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_7_0;
-		_widget_4_0_7_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_7_0;
-		_widget_4_0_7_1.IsHidden = _datasource_Root.IsRenownProgressComplete;
-		_widget_4_0_7_1.PropertyChanged += PropertyChangedListenerOf_widget_4_0_7_1;
-		_widget_4_0_7_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_7_1;
-		_widget_4_0_7_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_7_1;
-		_widget_4_0_7_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_7_1;
-		_widget_4_0_7_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_7_1;
-		_widget_4_0_7_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_7_1;
-		_widget_4_0_7_1.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_7_1;
-		_widget_4_0_7_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_7_1;
-		_widget_4_0_7_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_7_1;
-		_widget_4_0_7_1_0.IntText = _datasource_Root.CurrentTier;
-		_widget_4_0_7_1_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0_7_1_0;
-		_widget_4_0_7_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_7_1_0;
-		_widget_4_0_7_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_7_1_0;
-		_widget_4_0_7_1_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_7_1_0;
-		_widget_4_0_7_1_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_7_1_0;
-		_widget_4_0_7_1_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_7_1_0;
-		_widget_4_0_7_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_7_1_0;
-		_widget_4_0_7_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_7_1_0;
-		_widget_4_0_7_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_7_1_0;
-		_widget_4_0_7_1_1_0.InitialAmount = _datasource_Root.CurrentRenownOverPreviousTier;
-		_widget_4_0_7_1_1_0.MaxAmount = _datasource_Root.CurrentTierRenownRange;
-		_widget_4_0_7_1_1_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0_7_1_1_0;
-		_widget_4_0_7_1_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_7_1_1_0;
-		_widget_4_0_7_1_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_7_1_1_0;
-		_widget_4_0_7_1_1_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_7_1_1_0;
-		_widget_4_0_7_1_1_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_7_1_1_0;
-		_widget_4_0_7_1_1_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_7_1_1_0;
-		_widget_4_0_7_1_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_7_1_1_0;
-		_widget_4_0_7_1_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_7_1_1_0;
-		_widget_4_0_7_1_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_7_1_1_0;
-		_widget_4_0_7_1_2.IntText = _datasource_Root.NextTier;
-		_widget_4_0_7_1_2.PropertyChanged += PropertyChangedListenerOf_widget_4_0_7_1_2;
-		_widget_4_0_7_1_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_7_1_2;
-		_widget_4_0_7_1_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_7_1_2;
-		_widget_4_0_7_1_2.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_7_1_2;
-		_widget_4_0_7_1_2.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_7_1_2;
-		_widget_4_0_7_1_2.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_7_1_2;
-		_widget_4_0_7_1_2.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_7_1_2;
-		_widget_4_0_7_1_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_7_1_2;
-		_widget_4_0_7_1_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_7_1_2;
-		_datasource_Root_GoldChangeTooltip = _datasource_Root.GoldChangeTooltip;
-		if (_datasource_Root_GoldChangeTooltip != null)
-		{
-			_datasource_Root_GoldChangeTooltip.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_widget_1_0.EventFire += EventListenerOf_widget_1_0;
-		}
+		_widget_3_0_0.IsEnabled = _datasource_Root.CanChooseBanner;
+		_widget_3_0_0.EventFire += EventListenerOf_widget_3_0_0;
+		_widget_3_0_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0_0;
+		_widget_3_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_0;
+		_widget_3_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_0;
+		_widget_3_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_0;
+		_widget_3_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_0;
+		_widget_3_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_0;
+		_widget_3_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_0;
+		_widget_3_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_0;
+		_widget_3_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_0;
+		_widget_3_0_2.Text = _datasource_Root.LeaderText;
+		_widget_3_0_2.PropertyChanged += PropertyChangedListenerOf_widget_3_0_2;
+		_widget_3_0_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_2;
+		_widget_3_0_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_2;
+		_widget_3_0_2.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_2;
+		_widget_3_0_2.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_2;
+		_widget_3_0_2.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_2;
+		_widget_3_0_2.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_2;
+		_widget_3_0_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_2;
+		_widget_3_0_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_2;
+		_widget_3_0_3_0_0.IsEnabled = _datasource_Root.PlayerCanChangeClanName;
+		_widget_3_0_3_0_0.EventFire += EventListenerOf_widget_3_0_3_0_0;
+		_widget_3_0_3_0_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0_3_0_0;
+		_widget_3_0_3_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_3_0_0;
+		_widget_3_0_3_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_3_0_0;
+		_widget_3_0_3_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_3_0_0;
+		_widget_3_0_3_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_3_0_0;
+		_widget_3_0_3_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_3_0_0;
+		_widget_3_0_3_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_3_0_0;
+		_widget_3_0_3_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_3_0_0;
+		_widget_3_0_3_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_3_0_0;
+		_widget_3_0_3_0_0_0_0.Text = _datasource_Root.Name;
+		_widget_3_0_3_0_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+		_widget_3_0_3_0_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+		_widget_3_0_3_0_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+		_widget_3_0_3_0_0_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+		_widget_3_0_3_0_0_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+		_widget_3_0_3_0_0_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+		_widget_3_0_3_0_0_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+		_widget_3_0_3_0_0_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+		_widget_3_0_3_0_0_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_3_0_0_0_0;
+		_widget_3_0_3_0_0_0_1.IsEnabled = _datasource_Root.PlayerCanChangeClanName;
+		_widget_3_0_3_0_0_0_1.PropertyChanged += PropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+		_widget_3_0_3_0_0_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+		_widget_3_0_3_0_0_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+		_widget_3_0_3_0_0_0_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+		_widget_3_0_3_0_0_0_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+		_widget_3_0_3_0_0_0_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+		_widget_3_0_3_0_0_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+		_widget_3_0_3_0_0_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+		_widget_3_0_3_0_0_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_3_0_0_0_1;
+		_widget_3_0_4.IsVisible = _datasource_Root.CanSwitchTabs;
+		_widget_3_0_4.PropertyChanged += PropertyChangedListenerOf_widget_3_0_4;
+		_widget_3_0_4.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_4;
+		_widget_3_0_4.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_4;
+		_widget_3_0_4.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_4;
+		_widget_3_0_4.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_4;
+		_widget_3_0_4.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_4;
+		_widget_3_0_4.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_4;
+		_widget_3_0_4.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_4;
+		_widget_3_0_4.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_4;
+		_widget_3_0_5_0.IsSelected = _datasource_Root.IsMembersSelected;
+		_widget_3_0_5_0.EventFire += EventListenerOf_widget_3_0_5_0;
+		_widget_3_0_5_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0_5_0;
+		_widget_3_0_5_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_5_0;
+		_widget_3_0_5_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_5_0;
+		_widget_3_0_5_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_5_0;
+		_widget_3_0_5_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_5_0;
+		_widget_3_0_5_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_5_0;
+		_widget_3_0_5_0.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_5_0;
+		_widget_3_0_5_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_5_0;
+		_widget_3_0_5_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_5_0;
+		_widget_3_0_5_0_0.Text = _datasource_Root.MembersText;
+		_widget_3_0_5_0_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0_5_0_0;
+		_widget_3_0_5_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_5_0_0;
+		_widget_3_0_5_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_5_0_0;
+		_widget_3_0_5_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_5_0_0;
+		_widget_3_0_5_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_5_0_0;
+		_widget_3_0_5_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_5_0_0;
+		_widget_3_0_5_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_5_0_0;
+		_widget_3_0_5_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_5_0_0;
+		_widget_3_0_5_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_5_0_0;
+		_widget_3_0_5_1.IsSelected = _datasource_Root.IsPartiesSelected;
+		_widget_3_0_5_1.EventFire += EventListenerOf_widget_3_0_5_1;
+		_widget_3_0_5_1.PropertyChanged += PropertyChangedListenerOf_widget_3_0_5_1;
+		_widget_3_0_5_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_5_1;
+		_widget_3_0_5_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_5_1;
+		_widget_3_0_5_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_5_1;
+		_widget_3_0_5_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_5_1;
+		_widget_3_0_5_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_5_1;
+		_widget_3_0_5_1.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_5_1;
+		_widget_3_0_5_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_5_1;
+		_widget_3_0_5_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_5_1;
+		_widget_3_0_5_1_0.Text = _datasource_Root.PartiesText;
+		_widget_3_0_5_1_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0_5_1_0;
+		_widget_3_0_5_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_5_1_0;
+		_widget_3_0_5_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_5_1_0;
+		_widget_3_0_5_1_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_5_1_0;
+		_widget_3_0_5_1_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_5_1_0;
+		_widget_3_0_5_1_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_5_1_0;
+		_widget_3_0_5_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_5_1_0;
+		_widget_3_0_5_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_5_1_0;
+		_widget_3_0_5_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_5_1_0;
+		_widget_3_0_5_2.IsSelected = _datasource_Root.IsFiefsSelected;
+		_widget_3_0_5_2.EventFire += EventListenerOf_widget_3_0_5_2;
+		_widget_3_0_5_2.PropertyChanged += PropertyChangedListenerOf_widget_3_0_5_2;
+		_widget_3_0_5_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_5_2;
+		_widget_3_0_5_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_5_2;
+		_widget_3_0_5_2.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_5_2;
+		_widget_3_0_5_2.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_5_2;
+		_widget_3_0_5_2.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_5_2;
+		_widget_3_0_5_2.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_5_2;
+		_widget_3_0_5_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_5_2;
+		_widget_3_0_5_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_5_2;
+		_widget_3_0_5_2_0.Text = _datasource_Root.FiefsText;
+		_widget_3_0_5_2_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0_5_2_0;
+		_widget_3_0_5_2_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_5_2_0;
+		_widget_3_0_5_2_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_5_2_0;
+		_widget_3_0_5_2_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_5_2_0;
+		_widget_3_0_5_2_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_5_2_0;
+		_widget_3_0_5_2_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_5_2_0;
+		_widget_3_0_5_2_0.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_5_2_0;
+		_widget_3_0_5_2_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_5_2_0;
+		_widget_3_0_5_2_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_5_2_0;
+		_widget_3_0_5_3.IsSelected = _datasource_Root.IsIncomeSelected;
+		_widget_3_0_5_3.EventFire += EventListenerOf_widget_3_0_5_3;
+		_widget_3_0_5_3.PropertyChanged += PropertyChangedListenerOf_widget_3_0_5_3;
+		_widget_3_0_5_3.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_5_3;
+		_widget_3_0_5_3.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_5_3;
+		_widget_3_0_5_3.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_5_3;
+		_widget_3_0_5_3.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_5_3;
+		_widget_3_0_5_3.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_5_3;
+		_widget_3_0_5_3.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_5_3;
+		_widget_3_0_5_3.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_5_3;
+		_widget_3_0_5_3.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_5_3;
+		_widget_3_0_5_3_0.Text = _datasource_Root.IncomeText;
+		_widget_3_0_5_3_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0_5_3_0;
+		_widget_3_0_5_3_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_5_3_0;
+		_widget_3_0_5_3_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_5_3_0;
+		_widget_3_0_5_3_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_5_3_0;
+		_widget_3_0_5_3_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_5_3_0;
+		_widget_3_0_5_3_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_5_3_0;
+		_widget_3_0_5_3_0.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_5_3_0;
+		_widget_3_0_5_3_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_5_3_0;
+		_widget_3_0_5_3_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_5_3_0;
+		_widget_3_0_6.IsVisible = _datasource_Root.CanSwitchTabs;
+		_widget_3_0_6.PropertyChanged += PropertyChangedListenerOf_widget_3_0_6;
+		_widget_3_0_6.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_6;
+		_widget_3_0_6.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_6;
+		_widget_3_0_6.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_6;
+		_widget_3_0_6.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_6;
+		_widget_3_0_6.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_6;
+		_widget_3_0_6.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_6;
+		_widget_3_0_6.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_6;
+		_widget_3_0_6.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_6;
+		_widget_3_0_7_0.Text = _datasource_Root.CurrentRenownText;
+		_widget_3_0_7_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0_7_0;
+		_widget_3_0_7_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_7_0;
+		_widget_3_0_7_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_7_0;
+		_widget_3_0_7_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_7_0;
+		_widget_3_0_7_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_7_0;
+		_widget_3_0_7_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_7_0;
+		_widget_3_0_7_0.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_7_0;
+		_widget_3_0_7_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_7_0;
+		_widget_3_0_7_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_7_0;
+		_widget_3_0_7_1.IsHidden = _datasource_Root.IsRenownProgressComplete;
+		_widget_3_0_7_1.PropertyChanged += PropertyChangedListenerOf_widget_3_0_7_1;
+		_widget_3_0_7_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_7_1;
+		_widget_3_0_7_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_7_1;
+		_widget_3_0_7_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_7_1;
+		_widget_3_0_7_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_7_1;
+		_widget_3_0_7_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_7_1;
+		_widget_3_0_7_1.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_7_1;
+		_widget_3_0_7_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_7_1;
+		_widget_3_0_7_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_7_1;
+		_widget_3_0_7_1_0.IntText = _datasource_Root.CurrentTier;
+		_widget_3_0_7_1_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0_7_1_0;
+		_widget_3_0_7_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_7_1_0;
+		_widget_3_0_7_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_7_1_0;
+		_widget_3_0_7_1_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_7_1_0;
+		_widget_3_0_7_1_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_7_1_0;
+		_widget_3_0_7_1_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_7_1_0;
+		_widget_3_0_7_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_7_1_0;
+		_widget_3_0_7_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_7_1_0;
+		_widget_3_0_7_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_7_1_0;
+		_widget_3_0_7_1_1_0.InitialAmount = _datasource_Root.CurrentRenownOverPreviousTier;
+		_widget_3_0_7_1_1_0.MaxAmount = _datasource_Root.CurrentTierRenownRange;
+		_widget_3_0_7_1_1_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0_7_1_1_0;
+		_widget_3_0_7_1_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_7_1_1_0;
+		_widget_3_0_7_1_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_7_1_1_0;
+		_widget_3_0_7_1_1_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_7_1_1_0;
+		_widget_3_0_7_1_1_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_7_1_1_0;
+		_widget_3_0_7_1_1_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_7_1_1_0;
+		_widget_3_0_7_1_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_7_1_1_0;
+		_widget_3_0_7_1_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_7_1_1_0;
+		_widget_3_0_7_1_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_7_1_1_0;
+		_widget_3_0_7_1_2.IntText = _datasource_Root.NextTier;
+		_widget_3_0_7_1_2.PropertyChanged += PropertyChangedListenerOf_widget_3_0_7_1_2;
+		_widget_3_0_7_1_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_7_1_2;
+		_widget_3_0_7_1_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_7_1_2;
+		_widget_3_0_7_1_2.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_7_1_2;
+		_widget_3_0_7_1_2.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_7_1_2;
+		_widget_3_0_7_1_2.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_7_1_2;
+		_widget_3_0_7_1_2.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_7_1_2;
+		_widget_3_0_7_1_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_7_1_2;
+		_widget_3_0_7_1_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_7_1_2;
 		_datasource_Root_ClanMembers = _datasource_Root.ClanMembers;
 		if (_datasource_Root_ClanMembers != null)
 		{
@@ -5381,7 +4065,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_ClanMembers.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ClanMembers;
 			_datasource_Root_ClanMembers.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ClanMembers;
 			_datasource_Root_ClanMembers.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ClanMembers;
-			_widget_2_0.SetDataSource(_datasource_Root_ClanMembers);
+			_widget_1_0.SetDataSource(_datasource_Root_ClanMembers);
 		}
 		_datasource_Root_ClanParties = _datasource_Root.ClanParties;
 		if (_datasource_Root_ClanParties != null)
@@ -5395,7 +4079,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_ClanParties.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ClanParties;
 			_datasource_Root_ClanParties.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ClanParties;
 			_datasource_Root_ClanParties.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ClanParties;
-			_widget_2_1.SetDataSource(_datasource_Root_ClanParties);
+			_widget_1_1.SetDataSource(_datasource_Root_ClanParties);
 		}
 		_datasource_Root_ClanFiefs = _datasource_Root.ClanFiefs;
 		if (_datasource_Root_ClanFiefs != null)
@@ -5409,7 +4093,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_ClanFiefs.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ClanFiefs;
 			_datasource_Root_ClanFiefs.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ClanFiefs;
 			_datasource_Root_ClanFiefs.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ClanFiefs;
-			_widget_2_2.SetDataSource(_datasource_Root_ClanFiefs);
+			_widget_1_2.SetDataSource(_datasource_Root_ClanFiefs);
 		}
 		_datasource_Root_ClanIncome = _datasource_Root.ClanIncome;
 		if (_datasource_Root_ClanIncome != null)
@@ -5423,7 +4107,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_ClanIncome.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ClanIncome;
 			_datasource_Root_ClanIncome.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ClanIncome;
 			_datasource_Root_ClanIncome.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ClanIncome;
-			_widget_2_3.SetDataSource(_datasource_Root_ClanIncome);
+			_widget_1_3.SetDataSource(_datasource_Root_ClanIncome);
 		}
 		_datasource_Root_ClanBanner = _datasource_Root.ClanBanner;
 		if (_datasource_Root_ClanBanner != null)
@@ -5437,18 +4121,18 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_ClanBanner.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ClanBanner;
 			_datasource_Root_ClanBanner.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ClanBanner;
 			_datasource_Root_ClanBanner.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ClanBanner;
-			_widget_4_0_0_0.AdditionalArgs = _datasource_Root_ClanBanner.AdditionalArgs;
-			_widget_4_0_0_0.ImageId = _datasource_Root_ClanBanner.Id;
-			_widget_4_0_0_0.TextureProviderName = _datasource_Root_ClanBanner.TextureProviderName;
-			_widget_4_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_0_0;
+			_widget_3_0_0_0.AdditionalArgs = _datasource_Root_ClanBanner.AdditionalArgs;
+			_widget_3_0_0_0.ImageId = _datasource_Root_ClanBanner.Id;
+			_widget_3_0_0_0.TextureProviderName = _datasource_Root_ClanBanner.TextureProviderName;
+			_widget_3_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_0_0;
 		}
 		_datasource_Root_ClanBannerHint = _datasource_Root.ClanBannerHint;
 		if (_datasource_Root_ClanBannerHint != null)
@@ -5462,7 +4146,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_ClanBannerHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ClanBannerHint;
 			_datasource_Root_ClanBannerHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ClanBannerHint;
 			_datasource_Root_ClanBannerHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ClanBannerHint;
-			_widget_4_0_0_1.EventFire += EventListenerOf_widget_4_0_0_1;
+			_widget_3_0_0_1.EventFire += EventListenerOf_widget_3_0_0_1;
 		}
 		_datasource_Root_Leader = _datasource_Root.Leader;
 		if (_datasource_Root_Leader != null)
@@ -5476,7 +4160,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_Leader.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Leader;
 			_datasource_Root_Leader.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Leader;
 			_datasource_Root_Leader.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Leader;
-			_widget_4_0_1.EventFire += EventListenerOf_widget_4_0_1;
+			_widget_3_0_1.EventFire += EventListenerOf_widget_3_0_1;
 			_datasource_Root_Leader_ImageIdentifier = _datasource_Root_Leader.ImageIdentifier;
 			if (_datasource_Root_Leader_ImageIdentifier != null)
 			{
@@ -5489,18 +4173,18 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				_datasource_Root_Leader_ImageIdentifier.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Leader_ImageIdentifier;
 				_datasource_Root_Leader_ImageIdentifier.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Leader_ImageIdentifier;
 				_datasource_Root_Leader_ImageIdentifier.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Leader_ImageIdentifier;
-				_widget_4_0_1_0.AdditionalArgs = _datasource_Root_Leader_ImageIdentifier.AdditionalArgs;
-				_widget_4_0_1_0.ImageId = _datasource_Root_Leader_ImageIdentifier.Id;
-				_widget_4_0_1_0.TextureProviderName = _datasource_Root_Leader_ImageIdentifier.TextureProviderName;
-				_widget_4_0_1_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_1_0;
+				_widget_3_0_1_0.AdditionalArgs = _datasource_Root_Leader_ImageIdentifier.AdditionalArgs;
+				_widget_3_0_1_0.ImageId = _datasource_Root_Leader_ImageIdentifier.Id;
+				_widget_3_0_1_0.TextureProviderName = _datasource_Root_Leader_ImageIdentifier.TextureProviderName;
+				_widget_3_0_1_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_1_0;
 			}
 		}
 		_datasource_Root_ChangeClanNameHint = _datasource_Root.ChangeClanNameHint;
@@ -5515,7 +4199,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_ChangeClanNameHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ChangeClanNameHint;
 			_datasource_Root_ChangeClanNameHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ChangeClanNameHint;
 			_datasource_Root_ChangeClanNameHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ChangeClanNameHint;
-			_widget_4_0_3_0_1.EventFire += EventListenerOf_widget_4_0_3_0_1;
+			_widget_3_0_3_0_1.EventFire += EventListenerOf_widget_3_0_3_0_1;
 		}
 		_datasource_Root_PreviousTabInputKey = _datasource_Root.PreviousTabInputKey;
 		if (_datasource_Root_PreviousTabInputKey != null)
@@ -5529,17 +4213,17 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_PreviousTabInputKey.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_PreviousTabInputKey;
 			_datasource_Root_PreviousTabInputKey.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_PreviousTabInputKey;
 			_datasource_Root_PreviousTabInputKey.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_PreviousTabInputKey;
-			_widget_4_0_4_0.KeyID = _datasource_Root_PreviousTabInputKey.KeyID;
-			_widget_4_0_4_0.IsVisible = _datasource_Root_PreviousTabInputKey.IsVisible;
-			_widget_4_0_4_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_4_0;
+			_widget_3_0_4_0.KeyID = _datasource_Root_PreviousTabInputKey.KeyID;
+			_widget_3_0_4_0.IsVisible = _datasource_Root_PreviousTabInputKey.IsVisible;
+			_widget_3_0_4_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_4_0;
 		}
 		_datasource_Root_NextTabInputKey = _datasource_Root.NextTabInputKey;
 		if (_datasource_Root_NextTabInputKey != null)
@@ -5553,17 +4237,17 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_NextTabInputKey.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_NextTabInputKey;
 			_datasource_Root_NextTabInputKey.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_NextTabInputKey;
 			_datasource_Root_NextTabInputKey.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_NextTabInputKey;
-			_widget_4_0_6_0.KeyID = _datasource_Root_NextTabInputKey.KeyID;
-			_widget_4_0_6_0.IsVisible = _datasource_Root_NextTabInputKey.IsVisible;
-			_widget_4_0_6_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_6_0;
+			_widget_3_0_6_0.KeyID = _datasource_Root_NextTabInputKey.KeyID;
+			_widget_3_0_6_0.IsVisible = _datasource_Root_NextTabInputKey.IsVisible;
+			_widget_3_0_6_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_6_0;
 		}
 		_datasource_Root_RenownHint = _datasource_Root.RenownHint;
 		if (_datasource_Root_RenownHint != null)
@@ -5577,7 +4261,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_RenownHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_RenownHint;
 			_datasource_Root_RenownHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_RenownHint;
 			_datasource_Root_RenownHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_RenownHint;
-			_widget_4_0_7.EventFire += EventListenerOf_widget_4_0_7;
+			_widget_3_0_7.EventFire += EventListenerOf_widget_3_0_7;
 		}
 		_datasource_Root_CardSelectionPopup = _datasource_Root.CardSelectionPopup;
 		if (_datasource_Root_CardSelectionPopup != null)
@@ -5591,7 +4275,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_CardSelectionPopup.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_CardSelectionPopup;
 			_datasource_Root_CardSelectionPopup.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_CardSelectionPopup;
 			_datasource_Root_CardSelectionPopup.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_CardSelectionPopup;
-			_widget_6.SetDataSource(_datasource_Root_CardSelectionPopup);
+			_widget_5.SetDataSource(_datasource_Root_CardSelectionPopup);
 		}
 		_datasource_Root_TutorialNotification = _datasource_Root.TutorialNotification;
 		if (_datasource_Root_TutorialNotification != null)
@@ -5605,59 +4289,26 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_TutorialNotification.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_TutorialNotification;
 			_datasource_Root_TutorialNotification.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_TutorialNotification;
 			_datasource_Root_TutorialNotification.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TutorialNotification;
-			_widget_7.ElementID = _datasource_Root_TutorialNotification.ElementID;
-			_widget_7.PropertyChanged += PropertyChangedListenerOf_widget_7;
-			_widget_7.boolPropertyChanged += boolPropertyChangedListenerOf_widget_7;
-			_widget_7.floatPropertyChanged += floatPropertyChangedListenerOf_widget_7;
-			_widget_7.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_7;
-			_widget_7.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_7;
-			_widget_7.doublePropertyChanged += doublePropertyChangedListenerOf_widget_7;
-			_widget_7.intPropertyChanged += intPropertyChangedListenerOf_widget_7;
-			_widget_7.uintPropertyChanged += uintPropertyChangedListenerOf_widget_7;
-			_widget_7.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_7;
+			_widget_6.ElementID = _datasource_Root_TutorialNotification.ElementID;
+			_widget_6.PropertyChanged += PropertyChangedListenerOf_widget_6;
+			_widget_6.boolPropertyChanged += boolPropertyChangedListenerOf_widget_6;
+			_widget_6.floatPropertyChanged += floatPropertyChangedListenerOf_widget_6;
+			_widget_6.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_6;
+			_widget_6.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_6;
+			_widget_6.doublePropertyChanged += doublePropertyChangedListenerOf_widget_6;
+			_widget_6.intPropertyChanged += intPropertyChangedListenerOf_widget_6;
+			_widget_6.uintPropertyChanged += uintPropertyChangedListenerOf_widget_6;
+			_widget_6.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_6;
 		}
 		_widget_0.SetDataSource(_datasource_Root);
-		_widget_5.SetDataSource(_datasource_Root);
-	}
-
-	private void RefreshDataSource_datasource_Root_GoldChangeTooltip(TooltipTriggerVM newDataSource)
-	{
-		if (_datasource_Root_GoldChangeTooltip != null)
-		{
-			_datasource_Root_GoldChangeTooltip.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_widget_1_0.EventFire -= EventListenerOf_widget_1_0;
-			_datasource_Root_GoldChangeTooltip = null;
-		}
-		_datasource_Root_GoldChangeTooltip = newDataSource;
-		_datasource_Root_GoldChangeTooltip = _datasource_Root.GoldChangeTooltip;
-		if (_datasource_Root_GoldChangeTooltip != null)
-		{
-			_datasource_Root_GoldChangeTooltip.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_datasource_Root_GoldChangeTooltip.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_GoldChangeTooltip;
-			_widget_1_0.EventFire += EventListenerOf_widget_1_0;
-		}
+		_widget_4.SetDataSource(_datasource_Root);
 	}
 
 	private void RefreshDataSource_datasource_Root_ClanMembers(ClanMembersVM newDataSource)
 	{
 		if (_datasource_Root_ClanMembers != null)
 		{
-			_widget_2_0.SetDataSource(null);
+			_widget_1_0.SetDataSource(null);
 			_datasource_Root_ClanMembers.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ClanMembers;
 			_datasource_Root_ClanMembers.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ClanMembers;
 			_datasource_Root_ClanMembers.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ClanMembers;
@@ -5682,7 +4333,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_ClanMembers.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ClanMembers;
 			_datasource_Root_ClanMembers.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ClanMembers;
 			_datasource_Root_ClanMembers.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ClanMembers;
-			_widget_2_0.SetDataSource(_datasource_Root_ClanMembers);
+			_widget_1_0.SetDataSource(_datasource_Root_ClanMembers);
 		}
 	}
 
@@ -5690,7 +4341,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 	{
 		if (_datasource_Root_ClanParties != null)
 		{
-			_widget_2_1.SetDataSource(null);
+			_widget_1_1.SetDataSource(null);
 			_datasource_Root_ClanParties.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ClanParties;
 			_datasource_Root_ClanParties.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ClanParties;
 			_datasource_Root_ClanParties.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ClanParties;
@@ -5715,7 +4366,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_ClanParties.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ClanParties;
 			_datasource_Root_ClanParties.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ClanParties;
 			_datasource_Root_ClanParties.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ClanParties;
-			_widget_2_1.SetDataSource(_datasource_Root_ClanParties);
+			_widget_1_1.SetDataSource(_datasource_Root_ClanParties);
 		}
 	}
 
@@ -5723,7 +4374,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 	{
 		if (_datasource_Root_ClanFiefs != null)
 		{
-			_widget_2_2.SetDataSource(null);
+			_widget_1_2.SetDataSource(null);
 			_datasource_Root_ClanFiefs.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ClanFiefs;
 			_datasource_Root_ClanFiefs.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ClanFiefs;
 			_datasource_Root_ClanFiefs.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ClanFiefs;
@@ -5748,7 +4399,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_ClanFiefs.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ClanFiefs;
 			_datasource_Root_ClanFiefs.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ClanFiefs;
 			_datasource_Root_ClanFiefs.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ClanFiefs;
-			_widget_2_2.SetDataSource(_datasource_Root_ClanFiefs);
+			_widget_1_2.SetDataSource(_datasource_Root_ClanFiefs);
 		}
 	}
 
@@ -5756,7 +4407,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 	{
 		if (_datasource_Root_ClanIncome != null)
 		{
-			_widget_2_3.SetDataSource(null);
+			_widget_1_3.SetDataSource(null);
 			_datasource_Root_ClanIncome.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ClanIncome;
 			_datasource_Root_ClanIncome.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ClanIncome;
 			_datasource_Root_ClanIncome.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ClanIncome;
@@ -5781,7 +4432,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_ClanIncome.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ClanIncome;
 			_datasource_Root_ClanIncome.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ClanIncome;
 			_datasource_Root_ClanIncome.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ClanIncome;
-			_widget_2_3.SetDataSource(_datasource_Root_ClanIncome);
+			_widget_1_3.SetDataSource(_datasource_Root_ClanIncome);
 		}
 	}
 
@@ -5798,15 +4449,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_ClanBanner.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ClanBanner;
 			_datasource_Root_ClanBanner.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ClanBanner;
 			_datasource_Root_ClanBanner.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ClanBanner;
-			_widget_4_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_0_0;
+			_widget_3_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_0_0;
 			_datasource_Root_ClanBanner = null;
 		}
 		_datasource_Root_ClanBanner = newDataSource;
@@ -5822,18 +4473,18 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_ClanBanner.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ClanBanner;
 			_datasource_Root_ClanBanner.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ClanBanner;
 			_datasource_Root_ClanBanner.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ClanBanner;
-			_widget_4_0_0_0.AdditionalArgs = _datasource_Root_ClanBanner.AdditionalArgs;
-			_widget_4_0_0_0.ImageId = _datasource_Root_ClanBanner.Id;
-			_widget_4_0_0_0.TextureProviderName = _datasource_Root_ClanBanner.TextureProviderName;
-			_widget_4_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_0_0;
-			_widget_4_0_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_0_0;
+			_widget_3_0_0_0.AdditionalArgs = _datasource_Root_ClanBanner.AdditionalArgs;
+			_widget_3_0_0_0.ImageId = _datasource_Root_ClanBanner.Id;
+			_widget_3_0_0_0.TextureProviderName = _datasource_Root_ClanBanner.TextureProviderName;
+			_widget_3_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_0_0;
+			_widget_3_0_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_0_0;
 		}
 	}
 
@@ -5850,7 +4501,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_ClanBannerHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ClanBannerHint;
 			_datasource_Root_ClanBannerHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ClanBannerHint;
 			_datasource_Root_ClanBannerHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ClanBannerHint;
-			_widget_4_0_0_1.EventFire -= EventListenerOf_widget_4_0_0_1;
+			_widget_3_0_0_1.EventFire -= EventListenerOf_widget_3_0_0_1;
 			_datasource_Root_ClanBannerHint = null;
 		}
 		_datasource_Root_ClanBannerHint = newDataSource;
@@ -5866,7 +4517,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_ClanBannerHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ClanBannerHint;
 			_datasource_Root_ClanBannerHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ClanBannerHint;
 			_datasource_Root_ClanBannerHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ClanBannerHint;
-			_widget_4_0_0_1.EventFire += EventListenerOf_widget_4_0_0_1;
+			_widget_3_0_0_1.EventFire += EventListenerOf_widget_3_0_0_1;
 		}
 	}
 
@@ -5883,7 +4534,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_Leader.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Leader;
 			_datasource_Root_Leader.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Leader;
 			_datasource_Root_Leader.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Leader;
-			_widget_4_0_1.EventFire -= EventListenerOf_widget_4_0_1;
+			_widget_3_0_1.EventFire -= EventListenerOf_widget_3_0_1;
 			if (_datasource_Root_Leader_ImageIdentifier != null)
 			{
 				_datasource_Root_Leader_ImageIdentifier.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Leader_ImageIdentifier;
@@ -5895,15 +4546,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				_datasource_Root_Leader_ImageIdentifier.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Leader_ImageIdentifier;
 				_datasource_Root_Leader_ImageIdentifier.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Leader_ImageIdentifier;
 				_datasource_Root_Leader_ImageIdentifier.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Leader_ImageIdentifier;
-				_widget_4_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_1_0;
+				_widget_3_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_1_0;
 				_datasource_Root_Leader_ImageIdentifier = null;
 			}
 			_datasource_Root_Leader = null;
@@ -5921,7 +4572,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_Leader.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Leader;
 			_datasource_Root_Leader.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Leader;
 			_datasource_Root_Leader.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Leader;
-			_widget_4_0_1.EventFire += EventListenerOf_widget_4_0_1;
+			_widget_3_0_1.EventFire += EventListenerOf_widget_3_0_1;
 			_datasource_Root_Leader_ImageIdentifier = _datasource_Root_Leader.ImageIdentifier;
 			if (_datasource_Root_Leader_ImageIdentifier != null)
 			{
@@ -5934,18 +4585,18 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				_datasource_Root_Leader_ImageIdentifier.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Leader_ImageIdentifier;
 				_datasource_Root_Leader_ImageIdentifier.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Leader_ImageIdentifier;
 				_datasource_Root_Leader_ImageIdentifier.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Leader_ImageIdentifier;
-				_widget_4_0_1_0.AdditionalArgs = _datasource_Root_Leader_ImageIdentifier.AdditionalArgs;
-				_widget_4_0_1_0.ImageId = _datasource_Root_Leader_ImageIdentifier.Id;
-				_widget_4_0_1_0.TextureProviderName = _datasource_Root_Leader_ImageIdentifier.TextureProviderName;
-				_widget_4_0_1_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_1_0;
-				_widget_4_0_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_1_0;
+				_widget_3_0_1_0.AdditionalArgs = _datasource_Root_Leader_ImageIdentifier.AdditionalArgs;
+				_widget_3_0_1_0.ImageId = _datasource_Root_Leader_ImageIdentifier.Id;
+				_widget_3_0_1_0.TextureProviderName = _datasource_Root_Leader_ImageIdentifier.TextureProviderName;
+				_widget_3_0_1_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_1_0;
+				_widget_3_0_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_1_0;
 			}
 		}
 	}
@@ -5963,15 +4614,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_Leader_ImageIdentifier.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Leader_ImageIdentifier;
 			_datasource_Root_Leader_ImageIdentifier.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Leader_ImageIdentifier;
 			_datasource_Root_Leader_ImageIdentifier.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Leader_ImageIdentifier;
-			_widget_4_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_1_0;
-			_widget_4_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_1_0;
-			_widget_4_0_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_1_0;
-			_widget_4_0_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_1_0;
-			_widget_4_0_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_1_0;
-			_widget_4_0_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_1_0;
-			_widget_4_0_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_1_0;
-			_widget_4_0_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_1_0;
-			_widget_4_0_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_1_0;
+			_widget_3_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_1_0;
+			_widget_3_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_1_0;
+			_widget_3_0_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_1_0;
+			_widget_3_0_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_1_0;
+			_widget_3_0_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_1_0;
+			_widget_3_0_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_1_0;
+			_widget_3_0_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_1_0;
+			_widget_3_0_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_1_0;
+			_widget_3_0_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_1_0;
 			_datasource_Root_Leader_ImageIdentifier = null;
 		}
 		_datasource_Root_Leader_ImageIdentifier = newDataSource;
@@ -5987,18 +4638,18 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_Leader_ImageIdentifier.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_Leader_ImageIdentifier;
 			_datasource_Root_Leader_ImageIdentifier.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Leader_ImageIdentifier;
 			_datasource_Root_Leader_ImageIdentifier.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Leader_ImageIdentifier;
-			_widget_4_0_1_0.AdditionalArgs = _datasource_Root_Leader_ImageIdentifier.AdditionalArgs;
-			_widget_4_0_1_0.ImageId = _datasource_Root_Leader_ImageIdentifier.Id;
-			_widget_4_0_1_0.TextureProviderName = _datasource_Root_Leader_ImageIdentifier.TextureProviderName;
-			_widget_4_0_1_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0_1_0;
-			_widget_4_0_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_1_0;
-			_widget_4_0_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_1_0;
-			_widget_4_0_1_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_1_0;
-			_widget_4_0_1_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_1_0;
-			_widget_4_0_1_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_1_0;
-			_widget_4_0_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_1_0;
-			_widget_4_0_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_1_0;
-			_widget_4_0_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_1_0;
+			_widget_3_0_1_0.AdditionalArgs = _datasource_Root_Leader_ImageIdentifier.AdditionalArgs;
+			_widget_3_0_1_0.ImageId = _datasource_Root_Leader_ImageIdentifier.Id;
+			_widget_3_0_1_0.TextureProviderName = _datasource_Root_Leader_ImageIdentifier.TextureProviderName;
+			_widget_3_0_1_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0_1_0;
+			_widget_3_0_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_1_0;
+			_widget_3_0_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_1_0;
+			_widget_3_0_1_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_1_0;
+			_widget_3_0_1_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_1_0;
+			_widget_3_0_1_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_1_0;
+			_widget_3_0_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_1_0;
+			_widget_3_0_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_1_0;
+			_widget_3_0_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_1_0;
 		}
 	}
 
@@ -6015,7 +4666,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_ChangeClanNameHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ChangeClanNameHint;
 			_datasource_Root_ChangeClanNameHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ChangeClanNameHint;
 			_datasource_Root_ChangeClanNameHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ChangeClanNameHint;
-			_widget_4_0_3_0_1.EventFire -= EventListenerOf_widget_4_0_3_0_1;
+			_widget_3_0_3_0_1.EventFire -= EventListenerOf_widget_3_0_3_0_1;
 			_datasource_Root_ChangeClanNameHint = null;
 		}
 		_datasource_Root_ChangeClanNameHint = newDataSource;
@@ -6031,7 +4682,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_ChangeClanNameHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ChangeClanNameHint;
 			_datasource_Root_ChangeClanNameHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ChangeClanNameHint;
 			_datasource_Root_ChangeClanNameHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ChangeClanNameHint;
-			_widget_4_0_3_0_1.EventFire += EventListenerOf_widget_4_0_3_0_1;
+			_widget_3_0_3_0_1.EventFire += EventListenerOf_widget_3_0_3_0_1;
 		}
 	}
 
@@ -6048,15 +4699,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_PreviousTabInputKey.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_PreviousTabInputKey;
 			_datasource_Root_PreviousTabInputKey.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_PreviousTabInputKey;
 			_datasource_Root_PreviousTabInputKey.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_PreviousTabInputKey;
-			_widget_4_0_4_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_4_0;
+			_widget_3_0_4_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_4_0;
 			_datasource_Root_PreviousTabInputKey = null;
 		}
 		_datasource_Root_PreviousTabInputKey = newDataSource;
@@ -6072,17 +4723,17 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_PreviousTabInputKey.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_PreviousTabInputKey;
 			_datasource_Root_PreviousTabInputKey.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_PreviousTabInputKey;
 			_datasource_Root_PreviousTabInputKey.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_PreviousTabInputKey;
-			_widget_4_0_4_0.KeyID = _datasource_Root_PreviousTabInputKey.KeyID;
-			_widget_4_0_4_0.IsVisible = _datasource_Root_PreviousTabInputKey.IsVisible;
-			_widget_4_0_4_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_4_0;
-			_widget_4_0_4_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_4_0;
+			_widget_3_0_4_0.KeyID = _datasource_Root_PreviousTabInputKey.KeyID;
+			_widget_3_0_4_0.IsVisible = _datasource_Root_PreviousTabInputKey.IsVisible;
+			_widget_3_0_4_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_4_0;
+			_widget_3_0_4_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_4_0;
 		}
 	}
 
@@ -6099,15 +4750,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_NextTabInputKey.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_NextTabInputKey;
 			_datasource_Root_NextTabInputKey.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_NextTabInputKey;
 			_datasource_Root_NextTabInputKey.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_NextTabInputKey;
-			_widget_4_0_6_0.PropertyChanged -= PropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_0_6_0;
+			_widget_3_0_6_0.PropertyChanged -= PropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3_0_6_0;
 			_datasource_Root_NextTabInputKey = null;
 		}
 		_datasource_Root_NextTabInputKey = newDataSource;
@@ -6123,17 +4774,17 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_NextTabInputKey.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_NextTabInputKey;
 			_datasource_Root_NextTabInputKey.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_NextTabInputKey;
 			_datasource_Root_NextTabInputKey.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_NextTabInputKey;
-			_widget_4_0_6_0.KeyID = _datasource_Root_NextTabInputKey.KeyID;
-			_widget_4_0_6_0.IsVisible = _datasource_Root_NextTabInputKey.IsVisible;
-			_widget_4_0_6_0.PropertyChanged += PropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.intPropertyChanged += intPropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_0_6_0;
-			_widget_4_0_6_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_0_6_0;
+			_widget_3_0_6_0.KeyID = _datasource_Root_NextTabInputKey.KeyID;
+			_widget_3_0_6_0.IsVisible = _datasource_Root_NextTabInputKey.IsVisible;
+			_widget_3_0_6_0.PropertyChanged += PropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.intPropertyChanged += intPropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3_0_6_0;
+			_widget_3_0_6_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3_0_6_0;
 		}
 	}
 
@@ -6150,7 +4801,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_RenownHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_RenownHint;
 			_datasource_Root_RenownHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_RenownHint;
 			_datasource_Root_RenownHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_RenownHint;
-			_widget_4_0_7.EventFire -= EventListenerOf_widget_4_0_7;
+			_widget_3_0_7.EventFire -= EventListenerOf_widget_3_0_7;
 			_datasource_Root_RenownHint = null;
 		}
 		_datasource_Root_RenownHint = newDataSource;
@@ -6166,7 +4817,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_RenownHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_RenownHint;
 			_datasource_Root_RenownHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_RenownHint;
 			_datasource_Root_RenownHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_RenownHint;
-			_widget_4_0_7.EventFire += EventListenerOf_widget_4_0_7;
+			_widget_3_0_7.EventFire += EventListenerOf_widget_3_0_7;
 		}
 	}
 
@@ -6174,7 +4825,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 	{
 		if (_datasource_Root_CardSelectionPopup != null)
 		{
-			_widget_6.SetDataSource(null);
+			_widget_5.SetDataSource(null);
 			_datasource_Root_CardSelectionPopup.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_CardSelectionPopup;
 			_datasource_Root_CardSelectionPopup.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_CardSelectionPopup;
 			_datasource_Root_CardSelectionPopup.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_CardSelectionPopup;
@@ -6199,7 +4850,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_CardSelectionPopup.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_CardSelectionPopup;
 			_datasource_Root_CardSelectionPopup.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_CardSelectionPopup;
 			_datasource_Root_CardSelectionPopup.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_CardSelectionPopup;
-			_widget_6.SetDataSource(_datasource_Root_CardSelectionPopup);
+			_widget_5.SetDataSource(_datasource_Root_CardSelectionPopup);
 		}
 	}
 
@@ -6216,15 +4867,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_TutorialNotification.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_TutorialNotification;
 			_datasource_Root_TutorialNotification.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_TutorialNotification;
 			_datasource_Root_TutorialNotification.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TutorialNotification;
-			_widget_7.PropertyChanged -= PropertyChangedListenerOf_widget_7;
-			_widget_7.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_7;
-			_widget_7.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_7;
-			_widget_7.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_7;
-			_widget_7.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_7;
-			_widget_7.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_7;
-			_widget_7.intPropertyChanged -= intPropertyChangedListenerOf_widget_7;
-			_widget_7.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_7;
-			_widget_7.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_7;
+			_widget_6.PropertyChanged -= PropertyChangedListenerOf_widget_6;
+			_widget_6.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_6;
+			_widget_6.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_6;
+			_widget_6.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_6;
+			_widget_6.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_6;
+			_widget_6.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_6;
+			_widget_6.intPropertyChanged -= intPropertyChangedListenerOf_widget_6;
+			_widget_6.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_6;
+			_widget_6.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_6;
 			_datasource_Root_TutorialNotification = null;
 		}
 		_datasource_Root_TutorialNotification = newDataSource;
@@ -6240,16 +4891,16 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_TutorialNotification.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_TutorialNotification;
 			_datasource_Root_TutorialNotification.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_TutorialNotification;
 			_datasource_Root_TutorialNotification.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_TutorialNotification;
-			_widget_7.ElementID = _datasource_Root_TutorialNotification.ElementID;
-			_widget_7.PropertyChanged += PropertyChangedListenerOf_widget_7;
-			_widget_7.boolPropertyChanged += boolPropertyChangedListenerOf_widget_7;
-			_widget_7.floatPropertyChanged += floatPropertyChangedListenerOf_widget_7;
-			_widget_7.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_7;
-			_widget_7.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_7;
-			_widget_7.doublePropertyChanged += doublePropertyChangedListenerOf_widget_7;
-			_widget_7.intPropertyChanged += intPropertyChangedListenerOf_widget_7;
-			_widget_7.uintPropertyChanged += uintPropertyChangedListenerOf_widget_7;
-			_widget_7.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_7;
+			_widget_6.ElementID = _datasource_Root_TutorialNotification.ElementID;
+			_widget_6.PropertyChanged += PropertyChangedListenerOf_widget_6;
+			_widget_6.boolPropertyChanged += boolPropertyChangedListenerOf_widget_6;
+			_widget_6.floatPropertyChanged += floatPropertyChangedListenerOf_widget_6;
+			_widget_6.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_6;
+			_widget_6.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_6;
+			_widget_6.doublePropertyChanged += doublePropertyChangedListenerOf_widget_6;
+			_widget_6.intPropertyChanged += intPropertyChangedListenerOf_widget_6;
+			_widget_6.uintPropertyChanged += uintPropertyChangedListenerOf_widget_6;
+			_widget_6.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_6;
 		}
 	}
 }

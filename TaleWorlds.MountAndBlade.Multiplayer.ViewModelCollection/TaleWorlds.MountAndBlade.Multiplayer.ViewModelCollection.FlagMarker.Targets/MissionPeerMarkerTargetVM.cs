@@ -15,6 +15,12 @@ public class MissionPeerMarkerTargetVM : MissionMarkerTargetVM
 
 	private bool _isFriend;
 
+	private bool _showHealth;
+
+	private float _healthLimit;
+
+	private float _currentHealth;
+
 	public MissionPeer TargetPeer { get; private set; }
 
 	public override Vec3 WorldPosition
@@ -32,6 +38,57 @@ public class MissionPeerMarkerTargetVM : MissionMarkerTargetVM
 
 	protected override float HeightOffset => 0.75f;
 
+	[DataSourceProperty]
+	public bool ShowHealth
+	{
+		get
+		{
+			return _showHealth;
+		}
+		set
+		{
+			if (value != _showHealth)
+			{
+				_showHealth = value;
+				OnPropertyChangedWithValue(value, "ShowHealth");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float HealthLimit
+	{
+		get
+		{
+			return _healthLimit;
+		}
+		set
+		{
+			if (value != _healthLimit)
+			{
+				_healthLimit = value;
+				OnPropertyChangedWithValue(value, "HealthLimit");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float CurrentHealth
+	{
+		get
+		{
+			return _currentHealth;
+		}
+		set
+		{
+			if (value != _currentHealth)
+			{
+				_currentHealth = value;
+				OnPropertyChangedWithValue(value, "CurrentHealth");
+			}
+		}
+	}
+
 	public MissionPeerMarkerTargetVM(MissionPeer peer, bool isFriend)
 		: base(MissionMarkerType.Peer)
 	{
@@ -39,6 +96,17 @@ public class MissionPeerMarkerTargetVM : MissionMarkerTargetVM
 		_isFriend = isFriend;
 		base.Name = peer.DisplayedName;
 		SetVisual();
+		RefreshHealth();
+	}
+
+	private void RefreshHealth()
+	{
+		Agent agent = TargetPeer?.ControlledAgent;
+		if (ShowHealth = MultiplayerSpectatorHelper.ShouldShowBothTeamsData() && agent != null && agent.IsActive())
+		{
+			HealthLimit = agent.HealthLimit;
+			CurrentHealth = agent.Health;
+		}
 	}
 
 	private void SetVisual()
@@ -65,6 +133,7 @@ public class MissionPeerMarkerTargetVM : MissionMarkerTargetVM
 	{
 		if (TargetPeer?.ControlledAgent != null)
 		{
+			RefreshHealth();
 			base.UpdateScreenPosition(missionCamera);
 		}
 	}

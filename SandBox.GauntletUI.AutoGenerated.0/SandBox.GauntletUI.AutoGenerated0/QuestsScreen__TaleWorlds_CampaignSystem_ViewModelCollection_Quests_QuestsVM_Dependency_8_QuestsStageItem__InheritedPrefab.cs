@@ -20,7 +20,7 @@ public class QuestsScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Quests_
 
 	private Widget _widget_0_0;
 
-	private BoolStateChangerWidget _widget_0_0_0;
+	private BoolStateChangerBrushWidget _widget_0_0_0;
 
 	private RichTextWidget _widget_0_0_1;
 
@@ -80,7 +80,7 @@ public class QuestsScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Quests_
 		_widget.AddChild(_widget_0);
 		_widget_0_0 = new Widget(base.Context);
 		_widget_0.AddChild(_widget_0_0);
-		_widget_0_0_0 = new BoolStateChangerWidget(base.Context);
+		_widget_0_0_0 = new BoolStateChangerBrushWidget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_0);
 		_widget_0_0_1 = new RichTextWidget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_1);

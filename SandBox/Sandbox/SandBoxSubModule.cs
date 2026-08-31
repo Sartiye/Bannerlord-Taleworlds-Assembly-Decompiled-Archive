@@ -76,6 +76,7 @@ public class SandBoxSubModule : MBSubModuleBase
 				campaignGameStarter.AddBehavior(new StealthCharactersCampaignBehavior());
 				campaignGameStarter.AddBehavior(new TavernEmployeesCampaignBehavior());
 				campaignGameStarter.AddBehavior(new TownMerchantsCampaignBehavior());
+				campaignGameStarter.AddBehavior(new CampaignPermanentOptionsBehavior());
 				campaignGameStarter.AddBehavior(new RecruitmentAgentSpawnBehavior());
 			}
 		}

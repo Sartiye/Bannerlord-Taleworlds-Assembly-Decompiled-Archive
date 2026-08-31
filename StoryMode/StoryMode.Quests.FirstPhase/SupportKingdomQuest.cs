@@ -233,11 +233,13 @@ public class SupportKingdomQuest : StoryModeQuestBase
 
 	private bool CheckConditionToSupportKingdom(out TextObject explanation)
 	{
-		explanation = new TextObject("{=qNR8WKcX}You should join a kingdom before supporting it with the Dragon Banner.");
 		if (Clan.PlayerClan.Kingdom == null || Clan.PlayerClan.Kingdom != Hero.OneToOneConversationHero.Clan.Kingdom)
 		{
+			explanation = new TextObject("{=qNR8WKcX}You should join {KINGDOM_NAME} before supporting it with the Dragon Banner.");
+			explanation.SetTextVariable("KINGDOM_NAME", Hero.OneToOneConversationHero.Clan.Kingdom.Name);
 			return false;
 		}
+		explanation = TextObject.GetEmpty();
 		return true;
 	}
 

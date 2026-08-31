@@ -47,6 +47,12 @@ public sealed class MultiplayerHotkeyCategory : GameKeyContext
 
 	public const string SpectateCameraPosition9 = "SpectateCameraPosition9";
 
+	public const string CycleSpectatorCamera = "CycleSpectatorCamera";
+
+	public const string CycleSpectatorTargetPrevious = "CycleSpectatorTargetPrevious";
+
+	public const string CycleSpectatorTargetNext = "CycleSpectatorTargetNext";
+
 	public const string InspectBadgeProgression = "InspectBadgeProgression";
 
 	public const string PerformActionOnCosmeticItem = "PerformActionOnCosmeticItem";
@@ -54,6 +60,23 @@ public sealed class MultiplayerHotkeyCategory : GameKeyContext
 	public const string PreviewCosmeticItem = "PreviewCosmeticItem";
 
 	public const string ToggleFriendsList = "ToggleFriendsList";
+
+	private static readonly InputKey[] CameraPositionDigitKeys = new InputKey[9]
+	{
+		InputKey.D1,
+		InputKey.D2,
+		InputKey.D3,
+		InputKey.D4,
+		InputKey.D5,
+		InputKey.D6,
+		InputKey.D7,
+		InputKey.D8,
+		InputKey.D9
+	};
+
+	public static readonly string[] StoreCameraPositionHotKeys = new string[9] { "StoreCameraPosition1", "StoreCameraPosition2", "StoreCameraPosition3", "StoreCameraPosition4", "StoreCameraPosition5", "StoreCameraPosition6", "StoreCameraPosition7", "StoreCameraPosition8", "StoreCameraPosition9" };
+
+	public static readonly string[] SpectateCameraPositionHotKeys = new string[9] { "SpectateCameraPosition1", "SpectateCameraPosition2", "SpectateCameraPosition3", "SpectateCameraPosition4", "SpectateCameraPosition5", "SpectateCameraPosition6", "SpectateCameraPosition7", "SpectateCameraPosition8", "SpectateCameraPosition9" };
 
 	public MultiplayerHotkeyCategory()
 		: base("MultiplayerHotkeyCategory", 116)
@@ -65,13 +88,13 @@ public sealed class MultiplayerHotkeyCategory : GameKeyContext
 
 	private void RegisterHotKeys()
 	{
-		for (int i = 1; i <= 9; i++)
+		for (int i = 0; i < CameraPositionDigitKeys.Length; i++)
 		{
-			RegisterHotKey(new HotKey("StoreCameraPosition" + i, "MultiplayerHotkeyCategory", (InputKey)(11 + i)));
+			RegisterHotKey(new HotKey("StoreCameraPosition" + (i + 1), "MultiplayerHotkeyCategory", CameraPositionDigitKeys[i]));
 		}
-		for (int j = 1; j <= 9; j++)
+		for (int j = 0; j < CameraPositionDigitKeys.Length; j++)
 		{
-			RegisterHotKey(new HotKey("SpectateCameraPosition" + j, "MultiplayerHotkeyCategory", (InputKey)(11 + j)));
+			RegisterHotKey(new HotKey("SpectateCameraPosition" + (j + 1), "MultiplayerHotkeyCategory", CameraPositionDigitKeys[j]));
 		}
 		List<Key> keys = new List<Key>
 		{
@@ -93,10 +116,28 @@ public sealed class MultiplayerHotkeyCategory : GameKeyContext
 			new Key(InputKey.F),
 			new Key(InputKey.ControllerRLeft)
 		};
+		List<Key> keys5 = new List<Key>
+		{
+			new Key(InputKey.V),
+			new Key(InputKey.ControllerRRight)
+		};
 		RegisterHotKey(new HotKey("PerformActionOnCosmeticItem", "MultiplayerHotkeyCategory", keys2));
 		RegisterHotKey(new HotKey("PreviewCosmeticItem", "MultiplayerHotkeyCategory", keys3));
 		RegisterHotKey(new HotKey("InspectBadgeProgression", "MultiplayerHotkeyCategory", keys));
 		RegisterHotKey(new HotKey("ToggleFriendsList", "MultiplayerHotkeyCategory", keys4));
+		RegisterHotKey(new HotKey("CycleSpectatorCamera", "MultiplayerHotkeyCategory", keys5));
+		List<Key> keys6 = new List<Key>
+		{
+			new Key(InputKey.Q),
+			new Key(InputKey.ControllerLBumper)
+		};
+		RegisterHotKey(new HotKey("CycleSpectatorTargetPrevious", "MultiplayerHotkeyCategory", keys6));
+		List<Key> keys7 = new List<Key>
+		{
+			new Key(InputKey.E),
+			new Key(InputKey.ControllerRBumper)
+		};
+		RegisterHotKey(new HotKey("CycleSpectatorTargetNext", "MultiplayerHotkeyCategory", keys7));
 	}
 
 	private void RegisterGameKeys()

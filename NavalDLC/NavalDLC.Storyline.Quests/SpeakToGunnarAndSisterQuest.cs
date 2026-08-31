@@ -192,7 +192,7 @@ public class SpeakToGunnarAndSisterQuest : QuestBase
 		MobileParty.MainParty.MemberRoster.AddToCounts(object2, 10);
 		if (!MobileParty.MainParty.Anchor.IsValid && Settlement.CurrentSettlement != null && Settlement.CurrentSettlement.HasPort)
 		{
-			MobileParty.MainParty.Anchor.SetSettlement(Settlement.CurrentSettlement);
+			MobileParty.MainParty.Anchor.Settlement = Settlement.CurrentSettlement;
 		}
 		TextObject textObject = new TextObject("{=06sIBlHR}{NUMBER} troops and {SHIP_NAME} were added to your party.");
 		textObject.SetTextVariable("NUMBER", 20);

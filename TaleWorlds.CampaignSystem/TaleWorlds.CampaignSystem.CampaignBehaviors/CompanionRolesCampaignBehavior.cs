@@ -33,6 +33,8 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 
 	private const int NewHeroSkillLowerLimit = 125;
 
+	private const int CompanionBecomingVassalPartySizeTarget = 33;
+
 	private Settlement _selectedFief;
 
 	private bool _playerConfirmedTheAction;
@@ -155,7 +157,7 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		{
 			if (Hero.OneToOneConversationHero.PartyBelongedTo != null)
 			{
-				return !Hero.OneToOneConversationHero.PartyBelongedTo.IsInRaftState;
+				return !Hero.OneToOneConversationHero.PartyBelongedTo.IsInNavalAutoTravel;
 			}
 			return true;
 		}
@@ -244,7 +246,7 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 	private void ConfirmTurningCompanionToLordConsequence()
 	{
 		CurrentBehavior._playerConfirmedTheAction = true;
-		TextObject textObject = new TextObject("{=4eStbG4S}Select {COMPANION.NAME}{.o} clan name: ");
+		TextObject textObject = new TextObject("{=0oItvT2C}Choose {COMPANION.NAME}{.o} clan name: ");
 		StringHelpers.SetCharacterProperties("COMPANION", Hero.OneToOneConversationHero.CharacterObject);
 		InformationManager.ShowTextInquiry(new TextInquiryData(textObject.ToString(), string.Empty, isAffirmativeOptionShown: true, isNegativeOptionShown: false, GameTexts.FindText("str_done").ToString(), null, ClanNameSelectionIsDone, null, shouldInputBeObfuscated: false, FactionHelper.IsClanNameApplicable));
 	}
@@ -268,17 +270,23 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 		{
 			MobileParty.MainParty.MemberRoster.AddToCounts(oneToOneConversationHero.CharacterObject, -1);
 		}
-		MobileParty partyBelongedTo = oneToOneConversationHero.PartyBelongedTo;
-		if (partyBelongedTo == null)
+		MobileParty mobileParty = oneToOneConversationHero.PartyBelongedTo;
+		if (mobileParty == null)
 		{
-			MobileParty mobileParty = LordPartyComponent.CreateLordParty(oneToOneConversationHero.CharacterObject.StringId, oneToOneConversationHero, MobileParty.MainParty.Position, 3f, CurrentBehavior._selectedFief, oneToOneConversationHero);
-			mobileParty.MemberRoster.AddToCounts(clan.Culture.BasicTroop, MBRandom.RandomInt(12, 15));
-			mobileParty.MemberRoster.AddToCounts(clan.Culture.EliteBasicTroop, MBRandom.RandomInt(10, 15));
+			mobileParty = LordPartyComponent.CreateLordParty(oneToOneConversationHero.CharacterObject.StringId, oneToOneConversationHero, MobileParty.MainParty.Position, 3f, CurrentBehavior._selectedFief, oneToOneConversationHero);
 		}
 		else
 		{
-			partyBelongedTo.ActualClan = clan;
-			partyBelongedTo.Party.SetVisualAsDirty();
+			mobileParty.ActualClan = clan;
+			mobileParty.Party.SetVisualAsDirty();
+		}
+		if (mobileParty.MemberRoster.TotalManCount < 33)
+		{
+			int num = 33 - mobileParty.MemberRoster.TotalManCount;
+			int num2 = num / 2;
+			int count = num - num2;
+			mobileParty.MemberRoster.AddToCounts(clan.Culture.BasicTroop, num2);
+			mobileParty.MemberRoster.AddToCounts(clan.Culture.EliteBasicTroop, count);
 		}
 		AdjustCompanionsEquipment(oneToOneConversationHero);
 		SpawnNewHeroesForNewCompanionClan(oneToOneConversationHero, clan, CurrentBehavior._selectedFief);
@@ -571,7 +579,7 @@ public class CompanionRolesCampaignBehavior : CampaignBehaviorBase
 			{
 				return false;
 			}
-			return !partyBelongedTo.IsInRaftState;
+			return !partyBelongedTo.IsInNavalAutoTravel;
 		}
 		return false;
 	}

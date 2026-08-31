@@ -1,4 +1,7 @@
+using System.Linq;
 using Helpers;
+using StoryMode.Quests.SecondPhase.ConspiracyQuests;
+using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -22,6 +25,20 @@ public class StoryModeEncounterGameMenuModel : EncounterGameMenuModel
 			result = "storymode_game_menu_blocker";
 			startBattle = false;
 			joinBattle = false;
+		}
+		else if (StoryModeManager.Current.MainStoryLine.SecondPhase != null && (StoryModeManager.Current.MainStoryLine.SecondPhase.ConspiracyClan == attackerParty.MapFaction || StoryModeManager.Current.MainStoryLine.SecondPhase.ConspiracyClan == defenderParty.MapFaction))
+		{
+			QuestBase questBase = Campaign.Current.QuestManager.Quests.FirstOrDefault((QuestBase q) => !q.IsFinalized && q.GetType() == typeof(DisruptSupplyLinesConspiracyQuest));
+			if (questBase != null && ((DisruptSupplyLinesConspiracyQuest)questBase).ConspiracyCaravan == defenderParty.MobileParty)
+			{
+				result = base.BaseModel.GetEncounterMenu(attackerParty, defenderParty, out startBattle, out joinBattle);
+			}
+			else
+			{
+				result = "encounter";
+				startBattle = true;
+				joinBattle = true;
+			}
 		}
 		else
 		{

@@ -30,9 +30,12 @@ public readonly struct ClanCardSelectionItemInfo
 
 	public readonly TextObject ActionResult;
 
-	public ClanCardSelectionItemInfo(object identifier, TextObject title, ImageIdentifier image, CardSelectionItemSpriteType spriteType, string spriteName, string spriteLabel, IEnumerable<ClanCardSelectionItemPropertyInfo> properties, bool isDisabled, TextObject disabledReason, TextObject actionResult)
+	public readonly bool IsInitiallySelected;
+
+	public ClanCardSelectionItemInfo(object identifier, TextObject title, ImageIdentifier image, CardSelectionItemSpriteType spriteType, string spriteName, string spriteLabel, IEnumerable<ClanCardSelectionItemPropertyInfo> properties, bool isDisabled, TextObject disabledReason, TextObject actionResult, bool isInitiallySelected = false)
 	{
 		bool isDisabled2 = isDisabled;
+		bool isInitiallySelected2 = isInitiallySelected;
 		Identifier = identifier;
 		Title = title;
 		Image = image;
@@ -45,11 +48,13 @@ public readonly struct ClanCardSelectionItemInfo
 		IsDisabled = isDisabled2;
 		DisabledReason = disabledReason;
 		ActionResult = actionResult;
+		IsInitiallySelected = isInitiallySelected2;
 	}
 
-	public ClanCardSelectionItemInfo(TextObject specialActionText, bool isDisabled, TextObject disabledReason, TextObject actionResult)
+	public ClanCardSelectionItemInfo(TextObject specialActionText, bool isDisabled, TextObject disabledReason, TextObject actionResult, bool isInitiallySelected = false)
 	{
 		bool isDisabled2 = isDisabled;
+		bool isInitiallySelected2 = isInitiallySelected;
 		Identifier = null;
 		Title = null;
 		Image = null;
@@ -62,5 +67,6 @@ public readonly struct ClanCardSelectionItemInfo
 		IsDisabled = isDisabled2;
 		DisabledReason = disabledReason;
 		ActionResult = actionResult;
+		IsInitiallySelected = isInitiallySelected2;
 	}
 }

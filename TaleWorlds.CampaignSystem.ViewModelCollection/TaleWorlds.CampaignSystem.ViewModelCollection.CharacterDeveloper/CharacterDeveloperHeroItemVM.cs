@@ -681,8 +681,8 @@ public class CharacterDeveloperHeroItemVM : ViewModel
 		{
 			return HeroNameText;
 		}
-		GameTexts.SetVariable("STR1", HeroNameText);
-		GameTexts.SetVariable("STR2", "{=!}<img src=\"CharacterDeveloper\\UnselectedPerksIcon\" extend=\"2\">");
+		GameTexts.SetVariable("STR1", "{=!}<img src=\"CharacterDeveloper\\UnselectedPerksIcon\" extend=\"2\">");
+		GameTexts.SetVariable("STR2", HeroNameText);
 		return GameTexts.FindText("str_STR1_space_STR2").ToString();
 	}
 

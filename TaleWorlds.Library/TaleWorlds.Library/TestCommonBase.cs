@@ -22,7 +22,11 @@ public abstract class TestCommonBase
 
 	private bool timeoutTimerEnabled = true;
 
-	private int commonWaitTimeoutLimits = 1140;
+	private int commonWaitTimeoutLimits = 1500;
+
+	public Action OnDumpCreationStartedCallback;
+
+	public Action OnDumpCreatedCallback;
 
 	public static TestCommonBase BaseInstance => _baseInstance;
 
@@ -36,6 +40,14 @@ public abstract class TestCommonBase
 	public void ToggleTimeoutTimer()
 	{
 		timeoutTimerEnabled = !timeoutTimerEnabled;
+		if (!timeoutTimerEnabled)
+		{
+			OnDumpCreationStartedCallback?.Invoke();
+		}
+		else
+		{
+			OnDumpCreatedCallback?.Invoke();
+		}
 	}
 
 	public bool CheckTimeoutTimer()

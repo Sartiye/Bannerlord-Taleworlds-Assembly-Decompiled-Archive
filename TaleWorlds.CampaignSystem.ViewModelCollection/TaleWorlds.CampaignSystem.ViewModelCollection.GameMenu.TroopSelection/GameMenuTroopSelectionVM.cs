@@ -321,7 +321,7 @@ public class GameMenuTroopSelectionVM : ViewModel
 		}
 	}
 
-	protected virtual void InitList()
+	protected void InitList()
 	{
 		Troops = new MBBindingList<TroopSelectionItemVM>();
 		_currentTotalSelectedTroopCount = 0;
@@ -462,13 +462,13 @@ public class GameMenuTroopSelectionVM : ViewModel
 		IsEnabled = false;
 	}
 
-	public void ExecuteReset()
+	public virtual void ExecuteReset()
 	{
 		InitList();
 		OnCurrentSelectedAmountChange();
 	}
 
-	public void ExecuteClearSelection()
+	public virtual void ExecuteClearSelection()
 	{
 		Troops.ApplyActionOnAllItems(delegate(TroopSelectionItemVM troopItem)
 		{

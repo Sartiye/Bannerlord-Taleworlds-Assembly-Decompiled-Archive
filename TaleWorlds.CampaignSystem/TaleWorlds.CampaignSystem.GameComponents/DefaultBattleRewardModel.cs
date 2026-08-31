@@ -37,12 +37,9 @@ public class DefaultBattleRewardModel : BattleRewardModel
 		float num = (mapEvent.StrengthOfSide[(int)PartyBase.MainParty.Side] - PlayerEncounter.Current.PlayerPartyInitialStrength) / (mapEvent.StrengthOfSide[(int)PartyBase.MainParty.OpponentSide] + 1f);
 		float num2 = ((num < 1f) ? (1f + (1f - num)) : ((num < 3f) ? (0.5f * (3f - num)) : 0f));
 		float renownValue = (mapEvent.AttackerSide.IsMainPartyAmongParties() ? mapEvent.AttackerSide : mapEvent.DefenderSide).RenownValue;
-		ExplainedNumber explainedNumber = new ExplainedNumber(0.75f + TaleWorlds.Library.MathF.Pow(playerBattleContributionRate * 1.3f * (num2 + renownValue), 0.67f));
-		if (Hero.MainHero.GetPerkValue(DefaultPerks.Charm.Camaraderie))
-		{
-			explainedNumber.AddFactor(DefaultPerks.Charm.Camaraderie.PrimaryBonus, DefaultPerks.Charm.Camaraderie.Name);
-		}
-		return (int)explainedNumber.ResultNumber;
+		ExplainedNumber bonuses = new ExplainedNumber(0.75f + TaleWorlds.Library.MathF.Pow(playerBattleContributionRate * 1.3f * (num2 + renownValue), 0.67f));
+		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Charm.Camaraderie, BattleEnvironment.Any, Hero.MainHero.CharacterObject, isPrimaryBonus: true, ref bonuses);
+		return (int)bonuses.ResultNumber;
 	}
 
 	public override ExplainedNumber CalculateRenownGain(PartyBase winnerParty, float renownValueOfBattleForWinnerSide, float contributionShareOfWinnerParty, float renownMultiplierForWinnerSide, bool includeDescriptions)
@@ -50,22 +47,14 @@ public class DefaultBattleRewardModel : BattleRewardModel
 		ExplainedNumber stat = new ExplainedNumber(contributionShareOfWinnerParty * renownValueOfBattleForWinnerSide * renownMultiplierForWinnerSide, includeDescriptions);
 		if (winnerParty.IsMobile)
 		{
-			if (winnerParty.MobileParty.HasPerk(DefaultPerks.Throwing.LongReach, checkSecondaryRole: true))
-			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Throwing.LongReach, winnerParty.MobileParty, isPrimaryBonus: false, ref stat);
-			}
-			if (winnerParty.MobileParty.HasPerk(DefaultPerks.Charm.PublicSpeaker))
-			{
-				stat.AddFactor(DefaultPerks.Charm.PublicSpeaker.PrimaryBonus, DefaultPerks.Charm.PublicSpeaker.Name);
-			}
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Throwing.LongReach, winnerParty.MobileParty, isPrimaryBonus: false, ref stat);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Charm.PublicSpeaker, winnerParty.MobileParty, isPrimaryBonus: true, ref stat);
 			if (winnerParty.LeaderHero != null)
 			{
-				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Leadership.FamousCommander, winnerParty.LeaderHero.CharacterObject, isPrimaryBonus: true, ref stat, winnerParty.MobileParty.IsCurrentlyAtSea);
+				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Leadership.FamousCommander, winnerParty.MobileParty.CurrentBattleEnvironment, winnerParty.LeaderHero.CharacterObject, isPrimaryBonus: true, ref stat);
+				TraitEffectHelper.ApplyTraitEffect(winnerParty.LeaderHero, DefaultPersonalityTraitEffects.ValorBattleRenownEffect, ref stat);
 			}
-			if (PartyBaseHelper.HasFeat(winnerParty, DefaultCulturalFeats.VlandianRenownMercenaryFeat))
-			{
-				stat.AddFactor(DefaultCulturalFeats.VlandianRenownMercenaryFeat.EffectBonus, GameTexts.FindText("str_culture"));
-			}
+			FeatHelper.ApplyCultureFeat(winnerParty, DefaultCulturalFeats.VlandianRenownMercenaryFeat, ref stat);
 		}
 		return stat;
 	}
@@ -78,7 +67,7 @@ public class DefaultBattleRewardModel : BattleRewardModel
 			bonuses = new ExplainedNumber(influenceValueOfBattleForWinnerSide * contributionShareOfWinnerParty * influenceMultiplierForWinnerSide, includeDescriptions);
 			if (winnerParty.LeaderHero != null)
 			{
-				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Charm.Warlord, winnerParty.LeaderHero.CharacterObject, isPrimaryBonus: true, ref bonuses, winnerParty.MobileParty.IsCurrentlyAtSea);
+				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Charm.Warlord, winnerParty.MobileParty.CurrentBattleEnvironment, winnerParty.LeaderHero.CharacterObject, isPrimaryBonus: true, ref bonuses);
 			}
 		}
 		return bonuses;
@@ -89,14 +78,8 @@ public class DefaultBattleRewardModel : BattleRewardModel
 		ExplainedNumber stat = new ExplainedNumber(0.5f + renownValueOfBattleForWinnerSide * contributionShareOfWinnerParty * 0.5f, includeDescriptions);
 		if (winnerParty.IsMobile)
 		{
-			if (winnerParty.MobileParty.HasPerk(DefaultPerks.Throwing.LongReach, checkSecondaryRole: true))
-			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Throwing.LongReach, winnerParty.MobileParty, isPrimaryBonus: false, ref stat);
-			}
-			if (winnerParty.MobileParty.HasPerk(DefaultPerks.Leadership.CitizenMilitia, checkSecondaryRole: true))
-			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.CitizenMilitia, winnerParty.MobileParty, isPrimaryBonus: false, ref stat, winnerParty.MobileParty.IsCurrentlyAtSea);
-			}
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Throwing.LongReach, winnerParty.MobileParty, isPrimaryBonus: false, ref stat);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.CitizenMilitia, winnerParty.MobileParty, isPrimaryBonus: false, ref stat);
 		}
 		return stat;
 	}
@@ -108,7 +91,8 @@ public class DefaultBattleRewardModel : BattleRewardModel
 
 	public override EquipmentElement GetLootedItemFromTroop(CharacterObject character, float targetValue)
 	{
-		bool num = MobileParty.MainParty.HasPerk(DefaultPerks.Engineering.Metallurgy);
+		Hero perkOwnerHero = null;
+		bool num = MobileParty.MainParty.HasPerk(DefaultPerks.Engineering.Metallurgy, out perkOwnerHero);
 		EquipmentElement result = GetRandomItem(character.BattleEquipments.GetRandomElementInefficiently(), targetValue);
 		if (num && result.ItemModifier != null && result.ItemModifier.PriceMultiplier < 1f && MBRandom.RandomFloat < DefaultPerks.Engineering.Metallurgy.PrimaryBonus)
 		{
@@ -232,6 +216,8 @@ public class DefaultBattleRewardModel : BattleRewardModel
 	{
 		woundedMemberChances = new MBList<KeyValuePair<MapEventParty, float>>();
 		healthyMemberChances = new MBList<KeyValuePair<MapEventParty, float>>();
+		MBList<KeyValuePair<MapEventParty, float>> mBList = new MBList<KeyValuePair<MapEventParty, float>>();
+		MBList<KeyValuePair<MapEventParty, float>> mBList2 = new MBList<KeyValuePair<MapEventParty, float>>();
 		float num = 0f;
 		float num2 = 0.25f;
 		if (endedMapEvent.GetMapEventSide(endedMapEvent.DefeatedSide).IsSurrendered)
@@ -243,14 +229,24 @@ public class DefaultBattleRewardModel : BattleRewardModel
 			MobileParty mobileParty = winnerParty.Party.MobileParty;
 			if (winnerParty.ContributionToBattle > 0 && winnerParty.Party.MemberRoster.Count > 0 && (mobileParty == null || (!mobileParty.IsVillager && !mobileParty.IsCaravan && !mobileParty.IsPatrolParty && ((!mobileParty.IsGarrison && !mobileParty.IsMilitia) || !mobileParty.CurrentSettlement.IsVillage))))
 			{
-				healthyMemberChances.Add(new KeyValuePair<MapEventParty, float>(winnerParty, winnerParty.ContributionToBattle));
+				mBList.Add(new KeyValuePair<MapEventParty, float>(winnerParty, winnerParty.ContributionToBattle));
 				num += (float)winnerParty.ContributionToBattle;
+				ExplainedNumber result = new ExplainedNumber(1f);
+				if (mobileParty?.LeaderHero != null)
+				{
+					TraitEffectHelper.ApplyTraitEffect(mobileParty.LeaderHero, DefaultPersonalityTraitEffects.MercyPrisonerCaptureMercifulEffect, ref result);
+					TraitEffectHelper.ApplyTraitEffect(mobileParty?.LeaderHero, DefaultPersonalityTraitEffects.MercyPrisonerCaptureCruelEffect, ref result);
+				}
+				mBList2.Add(new KeyValuePair<MapEventParty, float>(winnerParty, result.ResultNumber));
 			}
 		}
-		for (int i = 0; i < healthyMemberChances.Count; i++)
+		for (int i = 0; i < mBList.Count; i++)
 		{
-			woundedMemberChances.Add(new KeyValuePair<MapEventParty, float>(healthyMemberChances[i].Key, healthyMemberChances[i].Value / num * 1f));
-			healthyMemberChances[i] = new KeyValuePair<MapEventParty, float>(healthyMemberChances[i].Key, healthyMemberChances[i].Value / num * num2);
+			MapEventParty key = mBList[i].Key;
+			float num3 = mBList[i].Value / num;
+			float value = mBList2[i].Value;
+			woundedMemberChances.Add(new KeyValuePair<MapEventParty, float>(key, num3 * 1f * value));
+			healthyMemberChances.Add(new KeyValuePair<MapEventParty, float>(key, num3 * num2 * value));
 		}
 	}
 
@@ -294,6 +290,7 @@ public class DefaultBattleRewardModel : BattleRewardModel
 			{
 				MobileParty mobileParty = winnerParty.Party.MobileParty;
 				PartyBase party = winnerParty.Party;
+				BattleEnvironment battleEnvironment = mobileParty?.CurrentBattleEnvironment ?? BattleEnvironment.Land;
 				if (winnerParty.ContributionToBattle > 0 && winnerParty.Party.MemberRoster.Count > 0 && (mobileParty == null || (!mobileParty.IsGarrison && !mobileParty.IsMilitia)))
 				{
 					mBList2.Add(new KeyValuePair<MapEventParty, float>(winnerParty, winnerParty.ContributionToBattle));
@@ -302,10 +299,11 @@ public class DefaultBattleRewardModel : BattleRewardModel
 					SkillHelper.AddSkillBonusForParty(DefaultSkillEffects.RogueryLootBonus, party.MobileParty, ref explainedNumber);
 					if (party.LeaderHero != null && party.LeaderHero.GetPerkValue(DefaultPerks.Roguery.RogueExtraordinaire))
 					{
-						PerkHelper.AddEpicPerkBonusForCharacter(DefaultPerks.Roguery.RogueExtraordinaire, party.LeaderHero.CharacterObject, DefaultSkills.Roguery, applyPrimaryBonus: true, ref explainedNumber, Campaign.Current.Models.CharacterDevelopmentModel.MinSkillRequiredForEpicPerkBonus);
+						PerkHelper.AddEpicPerkBonusForCharacter(DefaultPerks.Roguery.RogueExtraordinaire, battleEnvironment, party.LeaderHero.CharacterObject, DefaultSkills.Roguery, isPrimaryBonus: true, ref explainedNumber, Campaign.Current.Models.CharacterDevelopmentModel.MinSkillRequiredForEpicPerkBonus);
 					}
 					float num2 = explainedNumber.ResultNumber;
-					if (party.MobileParty.HasPerk(DefaultPerks.Roguery.KnowHow) && (defeatedParty.MobileParty.IsCaravan || defeatedParty.MobileParty.IsVillager))
+					Hero perkOwnerHero = null;
+					if (party.MobileParty.HasPerk(DefaultPerks.Roguery.KnowHow, out perkOwnerHero) && (defeatedParty.MobileParty.IsCaravan || defeatedParty.MobileParty.IsVillager))
 					{
 						num2 *= 1f + DefaultPerks.Roguery.KnowHow.PrimaryBonus;
 					}

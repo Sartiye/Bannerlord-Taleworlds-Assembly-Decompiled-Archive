@@ -24,12 +24,16 @@ public class DefaultPartyImpairmentModel : PartyImpairmentModel
 	public override ExplainedNumber GetDisorganizedStateDuration(MobileParty party)
 	{
 		ExplainedNumber stat = new ExplainedNumber(6f);
-		bool flag = party.MapEvent != null && (party.MapEvent.IsRaid || party.MapEvent.IsSiegeAssault);
-		if (!party.IsCurrentlyAtSea && flag && party.HasPerk(DefaultPerks.Tactics.SwiftRegroup))
+		if (party.MapEvent != null && (party.MapEvent.IsRaid || party.MapEvent.IsSiegeAssault))
 		{
-			stat.AddFactor(DefaultPerks.Tactics.SwiftRegroup.PrimaryBonus, DefaultPerks.Tactics.SwiftRegroup.Description);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.SwiftRegroup, party, isPrimaryBonus: true, ref stat);
 		}
-		PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.Foragers, party, isPrimaryBonus: false, ref stat, party.IsCurrentlyAtSea);
+		PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.Foragers, party, isPrimaryBonus: false, ref stat);
+		Hero hero = party.Army?.LeaderParty?.LeaderHero ?? party.LeaderHero;
+		if (hero != null)
+		{
+			TraitEffectHelper.ApplyTraitEffect(hero, DefaultPersonalityTraitEffects.CalculatingLongerDisorganizeEffect, ref stat);
+		}
 		return stat;
 	}
 

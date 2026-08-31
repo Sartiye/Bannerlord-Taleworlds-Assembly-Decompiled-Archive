@@ -41,6 +41,12 @@ public class MenuViewContext : IMenuContextHandler
 
 	private bool _isActive;
 
+	private bool _isAmbientSoundDirty;
+
+	private bool _isPanelSoundDirty;
+
+	private bool _isBackgroundMeshDirty;
+
 	internal GameMenu CurGameMenu => _menuContext.GameMenu;
 
 	public MenuContext MenuContext => _menuContext;
@@ -97,6 +103,40 @@ public class MenuViewContext : IMenuContextHandler
 
 	public void OnFrameTick(float dt)
 	{
+		if (_isBackgroundMeshDirty)
+		{
+			foreach (MenuView menuView2 in MenuViews)
+			{
+				menuView2.OnBackgroundMeshNameSet(_menuContext.CurrentBackgroundMeshName);
+			}
+			_isBackgroundMeshDirty = false;
+		}
+		if (_isAmbientSoundDirty)
+		{
+			if (!string.IsNullOrEmpty(_menuContext.CurrentAmbientSoundID))
+			{
+				PlayAmbientSound(_menuContext.CurrentAmbientSoundID);
+			}
+			else
+			{
+				_ambientSound?.Release();
+				_ambientSound = null;
+			}
+			_isAmbientSoundDirty = false;
+		}
+		if (_isPanelSoundDirty)
+		{
+			if (!string.IsNullOrEmpty(_menuContext.CurrentPanelSoundID))
+			{
+				PlayPanelSound(_menuContext.CurrentPanelSoundID);
+			}
+			else
+			{
+				_panelSound?.Release();
+				_panelSound = null;
+			}
+			_isPanelSoundDirty = false;
+		}
 		for (int i = 0; i < MenuViews.Count; i++)
 		{
 			MenuView menuView = MenuViews[i];
@@ -132,14 +172,9 @@ public class MenuViewContext : IMenuContextHandler
 		{
 			MenuViews[i].OnActivate();
 		}
-		if (!string.IsNullOrEmpty(MenuContext?.CurrentAmbientSoundID))
-		{
-			PlayAmbientSound(MenuContext.CurrentAmbientSoundID);
-		}
-		if (!string.IsNullOrEmpty(MenuContext?.CurrentPanelSoundID))
-		{
-			PlayPanelSound(MenuContext.CurrentPanelSoundID);
-		}
+		_isPanelSoundDirty = true;
+		_isAmbientSoundDirty = true;
+		_isBackgroundMeshDirty = true;
 	}
 
 	public void OnDeactivate()
@@ -180,7 +215,9 @@ public class MenuViewContext : IMenuContextHandler
 	public void StopAllSounds()
 	{
 		_ambientSound?.Release();
+		_ambientSound = null;
 		_panelSound?.Release();
+		_panelSound = null;
 	}
 
 	private void PlayAmbientSound(string ambientSoundID)
@@ -365,12 +402,12 @@ public class MenuViewContext : IMenuContextHandler
 
 	void IMenuContextHandler.OnAmbientSoundIDSet(string ambientSoundID)
 	{
-		PlayAmbientSound(ambientSoundID);
+		_isAmbientSoundDirty = true;
 	}
 
 	void IMenuContextHandler.OnPanelSoundIDSet(string panelSoundID)
 	{
-		PlayPanelSound(panelSoundID);
+		_isPanelSoundDirty = true;
 	}
 
 	void IMenuContextHandler.OnMenuCreate()
@@ -415,10 +452,7 @@ public class MenuViewContext : IMenuContextHandler
 
 	void IMenuContextHandler.OnBackgroundMeshNameSet(string name)
 	{
-		foreach (MenuView menuView in MenuViews)
-		{
-			menuView.OnBackgroundMeshNameSet(name);
-		}
+		_isBackgroundMeshDirty = true;
 	}
 
 	void IMenuContextHandler.OnOpenTownManagement()

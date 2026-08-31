@@ -75,6 +75,10 @@ public class MissionPeer : PeerComponent
 
 	private int _score;
 
+	private readonly Dictionary<WeaponClass, int> _weaponUsageByClass = new Dictionary<WeaponClass, int>();
+
+	private WeaponClass _mostUsedWeaponClass;
+
 	private (int, MBList<MPPerkObject>) _selectedPerks;
 
 	private int _botsUnderControlAlive;
@@ -143,6 +147,19 @@ public class MissionPeer : PeerComponent
 			return MultiplayerClassDivisions.GetMPHeroClassForPeer(this).TroopName.ToString();
 		}
 	}
+
+	public string ClanName { get; internal set; } = string.Empty;
+
+
+	public bool HasSentClanInfo { get; internal set; }
+
+	public string LastKillVictimName { get; internal set; } = string.Empty;
+
+
+	public string MostUsedWeaponName { get; internal set; } = string.Empty;
+
+
+	public WeaponClass MostUsedWeaponClass => _mostUsedWeaponClass;
 
 	public MBReadOnlyList<MPPerkObject> SelectedPerks
 	{
@@ -429,6 +446,43 @@ public class MissionPeer : PeerComponent
 
 	public static event OnPlayerKilledDelegate OnPlayerKilled;
 
+	public bool RegisterWeaponUsage(WeaponClass weaponClass, int weight)
+	{
+		if (weaponClass == WeaponClass.Undefined || weight <= 0)
+		{
+			return false;
+		}
+		if (!_weaponUsageByClass.ContainsKey(weaponClass))
+		{
+			_weaponUsageByClass[weaponClass] = 0;
+		}
+		_weaponUsageByClass[weaponClass] += weight;
+		WeaponClass weaponClass2 = _mostUsedWeaponClass;
+		int num = ((weaponClass2 != 0 && _weaponUsageByClass.ContainsKey(weaponClass2)) ? _weaponUsageByClass[weaponClass2] : (-1));
+		foreach (KeyValuePair<WeaponClass, int> item in _weaponUsageByClass)
+		{
+			if (item.Value > num)
+			{
+				num = item.Value;
+				weaponClass2 = item.Key;
+			}
+		}
+		if (weaponClass2 != _mostUsedWeaponClass)
+		{
+			_mostUsedWeaponClass = weaponClass2;
+			return true;
+		}
+		return false;
+	}
+
+	public void ResetSpectatorStats()
+	{
+		_weaponUsageByClass.Clear();
+		_mostUsedWeaponClass = WeaponClass.Undefined;
+		MostUsedWeaponName = string.Empty;
+		LastKillVictimName = string.Empty;
+	}
+
 	public MissionPeer()
 	{
 		SpawnTimer = new Timer(Mission.Current.CurrentTime, 3f, autoReset: false);
@@ -693,7 +747,16 @@ public class MissionPeer : PeerComponent
 			{
 				_numberOfTimesPeerKilledPerPeer[victimPeer]++;
 			}
+			LastKillVictimName = victimPeer.DisplayedName ?? string.Empty;
 			MissionPeer.OnPlayerKilled?.Invoke(this, victimPeer);
+		}
+	}
+
+	public void OnKillBot(string botName)
+	{
+		if (!string.IsNullOrEmpty(botName))
+		{
+			LastKillVictimName = botName;
 		}
 	}
 

@@ -1,5 +1,6 @@
 using System;
 using TaleWorlds.Core;
+using TaleWorlds.Engine;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -250,7 +251,7 @@ public class MPAuthenticationVM : ViewModel
 		lobbyState2.OnMultiplayerPrivilegeUpdated = (Action<bool>)Delegate.Combine(lobbyState2.OnMultiplayerPrivilegeUpdated, new Action<bool>(OnMultiplayerPrivilegeUpdated));
 		InternetAvailabilityChecker.OnInternetConnectionAvailabilityChanged = (Action<bool>)Delegate.Combine(InternetAvailabilityChecker.OnInternetConnectionAvailabilityChanged, new Action<bool>(OnInternetConnectionAvailabilityChanged));
 		AuthenticationDebug = new MPAuthenticationDebugVM();
-		AuthenticationDebug.IsEnabled = false;
+		AuthenticationDebug.IsEnabled = IsDebugAuthenticationEnabled();
 		RefreshValues();
 	}
 
@@ -273,6 +274,19 @@ public class MPAuthenticationVM : ViewModel
 		LobbyState lobbyState = _lobbyState;
 		lobbyState.OnMultiplayerPrivilegeUpdated = (Action<bool>)Delegate.Remove(lobbyState.OnMultiplayerPrivilegeUpdated, new Action<bool>(OnMultiplayerPrivilegeUpdated));
 		InternetAvailabilityChecker.OnInternetConnectionAvailabilityChanged = (Action<bool>)Delegate.Remove(InternetAvailabilityChecker.OnInternetConnectionAvailabilityChanged, new Action<bool>(OnInternetConnectionAvailabilityChanged));
+	}
+
+	private bool IsDebugAuthenticationEnabled()
+	{
+		if (Utilities.CommandLineArgumentExists("/forceMultiplayerDebugLogin"))
+		{
+			return true;
+		}
+		if (MBCommon.IsDebugMode)
+		{
+			return Module.CurrentModule.StartupInfo.StartupType != GameStartupType.Multiplayer;
+		}
+		return false;
 	}
 
 	public void OnTick(float dt)

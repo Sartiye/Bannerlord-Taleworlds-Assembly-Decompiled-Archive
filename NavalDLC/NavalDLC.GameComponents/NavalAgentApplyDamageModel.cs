@@ -33,9 +33,11 @@ public class NavalAgentApplyDamageModel : AgentApplyDamageModel
 		Agent agent = (attackInformation.IsAttackerAgentMount ? attackInformation.AttackerAgent.RiderAgent : attackInformation.AttackerAgent);
 		CharacterObject characterObject = (attackInformation.IsAttackerAgentMount ? attackInformation.AttackerRiderAgentCharacter : attackInformation.AttackerAgentCharacter) as CharacterObject;
 		CharacterObject captainCharacter = attackInformation.AttackerCaptainCharacter as CharacterObject;
+		BattleEnvironment attackerBattleEnvironment = attackInformation.AttackerBattleEnvironment;
 		Agent agent2 = (attackInformation.IsVictimAgentMount ? attackInformation.AttackerAgent.RiderAgent : attackInformation.VictimAgent);
 		_ = attackInformation.IsVictimAgentMount;
 		CharacterObject captainCharacter2 = attackInformation.VictimCaptainCharacter as CharacterObject;
+		BattleEnvironment victimBattleEnvironment = attackInformation.VictimBattleEnvironment;
 		bool flag = collisionData.AttackBlockedWithShield || collisionData.CollidedWithShieldOnBack;
 		ExplainedNumber bonuses = new ExplainedNumber(baseNumber);
 		WeaponComponentData currentUsageItem = attackInformation.AttackerWeapon.CurrentUsageItem;
@@ -49,23 +51,23 @@ public class NavalAgentApplyDamageModel : AgentApplyDamageModel
 					{
 						if (currentUsageItem.RelevantSkill == DefaultSkills.OneHanded)
 						{
-							PerkHelper.AddPerkBonusForCharacter(NavalPerks.Shipmaster.TheCorsairsEdge, characterObject, isPrimaryBonus: true, ref bonuses);
+							PerkHelper.AddPerkBonusForCharacter(NavalPerks.Shipmaster.TheCorsairsEdge, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
 						}
 						if (currentUsageItem.WeaponClass == WeaponClass.OneHandedAxe || currentUsageItem.WeaponClass == WeaponClass.TwoHandedAxe)
 						{
-							PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.AxeOfTheNorthwind, characterObject, isPrimaryBonus: true, ref bonuses);
+							PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.AxeOfTheNorthwind, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
 						}
 						if (currentUsageItem.WeaponClass == WeaponClass.OneHandedSword || currentUsageItem.WeaponClass == WeaponClass.TwoHandedSword)
 						{
-							PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.SunnyDisposition, characterObject, isPrimaryBonus: true, ref bonuses);
+							PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.SunnyDisposition, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
 						}
 						if (currentUsageItem.WeaponClass == WeaponClass.TwoHandedAxe || currentUsageItem.WeaponClass == WeaponClass.TwoHandedMace || currentUsageItem.WeaponClass == WeaponClass.TwoHandedPolearm || currentUsageItem.WeaponClass == WeaponClass.TwoHandedSword)
 						{
-							PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.MightyBlows, captainCharacter, ref bonuses);
+							PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.MightyBlows, attackerBattleEnvironment, captainCharacter, ref bonuses);
 						}
 						if (currentUsageItem.IsMeleeWeapon)
 						{
-							PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.WarriorsMight, characterObject, isPrimaryBonus: true, ref bonuses);
+							PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.WarriorsMight, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
 						}
 					}
 				}
@@ -75,32 +77,32 @@ public class NavalAgentApplyDamageModel : AgentApplyDamageModel
 					{
 						if (isNavalBattle)
 						{
-							PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.TheSkysFury, captainCharacter, ref bonuses);
+							PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.TheSkysFury, attackerBattleEnvironment, captainCharacter, ref bonuses);
 						}
 					}
 					else if (currentUsageItem.RelevantSkill == DefaultSkills.Crossbow && collisionData.CollisionBoneIndex != -1)
 					{
 						if (isNavalBattle)
 						{
-							PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.TheSkysFury, captainCharacter, ref bonuses);
+							PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.TheSkysFury, attackerBattleEnvironment, captainCharacter, ref bonuses);
 						}
 					}
 					else if (currentUsageItem.RelevantSkill == DefaultSkills.Throwing && isNavalBattle)
 					{
-						PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.CrewOfSpears, captainCharacter, ref bonuses);
-						PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.WarriorsMight, captainCharacter, ref bonuses);
+						PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.CrewOfSpears, attackerBattleEnvironment, captainCharacter, ref bonuses);
+						PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.WarriorsMight, attackerBattleEnvironment, captainCharacter, ref bonuses);
 					}
 					if (isNavalBattle && (currentUsageItem.RelevantSkill == DefaultSkills.Bow || currentUsageItem.RelevantSkill == DefaultSkills.Crossbow || currentUsageItem.RelevantSkill == DefaultSkills.Throwing))
 					{
 						if (flag)
 						{
-							PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Boatswain.AccuracyTraining, captainCharacter, ref bonuses);
+							PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Boatswain.AccuracyTraining, attackerBattleEnvironment, captainCharacter, ref bonuses);
 						}
 						if (!IsAgentCrewBoarded(agent2))
 						{
-							PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Shipmaster.SeaborneFortress, captainCharacter2, ref bonuses);
+							PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Shipmaster.SeaborneFortress, victimBattleEnvironment, captainCharacter2, ref bonuses);
 						}
-						PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.TheSkysFury, characterObject, isPrimaryBonus: true, ref bonuses);
+						PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.TheSkysFury, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
 					}
 				}
 			}
@@ -109,22 +111,22 @@ public class NavalAgentApplyDamageModel : AgentApplyDamageModel
 				if (IsAgentOnEnemyShip(agent))
 				{
 					_ = agent.Name == "Itsul Ironeye";
-					PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.BoardingMaster, characterObject, isPrimaryBonus: true, ref bonuses);
-					PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.BoardingMaster, captainCharacter, ref bonuses);
+					PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.BoardingMaster, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
+					PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.BoardingMaster, attackerBattleEnvironment, captainCharacter, ref bonuses);
 				}
 				else if (IsAgentOnOwnShip(agent))
 				{
-					PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.HomeTurfAdvantage, characterObject, isPrimaryBonus: true, ref bonuses);
-					PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.HomeTurfAdvantage, captainCharacter, ref bonuses);
+					PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.HomeTurfAdvantage, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
+					PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.HomeTurfAdvantage, attackerBattleEnvironment, captainCharacter, ref bonuses);
 				}
 			}
 			if (collisionData.IsAlternativeAttack)
 			{
-				PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.BruteForce, characterObject, isPrimaryBonus: true, ref bonuses);
+				PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.BruteForce, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
 			}
 			if (flag && isNavalBattle)
 			{
-				PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.Forceful, captainCharacter, ref bonuses);
+				PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.Forceful, attackerBattleEnvironment, captainCharacter, ref bonuses);
 			}
 		}
 		return bonuses.ResultNumber;
@@ -144,6 +146,7 @@ public class NavalAgentApplyDamageModel : AgentApplyDamageModel
 		Agent agent2 = (attackInformation.IsAttackerAgentMount ? attackInformation.AttackerAgent.RiderAgent : attackInformation.AttackerAgent);
 		CharacterObject characterObject = (attackInformation.IsVictimAgentMount ? attackInformation.VictimRiderAgentCharacter : attackInformation.VictimAgentCharacter) as CharacterObject;
 		CharacterObject characterObject2 = attackInformation.VictimCaptainCharacter as CharacterObject;
+		BattleEnvironment victimBattleEnvironment = attackInformation.VictimBattleEnvironment;
 		ExplainedNumber bonuses = new ExplainedNumber(baseNumber);
 		WeaponComponentData currentUsageItem = attackInformation.AttackerWeapon.CurrentUsageItem;
 		if (characterObject != null && currentUsageItem != null)
@@ -155,7 +158,7 @@ public class NavalAgentApplyDamageModel : AgentApplyDamageModel
 					if (agent.CurrentlyUsedGameObject != null && agent.CurrentlyUsedGameObject.GetComponent<UserDamageCalculateComponent>() != null)
 					{
 						UserDamageCalculateComponent component = agent.CurrentlyUsedGameObject.GetComponent<UserDamageCalculateComponent>();
-						component.ApplyPerkBonusForCharacter(NavalPerks.Shipmaster.TheHelmsmansShield, isPrimaryBonus: true, characterObject, ref bonuses);
+						component.ApplyPerkBonusForCharacter(NavalPerks.Shipmaster.TheHelmsmansShield, isPrimaryBonus: true, characterObject, BattleEnvironment.Naval, ref bonuses);
 						if (agent == Agent.Main)
 						{
 							bonuses.AddFactor(component.DamageReductionFactor);
@@ -173,11 +176,12 @@ public class NavalAgentApplyDamageModel : AgentApplyDamageModel
 			}
 			else if (currentUsageItem.IsMeleeWeapon)
 			{
+				float effectValue;
 				if (Mission.Current.IsNavalBattle && IsAgentOnEnemyShip(agent))
 				{
-					PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.TerrorOfTheSeas, characterObject2, ref bonuses);
+					PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.TerrorOfTheSeas, victimBattleEnvironment, characterObject2, ref bonuses);
 				}
-				else if (Mission.Current.IsNavalBattle && IsAgentOnOwnShip(agent) && characterObject2 != null && characterObject2.GetPerkValue(NavalPerks.Mariner.RallyingCry))
+				else if (Mission.Current.IsNavalBattle && IsAgentOnOwnShip(agent) && characterObject2 != null && characterObject2.GetPerkValue(NavalPerks.Mariner.RallyingCry, victimBattleEnvironment, isPrimaryEffect: false, out effectValue))
 				{
 					bonuses.AddFactor(NavalPerks.Mariner.RallyingCry.SecondaryBonus);
 				}
@@ -265,9 +269,9 @@ public class NavalAgentApplyDamageModel : AgentApplyDamageModel
 		return base.BaseModel.CalculateAlternativeAttackDamage(in attackInformation, in collisionData, weapon);
 	}
 
-	public override float CalculatePassiveAttackDamage(BasicCharacterObject attackerCharacter, in AttackCollisionData collisionData, float baseDamage)
+	public override float CalculatePassiveAttackDamage(in AttackInformation attackInformation, in AttackCollisionData collisionData, float baseDamage)
 	{
-		return base.BaseModel.CalculatePassiveAttackDamage(attackerCharacter, in collisionData, baseDamage);
+		return base.BaseModel.CalculatePassiveAttackDamage(in attackInformation, in collisionData, baseDamage);
 	}
 
 	public override MeleeCollisionReaction DecidePassiveAttackCollisionReaction(Agent attacker, Agent defender, bool isFatalHit)
@@ -284,12 +288,15 @@ public class NavalAgentApplyDamageModel : AgentApplyDamageModel
 	{
 		float baseNumber = base.BaseModel.CalculateSailFireDamage(agent, shipOrigin, baseDamage, damageFromShipMachine);
 		ExplainedNumber bonuses = new ExplainedNumber(baseNumber);
-		if (agent.Formation?.Captain?.Character is CharacterObject captainCharacter)
+		Agent agent2 = agent.Formation?.Captain;
+		CharacterObject characterObject = agent2?.Character as CharacterObject;
+		BattleEnvironment battleEnvironment = agent2?.CurrentBattleEnvironment ?? BattleEnvironment.None;
+		if (characterObject != null)
 		{
-			PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.EnemyOfTheWood, captainCharacter, ref bonuses);
+			PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.EnemyOfTheWood, battleEnvironment, characterObject, ref bonuses);
 			if (!damageFromShipMachine)
 			{
-				PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Boatswain.SpecialArrows, captainCharacter, ref bonuses);
+				PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Boatswain.SpecialArrows, battleEnvironment, characterObject, ref bonuses);
 			}
 		}
 		Figurehead figurehead = (shipOrigin as Ship).Figurehead;
@@ -362,6 +369,7 @@ public class NavalAgentApplyDamageModel : AgentApplyDamageModel
 	{
 		float num = base.BaseModel.CalculateRemainingMomentum(originalMomentum, in b, in collisionData, attacker, victim, in attackerWeapon, isCrushThrough);
 		CharacterObject characterObject = (CharacterObject)attacker.Character;
+		BattleEnvironment currentBattleEnvironment = attacker.CurrentBattleEnvironment;
 		if (collisionData.IsColliderAgent && !collisionData.IsHorseCharge && (attacker == null || !attacker.IsDoingPassiveAttack) && !MissionCombatMechanicsHelper.HitWithAnotherBone(in collisionData, attacker, in attackerWeapon) && !attackerWeapon.IsEmpty && b.StrikeType != StrikeType.Thrust && !attackerWeapon.IsEmpty && attackerWeapon.CurrentUsageItem.RelevantSkill == DefaultSkills.TwoHanded)
 		{
 			ExplainedNumber bonuses = new ExplainedNumber(0f, includeDescriptions: false, null);
@@ -371,7 +379,7 @@ public class NavalAgentApplyDamageModel : AgentApplyDamageModel
 				bonuses.Add(b.AbsorbedByArmor / (float)b.InflictedDamage);
 				if (characterObject != null)
 				{
-					PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.MightyBlows, characterObject, isPrimaryBonus: true, ref bonuses);
+					PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.MightyBlows, currentBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
 				}
 			}
 			num = originalMomentum - bonuses.ResultNumber;

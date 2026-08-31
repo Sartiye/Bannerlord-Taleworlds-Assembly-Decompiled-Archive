@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.AdvancedStartOptions;
 using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
@@ -13,8 +14,8 @@ public class CampaignStoryMode : Campaign
 	[SaveableProperty(9999)]
 	public StoryModeManager StoryMode { get; private set; }
 
-	public CampaignStoryMode(CampaignGameMode gameMode)
-		: base(gameMode)
+	public CampaignStoryMode(CampaignGameMode gameMode, AdvancedStartOptionsData startOptions)
+		: base(gameMode, startOptions)
 	{
 		StoryMode = new StoryModeManager();
 	}

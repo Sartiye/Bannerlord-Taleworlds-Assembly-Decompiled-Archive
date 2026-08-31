@@ -158,7 +158,7 @@ public class PirateBattleMissionController : MissionLogic
 			_playerShip.ShipOrder.SetOrderOarsmenLevel(2);
 			_navalAgentsLogic.AssignAndTeleportCrewToShipMachines(TeamSideEnum.PlayerTeam);
 			_navalAgentsLogic.AssignAndTeleportCrewToShipMachines(TeamSideEnum.EnemyTeam);
-			Mission.Current.OnDeploymentFinished();
+			base.Mission.OnInitialSpawnCompleted();
 			_secondShip.SetAnchor(isAnchored: true);
 			_secondShip.ShipOrder.SetShipStopOrder();
 			_secondShip.SetController(ShipControllerType.None, autoUpdateController: false);
@@ -190,12 +190,12 @@ public class PirateBattleMissionController : MissionLogic
 			if (!_isGunnarAfterFightFirstNotificationShown)
 			{
 				_isGunnarAfterFightFirstNotificationShown = true;
-				_currentNotificationText = new TextObject("{=Ni85tv1G}I think I see them. Untie our ships, and let’s have at it!");
+				_currentNotificationText = new TextObject("{=Ni85tv1G}I think I see them. Untie our ships, and let's have at it!");
 			}
 			else if (!_isGunnarAfterFightSecondNotificationShown && !_playerShip.GetIsThereActiveBridgeTo(_secondShip))
 			{
 				_isGunnarAfterFightSecondNotificationShown = true;
-				_currentNotificationText = new TextObject("{=BfzIsraW}I’ll let you decide how to fight this one. Maneuver a bit, or just go straight at them?");
+				_currentNotificationText = new TextObject("{=BfzIsraW}I'll let you decide how to fight this one. Maneuver a bit, or just go straight at them?");
 				PirateBattlePhase2Objective objective2 = new PirateBattlePhase2Objective(Mission.Current, this);
 				_missionObjectiveLogic.StartObjective(objective2);
 			}
@@ -222,7 +222,7 @@ public class PirateBattleMissionController : MissionLogic
 			else if (!_hasShownBoardImminentNotification)
 			{
 				_hasShownBoardImminentNotification = true;
-				_currentNotificationText = new TextObject("{=GtSpVtOq}Get ready to board…");
+				_currentNotificationText = new TextObject("{=GtSpVtOq}Get ready to board...");
 				MBMusicManager.Current.ChangeCurrentThemeIntensity(0.5f);
 			}
 		}
@@ -484,7 +484,7 @@ public class PirateBattleMissionController : MissionLogic
 		_isSecondPhaseSetup = true;
 		Formation formation = Mission.GetTeam(TeamSideEnum.EnemyTeam).GetFormation(FormationClass.Ranged);
 		_reinforcementShip = CreateShip("ship_lightlongship_storyline", "spawnpoint_ship_reinforcement", formation, _pirateParty.Party, ReinforcementShipUpgradePieces, "generated_square_l1_h4_10");
-		_reinforcementShip.OnDeploymentFinished();
+		_reinforcementShip.FinalizeDeployment(initializeMachines: true);
 		SpawnEnemyAgents(_reinforcementShip);
 		MatrixFrame globalFrame = _playerShip.GlobalFrame;
 		Vec2 position = globalFrame.origin.AsVec2;
@@ -649,6 +649,8 @@ public class PirateBattleMissionController : MissionLogic
 		_gunnarAgent.Controller = AgentControllerType.AI;
 		string keyHyperlinkText = HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("MissionOrderHotkeyCategory", 80));
 		GameTexts.SetVariable("SHIP_COMMANDING_TUTORIAL_GROUP_KEY", keyHyperlinkText);
+		_playerShip.ShipControllerMachine.PilotStandingPoint.IsDisabledForPlayers = false;
+		_secondShip.ShipControllerMachine.PilotStandingPoint.IsDisabledForPlayers = false;
 		_navalAgentsLogic.SetDeploymentMode(value: true);
 		_navalShipsLogic.SetDeploymentMode(value: true);
 		_playerShip.ShipOrder.Tick();
@@ -656,8 +658,6 @@ public class PirateBattleMissionController : MissionLogic
 		_navalAgentsLogic.AssignAndTeleportCrewToShipMachines(TeamSideEnum.PlayerTeam);
 		_navalAgentsLogic.SetDeploymentMode(value: false);
 		_navalShipsLogic.SetDeploymentMode(value: false);
-		_playerShip.ShipControllerMachine.PilotStandingPoint.IsDisabledForPlayers = false;
-		_secondShip.ShipControllerMachine.PilotStandingPoint.IsDisabledForPlayers = false;
 		Vec3 vec = _reinforcementShip.GameEntity.GlobalPosition - Agent.Main.Position;
 		this.OnCameraBearingNeedsUpdateEvent(vec.RotationZ);
 	}

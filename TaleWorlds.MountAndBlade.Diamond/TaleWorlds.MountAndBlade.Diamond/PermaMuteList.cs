@@ -58,23 +58,26 @@ public static class PermaMuteList
 		try
 		{
 			Dictionary<string, List<(string, string)>> dictionary = JsonConvert.DeserializeObject<Dictionary<string, List<(string, string)>>>(await FileHelper.GetFileContentStringAsync(PermaMuteFilePath));
-			if (dictionary != null)
+			if (dictionary == null)
 			{
-				_mutedPlayers = dictionary;
+				Debug.Print("PermaMuteList: file deserialized to null (corrupted). Deleting.");
+				try
+				{
+					FileHelper.DeleteFile(PermaMuteFilePath);
+					return;
+				}
+				catch (Exception ex)
+				{
+					Debug.Print($"PermaMuteList: could not delete corrupted file. {ex.Message}");
+					return;
+				}
 			}
+			_mutedPlayers = dictionary;
 			HasMutedPlayersLoaded = true;
 		}
-		catch (Exception ex)
+		catch (Exception ex2)
 		{
-			Debug.FailedAssert("Could not load muted players. " + ex.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\PermaMuteList.cs", "LoadMutedPlayers", 61);
-			try
-			{
-				FileHelper.DeleteFile(PermaMuteFilePath);
-			}
-			catch (Exception ex2)
-			{
-				Debug.FailedAssert("Could not delete muted players file. " + ex2.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\PermaMuteList.cs", "LoadMutedPlayers", 68);
-			}
+			Debug.Print($"PermaMuteList: could not load muted players. {ex2.Message}");
 		}
 	}
 
@@ -87,7 +90,7 @@ public static class PermaMuteList
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Could not save muted players. " + ex.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\PermaMuteList.cs", "SaveMutedPlayers", 83);
+			Debug.FailedAssert("Could not save muted players. " + ex.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\PermaMuteList.cs", "SaveMutedPlayers", 84);
 		}
 	}
 

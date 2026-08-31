@@ -37,7 +37,7 @@ public class MapEventSide
 	internal float LeaderSimulationModifier;
 
 	[CachedData]
-	private MBList<(SiegeEngineType, Ship)> _siegeEngineList = new MBList<(SiegeEngineType, Ship)>();
+	private MBList<(SiegeEngineType, Ship)> _shipSiegeEngineList = new MBList<(SiegeEngineType, Ship)>();
 
 	[SaveableField(30)]
 	private readonly MBList<MapEventParty> _battleParties;
@@ -128,7 +128,7 @@ public class MapEventSide
 
 	public int NumRemainingSimulationShips => SimulationShipList?.Count ?? 0;
 
-	public int NumRemainingSimulationSiegeEngines => _siegeEngineList?.Count ?? 0;
+	public int NumRemainingSimulationShipSiegeEngines => _shipSiegeEngineList?.Count ?? 0;
 
 	public bool HasTroopLimit => _battleParties.AnyQ((MapEventParty p) => p.HasTroopLimit);
 
@@ -347,7 +347,7 @@ public class MapEventSide
 		int num = 0;
 		foreach (MapEventParty battleParty in _battleParties)
 		{
-			if (battleParty.Party.MemberRoster.Count > 0)
+			if (battleParty.Party.MemberRoster.TotalManCount > 0)
 			{
 				num += battleParty.ContributionToBattle;
 			}
@@ -458,71 +458,24 @@ public class MapEventSide
 		character.HitPoints -= damage;
 	}
 
+	[LoadInitializationCallback]
+	public void OnLoad()
+	{
+		SimulationShipList = new MBList<Ship>();
+		_shipSiegeEngineList = new MBList<(SiegeEngineType, Ship)>();
+	}
+
 	public void AllocateShips()
 	{
-		MBList<(Ship, MapEventParty)> simulationShips = Campaign.Current.Models.CombatSimulationModel.GetSimulationShips(MapEvent, _battleParties);
-		CreateOrderedSimulationShipList(simulationShips);
+		SimulationShipList.Clear();
+		SimulationShipList = MapEvent.Component.GetSimulationShipList(this);
 		WeightedShipCombatFactor = GetWeightedShipCombatFactor();
 	}
 
-	public void AllocateSiegeEngines()
+	public void AllocateShipSiegeEngines()
 	{
-		if (_siegeEngineList == null)
-		{
-			_siegeEngineList = new MBList<(SiegeEngineType, Ship)>();
-		}
-		else
-		{
-			_siegeEngineList.Clear();
-		}
-		if (!MapEvent.IsNavalMapEvent)
-		{
-			return;
-		}
-		for (int i = 0; i < SimulationShipList.Count; i++)
-		{
-			foreach (SiegeEngineType siegeEngine in SimulationShipList[i].GetSiegeEngines())
-			{
-				_siegeEngineList.Add((siegeEngine, SimulationShipList[i]));
-			}
-		}
-	}
-
-	private void CreateOrderedSimulationShipList(MBList<(Ship, MapEventParty)> ships)
-	{
-		if (SimulationShipList == null)
-		{
-			SimulationShipList = new MBList<Ship>();
-		}
-		else
-		{
-			SimulationShipList.Clear();
-		}
-		float num = NumRemainingSimulationTroops;
-		foreach (var item in ships.OrderByDescending(((Ship, MapEventParty) x) => GetShipCombatImportance(x.Item1)))
-		{
-			if (num <= 0f)
-			{
-				break;
-			}
-			float num2 = (float)item.Item1.MainDeckCrewCapacity * 0.8f;
-			SimulationShipList.Add(item.Item1);
-			num -= num2;
-		}
-	}
-
-	private float GetShipCombatScore(Ship ship)
-	{
-		float combatFactor = ship.GetCombatFactor();
-		float num = TaleWorlds.Library.MathF.Max(TaleWorlds.Library.MathF.Clamp(ship.HitPoints / ship.MaxHitPoints, 0f, 1f), 0.7f);
-		return combatFactor * num;
-	}
-
-	private float GetShipCombatImportance(Ship ship)
-	{
-		float num = TaleWorlds.Library.MathF.Clamp(ship.HitPoints / ship.MaxHitPoints, 0f, 1f);
-		float y = ((num < 0.3f) ? 2f : 0.6f);
-		return GetShipCombatScore(ship) * TaleWorlds.Library.MathF.Pow(num, y);
+		_shipSiegeEngineList.Clear();
+		MapEvent.Component.UpdateShipSiegeEnginesListOfSide(this, _shipSiegeEngineList);
 	}
 
 	public void AllocateTroops(ref List<UniqueTroopDescriptor> troopsList, int numberToAllocate, Func<UniqueTroopDescriptor, MapEventParty, bool> customAllocationConditions = null)
@@ -714,7 +667,7 @@ public class MapEventSide
 		foreach (Ship simulationShip in SimulationShipList)
 		{
 			num2 += (float)simulationShip.MainDeckCrewCapacity;
-			num += (float)simulationShip.MainDeckCrewCapacity * GetShipCombatScore(simulationShip);
+			num += (float)simulationShip.MainDeckCrewCapacity * Campaign.Current.Models.CombatSimulationModel.GetShipCombatScore(simulationShip);
 		}
 		if (num2.ApproximatelyEqualsTo(0f))
 		{
@@ -813,7 +766,7 @@ public class MapEventSide
 		MakeReady(includeHumanPlayers: false, sizeOfSide, priorTroops);
 		AllocateTroops(ref _simulationTroopList, sizeOfSide);
 		AllocateShips();
-		AllocateSiegeEngines();
+		AllocateShipSiegeEngines();
 		if (!_battleParties.AnyQ((MapEventParty p) => p.HasTroopLimit))
 		{
 			return;
@@ -910,9 +863,9 @@ public class MapEventSide
 
 	public (SiegeEngineType, Ship) GetRandomSimulationSiegeEngine()
 	{
-		if (NumRemainingSimulationSiegeEngines > 0)
+		if (NumRemainingSimulationShipSiegeEngines > 0)
 		{
-			return _siegeEngineList[MBRandom.RandomInt(NumRemainingSimulationSiegeEngines)];
+			return _shipSiegeEngineList[MBRandom.RandomInt(NumRemainingSimulationShipSiegeEngines)];
 		}
 		return (null, null);
 	}
@@ -938,11 +891,11 @@ public class MapEventSide
 	private void RemoveShipFromSimulationList(Ship ship)
 	{
 		SimulationShipList.Remove(ship);
-		for (int num = _siegeEngineList.Count - 1; num >= 0; num--)
+		for (int num = _shipSiegeEngineList.Count - 1; num >= 0; num--)
 		{
-			if (_siegeEngineList[num].Item2 == ship)
+			if (_shipSiegeEngineList[num].Item2 == ship)
 			{
-				_siegeEngineList.RemoveAt(num);
+				_shipSiegeEngineList.RemoveAt(num);
 			}
 		}
 	}
@@ -1000,7 +953,8 @@ public class MapEventSide
 				OnTroopWounded(_selectedSimulationTroopDescriptor);
 				BattleObserver?.TroopNumberChanged(MissionSide, GetAllocatedTroopParty(_selectedSimulationTroopDescriptor), _selectedSimulationTroop, -1, 0, 1);
 				SkillLevelingManager.OnSurgeryApplied(party.MobileParty, surgerySuccess: true, _selectedSimulationTroop.Tier);
-				if (strikerParty?.MobileParty != null && strikerParty.MobileParty.HasPerk(DefaultPerks.Medicine.DoctorsOath))
+				Hero perkOwnerHero = null;
+				if (strikerParty?.MobileParty != null && strikerParty.MobileParty.HasPerk(DefaultPerks.Medicine.DoctorsOath, out perkOwnerHero))
 				{
 					SkillLevelingManager.OnSurgeryApplied(strikerParty.MobileParty, surgerySuccess: true, _selectedSimulationTroop.Tier);
 				}
@@ -1010,7 +964,8 @@ public class MapEventSide
 				OnTroopKilled(_selectedSimulationTroopDescriptor);
 				BattleObserver?.TroopNumberChanged(MissionSide, GetAllocatedTroopParty(_selectedSimulationTroopDescriptor), _selectedSimulationTroop, -1, 1);
 				SkillLevelingManager.OnSurgeryApplied(party.MobileParty, surgerySuccess: false, _selectedSimulationTroop.Tier);
-				if (strikerParty?.MobileParty != null && strikerParty.MobileParty.HasPerk(DefaultPerks.Medicine.DoctorsOath))
+				Hero perkOwnerHero2 = null;
+				if (strikerParty?.MobileParty != null && strikerParty.MobileParty.HasPerk(DefaultPerks.Medicine.DoctorsOath, out perkOwnerHero2))
 				{
 					SkillLevelingManager.OnSurgeryApplied(strikerParty.MobileParty, surgerySuccess: false, _selectedSimulationTroop.Tier);
 				}

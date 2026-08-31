@@ -131,6 +131,22 @@ public class PartyNameplatesVM : ViewModel
 		PlayerNameplate?.RefreshValues();
 	}
 
+	public void Reset()
+	{
+		Nameplates.ApplyActionOnAllItems(delegate(PartyNameplateVM n)
+		{
+			n.OnFinalize();
+		});
+		Nameplates.Clear();
+		_nameplatesByParty.Clear();
+		if (PlayerNameplate != null)
+		{
+			PlayerNameplate.Clear();
+			PlayerNameplate = null;
+		}
+		Initialize();
+	}
+
 	public void Initialize()
 	{
 		MBReadOnlyList<MobileParty> all = MobileParty.All;

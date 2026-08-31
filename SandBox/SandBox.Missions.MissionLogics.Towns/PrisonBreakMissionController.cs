@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using SandBox.CampaignBehaviors;
 using SandBox.Missions.AgentBehaviors;
+using SandBox.Missions.MissionLogics.Towns.Objectives;
+using SandBox.Objects;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.Extensions;
@@ -13,6 +15,7 @@ using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
+using TaleWorlds.MountAndBlade.Missions.MissionLogics;
 
 namespace SandBox.Missions.MissionLogics.Towns;
 
@@ -36,11 +39,15 @@ public class PrisonBreakMissionController : MissionLogic
 
 	private StealthFailCounterMissionLogic _failCounterMissionLogic;
 
+	private MissionObjectiveLogic _missionObjectiveLogic;
+
 	private bool _isPrisonerFollowing;
 
 	private bool _isPrisonerNear;
 
 	private bool _missionFailedByStealthCounter;
+
+	public bool IsTalkedWithPrisoner => !_isFirstPhase;
 
 	public PrisonBreakMissionController(CharacterObject prisonerCharacter)
 	{
@@ -100,6 +107,13 @@ public class PrisonBreakMissionController : MissionLogic
 		textObject.SetTextVariable("PRISONER_NAME", _prisonerCharacter.Name);
 		MBInformationManager.AddQuickInformation(textObject);
 		_aliveGuardAgents = base.Mission.Agents.Where((Agent x) => x.Character is CharacterObject characterObject && (characterObject.Occupation == Occupation.Soldier || characterObject.Occupation == Occupation.Guard || characterObject.Occupation == Occupation.PrisonGuard)).ToList();
+		_missionObjectiveLogic = base.Mission.GetMissionBehavior<MissionObjectiveLogic>();
+		_missionObjectiveLogic?.StartObjective(new FindThePrisonerObjective(base.Mission));
+	}
+
+	public override void OnAfterMissionLoadingFinished()
+	{
+		base.Mission.OnInitialSpawnCompleted();
 	}
 
 	private void SwitchPrisonerFollowingState(bool forceFollow = false)
@@ -186,6 +200,8 @@ public class PrisonBreakMissionController : MissionLogic
 			aliveGuardAgent.SetAlarmState(Agent.AIStateFlag.PatrollingCautious);
 		}
 		UpdateDoorPermission();
+		_missionObjectiveLogic?.CompleteCurrentObjective();
+		_missionObjectiveLogic?.StartObjective(new EscapeThePrisonObjective(base.Mission));
 	}
 
 	public override bool IsThereAgentAction(Agent userAgent, Agent otherAgent)
@@ -260,10 +276,7 @@ public class PrisonBreakMissionController : MissionLogic
 	public override InquiryData OnEndMissionRequest(out bool canLeave)
 	{
 		canLeave = Agent.Main == null || !Agent.Main.IsActive();
-		if (!canLeave)
-		{
-			MBInformationManager.AddQuickInformation(GameTexts.FindText("str_can_not_retreat"));
-		}
+		MBInformationManager.AddQuickInformation(new TextObject("{=1FrwohfQ}Get to the exit with the prisoner to escape."));
 		return null;
 	}
 
@@ -351,6 +364,14 @@ public class PrisonBreakMissionController : MissionLogic
 			{
 				townPassageProp.Deactivate();
 			}
+		}
+	}
+
+	public override void OnObjectUsed(Agent userAgent, UsableMissionObject usedObject)
+	{
+		if (!_isFirstPhase && userAgent == Agent.Main && usedObject is PassageUsePoint)
+		{
+			_missionObjectiveLogic?.CompleteCurrentObjective();
 		}
 	}
 

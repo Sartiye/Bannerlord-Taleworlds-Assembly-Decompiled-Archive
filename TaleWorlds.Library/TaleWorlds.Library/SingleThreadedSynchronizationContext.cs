@@ -22,7 +22,7 @@ public sealed class SingleThreadedSynchronizationContext : SynchronizationContex
 
 		public void Invoke()
 		{
-			_callback.DynamicInvokeWithLog(_state);
+			_callback.DynamicInvoke(_state);
 			_waitHandle?.Set();
 		}
 	}

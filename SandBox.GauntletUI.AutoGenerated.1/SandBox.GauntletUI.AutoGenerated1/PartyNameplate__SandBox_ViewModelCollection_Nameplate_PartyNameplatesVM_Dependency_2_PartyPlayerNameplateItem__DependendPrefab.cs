@@ -44,7 +44,7 @@ public class PartyNameplate__SandBox_ViewModelCollection_Nameplate_PartyNameplat
 
 	private TextWidget _widget_1_0_0;
 
-	private BoolStateChangerWidget _widget_1_0_0_0;
+	private BoolStateChangerBrushWidget _widget_1_0_0_0;
 
 	private TextWidget _widget_1_0_1;
 
@@ -100,7 +100,7 @@ public class PartyNameplate__SandBox_ViewModelCollection_Nameplate_PartyNameplat
 		_widget_1.AddChild(_widget_1_0);
 		_widget_1_0_0 = new TextWidget(base.Context);
 		_widget_1_0.AddChild(_widget_1_0_0);
-		_widget_1_0_0_0 = new BoolStateChangerWidget(base.Context);
+		_widget_1_0_0_0 = new BoolStateChangerBrushWidget(base.Context);
 		_widget_1_0_0.AddChild(_widget_1_0_0_0);
 		_widget_1_0_1 = new TextWidget(base.Context);
 		_widget_1_0.AddChild(_widget_1_0_1);

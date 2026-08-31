@@ -35,7 +35,7 @@ public class MPLobbyFriendGroupVM : ViewModel
 		PendingRequests
 	}
 
-	private List<FriendOperation> _friendOperationQueue;
+	private readonly List<FriendOperation> _friendOperationQueue;
 
 	private string _title;
 
@@ -131,49 +131,51 @@ public class MPLobbyFriendGroupVM : ViewModel
 
 	public void Tick()
 	{
-		for (int i = 0; i < _friendOperationQueue.Count; i++)
+		lock (_friendOperationQueue)
 		{
-			HandleFriendOperationAux(_friendOperationQueue[i]);
+			for (int i = 0; i < _friendOperationQueue.Count; i++)
+			{
+				HandleFriendOperationAux(_friendOperationQueue[i]);
+			}
+			_friendOperationQueue.Clear();
 		}
-		_friendOperationQueue.Clear();
 	}
 
 	private void HandleFriendOperationAux(FriendOperation operation)
 	{
+		switch (operation.Type)
+		{
+		case FriendOperation.OperationTypes.Add:
+			FriendList.Add(operation.Friend);
+			operation.Friend.UpdateNameAndAvatar();
+			break;
+		case FriendOperation.OperationTypes.Remove:
+			FriendList.Remove(operation.Friend);
+			break;
+		case FriendOperation.OperationTypes.Clear:
+			FriendList.Clear();
+			break;
+		}
+	}
+
+	private void EnqueueFriendOperation(FriendOperation operation)
+	{
 		lock (_friendOperationQueue)
 		{
-			switch (operation.Type)
-			{
-			case FriendOperation.OperationTypes.Add:
-				FriendList.Add(operation.Friend);
-				operation.Friend.UpdateNameAndAvatar();
-				break;
-			case FriendOperation.OperationTypes.Remove:
-				FriendList.Remove(operation.Friend);
-				break;
-			case FriendOperation.OperationTypes.Clear:
-				FriendList.Clear();
-				break;
-			}
+			_friendOperationQueue.Add(operation);
 		}
 	}
 
 	public void ClearFriends()
 	{
-		lock (_friendOperationQueue)
-		{
-			_friendOperationQueue.Add(new FriendOperation(FriendOperation.OperationTypes.Clear, null));
-		}
+		EnqueueFriendOperation(new FriendOperation(FriendOperation.OperationTypes.Clear, null));
 	}
 
 	public void AddFriend(MPLobbyFriendItemVM player)
 	{
 		if (player.ProvidedID != NetworkMain.GameClient.PlayerID)
 		{
-			lock (_friendOperationQueue)
-			{
-				_friendOperationQueue.Add(new FriendOperation(FriendOperation.OperationTypes.Add, player));
-			}
+			EnqueueFriendOperation(new FriendOperation(FriendOperation.OperationTypes.Add, player));
 		}
 	}
 
@@ -181,10 +183,7 @@ public class MPLobbyFriendGroupVM : ViewModel
 	{
 		if (player.ProvidedID != NetworkMain.GameClient.PlayerID)
 		{
-			lock (_friendOperationQueue)
-			{
-				_friendOperationQueue.Add(new FriendOperation(FriendOperation.OperationTypes.Remove, player));
-			}
+			EnqueueFriendOperation(new FriendOperation(FriendOperation.OperationTypes.Remove, player));
 		}
 	}
 }

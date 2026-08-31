@@ -44,9 +44,13 @@ public class PartyNameplate__SandBox_ViewModelCollection_Nameplate_PartyNameplat
 
 	private TextWidget _widget_1_0_0;
 
-	private BoolStateChangerWidget _widget_1_0_0_0;
+	private BoolStateChangerBrushWidget _widget_1_0_0_0;
 
-	private TextWidget _widget_1_0_1;
+	private ListPanel _widget_1_0_1;
+
+	private TextWidget _widget_1_0_1_0;
+
+	private Widget _widget_1_0_1_1;
 
 	private Widget _widget_1_1;
 
@@ -94,10 +98,14 @@ public class PartyNameplate__SandBox_ViewModelCollection_Nameplate_PartyNameplat
 		_widget_1.AddChild(_widget_1_0);
 		_widget_1_0_0 = new TextWidget(base.Context);
 		_widget_1_0.AddChild(_widget_1_0_0);
-		_widget_1_0_0_0 = new BoolStateChangerWidget(base.Context);
+		_widget_1_0_0_0 = new BoolStateChangerBrushWidget(base.Context);
 		_widget_1_0_0.AddChild(_widget_1_0_0_0);
-		_widget_1_0_1 = new TextWidget(base.Context);
+		_widget_1_0_1 = new ListPanel(base.Context);
 		_widget_1_0.AddChild(_widget_1_0_1);
+		_widget_1_0_1_0 = new TextWidget(base.Context);
+		_widget_1_0_1.AddChild(_widget_1_0_1_0);
+		_widget_1_0_1_1 = new Widget(base.Context);
+		_widget_1_0_1.AddChild(_widget_1_0_1_1);
 		_widget_1_1 = new Widget(base.Context);
 		_widget_1.AddChild(_widget_1_1);
 		_widget_2 = new Widget(base.Context);
@@ -120,7 +128,9 @@ public class PartyNameplate__SandBox_ViewModelCollection_Nameplate_PartyNameplat
 		_widget_1_0.Id = "NameSpeedContainer";
 		_widget_1_0_0.Id = "SpeedTextWidget";
 		_widget_1_0_0_0.Id = "SpeedIconWidget";
-		_widget_1_0_1.Id = "NameplateFullNameTextWidget";
+		_widget_1_0_1.Id = "NameBloodFeudContainer";
+		_widget_1_0_1_0.Id = "NameplateFullNameTextWidget";
+		_widget_1_0_1_1.Id = "BloodFeudWidget";
 		_widget_1_1.Id = "ParleyIconWidget";
 		_widget_2.Id = "TrackerFrame";
 	}
@@ -132,7 +142,8 @@ public class PartyNameplate__SandBox_ViewModelCollection_Nameplate_PartyNameplat
 		base.HeightSizePolicy = SizePolicy.CoverChildren;
 		base.DisorganizedWidget = _widget_0_0_0_1;
 		base.NameplateExtraInfoTextWidget = _widget_0_0_2_1;
-		base.NameplateFullNameTextWidget = _widget_1_0_1;
+		base.NameplateFullNameTextWidget = _widget_1_0_1_0;
+		base.BloodFeudIconWidget = _widget_1_0_1_1;
 		base.SpeedTextWidget = _widget_1_0_0;
 		base.SpeedIconWidget = _widget_1_0_0_0;
 		base.ParleyIconWidget = _widget_1_1;
@@ -230,10 +241,21 @@ public class PartyNameplate__SandBox_ViewModelCollection_Nameplate_PartyNameplat
 		_widget_1_0_1.DoNotAcceptEvents = true;
 		_widget_1_0_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_1_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_1_0_1.MaxWidth = 500f;
 		_widget_1_0_1.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_1_0_1.Brush = base.Context.GetBrush("PartyNameplate.FullName.Text");
-		_widget_1_0_1.Brush.TextHorizontalAlignment = TextHorizontalAlignment.Center;
+		_widget_1_0_1_0.DoNotAcceptEvents = true;
+		_widget_1_0_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_1_0_1_0.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_1_0_1_0.MaxWidth = 500f;
+		_widget_1_0_1_0.VerticalAlignment = VerticalAlignment.Center;
+		_widget_1_0_1_0.Brush = base.Context.GetBrush("PartyNameplate.FullName.Text");
+		_widget_1_0_1_0.Brush.TextHorizontalAlignment = TextHorizontalAlignment.Center;
+		_widget_1_0_1_1.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_1_0_1_1.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_1_0_1_1.SuggestedWidth = 20f;
+		_widget_1_0_1_1.SuggestedHeight = 30f;
+		_widget_1_0_1_1.MarginLeft = 5f;
+		_widget_1_0_1_1.VerticalAlignment = VerticalAlignment.Center;
+		_widget_1_0_1_1.Sprite = base.Context.SpriteData.GetSprite("SPGeneral\\blood_feud_icon");
 		_widget_1_1.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_1.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1_1.SuggestedWidth = 30f;
@@ -328,15 +350,15 @@ public class PartyNameplate__SandBox_ViewModelCollection_Nameplate_PartyNameplat
 		_widget_1_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_0_0_0;
 		_widget_1_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_0_0_0;
 		_widget_1_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_0_0_0;
-		_widget_1_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_1_0_1;
-		_widget_1_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_0_1;
-		_widget_1_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_0_1;
-		_widget_1_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_0_1;
-		_widget_1_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_0_1;
-		_widget_1_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_0_1;
-		_widget_1_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_0_1;
-		_widget_1_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_0_1;
-		_widget_1_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_0_1;
+		_widget_1_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_0_1_0;
+		_widget_1_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_0_1_0;
+		_widget_1_0_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_0_1_0;
+		_widget_1_0_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_0_1_0;
+		_widget_1_0_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_0_1_0;
+		_widget_1_0_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_0_1_0;
+		_widget_1_0_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_0_1_0;
+		_widget_1_0_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_0_1_0;
+		_widget_1_0_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_0_1_0;
 		if (_datasource_Root_Quests != null)
 		{
 			_datasource_Root_Quests.ListChanged -= OnList_datasource_Root_QuestsChanged;
@@ -462,6 +484,9 @@ public class PartyNameplate__SandBox_ViewModelCollection_Nameplate_PartyNameplat
 			break;
 		case "IsDisorganized":
 			_datasource_Root.IsDisorganized = _widget.IsDisorganized;
+			break;
+		case "HasBloodFeud":
+			_datasource_Root.HasBloodFeud = _widget.HasBloodFeud;
 			break;
 		}
 	}
@@ -743,60 +768,60 @@ public class PartyNameplate__SandBox_ViewModelCollection_Nameplate_PartyNameplat
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_1_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_0_1_0(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_1_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_0_1_0(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_1_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_0_1_0(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_1_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_0_1_0(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_1_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_0_1_0(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_1_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_0_1_0(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_1_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_0_1_0(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_1_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_0_1_0(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_1_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_0_1(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_0_1_0(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_1_0_1(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_1_0_1_0(string propertyName)
 	{
 		if (propertyName == "Brush.FontColor")
 		{
-			_datasource_Root.FactionColor = _widget_1_0_1.Brush.FontColor.ToString();
+			_datasource_Root.FactionColor = _widget_1_0_1_0.Brush.FontColor.ToString();
 		}
 		else if (propertyName == "Text")
 		{
-			_datasource_Root.FullName = _widget_1_0_1.Text;
+			_datasource_Root.FullName = _widget_1_0_1_0.Text;
 		}
 	}
 
@@ -953,6 +978,9 @@ public class PartyNameplate__SandBox_ViewModelCollection_Nameplate_PartyNameplat
 		case "IsDisorganized":
 			_widget.IsDisorganized = _datasource_Root.IsDisorganized;
 			break;
+		case "HasBloodFeud":
+			_widget.HasBloodFeud = _datasource_Root.HasBloodFeud;
+			break;
 		case "FactionColor":
 			if (_datasource_Root.FactionColor != null)
 			{
@@ -968,7 +996,7 @@ public class PartyNameplate__SandBox_ViewModelCollection_Nameplate_PartyNameplat
 			}
 			if (_datasource_Root.FactionColor != null)
 			{
-				_widget_1_0_1.Brush.FontColor = Color.ConvertStringToColor(_datasource_Root.FactionColor);
+				_widget_1_0_1_0.Brush.FontColor = Color.ConvertStringToColor(_datasource_Root.FactionColor);
 			}
 			break;
 		case "Count":
@@ -984,7 +1012,7 @@ public class PartyNameplate__SandBox_ViewModelCollection_Nameplate_PartyNameplat
 			_widget_1_0_0_0.BooleanCheck = _datasource_Root.IsCurrentlyAtSea;
 			break;
 		case "FullName":
-			_widget_1_0_1.Text = _datasource_Root.FullName;
+			_widget_1_0_1_0.Text = _datasource_Root.FullName;
 			break;
 		}
 	}
@@ -1173,15 +1201,15 @@ public class PartyNameplate__SandBox_ViewModelCollection_Nameplate_PartyNameplat
 			_widget_1_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_0_0_0;
 			_widget_1_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_0_0_0;
 			_widget_1_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_0_0_0;
-			_widget_1_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_1_0_1;
-			_widget_1_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_0_1;
-			_widget_1_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_0_1;
-			_widget_1_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_0_1;
-			_widget_1_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_0_1;
-			_widget_1_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_0_1;
-			_widget_1_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_0_1;
-			_widget_1_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_0_1;
-			_widget_1_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_0_1;
+			_widget_1_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_0_1_0;
+			_widget_1_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_0_1_0;
+			_widget_1_0_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_0_1_0;
+			_widget_1_0_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_0_1_0;
+			_widget_1_0_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_0_1_0;
+			_widget_1_0_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_0_1_0;
+			_widget_1_0_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_0_1_0;
+			_widget_1_0_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_0_1_0;
+			_widget_1_0_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_0_1_0;
 			if (_datasource_Root_Quests != null)
 			{
 				_datasource_Root_Quests.ListChanged -= OnList_datasource_Root_QuestsChanged;
@@ -1245,6 +1273,7 @@ public class PartyNameplate__SandBox_ViewModelCollection_Nameplate_PartyNameplat
 		_widget.ShouldShowFullName = _datasource_Root.ShouldShowFullName;
 		_widget.CanParley = _datasource_Root.CanParley;
 		_widget.IsDisorganized = _datasource_Root.IsDisorganized;
+		_widget.HasBloodFeud = _datasource_Root.HasBloodFeud;
 		_widget.PropertyChanged += PropertyChangedListenerOf_widget;
 		_widget.boolPropertyChanged += boolPropertyChangedListenerOf_widget;
 		_widget.floatPropertyChanged += floatPropertyChangedListenerOf_widget;
@@ -1318,18 +1347,18 @@ public class PartyNameplate__SandBox_ViewModelCollection_Nameplate_PartyNameplat
 		_widget_1_0_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_0_0_0;
 		if (_datasource_Root.FactionColor != null)
 		{
-			_widget_1_0_1.Brush.FontColor = Color.ConvertStringToColor(_datasource_Root.FactionColor);
+			_widget_1_0_1_0.Brush.FontColor = Color.ConvertStringToColor(_datasource_Root.FactionColor);
 		}
-		_widget_1_0_1.Text = _datasource_Root.FullName;
-		_widget_1_0_1.PropertyChanged += PropertyChangedListenerOf_widget_1_0_1;
-		_widget_1_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_0_1;
-		_widget_1_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_0_1;
-		_widget_1_0_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_0_1;
-		_widget_1_0_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_0_1;
-		_widget_1_0_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_0_1;
-		_widget_1_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_1_0_1;
-		_widget_1_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_0_1;
-		_widget_1_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_0_1;
+		_widget_1_0_1_0.Text = _datasource_Root.FullName;
+		_widget_1_0_1_0.PropertyChanged += PropertyChangedListenerOf_widget_1_0_1_0;
+		_widget_1_0_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_0_1_0;
+		_widget_1_0_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_0_1_0;
+		_widget_1_0_1_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_0_1_0;
+		_widget_1_0_1_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_0_1_0;
+		_widget_1_0_1_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_0_1_0;
+		_widget_1_0_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_0_1_0;
+		_widget_1_0_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_0_1_0;
+		_widget_1_0_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_0_1_0;
 		_datasource_Root_Quests = _datasource_Root.Quests;
 		if (_datasource_Root_Quests != null)
 		{

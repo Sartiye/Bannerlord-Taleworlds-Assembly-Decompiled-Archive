@@ -584,7 +584,7 @@ public class LandLordTheArtOfTheTradeIssueBehavior : CampaignBehaviorBase
 			textObject5.SetTextVariable("TOTAL_DENARS", _targetDenarsToAchieve);
 			TextObject playerFailOptionWithGold = new TextObject("{=dtzKfkrh}We never agreed on this. I am not paying you any more than {GATHERED_DENARS}{GOLD_ICON}, and you cannot force me.");
 			playerFailOptionWithGold.SetTextVariable("GATHERED_DENARS", _gatheredDenars);
-			TextObject playerFailOptionNoGold = new TextObject("{=aFDiKxhr}Our deal involved you getting your cut from the sales I made. No sale means no cut. I'm sure you understand.[ib:warrior2]");
+			TextObject playerFailOptionNoGold = new TextObject("{=aFDiKxhr}Our deal involved you getting your cut from the sales I made. No sale means no cut. I'm sure you understand.");
 			TextObject text2 = new TextObject("{=!}{PLAYER_FAIL_OPTION}");
 			TextObject textObject6 = new TextObject("{=41wb8QaV}I know I can not force you to pay you what you owe me. But I think you will find that a good name is worth more than a few loads of {SELECTED_ITEM}...");
 			textObject6.SetTextVariable("SELECTED_ITEM", _selectedItemObject.Name);

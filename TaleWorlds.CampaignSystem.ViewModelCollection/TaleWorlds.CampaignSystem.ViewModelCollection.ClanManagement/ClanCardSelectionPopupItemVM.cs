@@ -287,6 +287,10 @@ public class ClanCardSelectionPopupItemVM : ViewModel
 		}
 		IsDisabled = info.IsDisabled;
 		IsSpecialActionItem = info.IsSpecialActionItem;
+		if (info.IsInitiallySelected)
+		{
+			ExecuteSelect();
+		}
 		HasSprite = !string.IsNullOrEmpty(info.SpriteName);
 		HasImage = info.Image != null;
 		SpriteType = info.SpriteType.ToString();

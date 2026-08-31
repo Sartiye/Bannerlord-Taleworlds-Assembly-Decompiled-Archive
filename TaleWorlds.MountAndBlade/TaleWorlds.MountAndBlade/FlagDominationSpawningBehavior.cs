@@ -118,7 +118,7 @@ public class FlagDominationSpawningBehavior : SpawningBehaviorBase
 			BasicCultureObject basicCultureObject = (num ? @object : object2);
 			MultiplayerClassDivisions.MPHeroClass mPHeroClassForPeer = MultiplayerClassDivisions.GetMPHeroClassForPeer(component);
 			int num2 = ((_flagDominationMissionController.GetMissionType() == MultiplayerGameType.Battle) ? mPHeroClassForPeer.TroopBattleCost : mPHeroClassForPeer.TroopCost);
-			if (component.ControlledAgent != null || component.HasSpawnedAgentVisuals || component.Team == null || component.Team == base.Mission.SpectatorTeam || !component.TeamInitialPerkInfoReady || !component.SpawnTimer.Check(base.Mission.CurrentTime))
+			if (component.ControlledAgent != null || component.HasSpawnedAgentVisuals || component.Team == null || networkPeer.IsSpectator || component.Team == base.Mission.SpectatorTeam || !component.TeamInitialPerkInfoReady || !component.SpawnTimer.Check(base.Mission.CurrentTime))
 			{
 				continue;
 			}

@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TaleWorlds.Library.Http;
@@ -17,9 +18,9 @@ public class DotNetHttpDriver : IHttpDriver
 		_httpClient = new HttpClient();
 	}
 
-	IHttpRequestTask IHttpDriver.CreateHttpPostRequestTask(string address, string postData, bool withUserToken)
+	IHttpRequestTask IHttpDriver.CreateHttpPostRequestTask(string address, string postData, bool withUserToken, CancellationToken cancellationToken)
 	{
-		return new HttpPostRequest(_httpClient, address, postData);
+		return new HttpPostRequest(_httpClient, address, postData, cancellationToken);
 	}
 
 	IHttpRequestTask IHttpDriver.CreateHttpGetRequestTask(string address, bool withUserToken)

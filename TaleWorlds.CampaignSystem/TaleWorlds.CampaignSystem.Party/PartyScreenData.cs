@@ -27,7 +27,7 @@ public class PartyScreenData : IEnumerable<(TroopRosterElement, bool)>, IEnumera
 
 	public (int, int, int) PartyInfluenceChangeAmount;
 
-	public int PartyMoraleChangeAmount;
+	public float PartyMoraleChangeAmount;
 
 	public int PartyHorseChangeAmount;
 
@@ -56,7 +56,7 @@ public class PartyScreenData : IEnumerable<(TroopRosterElement, bool)>, IEnumera
 	{
 		PartyGoldChangeAmount = 0;
 		PartyInfluenceChangeAmount = (0, 0, 0);
-		PartyMoraleChangeAmount = 0;
+		PartyMoraleChangeAmount = 0f;
 		PartyHorseChangeAmount = 0;
 		RightRecruitableData = new Dictionary<CharacterObject, int>();
 		UpgradedTroopsHistory = new List<Tuple<CharacterObject, CharacterObject, int>>();

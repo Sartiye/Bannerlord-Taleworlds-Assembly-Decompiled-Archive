@@ -4,10 +4,12 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Conversation;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Conversation;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection.Generic;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.Engine.Screens;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
+using TaleWorlds.MountAndBlade;
 using TaleWorlds.MountAndBlade.GauntletUI.Mission;
 using TaleWorlds.MountAndBlade.View;
 using TaleWorlds.MountAndBlade.View.MissionViews;
@@ -20,6 +22,8 @@ namespace SandBox.GauntletUI.Missions;
 [OverrideView(typeof(MissionConversationView))]
 public class MissionGauntletConversationView : MissionView, IConversationStateHandler
 {
+	private GauntletLayer _blankScreenLayer;
+
 	private MissionConversationVM _dataSource;
 
 	private GauntletLayer _gauntletLayer;
@@ -92,6 +96,12 @@ public class MissionGauntletConversationView : MissionView, IConversationStateHa
 		}
 		_gauntletLayer = null;
 		ConversationHandler = null;
+		Campaign.Current.ConversationManager.ConversationEndOneShot -= OnConversationEnded;
+		if (_blankScreenLayer != null)
+		{
+			base.MissionScreen.RemoveLayer(_blankScreenLayer);
+			_blankScreenLayer = null;
+		}
 		base.OnMissionScreenFinalize();
 	}
 
@@ -144,6 +154,18 @@ public class MissionGauntletConversationView : MissionView, IConversationStateHa
 		base.MissionScreen.SetLayerCategoriesStateAndDeactivateOthers(new string[2] { "MissionConversation", "SceneLayer" }, isActive: true);
 		ScreenManager.TrySetFocus(_gauntletLayer);
 		InformationManager.HideAllMessages();
+		Campaign.Current.ConversationManager.ConversationEndOneShot += OnConversationEnded;
+	}
+
+	private void OnConversationEnded()
+	{
+		if (base.MissionScreen?.Mission != null && base.MissionScreen.Mission.HasMissionBehavior<ConversationMissionLogic>() && base.MissionScreen.Mission.CurrentState != Mission.State.EndingNextFrame && base.MissionScreen.Mission.CurrentState != Mission.State.Over)
+		{
+			_blankScreenLayer = new GauntletLayer("MissionConversationEnd", 10000);
+			_blankScreenLayer.LoadMovie("MissionReadyBlocker", new BoolItemWithActionVM(null, isActive: true, null));
+			base.MissionScreen.AddLayer(_blankScreenLayer);
+		}
+		Campaign.Current.ConversationManager.ConversationEndOneShot -= OnConversationEnded;
 	}
 
 	public override void OnMissionModeChange(MissionMode oldMissionMode, bool atStart)
@@ -164,15 +186,6 @@ public class MissionGauntletConversationView : MissionView, IConversationStateHa
 		}
 	}
 
-	void IConversationStateHandler.OnConversationUninstall()
-	{
-		base.MissionScreen.SetConversationActive(isActive: false);
-		if (_gauntletLayer != null)
-		{
-			DestroyConversationView();
-		}
-	}
-
 	private void DestroyConversationView()
 	{
 		if (_dataSource != null)
@@ -180,6 +193,7 @@ public class MissionGauntletConversationView : MissionView, IConversationStateHa
 			_dataSource?.OnFinalize();
 			_dataSource = null;
 		}
+		Campaign.Current.ConversationManager.ConversationEndOneShot -= OnConversationEnded;
 		_conversationCategory.Unload();
 		_gauntletLayer.IsFocusLayer = false;
 		ScreenManager.TryLoseFocus(_gauntletLayer);
@@ -189,6 +203,15 @@ public class MissionGauntletConversationView : MissionView, IConversationStateHa
 		base.MissionScreen.RemoveLayer(_gauntletLayer);
 		_gauntletLayer = null;
 		_escapeView = null;
+	}
+
+	void IConversationStateHandler.OnConversationUninstall()
+	{
+		base.MissionScreen.SetConversationActive(isActive: false);
+		if (_gauntletLayer != null)
+		{
+			DestroyConversationView();
+		}
 	}
 
 	private string GetContinueKeyText()

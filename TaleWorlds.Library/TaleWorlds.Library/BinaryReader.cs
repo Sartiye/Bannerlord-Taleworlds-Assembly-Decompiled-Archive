@@ -38,7 +38,13 @@ public class BinaryReader : IReader
 		{
 			_buffer[3] = 0;
 		}
-		return BitConverter.ToInt32(_buffer, 0);
+		int num = BitConverter.ToInt32(_buffer, 0);
+		if (num < -1 || num > 16777215)
+		{
+			Debug.Print($"Overflowed while writing 3byte int ({num})");
+			Debug.FailedAssert($"Overflowed while writing 3byte int ({num})", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\BinaryReader.cs", "Read3ByteInt", 49);
+		}
+		return num;
 	}
 
 	public int ReadInt()

@@ -56,6 +56,16 @@ public class PortScreenRestrictedModeHandler : PortScreenHandler
 		return PortActionInfo.CreateInvalid();
 	}
 
+	protected override PortActionInfo CanStashShip(Ship ship)
+	{
+		return PortActionInfo.CreateInvalid();
+	}
+
+	protected override PortActionInfo CanViewStash(bool isRightRoster)
+	{
+		return PortActionInfo.CreateInvalid();
+	}
+
 	public override bool GetCanConfirm(out TextObject disabledHint)
 	{
 		disabledHint = TextObject.GetEmpty();

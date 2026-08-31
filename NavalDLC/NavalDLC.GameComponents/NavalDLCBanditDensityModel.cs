@@ -43,7 +43,7 @@ public class NavalDLCBanditDensityModel : BanditDensityModel
 			{
 				return 0;
 			}
-			return 8;
+			return base.BaseModel.NumberOfInitialHideoutsAtEachBanditFaction + 1;
 		}
 	}
 
@@ -56,7 +56,7 @@ public class NavalDLCBanditDensityModel : BanditDensityModel
 			{
 				return 0;
 			}
-			return 9;
+			return base.BaseModel.NumberOfMaximumHideoutsAtEachBanditFaction + 1;
 		}
 	}
 

@@ -72,11 +72,13 @@ public class DefaultBuildingConstructionModel : BuildingConstructionModel
 
 	public override int GetBoostCost(Town town)
 	{
-		if (!town.IsCastle)
+		float num = (town.IsCastle ? CastleBoostCost : TownBoostCost);
+		if (town.Governor != null && town.Governor.CurrentSettlement?.Town == town)
 		{
-			return TownBoostCost;
+			float traitEffectBonus = TraitEffectHelper.GetTraitEffectBonus(town.Governor, DefaultPersonalityTraitEffects.GenerosityTownProjectEffect);
+			num *= 1f - traitEffectBonus;
 		}
-		return CastleBoostCost;
+		return MathF.Round(num);
 	}
 
 	private int CalculateDailyConstructionPowerInternal(Town town, ref ExplainedNumber result, bool omitBoost = false)
@@ -85,21 +87,21 @@ public class DefaultBuildingConstructionModel : BuildingConstructionModel
 		result.Add(value, GameTexts.FindText("str_prosperity"));
 		if (!omitBoost && town.BoostBuildingProcess > 0)
 		{
-			int num = (town.IsCastle ? CastleBoostCost : TownBoostCost);
-			int boostAmount = GetBoostAmount(town);
-			float num2 = MathF.Min(1f, (float)town.BoostBuildingProcess / (float)num);
-			float num3 = 0f;
+			int boostCost = Campaign.Current.Models.BuildingConstructionModel.GetBoostCost(town);
+			int boostAmount = Campaign.Current.Models.BuildingConstructionModel.GetBoostAmount(town);
+			float num = MathF.Min(1f, (float)town.BoostBuildingProcess / (float)boostCost);
+			float num2 = 0f;
 			if (town.IsTown && town.Governor != null && town.Governor.GetPerkValue(DefaultPerks.Engineering.Clockwork))
 			{
-				num3 += DefaultPerks.Engineering.Clockwork.SecondaryBonus;
+				num2 += DefaultPerks.Engineering.Clockwork.SecondaryBonus;
 			}
-			boostAmount += MathF.Round((float)boostAmount * num3);
-			result.Add((float)boostAmount * num2, BoostText);
+			boostAmount += MathF.Round((float)boostAmount * num2);
+			result.Add((float)boostAmount * num, BoostText);
 		}
 		if (town.Governor != null && town.Governor.CurrentSettlement?.Town == town)
 		{
 			SkillHelper.AddSkillBonusForTown(DefaultSkillEffects.TownProjectBuildingBonus, town, ref result);
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.ForcedLabor, town, ref result);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.ForcedLabor, town, isPrimaryBonus: false, ref result);
 		}
 		if (town.Governor != null && town.Governor.CurrentSettlement?.Town == town && !town.BuildingsInProgress.IsEmpty())
 		{
@@ -108,33 +110,33 @@ public class DefaultBuildingConstructionModel : BuildingConstructionModel
 				float value2 = MathF.Min(0.3f, (float)town.Settlement.Party.PrisonRoster.TotalManCount / 3f * DefaultPerks.Steward.ForcedLabor.SecondaryBonus);
 				result.AddFactor(value2, DefaultPerks.Steward.ForcedLabor.Name);
 			}
-			if (town.IsCastle && town.Governor.GetPerkValue(DefaultPerks.Engineering.MilitaryPlanner))
+			if (town.IsCastle)
 			{
-				result.AddFactor(DefaultPerks.Engineering.MilitaryPlanner.SecondaryBonus, DefaultPerks.Engineering.MilitaryPlanner.Name);
+				PerkHelper.AddPerkBonusForTown(DefaultPerks.Engineering.MilitaryPlanner, town, isPrimaryBonus: false, ref result);
 			}
-			else if (town.IsTown && town.Governor.GetPerkValue(DefaultPerks.Engineering.Carpenters))
+			else if (town.IsTown)
 			{
-				result.AddFactor(DefaultPerks.Engineering.Carpenters.SecondaryBonus, DefaultPerks.Engineering.Carpenters.Name);
+				PerkHelper.AddPerkBonusForTown(DefaultPerks.Engineering.Carpenters, town, isPrimaryBonus: false, ref result);
 			}
 			Building building = town.BuildingsInProgress.Peek();
-			if ((building.BuildingType == DefaultBuildingTypes.SettlementFortifications || building.BuildingType == DefaultBuildingTypes.CastleBarracks || building.BuildingType == DefaultBuildingTypes.SettlementBarracks) && town.Governor.GetPerkValue(DefaultPerks.Engineering.Stonecutters))
+			if (building.BuildingType == DefaultBuildingTypes.SettlementFortifications || building.BuildingType == DefaultBuildingTypes.CastleBarracks || building.BuildingType == DefaultBuildingTypes.SettlementBarracks)
 			{
-				result.AddFactor(DefaultPerks.Engineering.Stonecutters.PrimaryBonus, DefaultPerks.Engineering.Stonecutters.Name);
+				PerkHelper.AddPerkBonusForTown(DefaultPerks.Engineering.Stonecutters, town, isPrimaryBonus: true, ref result);
 			}
 		}
-		int num4 = town.SoldItems.Sum((Town.SellLog x) => (x.Category.Properties == ItemCategory.Property.BonusToProduction) ? x.Number : 0);
-		if (num4 > 0)
+		int num3 = town.SoldItems.Sum((Town.SellLog x) => (x.Category.Properties == ItemCategory.Property.BonusToProduction) ? x.Number : 0);
+		if (num3 > 0)
 		{
-			result.Add(0.25f * (float)num4, ProductionFromMarketText);
+			result.Add(0.25f * (float)num3, ProductionFromMarketText);
 		}
 		BuildingType buildingType = (town.BuildingsInProgress.IsEmpty() ? null : town.BuildingsInProgress.Peek().BuildingType);
 		if (buildingType != null && buildingType.IsMilitaryProject)
 		{
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.TwoHanded.Confidence, town, ref result);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.TwoHanded.Confidence, town, isPrimaryBonus: false, ref result);
 		}
 		if (buildingType == DefaultBuildingTypes.SettlementMarketplace)
 		{
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Trade.SelfMadeMan, town, ref result);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Trade.SelfMadeMan, town, isPrimaryBonus: false, ref result);
 		}
 		town.AddEffectOfBuildings(BuildingEffectEnum.ConstructionPerDay, ref result);
 		if (town.Loyalty >= 75f)
@@ -144,16 +146,16 @@ public class DefaultBuildingConstructionModel : BuildingConstructionModel
 		}
 		else if (town.Loyalty > 25f && town.Loyalty <= 50f)
 		{
-			float num5 = MBMath.Map(town.Loyalty, 25f, 50f, 0.5f, 0f);
-			result.AddFactor(0f - num5, LowLoyaltyPenaltyText);
+			float num4 = MBMath.Map(town.Loyalty, 25f, 50f, 0.5f, 0f);
+			result.AddFactor(0f - num4, LowLoyaltyPenaltyText);
 		}
 		else if (town.Loyalty <= 25f)
 		{
 			result.LimitMax(0f, VeryLowLoyaltyPenaltyText);
 		}
-		if (town.Loyalty > 25f && town.OwnerClan.Culture.HasFeat(DefaultCulturalFeats.BattanianConstructionFeat))
+		if (town.Loyalty > 25f)
 		{
-			result.AddFactor(DefaultCulturalFeats.BattanianConstructionFeat.EffectBonus, CultureText);
+			FeatHelper.ApplyCultureFeat(town.OwnerClan.Culture, DefaultCulturalFeats.BattanianConstructionFeat, ref result);
 		}
 		result.LimitMin(0f);
 		return (int)result.ResultNumber;

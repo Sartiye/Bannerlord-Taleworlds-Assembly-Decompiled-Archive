@@ -18,7 +18,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_24_
 
 	private ButtonWidget _widget_1;
 
-	private PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_27_PortUpgradePieceVisuals__DependendPrefab _widget_1_0;
+	private PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_32_PortUpgradePieceVisuals__DependendPrefab _widget_1_0;
 
 	private BrushWidget _widget_1_1;
 
@@ -50,7 +50,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_24_
 		_widget.AddChild(_widget_0);
 		_widget_1 = new ButtonWidget(base.Context);
 		_widget.AddChild(_widget_1);
-		_widget_1_0 = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_27_PortUpgradePieceVisuals__DependendPrefab(base.Context);
+		_widget_1_0 = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_32_PortUpgradePieceVisuals__DependendPrefab(base.Context);
 		_widget_1.AddChild(_widget_1_0);
 		_widget_1_0.CreateWidgets();
 		_widget_1_1 = new BrushWidget(base.Context);
@@ -90,7 +90,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_24_
 		_widget_1.UpdateChildrenStates = true;
 		_widget_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_1.Brush = base.Context.GetBrush("Port.Slot.Button.SoundBrush.Diamond");
+		_widget_1.Brush = base.Context.GetBrush("Port.Slot.Button.SoundBrush.Bronze");
 		_widget_1.GamepadNavigationIndex = 0;
 		_widget_1_0.SetAttributes();
 		_widget_1_1.WidthSizePolicy = SizePolicy.Fixed;

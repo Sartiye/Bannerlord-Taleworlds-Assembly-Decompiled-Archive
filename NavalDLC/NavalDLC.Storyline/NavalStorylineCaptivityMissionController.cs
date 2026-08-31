@@ -192,7 +192,7 @@ public class NavalStorylineCaptivityMissionController : MissionLogic
 				Mission.Current.Scene.SetGlobalWindStrengthVector(in windVector);
 			}
 			base.Mission.Scene.SetWaterStrength(1f);
-			Mission.Current.OnDeploymentFinished();
+			base.Mission.OnInitialSpawnCompleted();
 			MBMusicManager.Current.StartThemeWithConstantIntensity(MusicTheme.StealthA);
 			MBMusicManager.Current.ChangeCurrentThemeIntensity(-1f);
 			MBMusicManager.Current.ChangeCurrentThemeIntensity(0.5f);
@@ -1043,12 +1043,12 @@ public class NavalStorylineCaptivityMissionController : MissionLogic
 
 	private void OnPlayerReachedFirstZone()
 	{
-		CampaignInformationManager.AddDialogLine(new TextObject("{=wYMz91k4}Right - now let’s slow down so that they can climb aboard."), _allyCharacterObject, _allyCharacterObject.FirstCivilianEquipment, 1000);
+		CampaignInformationManager.AddDialogLine(new TextObject("{=wYMz91k4}Right - now let's slow down so that they can climb aboard."), _allyCharacterObject, _allyCharacterObject.FirstCivilianEquipment, 1000);
 	}
 
 	private void OnFirstHighlightCleared()
 	{
-		CampaignInformationManager.AddDialogLine(new TextObject("{=HuChgeJp}There’s two more of them over there. Let’s go fish them out."), _allyCharacterObject, _allyCharacterObject.FirstCivilianEquipment, 1000);
+		CampaignInformationManager.AddDialogLine(new TextObject("{=HuChgeJp}There's two more of them over there. Let's go fish them out."), _allyCharacterObject, _allyCharacterObject.FirstCivilianEquipment, 1000);
 	}
 
 	private void StartSavedCrewConversation()

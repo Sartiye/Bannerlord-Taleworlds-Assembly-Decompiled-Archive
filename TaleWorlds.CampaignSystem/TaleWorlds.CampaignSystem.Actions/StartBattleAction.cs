@@ -29,7 +29,7 @@ public static class StartBattleAction
 			}
 			attackerParty.MapEventSide = defenderParty.MapEvent.GetMapEventSide(side);
 		}
-		if (defenderParty.MapEvent.IsPlayerMapEvent && !defenderParty.MapEvent.IsSallyOut && PlayerEncounter.Current != null && MobileParty.MainParty.CurrentSettlement != null)
+		if (defenderParty.MapEvent != null && defenderParty.MapEvent.IsPlayerMapEvent && !defenderParty.MapEvent.IsSallyOut && PlayerEncounter.Current != null && MobileParty.MainParty.CurrentSettlement != null)
 		{
 			PlayerEncounter.Current.InterruptEncounter("encounter_interrupted");
 		}
@@ -99,7 +99,7 @@ public static class StartBattleAction
 				}
 				else
 				{
-					Debug.FailedAssert("Missing settlement type in StartBattleAction.GetGameAction", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\StartBattleAction.cs", "Apply", 135);
+					Debug.FailedAssert("Missing settlement type in StartBattleAction.GetGameAction", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\StartBattleAction.cs", "Apply", 134);
 				}
 			}
 		}
@@ -141,7 +141,7 @@ public static class StartBattleAction
 			}
 			else
 			{
-				Debug.FailedAssert("Missing mapEventType?", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\StartBattleAction.cs", "Apply", 180);
+				Debug.FailedAssert("Missing mapEventType?", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\StartBattleAction.cs", "Apply", 179);
 			}
 			settlement = mapEventSettlement;
 		}

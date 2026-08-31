@@ -67,7 +67,7 @@ public class SailToTheGulfOfCharasQuest : NavalStorylineQuestBase
 	{
 		_corsairSpawnPosition = corsairSpawnPosition;
 		_willProgressStoryline = true;
-		_corsairHuntingGroundMarker = Campaign.Current.MapMarkerManager.CreateMapMarker(NavalStorylineData.CorsairBanner, new TextObject("{=QLrwlirp}Corsair Hunting Grounds"), _corsairSpawnPosition.AsVec3(), isVisibleOnMap: true, base.StringId);
+		_corsairHuntingGroundMarker = Campaign.Current.MapTrackerManager.CreateMapMarker(NavalStorylineData.CorsairBanner, new TextObject("{=QLrwlirp}Corsair Hunting Grounds"), _corsairSpawnPosition.AsVec3(), isVisibleOnMap: true, base.StringId);
 	}
 
 	protected override void SetDialogs()

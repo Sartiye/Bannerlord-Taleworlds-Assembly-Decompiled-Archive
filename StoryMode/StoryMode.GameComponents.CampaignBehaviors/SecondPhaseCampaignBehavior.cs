@@ -29,6 +29,8 @@ public class SecondPhaseCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, DailyTick);
 		CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
 		CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(this, OnGameLoaded);
+		CampaignEvents.OnGameEarlyLoadedEvent.AddNonSerializedListener(this, OnGameEarlyLoaded);
+		CampaignEvents.KingdomCreatedEvent.AddNonSerializedListener(this, OnKingdomCreated);
 		StoryModeEvents.OnConspiracyActivatedEvent.AddNonSerializedListener(this, OnConspiracyActivated);
 	}
 
@@ -40,7 +42,7 @@ public class SecondPhaseCampaignBehavior : CampaignBehaviorBase
 
 	private void WeeklyTick()
 	{
-		int num = 14 + MBRandom.RandomIntWithSeed((uint)(SecondPhase.Instance?.LastConspiracyQuestCreationTime.ToMilliseconds ?? 53.0), 2000u) % 8;
+		int num = 22 + MBRandom.RandomIntWithSeed((uint)(SecondPhase.Instance?.LastConspiracyQuestCreationTime.ToMilliseconds ?? 53.0), 2000u) % 8;
 		if (_isConspiracySetUpStarted && StoryModeManager.Current.MainStoryLine.ThirdPhase == null && SecondPhase.Instance.ConspiracyStrength < 2000f && SecondPhase.Instance.LastConspiracyQuestCreationTime.ElapsedDaysUntilNow >= (float)num && !IsThereActiveConspiracyQuest())
 		{
 			SecondPhase.Instance.CreateNextConspiracyQuest();
@@ -94,6 +96,22 @@ public class SecondPhaseCampaignBehavior : CampaignBehaviorBase
 			{
 				DestroyPartyAction.Apply(null, item);
 			}
+		}
+	}
+
+	private void OnGameEarlyLoaded(CampaignGameStarter campaignGameStarter)
+	{
+		if (SecondPhase.Instance != null && SecondPhase.Instance.ConspiracyClan == null)
+		{
+			SecondPhase.Instance.CreateConspiracyClan();
+		}
+	}
+
+	private void OnKingdomCreated(Kingdom createdKingdom)
+	{
+		if (StoryModeManager.Current.MainStoryLine.IsFirstPhaseCompleted && !StoryModeManager.Current.MainStoryLine.IsSecondPhaseCompleted && StoryModeManager.Current.MainStoryLine.IsOnImperialQuestLine == StoryModeData.IsKingdomImperial(createdKingdom))
+		{
+			DeclareWarAction.ApplyByDefault(StoryModeManager.Current.MainStoryLine.SecondPhase.ConspiracyClan, createdKingdom);
 		}
 	}
 

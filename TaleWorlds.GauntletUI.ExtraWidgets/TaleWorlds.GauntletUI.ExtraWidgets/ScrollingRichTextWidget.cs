@@ -26,7 +26,9 @@ public class ScrollingRichTextWidget : RichTextWidget
 
 	private bool _isAutoScrolling = true;
 
-	private float _scrollPerTick = 30f;
+	private float _scrollPerSecond = 30f;
+
+	private float _scrollRatioPerSecond;
 
 	private float _inbetweenScrollDuration = 1f;
 
@@ -70,18 +72,35 @@ public class ScrollingRichTextWidget : RichTextWidget
 	}
 
 	[Editor(false)]
-	public float ScrollPerTick
+	public float ScrollPerSecond
 	{
 		get
 		{
-			return _scrollPerTick;
+			return _scrollPerSecond;
 		}
 		set
 		{
-			if (value != _scrollPerTick)
+			if (value != _scrollPerSecond)
 			{
-				_scrollPerTick = value;
-				OnPropertyChanged(value, "ScrollPerTick");
+				_scrollPerSecond = value;
+				OnPropertyChanged(value, "ScrollPerSecond");
+			}
+		}
+	}
+
+	[Editor(false)]
+	public float ScrollRatioPerSecond
+	{
+		get
+		{
+			return _scrollRatioPerSecond;
+		}
+		set
+		{
+			if (value != _scrollRatioPerSecond)
+			{
+				_scrollRatioPerSecond = value;
+				OnPropertyChanged(value, "ScrollRatioPerSecond");
 			}
 		}
 	}
@@ -159,7 +178,8 @@ public class ScrollingRichTextWidget : RichTextWidget
 			}
 			else if (_scrollTimeElapsed >= InbetweenScrollDuration && _currentScrollAmount < _totalScrollAmount)
 			{
-				_currentScrollAmount += dt * ScrollPerTick;
+				_currentScrollAmount += dt * ScrollPerSecond;
+				_currentScrollAmount += dt * ScrollRatioPerSecond * _totalScrollAmount;
 			}
 			else if (_currentScrollAmount >= _totalScrollAmount)
 			{
@@ -239,7 +259,7 @@ public class ScrollingRichTextWidget : RichTextWidget
 				{
 					flag = false;
 				}
-				if (!flag && GetWordWidth(ActualText.Substring(0, num - 3) + "...", 0.25f) * base._scaleToUse <= GetMaximumAllowedWidth())
+				if (!flag && _richText.GetPreferredSize(base.WidthSizePolicy == SizePolicy.Fixed, base.SuggestedWidth, base.HeightSizePolicy == SizePolicy.Fixed, base.SuggestedHeight, base.Context.SpriteData, base._scaleToUse).X <= GetMaximumAllowedWidth())
 				{
 					_richText.Value = ActualText.Substring(0, num - 3) + "...";
 					break;
@@ -267,36 +287,7 @@ public class ScrollingRichTextWidget : RichTextWidget
 
 	private void UpdateWordWidth()
 	{
-		float padding = 0.5f;
-		if (base.WidthSizePolicy == SizePolicy.CoverChildren)
-		{
-			padding = 0f;
-		}
-		_wordWidth = GetWordWidth(_richText.Value, padding) * base._scaleToUse;
-	}
-
-	private float GetWordWidth(string word, float padding)
-	{
-		float num = padding * 2f;
-		for (int i = 0; i < word.Length; i++)
-		{
-			num += GetCharacterWidth(word[i]);
-		}
-		return num;
-	}
-
-	private float GetCharacterWidth(char character)
-	{
-		Font mappedFontForLocalization = base.Context.FontFactory.GetMappedFontForLocalization(base.Brush?.Font?.Name);
-		float num;
-		if (!mappedFontForLocalization.Characters.ContainsKey(character))
-		{
-			Font font = base.Context.FontFactory.GetUsableFontForCharacter(character) ?? mappedFontForLocalization;
-			num = (float)base.Brush.FontSize / (float)font.Size;
-			return font.GetCharacterWidth(character, 0.5f) * num;
-		}
-		num = (float)base.Brush.FontSize / (float)mappedFontForLocalization.Size;
-		return mappedFontForLocalization.GetCharacterWidth(character, 0.5f) * num;
+		_wordWidth = _richText.GetPreferredSize(base.WidthSizePolicy == SizePolicy.Fixed, base.SuggestedWidth, base.HeightSizePolicy == SizePolicy.Fixed, base.SuggestedHeight, base.Context.SpriteData, base._scaleToUse).X;
 	}
 
 	private void ResetScroll()

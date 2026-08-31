@@ -136,7 +136,7 @@ public class NavalMissionDeploymentPlanningLogic : MissionDeploymentPlanningLogi
 
 	public override bool GetPathDeploymentBoundaryIntersection(Team team, in WorldPosition startPosition, in WorldPosition endPosition, out WorldPosition intersection)
 	{
-		Debug.FailedAssert("Naval deployment plan does not support finding boundary intersection between positions as it does not support a navmesh", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Missions\\Deployment\\NavalMissionDeploymentPlanningLogic.cs", "GetPathDeploymentBoundaryIntersection", 166);
+		Debug.FailedAssert("Naval deployment plan does not support finding boundary intersection between positions as it does not support a navmesh", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Missions\\Deployment\\NavalMissionDeploymentPlanningLogic.cs", "GetPathDeploymentBoundaryIntersection", 167);
 		intersection = WorldPosition.Invalid;
 		return false;
 	}
@@ -148,35 +148,22 @@ public class NavalMissionDeploymentPlanningLogic : MissionDeploymentPlanningLogi
 
 	public override MatrixFrame GetZoomFocusFrame(Team team)
 	{
-		NavalTeamDeploymentPlan teamPlan = GetTeamPlan(team);
-		MatrixFrame deploymentFrame = teamPlan.GetDeploymentFrame();
-		Vec3 zero = Vec3.Zero;
-		int num = 0;
-		for (int i = 0; i < 11; i++)
-		{
-			IFormationDeploymentPlan formationPlan = teamPlan.GetFormationPlan((FormationClass)i);
-			if (formationPlan.HasFrame())
-			{
-				zero += formationPlan.GetFrame().origin;
-				num++;
-			}
-		}
-		zero /= (float)num;
-		deploymentFrame.origin = zero;
-		return deploymentFrame;
+		Vec2 halfExtents;
+		return GetFormationsCenterFrameAndExtents(team, out halfExtents);
 	}
 
 	public override float GetZoomOffset(Team team, float fovAngle)
 	{
 		NavalTeamDeploymentPlan teamPlan = GetTeamPlan(team);
-		MatrixFrame deploymentFrame = teamPlan.GetDeploymentFrame();
+		Vec2 halfExtents;
+		MatrixFrame formationsCenterFrameAndExtents = GetFormationsCenterFrameAndExtents(team, out halfExtents);
 		float num = float.MinValue;
 		for (int i = 0; i < 11; i++)
 		{
 			IFormationDeploymentPlan formationPlan = teamPlan.GetFormationPlan((FormationClass)i);
 			if (formationPlan.HasFrame())
 			{
-				float b = formationPlan.GetFrame().origin.AsVec2.DistanceSquared(deploymentFrame.origin.AsVec2);
+				float b = formationPlan.GetFrame().origin.AsVec2.DistanceSquared(formationsCenterFrameAndExtents.origin.AsVec2);
 				num = MathF.Max(num, b);
 			}
 		}
@@ -210,9 +197,14 @@ public class NavalMissionDeploymentPlanningLogic : MissionDeploymentPlanningLogi
 		return GetTeamPlanAux(team)?.HasDeploymentBoundaries() ?? false;
 	}
 
-	public override MatrixFrame GetDeploymentFrame(Team team)
+	public override MatrixFrame GetDeploymentZoneFrame(Team team)
 	{
-		return GetTeamPlan(team).GetDeploymentFrame();
+		return GetTeamPlan(team).GetDeploymentZoneFrame();
+	}
+
+	public override MatrixFrame GetFormationsCenterFrameAndExtents(Team team, out Vec2 halfExtents, bool ignoreDimensionlessFormations = true)
+	{
+		return GetTeamPlan(team).GetFormationsCenterFrameAndExtents(out halfExtents, ignoreDimensionlessFormations);
 	}
 
 	public float GetTargetOffset(Team team)

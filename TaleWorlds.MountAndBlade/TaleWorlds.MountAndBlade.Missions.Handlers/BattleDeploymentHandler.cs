@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using TaleWorlds.Core;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.MountAndBlade.Missions.Handlers;
@@ -96,5 +98,23 @@ public class BattleDeploymentHandler : DeploymentHandler
 	private void OrderController_OnOrderIssued(OrderType orderType, MBReadOnlyList<Formation> appliedFormations, OrderController orderController, params object[] delegateParams)
 	{
 		DeploymentHandler.OrderController_OnOrderIssued_Aux(orderType, appliedFormations, orderController, delegateParams);
+	}
+
+	public override void HandleGeneralsDeploymentFrames()
+	{
+		bool isTeleportingAgents = base.Mission.IsTeleportingAgents;
+		base.Mission.IsTeleportingAgents = true;
+		foreach (Team team in base.Mission.Teams)
+		{
+			if (team.GeneralAgent != null)
+			{
+				base.Mission.GetFormationSpawnFrame(team, FormationClass.NumberOfRegularFormations, isReinforcement: false, out var spawnPosition, out var spawnDirection);
+				if (spawnPosition.GetNavMesh() != UIntPtr.Zero && spawnPosition.IsValid)
+				{
+					team.GeneralAgent.TrySetFormationFrame(in spawnPosition, in spawnDirection);
+				}
+			}
+		}
+		base.Mission.IsTeleportingAgents = isTeleportingAgents;
 	}
 }

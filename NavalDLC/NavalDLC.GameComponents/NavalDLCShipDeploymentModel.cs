@@ -24,11 +24,11 @@ public class NavalDLCShipDeploymentModel : ShipDeploymentModel
 	{
 		int num = (ShipDeploymentModel.IgnoreDeploymentLimits ? 8 : 3);
 		ExplainedNumber stat = new ExplainedNumber(num);
-		PerkHelper.AddPerkBonusForParty(NavalPerks.Boatswain.PortAuthority, party, isPrimaryBonus: true, ref stat);
-		PerkHelper.AddPerkBonusForParty(NavalPerks.Boatswain.BlessingsOfTheSea, party, isPrimaryBonus: true, ref stat);
-		PerkHelper.AddPerkBonusForParty(NavalPerks.Boatswain.MerchantFleet, party, isPrimaryBonus: true, ref stat);
-		PerkHelper.AddPerkBonusForParty(NavalPerks.Shipmaster.Stormrider, party, isPrimaryBonus: false, ref stat);
-		PerkHelper.AddPerkBonusForParty(NavalPerks.Shipmaster.MasterAndCommander, party, isPrimaryBonus: false, ref stat);
+		PerkHelper.AddPerkBonusForParty(NavalPerks.Boatswain.PortAuthority, BattleEnvironment.Naval, party, isPrimaryBonus: true, ref stat);
+		PerkHelper.AddPerkBonusForParty(NavalPerks.Boatswain.BlessingsOfTheSea, BattleEnvironment.Naval, party, isPrimaryBonus: true, ref stat);
+		PerkHelper.AddPerkBonusForParty(NavalPerks.Boatswain.MerchantFleet, BattleEnvironment.Naval, party, isPrimaryBonus: true, ref stat);
+		PerkHelper.AddPerkBonusForParty(NavalPerks.Shipmaster.Stormrider, BattleEnvironment.Naval, party, isPrimaryBonus: false, ref stat);
+		PerkHelper.AddPerkBonusForParty(NavalPerks.Shipmaster.MasterAndCommander, BattleEnvironment.Naval, party, isPrimaryBonus: false, ref stat);
 		return (int)stat.ResultNumber;
 	}
 
@@ -39,9 +39,8 @@ public class NavalDLCShipDeploymentModel : ShipDeploymentModel
 		_ = mainParty.Army;
 		playerTeamMapEventParties = new MBList<MapEventParty>();
 		playerAllyTeamMapEventParties = new MBList<MapEventParty>();
-		bool isNavalLandHybridMission = false;
 		IBattleCombatant allyCombatant;
-		bool flag = MissionCombatantsLogic.SupportsAllyTeamOnPlayerSide(playerSideMapEventParties.Select((MapEventParty mapEventParty) => mapEventParty.Party), playerMapEventParty.Party, isPlayerSergeant, isNavalLandHybridMission, out allyCombatant);
+		bool flag = MissionCombatantsLogic.SupportsAllyTeamOnPlayerSide(playerSideMapEventParties.Select((MapEventParty mapEventParty) => mapEventParty.Party), playerMapEventParty.Party, isPlayerSergeant, isNavalLandHybridMission: false, out allyCombatant);
 		foreach (MapEventParty playerSideMapEventParty in playerSideMapEventParties)
 		{
 			if (PartyBase.IsPartyUnderPlayerCommand(playerSideMapEventParty.Party) || !flag)

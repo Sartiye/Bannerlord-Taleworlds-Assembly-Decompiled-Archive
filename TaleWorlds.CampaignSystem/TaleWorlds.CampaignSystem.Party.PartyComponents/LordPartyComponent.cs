@@ -72,7 +72,7 @@ public class LordPartyComponent : WarPartyComponent
 		}
 	}
 
-	public override bool CanHaveNavalNavigationCapability => true;
+	public override bool CanHaveNavalNavigationCapability => _leader?.CanHaveFleet ?? true;
 
 	public override Settlement HomeSettlement => Owner.HomeSettlement;
 

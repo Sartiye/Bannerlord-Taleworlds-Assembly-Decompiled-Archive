@@ -6,6 +6,7 @@ using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 using TaleWorlds.ObjectSystem;
 using TaleWorlds.SaveSystem;
@@ -141,7 +142,12 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 			{
 				return new List<Equipment> { HeroObject.StealthEquipment }.AsEnumerable();
 			}
-			if (Culture.DefaultBattleEquipmentRoster != null)
+			IEnumerable<Equipment> enumerable = AllEquipments.WhereQ((Equipment e) => e.IsStealth);
+			if (enumerable.AnyQ())
+			{
+				return enumerable;
+			}
+			if (Culture.DefaultStealthEquipmentRoster != null)
 			{
 				return Culture.DefaultStealthEquipmentRoster.AllEquipments.AsEnumerable();
 			}
@@ -589,12 +595,12 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 		Level = ((xmlNode8 == null) ? 1 : Convert.ToInt32(xmlNode8.InnerText));
 		if (node.Attributes["civilianTemplate"] != null)
 		{
-			Debug.FailedAssert("'civilianTemplate' This should not be used anymore, make sure this is intended", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CharacterObject.cs", "Deserialize", 700);
+			Debug.FailedAssert("'civilianTemplate' This should not be used anymore, make sure this is intended", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CharacterObject.cs", "Deserialize", 706);
 			_civilianEquipmentTemplate = objectManager.ReadObjectReferenceFromXml("civilianTemplate", typeof(CharacterObject), node) as CharacterObject;
 		}
 		if (node.Attributes["battleTemplate"] != null)
 		{
-			Debug.FailedAssert("'battleTemplate' This should not be used anymore, make sure this is intended", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CharacterObject.cs", "Deserialize", 708);
+			Debug.FailedAssert("'battleTemplate' This should not be used anymore, make sure this is intended", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CharacterObject.cs", "Deserialize", 714);
 			_battleEquipmentTemplate = objectManager.ReadObjectReferenceFromXml("battleTemplate", typeof(CharacterObject), node) as CharacterObject;
 		}
 		_isMariner = GetTraitLevel(DefaultTraits.NavalSoldier) != 0;
@@ -717,7 +723,7 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 		case Equipment.EquipmentType.Stealth:
 			return FirstStealthEquipment;
 		default:
-			Debug.FailedAssert("Wanted EquipmentType doesn't exist", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CharacterObject.cs", "GetEquipmentByType", 908);
+			Debug.FailedAssert("Wanted EquipmentType doesn't exist", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CharacterObject.cs", "GetEquipmentByType", 914);
 			return null;
 		}
 	}
@@ -786,6 +792,16 @@ public sealed class CharacterObject : BasicCharacterObject, ICharacterData
 		{
 			return HeroObject.GetPerkValue(perk);
 		}
+		return false;
+	}
+
+	public bool GetPerkValue(PerkObject perk, BattleEnvironment environment, bool isPrimaryEffect, out float effectValue)
+	{
+		if (IsHero)
+		{
+			return HeroObject.GetPerkValue(perk, isPrimaryEffect, out effectValue, environment);
+		}
+		effectValue = 0f;
 		return false;
 	}
 

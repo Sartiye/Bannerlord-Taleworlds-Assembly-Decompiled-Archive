@@ -267,11 +267,12 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_0_2_0_3_0.UpdateChildrenStates = true;
 		_widget_0_2_0_3_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_0_3_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_2_0_3_0_0.MarginTop = -10f;
 		_widget_0_2_0_3_0_0.ClipContents = true;
 		_widget_0_2_0_3_0_0.UpdateChildrenStates = true;
 		_widget_0_2_0_3_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_2_0_3_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_2_0_3_0_0_0.MarginTop = -20f;
+		_widget_0_2_0_3_0_0_0.MarginTop = -10f;
 		_widget_0_2_0_3_0_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_0_2_0_3_0_0_0.UpdateChildrenStates = true;
 		_widget_0_2_0_3_1.WidthSizePolicy = SizePolicy.Fixed;

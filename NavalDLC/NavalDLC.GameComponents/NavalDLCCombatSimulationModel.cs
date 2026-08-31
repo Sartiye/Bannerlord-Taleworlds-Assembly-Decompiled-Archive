@@ -178,7 +178,7 @@ public class NavalDLCCombatSimulationModel : CombatSimulationModel
 					}
 					else
 					{
-						Debug.FailedAssert("Defender cant retreat in raid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\GameComponents\\NavalDLCCombatSimulationModel.cs", "GetSimulationTicksForBattleRound", 205);
+						Debug.FailedAssert("Defender cant retreat in raid", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\GameComponents\\NavalDLCCombatSimulationModel.cs", "GetSimulationTicksForBattleRound", 204);
 						num4 = 0;
 					}
 				}
@@ -188,9 +188,9 @@ public class NavalDLCCombatSimulationModel : CombatSimulationModel
 		return base.BaseModel.GetSimulationTicksForBattleRound(mapEvent);
 	}
 
-	public override ExplainedNumber SimulateHit(CharacterObject strikerTroop, CharacterObject struckTroop, PartyBase strikerParty, PartyBase struckParty, float strikerAdvantage, MapEvent battle, float strikerSideMorale, float struckSideMorale)
+	public override ExplainedNumber SimulateHit(CharacterObject strikerTroop, CharacterObject struckTroop, PartyBase strikerParty, PartyBase struckParty, float strikerAdvantage, MapEvent battle, BattleEnvironment battleEnvironment, float strikerSideMorale, float struckSideMorale)
 	{
-		ExplainedNumber result = base.BaseModel.SimulateHit(strikerTroop, struckTroop, strikerParty, struckParty, strikerAdvantage, battle, strikerSideMorale, struckSideMorale);
+		ExplainedNumber result = base.BaseModel.SimulateHit(strikerTroop, struckTroop, strikerParty, struckParty, strikerAdvantage, battle, battleEnvironment, strikerSideMorale, struckSideMorale);
 		if (battle.IsNavalMapEvent)
 		{
 			float weightedShipCombatFactor = battle.GetMapEventSide(strikerParty.Side).WeightedShipCombatFactor;
@@ -223,7 +223,7 @@ public class NavalDLCCombatSimulationModel : CombatSimulationModel
 				num = 3;
 				break;
 			default:
-				Debug.FailedAssert("Unhandled ship type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\GameComponents\\NavalDLCCombatSimulationModel.cs", "SimulateHit", 257);
+				Debug.FailedAssert("Unhandled ship type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\GameComponents\\NavalDLCCombatSimulationModel.cs", "SimulateHit", 256);
 				break;
 			}
 			stat = new ExplainedNumber(siegeEngine.Damage * num);
@@ -232,7 +232,8 @@ public class NavalDLCCombatSimulationModel : CombatSimulationModel
 				PerkHelper.AddPerkBonusForParty(NavalPerks.Shipmaster.SeaborneFortress, struckParty.MobileParty, isPrimaryBonus: true, ref stat);
 			}
 		}
-		if (strikerParty.IsMobile && !strikerParty.MobileParty.IsCurrentlyAtSea && strikerParty.MobileParty.HasPerk(DefaultPerks.Crossbow.Terror) && strikerParty.RandomFloatWithSeed((uint)battle.UpdateCount) < DefaultPerks.Crossbow.Terror.PrimaryBonus)
+		Hero perkOwnerHero = null;
+		if (strikerParty.IsMobile && strikerParty.MobileParty.HasPerk(DefaultPerks.Crossbow.Terror, out perkOwnerHero) && strikerParty.RandomFloatWithSeed((uint)battle.UpdateCount) < DefaultPerks.Crossbow.Terror.GetPrimaryBonus(strikerParty.MobileParty.CurrentBattleEnvironment))
 		{
 			troopCasualties++;
 		}
@@ -255,26 +256,6 @@ public class NavalDLCCombatSimulationModel : CombatSimulationModel
 		return base.BaseModel.GetBluntDamageChance(strikerTroop, strikedTroop, strikerParty, strikedParty, battle);
 	}
 
-	public override MBList<(Ship, MapEventParty)> GetSimulationShips(MapEvent mapEvent, MBList<MapEventParty> battleParties)
-	{
-		MBList<(Ship, MapEventParty)> mBList = new MBList<(Ship, MapEventParty)>();
-		bool flag = mapEvent.SimulationContext == MapEvent.PowerCalculationContext.NavalRaid;
-		if (mapEvent.IsNavalMapEvent || flag)
-		{
-			foreach (MapEventParty battleParty in battleParties)
-			{
-				foreach (Ship ship in battleParty.Ships)
-				{
-					if (!flag || ship.ShipHull.CanNavigateShallowWater)
-					{
-						mBList.Add((ship, battleParty));
-					}
-				}
-			}
-		}
-		return mBList;
-	}
-
 	public override int GetParticipatingTroopCount(MapEventSide side)
 	{
 		int participatingTroopCount = base.BaseModel.GetParticipatingTroopCount(side);
@@ -283,6 +264,20 @@ public class NavalDLCCombatSimulationModel : CombatSimulationModel
 			return Math.Min(GetShallowShipDeckCrewCapacity(side), participatingTroopCount);
 		}
 		return participatingTroopCount;
+	}
+
+	public override float GetShipCombatImportance(Ship ship)
+	{
+		float num = TaleWorlds.Library.MathF.Clamp(ship.HitPoints / ship.MaxHitPoints, 0f, 1f);
+		float y = ((num < 0.3f) ? 2f : 0.6f);
+		return Campaign.Current.Models.CombatSimulationModel.GetShipCombatScore(ship) * TaleWorlds.Library.MathF.Pow(num, y);
+	}
+
+	public override float GetShipCombatScore(Ship ship)
+	{
+		float combatFactor = ship.GetCombatFactor();
+		float num = TaleWorlds.Library.MathF.Max(TaleWorlds.Library.MathF.Clamp(ship.HitPoints / ship.MaxHitPoints, 0f, 1f), 0.7f);
+		return combatFactor * num;
 	}
 
 	private int GetShallowShipDeckCrewCapacity(MapEventSide side)

@@ -725,7 +725,8 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 		}
 		if (mobileParty != null && mobileParty.IsCaravan && mobileParty.HasLandNavigationCapability && settlement.IsTown && settlement.Town.Governor != null && settlement.Town.Governor.GetPerkValue(DefaultPerks.Trade.Tollgates))
 		{
-			settlement.Town.TradeTaxAccumulated += TaleWorlds.Library.MathF.Round(DefaultPerks.Trade.Tollgates.SecondaryBonus);
+			int num2 = TaleWorlds.Library.MathF.Round(DefaultPerks.Trade.Tollgates.SecondaryBonus);
+			settlement.Town.TradeTaxAccumulated += num2;
 		}
 	}
 
@@ -1756,7 +1757,7 @@ public class CaravansCampaignBehavior : CampaignBehaviorBase
 	private bool conversation_warn_player_on_condition()
 	{
 		IFaction mapFaction = MobileParty.ConversationParty.MapFaction;
-		MBTextManager.SetTextVariable("KINGDOM", mapFaction.IsKingdomFaction ? ((Kingdom)mapFaction).EncyclopediaTitle : mapFaction.Name);
+		MBTextManager.SetTextVariable("KINGDOM", mapFaction.IsKingdomFaction ? ((Kingdom)mapFaction).FormalName : mapFaction.Name);
 		if (PlayerEncounter.Current != null && !PlayerEncounter.LeaveEncounter)
 		{
 			return !MobileParty.MainParty.MapFaction.IsAtWarWith(MobileParty.ConversationParty.MapFaction);

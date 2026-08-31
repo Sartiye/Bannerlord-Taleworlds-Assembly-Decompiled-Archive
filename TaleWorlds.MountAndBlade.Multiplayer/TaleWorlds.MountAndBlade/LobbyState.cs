@@ -42,6 +42,8 @@ public class LobbyState : GameState
 
 	private List<Func<GameServerEntry, List<CustomServerAction>>> _onCustomServerActionRequestedForServerEntry;
 
+	private List<Func<PremadeGameEntry, List<PremadeServerAction>>> _onPremadeServerActionRequestedForServerEntry;
+
 	public Action<bool> OnMultiplayerPrivilegeUpdated;
 
 	public Action<bool> OnCrossplayPrivilegeUpdated;
@@ -94,6 +96,7 @@ public class LobbyState : GameState
 	{
 		_registeredPermissionEvents = new ConcurrentDictionary<(PlayerId, Permission), bool>();
 		_onCustomServerActionRequestedForServerEntry = new List<Func<GameServerEntry, List<CustomServerAction>>>();
+		_onPremadeServerActionRequestedForServerEntry = new List<Func<PremadeGameEntry, List<PremadeServerAction>>>();
 	}
 
 	public void InitializeLogic(ILobbyStateHandler lobbyStateHandler)
@@ -132,6 +135,7 @@ public class LobbyState : GameState
 		NewsManager.SetNewsSourceURL(GetApplicableNewsSourceURL());
 		RecentPlayersManager.Initialize();
 		_onCustomServerActionRequestedForServerEntry = new List<Func<GameServerEntry, List<CustomServerAction>>>();
+		_onPremadeServerActionRequestedForServerEntry = new List<Func<PremadeGameEntry, List<PremadeServerAction>>>();
 		_lobbyGameClientManager = new LobbyGameClientHandler();
 		_lobbyGameClientManager.LobbyState = this;
 		NewsManager.UpdateNewsItems(forceRefresh: false);
@@ -182,6 +186,8 @@ public class LobbyState : GameState
 		NewsManager = null;
 		_onCustomServerActionRequestedForServerEntry.Clear();
 		_onCustomServerActionRequestedForServerEntry = null;
+		_onPremadeServerActionRequestedForServerEntry.Clear();
+		_onPremadeServerActionRequestedForServerEntry = null;
 		foreach (var key in _registeredPermissionEvents.Keys)
 		{
 			if (PlatformServices.Instance.UnregisterPermissionChangeEvent(key.PlayerId, key.Permission, MultiplayerPermissionWithPlayerChanged))
@@ -335,19 +341,22 @@ public class LobbyState : GameState
 		}
 		string strValue = MultiplayerOptions.OptionType.GamePassword.GetStrValue();
 		string strValue2 = MultiplayerOptions.OptionType.AdminPassword.GetStrValue();
+		string strValue3 = MultiplayerOptions.OptionType.SpectatorPassword.GetStrValue();
 		string value = ((!string.IsNullOrEmpty(strValue)) ? Common.CalculateMD5Hash(strValue) : null);
 		string value2 = ((!string.IsNullOrEmpty(strValue2)) ? Common.CalculateMD5Hash(strValue2) : null);
+		string value3 = ((!string.IsNullOrEmpty(strValue3)) ? Common.CalculateMD5Hash(strValue3) : null);
 		MultiplayerOptions.OptionType.GamePassword.SetValue(value);
 		MultiplayerOptions.OptionType.AdminPassword.SetValue(value2);
-		string strValue3 = MultiplayerOptions.OptionType.GameType.GetStrValue();
-		string gameModule = MultiplayerGameTypes.GetGameTypeInfo(strValue3).GameModule;
-		string strValue4 = MultiplayerOptions.OptionType.Map.GetStrValue();
+		MultiplayerOptions.OptionType.SpectatorPassword.SetValue(value3);
+		string strValue4 = MultiplayerOptions.OptionType.GameType.GetStrValue();
+		string gameModule = MultiplayerGameTypes.GetGameTypeInfo(strValue4).GameModule;
+		string strValue5 = MultiplayerOptions.OptionType.Map.GetStrValue();
 		string uniqueMapId = null;
-		if (Utilities.TryGetUniqueIdentifiersForScene(strValue4, out var identifiers))
+		if (Utilities.TryGetUniqueIdentifiersForScene(strValue5, out var identifiers))
 		{
 			uniqueMapId = identifiers.Serialize();
 		}
-		NetworkMain.GameClient.RegisterCustomGame(gameModule, strValue3, MultiplayerOptions.OptionType.ServerName.GetStrValue(), MultiplayerOptions.OptionType.MaxNumberOfPlayers.GetIntValue(), strValue4, uniqueMapId, MultiplayerOptions.OptionType.GamePassword.GetStrValue(), MultiplayerOptions.OptionType.AdminPassword.GetStrValue(), 9999);
+		NetworkMain.GameClient.RegisterCustomGame(gameModule, strValue4, MultiplayerOptions.OptionType.ServerName.GetStrValue(), MultiplayerOptions.OptionType.MaxNumberOfPlayers.GetIntValue(), strValue5, uniqueMapId, MultiplayerOptions.OptionType.GamePassword.GetStrValue(), MultiplayerOptions.OptionType.AdminPassword.GetStrValue(), MultiplayerOptions.OptionType.SpectatorPassword.GetStrValue(), 9999, MultiplayerOptions.OptionType.MaxSpectatorCount.GetIntValue(), MultiplayerOptions.OptionType.EnableSpectators.GetBoolValue());
 	}
 
 	public void CreatePremadeGame()
@@ -358,6 +367,8 @@ public class LobbyState : GameState
 		string strValue4 = MultiplayerOptions.OptionType.CultureTeam1.GetStrValue();
 		string strValue5 = MultiplayerOptions.OptionType.CultureTeam2.GetStrValue();
 		string strValue6 = MultiplayerOptions.OptionType.GamePassword.GetStrValue();
+		string strValue7 = MultiplayerOptions.OptionType.SpectatorPassword.GetStrValue();
+		int intValue = MultiplayerOptions.OptionType.MaxSpectatorCount.GetIntValue();
 		PremadeGameType premadeGameType = (PremadeGameType)Enum.GetValues(typeof(PremadeGameType)).GetValue(MultiplayerOptions.OptionType.PremadeGameType.GetIntValue());
 		if (premadeGameType == PremadeGameType.Clan)
 		{
@@ -377,7 +388,7 @@ public class LobbyState : GameState
 		}
 		if (strValue != null && !strValue.IsEmpty() && premadeGameType != PremadeGameType.Invalid)
 		{
-			NetworkMain.GameClient.CreatePremadeGame(strValue, strValue2, strValue3, strValue4, strValue5, strValue6, premadeGameType);
+			NetworkMain.GameClient.CreatePremadeGame(strValue, strValue2, strValue3, strValue4, strValue5, strValue6, premadeGameType, strValue7, intValue);
 		}
 		else if (premadeGameType == PremadeGameType.Invalid)
 		{
@@ -1005,7 +1016,7 @@ public class LobbyState : GameState
 		_ = 4;
 	}
 
-	public List<CustomServerAction> GetCustomActionsForServer(GameServerEntry gameServerEntry)
+	public List<CustomServerAction> GetActionsForCustomServer(GameServerEntry gameServerEntry)
 	{
 		List<CustomServerAction> list = new List<CustomServerAction>();
 		for (int i = 0; i < _onCustomServerActionRequestedForServerEntry.Count; i++)
@@ -1027,7 +1038,7 @@ public class LobbyState : GameState
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Lobby state is finalized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyState.cs", "RegisterForCustomServerAction", 1179);
+			TaleWorlds.Library.Debug.FailedAssert("Lobby state is finalized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyState.cs", "RegisterForCustomServerAction", 1169);
 		}
 	}
 
@@ -1039,7 +1050,45 @@ public class LobbyState : GameState
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Lobby state is finalized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyState.cs", "UnregisterForCustomServerAction", 1191);
+			TaleWorlds.Library.Debug.FailedAssert("Lobby state is finalized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyState.cs", "UnregisterForCustomServerAction", 1181);
+		}
+	}
+
+	public List<PremadeServerAction> GetActionsForPremadeServer(PremadeGameEntry serverEntry)
+	{
+		List<PremadeServerAction> list = new List<PremadeServerAction>();
+		for (int i = 0; i < _onPremadeServerActionRequestedForServerEntry.Count; i++)
+		{
+			List<PremadeServerAction> list2 = _onPremadeServerActionRequestedForServerEntry[i](serverEntry);
+			if (list2 != null && list2.Count > 0)
+			{
+				list.AddRange(list2);
+			}
+		}
+		return list;
+	}
+
+	public void RegisterForPremadeServerAction(Func<PremadeGameEntry, List<PremadeServerAction>> action)
+	{
+		if (_onPremadeServerActionRequestedForServerEntry != null)
+		{
+			_onPremadeServerActionRequestedForServerEntry.Add(action);
+		}
+		else
+		{
+			TaleWorlds.Library.Debug.FailedAssert("Lobby state is finalized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyState.cs", "RegisterForPremadeServerAction", 1208);
+		}
+	}
+
+	public void UnregisterForPremadeServerAction(Func<PremadeGameEntry, List<PremadeServerAction>> action)
+	{
+		if (_onPremadeServerActionRequestedForServerEntry != null)
+		{
+			_onPremadeServerActionRequestedForServerEntry.Remove(action);
+		}
+		else
+		{
+			TaleWorlds.Library.Debug.FailedAssert("Lobby state is finalized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyState.cs", "UnregisterForPremadeServerAction", 1220);
 		}
 	}
 }

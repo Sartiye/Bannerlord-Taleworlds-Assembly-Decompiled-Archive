@@ -27,7 +27,7 @@ public abstract class PartyTroopManagerVM : ViewModel
 
 	private int _initialHorseChange;
 
-	private int _initialMoraleChange;
+	private float _initialMoraleChange;
 
 	protected List<Tuple<EquipmentElement, int>> _initialUsedUpgradeHorsesHistory = new List<Tuple<EquipmentElement, int>>();
 
@@ -585,7 +585,7 @@ public abstract class PartyTroopManagerVM : ViewModel
 		MBTextManager.SetTextVariable("PAY_OR_GET", 0);
 		int num = _partyVM.PartyScreenLogic.CurrentData.PartyGoldChangeAmount - _initialGoldChange;
 		int num2 = _partyVM.PartyScreenLogic.CurrentData.PartyHorseChangeAmount - _initialHorseChange;
-		int num3 = _partyVM.PartyScreenLogic.CurrentData.PartyMoraleChangeAmount - _initialMoraleChange;
+		float num3 = _partyVM.PartyScreenLogic.CurrentData.PartyMoraleChangeAmount - _initialMoraleChange;
 		MBTextManager.SetTextVariable("LABEL_ICON", "{=!}<img src=\"General\\Icons\\Coin@2x\" extend=\"6\">");
 		MBTextManager.SetTextVariable("TRADE_AMOUNT", TaleWorlds.Library.MathF.Abs(num));
 		GoldChangeText = ((num == 0) ? "" : GameTexts.FindText("str_party_generic_label").ToString());
@@ -594,7 +594,7 @@ public abstract class PartyTroopManagerVM : ViewModel
 		HorseChangeText = ((num2 == 0) ? "" : GameTexts.FindText("str_party_generic_label").ToString());
 		MBTextManager.SetTextVariable("LABEL_ICON", "{=!}<img src=\"General\\Icons\\Morale@2x\" extend=\"4\">");
 		MBTextManager.SetTextVariable("TRADE_AMOUNT", TaleWorlds.Library.MathF.Abs(num3));
-		MoraleChangeText = ((num3 == 0) ? "" : GameTexts.FindText("str_party_generic_label").ToString());
+		MoraleChangeText = ((num3 == 0f) ? "" : GameTexts.FindText("str_party_generic_label").ToString());
 	}
 
 	protected void SetFocusedCharacter(PartyTroopManagerItemVM troop)

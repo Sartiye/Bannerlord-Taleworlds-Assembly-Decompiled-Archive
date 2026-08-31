@@ -61,7 +61,7 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		base.WidthSizePolicy = SizePolicy.StretchToParent;
 		base.HeightSizePolicy = SizePolicy.CoverChildren;
 		base.CollapseIndicator = _widget_2_0;
-		base.ItemListWidget = _widget.FindChild(new BindingPath("..\\SettlementsGrid"));
+		base.ItemListWidget = _widget.FindChild(new BindingPath("..\\MembersGrid"));
 		base.UpdateChildrenStates = true;
 		base.DoNotPassEventsToChildren = true;
 		base.ExtendCursorAreaLeft = 5f;
@@ -179,7 +179,7 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 	{
 		if (propertyName == "Text")
 		{
-			_datasource_Root.SettlementsText = _widget_2_1.Text;
+			_datasource_Root.MembersText = _widget_2_1.Text;
 		}
 	}
 
@@ -230,9 +230,9 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 
 	private void HandleViewModelPropertyChangeOf_datasource_Root(string propertyName)
 	{
-		if (propertyName == "SettlementsText")
+		if (propertyName == "MembersText")
 		{
-			_widget_2_1.Text = _datasource_Root.SettlementsText;
+			_widget_2_1.Text = _datasource_Root.MembersText;
 		}
 	}
 
@@ -272,7 +272,7 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 			_datasource_Root.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
-			_widget_2_1.Text = _datasource_Root.SettlementsText;
+			_widget_2_1.Text = _datasource_Root.MembersText;
 			_widget_2_1.PropertyChanged += PropertyChangedListenerOf_widget_2_1;
 			_widget_2_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_2_1;
 			_widget_2_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_2_1;

@@ -32,11 +32,13 @@ public class TavernEmployeesCampaignBehavior : CampaignBehaviorBase
 
 	public const int TavernCompanionInquiryCost = 2;
 
-	private const int MinimumTavernCompanionInquirySkillLevel = 30;
+	private const int MinimumTavernCompanionInquirySkillLevel = 50;
 
 	private const int BaseTunPrice = 50;
 
 	private const int AskForClanInfoPrice = 500;
+
+	private const float CompanionTownDistanceConsiderationMultiplier = 3f;
 
 	private Settlement _orderedDrinkThisDayInSettlement;
 
@@ -54,7 +56,7 @@ public class TavernEmployeesCampaignBehavior : CampaignBehaviorBase
 
 	private readonly Dictionary<TavernInquiryCompanionType, List<Hero>> _previouslyRecommendedCompanions = new Dictionary<TavernInquiryCompanionType, List<Hero>>();
 
-	private float MaxTownDistanceAsDays => Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(MobileParty.NavigationType.All) * 2f / (Campaign.Current.EstimatedAverageVillagerPartySpeed * (float)CampaignTime.HoursInDay);
+	private float MaxTownDistanceAsDays => Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(MobileParty.NavigationType.All) * 3f / (Campaign.Current.EstimatedAverageVillagerPartySpeed * (float)CampaignTime.HoursInDay);
 
 	public override void RegisterEvents()
 	{
@@ -329,14 +331,14 @@ public class TavernEmployeesCampaignBehavior : CampaignBehaviorBase
 			FindCompanionWithType(TavernInquiryCompanionType.Navigator);
 			break;
 		default:
-			Debug.FailedAssert("Wrong function call! This only should be called for First Mate and Navigator.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\CampaignBehaviors\\TavernEmployeesCampaignBehavior.cs", "FindCompanionWithType", 353);
+			Debug.FailedAssert("Wrong function call! This only should be called for First Mate and Navigator.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\CampaignBehaviors\\TavernEmployeesCampaignBehavior.cs", "FindCompanionWithType", 355);
 			break;
 		}
 	}
 
 	private void FindCompanionWithType(TavernInquiryCompanionType companionType)
 	{
-		int num = 30;
+		int num = 50;
 		Hero inquiryCurrentCompanion = null;
 		float num2 = MaxTownDistanceAsDays * Campaign.Current.EstimatedAverageVillagerPartySpeed * (float)CampaignTime.HoursInDay;
 		foreach (Town allTown in Town.AllTowns)
@@ -460,11 +462,11 @@ public class TavernEmployeesCampaignBehavior : CampaignBehaviorBase
 		campaignGameStarter.AddDialogLine("ransom_broker_families", "ransom_broker_families", "ransom_broker_info_talk", "{=zxonBgY2}Oh, I suppose I could sell them to the republics of Geroia, to row their galleys, although even in Geroia they prefer free oarsmen these days... But it rarely comes to that. You'd be surprised what sorts of treasures a peasant can dig out of his cowshed or wheedle out of his cousins!", null, null);
 		campaignGameStarter.AddDialogLine("ransom_broker_prices", "ransom_broker_prices", "ransom_broker_info_talk", "{=PLbxHyPu}It varies. I fancy that I have a fine eye for assessing a ransom. There are a dozen little things about a man that will tell you whether he goes to bed hungry, or spices his meat with pepper and cloves from the east. The real money of course is in the aristocracy, and if you ever want to do my job you'll want to learn about every landowning family or tribal chief in Calradia, their estates, their offspring both lawful and bastard, and, of course, their credit with the merchants.", null, null);
 		campaignGameStarter.AddDialogLine("ransom_broker_ransom_me", "ransom_broker_ransom_me", "ransom_broker_info_talk", "{=4tY23HWb}Of course. I'm welcome in every court in Calradia. There's not many who can say that! So always be sure to keep a pot of denars buried somewhere, and a loyal servant who can find it in a hurry.", null, null);
-		campaignGameStarter.AddDialogLine("ransom_broker_start_has_met", "start", "ransom_broker_talk", "{=w4yxgY3F}Greetings. If you have any prisoners, I will be happy to buy them from you.", conversation_ransom_broker_start_has_met_on_condition, null);
-		campaignGameStarter.AddDialogLine("ransom_broker_pretalk", "ransom_broker_pretalk", "ransom_broker_talk", "{=AQi1arUp}Anyway, if you have any prisoners, I will be happy to buy them from you.", null, null);
-		campaignGameStarter.AddPlayerLine("ransom_broker_talk_player_1", "ransom_broker_talk", "ransom_broker_sell_prisoners", "{=cAVxYAdw}Then you'd better bring your purse. I have got prisoners to sell.", conversation_ransom_broker_open_party_screen_on_condition, null);
-		campaignGameStarter.AddPlayerLine("ransom_broker_talk_player_2", "ransom_broker_talk", "ransom_broker_2", "{=Yac7bSU3}Tell me about what you do again.", null, null);
-		campaignGameStarter.AddPlayerLine("ransom_broker_talk_player_4", "ransom_broker_talk", "ransom_broker_no_prisoners", "{=CQMkh88h}I don't have any prisoners to sell, but that's good to know.", null, null);
+		campaignGameStarter.AddDialogLine("ransom_broker_start_has_met", "start", "ransom_broker_talk", "{=EIdFCZrx}Greetings. If you have any more business for me, please let me know.", conversation_ransom_broker_start_has_met_on_condition, null);
+		campaignGameStarter.AddDialogLine("ransom_broker_pretalk", "ransom_broker_pretalk", "ransom_broker_talk", "{=xYdOZblK}Anyway, if you have any more business for me, please let me know.", null, null);
+		campaignGameStarter.AddPlayerLine("ransom_broker_talk_player_1", "ransom_broker_talk", "ransom_broker_sell_prisoners", "{=cAVxYAdw}Get out your purse. I have prisoners to sell.", conversation_ransom_broker_open_party_screen_on_condition, null);
+		campaignGameStarter.AddPlayerLine("ransom_broker_talk_player_2", "ransom_broker_talk", "ransom_broker_2", "{=Yac7bSU3}Tell me again about brokering ransoms.", null, null);
+		campaignGameStarter.AddPlayerLine("ransom_broker_talk_player_4", "ransom_broker_talk", "ransom_broker_no_prisoners", "{=2aM84VZh}Nothing more for now.", null, null, 0);
 		campaignGameStarter.AddDialogLine("ransom_broker_no_prisoners", "ransom_broker_no_prisoners", "close_window", "{=mEsaiLOR}Very well then. If you happen to have any more prisoners, you know where to find me.", null, null);
 		campaignGameStarter.AddDialogLine("ransom_broker_sell_prisoners", "ransom_broker_sell_prisoners", "ransom_broker_sell_prisoners_3", "{=xFmYRCHs}Let me see what you have...", null, conversation_ransom_broker_sell_prisoners_on_consequence);
 		campaignGameStarter.AddDialogLine("ransom_broker_sell_prisoners_3", "ransom_broker_sell_prisoners_3", "ransom_broker_pretalk", "{=3BvfOe1y}Very well then. You catch some more and you want me to take them off of your hands, you know where to find me...", null, null);

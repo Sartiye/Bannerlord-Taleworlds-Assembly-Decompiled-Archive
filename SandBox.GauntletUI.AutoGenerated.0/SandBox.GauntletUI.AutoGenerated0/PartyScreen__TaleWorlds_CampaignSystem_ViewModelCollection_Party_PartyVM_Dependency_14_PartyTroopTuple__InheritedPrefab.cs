@@ -114,7 +114,9 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 
 	private Widget _widget_0_0_2_0_3_1_0;
 
-	private HintWidget _widget_0_0_2_0_3_1_1;
+	private Widget _widget_0_0_2_0_3_1_1;
+
+	private HintWidget _widget_0_0_2_0_3_1_2;
 
 	private HintWidget _widget_0_0_2_0_3_2;
 
@@ -421,8 +423,10 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 		_widget_0_0_2_0_3.AddChild(_widget_0_0_2_0_3_1);
 		_widget_0_0_2_0_3_1_0 = new Widget(base.Context);
 		_widget_0_0_2_0_3_1.AddChild(_widget_0_0_2_0_3_1_0);
-		_widget_0_0_2_0_3_1_1 = new HintWidget(base.Context);
+		_widget_0_0_2_0_3_1_1 = new Widget(base.Context);
 		_widget_0_0_2_0_3_1.AddChild(_widget_0_0_2_0_3_1_1);
+		_widget_0_0_2_0_3_1_2 = new HintWidget(base.Context);
+		_widget_0_0_2_0_3_1.AddChild(_widget_0_0_2_0_3_1_2);
 		_widget_0_0_2_0_3_2 = new HintWidget(base.Context);
 		_widget_0_0_2_0_3.AddChild(_widget_0_0_2_0_3_2);
 		_widget_0_0_2_0_4 = new FillBarVerticalWidget(base.Context);
@@ -858,10 +862,18 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 		_widget_0_0_2_0_3_1_0.Sprite = base.Context.SpriteData.GetSprite("General\\Mission\\PersonalKillfeed\\kill_feed_skull");
 		_widget_0_0_2_0_3_1_0.Color = new Color(1f, 0f, 0f);
 		_widget_0_0_2_0_3_1_0.SaturationFactor = 60f;
-		_widget_0_0_2_0_3_1_0.ValueFactor = 20f;
-		_widget_0_0_2_0_3_1_1.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_0_2_0_3_1_1.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_0_2_0_3_1_1.IsEnabled = false;
+		_widget_0_0_2_0_3_1_1.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_0_0_2_0_3_1_1.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_0_0_2_0_3_1_1.SuggestedWidth = 7f;
+		_widget_0_0_2_0_3_1_1.SuggestedHeight = 10f;
+		_widget_0_0_2_0_3_1_1.HorizontalAlignment = HorizontalAlignment.Right;
+		_widget_0_0_2_0_3_1_1.VerticalAlignment = VerticalAlignment.Bottom;
+		_widget_0_0_2_0_3_1_1.MarginRight = 8f;
+		_widget_0_0_2_0_3_1_1.MarginBottom = 10f;
+		_widget_0_0_2_0_3_1_1.Sprite = base.Context.SpriteData.GetSprite("SPGeneral\\blood_feud_icon");
+		_widget_0_0_2_0_3_1_2.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_0_2_0_3_1_2.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_0_2_0_3_1_2.IsEnabled = false;
 		_widget_0_0_2_0_3_2.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_2_0_3_2.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_2_0_3_2.IsEnabled = false;
@@ -1596,7 +1608,7 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 			_datasource_Root_ExecutePrisonerHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ExecutePrisonerHint;
 			_datasource_Root_ExecutePrisonerHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ExecutePrisonerHint;
 			_datasource_Root_ExecutePrisonerHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ExecutePrisonerHint;
-			_widget_0_0_2_0_3_1_1.EventFire -= EventListenerOf_widget_0_0_2_0_3_1_1;
+			_widget_0_0_2_0_3_1_2.EventFire -= EventListenerOf_widget_0_0_2_0_3_1_2;
 			_widget_0_0_2_0_3_2.EventFire -= EventListenerOf_widget_0_0_2_0_3_2;
 			_datasource_Root_ExecutePrisonerHint = null;
 		}
@@ -1955,7 +1967,7 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 		}
 	}
 
-	private void EventListenerOf_widget_0_0_2_0_3_1_1(Widget widget, string commandName, object[] args)
+	private void EventListenerOf_widget_0_0_2_0_3_1_2(Widget widget, string commandName, object[] args)
 	{
 		if (commandName == "HoverBegin")
 		{
@@ -5714,7 +5726,7 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 				_datasource_Root_ExecutePrisonerHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ExecutePrisonerHint;
 				_datasource_Root_ExecutePrisonerHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ExecutePrisonerHint;
 				_datasource_Root_ExecutePrisonerHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ExecutePrisonerHint;
-				_widget_0_0_2_0_3_1_1.EventFire -= EventListenerOf_widget_0_0_2_0_3_1_1;
+				_widget_0_0_2_0_3_1_2.EventFire -= EventListenerOf_widget_0_0_2_0_3_1_2;
 				_widget_0_0_2_0_3_2.EventFire -= EventListenerOf_widget_0_0_2_0_3_2;
 				_datasource_Root_ExecutePrisonerHint = null;
 			}
@@ -6378,7 +6390,7 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 			_datasource_Root_ExecutePrisonerHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ExecutePrisonerHint;
 			_datasource_Root_ExecutePrisonerHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ExecutePrisonerHint;
 			_datasource_Root_ExecutePrisonerHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ExecutePrisonerHint;
-			_widget_0_0_2_0_3_1_1.EventFire += EventListenerOf_widget_0_0_2_0_3_1_1;
+			_widget_0_0_2_0_3_1_2.EventFire += EventListenerOf_widget_0_0_2_0_3_1_2;
 			_widget_0_0_2_0_3_2.EventFire += EventListenerOf_widget_0_0_2_0_3_2;
 		}
 		_datasource_Root_TroopXPTooltip = _datasource_Root.TroopXPTooltip;
@@ -7022,7 +7034,7 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 			_datasource_Root_ExecutePrisonerHint.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ExecutePrisonerHint;
 			_datasource_Root_ExecutePrisonerHint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ExecutePrisonerHint;
 			_datasource_Root_ExecutePrisonerHint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ExecutePrisonerHint;
-			_widget_0_0_2_0_3_1_1.EventFire -= EventListenerOf_widget_0_0_2_0_3_1_1;
+			_widget_0_0_2_0_3_1_2.EventFire -= EventListenerOf_widget_0_0_2_0_3_1_2;
 			_widget_0_0_2_0_3_2.EventFire -= EventListenerOf_widget_0_0_2_0_3_2;
 			_datasource_Root_ExecutePrisonerHint = null;
 		}
@@ -7039,7 +7051,7 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 			_datasource_Root_ExecutePrisonerHint.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ExecutePrisonerHint;
 			_datasource_Root_ExecutePrisonerHint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ExecutePrisonerHint;
 			_datasource_Root_ExecutePrisonerHint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ExecutePrisonerHint;
-			_widget_0_0_2_0_3_1_1.EventFire += EventListenerOf_widget_0_0_2_0_3_1_1;
+			_widget_0_0_2_0_3_1_2.EventFire += EventListenerOf_widget_0_0_2_0_3_1_2;
 			_widget_0_0_2_0_3_2.EventFire += EventListenerOf_widget_0_0_2_0_3_2;
 		}
 	}

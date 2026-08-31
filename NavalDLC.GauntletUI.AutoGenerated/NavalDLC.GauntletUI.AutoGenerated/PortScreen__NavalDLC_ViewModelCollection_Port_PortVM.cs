@@ -146,6 +146,10 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 
 	private PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_16_PortActionButton__DependendPrefab _widget_4_5_2;
 
+	private PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_17_PortActionButton__DependendPrefab _widget_4_5_3;
+
+	private PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_PortActionButton__DependendPrefab _widget_4_5_4;
+
 	private Widget _widget_5;
 
 	private NavigationScopeTargeter _widget_5_0;
@@ -156,11 +160,11 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 
 	private NavigationScopeTargeter _widget_5_2;
 
-	private Widget _widget_5_3;
+	private ListPanel _widget_5_3;
 
-	private PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_17_PortActionButton__DependendPrefab _widget_5_3_0;
+	private PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_19_PortActionButton__DependendPrefab _widget_5_3_0;
 
-	private PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_PortActionButton__DependendPrefab _widget_5_3_1;
+	private PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_20_PortActionButton__DependendPrefab _widget_5_3_1;
 
 	private NavigationScopeTargeter _widget_6;
 
@@ -186,7 +190,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 
 	private TextWidget _widget_8_1_0_2_1;
 
-	private BoolStateChangerWidget _widget_8_2;
+	private BoolStateChangerBrushWidget _widget_8_2;
 
 	private PortPieceInspectionWidget _widget_9;
 
@@ -244,7 +248,11 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 
 	private PortPieceTooltipPropertiesListPanel _widget_9_1_0_3;
 
-	private PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_19_Standard_TripleDialogCloseButtons__DependendPrefab _widget_10;
+	private BoolStateChangerBrushWidget _widget_10;
+
+	private PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_21_Standard_TripleDialogCloseButtons__DependendPrefab _widget_11;
+
+	private PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_22_PortShipSelectionPopup__DependendPrefab _widget_12;
 
 	private PortVM _datasource_Root;
 
@@ -285,6 +293,8 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 	private ShipUpgradePieceBaseVM _datasource_Root_InspectedUpgrade;
 
 	private MBBindingList<StringPairItemVM> _datasource_Root_InspectedUpgrade_Properties;
+
+	private PortShipStashPopupVM _datasource_Root_ShipSelectionPopup;
 
 	public PortScreen__NavalDLC_ViewModelCollection_Port_PortVM(UIContext context)
 		: base(context)
@@ -327,6 +337,20 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 		{
 			SuggestedWidth = 73.5f,
 			SuggestedHeight = 73.5f
+		});
+		return visualDefinition;
+	}
+
+	private VisualDefinition CreateVisualDefinitionBottomMenu()
+	{
+		VisualDefinition visualDefinition = new VisualDefinition("BottomMenu", 0.45f, 0f, AnimationInterpolation.Type.EaseOut, AnimationInterpolation.Function.Quint);
+		visualDefinition.AddVisualState(new VisualState("Default")
+		{
+			PositionYOffset = 6f
+		});
+		visualDefinition.AddVisualState(new VisualState("Opened")
+		{
+			PositionYOffset = 100f
 		});
 		return visualDefinition;
 	}
@@ -467,6 +491,12 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 		_widget_4_5_2 = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_16_PortActionButton__DependendPrefab(base.Context);
 		_widget_4_5.AddChild(_widget_4_5_2);
 		_widget_4_5_2.CreateWidgets();
+		_widget_4_5_3 = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_17_PortActionButton__DependendPrefab(base.Context);
+		_widget_4_5.AddChild(_widget_4_5_3);
+		_widget_4_5_3.CreateWidgets();
+		_widget_4_5_4 = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_PortActionButton__DependendPrefab(base.Context);
+		_widget_4_5.AddChild(_widget_4_5_4);
+		_widget_4_5_4.CreateWidgets();
 		_widget_5 = new Widget(base.Context);
 		_widget.AddChild(_widget_5);
 		_widget_5_0 = new NavigationScopeTargeter(base.Context);
@@ -477,12 +507,12 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 		_widget_5_1.AddChild(_widget_5_1_0);
 		_widget_5_2 = new NavigationScopeTargeter(base.Context);
 		_widget_5.AddChild(_widget_5_2);
-		_widget_5_3 = new Widget(base.Context);
+		_widget_5_3 = new ListPanel(base.Context);
 		_widget_5.AddChild(_widget_5_3);
-		_widget_5_3_0 = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_17_PortActionButton__DependendPrefab(base.Context);
+		_widget_5_3_0 = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_19_PortActionButton__DependendPrefab(base.Context);
 		_widget_5_3.AddChild(_widget_5_3_0);
 		_widget_5_3_0.CreateWidgets();
-		_widget_5_3_1 = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_PortActionButton__DependendPrefab(base.Context);
+		_widget_5_3_1 = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_20_PortActionButton__DependendPrefab(base.Context);
 		_widget_5_3.AddChild(_widget_5_3_1);
 		_widget_5_3_1.CreateWidgets();
 		_widget_6 = new NavigationScopeTargeter(base.Context);
@@ -509,7 +539,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 		_widget_8_1_0_2.AddChild(_widget_8_1_0_2_0);
 		_widget_8_1_0_2_1 = new TextWidget(base.Context);
 		_widget_8_1_0_2.AddChild(_widget_8_1_0_2_1);
-		_widget_8_2 = new BoolStateChangerWidget(base.Context);
+		_widget_8_2 = new BoolStateChangerBrushWidget(base.Context);
 		_widget_8.AddChild(_widget_8_2);
 		_widget_9 = new PortPieceInspectionWidget(base.Context);
 		_widget.AddChild(_widget_9);
@@ -567,9 +597,14 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 		_widget_9_1_0_2.AddChild(_widget_9_1_0_2_2);
 		_widget_9_1_0_3 = new PortPieceTooltipPropertiesListPanel(base.Context);
 		_widget_9_1_0.AddChild(_widget_9_1_0_3);
-		_widget_10 = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_19_Standard_TripleDialogCloseButtons__DependendPrefab(base.Context);
+		_widget_10 = new BoolStateChangerBrushWidget(base.Context);
 		_widget.AddChild(_widget_10);
-		_widget_10.CreateWidgets();
+		_widget_11 = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_21_Standard_TripleDialogCloseButtons__DependendPrefab(base.Context);
+		_widget.AddChild(_widget_11);
+		_widget_11.CreateWidgets();
+		_widget_12 = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_22_PortShipSelectionPopup__DependendPrefab(base.Context);
+		_widget.AddChild(_widget_12);
+		_widget_12.CreateWidgets();
 	}
 
 	public void SetIds()
@@ -605,6 +640,8 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 		_widget_4_5_0.SetIds();
 		_widget_4_5_1.SetIds();
 		_widget_4_5_2.SetIds();
+		_widget_4_5_3.SetIds();
+		_widget_4_5_4.SetIds();
 		_widget_5.Id = "BottomPanel";
 		_widget_5_1.Id = "TotalCost";
 		_widget_5_3.Id = "MainActionButtons";
@@ -620,8 +657,9 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 		_widget_9_0_0_1.Id = "FrameListPanel";
 		_widget_9_0_0_1_0.Id = "TopFrame";
 		_widget_9_0_0_1_1.Id = "BottomFrame";
-		_widget_10.SetIds();
-		_widget_10.Id = "TripleDialogCloseButtons";
+		_widget_11.SetIds();
+		_widget_11.Id = "TripleDialogCloseButtons";
+		_widget_12.SetIds();
 	}
 
 	public void SetAttributes()
@@ -926,21 +964,28 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 		_widget_4_4.ScopeID = "ActionButtonsNavigationScope";
 		_widget_4_4.ScopeParent = _widget_4_5;
 		_widget_4_4.ScopeMovements = GamepadNavigationTypes.Vertical;
+		_widget_4_4.DoNotAutoNavigateAfterSort = true;
 		_widget_4_5.DoNotAcceptEvents = true;
 		_widget_4_5.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_4_5.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_4_5.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_4_5.MarginTop = 20f;
+		_widget_4_5.MarginTop = 10f;
 		_widget_4_5.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_4_5_0.SetAttributes();
-		_widget_4_5_0.MarginBottom = 10f;
+		_widget_4_5_0.MarginBottom = 3f;
 		_widget_4_5_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_4_5_1.SetAttributes();
-		_widget_4_5_1.MarginBottom = 10f;
+		_widget_4_5_1.MarginBottom = 3f;
 		_widget_4_5_1.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_4_5_2.SetAttributes();
-		_widget_4_5_2.MarginBottom = 10f;
+		_widget_4_5_2.MarginBottom = 3f;
 		_widget_4_5_2.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_4_5_3.SetAttributes();
+		_widget_4_5_3.MarginBottom = 3f;
+		_widget_4_5_3.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_4_5_4.SetAttributes();
+		_widget_4_5_4.MarginBottom = 3f;
+		_widget_4_5_4.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_5.DoNotAcceptEvents = true;
 		_widget_5.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_5.HeightSizePolicy = SizePolicy.StretchToParent;
@@ -960,11 +1005,12 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 		_widget_5_3.DoNotAcceptEvents = true;
 		_widget_5_3.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_5_3.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_5_3.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_5_3.SuggestedWidth = 300f;
 		_widget_5_3.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_5_3.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_5_3.MarginRight = 20f;
-		_widget_5_3.MarginBottom = 200f;
+		_widget_5_3.MarginBottom = 140f;
 		_widget_5_3_0.SetAttributes();
 		_widget_5_3_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_5_3_0.VerticalAlignment = VerticalAlignment.Bottom;
@@ -1160,7 +1206,14 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 		_widget_9_1_0_3.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_9_1_0_3.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_9_1_0_3.MarginTop = 5f;
-		_widget_10.SetAttributes();
+		_widget_10.DoNotAcceptEvents = true;
+		_widget_10.DoNotPassEventsToChildren = true;
+		_widget_10.FalseState = "Default";
+		_widget_10.TargetWidget = _widget_11;
+		_widget_10.TrueState = "Opened";
+		_widget_11.SetAttributes();
+		_widget_11.VisualDefinition = CreateVisualDefinitionBottomMenu();
+		_widget_12.SetAttributes();
 	}
 
 	public void RefreshBindingWithChildren()
@@ -1181,9 +1234,11 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 		_widget_4_5_0.DestroyDataSource();
 		_widget_4_5_1.DestroyDataSource();
 		_widget_4_5_2.DestroyDataSource();
+		_widget_4_5_3.DestroyDataSource();
+		_widget_4_5_4.DestroyDataSource();
 		_widget_5_3_0.DestroyDataSource();
 		_widget_5_3_1.DestroyDataSource();
-		_widget_10.DestroyDataSource();
+		_widget_11.DestroyDataSource();
 		_datasource_Root.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root;
@@ -1797,6 +1852,29 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 			}
 			_datasource_Root_InspectedUpgrade = null;
 		}
+		if (_datasource_Root_ShipSelectionPopup != null)
+		{
+			_widget_12.DestroyDataSource();
+			_datasource_Root_ShipSelectionPopup.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_widget_10.PropertyChanged -= PropertyChangedListenerOf_widget_10;
+			_widget_10.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_10;
+			_widget_10.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_10;
+			_widget_10.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_10;
+			_widget_10.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_10;
+			_widget_10.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_10;
+			_widget_10.intPropertyChanged -= intPropertyChangedListenerOf_widget_10;
+			_widget_10.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_10;
+			_widget_10.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_10;
+			_datasource_Root_ShipSelectionPopup = null;
+		}
 		_datasource_Root = null;
 	}
 
@@ -1977,9 +2055,9 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 
 	private void HandleWidgetPropertyChangeOf_widget_2_0_0_0_0_0(string propertyName)
 	{
-		if (propertyName == "IsHidden")
+		if (propertyName == "IsVisible")
 		{
-			_datasource_Root.IsControllingCamera = _widget_2_0_0_0_0_0.IsHidden;
+			_datasource_Root.ShowPortScreenGamepadInputs = _widget_2_0_0_0_0_0.IsVisible;
 		}
 	}
 
@@ -2030,9 +2108,9 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 
 	private void HandleWidgetPropertyChangeOf_widget_2_0_1_0_0_0(string propertyName)
 	{
-		if (propertyName == "IsHidden")
+		if (propertyName == "IsVisible")
 		{
-			_datasource_Root.IsControllingCamera = _widget_2_0_1_0_0_0.IsHidden;
+			_datasource_Root.ShowPortScreenGamepadInputs = _widget_2_0_1_0_0_0.IsVisible;
 		}
 	}
 
@@ -3915,6 +3993,59 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 		}
 	}
 
+	private void PropertyChangedListenerOf_widget_10(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_10(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_10(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_10(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_10(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_10(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_10(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_10(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_10(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_10(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_10(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_10(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_10(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_10(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_10(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_10(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_10(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_10(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_10(string propertyName)
+	{
+		if (propertyName == "BooleanCheck")
+		{
+			_datasource_Root_ShipSelectionPopup.IsOpen = _widget_10.BooleanCheck;
+		}
+	}
+
 	private void ViewModelPropertyChangedListenerOf_datasource_Root(object sender, PropertyChangedEventArgs e)
 	{
 		HandleViewModelPropertyChangeOf_datasource_Root(e.PropertyName);
@@ -3994,13 +4125,18 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 		case "InspectedUpgrade":
 			RefreshDataSource_datasource_Root_InspectedUpgrade(_datasource_Root.InspectedUpgrade);
 			break;
+		case "ShipSelectionPopup":
+			RefreshDataSource_datasource_Root_ShipSelectionPopup(_datasource_Root.ShipSelectionPopup);
+			break;
 		case "IsAnyUpgradeSlotSelected":
 			_widget.IsAnyUpgradeSlotSelected = _datasource_Root.IsAnyUpgradeSlotSelected;
 			break;
 		case "IsControllingCamera":
 			_widget.IsControllingCamera = _datasource_Root.IsControllingCamera;
-			_widget_2_0_0_0_0_0.IsHidden = _datasource_Root.IsControllingCamera;
-			_widget_2_0_1_0_0_0.IsHidden = _datasource_Root.IsControllingCamera;
+			break;
+		case "ShowPortScreenGamepadInputs":
+			_widget_2_0_0_0_0_0.IsVisible = _datasource_Root.ShowPortScreenGamepadInputs;
+			_widget_2_0_1_0_0_0.IsVisible = _datasource_Root.ShowPortScreenGamepadInputs;
 			break;
 		case "TotalGoldCostText":
 			_widget_5_1.Text = _datasource_Root.TotalGoldCostText;
@@ -4739,6 +4875,59 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 		}
 	}
 
+	private void ViewModelPropertyChangedListenerOf_datasource_Root_ShipSelectionPopup(object sender, PropertyChangedEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ShipSelectionPopup(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ShipSelectionPopup(object sender, PropertyChangedWithValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ShipSelectionPopup(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ShipSelectionPopup(object sender, PropertyChangedWithBoolValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ShipSelectionPopup(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ShipSelectionPopup(object sender, PropertyChangedWithIntValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ShipSelectionPopup(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ShipSelectionPopup(object sender, PropertyChangedWithFloatValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ShipSelectionPopup(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ShipSelectionPopup(object sender, PropertyChangedWithUIntValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ShipSelectionPopup(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ShipSelectionPopup(object sender, PropertyChangedWithColorValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ShipSelectionPopup(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ShipSelectionPopup(object sender, PropertyChangedWithDoubleValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ShipSelectionPopup(e.PropertyName);
+	}
+
+	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ShipSelectionPopup(object sender, PropertyChangedWithVec2ValueEventArgs e)
+	{
+		HandleViewModelPropertyChangeOf_datasource_Root_ShipSelectionPopup(e.PropertyName);
+	}
+
+	private void HandleViewModelPropertyChangeOf_datasource_Root_ShipSelectionPopup(string propertyName)
+	{
+		if (propertyName == "IsOpen")
+		{
+			_widget_10.BooleanCheck = _datasource_Root_ShipSelectionPopup.IsOpen;
+		}
+	}
+
 	private void ViewModelPropertyChangedListenerOf_datasource_Root_SelectedShip_Stats(object sender, PropertyChangedEventArgs e)
 	{
 		HandleViewModelPropertyChangeOf_datasource_Root_SelectedShip_Stats(e.PropertyName);
@@ -5206,9 +5395,11 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 			_widget_4_5_0.SetDataSource(null);
 			_widget_4_5_1.SetDataSource(null);
 			_widget_4_5_2.SetDataSource(null);
+			_widget_4_5_3.SetDataSource(null);
+			_widget_4_5_4.SetDataSource(null);
 			_widget_5_3_0.SetDataSource(null);
 			_widget_5_3_1.SetDataSource(null);
-			_widget_10.SetDataSource(null);
+			_widget_11.SetDataSource(null);
 			_datasource_Root.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root;
@@ -5840,6 +6031,29 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 				}
 				_datasource_Root_InspectedUpgrade = null;
 			}
+			if (_datasource_Root_ShipSelectionPopup != null)
+			{
+				_widget_12.SetDataSource(null);
+				_datasource_Root_ShipSelectionPopup.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ShipSelectionPopup;
+				_datasource_Root_ShipSelectionPopup.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ShipSelectionPopup;
+				_datasource_Root_ShipSelectionPopup.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ShipSelectionPopup;
+				_datasource_Root_ShipSelectionPopup.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ShipSelectionPopup;
+				_datasource_Root_ShipSelectionPopup.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ShipSelectionPopup;
+				_datasource_Root_ShipSelectionPopup.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ShipSelectionPopup;
+				_datasource_Root_ShipSelectionPopup.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ShipSelectionPopup;
+				_datasource_Root_ShipSelectionPopup.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ShipSelectionPopup;
+				_datasource_Root_ShipSelectionPopup.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ShipSelectionPopup;
+				_widget_10.PropertyChanged -= PropertyChangedListenerOf_widget_10;
+				_widget_10.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_10;
+				_widget_10.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_10;
+				_widget_10.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_10;
+				_widget_10.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_10;
+				_widget_10.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_10;
+				_widget_10.intPropertyChanged -= intPropertyChangedListenerOf_widget_10;
+				_widget_10.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_10;
+				_widget_10.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_10;
+				_datasource_Root_ShipSelectionPopup = null;
+			}
 			_datasource_Root = null;
 		}
 		_datasource_Root = newDataSource;
@@ -5868,7 +6082,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 		_widget.intPropertyChanged += intPropertyChangedListenerOf_widget;
 		_widget.uintPropertyChanged += uintPropertyChangedListenerOf_widget;
 		_widget.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget;
-		_widget_2_0_0_0_0_0.IsHidden = _datasource_Root.IsControllingCamera;
+		_widget_2_0_0_0_0_0.IsVisible = _datasource_Root.ShowPortScreenGamepadInputs;
 		_widget_2_0_0_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_2_0_0_0_0_0;
 		_widget_2_0_0_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_2_0_0_0_0_0;
 		_widget_2_0_0_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_2_0_0_0_0_0;
@@ -5878,7 +6092,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 		_widget_2_0_0_0_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_2_0_0_0_0_0;
 		_widget_2_0_0_0_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_2_0_0_0_0_0;
 		_widget_2_0_0_0_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_2_0_0_0_0_0;
-		_widget_2_0_1_0_0_0.IsHidden = _datasource_Root.IsControllingCamera;
+		_widget_2_0_1_0_0_0.IsVisible = _datasource_Root.ShowPortScreenGamepadInputs;
 		_widget_2_0_1_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_2_0_1_0_0_0;
 		_widget_2_0_1_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_2_0_1_0_0_0;
 		_widget_2_0_1_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_2_0_1_0_0_0;
@@ -6559,14 +6773,40 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 				}
 			}
 		}
+		_datasource_Root_ShipSelectionPopup = _datasource_Root.ShipSelectionPopup;
+		if (_datasource_Root_ShipSelectionPopup != null)
+		{
+			_datasource_Root_ShipSelectionPopup.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_widget_10.BooleanCheck = _datasource_Root_ShipSelectionPopup.IsOpen;
+			_widget_10.PropertyChanged += PropertyChangedListenerOf_widget_10;
+			_widget_10.boolPropertyChanged += boolPropertyChangedListenerOf_widget_10;
+			_widget_10.floatPropertyChanged += floatPropertyChangedListenerOf_widget_10;
+			_widget_10.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_10;
+			_widget_10.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_10;
+			_widget_10.doublePropertyChanged += doublePropertyChangedListenerOf_widget_10;
+			_widget_10.intPropertyChanged += intPropertyChangedListenerOf_widget_10;
+			_widget_10.uintPropertyChanged += uintPropertyChangedListenerOf_widget_10;
+			_widget_10.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_10;
+			_widget_12.SetDataSource(_datasource_Root_ShipSelectionPopup);
+		}
 		_widget_2_1.SetDataSource(_datasource_Root);
 		_widget_2_2.SetDataSource(_datasource_Root);
 		_widget_4_5_0.SetDataSource(_datasource_Root);
 		_widget_4_5_1.SetDataSource(_datasource_Root);
 		_widget_4_5_2.SetDataSource(_datasource_Root);
+		_widget_4_5_3.SetDataSource(_datasource_Root);
+		_widget_4_5_4.SetDataSource(_datasource_Root);
 		_widget_5_3_0.SetDataSource(_datasource_Root);
 		_widget_5_3_1.SetDataSource(_datasource_Root);
-		_widget_10.SetDataSource(_datasource_Root);
+		_widget_11.SetDataSource(_datasource_Root);
 	}
 
 	private void RefreshDataSource_datasource_Root_LeftRoster(ShipRosterVM newDataSource)
@@ -8510,6 +8750,58 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM : PortScreenWi
 				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_9_ItemTemplate.SetAttributes();
 				portScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_9_ItemTemplate.SetDataSource(dataSource);
 			}
+		}
+	}
+
+	private void RefreshDataSource_datasource_Root_ShipSelectionPopup(PortShipStashPopupVM newDataSource)
+	{
+		if (_datasource_Root_ShipSelectionPopup != null)
+		{
+			_widget_12.SetDataSource(null);
+			_datasource_Root_ShipSelectionPopup.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_widget_10.PropertyChanged -= PropertyChangedListenerOf_widget_10;
+			_widget_10.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_10;
+			_widget_10.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_10;
+			_widget_10.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_10;
+			_widget_10.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_10;
+			_widget_10.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_10;
+			_widget_10.intPropertyChanged -= intPropertyChangedListenerOf_widget_10;
+			_widget_10.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_10;
+			_widget_10.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_10;
+			_datasource_Root_ShipSelectionPopup = null;
+		}
+		_datasource_Root_ShipSelectionPopup = newDataSource;
+		_datasource_Root_ShipSelectionPopup = _datasource_Root.ShipSelectionPopup;
+		if (_datasource_Root_ShipSelectionPopup != null)
+		{
+			_datasource_Root_ShipSelectionPopup.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_datasource_Root_ShipSelectionPopup.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ShipSelectionPopup;
+			_widget_10.BooleanCheck = _datasource_Root_ShipSelectionPopup.IsOpen;
+			_widget_10.PropertyChanged += PropertyChangedListenerOf_widget_10;
+			_widget_10.boolPropertyChanged += boolPropertyChangedListenerOf_widget_10;
+			_widget_10.floatPropertyChanged += floatPropertyChangedListenerOf_widget_10;
+			_widget_10.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_10;
+			_widget_10.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_10;
+			_widget_10.doublePropertyChanged += doublePropertyChangedListenerOf_widget_10;
+			_widget_10.intPropertyChanged += intPropertyChangedListenerOf_widget_10;
+			_widget_10.uintPropertyChanged += uintPropertyChangedListenerOf_widget_10;
+			_widget_10.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_10;
+			_widget_12.SetDataSource(_datasource_Root_ShipSelectionPopup);
 		}
 	}
 

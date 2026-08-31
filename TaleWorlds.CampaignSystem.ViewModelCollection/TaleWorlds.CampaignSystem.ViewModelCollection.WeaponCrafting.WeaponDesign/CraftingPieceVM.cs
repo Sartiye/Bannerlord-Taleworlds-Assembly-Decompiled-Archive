@@ -14,6 +14,8 @@ public class CraftingPieceVM : ViewModel
 
 	private readonly Action<CraftingPieceVM> _selectWeaponPiece;
 
+	private readonly Action<CraftingPiece> _inspectCraftPiece;
+
 	private bool _isFilteredOut;
 
 	public CraftingPieceImageIdentifierVM _imageIdentifier;
@@ -209,9 +211,10 @@ public class CraftingPieceVM : ViewModel
 		ImageIdentifier = new CraftingPieceImageIdentifierVM(null, string.Empty);
 	}
 
-	public CraftingPieceVM(Action<CraftingPieceVM> selectWeaponPart, string templateId, WeaponDesignElement usableCraftingPiece, int pieceType, int index, bool isOpened)
+	public CraftingPieceVM(Action<CraftingPieceVM> selectWeaponPart, Action<CraftingPiece> inspectCraftPiece, string templateId, WeaponDesignElement usableCraftingPiece, int pieceType, int index, bool isOpened)
 	{
 		_selectWeaponPiece = selectWeaponPart;
+		_inspectCraftPiece = inspectCraftPiece;
 		CraftingPiece = usableCraftingPiece;
 		Tier = usableCraftingPiece.CraftingPiece.PieceTier;
 		TierText = Common.ToRoman(Tier);
@@ -237,9 +240,13 @@ public class CraftingPieceVM : ViewModel
 		}
 	}
 
-	public void ExecuteOpenTooltip()
+	public void ExecuteOpenTooltip(bool isMouseMoving)
 	{
 		InformationManager.ShowTooltip(typeof(WeaponDesignElement), CraftingPiece);
+		if (isMouseMoving)
+		{
+			_inspectCraftPiece?.Invoke(CraftingPiece.CraftingPiece);
+		}
 	}
 
 	public void ExecuteCloseTooltip()

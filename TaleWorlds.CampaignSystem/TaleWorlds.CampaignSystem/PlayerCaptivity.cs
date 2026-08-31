@@ -168,7 +168,12 @@ public class PlayerCaptivity
 
 	private int GetPlayerRansomValue()
 	{
-		return (int)((MBRandom.RandomFloat * 0.5f + 0.5f) * ((float)Hero.MainHero.Gold * 0.05f + 300f) * (float)((!Hero.MainHero.PartyBelongedToAsPrisoner.IsSettlement) ? 1 : (Hero.MainHero.PartyBelongedToAsPrisoner.Settlement.MapFaction.IsKingdomFaction ? 4 : 2)) * (float)((!Hero.MainHero.PartyBelongedToAsPrisoner.IsMobile || !Hero.MainHero.PartyBelongedToAsPrisoner.MobileParty.IsLordParty) ? 1 : 2) * (Hero.MainHero.GetPerkValue(DefaultPerks.Trade.ManOfMeans) ? (1f + DefaultPerks.Trade.ManOfMeans.SecondaryBonus) : 1f));
+		float num = 1f;
+		if (Hero.MainHero.GetPerkValue(DefaultPerks.Trade.ManOfMeans))
+		{
+			num += DefaultPerks.Trade.ManOfMeans.SecondaryBonus;
+		}
+		return (int)((MBRandom.RandomFloat * 0.5f + 0.5f) * ((float)Hero.MainHero.Gold * 0.05f + 300f) * (float)((!Hero.MainHero.PartyBelongedToAsPrisoner.IsSettlement) ? 1 : (Hero.MainHero.PartyBelongedToAsPrisoner.Settlement.MapFaction.IsKingdomFaction ? 4 : 2)) * (float)((!Hero.MainHero.PartyBelongedToAsPrisoner.IsMobile || !Hero.MainHero.PartyBelongedToAsPrisoner.MobileParty.IsLordParty) ? 1 : 2) * num);
 	}
 
 	private void StartCaptivityInternal(PartyBase captorParty)

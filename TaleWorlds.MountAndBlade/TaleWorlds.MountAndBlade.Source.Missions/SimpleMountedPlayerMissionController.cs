@@ -38,6 +38,11 @@ public class SimpleMountedPlayerMissionController : MissionLogic
 		base.Mission.SpawnAgent(agentBuildData).WieldInitialWeapons();
 	}
 
+	public override void OnAfterMissionLoadingFinished()
+	{
+		base.Mission.OnInitialSpawnCompleted();
+	}
+
 	public override bool MissionEnded(ref MissionResult missionResult)
 	{
 		return base.Mission.InputManager.IsGameKeyPressed(4);

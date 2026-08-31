@@ -18,7 +18,7 @@ public class NavalMissionShipParametersModel : MissionShipParametersModel
 		MobileParty mobileParty = ((partyBase != null && partyBase.IsMobile) ? partyBase.MobileParty : null);
 		if (mobileParty != null)
 		{
-			PerkHelper.AddPerkBonusForParty(NavalPerks.Boatswain.PopularCaptain, mobileParty, isPrimaryBonus: false, ref stat);
+			PerkHelper.AddPerkBonusForParty(NavalPerks.Boatswain.PopularCaptain, BattleEnvironment.Naval, mobileParty, isPrimaryBonus: false, ref stat);
 		}
 		return MathF.Min(MathF.Ceiling(stat.ResultNumber), shipOrigin.TotalCrewCapacity);
 	}
@@ -30,7 +30,7 @@ public class NavalMissionShipParametersModel : MissionShipParametersModel
 		{
 			int skillValue = characterObject.GetSkillValue(NavalSkills.Shipmaster);
 			SkillHelper.AddSkillBonusForSkillLevel(NavalSkillEffects.WindBonus, ref explainedNumber, skillValue);
-			PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Shipmaster.Windborne, characterObject, ref explainedNumber);
+			PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Shipmaster.Windborne, captain.CurrentBattleEnvironment, characterObject, ref explainedNumber);
 		}
 		return explainedNumber.ResultNumber;
 	}
@@ -42,7 +42,7 @@ public class NavalMissionShipParametersModel : MissionShipParametersModel
 		Agent agent = pilotAgent?.Formation?.Captain;
 		if (agent != null && agent.Character is CharacterObject captainCharacter)
 		{
-			PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Shipmaster.ChainToOars, captainCharacter, ref bonuses);
+			PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Shipmaster.ChainToOars, agent.CurrentBattleEnvironment, captainCharacter, ref bonuses);
 		}
 		return bonuses.ResultNumber;
 	}

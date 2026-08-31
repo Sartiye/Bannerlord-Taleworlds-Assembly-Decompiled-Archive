@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Helpers;
+using TaleWorlds.CampaignSystem.BattleWreckages;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.Extensions;
@@ -147,31 +148,36 @@ public static class TooltipRefresherCollection
 		{
 			propertyBasedTooltipVM.AddProperty(GameTexts.FindText("str_clan").ToString(), hero.Clan.Name.ToString());
 		}
+		Clan clan = hero.Clan;
+		if (clan != null && clan.HasBloodFeudWithPlayer)
+		{
+			propertyBasedTooltipVM.AddProperty("", new TextObject("{=AZaCxlzZ}{BLOOD_ICON} In a blood feud with the {CLAN_NAME}").SetTextVariable("BLOOD_ICON", "{=!}<img src=\"SPGeneral\\blood_feud_icon\" extend=\"3\">").SetTextVariable("CLAN_NAME", Clan.PlayerClan.Name).ToString());
+		}
 		propertyBasedTooltipVM.AddProperty("", "", -1);
 		if (!num)
 		{
 			List<TextObject> list = new List<TextObject>();
-			foreach (Settlement item2 in Settlement.All)
+			foreach (Settlement item in Settlement.All)
 			{
-				if (item2.IsTown)
+				if (item.IsTown)
 				{
-					Town town = item2.Town;
+					Town town = item.Town;
 					list.AddRange(from x in town.Workshops
 						where x.Owner == hero && !x.WorkshopType.IsHidden
 						select x.WorkshopType.Name);
 				}
-				if (!item2.IsTown && !item2.IsVillage)
+				if (!item.IsTown && !item.IsVillage)
 				{
 					continue;
 				}
-				foreach (Alley alley in item2.Alleys)
+				foreach (Alley alley in item.Alleys)
 				{
 					if (alley.Owner == hero)
 					{
-						MBTextManager.SetTextVariable("RANK", alley.Name);
-						MBTextManager.SetTextVariable("NUMBER", Campaign.Current.Models.AlleyModel.GetTroopsOfAIOwnedAlley(alley).TotalManCount);
-						TextObject item = GameTexts.FindText("str_RANK_with_NUM_between_parenthesis");
-						list.Add(item);
+						TextObject textObject = GameTexts.FindText("str_RANK_with_NUM_between_parenthesis");
+						textObject.SetTextVariable("RANK", alley.Name);
+						textObject.SetTextVariable("NUMBER", Campaign.Current.Models.AlleyModel.GetTroopsOfAIOwnedAlley(alley).TotalManCount);
+						list.Add(textObject);
 					}
 				}
 			}
@@ -181,13 +187,13 @@ public static class TooltipRefresherCollection
 			{
 				propertyBasedTooltipVM.AddProperty("", value, 0, TooltipProperty.TooltipPropertyFlags.MultiLine);
 			}
-			TextObject textObject = new TextObject("{=C2qpwFq5}Owner of {SETTLEMENTS}");
+			TextObject textObject2 = new TextObject("{=C2qpwFq5}Owner of {SETTLEMENTS}");
 			IEnumerable<TextObject> enumerable = from x in Settlement.FindAll((Settlement x) => x.IsFortification && x.OwnerClan != null && x.OwnerClan.Leader == hero)
 				select x.Name;
 			MBTextManager.SetTextVariable("SETTLEMENTS", CampaignUIHelper.GetCommaSeparatedText(null, enumerable));
 			if (enumerable.Count() > 0)
 			{
-				propertyBasedTooltipVM.AddProperty("", textObject.ToString(), 0, TooltipProperty.TooltipPropertyFlags.MultiLine);
+				propertyBasedTooltipVM.AddProperty("", textObject2.ToString(), 0, TooltipProperty.TooltipPropertyFlags.MultiLine);
 			}
 			if (hero.OwnedCaravans.Count > 0)
 			{
@@ -201,8 +207,8 @@ public static class TooltipRefresherCollection
 			{
 				MBTextManager.SetTextVariable("STR1", new TextObject("{=jQdBl4hf}Governor of "));
 				MBTextManager.SetTextVariable("STR2", hero.GovernorOf.Name);
-				TextObject textObject2 = GameTexts.FindText("str_STR1_STR2");
-				propertyBasedTooltipVM.AddProperty("", textObject2.ToString);
+				TextObject textObject3 = GameTexts.FindText("str_STR1_STR2");
+				propertyBasedTooltipVM.AddProperty("", textObject3.ToString);
 			}
 			if (hero != Hero.MainHero)
 			{
@@ -1235,6 +1241,18 @@ public static class TooltipRefresherCollection
 		{
 			propertyBasedTooltipVM.AddProperty("", CampaignUIHelper.GetMobilePartyBehaviorText(mobileParty));
 		}
+		if (propertyBasedTooltipVM.IsExtended)
+		{
+			Clan actualClan = mobileParty.ActualClan;
+			if (actualClan != null && actualClan.HasBloodFeudWithPlayer)
+			{
+				if (isInspected)
+				{
+					propertyBasedTooltipVM.AddProperty("", "", -1);
+				}
+				propertyBasedTooltipVM.AddProperty("", new TextObject("{=AZaCxlzZ}{BLOOD_ICON} In a blood feud with the {CLAN_NAME}").SetTextVariable("BLOOD_ICON", "{=!}<img src=\"SPGeneral\\blood_feud_icon\" extend=\"3\">").SetTextVariable("CLAN_NAME", Clan.PlayerClan.Name).ToString());
+			}
+		}
 		propertyBasedTooltipVM.AddProperty(string.Empty, string.Empty, -1);
 		propertyBasedTooltipVM.AddProperty(GameTexts.FindText("str_owner").ToString(), " ");
 		propertyBasedTooltipVM.AddProperty("", "", 0, TooltipProperty.TooltipPropertyFlags.RundownSeperator);
@@ -1340,6 +1358,14 @@ public static class TooltipRefresherCollection
 		if (leaderParty.IsInspected || !flag2)
 		{
 			propertyBasedTooltipVM.AddProperty("", CampaignUIHelper.GetMobilePartyBehaviorText(leaderParty));
+		}
+		if (propertyBasedTooltipVM.IsExtended && army.Parties.Any((MobileParty x) => x.ActualClan?.HasBloodFeudWithPlayer ?? false))
+		{
+			if (leaderParty.IsInspected || !flag2)
+			{
+				propertyBasedTooltipVM.AddProperty("", "", -1);
+			}
+			propertyBasedTooltipVM.AddProperty("", new TextObject("{=a5EFOx2U}{BLOOD_ICON} Some members are in a blood feud with the {CLAN_NAME}").SetTextVariable("BLOOD_ICON", "{=!}<img src=\"SPGeneral\\blood_feud_icon\" extend=\"3\">").SetTextVariable("CLAN_NAME", Clan.PlayerClan.Name).ToString());
 		}
 		propertyBasedTooltipVM.AddProperty(string.Empty, string.Empty, -1);
 		propertyBasedTooltipVM.AddProperty(GameTexts.FindText("str_owner").ToString(), " ");
@@ -2059,7 +2085,11 @@ public static class TooltipRefresherCollection
 				continue;
 			}
 			CharacterObject hero = elementCopyAtIndex2.Character;
-			propertyBasedTooltipVM.AddProperty(elementCopyAtIndex2.Character.Name.ToString(), delegate
+			TextObject name = hero.Name;
+			Clan clan = hero.HeroObject.Clan;
+			string definition = ((clan != null && clan.HasBloodFeudWithPlayer) ? GameTexts.FindText("str_STR1_STR2").SetTextVariable("STR1", name).SetTextVariable("STR2", "{=!}<img src=\"SPGeneral\\blood_feud_icon\" extend=\"3\">")
+				.ToString() : name.ToString());
+			propertyBasedTooltipVM.AddProperty(definition, delegate
 			{
 				TroopRoster troopRoster3 = ((funcToDoBeforeLambda != null) ? funcToDoBeforeLambda() : troopRoster);
 				int num2 = troopRoster3.FindIndexOfTroop(hero);
@@ -2186,5 +2216,20 @@ public static class TooltipRefresherCollection
 		MapMarker mapMarker = args[0] as MapMarker;
 		propertyBasedTooltipVM.Mode = 1;
 		propertyBasedTooltipVM.AddProperty("", mapMarker.Name.ToString, 0, TooltipProperty.TooltipPropertyFlags.Title);
+	}
+
+	public static void RefreshBattleWreckageTooltip(PropertyBasedTooltipVM propertyBasedTooltipVM, object[] args)
+	{
+		BattleWreckage battleWreckage = args[0] as BattleWreckage;
+		propertyBasedTooltipVM.Mode = 1;
+		if (battleWreckage.IsInvestigated)
+		{
+			TextObject textObject = new TextObject("{=NFavDfWG}Battle Remains");
+			propertyBasedTooltipVM.AddProperty("", textObject.ToString(), 0, TooltipProperty.TooltipPropertyFlags.Title);
+		}
+		else
+		{
+			propertyBasedTooltipVM.AddProperty("", battleWreckage.Name.ToString(), 0, TooltipProperty.TooltipPropertyFlags.Title);
+		}
 	}
 }

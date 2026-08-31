@@ -4,7 +4,9 @@ using System.IO;
 using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.AdvancedStartOptions;
 using TaleWorlds.CampaignSystem.BarterSystem;
+using TaleWorlds.CampaignSystem.BattleWreckages;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Conversation;
@@ -226,6 +228,8 @@ public class Campaign : GameType
 	[SaveableProperty(211)]
 	public CampaignObjectManager CampaignObjectManager { get; private set; }
 
+	public AdvancedStartOptionsData AdvancedStartData => Options?.AdvancedStartOptionsData;
+
 	public override bool IsDevelopment => GameMode == CampaignGameMode.Tutorial;
 
 	[SaveableProperty(3)]
@@ -247,6 +251,9 @@ public class Campaign : GameType
 
 	[SaveableProperty(9)]
 	public IssueManager IssueManager { get; private set; }
+
+	[SaveableProperty(345)]
+	public IncidentManager IncidentManager { get; private set; }
 
 	[SaveableProperty(11)]
 	public FactionManager FactionManager { get; private set; }
@@ -305,6 +312,8 @@ public class Campaign : GameType
 	internal MBReadOnlyList<MBEquipmentRoster> AllEquipmentRosters { get; private set; }
 
 	public DefaultCulturalFeats DefaultFeats { get; private set; }
+
+	public DefaultPersonalityTraitEffects DefaultPersonalityTraitEffects { get; private set; }
 
 	internal MBReadOnlyList<PolicyObject> AllPolicies { get; private set; }
 
@@ -400,7 +409,7 @@ public class Campaign : GameType
 	public MapEventManager MapEventManager { get; internal set; }
 
 	[SaveableProperty(43)]
-	public MapMarkerManager MapMarkerManager { get; internal set; }
+	public MapTrackerManager MapTrackerManager { get; internal set; }
 
 	internal CampaignEvents CampaignEvents { get; private set; }
 
@@ -496,6 +505,8 @@ public class Campaign : GameType
 
 	public MBReadOnlyList<MobileParty> PartiesWithoutPartyComponent => CampaignObjectManager.PartiesWithoutPartyComponent;
 
+	public MBReadOnlyList<BattleWreckage> Wreckages => CampaignObjectManager.Wreckages;
+
 	public MBReadOnlyList<Settlement> Settlements => CampaignObjectManager.Settlements;
 
 	public IEnumerable<IFaction> Factions => CampaignObjectManager.Factions;
@@ -558,19 +569,23 @@ public class Campaign : GameType
 	[SaveableProperty(68)]
 	public PropertyOwner<PropertyObject> PlayerTraitDeveloper { get; private set; }
 
+	[SaveableProperty(98)]
+	public PlayerDataForNavalAutoTravel PlayerDataForNavalAutoTravel { get; set; }
+
 	public float GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(MobileParty.NavigationType navigationType)
 	{
 		return _averageDistanceBetweenClosestTwoTowns[navigationType];
 	}
 
-	public Campaign(CampaignGameMode gameMode)
+	public Campaign(CampaignGameMode gameMode, AdvancedStartOptionsData startOptions)
 	{
 		GameMode = gameMode;
-		Options = new CampaignOptions();
+		Options = new CampaignOptions(startOptions);
 		CampaignObjectManager = new CampaignObjectManager();
 		CurrentConversationContext = ConversationContext.Default;
 		QuestManager = new QuestManager();
 		IssueManager = new IssueManager();
+		IncidentManager = new IncidentManager();
 		FactionManager = new FactionManager();
 		CharacterRelationManager = new CharacterRelationManager();
 		Romance = new Romance();
@@ -604,7 +619,6 @@ public class Campaign : GameType
 		CampaignVec2 position = NavigationHelper.FindReachablePointAroundPosition(Settlements.Find((Settlement x) => x.IsTown).GatePosition, MobileParty.MainParty.NavigationCapability, 20f);
 		MainParty.InitializeMobilePartyAtPosition(base.CurrentGame.ObjectManager.GetObject<PartyTemplateObject>("main_hero_party_template"), position);
 		LordPartyComponent.ConvertPartyToLordParty(MainParty, Hero.MainHero, Hero.MainHero);
-		MainParty.ItemRoster.AddToCounts(DefaultItems.Grain, 1);
 	}
 
 	[LoadInitializationCallback]
@@ -613,6 +627,10 @@ public class Campaign : GameType
 		_campaignEntitySystem = new EntitySystem<CampaignEntityComponent>();
 		PlayerFormationPreferences = _playerFormationPreferences.GetReadOnlyDictionary();
 		SpeedUpMultiplier = 4f;
+		if (IncidentManager == null)
+		{
+			IncidentManager = new IncidentManager();
+		}
 		if (UniqueGameId == null && MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.2"))
 		{
 			UniqueGameId = "oldSave";
@@ -634,7 +652,7 @@ public class Campaign : GameType
 		{
 			UnlockedFigureheadsByMainHero = new List<Figurehead>();
 			_customManagers = new List<ICustomSystemManager>();
-			MapMarkerManager = new MapMarkerManager();
+			MapTrackerManager = new MapTrackerManager();
 		}
 	}
 
@@ -651,6 +669,10 @@ public class Campaign : GameType
 		foreach (Settlement item3 in Settlement.All)
 		{
 			item3.OnFinishLoadState();
+		}
+		foreach (BattleWreckage wreckage in Wreckages)
+		{
+			wreckage.UpdateVisibility();
 		}
 		GameMenuCallbackManager = new GameMenuCallbackManager();
 		GameMenuCallbackManager.OnGameLoad();
@@ -746,6 +768,7 @@ public class Campaign : GameType
 		KingdomManager.RegisterEvents();
 		KingdomManager.OnSessionStart();
 		CampaignInformationManager.RegisterEvents();
+		IncidentManager.RegisterEvents();
 	}
 
 	private void DailyTickSettlement(Settlement settlement)
@@ -1325,7 +1348,6 @@ public class Campaign : GameType
 			Hero.MainHero.Father.SetHasMet();
 		}
 		PlayerDefaultFaction = CampaignObjectManager.Find<Clan>("player_faction");
-		GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, 1000, disableNotification: true);
 		Hero.MainHero.ChangeState(Hero.CharacterStates.Active);
 	}
 
@@ -1494,6 +1516,7 @@ public class Campaign : GameType
 		DefaultSiegeStrategies = new DefaultSiegeStrategies();
 		DefaultSkillEffects = new DefaultSkillEffects();
 		DefaultFeats = new DefaultCulturalFeats();
+		DefaultPersonalityTraitEffects = new DefaultPersonalityTraitEffects();
 		DefaultFigureheads = new DefaultFigureheads();
 	}
 
@@ -1502,6 +1525,7 @@ public class Campaign : GameType
 		KingdomManager = new KingdomManager();
 		CampaignInformationManager = new CampaignInformationManager();
 		VisualTrackerManager = new VisualTrackerManager();
+		MapTrackerManager = new MapTrackerManager();
 		TournamentManager = new TournamentManager();
 	}
 
@@ -1572,6 +1596,7 @@ public class Campaign : GameType
 		objectManager.RegisterType<Incident>("Incident", "Incidents", 62u);
 		objectManager.RegisterType<Figurehead>("Figurehead", "Figureheads", 63u);
 		objectManager.RegisterType<ShipPhysicsReference>("ShipPhysicsReference", "ShipPhysicsReferences", 64u);
+		objectManager.RegisterType<TraitEffectObject>("trait_effect", "TraitEffects", 65u);
 	}
 
 	private void CreateManagers()
@@ -1601,7 +1626,6 @@ public class Campaign : GameType
 		_campaignEntitySystem = new EntitySystem<CampaignEntityComponent>();
 		SiegeEventManager = new SiegeEventManager();
 		MapEventManager = new MapEventManager();
-		MapMarkerManager = new MapMarkerManager();
 		MinSettlementX = float.MaxValue;
 		MinSettlementY = float.MaxValue;
 		MaxSettlementX = float.MinValue;
@@ -1631,11 +1655,6 @@ public class Campaign : GameType
 
 	private void OnAfterNewGameCreatedInternal()
 	{
-		Hero.MainHero.Gold = 1000;
-		if (Clan.PlayerClan.Influence != 0f)
-		{
-			ChangeClanInfluenceAction.Apply(Clan.PlayerClan, 0f - Clan.PlayerClan.Influence);
-		}
 		Hero.MainHero.ChangeState(Hero.CharacterStates.Active);
 		GameInitTick();
 		_playerFormationPreferences = new Dictionary<CharacterObject, FormationClass>();
@@ -1857,6 +1876,7 @@ public class Campaign : GameType
 		collectedObjects.Add(CampaignObjectManager);
 		collectedObjects.Add(QuestManager);
 		collectedObjects.Add(IssueManager);
+		collectedObjects.Add(IncidentManager);
 		collectedObjects.Add(FactionManager);
 		collectedObjects.Add(CharacterRelationManager);
 		collectedObjects.Add(Romance);
@@ -1866,13 +1886,14 @@ public class Campaign : GameType
 		collectedObjects.Add(MapTimeTracker);
 		collectedObjects.Add(SiegeEventManager);
 		collectedObjects.Add(MapEventManager);
-		collectedObjects.Add(MapMarkerManager);
+		collectedObjects.Add(MapTrackerManager);
 		collectedObjects.Add(PlayerEncounter);
 		collectedObjects.Add(BarterManager);
 		collectedObjects.Add(MainParty);
 		collectedObjects.Add(CampaignInformationManager);
 		collectedObjects.Add(VisualTrackerManager);
 		collectedObjects.Add(PlayerTraitDeveloper);
+		collectedObjects.Add(PlayerDataForNavalAutoTravel);
 	}
 
 	internal static object AutoGeneratedGetMemberValueEnabledCheatsBefore(object o)
@@ -1918,6 +1939,11 @@ public class Campaign : GameType
 	internal static object AutoGeneratedGetMemberValueIssueManager(object o)
 	{
 		return ((Campaign)o).IssueManager;
+	}
+
+	internal static object AutoGeneratedGetMemberValueIncidentManager(object o)
+	{
+		return ((Campaign)o).IncidentManager;
 	}
 
 	internal static object AutoGeneratedGetMemberValueFactionManager(object o)
@@ -1975,9 +2001,9 @@ public class Campaign : GameType
 		return ((Campaign)o).MapEventManager;
 	}
 
-	internal static object AutoGeneratedGetMemberValueMapMarkerManager(object o)
+	internal static object AutoGeneratedGetMemberValueMapTrackerManager(object o)
 	{
-		return ((Campaign)o).MapMarkerManager;
+		return ((Campaign)o).MapTrackerManager;
 	}
 
 	internal static object AutoGeneratedGetMemberValue_curMapFrame(object o)
@@ -2018,6 +2044,11 @@ public class Campaign : GameType
 	internal static object AutoGeneratedGetMemberValuePlayerTraitDeveloper(object o)
 	{
 		return ((Campaign)o).PlayerTraitDeveloper;
+	}
+
+	internal static object AutoGeneratedGetMemberValuePlayerDataForNavalAutoTravel(object o)
+	{
+		return ((Campaign)o).PlayerDataForNavalAutoTravel;
 	}
 
 	internal static object AutoGeneratedGetMemberValueOptions(object o)

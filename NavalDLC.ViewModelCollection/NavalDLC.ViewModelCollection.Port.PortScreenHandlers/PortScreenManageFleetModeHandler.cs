@@ -130,6 +130,11 @@ public class PortScreenManageFleetModeHandler : PortScreenHandler
 		return PortActionInfo.CreateValid(isEnabled: false, 0, GameTexts.FindText("str_port_repair_ship"), new TextObject("{=Pm6JbaXa}You can't repair ships outside a port."));
 	}
 
+	protected override PortActionInfo CanRepairAll()
+	{
+		return PortActionInfo.CreateValid(isEnabled: false, 0, GameTexts.FindText("str_port_repair_all_ships"), new TextObject("{=Pm6JbaXa}You can't repair ships outside a port."));
+	}
+
 	protected override PortActionInfo CanSendToClan(Ship ship)
 	{
 		int troopsCountToSend = base.ShipsToSend.Count * Campaign.Current.Models.FleetManagementModel.MinimumTroopCountRequiredToSendShips;
@@ -137,9 +142,14 @@ public class PortScreenManageFleetModeHandler : PortScreenHandler
 		return PortActionInfo.CreateValid(Campaign.Current.Models.FleetManagementModel.CanSendShipToPlayerClan(ship, base.RightShips.Count, troopsCountToSend, out hint), 0, GameTexts.FindText("str_port_send_ship_to_clan"), hint);
 	}
 
-	protected override PortActionInfo CanRepairAll()
+	protected override PortActionInfo CanStashShip(Ship ship)
 	{
-		return PortActionInfo.CreateValid(isEnabled: false, 0, GameTexts.FindText("str_port_repair_all_ships"), new TextObject("{=Pm6JbaXa}You can't repair ships outside a port."));
+		return PortActionInfo.CreateInvalid();
+	}
+
+	protected override PortActionInfo CanViewStash(bool isRightRoster)
+	{
+		return PortActionInfo.CreateInvalid();
 	}
 
 	public override List<PortChangeInfo> GetChanges()

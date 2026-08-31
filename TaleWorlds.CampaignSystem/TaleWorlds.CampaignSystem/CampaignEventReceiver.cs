@@ -926,6 +926,10 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
+	public virtual void CanHeroBeReleased(Hero prisoner, ref bool result)
+	{
+	}
+
 	public virtual void CanPlayerMeetWithHeroAfterConversation(Hero hero, ref bool result)
 	{
 	}
@@ -1014,6 +1018,10 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
+	public virtual void CanHaveUnlockedUpgradePiece(Ship ship, ChangeShipOwnerAction.ShipOwnerChangeDetail detail, ref bool canHaveUpgradePiece)
+	{
+	}
+
 	public virtual void OnFigureheadUnlocked(Figurehead figurehead)
 	{
 	}
@@ -1066,14 +1074,6 @@ public abstract class CampaignEventReceiver
 	{
 	}
 
-	public virtual void OnMapMarkerCreated(MapMarker mapMarker)
-	{
-	}
-
-	public virtual void OnMapMarkerRemoved(MapMarker mapMarker)
-	{
-	}
-
 	public virtual void OnAllianceStarted(Kingdom kingdom1, Kingdom kingdom2)
 	{
 	}
@@ -1087,6 +1087,18 @@ public abstract class CampaignEventReceiver
 	}
 
 	public virtual void OnCallToWarAgreementEnded(Kingdom callingKingdom, Kingdom calledKingdom, Kingdom kingdomToCallToWarAgainst)
+	{
+	}
+
+	public virtual void OnPartyEncounter(PartyBase attacker, PartyBase defender)
+	{
+	}
+
+	public virtual void OnBloodFeudStateChanged(Clan clan, Hero executedHero, ChangeBloodFeudStateAction.ChangeBloodFeudActionDetail detail)
+	{
+	}
+
+	public virtual void OnDeathMarkAdded(Hero hero, Hero killerHero)
 	{
 	}
 

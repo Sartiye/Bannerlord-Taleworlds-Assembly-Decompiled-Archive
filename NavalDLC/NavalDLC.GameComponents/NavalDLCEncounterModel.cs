@@ -106,7 +106,7 @@ public class NavalDLCEncounterModel : EncounterModel
 		ExplainedNumber bonuses = base.BaseModel.GetBribeChance(defenderParty, attackerParty);
 		if (defenderParty.IsBandit && defenderParty.HasNavalNavigationCapability)
 		{
-			PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.Arr, attackerParty.LeaderHero.CharacterObject, isPrimaryBonus: true, ref bonuses);
+			PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.Arr, attackerParty.CurrentBattleEnvironment, attackerParty.LeaderHero.CharacterObject, isPrimaryBonus: true, ref bonuses);
 		}
 		return bonuses;
 	}

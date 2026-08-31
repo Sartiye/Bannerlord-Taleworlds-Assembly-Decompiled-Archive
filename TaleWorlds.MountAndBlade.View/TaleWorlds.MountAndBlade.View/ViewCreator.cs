@@ -122,6 +122,11 @@ public static class ViewCreator
 		return ViewCreatorManager.CreateMissionView<MissionFormationMarkerUIHandler>(mission != null, mission, Array.Empty<object>());
 	}
 
+	public static MissionView CreateMissionReplayView(Mission mission = null)
+	{
+		return ViewCreatorManager.CreateMissionView<ReplayMissionView>(mission != null, mission, Array.Empty<object>());
+	}
+
 	public static MissionView CreateMissionHintView(Mission mission = null)
 	{
 		return ViewCreatorManager.CreateMissionView<MissionHintView>(mission != null, mission, Array.Empty<object>());

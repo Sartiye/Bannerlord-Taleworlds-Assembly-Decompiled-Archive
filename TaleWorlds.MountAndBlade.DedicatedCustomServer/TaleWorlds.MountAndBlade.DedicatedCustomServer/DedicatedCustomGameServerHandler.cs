@@ -46,7 +46,7 @@ public class DedicatedCustomGameServerHandler : ICustomBattleServerSessionHandle
 
 	async Task<PlayerJoinGameResponseDataFromHost[]> ICustomBattleServerSessionHandler.OnClientWantsToConnectCustomGame(PlayerJoinGameData[] playerJoinData)
 	{
-		bool isFull = MultiplayerOptions.OptionType.MaxNumberOfPlayers.GetIntValue() < GameNetwork.NetworkPeerCount + playerJoinData.Length;
+		bool isFull = MultiplayerOptions.OptionType.CultureTeam2.GetIntValue() < GameNetwork.NetworkPeerCount + playerJoinData.Length;
 		List<PlayerJoinGameResponseDataFromHost> playerJoinResponses = new List<PlayerJoinGameResponseDataFromHost>();
 		bool peerTriedToJoinDuringLoading = false;
 		while (Mission.Current != null && Mission.Current.CurrentState != Mission.State.Continuing)

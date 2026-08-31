@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using NavalDLC.Missions.AI.UsableMachineAIs;
 using TaleWorlds.Core;
 using TaleWorlds.DotNet;
@@ -20,6 +22,34 @@ public class ShipAttachmentPointMachine : UsableMachine
 	private MBList<GameEntity> _rampPhysicsList;
 
 	private ActionIndexCache _actionForJumpingOff = ActionIndexCache.act_escape_jump;
+
+	private GameEntity _destructablePart;
+
+	private GameEntity _destructablePartCleanCollider;
+
+	private DestructableComponent _shipAttachmentPointMachineDestructableComponent;
+
+	private PhysicsMaterial _destructablePartPhysicsMaterialCached;
+
+	private Vec3[] _destructablePartQuadsCached = new Vec3[4];
+
+	private UIntPtr _destructablePartQuadPinnedPointer = UIntPtr.Zero;
+
+	private GCHandle _destructablePartQuadPinnedGCHandler;
+
+	private UIntPtr _destructablePartIndicesPinnedPointer = UIntPtr.Zero;
+
+	private GCHandle _destructablePartIndicesPinnedGCHandler;
+
+	private int[] _destructablePartQuadsIndicesCached = new int[6];
+
+	private bool _destructablePartReset = true;
+
+	private Vec3 _lastHitImpactDirection;
+
+	private Vec3 _lastHitImpactPosition;
+
+	private float _lastHitDamage;
 
 	public MissionShip OwnerShip { get; private set; }
 
@@ -87,6 +117,23 @@ public class ShipAttachmentPointMachine : UsableMachine
 		RampVisualEntity.SetVisibilityExcludeParents(visible: false);
 		SetScriptComponentToTick(GetTickRequirement());
 		EnemyRangeToStopUsing = 5f;
+		_destructablePartPhysicsMaterialCached = PhysicsMaterial.GetFromName("fabric");
+		_destructablePart = TaleWorlds.Engine.GameEntity.Instantiate(Mission.Current.Scene, "ship_attachment_point_destructable", MatrixFrame.Identity);
+		_destructablePartCleanCollider = _destructablePart.GetFirstChildEntityWithTagRecursive("cleanCollider");
+		_ = MatrixFrame.Identity;
+		_shipAttachmentPointMachineDestructableComponent = _destructablePart.GetFirstScriptOfType<DestructableComponent>();
+		_shipAttachmentPointMachineDestructableComponent.OnHitTakenWithImpact += OnDestructableHitTakenWithImpact;
+		_destructablePart.SetVisibilityExcludeParents(visible: false);
+		_destructablePartQuadPinnedGCHandler = GCHandle.Alloc(_destructablePartQuadsCached, GCHandleType.Pinned);
+		_destructablePartQuadPinnedPointer = (UIntPtr)(ulong)(long)_destructablePartQuadPinnedGCHandler.AddrOfPinnedObject();
+		_destructablePartIndicesPinnedGCHandler = GCHandle.Alloc(_destructablePartQuadsIndicesCached, GCHandleType.Pinned);
+		_destructablePartIndicesPinnedPointer = (UIntPtr)(ulong)(long)_destructablePartIndicesPinnedGCHandler.AddrOfPinnedObject();
+		_destructablePartQuadsIndicesCached[0] = 2;
+		_destructablePartQuadsIndicesCached[1] = 1;
+		_destructablePartQuadsIndicesCached[2] = 0;
+		_destructablePartQuadsIndicesCached[3] = 3;
+		_destructablePartQuadsIndicesCached[4] = 2;
+		_destructablePartQuadsIndicesCached[5] = 0;
 		IsDisabledForAttackerAIDueToEnemyInRange = new QueryData<bool>(() => OwnerShip != null && OwnerShip.ShipOrder != null && OwnerShip.ShipOrder.IsEnemyOnShip, 1f);
 		IsDisabledForDefenderAIDueToEnemyInRange = new QueryData<bool>(() => OwnerShip != null && OwnerShip.ShipOrder != null && OwnerShip.ShipOrder.IsEnemyOnShip, 1f);
 	}
@@ -101,10 +148,64 @@ public class ShipAttachmentPointMachine : UsableMachine
 		base.PilotStandingPoint.AddComponent(new ResetAnimationOnStopUsageComponent(ActionIndexCache.act_none, alwaysResetWithAction: false));
 	}
 
+	public void SetPhysicsEntitiesVisibility(bool isEnabled)
+	{
+		_shipAttachmentPointMachineDestructableComponent.Reset();
+		_destructablePart.SetVisibilityExcludeParents(isEnabled);
+		_destructablePartReset = true;
+	}
+
 	protected override void OnTick(float dt)
 	{
-		bool flag = !OwnerShip.BeingAbandoned && (LinkedAttachmentMachine?.CurrentAttachment != null || CurrentAttachment == null || (base.PilotAgent == null && (CurrentAttachment.State != ShipAttachmentMachine.ShipAttachment.ShipAttachmentState.BridgeConnected || OwnerShip.IsDisconnectionBlocked())));
+		bool flag = !OwnerShip.BeingAbandoned && (LinkedAttachmentMachine?.CurrentAttachment != null || CurrentAttachment == null || (base.PilotAgent == null && ((CurrentAttachment.State != ShipAttachmentMachine.ShipAttachment.ShipAttachmentState.BridgeConnected && CurrentAttachment.State != ShipAttachmentMachine.ShipAttachment.ShipAttachmentState.RopesPulling) || OwnerShip.IsDisconnectionBlocked())));
 		base.PilotStandingPoint.SetIsDeactivatedSynched(flag);
+		if (CurrentAttachment != null)
+		{
+			if ((CurrentAttachment.State == ShipAttachmentMachine.ShipAttachment.ShipAttachmentState.BridgeConnected || CurrentAttachment.State == ShipAttachmentMachine.ShipAttachment.ShipAttachmentState.BrokenAndWaitingForRemoval || CurrentAttachment.State == ShipAttachmentMachine.ShipAttachment.ShipAttachmentState.BridgeThrown) && !_destructablePartReset)
+			{
+				_shipAttachmentPointMachineDestructableComponent.Reset();
+				_destructablePart.SetVisibilityExcludeParents(visible: false);
+				_destructablePartReset = true;
+			}
+			else if (CurrentAttachment.State == ShipAttachmentMachine.ShipAttachment.ShipAttachmentState.RopesPulling)
+			{
+				if (_destructablePartReset)
+				{
+					_destructablePart.SetVisibilityExcludeParents(visible: true);
+					_destructablePartReset = false;
+				}
+				MatrixFrame globalFrame = ConnectionClipPlaneEntity.GetGlobalFrame();
+				MatrixFrame globalFrame2 = CurrentAttachment.AttachmentSource.ConnectionClipPlaneEntity.GetGlobalFrame();
+				Vec3 v = globalFrame2.origin - globalFrame2.rotation.s * 0.125f;
+				Vec3 v2 = globalFrame2.origin + globalFrame2.rotation.s * 0.125f;
+				Vec3 v3 = globalFrame.origin + globalFrame.rotation.s * 0.125f;
+				Vec3 v4 = globalFrame.origin - globalFrame.rotation.s * 0.125f;
+				MatrixFrame frame = MatrixFrame.Identity;
+				frame.origin = (v + v2 + v3 + v4) * 0.25f;
+				frame.rotation = Mat3.Identity;
+				_destructablePartQuadsCached[0] = frame.TransformToLocal(in v);
+				_destructablePartQuadsCached[1] = frame.TransformToLocal(in v4);
+				_destructablePartQuadsCached[2] = frame.TransformToLocal(in v3);
+				_destructablePartQuadsCached[3] = frame.TransformToLocal(in v2);
+				_destructablePartCleanCollider.ReplacePhysicsBodyWithQuadPhysicsBody(_destructablePartQuadPinnedPointer, 4, _destructablePartPhysicsMaterialCached, BodyFlags.TwoSided | BodyFlags.Moveable, _destructablePartIndicesPinnedPointer, 6, replaceTrianglemeshDescriptions: true);
+				_destructablePart.SetGlobalFrame(in frame);
+				if (_shipAttachmentPointMachineDestructableComponent.IsDestroyed)
+				{
+					if (base.PilotAgent != null && base.PilotAgent.IsAIControlled)
+					{
+						base.PilotAgent.DisableScriptedCombatMovement();
+						base.PilotAgent.StopUsingGameObject();
+					}
+					if (base.PilotStandingPoint.IsDisabledForPlayers)
+					{
+						base.PilotStandingPoint.SetIsDisabledForPlayersSynched(value: false);
+					}
+					_shipAttachmentPointMachineDestructableComponent.Reset();
+					_destructablePart.SetVisibilityExcludeParents(visible: false);
+					_destructablePartReset = true;
+				}
+			}
+		}
 		if (_focusObject.GetVisibilityExcludeParents() == flag)
 		{
 			_focusObject.SetVisibilityExcludeParents(!flag);
@@ -155,6 +256,66 @@ public class ShipAttachmentPointMachine : UsableMachine
 			else
 			{
 				base.PilotAgent.StopUsingGameObject();
+			}
+		}
+	}
+
+	protected override void OnRemoved(int removeReason)
+	{
+		base.OnRemoved(removeReason);
+		if (_shipAttachmentPointMachineDestructableComponent != null)
+		{
+			_shipAttachmentPointMachineDestructableComponent.OnHitTakenWithImpact -= OnDestructableHitTakenWithImpact;
+		}
+		if (_destructablePartQuadPinnedGCHandler.IsAllocated)
+		{
+			_destructablePartQuadPinnedGCHandler.Free();
+			_destructablePartQuadPinnedPointer = UIntPtr.Zero;
+		}
+		if (_destructablePartIndicesPinnedGCHandler.IsAllocated)
+		{
+			_destructablePartIndicesPinnedGCHandler.Free();
+			_destructablePartIndicesPinnedPointer = UIntPtr.Zero;
+		}
+	}
+
+	private void OnDestructableHitTakenWithImpact(DestructableComponent target, Agent attackerAgent, Vec3 impactPosition, Vec3 impactDirection, int inflictedDamage)
+	{
+		if (CurrentAttachment == null)
+		{
+			return;
+		}
+		RopePileBaked ropePileBaked = CurrentAttachment.AttachmentSource?.RopeVisual;
+		if (ropePileBaked == null)
+		{
+			return;
+		}
+		Vec3 origin = CurrentAttachment.AttachmentSource.ConnectionClipPlaneEntity.GetGlobalFrame().origin;
+		Vec3 vec = ConnectionClipPlaneEntity.GetGlobalFrame().origin - origin;
+		float lengthSquared = vec.LengthSquared;
+		if (!(lengthSquared >= 0.0001f))
+		{
+			return;
+		}
+		Vec3 vec2 = vec * (1f / TaleWorlds.Library.MathF.Sqrt(lengthSquared));
+		Vec3 globalHitVector = impactDirection - vec2 * Vec3.DotProduct(impactDirection, vec2);
+		if (globalHitVector.LengthSquared >= 1E-06f)
+		{
+			float num = MBMath.ClampFloat(Vec3.DotProduct(impactPosition - origin, vec) / lengthSquared, 0f, 1f);
+			_lastHitImpactDirection = impactDirection;
+			_lastHitImpactPosition = impactPosition;
+			_lastHitDamage = inflictedDamage;
+			if (target.IsDestroyed)
+			{
+				float num2 = TaleWorlds.Library.MathF.Min((float)inflictedDamage * 0.45f, 16f);
+				Vec3 impulseAtBreakPoint = ((impactDirection.LengthSquared > 0.0001f && num2 > 0f) ? (impactDirection.NormalizedCopy() * num2) : Vec3.Zero);
+				CurrentAttachment.BreakWithCutRope(num, impulseAtBreakPoint, CurrentAttachment.ShipAttachmentJoint.TensionRatio);
+				MissionCombatMechanicsHelper.NextBlowCollisionReactionOverride = MeleeCollisionReaction.SlicedThrough;
+			}
+			else
+			{
+				float intensity = MBMath.ClampFloat((float)inflictedDamage * 1.5f, 15f, 60f);
+				ropePileBaked.ApplyWobble(globalHitVector, intensity, 1f, num);
 			}
 		}
 	}

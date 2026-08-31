@@ -212,9 +212,13 @@ public class MBMusicManager
 				{
 					return MusicTheme.EmpireVictory;
 				}
-				if (culture.StringId == "sturgia" || culture.StringId == "nord")
+				if (culture.StringId == "sturgia")
 				{
 					return MusicTheme.SturgiaVictory;
+				}
+				if (culture.StringId == "nord")
+				{
+					return MusicTheme.NordVictory;
 				}
 				if (culture.StringId == "aserai")
 				{
@@ -329,6 +333,8 @@ public class MBMusicManager
 
 	private int _latestFrameUpdatedNo = -1;
 
+	private PsaiResult _soundtrackLoadResult = PsaiResult.OK;
+
 	public static MBMusicManager Current { get; private set; }
 
 	public MusicMode CurrentMode { get; private set; }
@@ -348,7 +354,7 @@ public class MBMusicManager
 				list.Add(moduleName);
 			}
 		}
-		PsaiCore.Instance.LoadSoundtrackFromProjectFile(list);
+		_soundtrackLoadResult = PsaiCore.Instance.LoadSoundtrackFromProjectFile(list);
 	}
 
 	public static bool IsCreationCompleted()
@@ -377,6 +383,10 @@ public class MBMusicManager
 			Current.CurrentMode = MusicMode.Paused;
 			Current._menuModeActivationTimer = 0.5f;
 			_initialized = true;
+			if (Current._soundtrackLoadResult != PsaiResult.OK)
+			{
+				MBDebug.ShowMessageBox("Music files could not be loaded. The game will run without music. Please verify your game files.", "Warning", 3u);
+			}
 			Debug.Print("MusicManager Initialize completed.", 0, Debug.DebugColor.Green, 281474976710656uL);
 		}
 	}

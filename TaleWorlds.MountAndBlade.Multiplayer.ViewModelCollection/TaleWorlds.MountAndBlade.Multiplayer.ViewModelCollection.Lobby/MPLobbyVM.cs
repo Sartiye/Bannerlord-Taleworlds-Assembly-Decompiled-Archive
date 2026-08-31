@@ -83,6 +83,8 @@ public class MPLobbyVM : ViewModel
 
 	private readonly Action _onLogout;
 
+	private readonly Action<bool> _onBusyStateChanged;
+
 	private readonly Action<KeyOptionVM> _onKeybindRequest;
 
 	private readonly Action<bool> _setNavigationRestriction;
@@ -937,11 +939,12 @@ public class MPLobbyVM : ViewModel
 		}
 	}
 
-	public MPLobbyVM(LobbyState lobbyState, Action<BasicCharacterObject> onOpenFacegen, Action onForceCloseFacegen, Action onLogout, Action<KeyOptionVM> onKeybindRequest, Func<string> getContinueKeyText, Action<bool> setNavigationRestriction)
+	public MPLobbyVM(LobbyState lobbyState, Action<BasicCharacterObject> onOpenFacegen, Action onForceCloseFacegen, Action onLogout, Action<bool> onBusyStateChanged, Action<KeyOptionVM> onKeybindRequest, Func<string> getContinueKeyText, Action<bool> setNavigationRestriction)
 	{
 		CurrentPage = LobbyPage.NotAssigned;
 		_onForceCloseFacegen = onForceCloseFacegen;
 		_onLogout = onLogout;
+		_onBusyStateChanged = onBusyStateChanged;
 		_onKeybindRequest = onKeybindRequest;
 		_setNavigationRestriction = setNavigationRestriction;
 		_lobbyState = lobbyState;
@@ -1880,7 +1883,7 @@ public class MPLobbyVM : ViewModel
 	private void UpdateBlockerState()
 	{
 		LobbyClient.State currentState = _lobbyClient.CurrentState;
-		bool flag = NetworkMain.GameClient.IsRefreshingPlayerData || _isDisconnecting || _isRejoining || _isStartingGameFind || _isCustomGameCheckingForMaps || currentState == LobbyClient.State.AtBattle || currentState == LobbyClient.State.QuittingFromBattle || currentState == LobbyClient.State.WaitingToRegisterCustomGame || currentState == LobbyClient.State.HostingCustomGame || currentState == LobbyClient.State.WaitingToJoinCustomGame || currentState == LobbyClient.State.InCustomGame;
+		bool flag = NetworkMain.GameClient.IsRefreshingPlayerData || _isDisconnecting || _isRejoining || _isStartingGameFind || _isCustomGameCheckingForMaps || currentState == LobbyClient.State.AtBattle || currentState == LobbyClient.State.QuittingFromBattle || currentState == LobbyClient.State.WaitingToRegisterCustomGame || currentState == LobbyClient.State.HostingCustomGame || currentState == LobbyClient.State.WaitingToJoinCustomGame || currentState == LobbyClient.State.InCustomGame || Matchmaking.CustomServer.IsSearchingGamesToSpectate;
 		if (flag && !BlockerState.IsEnabled)
 		{
 			TextObject description = new TextObject("{=Rc95Kq8r}Please wait...");

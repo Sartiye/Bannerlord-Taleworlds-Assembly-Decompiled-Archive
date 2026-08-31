@@ -13,7 +13,7 @@ public class QuestScreenTutorial : TutorialItemBase
 	public QuestScreenTutorial()
 	{
 		base.Placement = TutorialItemVM.ItemPlacements.Right;
-		base.HighlightedVisualElementID = "QuestsButton";
+		base.HighlightedVisualElementID = "quest";
 		base.MouseRequired = true;
 	}
 

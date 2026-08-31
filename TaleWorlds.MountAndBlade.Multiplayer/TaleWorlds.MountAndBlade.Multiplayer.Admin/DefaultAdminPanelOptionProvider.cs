@@ -54,6 +54,22 @@ public class DefaultAdminPanelOptionProvider : IAdminPanelOptionProvider
 
 		public const string AllowHorseArchers = "allow_horse_archers";
 
+		public const string EnableSpectators = "enable_spectators";
+
+		public const string StreamerModeEnabled = "streamer_mode_enabled";
+
+		public const string FormationTargetingVisibilityMode = "formation_targeting_visibility_mode";
+
+		public const string FormationTargetingVisibilityThreshold = "formation_targeting_visibility_threshold";
+
+		public const string FormationTargetingVisibilityAppliesAtCloseRange = "formation_targeting_visibility_close_range";
+
+		public const string FormationMarkerFarDistanceCutoff = "formation_marker_far_distance_cutoff";
+
+		public const string FormationMarkerFarAlphaTarget = "formation_marker_far_alpha_target";
+
+		public const string FormationMarkerAlwaysOnDistance = "formation_marker_always_on_distance";
+
 		public const string EndWarmup = "end_warmup";
 
 		public const string MutePlayer = "mute_player";
@@ -373,7 +389,7 @@ public class DefaultAdminPanelOptionProvider : IAdminPanelOptionProvider
 			if (_gameTypeOption == null)
 			{
 				Debug.Print("Game type option is not set for game type dependent option: " + base.Name);
-				Debug.FailedAssert("Game type option is not set for game type dependent option: " + base.Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Admin\\DefaultAdminPanelOptionProvider.cs", "GetIsAvailable", 994);
+				Debug.FailedAssert("Game type option is not set for game type dependent option: " + base.Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Admin\\DefaultAdminPanelOptionProvider.cs", "GetIsAvailable", 1063);
 				return true;
 			}
 			if (_gameTypeOption.IsUndecided)
@@ -447,7 +463,7 @@ public class DefaultAdminPanelOptionProvider : IAdminPanelOptionProvider
 			if (_gameTypeOption == null)
 			{
 				Debug.Print("Game type option is not set for game type dependent option: " + base.Name);
-				Debug.FailedAssert("Game type option is not set for game type dependent option: " + base.Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Admin\\DefaultAdminPanelOptionProvider.cs", "GetIsAvailable", 1080);
+				Debug.FailedAssert("Game type option is not set for game type dependent option: " + base.Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Admin\\DefaultAdminPanelOptionProvider.cs", "GetIsAvailable", 1149);
 				return true;
 			}
 			if (_gameTypeOption.IsUndecided)
@@ -633,7 +649,7 @@ public class DefaultAdminPanelOptionProvider : IAdminPanelOptionProvider
 		{
 			return adminPanelOption.GetValue();
 		}
-		Debug.FailedAssert($"Failed to find \"{typeof(T)}\" type option with id: {optionId}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Admin\\DefaultAdminPanelOptionProvider.cs", "GetValueFromOption", 185);
+		Debug.FailedAssert($"Failed to find \"{typeof(T)}\" type option with id: {optionId}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\Admin\\DefaultAdminPanelOptionProvider.cs", "GetValueFromOption", 193);
 		return default(T);
 	}
 
@@ -756,6 +772,19 @@ public class DefaultAdminPanelOptionProvider : IAdminPanelOptionProvider
 			{
 				_multiplayerAdminComponent.ChangeClassRestriction(FormationClass.HorseArcher, !val);
 			}));
+		adminPanelOptionGroup.AddOption(new AdminPanelOption<bool>("enable_spectators").BuildOptionType(MultiplayerOptions.OptionType.EnableSpectators).BuildName(new TextObject("{=BAP7bTOd}Allow Spectators")).BuildDescription(new TextObject("{=Ws9noGZk}Allow players to join this server as spectators.")));
+		adminPanelOptionGroup.AddOption(new AdminPanelOption<bool>("streamer_mode_enabled").BuildOptionType(MultiplayerOptions.OptionType.StreamerModeEnabled).BuildName(new TextObject("{=R96gmaky}Streamer Mode")).BuildDescription(new TextObject("{=uwBnWIsX}Enable the dedicated streamer overlay (all-players overlay and through-wall silhouettes) for spectators.")));
+		adminPanelOptionGroup.AddOption(new AdminPanelNumericOption("formation_targeting_visibility_mode").SetMinimumAndMaximumFrom(MultiplayerOptions.OptionType.FormationTargetingVisibilityMode).BuildOptionType(MultiplayerOptions.OptionType.FormationTargetingVisibilityMode).BuildName(new TextObject("{=ftvis_admin_mode}Formation Targeting Visibility Mode"))
+			.BuildDescription(new TextObject("{=ftvis_admin_mode_desc}Captain only. Visibility rule that must be satisfied before an enemy formation can be focused for targeting. 0 = Disabled, 1 = Percentage of visible troops, 2 = Absolute count of visible troops.")));
+		adminPanelOptionGroup.AddOption(new AdminPanelNumericOption("formation_targeting_visibility_threshold").SetMinimumAndMaximumFrom(MultiplayerOptions.OptionType.FormationTargetingVisibilityThreshold).BuildOptionType(MultiplayerOptions.OptionType.FormationTargetingVisibilityThreshold).BuildName(new TextObject("{=ftvis_admin_threshold}Formation Targeting Visibility Threshold"))
+			.BuildDescription(new TextObject("{=ftvis_admin_threshold_desc}Captain only. Threshold for the formation targeting visibility rule. In Percentage mode: minimum percent (0-100) of sampled troops that must be visible. In AbsoluteCount mode: minimum estimated visible troop count.")));
+		adminPanelOptionGroup.AddOption(new AdminPanelOption<bool>("formation_targeting_visibility_close_range").BuildOptionType(MultiplayerOptions.OptionType.FormationTargetingVisibilityAppliesAtCloseRange).BuildName(new TextObject("{=ftvis_admin_closerange}Formation Targeting Visibility At Close Range")).BuildDescription(new TextObject("{=ftvis_admin_closerange_desc}If enabled, the formation targeting visibility rule also applies to formations within close range (under 10 meters).")));
+		adminPanelOptionGroup.AddOption(new AdminPanelNumericOption("formation_marker_far_distance_cutoff").SetMinimumAndMaximumFrom(MultiplayerOptions.OptionType.FormationMarkerFarDistanceCutoff).BuildOptionType(MultiplayerOptions.OptionType.FormationMarkerFarDistanceCutoff).BuildName(new TextObject("{=fmark_admin_far_distance}Formation Marker Far Distance Cutoff"))
+			.BuildDescription(new TextObject("{=fmark_admin_far_distance_desc}Captain only. Distance in metres beyond which the formation marker is drawn at the far alpha target. The marker fades from full alpha at close range to that target at this distance. -1 uses the default.")));
+		adminPanelOptionGroup.AddOption(new AdminPanelNumericOption("formation_marker_far_alpha_target").SetMinimumAndMaximumFrom(MultiplayerOptions.OptionType.FormationMarkerFarAlphaTarget).BuildOptionType(MultiplayerOptions.OptionType.FormationMarkerFarAlphaTarget).BuildName(new TextObject("{=fmark_admin_far_alpha}Formation Marker Far Alpha Target"))
+			.BuildDescription(new TextObject("{=fmark_admin_far_alpha_desc}Captain only. Opacity of the formation marker at and beyond the far distance cutoff, as a percentage (0-100, where 0 hides the marker completely). -1 uses the default.")));
+		adminPanelOptionGroup.AddOption(new AdminPanelNumericOption("formation_marker_always_on_distance").SetMinimumAndMaximumFrom(MultiplayerOptions.OptionType.FormationMarkerAlwaysOnDistance).BuildOptionType(MultiplayerOptions.OptionType.FormationMarkerAlwaysOnDistance).BuildName(new TextObject("{=fmark_admin_always_on}Formation Marker Always On Distance"))
+			.BuildDescription(new TextObject("{=fmark_admin_always_on_desc}Captain only. Distance in metres within which a visible formation marker is always drawn at full opacity. Beyond it the marker fades toward the far alpha target. -1 uses the default.")));
 		return adminPanelOptionGroup;
 	}
 

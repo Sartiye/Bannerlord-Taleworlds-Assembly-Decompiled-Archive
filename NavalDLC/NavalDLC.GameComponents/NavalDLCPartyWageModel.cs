@@ -29,7 +29,8 @@ public class NavalDLCPartyWageModel : PartyWageModel
 	public override ExplainedNumber GetTotalWage(MobileParty mobileParty, TroopRoster troopRoster, bool includeDescriptions = false)
 	{
 		ExplainedNumber totalWage = base.BaseModel.GetTotalWage(mobileParty, troopRoster, includeDescriptions);
-		bool flag = !mobileParty.HasPerk(DefaultPerks.Steward.AidCorps);
+		Hero perkOwnerHero = null;
+		bool flag = !mobileParty.HasPerk(DefaultPerks.Steward.AidCorps, out perkOwnerHero);
 		int num = 0;
 		int num2 = 0;
 		for (int i = 0; i < troopRoster.Count; i++)
@@ -57,7 +58,8 @@ public class NavalDLCPartyWageModel : PartyWageModel
 			{
 				totalWage.AddFactor(-0.8f, _convoyPartyWageCutText);
 			}
-			if (mobileParty.HasPerk(NavalPerks.Boatswain.Optimization))
+			Hero perkOwnerHero2 = null;
+			if (mobileParty.HasPerk(NavalPerks.Boatswain.Optimization, out perkOwnerHero2))
 			{
 				float num5 = (float)num / totalWage.BaseNumber;
 				if (num5 > 0f)
@@ -66,7 +68,8 @@ public class NavalDLCPartyWageModel : PartyWageModel
 					totalWage.AddFactor(value, NavalPerks.Boatswain.Optimization.Name);
 				}
 			}
-			if (mobileParty.HasPerk(NavalPerks.Boatswain.NavalHorde))
+			Hero perkOwnerHero3 = null;
+			if (mobileParty.HasPerk(NavalPerks.Boatswain.NavalHorde, out perkOwnerHero3))
 			{
 				float num6 = (float)num2 / totalWage.BaseNumber;
 				if (num6 > 0f)
@@ -81,11 +84,11 @@ public class NavalDLCPartyWageModel : PartyWageModel
 
 	public override ExplainedNumber GetTroopRecruitmentCost(CharacterObject troop, Hero buyerHero, bool withoutItemCost = false)
 	{
-		ExplainedNumber bonuses = base.BaseModel.GetTroopRecruitmentCost(troop, buyerHero, withoutItemCost);
-		if (buyerHero != null)
+		ExplainedNumber stat = base.BaseModel.GetTroopRecruitmentCost(troop, buyerHero, withoutItemCost);
+		if (troop.IsMariner && buyerHero != null && buyerHero.PartyBelongedTo != null)
 		{
-			PerkHelper.AddPerkBonusForCharacter(NavalPerks.Boatswain.PopularCaptain, buyerHero.CharacterObject, isPrimaryBonus: true, ref bonuses);
+			PerkHelper.AddPerkBonusForParty(NavalPerks.Boatswain.PopularCaptain, buyerHero.PartyBelongedTo, isPrimaryBonus: true, ref stat);
 		}
-		return bonuses;
+		return stat;
 	}
 }

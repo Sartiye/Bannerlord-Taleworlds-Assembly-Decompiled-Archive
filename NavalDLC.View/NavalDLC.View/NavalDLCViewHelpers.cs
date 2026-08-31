@@ -52,8 +52,8 @@ public class NavalDLCViewHelpers
 			int randomValue = ship.RandomValue;
 			float mapVisualScale = ship.ShipHull.MapVisualScale;
 			string shipPrefab = @object?.Prefab;
-			(uint sailColor1, uint sailColor2) sailColors = ShipHelper.GetSailColors(ship);
-			GameEntity gameEntity = VisualShipFactory.CreateVisualShip(sailColor1: sailColors.sailColor1, sailColor2: sailColors.sailColor2, shipPrefab: shipPrefab, scene: scene, upgrades: selectedPieces, shipSeed: randomValue, hitPointRatio: ship.HitPoints / ship.MaxHitPoints, createPhysics: createPhysics, keepFireEntities: false);
+			ShipHelper.TryGetSailColors(ship, out (uint, uint) sailColors);
+			GameEntity gameEntity = VisualShipFactory.CreateVisualShip(shipPrefab, scene, selectedPieces, randomValue, ship.HitPoints / ship.MaxHitPoints, sailColors.Item1, sailColors.Item2, createPhysics, ship.ShipHull.FloatingForceMultiplier, keepFireEntities: false);
 			ShipVisual firstScriptOfType = gameEntity.GetFirstScriptOfType<ShipVisual>();
 			if (firstScriptOfType != null)
 			{
@@ -61,7 +61,9 @@ public class NavalDLCViewHelpers
 				{
 					if (sailVisual2 is SailVisual sailVisual && sailVisual.SailTopBannerEntity != null && sailVisual.SailTopBannerEntity.HasTag("banner_with_faction_color"))
 					{
-						SetBanner(sailVisual.SailTopBannerEntity, ShipHelper.GetShipBanner(ship));
+						GameEntity sailTopBannerEntity = sailVisual.SailTopBannerEntity;
+						ShipHelper.TryGetShipBanner(ship, out var banner);
+						SetBanner(sailTopBannerEntity, banner);
 					}
 				}
 			}
@@ -80,10 +82,8 @@ public class NavalDLCViewHelpers
 			string customSailPatternId = ship.CustomSailPatternId;
 			float mapVisualScale = ship.ShipHull.MapVisualScale;
 			string shipPrefab = @object?.Prefab;
-			(uint sailColor1, uint sailColor2) sailColors = ShipHelper.GetSailColors(ship);
-			uint item = sailColors.sailColor1;
-			uint item2 = sailColors.sailColor2;
-			GameEntity gameEntity = VisualShipFactory.CreateVisualShipForCampaign(shipPrefab, scene, selectedPieces, randomValue, customSailPatternId, item, item2);
+			ShipHelper.TryGetSailColors(ship, out (uint, uint) sailColors);
+			GameEntity gameEntity = VisualShipFactory.CreateVisualShipForCampaign(shipPrefab, scene, selectedPieces, randomValue, customSailPatternId, sailColors.Item1, sailColors.Item2);
 			ShipVisual firstScriptOfType = gameEntity.GetFirstScriptOfType<ShipVisual>();
 			if (firstScriptOfType != null)
 			{
@@ -91,7 +91,9 @@ public class NavalDLCViewHelpers
 				{
 					if (sailVisual2 is SailVisual sailVisual && sailVisual.SailTopBannerEntity != null && sailVisual.SailTopBannerEntity.HasTag("banner_with_faction_color"))
 					{
-						SetBanner(sailVisual.SailTopBannerEntity, ShipHelper.GetShipBanner(ship));
+						GameEntity sailTopBannerEntity = sailVisual.SailTopBannerEntity;
+						ShipHelper.TryGetShipBanner(ship, out var banner);
+						SetBanner(sailTopBannerEntity, banner);
 					}
 				}
 			}
@@ -144,14 +146,14 @@ public class NavalDLCViewHelpers
 		public static void RefreshShipVisuals(WeakGameEntity shipEntity, Ship ship, List<SailVisual> sailVisuals)
 		{
 			VisualShipFactory.RefreshUpgrades(shipEntity, ship.GetShipVisualSlotInfos());
-			(uint, uint) sailColors = ShipHelper.GetSailColors(ship);
+			ShipHelper.TryGetSailColors(ship, out (uint, uint) sailColors);
 			foreach (SailVisual sailVisual in sailVisuals)
 			{
-				sailVisual.ShipVisual.SailColors = sailColors;
-				sailVisual.ShipVisual.Health = ship.HitPoints / ship.MaxHitPoints;
+				sailVisual.ShipVisual.UpdateParameters(ship.HitPoints / ship.MaxHitPoints, sailColors);
 				sailVisual.RefreshSailVisual();
 			}
-			UpdateBanner(ShipHelper.GetShipBanner(ship), sailVisuals);
+			ShipHelper.TryGetShipBanner(ship, out var banner);
+			UpdateBanner(banner, sailVisuals);
 			foreach (Mesh item in shipEntity.GetAllMeshesWithTag("faction_color"))
 			{
 				(item.Color, item.Color2) = sailColors;
@@ -164,8 +166,7 @@ public class NavalDLCViewHelpers
 			ShipVisual firstScriptOfType = shipEntity.GetFirstScriptOfType<ShipVisual>();
 			if (firstScriptOfType != null)
 			{
-				firstScriptOfType.SailColors = (sailColor1: sailColor1, sailColor2: sailColor2);
-				firstScriptOfType.Health = healthPercent;
+				firstScriptOfType.UpdateParameters(healthPercent, (sailColor1, sailColor2));
 				foreach (ScriptComponentBehavior sailVisual2 in firstScriptOfType.SailVisuals)
 				{
 					if (sailVisual2 is SailVisual sailVisual)
@@ -183,6 +184,22 @@ public class NavalDLCViewHelpers
 				item.Color = sailColor1;
 				item.Color2 = sailColor2;
 			}
+		}
+
+		public static ShipHull GetFerryShipHullForSettlement(Settlement settlement)
+		{
+			string objectName = settlement.Culture.StringId switch
+			{
+				"empire" => "empire_trade_ship", 
+				"aserai" => "central_light_ship", 
+				"sturgia" => "northern_trade_ship", 
+				"vlandia" => "western_trade_ship", 
+				"battania" => "northern_trade_ship", 
+				"khuzait" => "eastern_trade_ship", 
+				"nord" => "northern_trade_ship", 
+				_ => "northern_trade_ship", 
+			};
+			return MBObjectManager.Instance.GetObject<ShipHull>(objectName);
 		}
 
 		private static void UpdateBanner(Banner banner, List<SailVisual> sailVisuals)
@@ -221,45 +238,6 @@ public class NavalDLCViewHelpers
 					}
 				}
 			}
-		}
-	}
-
-	public static class BannerVisualHelper
-	{
-		public static MetaMesh GetBannerOfCharacter(Banner banner, string bannerMeshName)
-		{
-			MetaMesh copy = MetaMesh.GetCopy(bannerMeshName);
-			for (int i = 0; i < copy.MeshCount; i++)
-			{
-				Mesh meshAtIndex = copy.GetMeshAtIndex(i);
-				if (meshAtIndex.HasTag("dont_use_tableau"))
-				{
-					continue;
-				}
-				Material material = meshAtIndex.GetMaterial();
-				Material tableauMaterial = null;
-				Tuple<Material, Banner> key = new Tuple<Material, Banner>(material, banner);
-				if (MapScreen.Instance.CharacterBannerMaterialCache.ContainsKey(key))
-				{
-					tableauMaterial = MapScreen.Instance.CharacterBannerMaterialCache[key];
-				}
-				else
-				{
-					tableauMaterial = material.CreateCopy();
-					Action<Texture> setAction = delegate(Texture tex)
-					{
-						tableauMaterial.SetTexture(Material.MBTextureType.DiffuseMap2, tex);
-						uint num = (uint)tableauMaterial.GetShader().GetMaterialShaderFlagMask("use_tableau_blending");
-						ulong shaderFlags = tableauMaterial.GetShaderFlags();
-						tableauMaterial.SetShaderFlags(shaderFlags | num);
-					};
-					BannerDebugInfo debugInfo = BannerDebugInfo.CreateManual("GetBannerOfCharacter");
-					banner.GetTableauTextureLarge(in debugInfo, setAction);
-					MapScreen.Instance.CharacterBannerMaterialCache[key] = tableauMaterial;
-				}
-				meshAtIndex.SetMaterial(tableauMaterial);
-			}
-			return copy;
 		}
 	}
 

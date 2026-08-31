@@ -26,6 +26,8 @@ public class MusicBattleMissionView : MissionView, IMusicHandler
 
 	private float _startingBattleRatio;
 
+	private bool _isKeepBattle;
+
 	private bool _isSiegeBattle;
 
 	private bool _isPaganBattle;
@@ -36,9 +38,10 @@ public class MusicBattleMissionView : MissionView, IMusicHandler
 
 	private BattleSideEnum PlayerSide => Mission.Current.PlayerTeam?.Side ?? BattleSideEnum.None;
 
-	public MusicBattleMissionView(bool isSiegeBattle)
+	public MusicBattleMissionView(bool isSiegeBattle, bool isKeepBattle)
 	{
 		_isSiegeBattle = isSiegeBattle;
+		_isKeepBattle = isKeepBattle;
 	}
 
 	public override void OnBehaviorInitialize()
@@ -137,16 +140,24 @@ public class MusicBattleMissionView : MissionView, IMusicHandler
 	{
 		if (_startingTroopCounts == null)
 		{
-			_startingTroopCounts = new int[2]
+			int num = 0;
+			int num2 = 0;
+			if (_isKeepBattle)
 			{
-				_missionAgentSpawnLogic.GetTotalNumberOfTroopsForSide(BattleSideEnum.Defender),
-				_missionAgentSpawnLogic.GetTotalNumberOfTroopsForSide(BattleSideEnum.Attacker)
-			};
-			_startingBattleRatio = (float)_startingTroopCounts[0] / (float)_startingTroopCounts[1];
+				num = Mission.Current.Teams.Defender.ActiveAgents.Count;
+				num2 = Mission.Current.Teams.Attacker.ActiveAgents.Count;
+			}
+			else
+			{
+				num = _missionAgentSpawnLogic.GetTotalNumberOfTroopsForSide(BattleSideEnum.Defender);
+				num2 = _missionAgentSpawnLogic.GetTotalNumberOfTroopsForSide(BattleSideEnum.Attacker);
+			}
+			_startingTroopCounts = new int[2] { num, num2 };
+			_startingBattleRatio = (float)num / (float)num2;
 		}
 		Vec2 vec = Agent.Main?.Position.AsVec2 ?? Vec2.Invalid;
 		bool flag = Mission.Current.PlayerTeam?.FormationsIncludingEmpty.Any((Formation f) => f.CountOfUnits > 0) ?? false;
-		float num = float.MaxValue;
+		float num3 = float.MaxValue;
 		if (flag || vec.IsValid)
 		{
 			foreach (Formation item in Mission.Current.PlayerEnemyTeam.FormationsIncludingEmpty)
@@ -155,10 +166,10 @@ public class MusicBattleMissionView : MissionView, IMusicHandler
 				{
 					continue;
 				}
-				float num2 = float.MaxValue;
+				float num4 = float.MaxValue;
 				if (!flag && vec.IsValid)
 				{
-					num2 = vec.DistanceSquared(item.CurrentPosition);
+					num4 = vec.DistanceSquared(item.CurrentPosition);
 				}
 				else if (flag)
 				{
@@ -166,52 +177,52 @@ public class MusicBattleMissionView : MissionView, IMusicHandler
 					{
 						if (item2.CountOfUnits > 0)
 						{
-							float num3 = item2.CurrentPosition.DistanceSquared(item.CurrentPosition);
-							if (num2 > num3)
+							float num5 = item2.CurrentPosition.DistanceSquared(item.CurrentPosition);
+							if (num4 > num5)
 							{
-								num2 = num3;
+								num4 = num5;
 							}
 						}
 					}
 				}
-				if (num > num2)
+				if (num3 > num4)
 				{
-					num = num2;
+					num3 = num4;
 				}
 			}
 		}
-		int num4 = _startingTroopCounts.Sum();
+		int num6 = _startingTroopCounts.Sum();
 		bool flag2 = false;
-		if (num4 < MusicParameters.SmallBattleTreshold)
+		if (num6 < MusicParameters.SmallBattleTreshold)
 		{
-			if (num < MusicParameters.SmallBattleDistanceTreshold * MusicParameters.SmallBattleDistanceTreshold)
+			if (num3 < MusicParameters.SmallBattleDistanceTreshold * MusicParameters.SmallBattleDistanceTreshold)
 			{
 				flag2 = true;
 			}
 		}
-		else if (num4 < MusicParameters.MediumBattleTreshold)
+		else if (num6 < MusicParameters.MediumBattleTreshold)
 		{
-			if (num < MusicParameters.MediumBattleDistanceTreshold * MusicParameters.MediumBattleDistanceTreshold)
+			if (num3 < MusicParameters.MediumBattleDistanceTreshold * MusicParameters.MediumBattleDistanceTreshold)
 			{
 				flag2 = true;
 			}
 		}
-		else if (num4 < MusicParameters.LargeBattleTreshold)
+		else if (num6 < MusicParameters.LargeBattleTreshold)
 		{
-			if (num < MusicParameters.LargeBattleDistanceTreshold * MusicParameters.LargeBattleDistanceTreshold)
+			if (num3 < MusicParameters.LargeBattleDistanceTreshold * MusicParameters.LargeBattleDistanceTreshold)
 			{
 				flag2 = true;
 			}
 		}
-		else if (num < MusicParameters.MaxBattleDistanceTreshold * MusicParameters.MaxBattleDistanceTreshold)
+		else if (num3 < MusicParameters.MaxBattleDistanceTreshold * MusicParameters.MaxBattleDistanceTreshold)
 		{
 			flag2 = true;
 		}
-		if (flag2)
+		if (flag2 || _isKeepBattle)
 		{
-			float num5 = (float)num4 / 1000f;
-			float startIntensity = MusicParameters.DefaultStartIntensity + num5 * MusicParameters.BattleSizeEffectOnStartIntensity + (MBRandom.RandomFloat - 0.5f) * (MusicParameters.RandomEffectMultiplierOnStartIntensity * 2f);
-			MusicTheme theme = (_isSiegeBattle ? MBMusicManager.Current.GetSiegeTheme(base.Mission.MusicCulture) : MBMusicManager.Current.GetBattleTheme(base.Mission.MusicCulture, num4, out _isPaganBattle));
+			float num7 = (float)num6 / 1000f;
+			float startIntensity = MusicParameters.DefaultStartIntensity + num7 * MusicParameters.BattleSizeEffectOnStartIntensity + (MBRandom.RandomFloat - 0.5f) * (MusicParameters.RandomEffectMultiplierOnStartIntensity * 2f);
+			MusicTheme theme = (_isSiegeBattle ? MBMusicManager.Current.GetSiegeTheme(base.Mission.MusicCulture) : MBMusicManager.Current.GetBattleTheme(base.Mission.MusicCulture, num6, out _isPaganBattle));
 			MBMusicManager.Current.StartTheme(theme, startIntensity);
 			_battleState = BattleState.Started;
 		}
@@ -223,6 +234,7 @@ public class MusicBattleMissionView : MissionView, IMusicHandler
 		{
 			if (Mission.Current.MissionResult != null)
 			{
+				base.Mission.MusicCulture = Mission.Current.GetMissionBehavior<MissionCombatantsLogic>().GetCultureForPlayerSide();
 				MusicTheme battleEndTheme = MBMusicManager.Current.GetBattleEndTheme(base.Mission.MusicCulture, Mission.Current.MissionResult.PlayerVictory);
 				MBMusicManager.Current.StartTheme(battleEndTheme, PsaiCore.Instance.GetPsaiInfo().currentIntensity, queueEndSegment: true);
 				_battleState = BattleState.Ending;
@@ -239,7 +251,7 @@ public class MusicBattleMissionView : MissionView, IMusicHandler
 	{
 		if (_battleState == BattleState.Starting)
 		{
-			if (base.Mission.MusicCulture == null && Mission.Current.GetMissionBehavior<DeploymentHandler>() == null && _missionAgentSpawnLogic.IsDeploymentOver)
+			if (base.Mission.MusicCulture == null && Mission.Current.GetMissionBehavior<DeploymentHandler>() == null && (_isKeepBattle || _missionAgentSpawnLogic.IsDeploymentOver))
 			{
 				KeyValuePair<BasicCultureObject, int> keyValuePair = new KeyValuePair<BasicCultureObject, int>(null, -1);
 				Dictionary<BasicCultureObject, int> dictionary = new Dictionary<BasicCultureObject, int>();
@@ -268,7 +280,7 @@ public class MusicBattleMissionView : MissionView, IMusicHandler
 				}
 				else
 				{
-					base.Mission.MusicCulture = Game.Current.PlayerTroop.Culture;
+					base.Mission.MusicCulture = Mission.Current.GetMissionBehavior<MissionCombatantsLogic>().GetCultureForPlayerSide();
 				}
 			}
 			if (base.Mission.MusicCulture != null)

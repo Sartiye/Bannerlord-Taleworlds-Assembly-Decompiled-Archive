@@ -7,7 +7,7 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.Diamond;
 
-public abstract class Client<T> : DiamondClientApplicationObject, IClient where T : Client<T>
+public abstract class Client : DiamondClientApplicationObject, IClient
 {
 	private enum ConnectionState
 	{
@@ -30,16 +30,75 @@ public abstract class Client<T> : DiamondClientApplicationObject, IClient where 
 
 	private bool _autoReconnect;
 
-	public bool IsInCriticalState { get; set; }
+	private bool _isInCriticalState;
 
-	public virtual long AliveCheckTimeInMiliSeconds => 2000L;
+	public int CriticalStateCheckTime = 1000;
+
+	public bool IsInCriticalState
+	{
+		get
+		{
+			return _isInCriticalState;
+		}
+		set
+		{
+			_isInCriticalState = value;
+			UpdateAliveCheckInterval();
+		}
+	}
+
+	public virtual int AliveCheckTimeInMilliSeconds => 2000;
+
+	public virtual int MaxConsecutiveFailuresBeforeDisconnect => 3;
+
+	protected string SessionAddress
+	{
+		get
+		{
+			return _clientSession.Address;
+		}
+		set
+		{
+			_clientSession.Address = value;
+		}
+	}
 
 	public ILoginAccessProvider AccessProvider { get; protected set; }
 
-	protected Client(DiamondClientApplication diamondClientApplication, IClientSessionProvider<T> sessionProvider, bool autoReconnect)
+	protected void UpdateAliveCheckInterval()
+	{
+		_clientSession.AliveCheckInterval = AliveCheckTimeInMilliSeconds;
+	}
+
+	private void ClientSessionConnected()
+	{
+		OnConnected();
+	}
+
+	private void ClientSessionDisconnected()
+	{
+		OnDisconnected();
+	}
+
+	private void ClientSessionConnectionFailed()
+	{
+		OnCantConnect();
+	}
+
+	private void ClientSessionMessageReceived(Message message)
+	{
+		HandleMessage(message);
+	}
+
+	protected Client(DiamondClientApplication diamondClientApplication, IClientSessionFactory sessionProvider, bool autoReconnect)
 		: base(diamondClientApplication)
 	{
-		_clientSession = sessionProvider.CreateSession((T)this);
+		_clientSession = sessionProvider.CreateSession(AliveCheckTimeInMilliSeconds);
+		_clientSession.MaxConsecutiveFailuresBeforeDisconnect = MaxConsecutiveFailuresBeforeDisconnect;
+		_clientSession.Connected += ClientSessionConnected;
+		_clientSession.ConnectionFailed += ClientSessionConnectionFailed;
+		_clientSession.Disconnected += ClientSessionDisconnected;
+		_clientSession.MessageReceived += ClientSessionMessageReceived;
 		_messageHandlers = new Dictionary<Type, Delegate>();
 		_autoReconnect = autoReconnect;
 		if (autoReconnect)
@@ -87,7 +146,7 @@ public abstract class Client<T> : DiamondClientApplicationObject, IClient where 
 		return await _clientSession.Login(message);
 	}
 
-	protected async Task<TResult> CallFunction<TResult>(Message message) where TResult : FunctionResult
+	protected async Task<CallResult> CallFunction<TResult>(Message message) where TResult : FunctionResult
 	{
 		return await _clientSession.CallFunction<TResult>(message);
 	}

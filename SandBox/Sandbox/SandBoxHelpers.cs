@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using SandBox.Missions.AgentBehaviors;
+using SandBox.Missions.MissionLogics;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.AgentOrigins;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Settlements.Locations;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
@@ -38,7 +40,7 @@ public static class SandBoxHelpers
 			}
 			else
 			{
-				Debug.FailedAssert("Cant follow agent", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\SandboxHelpers.cs", "FollowAgent", 45);
+				Debug.FailedAssert("Cant follow agent", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\SandboxHelpers.cs", "FollowAgent", 47);
 			}
 		}
 
@@ -54,7 +56,7 @@ public static class SandBoxHelpers
 			}
 			else
 			{
-				Debug.FailedAssert("Cant unfollow agent", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\SandboxHelpers.cs", "UnfollowAgent", 66);
+				Debug.FailedAssert("Cant unfollow agent", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\SandboxHelpers.cs", "UnfollowAgent", 68);
 			}
 		}
 
@@ -295,6 +297,14 @@ public static class SandBoxHelpers
 				}
 				AnimalSpawnSettings.CheckAndSetAnimalAgentFlags(item, agent);
 				SimulateAnimalAnimations(agent);
+			}
+		}
+
+		public static void RemapSpecialTagIfNecessary(LocationCharacter locationCharacter, MissionAgentHandler missionAgentHandler)
+		{
+			if (locationCharacter.SpecialTargetTag == "sp_throne" && !missionAgentHandler.HasUsablePointWithTag("sp_throne") && missionAgentHandler.HasUsablePointWithTag("sp_king"))
+			{
+				locationCharacter.SpecialTargetTag = "sp_king";
 			}
 		}
 

@@ -32,10 +32,7 @@ public class DefaultMapVisibilityModel : MapVisibilityModel
 		float partySeeingRangeBase = Campaign.Current.Models.MapVisibilityModel.GetPartySeeingRangeBase(party);
 		ExplainedNumber explainedNumber = new ExplainedNumber(partySeeingRangeBase, includeDescriptions);
 		SkillHelper.AddSkillBonusForParty(DefaultSkillEffects.TrackingSpottingDistance, party, ref explainedNumber);
-		if (!party.IsCurrentlyAtSea)
-		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Bow.EagleEye, party, isPrimaryBonus: false, ref explainedNumber);
-		}
+		PerkHelper.AddPerkBonusForParty(DefaultPerks.Bow.EagleEye, party, isPrimaryBonus: false, ref explainedNumber);
 		Hero effectiveScout = party.EffectiveScout;
 		if (effectiveScout != null)
 		{
@@ -59,9 +56,9 @@ public class DefaultMapVisibilityModel : MapVisibilityModel
 					PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.DayTraveler, party, isPrimaryBonus: false, ref explainedNumber);
 				}
 			}
-			if (!party.IsMoving && !party.IsCurrentlyAtSea && party.StationaryStartTime.ElapsedHoursUntilNow >= 1f)
+			if (!party.IsMoving && party.StationaryStartTime.ElapsedHoursUntilNow >= 1f)
 			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.VantagePoint, party, isPrimaryBonus: false, ref explainedNumber);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.VantagePoint, party, isPrimaryBonus: true, ref explainedNumber);
 			}
 			if (effectiveScout.GetPerkValue(DefaultPerks.Scouting.MountedScouts) && !party.IsCurrentlyAtSea)
 			{
@@ -89,7 +86,8 @@ public class DefaultMapVisibilityModel : MapVisibilityModel
 		if (Campaign.Current.MapSceneWrapper.GetFaceTerrainType(party.CurrentNavigationFace) == TerrainType.Forest)
 		{
 			float num2 = -0.3f;
-			if (MobileParty.MainParty.HasPerk(DefaultPerks.Scouting.KeenSight))
+			Hero perkOwnerHero = null;
+			if (MobileParty.MainParty.HasPerk(DefaultPerks.Scouting.KeenSight, out perkOwnerHero))
 			{
 				num2 += num2 * DefaultPerks.Scouting.KeenSight.PrimaryBonus;
 			}
@@ -101,10 +99,12 @@ public class DefaultMapVisibilityModel : MapVisibilityModel
 
 	public override float GetHideoutSpottingDistance()
 	{
-		if (MobileParty.MainParty.HasPerk(DefaultPerks.Scouting.RumourNetwork, checkSecondaryRole: true))
+		float num = MobileParty.MainParty.SeeingRange * 1.2f;
+		Hero perkOwnerHero = null;
+		if (MobileParty.MainParty.HasPerk(DefaultPerks.Scouting.RumourNetwork, out perkOwnerHero, checkSecondaryRole: true))
 		{
-			return MobileParty.MainParty.SeeingRange * 1.2f * (1f + DefaultPerks.Scouting.RumourNetwork.SecondaryBonus);
+			return num * (1f + DefaultPerks.Scouting.RumourNetwork.SecondaryBonus);
 		}
-		return MobileParty.MainParty.SeeingRange * 1.2f;
+		return num;
 	}
 }

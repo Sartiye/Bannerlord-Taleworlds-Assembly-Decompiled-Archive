@@ -27,13 +27,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 
 	private TextWidget _widget_0_1_0_0;
 
-	private Widget _widget_0_1_0_1;
-
-	private RichTextWidget _widget_0_1_0_1_0;
-
-	private Widget _widget_0_1_0_2;
-
-	private RichTextWidget _widget_0_1_0_2_0;
+	private RichTextWidget _widget_0_1_0_1;
 
 	private HintWidget _widget_0_2;
 
@@ -41,9 +35,9 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 
 	private PortVM _datasource_Root;
 
-	private PortActionVM _datasource_Root_SellAction;
+	private PortActionVM _datasource_Root_ViewStashedShipsAction;
 
-	private HintViewModel _datasource_Root_SellAction_Tooltip;
+	private HintViewModel _datasource_Root_ViewStashedShipsAction_Tooltip;
 
 	public PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_PortActionButton__DependendPrefab(UIContext context)
 		: base(context)
@@ -65,14 +59,8 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 		_widget_0_1.AddChild(_widget_0_1_0);
 		_widget_0_1_0_0 = new TextWidget(base.Context);
 		_widget_0_1_0.AddChild(_widget_0_1_0_0);
-		_widget_0_1_0_1 = new Widget(base.Context);
+		_widget_0_1_0_1 = new RichTextWidget(base.Context);
 		_widget_0_1_0.AddChild(_widget_0_1_0_1);
-		_widget_0_1_0_1_0 = new RichTextWidget(base.Context);
-		_widget_0_1_0_1.AddChild(_widget_0_1_0_1_0);
-		_widget_0_1_0_2 = new Widget(base.Context);
-		_widget_0_1_0.AddChild(_widget_0_1_0_2);
-		_widget_0_1_0_2_0 = new RichTextWidget(base.Context);
-		_widget_0_1_0_2.AddChild(_widget_0_1_0_2_0);
 		_widget_0_2 = new HintWidget(base.Context);
 		_widget_0.AddChild(_widget_0_2);
 		_widget_1 = new HintWidget(base.Context);
@@ -91,9 +79,9 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 		_widget_0.UpdateChildrenStates = true;
 		_widget_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0.HeightSizePolicy = SizePolicy.Fixed;
-		_widget_0.SuggestedWidth = 290f;
+		_widget_0.SuggestedWidth = 249f;
 		_widget_0.SuggestedHeight = 56f;
-		_widget_0.Brush = base.Context.GetBrush("Port.Sell.Button");
+		_widget_0.Brush = base.Context.GetBrush("Port.SendToClan.Button");
 		_widget_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0.WatchType = StringBasedVisibilityWidget.WatchTypes.Equal;
@@ -118,30 +106,17 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 		_widget_0_1_0.UpdateChildrenStates = true;
 		_widget_0_1_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_1_0_0.MaxWidth = 116f;
+		_widget_0_1_0_0.MaxWidth = 95.5f;
 		_widget_0_1_0_0.MarginRight = 5f;
 		_widget_0_1_0_0.Brush = base.Context.GetBrush("Port.Ship.Option.Button.Text");
 		_widget_0_1_0_0.Brush.TextHorizontalAlignment = TextHorizontalAlignment.Right;
 		_widget_0_1_0_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_1_0_1.MaxWidth = 95.5f;
 		_widget_0_1_0_1.MarginLeft = 5f;
-		_widget_0_1_0_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_1_0_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_1_0_1_0.MaxWidth = 116f;
-		_widget_0_1_0_1_0.Brush = base.Context.GetBrush("Port.Ship.Option.Gold.Text");
-		_widget_0_1_0_1_0.Brush.TextHorizontalAlignment = TextHorizontalAlignment.Left;
-		_widget_0_1_0_1_0.AutoHideIfEmpty = true;
-		_widget_0_1_0_1_0.IsEnabled = true;
-		_widget_0_1_0_2.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_1_0_2.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_1_0_2.MarginLeft = 5f;
-		_widget_0_1_0_2_0.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_1_0_2_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_1_0_2_0.MaxWidth = 116f;
-		_widget_0_1_0_2_0.Brush = base.Context.GetBrush("Port.Ship.Option.Gold.Text");
-		_widget_0_1_0_2_0.Brush.TextHorizontalAlignment = TextHorizontalAlignment.Left;
-		_widget_0_1_0_2_0.AutoHideIfEmpty = true;
-		_widget_0_1_0_2_0.IsEnabled = false;
+		_widget_0_1_0_1.Brush = base.Context.GetBrush("Port.Ship.Option.Gold.Text");
+		_widget_0_1_0_1.Brush.TextHorizontalAlignment = TextHorizontalAlignment.Left;
+		_widget_0_1_0_1.AutoHideIfEmpty = true;
 		_widget_0_2.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_2.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_2.IsEnabled = false;
@@ -165,17 +140,17 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 		_datasource_Root.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
-		if (_datasource_Root_SellAction != null)
+		if (_datasource_Root_ViewStashedShipsAction != null)
 		{
-			_datasource_Root_SellAction.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_SellAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ViewStashedShipsAction;
 			_widget.PropertyChanged -= PropertyChangedListenerOf_widget;
 			_widget.boolPropertyChanged -= boolPropertyChangedListenerOf_widget;
 			_widget.floatPropertyChanged -= floatPropertyChangedListenerOf_widget;
@@ -240,49 +215,22 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 			_widget_0_1_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_1;
-			_widget_0_1_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_2_0;
-			if (_datasource_Root_SellAction_Tooltip != null)
+			if (_datasource_Root_ViewStashedShipsAction_Tooltip != null)
 			{
-				_datasource_Root_SellAction_Tooltip.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_SellAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
 				_widget_0_2.EventFire -= EventListenerOf_widget_0_2;
 				_widget_1.EventFire -= EventListenerOf_widget_1;
-				_datasource_Root_SellAction_Tooltip = null;
+				_datasource_Root_ViewStashedShipsAction_Tooltip = null;
 			}
-			_datasource_Root_SellAction = null;
+			_datasource_Root_ViewStashedShipsAction = null;
 		}
 		_datasource_Root = null;
 	}
@@ -296,7 +244,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 	{
 		if (commandName == "Click")
 		{
-			_datasource_Root_SellAction.ExecuteAction();
+			_datasource_Root_ViewStashedShipsAction.ExecuteAction();
 		}
 	}
 
@@ -304,11 +252,11 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 	{
 		if (commandName == "HoverBegin")
 		{
-			_datasource_Root_SellAction_Tooltip.ExecuteBeginHint();
+			_datasource_Root_ViewStashedShipsAction_Tooltip.ExecuteBeginHint();
 		}
 		if (commandName == "HoverEnd")
 		{
-			_datasource_Root_SellAction_Tooltip.ExecuteEndHint();
+			_datasource_Root_ViewStashedShipsAction_Tooltip.ExecuteEndHint();
 		}
 	}
 
@@ -316,11 +264,11 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 	{
 		if (commandName == "HoverBegin")
 		{
-			_datasource_Root_SellAction_Tooltip.ExecuteBeginHint();
+			_datasource_Root_ViewStashedShipsAction_Tooltip.ExecuteBeginHint();
 		}
 		if (commandName == "HoverEnd")
 		{
-			_datasource_Root_SellAction_Tooltip.ExecuteEndHint();
+			_datasource_Root_ViewStashedShipsAction_Tooltip.ExecuteEndHint();
 		}
 	}
 
@@ -373,7 +321,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 	{
 		if (propertyName == "IsVisible")
 		{
-			_datasource_Root_SellAction.IsVisible = _widget.IsVisible;
+			_datasource_Root_ViewStashedShipsAction.IsVisible = _widget.IsVisible;
 		}
 	}
 
@@ -426,7 +374,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 	{
 		if (propertyName == "IsEnabled")
 		{
-			_datasource_Root_SellAction.IsEnabled = _widget_0.IsEnabled;
+			_datasource_Root_ViewStashedShipsAction.IsEnabled = _widget_0.IsEnabled;
 		}
 	}
 
@@ -479,7 +427,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 	{
 		if (propertyName == "FirstString")
 		{
-			_datasource_Root_SellAction.AdditionalInfo = _widget_0_0.FirstString;
+			_datasource_Root_ViewStashedShipsAction.AdditionalInfo = _widget_0_0.FirstString;
 		}
 	}
 
@@ -532,7 +480,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 	{
 		if (propertyName == "Text")
 		{
-			_datasource_Root_SellAction.Name = _widget_0_0_0.Text;
+			_datasource_Root_ViewStashedShipsAction.Name = _widget_0_0_0.Text;
 		}
 	}
 
@@ -585,7 +533,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 	{
 		if (propertyName == "FirstString")
 		{
-			_datasource_Root_SellAction.AdditionalInfo = _widget_0_1.FirstString;
+			_datasource_Root_ViewStashedShipsAction.AdditionalInfo = _widget_0_1.FirstString;
 		}
 	}
 
@@ -638,7 +586,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 	{
 		if (propertyName == "Text")
 		{
-			_datasource_Root_SellAction.Name = _widget_0_1_0_0.Text;
+			_datasource_Root_ViewStashedShipsAction.Name = _widget_0_1_0_0.Text;
 		}
 	}
 
@@ -689,290 +637,128 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 
 	private void HandleWidgetPropertyChangeOf_widget_0_1_0_1(string propertyName)
 	{
-		if (propertyName == "IsVisible")
-		{
-			_datasource_Root_SellAction.IsEnabled = _widget_0_1_0_1.IsVisible;
-		}
-	}
-
-	private void PropertyChangedListenerOf_widget_0_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_1_0(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_0_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_1_0(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_0_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_1_0(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_0_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_1_0(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_0_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_1_0(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_0_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_1_0(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_0_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_1_0(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_0_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_1_0(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_0_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_1_0(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_0_1_0_1_0(string propertyName)
-	{
 		if (propertyName == "Text")
 		{
-			_datasource_Root_SellAction.AdditionalInfo = _widget_0_1_0_1_0.Text;
+			_datasource_Root_ViewStashedShipsAction.AdditionalInfo = _widget_0_1_0_1.Text;
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_0_1_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void ViewModelPropertyChangedListenerOf_datasource_Root_ViewStashedShipsAction(object sender, PropertyChangedEventArgs e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2(propertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ViewStashedShipsAction(e.PropertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_0_1_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ViewStashedShipsAction(object sender, PropertyChangedWithValueEventArgs e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2(propertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ViewStashedShipsAction(e.PropertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_0_1_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ViewStashedShipsAction(object sender, PropertyChangedWithBoolValueEventArgs e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2(propertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ViewStashedShipsAction(e.PropertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_0_1_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ViewStashedShipsAction(object sender, PropertyChangedWithIntValueEventArgs e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2(propertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ViewStashedShipsAction(e.PropertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_0_1_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ViewStashedShipsAction(object sender, PropertyChangedWithFloatValueEventArgs e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2(propertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ViewStashedShipsAction(e.PropertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_0_1_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ViewStashedShipsAction(object sender, PropertyChangedWithUIntValueEventArgs e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2(propertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ViewStashedShipsAction(e.PropertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_0_1_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ViewStashedShipsAction(object sender, PropertyChangedWithColorValueEventArgs e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2(propertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ViewStashedShipsAction(e.PropertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_0_1_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ViewStashedShipsAction(object sender, PropertyChangedWithDoubleValueEventArgs e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2(propertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ViewStashedShipsAction(e.PropertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_0_1_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ViewStashedShipsAction(object sender, PropertyChangedWithVec2ValueEventArgs e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2(propertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ViewStashedShipsAction(e.PropertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_0_1_0_2(string propertyName)
-	{
-		if (propertyName == "IsHidden")
-		{
-			_datasource_Root_SellAction.IsEnabled = _widget_0_1_0_2.IsHidden;
-		}
-	}
-
-	private void PropertyChangedListenerOf_widget_0_1_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2_0(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_0_1_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2_0(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_0_1_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2_0(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_0_1_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2_0(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_0_1_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2_0(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_0_1_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2_0(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_0_1_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2_0(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_0_1_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2_0(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_0_1_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2_0(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_0_1_0_2_0(string propertyName)
-	{
-		if (propertyName == "Text")
-		{
-			_datasource_Root_SellAction.AdditionalInfo = _widget_0_1_0_2_0.Text;
-		}
-	}
-
-	private void ViewModelPropertyChangedListenerOf_datasource_Root_SellAction(object sender, PropertyChangedEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SellAction(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_SellAction(object sender, PropertyChangedWithValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SellAction(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_SellAction(object sender, PropertyChangedWithBoolValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SellAction(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_SellAction(object sender, PropertyChangedWithIntValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SellAction(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_SellAction(object sender, PropertyChangedWithFloatValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SellAction(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_SellAction(object sender, PropertyChangedWithUIntValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SellAction(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_SellAction(object sender, PropertyChangedWithColorValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SellAction(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_SellAction(object sender, PropertyChangedWithDoubleValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SellAction(e.PropertyName);
-	}
-
-	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_SellAction(object sender, PropertyChangedWithVec2ValueEventArgs e)
-	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SellAction(e.PropertyName);
-	}
-
-	private void HandleViewModelPropertyChangeOf_datasource_Root_SellAction(string propertyName)
+	private void HandleViewModelPropertyChangeOf_datasource_Root_ViewStashedShipsAction(string propertyName)
 	{
 		switch (propertyName)
 		{
 		case "Tooltip":
-			RefreshDataSource_datasource_Root_SellAction_Tooltip(_datasource_Root_SellAction.Tooltip);
+			RefreshDataSource_datasource_Root_ViewStashedShipsAction_Tooltip(_datasource_Root_ViewStashedShipsAction.Tooltip);
 			break;
 		case "IsVisible":
-			_widget.IsVisible = _datasource_Root_SellAction.IsVisible;
+			_widget.IsVisible = _datasource_Root_ViewStashedShipsAction.IsVisible;
 			break;
 		case "IsEnabled":
-			_widget_0.IsEnabled = _datasource_Root_SellAction.IsEnabled;
-			_widget_0_1_0_1.IsVisible = _datasource_Root_SellAction.IsEnabled;
-			_widget_0_1_0_2.IsHidden = _datasource_Root_SellAction.IsEnabled;
+			_widget_0.IsEnabled = _datasource_Root_ViewStashedShipsAction.IsEnabled;
 			break;
 		case "AdditionalInfo":
-			_widget_0_0.FirstString = _datasource_Root_SellAction.AdditionalInfo;
-			_widget_0_1.FirstString = _datasource_Root_SellAction.AdditionalInfo;
-			_widget_0_1_0_1_0.Text = _datasource_Root_SellAction.AdditionalInfo;
-			_widget_0_1_0_2_0.Text = _datasource_Root_SellAction.AdditionalInfo;
+			_widget_0_0.FirstString = _datasource_Root_ViewStashedShipsAction.AdditionalInfo;
+			_widget_0_1.FirstString = _datasource_Root_ViewStashedShipsAction.AdditionalInfo;
+			_widget_0_1_0_1.Text = _datasource_Root_ViewStashedShipsAction.AdditionalInfo;
 			break;
 		case "Name":
-			_widget_0_0_0.Text = _datasource_Root_SellAction.Name;
-			_widget_0_1_0_0.Text = _datasource_Root_SellAction.Name;
+			_widget_0_0_0.Text = _datasource_Root_ViewStashedShipsAction.Name;
+			_widget_0_1_0_0.Text = _datasource_Root_ViewStashedShipsAction.Name;
 			break;
 		}
 	}
 
-	private void ViewModelPropertyChangedListenerOf_datasource_Root_SellAction_Tooltip(object sender, PropertyChangedEventArgs e)
+	private void ViewModelPropertyChangedListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip(object sender, PropertyChangedEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SellAction_Tooltip(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ViewStashedShipsAction_Tooltip(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_SellAction_Tooltip(object sender, PropertyChangedWithValueEventArgs e)
+	private void ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip(object sender, PropertyChangedWithValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SellAction_Tooltip(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ViewStashedShipsAction_Tooltip(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_SellAction_Tooltip(object sender, PropertyChangedWithBoolValueEventArgs e)
+	private void ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip(object sender, PropertyChangedWithBoolValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SellAction_Tooltip(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ViewStashedShipsAction_Tooltip(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_SellAction_Tooltip(object sender, PropertyChangedWithIntValueEventArgs e)
+	private void ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip(object sender, PropertyChangedWithIntValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SellAction_Tooltip(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ViewStashedShipsAction_Tooltip(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_SellAction_Tooltip(object sender, PropertyChangedWithFloatValueEventArgs e)
+	private void ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip(object sender, PropertyChangedWithFloatValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SellAction_Tooltip(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ViewStashedShipsAction_Tooltip(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_SellAction_Tooltip(object sender, PropertyChangedWithUIntValueEventArgs e)
+	private void ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip(object sender, PropertyChangedWithUIntValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SellAction_Tooltip(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ViewStashedShipsAction_Tooltip(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_SellAction_Tooltip(object sender, PropertyChangedWithColorValueEventArgs e)
+	private void ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip(object sender, PropertyChangedWithColorValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SellAction_Tooltip(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ViewStashedShipsAction_Tooltip(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_SellAction_Tooltip(object sender, PropertyChangedWithDoubleValueEventArgs e)
+	private void ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip(object sender, PropertyChangedWithDoubleValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SellAction_Tooltip(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ViewStashedShipsAction_Tooltip(e.PropertyName);
 	}
 
-	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_SellAction_Tooltip(object sender, PropertyChangedWithVec2ValueEventArgs e)
+	private void ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip(object sender, PropertyChangedWithVec2ValueEventArgs e)
 	{
-		HandleViewModelPropertyChangeOf_datasource_Root_SellAction_Tooltip(e.PropertyName);
+		HandleViewModelPropertyChangeOf_datasource_Root_ViewStashedShipsAction_Tooltip(e.PropertyName);
 	}
 
-	private void HandleViewModelPropertyChangeOf_datasource_Root_SellAction_Tooltip(string propertyName)
+	private void HandleViewModelPropertyChangeOf_datasource_Root_ViewStashedShipsAction_Tooltip(string propertyName)
 	{
 	}
 
@@ -1023,25 +809,25 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 
 	private void HandleViewModelPropertyChangeOf_datasource_Root(string propertyName)
 	{
-		if (propertyName == "SellAction")
+		if (propertyName == "ViewStashedShipsAction")
 		{
-			RefreshDataSource_datasource_Root_SellAction(_datasource_Root.SellAction);
+			RefreshDataSource_datasource_Root_ViewStashedShipsAction(_datasource_Root.ViewStashedShipsAction);
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_SellAction(PortActionVM newDataSource)
+	private void RefreshDataSource_datasource_Root_ViewStashedShipsAction(PortActionVM newDataSource)
 	{
-		if (_datasource_Root_SellAction != null)
+		if (_datasource_Root_ViewStashedShipsAction != null)
 		{
-			_datasource_Root_SellAction.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_SellAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ViewStashedShipsAction;
 			_widget.PropertyChanged -= PropertyChangedListenerOf_widget;
 			_widget.boolPropertyChanged -= boolPropertyChangedListenerOf_widget;
 			_widget.floatPropertyChanged -= floatPropertyChangedListenerOf_widget;
@@ -1106,64 +892,37 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 			_widget_0_1_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_1;
-			_widget_0_1_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_2_0;
-			if (_datasource_Root_SellAction_Tooltip != null)
+			if (_datasource_Root_ViewStashedShipsAction_Tooltip != null)
 			{
-				_datasource_Root_SellAction_Tooltip.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_SellAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
 				_widget_0_2.EventFire -= EventListenerOf_widget_0_2;
 				_widget_1.EventFire -= EventListenerOf_widget_1;
-				_datasource_Root_SellAction_Tooltip = null;
+				_datasource_Root_ViewStashedShipsAction_Tooltip = null;
 			}
-			_datasource_Root_SellAction = null;
+			_datasource_Root_ViewStashedShipsAction = null;
 		}
-		_datasource_Root_SellAction = newDataSource;
-		_datasource_Root_SellAction = _datasource_Root.SellAction;
-		if (_datasource_Root_SellAction != null)
+		_datasource_Root_ViewStashedShipsAction = newDataSource;
+		_datasource_Root_ViewStashedShipsAction = _datasource_Root.ViewStashedShipsAction;
+		if (_datasource_Root_ViewStashedShipsAction != null)
 		{
-			_datasource_Root_SellAction.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_SellAction;
-			_widget.IsVisible = _datasource_Root_SellAction.IsVisible;
+			_datasource_Root_ViewStashedShipsAction.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_widget.IsVisible = _datasource_Root_ViewStashedShipsAction.IsVisible;
 			_widget.PropertyChanged += PropertyChangedListenerOf_widget;
 			_widget.boolPropertyChanged += boolPropertyChangedListenerOf_widget;
 			_widget.floatPropertyChanged += floatPropertyChangedListenerOf_widget;
@@ -1173,7 +932,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 			_widget.intPropertyChanged += intPropertyChangedListenerOf_widget;
 			_widget.uintPropertyChanged += uintPropertyChangedListenerOf_widget;
 			_widget.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget;
-			_widget_0.IsEnabled = _datasource_Root_SellAction.IsEnabled;
+			_widget_0.IsEnabled = _datasource_Root_ViewStashedShipsAction.IsEnabled;
 			_widget_0.EventFire += EventListenerOf_widget_0;
 			_widget_0.PropertyChanged += PropertyChangedListenerOf_widget_0;
 			_widget_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0;
@@ -1184,7 +943,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 			_widget_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0;
 			_widget_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0;
 			_widget_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0;
-			_widget_0_0.FirstString = _datasource_Root_SellAction.AdditionalInfo;
+			_widget_0_0.FirstString = _datasource_Root_ViewStashedShipsAction.AdditionalInfo;
 			_widget_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_0;
 			_widget_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0;
 			_widget_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0;
@@ -1194,7 +953,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 			_widget_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_0;
 			_widget_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_0;
 			_widget_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_0;
-			_widget_0_0_0.Text = _datasource_Root_SellAction.Name;
+			_widget_0_0_0.Text = _datasource_Root_ViewStashedShipsAction.Name;
 			_widget_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_0_0;
 			_widget_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_0;
 			_widget_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_0;
@@ -1204,7 +963,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 			_widget_0_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_0_0;
 			_widget_0_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_0_0;
 			_widget_0_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_1.FirstString = _datasource_Root_SellAction.AdditionalInfo;
+			_widget_0_1.FirstString = _datasource_Root_ViewStashedShipsAction.AdditionalInfo;
 			_widget_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_1;
 			_widget_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1;
 			_widget_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1;
@@ -1214,7 +973,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 			_widget_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1;
 			_widget_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1;
 			_widget_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1;
-			_widget_0_1_0_0.Text = _datasource_Root_SellAction.Name;
+			_widget_0_1_0_0.Text = _datasource_Root_ViewStashedShipsAction.Name;
 			_widget_0_1_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0_0;
 			_widget_0_1_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0_0;
 			_widget_0_1_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_0_0;
@@ -1224,7 +983,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 			_widget_0_1_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0_0;
 			_widget_0_1_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0_0;
 			_widget_0_1_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0_0;
-			_widget_0_1_0_1.IsVisible = _datasource_Root_SellAction.IsEnabled;
+			_widget_0_1_0_1.Text = _datasource_Root_ViewStashedShipsAction.AdditionalInfo;
 			_widget_0_1_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_0_1;
@@ -1234,84 +993,54 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 			_widget_0_1_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0_1;
-			_widget_0_1_0_1_0.Text = _datasource_Root_SellAction.AdditionalInfo;
-			_widget_0_1_0_1_0.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_2.IsHidden = _datasource_Root_SellAction.IsEnabled;
-			_widget_0_1_0_2.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2_0.Text = _datasource_Root_SellAction.AdditionalInfo;
-			_widget_0_1_0_2_0.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_datasource_Root_SellAction_Tooltip = _datasource_Root_SellAction.Tooltip;
-			if (_datasource_Root_SellAction_Tooltip != null)
+			_datasource_Root_ViewStashedShipsAction_Tooltip = _datasource_Root_ViewStashedShipsAction.Tooltip;
+			if (_datasource_Root_ViewStashedShipsAction_Tooltip != null)
 			{
-				_datasource_Root_SellAction_Tooltip.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_SellAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
 				_widget_0_2.EventFire += EventListenerOf_widget_0_2;
 				_widget_1.EventFire += EventListenerOf_widget_1;
 			}
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_SellAction_Tooltip(HintViewModel newDataSource)
+	private void RefreshDataSource_datasource_Root_ViewStashedShipsAction_Tooltip(HintViewModel newDataSource)
 	{
-		if (_datasource_Root_SellAction_Tooltip != null)
+		if (_datasource_Root_ViewStashedShipsAction_Tooltip != null)
 		{
-			_datasource_Root_SellAction_Tooltip.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_SellAction_Tooltip;
-			_datasource_Root_SellAction_Tooltip.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_SellAction_Tooltip;
-			_datasource_Root_SellAction_Tooltip.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_SellAction_Tooltip;
-			_datasource_Root_SellAction_Tooltip.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_SellAction_Tooltip;
-			_datasource_Root_SellAction_Tooltip.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_SellAction_Tooltip;
-			_datasource_Root_SellAction_Tooltip.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_SellAction_Tooltip;
-			_datasource_Root_SellAction_Tooltip.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_SellAction_Tooltip;
-			_datasource_Root_SellAction_Tooltip.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_SellAction_Tooltip;
-			_datasource_Root_SellAction_Tooltip.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_SellAction_Tooltip;
+			_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+			_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+			_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+			_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+			_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+			_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+			_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+			_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+			_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
 			_widget_0_2.EventFire -= EventListenerOf_widget_0_2;
 			_widget_1.EventFire -= EventListenerOf_widget_1;
-			_datasource_Root_SellAction_Tooltip = null;
+			_datasource_Root_ViewStashedShipsAction_Tooltip = null;
 		}
-		_datasource_Root_SellAction_Tooltip = newDataSource;
-		_datasource_Root_SellAction_Tooltip = _datasource_Root_SellAction.Tooltip;
-		if (_datasource_Root_SellAction_Tooltip != null)
+		_datasource_Root_ViewStashedShipsAction_Tooltip = newDataSource;
+		_datasource_Root_ViewStashedShipsAction_Tooltip = _datasource_Root_ViewStashedShipsAction.Tooltip;
+		if (_datasource_Root_ViewStashedShipsAction_Tooltip != null)
 		{
-			_datasource_Root_SellAction_Tooltip.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_SellAction_Tooltip;
-			_datasource_Root_SellAction_Tooltip.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_SellAction_Tooltip;
-			_datasource_Root_SellAction_Tooltip.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_SellAction_Tooltip;
-			_datasource_Root_SellAction_Tooltip.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_SellAction_Tooltip;
-			_datasource_Root_SellAction_Tooltip.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_SellAction_Tooltip;
-			_datasource_Root_SellAction_Tooltip.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_SellAction_Tooltip;
-			_datasource_Root_SellAction_Tooltip.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_SellAction_Tooltip;
-			_datasource_Root_SellAction_Tooltip.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_SellAction_Tooltip;
-			_datasource_Root_SellAction_Tooltip.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_SellAction_Tooltip;
+			_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+			_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+			_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+			_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+			_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+			_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+			_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+			_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+			_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
 			_widget_0_2.EventFire += EventListenerOf_widget_0_2;
 			_widget_1.EventFire += EventListenerOf_widget_1;
 		}
@@ -1330,17 +1059,17 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 			_datasource_Root.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
-			if (_datasource_Root_SellAction != null)
+			if (_datasource_Root_ViewStashedShipsAction != null)
 			{
-				_datasource_Root_SellAction.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_SellAction;
-				_datasource_Root_SellAction.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_SellAction;
-				_datasource_Root_SellAction.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_SellAction;
-				_datasource_Root_SellAction.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_SellAction;
-				_datasource_Root_SellAction.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_SellAction;
-				_datasource_Root_SellAction.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_SellAction;
-				_datasource_Root_SellAction.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_SellAction;
-				_datasource_Root_SellAction.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_SellAction;
-				_datasource_Root_SellAction.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_SellAction;
+				_datasource_Root_ViewStashedShipsAction.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ViewStashedShipsAction;
+				_datasource_Root_ViewStashedShipsAction.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ViewStashedShipsAction;
+				_datasource_Root_ViewStashedShipsAction.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ViewStashedShipsAction;
+				_datasource_Root_ViewStashedShipsAction.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ViewStashedShipsAction;
+				_datasource_Root_ViewStashedShipsAction.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ViewStashedShipsAction;
+				_datasource_Root_ViewStashedShipsAction.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ViewStashedShipsAction;
+				_datasource_Root_ViewStashedShipsAction.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ViewStashedShipsAction;
+				_datasource_Root_ViewStashedShipsAction.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ViewStashedShipsAction;
+				_datasource_Root_ViewStashedShipsAction.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ViewStashedShipsAction;
 				_widget.PropertyChanged -= PropertyChangedListenerOf_widget;
 				_widget.boolPropertyChanged -= boolPropertyChangedListenerOf_widget;
 				_widget.floatPropertyChanged -= floatPropertyChangedListenerOf_widget;
@@ -1405,49 +1134,22 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 				_widget_0_1_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_1;
 				_widget_0_1_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_1;
 				_widget_0_1_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_1;
-				_widget_0_1_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0_1_0;
-				_widget_0_1_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0_1_0;
-				_widget_0_1_0_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1_0_1_0;
-				_widget_0_1_0_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1_0_1_0;
-				_widget_0_1_0_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1_0_1_0;
-				_widget_0_1_0_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1_0_1_0;
-				_widget_0_1_0_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_1_0;
-				_widget_0_1_0_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_1_0;
-				_widget_0_1_0_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_1_0;
-				_widget_0_1_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0_2;
-				_widget_0_1_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0_2;
-				_widget_0_1_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1_0_2;
-				_widget_0_1_0_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1_0_2;
-				_widget_0_1_0_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1_0_2;
-				_widget_0_1_0_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1_0_2;
-				_widget_0_1_0_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_2;
-				_widget_0_1_0_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_2;
-				_widget_0_1_0_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_2;
-				_widget_0_1_0_2_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0_2_0;
-				_widget_0_1_0_2_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0_2_0;
-				_widget_0_1_0_2_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1_0_2_0;
-				_widget_0_1_0_2_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1_0_2_0;
-				_widget_0_1_0_2_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1_0_2_0;
-				_widget_0_1_0_2_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1_0_2_0;
-				_widget_0_1_0_2_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_2_0;
-				_widget_0_1_0_2_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_2_0;
-				_widget_0_1_0_2_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_2_0;
-				if (_datasource_Root_SellAction_Tooltip != null)
+				if (_datasource_Root_ViewStashedShipsAction_Tooltip != null)
 				{
-					_datasource_Root_SellAction_Tooltip.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_SellAction_Tooltip;
-					_datasource_Root_SellAction_Tooltip.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_SellAction_Tooltip;
-					_datasource_Root_SellAction_Tooltip.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_SellAction_Tooltip;
-					_datasource_Root_SellAction_Tooltip.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_SellAction_Tooltip;
-					_datasource_Root_SellAction_Tooltip.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_SellAction_Tooltip;
-					_datasource_Root_SellAction_Tooltip.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_SellAction_Tooltip;
-					_datasource_Root_SellAction_Tooltip.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_SellAction_Tooltip;
-					_datasource_Root_SellAction_Tooltip.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_SellAction_Tooltip;
-					_datasource_Root_SellAction_Tooltip.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_SellAction_Tooltip;
+					_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+					_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+					_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+					_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+					_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+					_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+					_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+					_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+					_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
 					_widget_0_2.EventFire -= EventListenerOf_widget_0_2;
 					_widget_1.EventFire -= EventListenerOf_widget_1;
-					_datasource_Root_SellAction_Tooltip = null;
+					_datasource_Root_ViewStashedShipsAction_Tooltip = null;
 				}
-				_datasource_Root_SellAction = null;
+				_datasource_Root_ViewStashedShipsAction = null;
 			}
 			_datasource_Root = null;
 		}
@@ -1465,19 +1167,19 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 		_datasource_Root.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
-		_datasource_Root_SellAction = _datasource_Root.SellAction;
-		if (_datasource_Root_SellAction != null)
+		_datasource_Root_ViewStashedShipsAction = _datasource_Root.ViewStashedShipsAction;
+		if (_datasource_Root_ViewStashedShipsAction != null)
 		{
-			_datasource_Root_SellAction.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_SellAction;
-			_datasource_Root_SellAction.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_SellAction;
-			_widget.IsVisible = _datasource_Root_SellAction.IsVisible;
+			_datasource_Root_ViewStashedShipsAction.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_datasource_Root_ViewStashedShipsAction.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ViewStashedShipsAction;
+			_widget.IsVisible = _datasource_Root_ViewStashedShipsAction.IsVisible;
 			_widget.PropertyChanged += PropertyChangedListenerOf_widget;
 			_widget.boolPropertyChanged += boolPropertyChangedListenerOf_widget;
 			_widget.floatPropertyChanged += floatPropertyChangedListenerOf_widget;
@@ -1487,7 +1189,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 			_widget.intPropertyChanged += intPropertyChangedListenerOf_widget;
 			_widget.uintPropertyChanged += uintPropertyChangedListenerOf_widget;
 			_widget.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget;
-			_widget_0.IsEnabled = _datasource_Root_SellAction.IsEnabled;
+			_widget_0.IsEnabled = _datasource_Root_ViewStashedShipsAction.IsEnabled;
 			_widget_0.EventFire += EventListenerOf_widget_0;
 			_widget_0.PropertyChanged += PropertyChangedListenerOf_widget_0;
 			_widget_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0;
@@ -1498,7 +1200,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 			_widget_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0;
 			_widget_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0;
 			_widget_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0;
-			_widget_0_0.FirstString = _datasource_Root_SellAction.AdditionalInfo;
+			_widget_0_0.FirstString = _datasource_Root_ViewStashedShipsAction.AdditionalInfo;
 			_widget_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_0;
 			_widget_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0;
 			_widget_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0;
@@ -1508,7 +1210,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 			_widget_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_0;
 			_widget_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_0;
 			_widget_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_0;
-			_widget_0_0_0.Text = _datasource_Root_SellAction.Name;
+			_widget_0_0_0.Text = _datasource_Root_ViewStashedShipsAction.Name;
 			_widget_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_0_0;
 			_widget_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_0;
 			_widget_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_0;
@@ -1518,7 +1220,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 			_widget_0_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_0_0;
 			_widget_0_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_0_0;
 			_widget_0_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_1.FirstString = _datasource_Root_SellAction.AdditionalInfo;
+			_widget_0_1.FirstString = _datasource_Root_ViewStashedShipsAction.AdditionalInfo;
 			_widget_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_1;
 			_widget_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1;
 			_widget_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1;
@@ -1528,7 +1230,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 			_widget_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1;
 			_widget_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1;
 			_widget_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1;
-			_widget_0_1_0_0.Text = _datasource_Root_SellAction.Name;
+			_widget_0_1_0_0.Text = _datasource_Root_ViewStashedShipsAction.Name;
 			_widget_0_1_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0_0;
 			_widget_0_1_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0_0;
 			_widget_0_1_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_0_0;
@@ -1538,7 +1240,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 			_widget_0_1_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0_0;
 			_widget_0_1_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0_0;
 			_widget_0_1_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0_0;
-			_widget_0_1_0_1.IsVisible = _datasource_Root_SellAction.IsEnabled;
+			_widget_0_1_0_1.Text = _datasource_Root_ViewStashedShipsAction.AdditionalInfo;
 			_widget_0_1_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_0_1;
@@ -1548,48 +1250,18 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_18_
 			_widget_0_1_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0_1;
-			_widget_0_1_0_1_0.Text = _datasource_Root_SellAction.AdditionalInfo;
-			_widget_0_1_0_1_0.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_2.IsHidden = _datasource_Root_SellAction.IsEnabled;
-			_widget_0_1_0_2.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2_0.Text = _datasource_Root_SellAction.AdditionalInfo;
-			_widget_0_1_0_2_0.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_datasource_Root_SellAction_Tooltip = _datasource_Root_SellAction.Tooltip;
-			if (_datasource_Root_SellAction_Tooltip != null)
+			_datasource_Root_ViewStashedShipsAction_Tooltip = _datasource_Root_ViewStashedShipsAction.Tooltip;
+			if (_datasource_Root_ViewStashedShipsAction_Tooltip != null)
 			{
-				_datasource_Root_SellAction_Tooltip.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_SellAction_Tooltip;
-				_datasource_Root_SellAction_Tooltip.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_SellAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
+				_datasource_Root_ViewStashedShipsAction_Tooltip.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_ViewStashedShipsAction_Tooltip;
 				_widget_0_2.EventFire += EventListenerOf_widget_0_2;
 				_widget_1.EventFire += EventListenerOf_widget_1;
 			}

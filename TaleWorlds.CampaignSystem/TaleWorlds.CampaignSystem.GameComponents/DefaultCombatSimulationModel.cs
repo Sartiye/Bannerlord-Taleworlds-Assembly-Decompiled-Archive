@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
@@ -15,7 +14,7 @@ namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultCombatSimulationModel : CombatSimulationModel
 {
-	public override ExplainedNumber SimulateHit(CharacterObject strikerTroop, CharacterObject struckTroop, PartyBase strikerParty, PartyBase struckParty, float strikerAdvantage, MapEvent battle, float strikerSideMorale, float struckSideMorale)
+	public override ExplainedNumber SimulateHit(CharacterObject strikerTroop, CharacterObject struckTroop, PartyBase strikerParty, PartyBase struckParty, float strikerAdvantage, MapEvent battle, BattleEnvironment battleEnvironment, float strikerSideMorale, float struckSideMorale)
 	{
 		float troopPower = Campaign.Current.Models.MilitaryPowerModel.GetTroopPower(strikerTroop, strikerParty.Side, strikerParty.MapEvent.SimulationContext, strikerParty.MapEventSide.LeaderSimulationModifier);
 		float troopPower2 = Campaign.Current.Models.MilitaryPowerModel.GetTroopPower(struckTroop, struckParty.Side, struckParty.MapEvent.SimulationContext, struckParty.MapEventSide.LeaderSimulationModifier);
@@ -23,7 +22,7 @@ public class DefaultCombatSimulationModel : CombatSimulationModel
 		ExplainedNumber effectiveDamage = new ExplainedNumber(num);
 		if (strikerParty.IsMobile && struckParty.IsMobile)
 		{
-			CalculateSimulationDamagePerkEffects(strikerTroop, struckTroop, strikerParty.MobileParty, struckParty.MobileParty, ref effectiveDamage, battle);
+			CalculateSimulationDamagePerkEffects(strikerTroop, struckTroop, strikerParty.MobileParty, struckParty.MobileParty, battle, battleEnvironment, ref effectiveDamage);
 		}
 		CalculateSimulationMoraleEffects(strikerSideMorale, struckSideMorale, ref effectiveDamage);
 		return effectiveDamage;
@@ -42,44 +41,41 @@ public class DefaultCombatSimulationModel : CombatSimulationModel
 		effectiveDamage.AddFactor((num - num2) * 0.005f);
 	}
 
-	private static void CalculateSimulationDamagePerkEffects(CharacterObject strikerTroop, CharacterObject struckTroop, MobileParty strikerParty, MobileParty struckParty, ref ExplainedNumber effectiveDamage, MapEvent battle)
+	private static void CalculateSimulationDamagePerkEffects(CharacterObject strikerTroop, CharacterObject struckTroop, MobileParty strikerParty, MobileParty struckParty, MapEvent battle, BattleEnvironment battleEnvironment, ref ExplainedNumber effectiveDamage)
 	{
-		if (!strikerParty.IsCurrentlyAtSea && strikerTroop.IsInfantry && struckTroop.IsMounted)
+		if (strikerTroop.IsInfantry && struckTroop.IsMounted)
 		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.TightFormations, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.TightFormations, battleEnvironment, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
 		}
-		if (!strikerParty.IsCurrentlyAtSea && struckParty.HasPerk(DefaultPerks.Tactics.LooseFormations) && struckTroop.IsInfantry && strikerTroop.IsRanged)
+		if (struckTroop.IsInfantry && strikerTroop.IsRanged)
 		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.LooseFormations, struckParty, isPrimaryBonus: true, ref effectiveDamage);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.LooseFormations, battleEnvironment, struckParty, isPrimaryBonus: true, ref effectiveDamage);
 		}
 		TerrainType faceTerrainType = Campaign.Current.MapSceneWrapper.GetFaceTerrainType(strikerParty.CurrentNavigationFace);
 		if (faceTerrainType == TerrainType.Snow || faceTerrainType == TerrainType.Forest)
 		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.ExtendedSkirmish, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.ExtendedSkirmish, battleEnvironment, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
 		}
 		if (faceTerrainType == TerrainType.Plain || faceTerrainType == TerrainType.Steppe || faceTerrainType == TerrainType.Desert)
 		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.DecisiveBattle, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.DecisiveBattle, battleEnvironment, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
 		}
-		if (!strikerParty.IsCurrentlyAtSea && !strikerParty.IsBandit && struckParty.IsBandit)
+		if (!strikerParty.IsBandit && struckParty.IsBandit)
 		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.LawKeeper, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.LawKeeper, battleEnvironment, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
 		}
-		if (!strikerParty.IsCurrentlyAtSea)
+		PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.Coaching, battleEnvironment, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
+		if (struckTroop.Tier >= 3)
 		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.Coaching, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.EliteReserves, battleEnvironment, struckParty, isPrimaryBonus: true, ref effectiveDamage);
 		}
-		if (!struckParty.IsCurrentlyAtSea && struckTroop.Tier >= 3)
+		if (strikerParty.MemberRoster.TotalHealthyCount > struckParty.MemberRoster.TotalHealthyCount)
 		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.EliteReserves, struckParty, isPrimaryBonus: true, ref effectiveDamage);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.Encirclement, battleEnvironment, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
 		}
-		if (!strikerParty.IsCurrentlyAtSea && strikerParty.MemberRoster.TotalHealthyCount > struckParty.MemberRoster.TotalHealthyCount)
+		if (strikerParty.MemberRoster.TotalHealthyCount < struckParty.MemberRoster.TotalHealthyCount)
 		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.Encirclement, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
-		}
-		if (!strikerParty.IsCurrentlyAtSea && strikerParty.MemberRoster.TotalHealthyCount < struckParty.MemberRoster.TotalHealthyCount)
-		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.Counteroffensive, strikerParty, isPrimaryBonus: false, ref effectiveDamage);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.Counteroffensive, battleEnvironment, strikerParty, isPrimaryBonus: false, ref effectiveDamage);
 		}
 		bool flag = false;
 		foreach (MapEventParty item in battle.PartiesOnSide(BattleSideEnum.Defender))
@@ -92,29 +88,29 @@ public class DefaultCombatSimulationModel : CombatSimulationModel
 		}
 		bool flag2 = !flag;
 		bool flag3 = flag2;
-		if (battle.IsSiegeAssault && flag2 && strikerParty.HasPerk(DefaultPerks.Tactics.Besieged))
+		if (battle.IsSiegeAssault && flag2)
 		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.Besieged, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.Besieged, battleEnvironment, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
 		}
-		if (flag && !strikerParty.IsCurrentlyAtSea && strikerParty.HasPerk(DefaultPerks.Scouting.Vanguard))
+		if (flag)
 		{
-			effectiveDamage.AddFactor(DefaultPerks.Scouting.Vanguard.PrimaryBonus, DefaultPerks.Scouting.Vanguard.Name);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.Vanguard, battleEnvironment, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
 		}
-		if ((battle.IsSiegeOutside || battle.IsSallyOut) && flag3 && !strikerParty.IsCurrentlyAtSea)
+		if ((battle.IsSiegeOutside || battle.IsSallyOut) && flag3)
 		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.Rearguard, strikerParty, isPrimaryBonus: false, ref effectiveDamage);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.Rearguard, battleEnvironment, strikerParty, isPrimaryBonus: false, ref effectiveDamage);
 		}
-		if (battle.IsSallyOut && flag && !strikerParty.IsCurrentlyAtSea && strikerParty.HasPerk(DefaultPerks.Scouting.Vanguard, checkSecondaryRole: true))
+		if (battle.IsSallyOut && flag)
 		{
-			effectiveDamage.AddFactor(DefaultPerks.Scouting.Vanguard.SecondaryBonus, DefaultPerks.Scouting.Vanguard.Name);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.Vanguard, battleEnvironment, strikerParty, isPrimaryBonus: false, ref effectiveDamage);
 		}
-		if (battle.IsFieldBattle && flag2 && !strikerParty.IsCurrentlyAtSea)
+		if (battle.IsFieldBattle && flag2)
 		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.Counteroffensive, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.Counteroffensive, battleEnvironment, strikerParty, isPrimaryBonus: true, ref effectiveDamage);
 		}
 		if (strikerParty.Army != null && strikerParty.LeaderHero != null && strikerParty.Army.LeaderParty == strikerParty)
 		{
-			PerkHelper.AddEpicPerkBonusForCharacter(DefaultPerks.Tactics.TacticalMastery, strikerParty.LeaderHero.CharacterObject, DefaultSkills.Tactics, applyPrimaryBonus: true, ref effectiveDamage, Campaign.Current.Models.CharacterDevelopmentModel.MinSkillRequiredForEpicPerkBonus, strikerParty.IsCurrentlyAtSea);
+			PerkHelper.AddEpicPerkBonusForCharacter(DefaultPerks.Tactics.TacticalMastery, battleEnvironment, strikerParty.LeaderHero.CharacterObject, DefaultSkills.Tactics, isPrimaryBonus: true, ref effectiveDamage, Campaign.Current.Models.CharacterDevelopmentModel.MinSkillRequiredForEpicPerkBonus);
 		}
 	}
 
@@ -228,14 +224,14 @@ public class DefaultCombatSimulationModel : CombatSimulationModel
 
 	private static void CalculateSettlementAdvantagePerkEffects(Settlement settlement, ref ExplainedNumber effectiveAdvantage, ISiegeEventSide opposingSide)
 	{
-		if (opposingSide.GetInvolvedPartiesForEventType().Any((PartyBase x) => x.MobileParty.HasPerk(DefaultPerks.Tactics.OnTheMarch) && !x.MobileParty.IsCurrentlyAtSea))
+		foreach (PartyBase item in opposingSide.GetInvolvedPartiesForEventType())
 		{
-			effectiveAdvantage.AddFactor(DefaultPerks.Tactics.OnTheMarch.PrimaryBonus, DefaultPerks.Tactics.OnTheMarch.Name);
+			if (PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.OnTheMarch, BattleEnvironment.Any, item.MobileParty, isPrimaryBonus: true, ref effectiveAdvantage))
+			{
+				break;
+			}
 		}
-		if (PerkHelper.GetPerkValueForTown(DefaultPerks.Tactics.OnTheMarch, settlement.Town))
-		{
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Tactics.OnTheMarch, settlement.Town, ref effectiveAdvantage);
-		}
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Tactics.OnTheMarch, settlement.Town, isPrimaryBonus: false, ref effectiveAdvantage);
 	}
 
 	public override (int defenderRounds, int attackerRounds) GetSimulationTicksForBattleRound(MapEvent mapEvent)
@@ -298,17 +294,19 @@ public class DefaultCombatSimulationModel : CombatSimulationModel
 			{
 				SkillHelper.AddSkillBonusForCharacter(DefaultSkillEffects.TacticsAdvantage, party.LeaderHero.CharacterObject, ref explainedNumber);
 			}
-			if (party.IsMobile && opposingParty.Culture.IsBandit && !party.MobileParty.IsCurrentlyAtSea)
+			if (party.IsMobile && opposingParty.Culture.IsBandit)
 			{
 				PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.Patrols, party.MobileParty, isPrimaryBonus: false, ref explainedNumber);
 			}
 		}
-		if (party.IsMobile && !party.MobileParty.IsCurrentlyAtSea && opposingParty.IsMobile && party.LeaderHero != null && opposingParty.LeaderHero != null && party.MobileParty.HasPerk(DefaultPerks.Tactics.PreBattleManeuvers, checkSecondaryRole: true))
+		Hero perkOwnerHero = null;
+		if (party.IsMobile && opposingParty.IsMobile && opposingParty.LeaderHero != null && party.MobileParty.HasPerk(DefaultPerks.Tactics.PreBattleManeuvers, out perkOwnerHero, checkSecondaryRole: true))
 		{
-			int num = party.LeaderHero.GetSkillValue(DefaultSkills.Tactics) - opposingParty.LeaderHero.GetSkillValue(DefaultSkills.Tactics);
+			int num = perkOwnerHero.GetSkillValue(DefaultSkills.Tactics) - opposingParty.LeaderHero.GetSkillValue(DefaultSkills.Tactics);
 			if (num > 0)
 			{
-				explainedNumber.Add((float)num * 0.01f);
+				float value = (float)num * 0.01f;
+				explainedNumber.Add(value);
 			}
 		}
 		return explainedNumber;
@@ -342,13 +340,18 @@ public class DefaultCombatSimulationModel : CombatSimulationModel
 		return CampaignTime.Minutes(30L);
 	}
 
-	public override MBList<(Ship, MapEventParty)> GetSimulationShips(MapEvent mapEvent, MBList<MapEventParty> battleParties)
-	{
-		return new MBList<(Ship, MapEventParty)>();
-	}
-
 	public override int GetParticipatingTroopCount(MapEventSide side)
 	{
 		return side.HealthyTroopCountAtMapEventStart;
+	}
+
+	public override float GetShipCombatImportance(Ship ship)
+	{
+		return 0f;
+	}
+
+	public override float GetShipCombatScore(Ship ship)
+	{
+		return 0f;
 	}
 }

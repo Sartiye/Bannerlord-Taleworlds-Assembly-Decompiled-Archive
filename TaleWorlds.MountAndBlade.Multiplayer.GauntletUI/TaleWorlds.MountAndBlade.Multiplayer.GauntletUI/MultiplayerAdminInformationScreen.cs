@@ -9,15 +9,13 @@ public class MultiplayerAdminInformationScreen : GlobalLayer
 {
 	private MultiplayerAdminInformationVM _dataSource;
 
-	private GauntletMovieIdentifier _movie;
-
 	public static MultiplayerAdminInformationScreen Current { get; private set; }
 
 	public MultiplayerAdminInformationScreen()
 	{
 		_dataSource = new MultiplayerAdminInformationVM();
 		GauntletLayer gauntletLayer = new GauntletLayer("MultiplayerAdminInformation", 15300);
-		_movie = gauntletLayer.LoadMovie("MultiplayerAdminInformation", _dataSource);
+		gauntletLayer.LoadMovie("MultiplayerAdminInformation", _dataSource);
 		base.Layer = gauntletLayer;
 		InformationManager.OnAddSystemNotification += OnSystemNotificationReceived;
 	}
@@ -47,7 +45,6 @@ public class MultiplayerAdminInformationScreen : GlobalLayer
 		{
 			Current.OnFinalize();
 			ScreenManager.RemoveGlobalLayer(Current);
-			(Current.Layer as GauntletLayer).ReleaseMovie(Current._movie);
 			Current._dataSource = null;
 			Current = null;
 		}

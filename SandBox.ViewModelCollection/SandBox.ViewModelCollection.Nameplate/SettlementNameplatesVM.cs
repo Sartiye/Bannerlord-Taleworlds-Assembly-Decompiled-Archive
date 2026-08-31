@@ -137,6 +137,20 @@ public class SettlementNameplatesVM : ViewModel
 		}
 	}
 
+	public void Reset(IEnumerable<Tuple<Settlement, GameEntity>> settlements)
+	{
+		for (int i = 0; i < _allNameplates.Count; i++)
+		{
+			_allNameplates[i].OnFinalize();
+		}
+		_allNameplates.Clear();
+		_allNameplatesBySettlements.Clear();
+		SmallNameplates.Clear();
+		MediumNameplates.Clear();
+		LargeNameplates.Clear();
+		Initialize(settlements);
+	}
+
 	public void Initialize(IEnumerable<Tuple<Settlement, GameEntity>> settlements)
 	{
 		_allRegularSettlements = settlements.Where((Tuple<Settlement, GameEntity> x) => !x.Item1.IsHideout && !(x.Item1.SettlementComponent is RetirementSettlementComponent));
@@ -170,7 +184,7 @@ public class SettlementNameplatesVM : ViewModel
 			}
 			else
 			{
-				Debug.FailedAssert("A seetlement which is IsRetreat doesn't have a retirement component.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Nameplate\\SettlementNameplatesVM.cs", "Initialize", 120);
+				Debug.FailedAssert("A seetlement which is IsRetreat doesn't have a retirement component.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Nameplate\\SettlementNameplatesVM.cs", "Initialize", 136);
 			}
 		}
 		for (int i = 0; i < _allNameplates.Count; i++)

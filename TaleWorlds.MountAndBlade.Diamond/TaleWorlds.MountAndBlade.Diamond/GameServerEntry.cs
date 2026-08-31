@@ -72,11 +72,23 @@ public class GameServerEntry
 	[JsonProperty]
 	public bool AllowsOptionalModules { get; private set; }
 
+	[JsonProperty]
+	public int SpectatorCount { get; private set; }
+
+	[JsonProperty]
+	public int MaxSpectatorCount { get; private set; }
+
+	[JsonProperty]
+	public bool SpectatorPasswordProtected { get; private set; }
+
+	[JsonProperty]
+	public bool EnableSpectators { get; private set; }
+
 	public GameServerEntry()
 	{
 	}
 
-	public GameServerEntry(CustomBattleId id, string serverName, string address, int port, string region, string gameModule, string gameType, string map, string uniqueMapId, int playerCount, int maxPlayerCount, bool isOfficial, bool byOfficialProvider, bool crossplayEnabled, PlayerId hostId, string hostName, List<ModuleInfoModel> loadedModules, bool allowsOptionalModules, bool passwordProtected = false, int permission = 0)
+	public GameServerEntry(CustomBattleId id, string serverName, string address, int port, string region, string gameModule, string gameType, string map, string uniqueMapId, int playerCount, int maxPlayerCount, bool isOfficial, bool byOfficialProvider, bool crossplayEnabled, PlayerId hostId, string hostName, List<ModuleInfoModel> loadedModules, bool allowsOptionalModules, bool passwordProtected = false, int permission = 0, int spectatorCount = 0, int maxSpectatorCount = 0, bool spectatorPasswordProtected = false, bool enableSpectators = false)
 	{
 		Id = id;
 		ServerName = serverName;
@@ -98,6 +110,10 @@ public class GameServerEntry
 		AllowsOptionalModules = allowsOptionalModules;
 		PasswordProtected = passwordProtected;
 		Permission = permission;
+		SpectatorCount = spectatorCount;
+		MaxSpectatorCount = maxSpectatorCount;
+		SpectatorPasswordProtected = spectatorPasswordProtected;
+		EnableSpectators = enableSpectators;
 	}
 
 	public static void FilterGameServerEntriesBasedOnCrossplay(ref List<GameServerEntry> serverList, bool hasCrossplayPrivilege)

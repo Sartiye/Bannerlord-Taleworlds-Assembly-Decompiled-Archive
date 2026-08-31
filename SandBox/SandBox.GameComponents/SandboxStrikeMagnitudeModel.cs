@@ -18,6 +18,7 @@ public class SandboxStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 	public override float CalculateStrikeMagnitudeForMissile(in AttackInformation attackInformation, in AttackCollisionData collisionData, in MissionWeapon weapon, float missileSpeed)
 	{
 		BasicCharacterObject attackerAgentCharacter = attackInformation.AttackerAgentCharacter;
+		BattleEnvironment attackerBattleEnvironment = attackInformation.AttackerBattleEnvironment;
 		WeaponComponentData currentUsageItem = weapon.CurrentUsageItem;
 		float missileTotalDamage = collisionData.MissileTotalDamage;
 		float missileStartingBaseSpeed = collisionData.MissileStartingBaseSpeed;
@@ -31,7 +32,7 @@ public class SandboxStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 				WeaponClass ammoClass = currentUsageItem.AmmoClass;
 				if (ammoClass == WeaponClass.Sling || ammoClass == WeaponClass.Stone || ammoClass == WeaponClass.ThrowingAxe || ammoClass == WeaponClass.ThrowingKnife || ammoClass == WeaponClass.Javelin)
 				{
-					PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Throwing.RunningThrow, characterObject, isPrimaryBonus: true, ref bonuses);
+					PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Throwing.RunningThrow, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
 				}
 			}
 			num += num2 * bonuses.ResultNumber;
@@ -47,22 +48,23 @@ public class SandboxStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 		CharacterObject captainCharacter = attackInformation.AttackerCaptainCharacter as CharacterObject;
 		bool doesAttackerHaveMountAgent = attackInformation.DoesAttackerHaveMountAgent;
 		SkillObject relevantSkill = attackInformation.AttackerWeapon.CurrentUsageItem.RelevantSkill;
+		BattleEnvironment attackerBattleEnvironment = attackInformation.AttackerBattleEnvironment;
 		if (doesAttackerHaveMountAgent)
 		{
-			PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Riding.NomadicTraditions, captainCharacter, ref bonuses);
+			PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Riding.NomadicTraditions, attackerBattleEnvironment, captainCharacter, ref bonuses);
 		}
 		else
 		{
-			PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Athletics.SurgingBlow, character, isPrimaryBonus: true, ref bonuses);
-			PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Athletics.SurgingBlow, captainCharacter, ref bonuses);
+			PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Athletics.SurgingBlow, attackerBattleEnvironment, character, isPrimaryBonus: true, ref bonuses);
+			PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Athletics.SurgingBlow, attackerBattleEnvironment, captainCharacter, ref bonuses);
 		}
 		if (relevantSkill == DefaultSkills.Polearm)
 		{
-			PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Polearm.Lancer, captainCharacter, ref bonuses);
+			PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Polearm.Lancer, attackerBattleEnvironment, captainCharacter, ref bonuses);
 			if (doesAttackerHaveMountAgent)
 			{
-				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Polearm.Lancer, character, isPrimaryBonus: true, ref bonuses);
-				PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Polearm.UnstoppableForce, captainCharacter, ref bonuses);
+				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Polearm.Lancer, attackerBattleEnvironment, character, isPrimaryBonus: true, ref bonuses);
+				PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Polearm.UnstoppableForce, attackerBattleEnvironment, captainCharacter, ref bonuses);
 			}
 		}
 		return CombatStatCalculator.CalculateBaseBlowMagnitudeForPassiveUsage(attackInformation.AttackerWeapon.Item.Weight, bonuses.ResultNumber);
@@ -71,6 +73,7 @@ public class SandboxStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 	public override float CalculateStrikeMagnitudeForSwing(in AttackInformation attackInformation, in AttackCollisionData collisionData, in MissionWeapon weapon, float swingSpeed, float impactPointAsPercent, float extraLinearSpeed)
 	{
 		BasicCharacterObject attackerAgentCharacter = attackInformation.AttackerAgentCharacter;
+		BattleEnvironment attackerBattleEnvironment = attackInformation.AttackerBattleEnvironment;
 		BasicCharacterObject attackerCaptainCharacter = attackInformation.AttackerCaptainCharacter;
 		bool doesAttackerHaveMountAgent = attackInformation.DoesAttackerHaveMountAgent;
 		WeaponComponentData currentUsageItem = weapon.CurrentUsageItem;
@@ -82,25 +85,25 @@ public class SandboxStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 			CharacterObject captainCharacter = attackerCaptainCharacter as CharacterObject;
 			if (doesAttackerHaveMountAgent)
 			{
-				PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Riding.NomadicTraditions, captainCharacter, ref bonuses);
+				PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Riding.NomadicTraditions, attackerBattleEnvironment, captainCharacter, ref bonuses);
 			}
 			else
 			{
 				if (relevantSkill == DefaultSkills.TwoHanded)
 				{
-					PerkHelper.AddPerkBonusForCharacter(DefaultPerks.TwoHanded.RecklessCharge, characterObject, isPrimaryBonus: true, ref bonuses);
+					PerkHelper.AddPerkBonusForCharacter(DefaultPerks.TwoHanded.RecklessCharge, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
 				}
-				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Roguery.DashAndSlash, characterObject, isPrimaryBonus: true, ref bonuses);
-				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Athletics.SurgingBlow, characterObject, isPrimaryBonus: true, ref bonuses);
-				PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Athletics.SurgingBlow, captainCharacter, ref bonuses);
+				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Roguery.DashAndSlash, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
+				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Athletics.SurgingBlow, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
+				PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Athletics.SurgingBlow, attackerBattleEnvironment, captainCharacter, ref bonuses);
 			}
 			if (relevantSkill == DefaultSkills.Polearm)
 			{
-				PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Polearm.Lancer, captainCharacter, ref bonuses);
+				PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Polearm.Lancer, attackerBattleEnvironment, captainCharacter, ref bonuses);
 				if (doesAttackerHaveMountAgent)
 				{
-					PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Polearm.Lancer, characterObject, isPrimaryBonus: true, ref bonuses);
-					PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Polearm.UnstoppableForce, captainCharacter, ref bonuses);
+					PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Polearm.Lancer, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
+					PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Polearm.UnstoppableForce, attackerBattleEnvironment, captainCharacter, ref bonuses);
 				}
 			}
 		}
@@ -109,7 +112,7 @@ public class SandboxStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 		if (item.IsCraftedByPlayer)
 		{
 			ExplainedNumber bonuses2 = new ExplainedNumber(num);
-			PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Crafting.SharpenedEdge, characterObject, isPrimaryBonus: true, ref bonuses2);
+			PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Crafting.SharpenedEdge, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses2);
 			num = bonuses2.ResultNumber;
 		}
 		return num;
@@ -123,6 +126,7 @@ public class SandboxStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 	public override float CalculateStrikeMagnitudeForThrust(in AttackInformation attackInformation, in AttackCollisionData collisionData, in MissionWeapon weapon, float thrustWeaponSpeed, float extraLinearSpeed, bool isThrown = false)
 	{
 		BasicCharacterObject attackerAgentCharacter = attackInformation.AttackerAgentCharacter;
+		BattleEnvironment attackerBattleEnvironment = attackInformation.AttackerBattleEnvironment;
 		BasicCharacterObject attackerCaptainCharacter = attackInformation.AttackerCaptainCharacter;
 		bool doesAttackerHaveMountAgent = attackInformation.DoesAttackerHaveMountAgent;
 		ItemObject item = weapon.Item;
@@ -136,25 +140,25 @@ public class SandboxStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 			CharacterObject captainCharacter = attackerCaptainCharacter as CharacterObject;
 			if (doesAttackerHaveMountAgent)
 			{
-				PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Riding.NomadicTraditions, captainCharacter, ref bonuses);
+				PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Riding.NomadicTraditions, attackerBattleEnvironment, captainCharacter, ref bonuses);
 			}
 			else
 			{
 				if (relevantSkill == DefaultSkills.TwoHanded)
 				{
-					PerkHelper.AddPerkBonusForCharacter(DefaultPerks.TwoHanded.RecklessCharge, characterObject, isPrimaryBonus: true, ref bonuses);
+					PerkHelper.AddPerkBonusForCharacter(DefaultPerks.TwoHanded.RecklessCharge, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
 				}
-				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Roguery.DashAndSlash, characterObject, isPrimaryBonus: true, ref bonuses);
-				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Athletics.SurgingBlow, characterObject, isPrimaryBonus: true, ref bonuses);
-				PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Athletics.SurgingBlow, captainCharacter, ref bonuses);
+				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Roguery.DashAndSlash, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
+				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Athletics.SurgingBlow, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
+				PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Athletics.SurgingBlow, attackerBattleEnvironment, captainCharacter, ref bonuses);
 			}
 			if (relevantSkill == DefaultSkills.Polearm)
 			{
-				PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Polearm.Lancer, captainCharacter, ref bonuses);
+				PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Polearm.Lancer, attackerBattleEnvironment, captainCharacter, ref bonuses);
 				if (doesAttackerHaveMountAgent)
 				{
-					PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Polearm.Lancer, characterObject, isPrimaryBonus: true, ref bonuses);
-					PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Polearm.UnstoppableForce, captainCharacter, ref bonuses);
+					PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Polearm.Lancer, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
+					PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Polearm.UnstoppableForce, attackerBattleEnvironment, captainCharacter, ref bonuses);
 				}
 			}
 		}
@@ -162,7 +166,7 @@ public class SandboxStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 		if (item.IsCraftedByPlayer)
 		{
 			ExplainedNumber bonuses2 = new ExplainedNumber(num);
-			PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Crafting.SharpenedTip, characterObject, isPrimaryBonus: true, ref bonuses2);
+			PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Crafting.SharpenedTip, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses2);
 			num = bonuses2.ResultNumber;
 		}
 		return num;
@@ -187,7 +191,7 @@ public class SandboxStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 			num4 = MathF.Max(0f, num2 - armorEffectiveness * 0.2f);
 			break;
 		default:
-			Debug.FailedAssert("Given damage type is invalid.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\GameComponents\\SandboxStrikeMagnitudeModel.cs", "ComputeRawDamage", 259);
+			Debug.FailedAssert("Given damage type is invalid.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\GameComponents\\SandboxStrikeMagnitudeModel.cs", "ComputeRawDamage", 267);
 			return 0f;
 		}
 		num3 += (1f - bluntDamageFactorByDamageType) * num4;
@@ -218,6 +222,7 @@ public class SandboxStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 		float num = baseArmor;
 		CharacterObject characterObject = attackerCharacter as CharacterObject;
 		CharacterObject characterObject2 = attackerCaptainCharacter as CharacterObject;
+		BattleEnvironment attackerBattleEnvironment = attackInformation.AttackerBattleEnvironment;
 		if (attackerCharacter == characterObject2)
 		{
 			characterObject2 = null;
@@ -226,11 +231,12 @@ public class SandboxStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 		{
 			if (weaponComponent != null)
 			{
-				if (weaponComponent.RelevantSkill == DefaultSkills.Crossbow && baseArmor < DefaultPerks.Crossbow.Piercer.PrimaryBonus && characterObject.GetPerkValue(DefaultPerks.Crossbow.Piercer))
+				float effectValue2;
+				if (weaponComponent.RelevantSkill == DefaultSkills.Crossbow && characterObject.GetPerkValue(DefaultPerks.Crossbow.Piercer, attackInformation.AttackerBattleEnvironment, isPrimaryEffect: true, out var effectValue) && baseArmor < effectValue)
 				{
 					flag = true;
 				}
-				else if (weaponComponent.WeaponClass == WeaponClass.SlingStone && collisionData.VictimHitBodyPart == BoneBodyPartType.Head && characterObject.GetPerkValue(DefaultPerks.Throwing.SlingingCompetitions))
+				else if (weaponComponent.WeaponClass == WeaponClass.SlingStone && collisionData.VictimHitBodyPart == BoneBodyPartType.Head && characterObject.GetPerkValue(DefaultPerks.Throwing.SlingingCompetitions, attackInformation.AttackerBattleEnvironment, isPrimaryEffect: true, out effectValue2))
 				{
 					flag = true;
 				}
@@ -242,35 +248,35 @@ public class SandboxStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 			else
 			{
 				ExplainedNumber bonuses = new ExplainedNumber(baseArmor);
-				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.TwoHanded.Vandal, characterObject, isPrimaryBonus: true, ref bonuses);
+				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.TwoHanded.Vandal, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
 				if (weaponComponent != null)
 				{
 					if (weaponComponent.RelevantSkill == DefaultSkills.OneHanded)
 					{
-						PerkHelper.AddPerkBonusForCharacter(DefaultPerks.OneHanded.ChinkInTheArmor, characterObject, isPrimaryBonus: true, ref bonuses);
+						PerkHelper.AddPerkBonusForCharacter(DefaultPerks.OneHanded.ChinkInTheArmor, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
 					}
 					else if (weaponComponent.RelevantSkill == DefaultSkills.Bow)
 					{
-						PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Bow.Bodkin, characterObject, isPrimaryBonus: true, ref bonuses);
+						PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Bow.Bodkin, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
 						if (characterObject2 != null)
 						{
-							PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Bow.Bodkin, characterObject2, ref bonuses);
+							PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Bow.Bodkin, attackerBattleEnvironment, characterObject2, ref bonuses);
 						}
 					}
 					else if (weaponComponent.RelevantSkill == DefaultSkills.Crossbow)
 					{
-						PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Crossbow.Puncture, characterObject, isPrimaryBonus: true, ref bonuses);
+						PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Crossbow.Puncture, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
 						if (characterObject2 != null)
 						{
-							PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Crossbow.Puncture, characterObject2, ref bonuses);
+							PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Crossbow.Puncture, attackerBattleEnvironment, characterObject2, ref bonuses);
 						}
 					}
 					else if (weaponComponent.RelevantSkill == DefaultSkills.Throwing)
 					{
-						PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Throwing.WeakSpot, characterObject, isPrimaryBonus: true, ref bonuses);
+						PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Throwing.WeakSpot, attackerBattleEnvironment, characterObject, isPrimaryBonus: true, ref bonuses);
 						if (characterObject2 != null)
 						{
-							PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Throwing.WeakSpot, characterObject2, ref bonuses);
+							PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Throwing.WeakSpot, attackerBattleEnvironment, characterObject2, ref bonuses);
 						}
 					}
 				}

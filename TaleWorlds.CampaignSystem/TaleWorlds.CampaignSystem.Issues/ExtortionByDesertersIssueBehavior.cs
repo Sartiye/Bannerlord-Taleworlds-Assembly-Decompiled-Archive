@@ -1019,6 +1019,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			_deserterMobileParty.Aggressiveness = 0f;
 			_deserterMobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: true);
 			_deserterMobileParty.Party.SetVisualAsDirty();
+			_deserterMobileParty.InitializePartyTrade(QuestHelper.CalculateInitialGoldForBanditQuestParty(_deserterMobileParty));
 			SetPartyAiAction.GetActionForRaidingSettlement(_deserterMobileParty, QuestSettlement, MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
 		}
 
@@ -1133,7 +1134,7 @@ public class ExtortionByDesertersIssueBehavior : CampaignBehaviorBase
 			distance = 0f;
 			if (!NavigationHelper.IsPositionValidForNavigationType(position, MobileParty.NavigationType.Default))
 			{
-				Debug.FailedAssert("Origin point not valid!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Issues\\ExtortionByDesertersIssueBehavior.cs", "FindFreePositionBetweenPointAndParty", 1397);
+				Debug.FailedAssert("Origin point not valid!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Issues\\ExtortionByDesertersIssueBehavior.cs", "FindFreePositionBetweenPointAndParty", 1398);
 			}
 			else
 			{

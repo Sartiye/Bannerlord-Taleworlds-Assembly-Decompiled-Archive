@@ -27,7 +27,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 
 	private Widget _widget_2;
 
-	private HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_HUDExtensions_MissionMultiplayerHUDExtensionVM_Dependency_10_MultiplayerCompassElement__DependendPrefab _widget_2_0;
+	private HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_HUDExtensions_MissionMultiplayerHUDExtensionVM_Dependency_16_MultiplayerCompassElement__DependendPrefab _widget_2_0;
 
 	private ImageIdentifierWidget _widget_3;
 
@@ -59,7 +59,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 		_widget_1_0.AddChild(_widget_1_0_0);
 		_widget_2 = new Widget(base.Context);
 		_widget.AddChild(_widget_2);
-		_widget_2_0 = new HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_HUDExtensions_MissionMultiplayerHUDExtensionVM_Dependency_10_MultiplayerCompassElement__DependendPrefab(base.Context);
+		_widget_2_0 = new HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollection_HUDExtensions_MissionMultiplayerHUDExtensionVM_Dependency_16_MultiplayerCompassElement__DependendPrefab(base.Context);
 		_widget_2.AddChild(_widget_2_0);
 		_widget_2_0.CreateWidgets();
 		_widget_3 = new ImageIdentifierWidget(base.Context);
@@ -165,6 +165,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 			_datasource_Root.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
+			_widget.EventFire -= EventListenerOf_widget;
 			_widget.PropertyChanged -= PropertyChangedListenerOf_widget;
 			_widget.boolPropertyChanged -= boolPropertyChangedListenerOf_widget;
 			_widget.floatPropertyChanged -= floatPropertyChangedListenerOf_widget;
@@ -255,6 +256,14 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 		RefreshDataSource_datasource_Root(dataSource);
 	}
 
+	private void EventListenerOf_widget(Widget widget, string commandName, object[] args)
+	{
+		if (commandName == "Click")
+		{
+			_datasource_Root.ExecuteSelectPlayer();
+		}
+	}
+
 	private void PropertyChangedListenerOf_widget(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
 		HandleWidgetPropertyChangeOf_widget(propertyName);
@@ -305,6 +314,10 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 		if (propertyName == "IsDead")
 		{
 			_datasource_Root.IsDead = _widget.IsDead;
+		}
+		else if (propertyName == "CanAcceptEvents")
+		{
+			_datasource_Root.IsSelectable = _widget.CanAcceptEvents;
 		}
 	}
 
@@ -648,6 +661,9 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 			_widget.IsDead = _datasource_Root.IsDead;
 			_widget_4.IsVisible = _datasource_Root.IsDead;
 			break;
+		case "IsSelectable":
+			_widget.CanAcceptEvents = _datasource_Root.IsSelectable;
+			break;
 		case "ValuePercent":
 			_widget_0.CurrentAmount = _datasource_Root.ValuePercent;
 			_widget_0.InitialAmount = _datasource_Root.ValuePercent;
@@ -787,6 +803,7 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 			_datasource_Root.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
+			_widget.EventFire -= EventListenerOf_widget;
 			_widget.PropertyChanged -= PropertyChangedListenerOf_widget;
 			_widget.boolPropertyChanged -= boolPropertyChangedListenerOf_widget;
 			_widget.floatPropertyChanged -= floatPropertyChangedListenerOf_widget;
@@ -883,6 +900,8 @@ public class HUDExtension__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCollect
 			_datasource_Root.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
 			_widget.IsDead = _datasource_Root.IsDead;
+			_widget.CanAcceptEvents = _datasource_Root.IsSelectable;
+			_widget.EventFire += EventListenerOf_widget;
 			_widget.PropertyChanged += PropertyChangedListenerOf_widget;
 			_widget.boolPropertyChanged += boolPropertyChangedListenerOf_widget;
 			_widget.floatPropertyChanged += floatPropertyChangedListenerOf_widget;

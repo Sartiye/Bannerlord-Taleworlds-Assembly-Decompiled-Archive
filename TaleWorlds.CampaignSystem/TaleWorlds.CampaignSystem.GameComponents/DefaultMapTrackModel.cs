@@ -23,10 +23,7 @@ public class DefaultMapTrackModel : MapTrackModel
 	{
 		ExplainedNumber explainedNumber = new ExplainedNumber(0f, includeDescriptions: false, null);
 		SkillHelper.AddSkillBonusForParty(DefaultSkillEffects.TrackingRadius, MobileParty.MainParty, ref explainedNumber);
-		if (!MobileParty.MainParty.IsCurrentlyAtSea)
-		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.Ranger, MobileParty.MainParty, isPrimaryBonus: true, ref explainedNumber);
-		}
+		PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.Ranger, MobileParty.MainParty, isPrimaryBonus: true, ref explainedNumber);
 		return explainedNumber.ResultNumber;
 	}
 
@@ -44,7 +41,8 @@ public class DefaultMapTrackModel : MapTrackModel
 		bool flag = Campaign.Current.MapSceneWrapper.GetFaceTerrainType(mobileParty.CurrentNavigationFace) == TerrainType.Snow;
 		int num = mobileParty.MemberRoster.TotalManCount + mobileParty.PrisonRoster.TotalManCount;
 		float num2 = MathF.Min(1f, (0.5f * MBRandom.RandomFloat + 0.5f + (float)num * 0.007f) / 2f) * (flag ? 0.5f : 1f);
-		if (MobileParty.MainParty.HasPerk(DefaultPerks.Scouting.Tracker) && !mobileParty.IsCurrentlyAtSea)
+		Hero perkOwnerHero = null;
+		if (MobileParty.MainParty.HasPerk(DefaultPerks.Scouting.Tracker, out perkOwnerHero))
 		{
 			num2 = MathF.Min(1f, num2 * (1f + DefaultPerks.Scouting.Tracker.PrimaryBonus));
 		}
@@ -57,9 +55,11 @@ public class DefaultMapTrackModel : MapTrackModel
 		float elapsedHoursUntilNow = track.CreationTime.ElapsedHoursUntilNow;
 		float num = (track.Position.ToVec2() - MobileParty.MainParty.Position.ToVec2()).Length / trackSpottingDistance;
 		float num2 = -75f + elapsedHoursUntilNow / MaxTrackLife * 100f + num * 100f + MathF.Max(0f, 100f - (float)size) * (CampaignTime.Now.IsNightTime ? 10f : 1f);
-		if (MobileParty.MainParty.HasPerk(DefaultPerks.Scouting.Ranger, checkSecondaryRole: true) && !MobileParty.MainParty.IsCurrentlyAtSea)
+		Hero perkOwnerHero = null;
+		if (MobileParty.MainParty.HasPerk(DefaultPerks.Scouting.Ranger, out perkOwnerHero, checkSecondaryRole: true))
 		{
-			num2 -= num2 * DefaultPerks.Scouting.Ranger.SecondaryBonus;
+			float num3 = (0f - num2) * DefaultPerks.Scouting.Ranger.SecondaryBonus;
+			num2 += num3;
 		}
 		return num2;
 	}

@@ -141,7 +141,7 @@ public class StrategicArea : MissionObject, IDetachment
 
 	private int CalculateCapacity()
 	{
-		return TaleWorlds.Library.MathF.Max(1, TaleWorlds.Library.MathF.Ceiling(TaleWorlds.Library.MathF.Max(1f, _width) * TaleWorlds.Library.MathF.Max(1f, _depth)));
+		return TaleWorlds.Library.MathF.Max(1, TaleWorlds.Library.MathF.Floor(TaleWorlds.Library.MathF.Max(1f, _width)) * TaleWorlds.Library.MathF.Floor(TaleWorlds.Library.MathF.Max(1f, _depth)));
 	}
 
 	public Vec3 GetGroundPosition()
@@ -337,7 +337,7 @@ public class StrategicArea : MissionObject, IDetachment
 		if (_shimmyLocalPosition.IsNonZero)
 		{
 			WorldPosition origin = _cachedGlobalWorldFrame.Origin;
-			origin.SetVec2(_cachedGlobalWorldFrame.ToGroundMatrixFrameMT().TransformToParent(in _shimmyLocalPosition).AsVec2);
+			origin.SetVec2MT(_cachedGlobalWorldFrame.ToGroundMatrixFrameMT().TransformToParent(in _shimmyLocalPosition).AsVec2);
 			return new WorldFrame(_cachedGlobalWorldFrame.Rotation, origin);
 		}
 		return _cachedGlobalWorldFrame;
@@ -466,34 +466,37 @@ public class StrategicArea : MissionObject, IDetachment
 	{
 		if (_capacity > 1)
 		{
-			int unitIndex = _agents.IndexOf(agent);
-			Formation formation = agent.Formation;
-			Formation simulationFormation = GetSimulationFormation(formation);
-			CacheGlobalWorldFrame();
-			ref WorldPosition origin = ref _cachedGlobalWorldFrame.Origin;
-			Vec2 formationDirection = _cachedGlobalWorldFrame.Rotation.f.AsVec2.Normalized();
-			formation.GetUnitPositionWithIndexAccordingToNewOrder(simulationFormation, unitIndex, in origin, in formationDirection, _width, _unitSpacing, _agents.Count, out var unitPosition, out var _);
-			if (unitPosition.HasValue)
+			int num = _agents.IndexOf(agent);
+			int num2 = TaleWorlds.Library.MathF.Floor(_width);
+			int num3 = num % num2;
+			int num4 = num / num2;
+			float num5 = Formation.InfantryInterval(_unitSpacing) + Formation.GetDefaultUnitDiameter(isMounted: false);
+			float num6 = Formation.InfantryDistance(_unitSpacing) + Formation.GetDefaultUnitDiameter(isMounted: false);
+			Vec3 vec = Vec3.Side * ((float)((num3 + 1) / 2) * TaleWorlds.Library.MathF.Pow(-1f, num3 + 1) + (float)(num4 % 2) / 2f) * num5;
+			Vec3 vec2 = -Vec3.Forward * num6 * num4;
+			Vec3 v = vec + vec2;
+			WorldPosition origin = new WorldPosition(Mission.Current.Scene, _cachedGlobalWorldFrame.ToGroundMatrixFrameMT().TransformToParent(in v));
+			if (origin.GetNavMeshMT() != UIntPtr.Zero)
 			{
-				return new WorldFrame(_cachedGlobalWorldFrame.Rotation, unitPosition.Value);
+				return new WorldFrame(_cachedGlobalWorldFrame.Rotation, origin);
 			}
 			return agent.GetWorldFrame();
 		}
-		float totalMissionTime = MBCommon.GetTotalMissionTime();
+		float currentTime = Mission.Current.CurrentTime;
 		ShimmyDirection shimmyDirection = _shimmyDirection;
-		int num = 0;
+		int num7 = 0;
 		StrategicAreaMutableTuple[] strategicAreaSidesScoreTally = _strategicAreaSidesScoreTally;
 		for (int i = 0; i < strategicAreaSidesScoreTally.Length; i++)
 		{
 			if (strategicAreaSidesScoreTally[i] != null)
 			{
-				num++;
+				num7++;
 			}
 		}
-		bool num2 = num > 1;
-		if (num2 && _lastShootTime < agent.LastRangedAttackTime)
+		bool num8 = num7 > 1;
+		if (num8 && _lastShootTime < agent.LastRangedHitTime)
 		{
-			_lastShootTime = agent.LastRangedAttackTime;
+			_lastShootTime = agent.LastRangedHitTime;
 			StrategicAreaMutableTuple strategicAreaMutableTuple = _strategicAreaSidesScoreTally[(int)_shimmyDirection];
 			if (strategicAreaMutableTuple != null)
 			{
@@ -505,7 +508,7 @@ public class StrategicArea : MissionObject, IDetachment
 			}
 		}
 		bool flag = false;
-		if (num2 && _lastShimmyTime < agent.LastRangedHitTime)
+		if (num8 && _lastShimmyTime < agent.LastRecievedRangedHitTime)
 		{
 			StrategicAreaMutableTuple strategicAreaMutableTuple2 = _strategicAreaSidesScoreTally[(int)_shimmyDirection];
 			if (strategicAreaMutableTuple2 != null)
@@ -519,7 +522,7 @@ public class StrategicArea : MissionObject, IDetachment
 			flag = true;
 		}
 		bool flag2 = false;
-		if (num2 && !flag && totalMissionTime - TaleWorlds.Library.MathF.Max(agent.LastRangedAttackTime, _lastShimmyTime) > 8f)
+		if (num8 && !flag && currentTime - TaleWorlds.Library.MathF.Max(agent.LastRangedHitTime, _lastShimmyTime) > 8f)
 		{
 			StrategicAreaMutableTuple strategicAreaMutableTuple3 = _strategicAreaSidesScoreTally[(int)_shimmyDirection];
 			if (strategicAreaMutableTuple3 != null)
@@ -534,28 +537,28 @@ public class StrategicArea : MissionObject, IDetachment
 		}
 		if (flag || flag2)
 		{
-			int num3 = int.MinValue;
-			int num4 = 0;
+			int num9 = int.MinValue;
+			int num10 = 0;
 			for (int j = 0; j < 5; j++)
 			{
 				if (j != (int)_shimmyDirection && _strategicAreaSidesScoreTally[j] != null)
 				{
-					int num5 = _strategicAreaSidesScoreTally[j].RangedHitScoredCount - _strategicAreaSidesScoreTally[j].RangedHitReceivedCount;
-					if (num5 > num3)
+					int num11 = _strategicAreaSidesScoreTally[j].RangedHitScoredCount - _strategicAreaSidesScoreTally[j].RangedHitReceivedCount;
+					if (num11 > num9)
 					{
-						num3 = num5;
-						num4 = 1;
+						num9 = num11;
+						num10 = 1;
 					}
-					else if (num5 == num3)
+					else if (num11 == num9)
 					{
-						num4++;
+						num10++;
 					}
 				}
 			}
-			int num6 = MBRandom.RandomInt(num4 - 1);
+			int num12 = MBRandom.RandomInt(num10 - 1);
 			for (int k = 0; k < 5; k++)
 			{
-				if (k != (int)_shimmyDirection && _strategicAreaSidesScoreTally[k] != null && _strategicAreaSidesScoreTally[k].RangedHitScoredCount - _strategicAreaSidesScoreTally[k].RangedHitReceivedCount == num3 && --num6 < 0)
+				if (k != (int)_shimmyDirection && _strategicAreaSidesScoreTally[k] != null && _strategicAreaSidesScoreTally[k].RangedHitScoredCount - _strategicAreaSidesScoreTally[k].RangedHitReceivedCount == num9 && --num12 < 0)
 				{
 					shimmyDirection = (ShimmyDirection)k;
 				}
@@ -565,23 +568,23 @@ public class StrategicArea : MissionObject, IDetachment
 		if (!_disableShimmy && _doesFrameNeedUpdate)
 		{
 			CacheGlobalWorldFrame();
-			Vec2 vec = _cachedGlobalWorldFrame.Rotation.f.AsVec2.Normalized();
-			Vec2 vec2 = shimmyDirection switch
+			Vec2 vec3 = _cachedGlobalWorldFrame.Rotation.f.AsVec2.Normalized();
+			Vec2 vec4 = shimmyDirection switch
 			{
 				ShimmyDirection.Center => Vec2.Zero, 
-				ShimmyDirection.Left => vec.RightVec(), 
-				ShimmyDirection.Forward => vec, 
-				ShimmyDirection.Right => vec.LeftVec(), 
-				ShimmyDirection.Back => -vec, 
+				ShimmyDirection.Left => vec3.RightVec(), 
+				ShimmyDirection.Forward => vec3, 
+				ShimmyDirection.Right => vec3.LeftVec(), 
+				ShimmyDirection.Back => -vec3, 
 				_ => Vec2.Zero, 
 			};
-			int num7 = 8;
+			int num13 = 8;
 			bool flag3 = false;
 			_cachedGlobalWorldFrame.Origin.GetGroundZMT();
 			WorldPosition origin2 = _cachedGlobalWorldFrame.Origin;
-			while (num7-- > 0)
+			while (num13-- > 0)
 			{
-				origin2.SetVec2(origin2.AsVec2 + (0.6f + 0.05f * (float)num7) * vec2);
+				origin2.SetVec2(origin2.AsVec2 + (0.6f + 0.05f * (float)num13) * vec4);
 				if (origin2.GetNavMeshMT() != UIntPtr.Zero && TaleWorlds.Library.MathF.Abs(_cachedGlobalWorldFrame.Origin.GetGroundZMT() - origin2.GetGroundZMT()) <= agent.Monster.BodyCapsuleRadius * 1.2f && !Mission.Current.IsPositionOnAnyBlockerNavMeshFace(origin2.GetGroundVec3MT()))
 				{
 					flag3 = true;
@@ -597,10 +600,10 @@ public class StrategicArea : MissionObject, IDetachment
 			else
 			{
 				_shimmyDirection = shimmyDirection;
-				_lastShimmyTime = totalMissionTime;
+				_lastShimmyTime = currentTime;
 				MatrixFrame matrixFrame = _cachedGlobalWorldFrame.ToGroundMatrixFrameMT();
-				Vec3 v = origin2.GetGroundVec3MT();
-				_shimmyLocalPosition = matrixFrame.TransformToLocal(in v);
+				Vec3 v2 = origin2.GetGroundVec3MT();
+				_shimmyLocalPosition = matrixFrame.TransformToLocal(in v2);
 			}
 		}
 		return GetShimmiedGlobalWorldFrameMT();

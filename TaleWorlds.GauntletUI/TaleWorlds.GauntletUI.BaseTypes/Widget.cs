@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using TaleWorlds.GauntletUI.GamepadNavigation;
 using TaleWorlds.GauntletUI.Layout;
+using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.TwoDimension;
 
@@ -1907,10 +1908,9 @@ public class Widget : PropertyOwnerObject
 		{
 			measureSpec.X -= ScaledMarginLeft + ScaledMarginRight;
 		}
-		else
+		else if (WidthSizePolicy == SizePolicy.CoverChildren && _gotMaxWidth)
 		{
-			_ = WidthSizePolicy;
-			_ = 2;
+			measureSpec.X = ScaledMaxWidth;
 		}
 		if (HeightSizePolicy == SizePolicy.Fixed)
 		{
@@ -1920,10 +1920,9 @@ public class Widget : PropertyOwnerObject
 		{
 			measureSpec.Y -= ScaledMarginTop + ScaledMarginBottom;
 		}
-		else
+		else if (HeightSizePolicy == SizePolicy.CoverChildren && _gotMaxHeight)
 		{
-			_ = HeightSizePolicy;
-			_ = 2;
+			measureSpec.Y = ScaledMaxHeight;
 		}
 		measureSpec = ProcessSizeWithBoundaries(measureSpec);
 		Vector2 vector = MeasureChildren(measureSpec);
@@ -2071,7 +2070,7 @@ public class Widget : PropertyOwnerObject
 
 	public Widget GetChild(int i)
 	{
-		if (i < _children.Count)
+		if (i >= 0 && i < _children.Count)
 		{
 			return _children[i];
 		}
@@ -2534,12 +2533,14 @@ public class Widget : PropertyOwnerObject
 	protected internal virtual void OnHoverBegin()
 	{
 		IsHovered = true;
-		EventFired("HoverBegin");
+		bool flag = Input.MouseMoveX != 0f || Input.MouseMoveY != 0f;
+		EventFired("HoverBegin", flag);
 	}
 
 	protected internal virtual void OnHoverEnd()
 	{
-		EventFired("HoverEnd");
+		bool flag = Input.MouseMoveX != 0f || Input.MouseMoveY != 0f;
+		EventFired("HoverEnd", flag);
 		IsHovered = false;
 	}
 

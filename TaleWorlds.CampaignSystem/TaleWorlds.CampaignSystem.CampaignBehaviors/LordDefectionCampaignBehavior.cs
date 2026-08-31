@@ -353,7 +353,7 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 
 	private bool conversation_player_start_defection_with_prisoner_on_condition()
 	{
-		if (Hero.OneToOneConversationHero != null && Clan.PlayerClan.Kingdom != null && Hero.MainHero.IsKingdomLeader && Hero.OneToOneConversationHero.Clan?.Leader == Hero.OneToOneConversationHero && Hero.OneToOneConversationHero.HeroState == Hero.CharacterStates.Prisoner && Campaign.Current.CurrentConversationContext != ConversationContext.CapturedLord && Campaign.Current.CurrentConversationContext != ConversationContext.FreeOrCapturePrisonerHero && Hero.OneToOneConversationHero.Clan != Hero.OneToOneConversationHero.MapFaction.Leader.Clan)
+		if (Hero.OneToOneConversationHero != null && Clan.PlayerClan.Kingdom != null && Hero.MainHero.IsKingdomLeader && Hero.OneToOneConversationHero.Clan?.Leader == Hero.OneToOneConversationHero && Hero.OneToOneConversationHero.HeroState == Hero.CharacterStates.Prisoner && Campaign.Current.CurrentConversationContext != ConversationContext.CapturedLord && Campaign.Current.CurrentConversationContext != ConversationContext.FreeOrCapturePrisonerHero && Hero.OneToOneConversationHero.Clan != Hero.OneToOneConversationHero.MapFaction.Leader.Clan && !Hero.OneToOneConversationHero.Clan.HasBloodFeudWithPlayer)
 		{
 			if (Hero.OneToOneConversationHero.PartyBelongedToAsPrisoner == null || Hero.OneToOneConversationHero.PartyBelongedToAsPrisoner != PartyBase.MainParty)
 			{
@@ -772,7 +772,7 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 	public bool conversation_player_is_asking_to_recruit_enemy_on_condition()
 	{
 		Kingdom kingdom = Clan.PlayerClan.Kingdom;
-		if (kingdom != null && Campaign.Current.Models.DefectionModel.CanHeroDefectToFaction(Hero.OneToOneConversationHero, kingdom) && FactionManager.IsAtWarAgainstFaction(Hero.OneToOneConversationHero.MapFaction, Hero.MainHero.MapFaction))
+		if (kingdom != null && Campaign.Current.Models.DefectionModel.CanHeroDefectToFaction(Hero.OneToOneConversationHero, kingdom) && FactionManager.IsAtWarAgainstFaction(Hero.OneToOneConversationHero.MapFaction, Hero.MainHero.MapFaction) && !Hero.OneToOneConversationHero.Clan.HasBloodFeudWithPlayer)
 		{
 			Hero.OneToOneConversationHero.MapFaction.Leader.SetTextVariables();
 			MBTextManager.SetTextVariable("FACTION_NAME", Hero.MainHero.MapFaction.Name);
@@ -784,7 +784,7 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 	public bool conversation_player_is_asking_to_recruit_neutral_on_condition()
 	{
 		Kingdom kingdom = Clan.PlayerClan.Kingdom;
-		if (kingdom != null && Campaign.Current.Models.DefectionModel.CanHeroDefectToFaction(Hero.OneToOneConversationHero, kingdom) && !FactionManager.IsAtWarAgainstFaction(Hero.OneToOneConversationHero.MapFaction, Hero.MainHero.MapFaction))
+		if (kingdom != null && Campaign.Current.Models.DefectionModel.CanHeroDefectToFaction(Hero.OneToOneConversationHero, kingdom) && !FactionManager.IsAtWarAgainstFaction(Hero.OneToOneConversationHero.MapFaction, Hero.MainHero.MapFaction) && !Hero.OneToOneConversationHero.Clan.HasBloodFeudWithPlayer)
 		{
 			Hero.OneToOneConversationHero.MapFaction.Leader.SetTextVariables();
 			MBTextManager.SetTextVariable("FACTION_NAME", Hero.MainHero.MapFaction.Name);

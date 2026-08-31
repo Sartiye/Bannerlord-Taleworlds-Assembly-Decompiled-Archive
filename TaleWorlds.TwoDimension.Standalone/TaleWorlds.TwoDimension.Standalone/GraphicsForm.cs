@@ -1,6 +1,5 @@
 using System;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.TwoDimension.Standalone.Native.Windows;
@@ -29,7 +28,11 @@ public class GraphicsForm : IMessageCommunicator
 
 	private LayeredWindowController _layeredWindowController;
 
-	public GraphicsContext GraphicsContext { get; private set; }
+	private bool _layeredWindow;
+
+	private bool _isFinalized;
+
+	public DirectXGraphicsContext GraphicsContext { get; private set; }
 
 	public int Width => _windowsForm.Width;
 
@@ -67,90 +70,96 @@ public class GraphicsForm : IMessageCommunicator
 		_messageLoopInputData = new InputData();
 		_windowsForm.AddMessageHandler(MessageHandler);
 		_windowsForm.Show();
-		GraphicsContext = new GraphicsContext();
-		if (layeredWindow)
-		{
-			_layeredWindowController = new LayeredWindowController(_windowsForm.Handle, _windowsForm.Width, _windowsForm.Height);
-		}
-	}
-
-	public bool CompareRecrangles(DXGI.RECT Rect1, DXGI.RECT Rect2)
-	{
-		int num = Rect1.right - Rect1.left;
-		int num2 = Rect1.bottom - Rect1.top;
-		int num3 = Rect2.right - Rect2.left;
-		int num4 = Rect2.bottom - Rect2.top;
-		if (num > num3 && num2 > num4)
-		{
-			return true;
-		}
-		return false;
+		GraphicsContext = new DirectXGraphicsContext();
+		_layeredWindow = layeredWindow;
 	}
 
 	public DXGI.RECT DecideWindowPosition()
 	{
+		IntPtr intPtr = User32.MonitorFromWindow(User32.GetDesktopWindow(), 1u);
 		User32.GetClientRect(User32.GetDesktopWindow(), out var lpRect);
 		DXGI.RECT rECT = default(DXGI.RECT);
 		rECT.left = lpRect.Left;
 		rECT.right = lpRect.Right;
 		rECT.top = lpRect.Top;
 		rECT.bottom = lpRect.Bottom;
-		DXGI.RECT rECT2 = rECT;
-		DXGI.CreateDXGIFactory(ref DXGI.IID_IDXGIFactory, out var factory);
-		DXGI.IDXGIFactory iDXGIFactory = (DXGI.IDXGIFactory)Marshal.GetObjectForIUnknown(factory);
-		MBList<Tuple<uint, DXGI.DXGI_ADAPTER_DESC>> mBList = new MBList<Tuple<uint, DXGI.DXGI_ADAPTER_DESC>>();
-		DXGI.IDXGIAdapter adapter;
-		for (uint num = 0u; iDXGIFactory.EnumAdapters(num, out adapter) == 0; num++)
+		DXGI.RECT result = rECT;
+		IntPtr factory = IntPtr.Zero;
+		DXGI.CreateDXGIFactory(ref DXGI.IID_IDXGIFactory, out factory);
+		if (factory == IntPtr.Zero)
 		{
-			adapter.GetDesc(out var desc);
-			if ((long)(ulong)desc.DedicatedVideoMemory > 0L)
+			return result;
+		}
+		MBList<Tuple<uint, ulong>> mBList = new MBList<Tuple<uint, ulong>>();
+		IntPtr adapter;
+		for (uint num = 0u; DXGIFactory.EnumAdapters(factory, num, out adapter) == 0; num++)
+		{
+			DXGIAdapter.GetDesc(adapter, out var desc);
+			ulong num2 = (ulong)desc.DedicatedVideoMemory;
+			if (num2 != 0)
 			{
-				mBList.Add(new Tuple<uint, DXGI.DXGI_ADAPTER_DESC>(num, desc));
+				mBList.Add(new Tuple<uint, ulong>(num, num2));
 			}
+			ComRelease.Release(adapter);
 		}
 		if (mBList.Count == 0)
 		{
-			Marshal.FinalReleaseComObject(iDXGIFactory);
-			return rECT2;
+			ComRelease.Release(factory);
+			return result;
 		}
-		mBList.Sort((Tuple<uint, DXGI.DXGI_ADAPTER_DESC> x, Tuple<uint, DXGI.DXGI_ADAPTER_DESC> y) => ((ulong)x.Item2.DedicatedVideoMemory <= (ulong)y.Item2.DedicatedVideoMemory) ? 1 : (-1));
-		foreach (Tuple<uint, DXGI.DXGI_ADAPTER_DESC> item in mBList)
+		mBList.Sort((Tuple<uint, ulong> x, Tuple<uint, ulong> y) => y.Item2.CompareTo(x.Item2));
+		foreach (Tuple<uint, ulong> item in mBList)
 		{
-			iDXGIFactory.EnumAdapters(item.Item1, out var adapter2);
-			DXGI.IDXGIOutput ppOutput;
-			for (uint num2 = 0u; adapter2.EnumOutputs(num2, out ppOutput) == 0; num2++)
+			if (DXGIFactory.EnumAdapters(factory, item.Item1, out var adapter2) != 0)
 			{
-				ppOutput.GetDesc(out var desc2);
-				if (desc2.AttachedToDesktop && rECT2 == desc2.DesktopCoordinates)
+				continue;
+			}
+			IntPtr output;
+			for (uint num3 = 0u; DXGIAdapter.EnumOutputs(adapter2, num3, out output) == 0; num3++)
+			{
+				DXGIOutput.GetDesc(output, out var desc2);
+				ComRelease.Release(output);
+				if (desc2.AttachedToDesktop && desc2.Monitor == intPtr)
 				{
-					Marshal.FinalReleaseComObject(iDXGIFactory);
-					return rECT2;
+					ComRelease.Release(adapter2);
+					ComRelease.Release(factory);
+					return desc2.DesktopCoordinates;
 				}
 			}
+			ComRelease.Release(adapter2);
 		}
-		foreach (Tuple<uint, DXGI.DXGI_ADAPTER_DESC> item2 in mBList)
+		foreach (Tuple<uint, ulong> item2 in mBList)
 		{
-			iDXGIFactory.EnumAdapters(item2.Item1, out var adapter3);
-			DXGI.IDXGIOutput ppOutput2;
-			for (uint num3 = 0u; adapter3.EnumOutputs(num3, out ppOutput2) == 0; num3++)
+			if (DXGIFactory.EnumAdapters(factory, item2.Item1, out var adapter3) != 0)
 			{
-				ppOutput2.GetDesc(out var desc3);
+				continue;
+			}
+			IntPtr output2;
+			for (uint num4 = 0u; DXGIAdapter.EnumOutputs(adapter3, num4, out output2) == 0; num4++)
+			{
+				DXGIOutput.GetDesc(output2, out var desc3);
+				ComRelease.Release(output2);
 				if (desc3.AttachedToDesktop)
 				{
-					Marshal.FinalReleaseComObject(iDXGIFactory);
+					ComRelease.Release(adapter3);
+					ComRelease.Release(factory);
 					return desc3.DesktopCoordinates;
 				}
 			}
+			ComRelease.Release(adapter3);
 		}
-		Marshal.FinalReleaseComObject(iDXGIFactory);
-		return rECT2;
+		ComRelease.Release(factory);
+		return result;
 	}
 
 	public void Destroy()
 	{
-		GraphicsContext.DestroyContext();
-		_windowsForm.Destroy();
-		_layeredWindowController?.OnFinalize();
+		if (!_isFinalized)
+		{
+			_isFinalized = true;
+			_layeredWindowController?.OnFinalize();
+			_windowsForm.Destroy();
+		}
 	}
 
 	public void MinimizeWindow()
@@ -160,32 +169,26 @@ public class GraphicsForm : IMessageCommunicator
 
 	public void InitializeGraphicsContext(ResourceDepot resourceDepot)
 	{
-		GraphicsContext.Control = _windowsForm;
-		GraphicsContext.CreateContext(resourceDepot);
+		if (_layeredWindow)
+		{
+			GraphicsContext.IsLayeredWindow = true;
+		}
+		GraphicsContext.CreateContext(_windowsForm.Handle, resourceDepot);
 		GraphicsContext.ProjectionMatrix = MatrixExtensions.CreateOrthographicOffCenter(0f, _windowsForm.Width, _windowsForm.Height, 0f, 0f, 2f);
+		if (_layeredWindow)
+		{
+			_layeredWindowController = new LayeredWindowController(_windowsForm.Handle, _windowsForm.Width, _windowsForm.Height, GraphicsContext);
+		}
 	}
 
 	public void BeginFrame()
 	{
-		if (GraphicsContext == null)
+		if (GraphicsContext != null)
 		{
-			return;
+			GraphicsContext.BeginFrame(_windowsForm.Width, _windowsForm.Height);
+			GraphicsContext.ProjectionMatrix = MatrixExtensions.CreateOrthographicOffCenter(0f, _windowsForm.Width, _windowsForm.Height, 0f, 0f, 2f);
+			_layeredWindowController?.SetSize(_windowsForm.Width, _windowsForm.Height);
 		}
-		int num = _windowsForm.Width;
-		int num2 = _windowsForm.Height;
-		if (User32.GetClientRect(_windowsForm.Handle, out var lpRect))
-		{
-			int width = lpRect.Width;
-			int height = lpRect.Height;
-			if (width > 0 && height > 0)
-			{
-				num = width;
-				num2 = height;
-			}
-		}
-		GraphicsContext.BeginFrame(num, num2);
-		GraphicsContext.Resize(num, num2);
-		GraphicsContext.ProjectionMatrix = MatrixExtensions.CreateOrthographicOffCenter(0f, num, num2, 0f, 0f, 2f);
 	}
 
 	public void Update()
@@ -341,135 +344,110 @@ public class GraphicsForm : IMessageCommunicator
 
 	private void MessageHandler(WindowMessage message, long wParam, long lParam)
 	{
-		switch (message)
+		if (message <= WindowMessage.KeyDown)
 		{
-		case WindowMessage.Close:
-			Destroy();
-			Environment.Exit(0);
-			break;
-		case WindowMessage.Size:
-		{
-			int num2 = (int)lParam % 65536;
-			int num3 = (int)(lParam / 65536);
-			if (num2 > 0 && num3 > 0)
+			switch (message)
 			{
-				_layeredWindowController?.SetSize(num2, num3);
-				if (GraphicsContext != null)
+			case WindowMessage.Close:
+				Destroy();
+				Environment.Exit(0);
+				break;
+			case WindowMessage.KeyDown:
+				lock (_inputDataLocker)
 				{
-					GraphicsContext.Resize(num2, num3);
+					_messageLoopInputData.KeyData[wParam] = true;
+					break;
+				}
+			case WindowMessage.KillFocus:
+				lock (_inputDataLocker)
+				{
+					for (int i = 0; i < 256; i++)
+					{
+						_messageLoopInputData.KeyData[i] = false;
+						_messageLoopInputData.RightMouse = false;
+						_messageLoopInputData.LeftMouse = false;
+					}
+					break;
+				}
+			case WindowMessage.SetFocus:
+				lock (_inputDataLocker)
+				{
+					break;
 				}
 			}
-			break;
 		}
-		case WindowMessage.DisplayChange:
-		case WindowMessage.DeviceChange:
-		case WindowMessage.DpiChanged:
+		else if (message <= WindowMessage.MouseWheel)
 		{
-			if (GraphicsContext != null)
+			switch (message)
 			{
-				GraphicsContext.RequestContextReactivation();
-			}
-			if (!User32.GetClientRect(_windowsForm.Handle, out var lpRect))
-			{
-				break;
-			}
-			int width = lpRect.Width;
-			int height = lpRect.Height;
-			if (width > 0 && height > 0)
-			{
-				_layeredWindowController?.SetSize(width, height);
-				if (GraphicsContext != null)
+			case WindowMessage.KeyUp:
+				lock (_inputDataLocker)
 				{
-					GraphicsContext.Resize(width, height);
+					_messageLoopInputData.KeyData[wParam] = false;
+					break;
 				}
-			}
-			break;
-		}
-		case WindowMessage.KeyDown:
-			lock (_inputDataLocker)
-			{
-				_messageLoopInputData.KeyData[wParam] = true;
-				break;
-			}
-		case WindowMessage.KeyUp:
-			lock (_inputDataLocker)
-			{
-				_messageLoopInputData.KeyData[wParam] = false;
-				break;
-			}
-		case WindowMessage.RightButtonUp:
-			lock (_inputDataLocker)
-			{
-				_messageLoopInputData.RightMouse = false;
-				int cursorX5 = (int)lParam % 65536;
-				int cursorY5 = (int)(lParam / 65536);
-				_messageLoopInputData.CursorX = cursorX5;
-				_messageLoopInputData.CursorY = cursorY5;
-				break;
-			}
-		case WindowMessage.RightButtonDown:
-			lock (_inputDataLocker)
-			{
-				_messageLoopInputData.RightMouse = true;
-				int cursorX4 = (int)lParam % 65536;
-				int cursorY4 = (int)(lParam / 65536);
-				_messageLoopInputData.CursorX = cursorX4;
-				_messageLoopInputData.CursorY = cursorY4;
-				break;
-			}
-		case WindowMessage.LeftButtonUp:
-			lock (_inputDataLocker)
-			{
-				_messageLoopInputData.LeftMouse = false;
-				int cursorX3 = (int)lParam % 65536;
-				int cursorY3 = (int)(lParam / 65536);
-				_messageLoopInputData.CursorX = cursorX3;
-				_messageLoopInputData.CursorY = cursorY3;
-				break;
-			}
-		case WindowMessage.LeftButtonDown:
-			lock (_inputDataLocker)
-			{
-				_messageLoopInputData.LeftMouse = true;
-				int cursorX2 = (int)lParam % 65536;
-				int cursorY2 = (int)(lParam / 65536);
-				_messageLoopInputData.CursorX = cursorX2;
-				_messageLoopInputData.CursorY = cursorY2;
-				break;
-			}
-		case WindowMessage.MouseMove:
-			lock (_inputDataLocker)
-			{
-				_messageLoopInputData.MouseMove = true;
-				int cursorX = (int)lParam % 65536;
-				int cursorY = (int)(lParam / 65536);
-				_messageLoopInputData.CursorX = cursorX;
-				_messageLoopInputData.CursorY = cursorY;
-				break;
-			}
-		case WindowMessage.MouseWheel:
-			lock (_inputDataLocker)
-			{
-				short num = (short)(wParam >> 16);
-				_messageLoopInputData.MouseScrollDelta = num;
-				break;
-			}
-		case WindowMessage.KillFocus:
-			lock (_inputDataLocker)
-			{
-				for (int i = 0; i < 256; i++)
+			case WindowMessage.RightButtonUp:
+				lock (_inputDataLocker)
 				{
-					_messageLoopInputData.KeyData[i] = false;
 					_messageLoopInputData.RightMouse = false;
-					_messageLoopInputData.LeftMouse = false;
+					int cursorX5 = (int)lParam % 65536;
+					int cursorY5 = (int)(lParam / 65536);
+					_messageLoopInputData.CursorX = cursorX5;
+					_messageLoopInputData.CursorY = cursorY5;
+					break;
 				}
-				break;
+			case WindowMessage.RightButtonDown:
+				lock (_inputDataLocker)
+				{
+					_messageLoopInputData.RightMouse = true;
+					int cursorX4 = (int)lParam % 65536;
+					int cursorY4 = (int)(lParam / 65536);
+					_messageLoopInputData.CursorX = cursorX4;
+					_messageLoopInputData.CursorY = cursorY4;
+					break;
+				}
+			case WindowMessage.LeftButtonUp:
+				lock (_inputDataLocker)
+				{
+					_messageLoopInputData.LeftMouse = false;
+					int cursorX3 = (int)lParam % 65536;
+					int cursorY3 = (int)(lParam / 65536);
+					_messageLoopInputData.CursorX = cursorX3;
+					_messageLoopInputData.CursorY = cursorY3;
+					break;
+				}
+			case WindowMessage.LeftButtonDown:
+				lock (_inputDataLocker)
+				{
+					_messageLoopInputData.LeftMouse = true;
+					int cursorX2 = (int)lParam % 65536;
+					int cursorY2 = (int)(lParam / 65536);
+					_messageLoopInputData.CursorX = cursorX2;
+					_messageLoopInputData.CursorY = cursorY2;
+					break;
+				}
+			case WindowMessage.MouseMove:
+				lock (_inputDataLocker)
+				{
+					_messageLoopInputData.MouseMove = true;
+					int cursorX = (int)lParam % 65536;
+					int cursorY = (int)(lParam / 65536);
+					_messageLoopInputData.CursorX = cursorX;
+					_messageLoopInputData.CursorY = cursorY;
+					break;
+				}
+			case WindowMessage.MouseWheel:
+				lock (_inputDataLocker)
+				{
+					short num = (short)(wParam >> 16);
+					_messageLoopInputData.MouseScrollDelta = num;
+					break;
+				}
 			}
-		case WindowMessage.SetFocus:
-			lock (_inputDataLocker)
-			{
-				break;
-			}
+		}
+		else if (message != WindowMessage.DeviceChange)
+		{
+			_ = 736;
 		}
 	}
 }

@@ -3,6 +3,7 @@ using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -55,42 +56,55 @@ public class DefaultCrimeModel : CrimeModel
 		};
 	}
 
+	public override ExplainedNumber GetEffectiveCrimeChange(IFaction faction, float deltaCrimeRating)
+	{
+		ExplainedNumber result = new ExplainedNumber(deltaCrimeRating);
+		if (deltaCrimeRating > 0f)
+		{
+			TraitEffectHelper.ApplyTraitEffect(Hero.MainHero, DefaultPersonalityTraitEffects.HonorCrimeIncreaseSlowEffect, ref result);
+		}
+		result.Add(faction.MainHeroCrimeRating);
+		result.LimitMin(0f);
+		result.LimitMax(Campaign.Current.Models.CrimeModel.GetMaxCrimeRating());
+		return result;
+	}
+
 	public override ExplainedNumber GetDailyCrimeRatingChange(IFaction faction, bool includeDescriptions = false)
 	{
-		ExplainedNumber bonuses = new ExplainedNumber(0f, includeDescriptions);
+		ExplainedNumber result = new ExplainedNumber(0f, includeDescriptions);
 		int num = faction.Settlements.Count((Settlement x) => x.IsTown && x.Alleys.Any((Alley y) => y.Owner == Hero.MainHero));
-		bonuses.Add((float)num * Campaign.Current.Models.AlleyModel.GetDailyCrimeRatingOfAlley, includeDescriptions ? new TextObject("{=t87T82jq}Owned alleys") : null);
+		result.Add((float)num * Campaign.Current.Models.AlleyModel.GetDailyCrimeRatingOfAlley, includeDescriptions ? new TextObject("{=t87T82jq}Owned alleys") : null);
 		if (faction.MainHeroCrimeRating.ApproximatelyEqualsTo(0f))
 		{
-			return bonuses;
+			return result;
 		}
-		Clan clan = faction as Clan;
 		if (Hero.MainHero.Clan == faction)
 		{
-			bonuses.Add(-5f, includeDescriptions ? new TextObject("{=eNtRt6F5}Your own Clan") : null);
+			result.Add(-5f, includeDescriptions ? new TextObject("{=eNtRt6F5}Your own Clan") : null);
 		}
 		else if (faction.IsKingdomFaction && faction.Leader == Hero.MainHero)
 		{
-			bonuses.Add(-5f, includeDescriptions ? new TextObject("{=xer2bta5}Your own Kingdom") : null);
+			result.Add(-5f, includeDescriptions ? new TextObject("{=xer2bta5}Your own Kingdom") : null);
 		}
 		else if (Hero.MainHero.MapFaction == faction)
 		{
-			bonuses.Add(-1.5f, includeDescriptions ? new TextObject("{=QRwaQIbm}Is in Kingdom") : null);
+			result.Add(-1.5f, includeDescriptions ? new TextObject("{=QRwaQIbm}Is in Kingdom") : null);
 		}
-		else if (clan != null && Hero.MainHero.MapFaction == clan.Kingdom)
+		else if (faction is Clan clan && Hero.MainHero.MapFaction == clan.Kingdom)
 		{
-			bonuses.Add(-1.25f, includeDescriptions ? new TextObject("{=hXGByLG9}Sharing the same Kingdom") : null);
+			result.Add(-1.25f, includeDescriptions ? new TextObject("{=hXGByLG9}Sharing the same Kingdom") : null);
 		}
 		else if (Hero.MainHero.Clan.IsAtWarWith(faction))
 		{
-			bonuses.Add(-0.25f, includeDescriptions ? new TextObject("{=BYTrUJyj}In War") : null);
+			result.Add(-0.25f, includeDescriptions ? new TextObject("{=BYTrUJyj}In War") : null);
 		}
 		else
 		{
-			bonuses.Add(-1f, includeDescriptions ? new TextObject("{=basevalue}Base") : null);
+			result.Add(-1f, includeDescriptions ? new TextObject("{=basevalue}Base") : null);
 		}
-		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Roguery.WhiteLies, Hero.MainHero.CharacterObject, isPrimaryBonus: true, ref bonuses);
-		return bonuses;
+		TraitEffectHelper.ApplyTraitEffect(Hero.MainHero, DefaultPersonalityTraitEffects.HonorCrimeDecaySlowEffect, ref result);
+		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Roguery.WhiteLies, BattleEnvironment.Any, Hero.MainHero.CharacterObject, isPrimaryBonus: true, ref result);
+		return result;
 	}
 
 	public override float GetMaxCrimeRating()

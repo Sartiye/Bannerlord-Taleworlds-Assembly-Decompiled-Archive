@@ -25,7 +25,7 @@ public class DefaultBattleMissionAgentSpawnLogic : MissionLogic, IBattleMissionA
 
 	private readonly MissionBattleSideSpawnContext _playerBattleSideSpawnContext;
 
-	private readonly BasicMissionTimer _globalReinforcementSpawnTimer;
+	private BasicMissionTimer _globalReinforcementSpawnTimer;
 
 	private bool _reinforcementSpawnEnabled = true;
 
@@ -71,19 +71,19 @@ public class DefaultBattleMissionAgentSpawnLogic : MissionLogic, IBattleMissionA
 
 	public BattleSideEnum PlayerSide { get; private set; }
 
-	public int TotalSpawnNumber => (DefenderActivePhase?.TotalSpawnNumber ?? 0) + (AttackerActivePhase?.TotalSpawnNumber ?? 0);
-
 	public int BattleSize => _battleSize;
 
+	public int TotalSpawnNumber => (DefenderActivePhase?.TotalSpawnNumber ?? 0) + (AttackerActivePhase?.TotalSpawnNumber ?? 0);
+
 	public int NumberOfAgents => base.Mission.AllAgents.Count;
-
-	public MissionSpawnPhase DefenderActivePhase => _phases[0].FirstOrDefault();
-
-	public MissionSpawnPhase AttackerActivePhase => _phases[1].FirstOrDefault();
 
 	public ref readonly MissionSpawnSettings SpawnSettings => ref _spawnSettings;
 
 	public IMissionDeploymentPlan DeploymentPlan => _deploymentPlan;
+
+	public MissionSpawnPhase DefenderActivePhase => _phases[0].FirstOrDefault();
+
+	public MissionSpawnPhase AttackerActivePhase => _phases[1].FirstOrDefault();
 
 	public bool IsInitialSpawnOver => DefenderActivePhase.InitialSpawnNumber + AttackerActivePhase.InitialSpawnNumber == 0;
 
@@ -119,7 +119,6 @@ public class DefaultBattleMissionAgentSpawnLogic : MissionLogic, IBattleMissionA
 			break;
 		}
 		_battleSize = TaleWorlds.Library.MathF.Min(_battleSize, MaxNumberOfTroopsForMission);
-		_globalReinforcementSpawnTimer = new BasicMissionTimer();
 		_spawnSettings = MissionSpawnSettings.CreateDefaultSpawnSettings();
 		_globalReinforcementInterval = _spawnSettings.GlobalReinforcementInterval;
 		_battleSideSpawnContexts = new MissionBattleSideSpawnContext[2];
@@ -146,13 +145,8 @@ public class DefaultBattleMissionAgentSpawnLogic : MissionLogic, IBattleMissionA
 	public override void OnBehaviorInitialize()
 	{
 		base.OnBehaviorInitialize();
+		_globalReinforcementSpawnTimer = new BasicMissionTimer();
 		MissionGameModels.Current.BattleInitializationModel.InitializeModel();
-	}
-
-	protected override void OnEndMission()
-	{
-		MissionGameModels.Current.BattleSpawnModel.OnMissionEnd();
-		MissionGameModels.Current.BattleInitializationModel.FinalizeModel();
 	}
 
 	public override void AfterStart()
@@ -190,6 +184,12 @@ public class DefaultBattleMissionAgentSpawnLogic : MissionLogic, IBattleMissionA
 		{
 			CheckReinforcementSpawn();
 		}
+	}
+
+	protected override void OnEndMission()
+	{
+		MissionGameModels.Current.BattleSpawnModel.OnMissionEnd();
+		MissionGameModels.Current.BattleInitializationModel.FinalizeModel();
 	}
 
 	public void InitWithSinglePhase(int defenderTotalSpawn, int attackerTotalSpawn, int defenderInitialSpawn, int attackerInitialSpawn, bool spawnDefenders, bool spawnAttackers, in MissionSpawnSettings spawnSettings)
@@ -240,21 +240,14 @@ public class DefaultBattleMissionAgentSpawnLogic : MissionLogic, IBattleMissionA
 
 	public void OnSideDeploymentOver(BattleSideEnum battleSide)
 	{
+		base.Mission.OnInitialSpawnCompleted(battleSide);
 		foreach (Team team in base.Mission.Teams)
 		{
-			if (team.Side == battleSide)
-			{
-				base.Mission.OnTeamDeployed(team);
-			}
-		}
-		base.Mission.OnBattleSideDeployed(battleSide);
-		foreach (Team team2 in base.Mission.Teams)
-		{
-			if (team2.Side != battleSide)
+			if (team.Side != battleSide)
 			{
 				continue;
 			}
-			foreach (Formation item in team2.FormationsIncludingEmpty)
+			foreach (Formation item in team.FormationsIncludingEmpty)
 			{
 				if (item.CountOfUnits > 0)
 				{
@@ -776,7 +769,7 @@ public class DefaultBattleMissionAgentSpawnLogic : MissionLogic, IBattleMissionA
 		case BattleSideEnum.Attacker:
 			return AttackerActivePhase;
 		default:
-			Debug.FailedAssert("Wrong Side", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DefaultBattleMissionAgentSpawnLogic.cs", "GetActivePhaseForSide", 958);
+			Debug.FailedAssert("Wrong Side", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DefaultBattleMissionAgentSpawnLogic.cs", "GetActivePhaseForSide", 951);
 			return null;
 		}
 	}
@@ -803,7 +796,7 @@ public class DefaultBattleMissionAgentSpawnLogic : MissionLogic, IBattleMissionA
 			bool flag2 = t2.team == base.Mission.PlayerTeam || t2.team == base.Mission.PlayerEnemyTeam;
 			if (flag && flag2)
 			{
-				Debug.FailedAssert("There can be only one main team in a battle side", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DefaultBattleMissionAgentSpawnLogic.cs", "CollectSortedBattleSideTeamsData", 989);
+				Debug.FailedAssert("There can be only one main team in a battle side", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\MissionLogics\\DefaultBattleMissionAgentSpawnLogic.cs", "CollectSortedBattleSideTeamsData", 982);
 				return 0;
 			}
 			if (!flag && !flag2)

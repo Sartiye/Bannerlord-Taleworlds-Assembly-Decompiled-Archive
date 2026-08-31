@@ -51,7 +51,8 @@ public class DefaultPartyHealingModel : PartyHealingModel
 	public override float GetSiegeBombardmentHitSurgeryChance(PartyBase party)
 	{
 		float num = 0f;
-		if (party != null && party.IsMobile && party.MobileParty.HasPerk(DefaultPerks.Medicine.SiegeMedic))
+		Hero perkOwnerHero = null;
+		if (party != null && party.IsMobile && party.MobileParty.HasPerk(DefaultPerks.Medicine.SiegeMedic, out perkOwnerHero))
 		{
 			num += DefaultPerks.Medicine.SiegeMedic.PrimaryBonus;
 		}
@@ -69,7 +70,8 @@ public class DefaultPartyHealingModel : PartyHealingModel
 		{
 			MobileParty mobileParty = party.MobileParty;
 			AddSurgeonSurvivalBonus(mobileParty, ref survivalDenominator);
-			if (enemyParty?.MobileParty != null && enemyParty.MobileParty.HasPerk(DefaultPerks.Medicine.DoctorsOath))
+			Hero perkOwnerHero = null;
+			if (enemyParty?.MobileParty != null && enemyParty.MobileParty.HasPerk(DefaultPerks.Medicine.DoctorsOath, out perkOwnerHero))
 			{
 				AddDoctorsOathSkillBonusForParty(enemyParty.MobileParty, ref survivalDenominator);
 				SkillLevelingManager.OnSurgeryApplied(enemyParty.MobileParty, surgerySuccess: false, character.Tier);
@@ -77,7 +79,7 @@ public class DefaultPartyHealingModel : PartyHealingModel
 			survivalDenominator.Add((float)character.Level * 0.02f);
 			if (!character.IsHero && party.MapEvent != null && character.Tier < 3)
 			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Medicine.PhysicianOfPeople, party.MobileParty, isPrimaryBonus: false, ref survivalDenominator, party.MobileParty.IsCurrentlyAtSea);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Medicine.PhysicianOfPeople, party.MobileParty, isPrimaryBonus: false, ref survivalDenominator);
 			}
 			if (character.IsHero)
 			{
@@ -85,23 +87,23 @@ public class DefaultPartyHealingModel : PartyHealingModel
 				survivalDenominator.Add(character.Age * -0.01f);
 				survivalDenominator.AddFactor(50f);
 			}
-			ExplainedNumber explainedNumber = new ExplainedNumber(1f / survivalDenominator.ResultNumber);
+			ExplainedNumber stat = new ExplainedNumber(1f / survivalDenominator.ResultNumber);
 			if (character.IsHero)
 			{
-				if (party.IsMobile && party.MobileParty.HasPerk(DefaultPerks.Medicine.CheatDeath, checkSecondaryRole: true))
+				if (party.IsMobile)
 				{
-					explainedNumber.AddFactor(DefaultPerks.Medicine.CheatDeath.SecondaryBonus, DefaultPerks.Medicine.CheatDeath.Name);
+					PerkHelper.AddPerkBonusForParty(DefaultPerks.Medicine.CheatDeath, party.MobileParty, isPrimaryBonus: false, ref stat);
 				}
 				if (character.HeroObject.Clan == Clan.PlayerClan)
 				{
 					float clanMemberDeathChanceMultiplier = Campaign.Current.Models.DifficultyModel.GetClanMemberDeathChanceMultiplier();
 					if (!clanMemberDeathChanceMultiplier.ApproximatelyEqualsTo(0f))
 					{
-						explainedNumber.AddFactor(clanMemberDeathChanceMultiplier, GameTexts.FindText("str_game_difficulty"));
+						stat.AddFactor(clanMemberDeathChanceMultiplier, GameTexts.FindText("str_game_difficulty"));
 					}
 				}
 			}
-			return 1f - MBMath.ClampFloat(explainedNumber.ResultNumber, 0f, 1f);
+			return 1f - MBMath.ClampFloat(stat.ResultNumber, 0f, 1f);
 		}
 		if (character.IsHero && character.HeroObject.IsPrisoner)
 		{
@@ -163,17 +165,17 @@ public class DefaultPartyHealingModel : PartyHealingModel
 				{
 					if (!mobileParty.IsMoving)
 					{
-						PerkHelper.AddPerkBonusForParty(DefaultPerks.Medicine.TriageTent, mobileParty, isPrimaryBonus: true, ref explainedNumber, mobileParty.IsCurrentlyAtSea);
+						PerkHelper.AddPerkBonusForParty(DefaultPerks.Medicine.TriageTent, mobileParty, isPrimaryBonus: true, ref explainedNumber);
 					}
-					else if (!mobileParty.IsCurrentlyAtSea)
+					else
 					{
-						PerkHelper.AddPerkBonusForParty(DefaultPerks.Medicine.WalkItOff, mobileParty, isPrimaryBonus: true, ref explainedNumber, mobileParty.IsCurrentlyAtSea);
+						PerkHelper.AddPerkBonusForParty(DefaultPerks.Medicine.WalkItOff, mobileParty, isPrimaryBonus: true, ref explainedNumber);
 						PerkHelper.AddPerkBonusForParty(DefaultPerks.Athletics.WalkItOff, mobileParty, isPrimaryBonus: true, ref explainedNumber);
 					}
 				}
 				if (mobileParty.Morale >= Campaign.Current.Models.PartyMoraleModel.HighMoraleValue)
 				{
-					PerkHelper.AddPerkBonusForParty(DefaultPerks.Medicine.BestMedicine, mobileParty, isPrimaryBonus: true, ref explainedNumber, mobileParty.IsCurrentlyAtSea);
+					PerkHelper.AddPerkBonusForParty(DefaultPerks.Medicine.BestMedicine, mobileParty, isPrimaryBonus: true, ref explainedNumber);
 				}
 				if (mobileParty.CurrentSettlement != null && !mobileParty.CurrentSettlement.IsHideout)
 				{
@@ -197,9 +199,10 @@ public class DefaultPartyHealingModel : PartyHealingModel
 				}
 				if (mobileParty.Army != null)
 				{
-					PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.Rearguard, mobileParty, isPrimaryBonus: true, ref explainedNumber, mobileParty.IsCurrentlyAtSea);
+					PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.Rearguard, mobileParty, isPrimaryBonus: true, ref explainedNumber);
 				}
-				if (party.ItemRoster.FoodVariety > 0 && mobileParty.HasPerk(DefaultPerks.Medicine.PerfectHealth))
+				Hero perkOwnerHero = null;
+				if (party.ItemRoster.FoodVariety > 0 && mobileParty.HasPerk(DefaultPerks.Medicine.PerfectHealth, out perkOwnerHero))
 				{
 					float num2 = DefaultPerks.Medicine.PerfectHealth.PrimaryBonus;
 					if (party.IsMobile && party.MobileParty.IsCurrentlyAtSea)
@@ -208,7 +211,8 @@ public class DefaultPartyHealingModel : PartyHealingModel
 					}
 					explainedNumber.AddFactor((float)mobileParty.ItemRoster.FoodVariety * num2, DefaultPerks.Medicine.PerfectHealth.Name);
 				}
-				if (mobileParty.HasPerk(DefaultPerks.Medicine.HelpingHands))
+				Hero perkOwnerHero2 = null;
+				if (mobileParty.HasPerk(DefaultPerks.Medicine.HelpingHands, out perkOwnerHero2))
 				{
 					int num3 = MathF.Floor((float)party.MemberRoster.TotalManCount / 10f);
 					float num4 = DefaultPerks.Medicine.HelpingHands.PrimaryBonus;
@@ -252,17 +256,17 @@ public class DefaultPartyHealingModel : PartyHealingModel
 			{
 				if (!mobileParty.IsMoving)
 				{
-					PerkHelper.AddPerkBonusForParty(DefaultPerks.Medicine.TriageTent, mobileParty, isPrimaryBonus: true, ref stat, mobileParty.IsCurrentlyAtSea);
+					PerkHelper.AddPerkBonusForParty(DefaultPerks.Medicine.TriageTent, mobileParty, isPrimaryBonus: true, ref stat);
 				}
-				else if (!mobileParty.IsCurrentlyAtSea)
+				else
 				{
-					PerkHelper.AddPerkBonusForParty(DefaultPerks.Medicine.WalkItOff, mobileParty, isPrimaryBonus: true, ref stat, mobileParty.IsCurrentlyAtSea);
+					PerkHelper.AddPerkBonusForParty(DefaultPerks.Medicine.WalkItOff, mobileParty, isPrimaryBonus: true, ref stat);
 					PerkHelper.AddPerkBonusForParty(DefaultPerks.Athletics.WalkItOff, mobileParty, isPrimaryBonus: true, ref stat);
 				}
 			}
 			if (mobileParty.Morale >= Campaign.Current.Models.PartyMoraleModel.HighMoraleValue)
 			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Medicine.BestMedicine, mobileParty, isPrimaryBonus: true, ref stat, mobileParty.IsCurrentlyAtSea);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Medicine.BestMedicine, mobileParty, isPrimaryBonus: true, ref stat);
 			}
 			if (mobileParty.CurrentSettlement != null && !mobileParty.CurrentSettlement.IsHideout)
 			{
@@ -286,31 +290,18 @@ public class DefaultPartyHealingModel : PartyHealingModel
 		return stat;
 	}
 
-	public override int GetHeroesEffectedHealingAmount(Hero hero, float healingRate)
-	{
-		ExplainedNumber bonuses = new ExplainedNumber(healingRate);
-		bool shouldApplyNavalMultiplier = (hero.PartyBelongedTo != null && hero.PartyBelongedTo.IsCurrentlyAtSea) || (hero.PartyBelongedToAsPrisoner != null && hero.PartyBelongedToAsPrisoner.IsMobile && hero.PartyBelongedToAsPrisoner.MobileParty.IsCurrentlyAtSea);
-		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Medicine.SelfMedication, hero.CharacterObject, isPrimaryBonus: true, ref bonuses, shouldApplyNavalMultiplier);
-		float resultNumber = bonuses.ResultNumber;
-		if (resultNumber - (float)(int)resultNumber > MBRandom.RandomFloat)
-		{
-			return (int)resultNumber + 1;
-		}
-		return (int)resultNumber;
-	}
-
 	public override ExplainedNumber GetBattleEndHealingAmount(PartyBase party, Hero hero)
 	{
-		ExplainedNumber result = new ExplainedNumber(0f, includeDescriptions: false, null);
+		ExplainedNumber bonuses = new ExplainedNumber(0f, includeDescriptions: false, null);
 		if (hero.GetPerkValue(DefaultPerks.Medicine.PreventiveMedicine))
 		{
-			result.Add(DefaultPerks.Medicine.PreventiveMedicine.SecondaryBonus * (float)(hero.MaxHitPoints - hero.HitPoints), DefaultPerks.Medicine.PreventiveMedicine.Name);
+			bonuses.Add(DefaultPerks.Medicine.PreventiveMedicine.SecondaryBonus * (float)(hero.MaxHitPoints - hero.HitPoints), DefaultPerks.Medicine.PreventiveMedicine.Name);
 		}
-		if (party.MapEventSide == party.MapEvent.AttackerSide && hero.GetPerkValue(DefaultPerks.Medicine.WalkItOff))
+		if (party.MapEventSide == party.MapEvent.AttackerSide)
 		{
-			result.Add(DefaultPerks.Medicine.WalkItOff.SecondaryBonus, DefaultPerks.Medicine.WalkItOff.Name);
+			PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Medicine.WalkItOff, BattleEnvironment.Any, hero.CharacterObject, isPrimaryBonus: false, ref bonuses);
 		}
-		return result;
+		return bonuses;
 	}
 
 	private static void AddDoctorsOathSkillBonusForParty(MobileParty enemyParty, ref ExplainedNumber explainedNumber)

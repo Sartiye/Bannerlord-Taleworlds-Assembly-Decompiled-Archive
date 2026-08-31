@@ -1166,7 +1166,8 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 				}
 				if (isSucceed && completerHero.GetPerkValue(DefaultPerks.Crafting.SteelMaker3))
 				{
-					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(completerHero, craftingOrder.OrderOwner, (int)DefaultPerks.Crafting.SteelMaker3.SecondaryBonus);
+					int relationChange = (int)DefaultPerks.Crafting.SteelMaker3.SecondaryBonus;
+					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(completerHero, craftingOrder.OrderOwner, relationChange);
 				}
 			}
 			else
@@ -1174,7 +1175,8 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 				craftingOrder.OrderOwner.AddPower((float)(craftedItem.Tier + 1));
 				if (isSucceed && completerHero.GetPerkValue(DefaultPerks.Crafting.ExperiencedSmith))
 				{
-					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(completerHero, craftingOrder.OrderOwner, (int)DefaultPerks.Crafting.ExperiencedSmith.SecondaryBonus);
+					int relationChange2 = (int)DefaultPerks.Crafting.ExperiencedSmith.SecondaryBonus;
+					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(completerHero, craftingOrder.OrderOwner, relationChange2);
 				}
 			}
 			_craftingOrders[town].RemoveTownOrder(craftingOrder);
@@ -1214,7 +1216,7 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 		}
 		else
 		{
-			Debug.FailedAssert("Trying to cancel a custom order that doesn't exist.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\CraftingCampaignBehavior.cs", "CancelCustomOrder", 1406);
+			Debug.FailedAssert("Trying to cancel a custom order that doesn't exist.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\CraftingCampaignBehavior.cs", "CancelCustomOrder", 1422);
 		}
 	}
 

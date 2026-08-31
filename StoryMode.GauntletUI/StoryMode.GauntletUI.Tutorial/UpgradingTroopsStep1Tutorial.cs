@@ -15,7 +15,7 @@ public class UpgradingTroopsStep1Tutorial : TutorialItemBase
 	public UpgradingTroopsStep1Tutorial()
 	{
 		base.Placement = TutorialItemVM.ItemPlacements.Right;
-		base.HighlightedVisualElementID = "PartyButton";
+		base.HighlightedVisualElementID = "party";
 		base.MouseRequired = true;
 	}
 

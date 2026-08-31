@@ -42,6 +42,10 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 
 	private int _numOfPerks;
 
+	private int _lastOpenedKingdomTabIndex;
+
+	private int _lastOpenedClanTabIndex;
+
 	private bool _isMapBarExtended;
 
 	private List<string> _inventoryItemLocks;
@@ -79,6 +83,8 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 	private List<ItemRosterElement> _plunderItems;
 
 	private List<Figurehead> _unexaminedFigureheads;
+
+	private List<string> _uninspectedCraftingPieces;
 
 	public bool IsPartyNotificationActive { get; private set; }
 
@@ -133,6 +139,7 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 		_inventorySortPreferences = new Dictionary<int, Tuple<int, int>>();
 		_plunderItems = new List<ItemRosterElement>();
 		_unexaminedFigureheads = new List<Figurehead>();
+		_uninspectedCraftingPieces = new List<string>();
 	}
 
 	public TextObject GetPartyNotificationText()
@@ -288,6 +295,26 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 		{
 			_isCharacterNotificationActive = shouldNotify;
 		}
+	}
+
+	public int GetLastOpenedKingdomTabIndex()
+	{
+		return _lastOpenedKingdomTabIndex;
+	}
+
+	public void SetLastOpenedKingdomTabIndex(int tabIndex)
+	{
+		_lastOpenedKingdomTabIndex = tabIndex;
+	}
+
+	public int GetLastOpenedClanTabIndex()
+	{
+		return _lastOpenedClanTabIndex;
+	}
+
+	public void SetLastOpenedClanTabIndex(int tabIndex)
+	{
+		_lastOpenedClanTabIndex = tabIndex;
 	}
 
 	private void OnGameLoaded(CampaignGameStarter campaignGameStarter)
@@ -514,6 +541,21 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 		_unexaminedFigureheads.Remove(figurehead);
 	}
 
+	public void RemoveCraftingPieceNewlyUnlockedList(CraftingPiece craftingPiece)
+	{
+		_uninspectedCraftingPieces.Remove(craftingPiece.StringId);
+	}
+
+	private void OnCraftingPieceUnlocked(CraftingPiece craftingPiece)
+	{
+		_uninspectedCraftingPieces.Add(craftingPiece.StringId);
+	}
+
+	public bool IsCraftingPieceNewlyUnlocked(CraftingPiece craftingPiece)
+	{
+		return _uninspectedCraftingPieces.Contains(craftingPiece.StringId);
+	}
+
 	public override void RegisterEvents()
 	{
 		CampaignEvents.HeroGainedSkill.AddNonSerializedListener(this, OnHeroGainedSkill);
@@ -526,6 +568,7 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 		CampaignEvents.ItemsLooted.AddNonSerializedListener(this, OnPlayerPlunderedItems);
 		CampaignEvents.RaidCompletedEvent.AddNonSerializedListener(this, OnRaidCompleted);
 		CampaignEvents.OnFigureheadUnlockedEvent.AddNonSerializedListener(this, OnFigureheadUnlocked);
+		CampaignEvents.CraftingPartUnlockedEvent.AddNonSerializedListener(this, OnCraftingPieceUnlocked);
 	}
 
 	private void OnRaidCompleted(BattleSideEnum winnerSide, RaidEventComponent raidEvent)
@@ -598,5 +641,6 @@ public class ViewDataTrackerCampaignBehavior : CampaignBehaviorBase, IViewDataTr
 		dataStore.SyncData("_examinedPrisonerCharacterList", ref _examinedPrisonerCharacterList);
 		dataStore.SyncData("_plunderItems", ref _plunderItems);
 		dataStore.SyncData("_unexaminedFigureheads", ref _unexaminedFigureheads);
+		dataStore.SyncData("_uninspectedCraftingPieces", ref _uninspectedCraftingPieces);
 	}
 }

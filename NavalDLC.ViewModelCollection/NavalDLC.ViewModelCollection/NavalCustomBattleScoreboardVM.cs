@@ -20,13 +20,18 @@ public class NavalCustomBattleScoreboardVM : CustomBattleScoreboardVM
 	{
 		public int Compare(SPScoreboardShipVM x, SPScoreboardShipVM y)
 		{
-			bool isPlayerShip = x.Ship.IsPlayerShip;
-			int num = y.Ship.IsPlayerShip.CompareTo(isPlayerShip);
+			int num = y.IsPlayerTeam.CompareTo(x.IsPlayerTeam);
 			if (num != 0)
 			{
 				return num;
 			}
-			num = y.IsPlayerTeam.CompareTo(x.IsPlayerTeam);
+			num = y.FormationIndex.CompareTo(x.FormationIndex);
+			if (num != 0)
+			{
+				return num;
+			}
+			bool isPlayerShip = x.Ship.IsPlayerShip;
+			num = y.Ship.IsPlayerShip.CompareTo(isPlayerShip);
 			if (num != 0)
 			{
 				return num;
@@ -75,7 +80,7 @@ public class NavalCustomBattleScoreboardVM : CustomBattleScoreboardVM
 			SPScoreboardShipVM sPScoreboardShipVM = base.Attackers.Ships[i];
 			ShipAssignment shipAssignment;
 			bool flag = _navalShipsLogic.FindAssignmentOfShipOrigin(sPScoreboardShipVM.Ship, out shipAssignment);
-			sPScoreboardShipVM.CurrentHealth = (flag ? shipAssignment.MissionShip.HitPoints : 0f);
+			sPScoreboardShipVM.CurrentHealth = sPScoreboardShipVM.Ship.HitPoints;
 			int isInactive;
 			if (flag)
 			{
@@ -87,13 +92,14 @@ public class NavalCustomBattleScoreboardVM : CustomBattleScoreboardVM
 				isInactive = 1;
 			}
 			sPScoreboardShipVM.IsInactive = (byte)isInactive != 0;
+			sPScoreboardShipVM.IsRetreated = !flag;
 		}
 		for (int j = 0; j < base.Defenders.Ships.Count; j++)
 		{
 			SPScoreboardShipVM sPScoreboardShipVM2 = base.Defenders.Ships[j];
 			ShipAssignment shipAssignment2;
 			bool flag2 = _navalShipsLogic.FindAssignmentOfShipOrigin(sPScoreboardShipVM2.Ship, out shipAssignment2);
-			sPScoreboardShipVM2.CurrentHealth = (flag2 ? shipAssignment2.MissionShip.HitPoints : 0f);
+			sPScoreboardShipVM2.CurrentHealth = sPScoreboardShipVM2.Ship.HitPoints;
 			int isInactive2;
 			if (flag2)
 			{
@@ -105,6 +111,7 @@ public class NavalCustomBattleScoreboardVM : CustomBattleScoreboardVM
 				isInactive2 = 1;
 			}
 			sPScoreboardShipVM2.IsInactive = (byte)isInactive2 != 0;
+			sPScoreboardShipVM2.IsRetreated = !flag2;
 		}
 	}
 
@@ -159,22 +166,22 @@ public class NavalCustomBattleScoreboardVM : CustomBattleScoreboardVM
 			for (int i = 0; i < mBList.Count; i++)
 			{
 				MissionShip missionShip = mBList[i];
-				base.Attackers.GetShipAddIfNotExists(missionShip.ShipOrigin, missionShip.ShipOrigin.Hull.Type.ToString(), null, Mission.Current.AttackerTeam.TeamSide);
+				base.Attackers.GetShipAddIfNotExists(missionShip.ShipOrigin, missionShip.ShipOrigin.Hull.Type.ToString(), null, Mission.Current.AttackerTeam.TeamSide, (int)missionShip.FormationIndex);
 			}
 			for (int j = 0; j < mBList2.Count; j++)
 			{
 				MissionShip missionShip2 = mBList2[j];
-				base.Attackers.GetShipAddIfNotExists(missionShip2.ShipOrigin, missionShip2.ShipOrigin.Hull.Type.ToString(), null, Mission.Current.AttackerAllyTeam.TeamSide);
+				base.Attackers.GetShipAddIfNotExists(missionShip2.ShipOrigin, missionShip2.ShipOrigin.Hull.Type.ToString(), null, Mission.Current.AttackerAllyTeam.TeamSide, (int)missionShip2.FormationIndex);
 			}
 			for (int k = 0; k < mBList3.Count; k++)
 			{
 				MissionShip missionShip3 = mBList3[k];
-				base.Defenders.GetShipAddIfNotExists(missionShip3.ShipOrigin, missionShip3.ShipOrigin.Hull.Type.ToString(), null, Mission.Current.DefenderTeam.TeamSide);
+				base.Defenders.GetShipAddIfNotExists(missionShip3.ShipOrigin, missionShip3.ShipOrigin.Hull.Type.ToString(), null, Mission.Current.DefenderTeam.TeamSide, (int)missionShip3.FormationIndex);
 			}
 			for (int l = 0; l < mBList4.Count; l++)
 			{
 				MissionShip missionShip4 = mBList4[l];
-				base.Defenders.GetShipAddIfNotExists(missionShip4.ShipOrigin, missionShip4.ShipOrigin.Hull.Type.ToString(), null, Mission.Current.DefenderAllyTeam.TeamSide);
+				base.Defenders.GetShipAddIfNotExists(missionShip4.ShipOrigin, missionShip4.ShipOrigin.Hull.Type.ToString(), null, Mission.Current.DefenderAllyTeam.TeamSide, (int)missionShip4.FormationIndex);
 			}
 		}
 		if (sort)
@@ -191,31 +198,25 @@ public class NavalCustomBattleScoreboardVM : CustomBattleScoreboardVM
 		{
 			new TooltipProperty(ship.Name.ToString(), string.Empty, 0, onlyShowWhenExtended: false, TooltipProperty.TooltipPropertyFlags.Title)
 		};
-		if (shipVM.IsDestroyed)
+		if (shipVM.IsRetreated)
+		{
+			list.Add(new TooltipProperty(string.Empty, new TextObject("{=w6Wa3lSL}Retreated").ToString(), -1));
+			list.Add(new TooltipProperty(string.Empty, string.Empty, 0));
+		}
+		else if (shipVM.IsDestroyed)
 		{
 			list.Add(new TooltipProperty(string.Empty, new TextObject("{=w8Yzf0F0}Destroyed").ToString(), -1));
 			list.Add(new TooltipProperty(string.Empty, string.Empty, 0));
 		}
 		list.Add(new TooltipProperty(new TextObject("{=sqdzHOPe}Class").ToString(), GameTexts.FindText("str_ship_type", ship.Hull.Type.ToString().ToLowerInvariant()).ToString(), 0));
-		MissionShip missionShip = null;
-		if (_navalShipsLogic != null && _navalShipsLogic.FindAssignmentOfShipOrigin(ship, out var shipAssignment))
+		string value = GameTexts.FindText("str_LEFT_over_RIGHT_no_space").SetTextVariable("LEFT", (int)ship.HitPoints).SetTextVariable("RIGHT", (int)ship.MaxHitPoints)
+			.ToString();
+		list.Add(new TooltipProperty(new TextObject("{=oBbiVeKE}Hit Points").ToString(), value, 0));
+		if (_navalShipsLogic != null && _navalShipsLogic.FindAssignmentOfShipOrigin(ship, out var shipAssignment) && shipAssignment.MissionShip != null)
 		{
-			missionShip = shipAssignment.MissionShip;
-		}
-		if (missionShip == null)
-		{
-			string value = GameTexts.FindText("str_LEFT_over_RIGHT_no_space").SetTextVariable("LEFT", (int)ship.HitPoints).SetTextVariable("RIGHT", (int)ship.MaxHitPoints)
+			string value2 = GameTexts.FindText("str_LEFT_over_RIGHT_no_space").SetTextVariable("LEFT", shipAssignment.MissionShip.Formation?.CountOfUnits ?? 0).SetTextVariable("RIGHT", shipAssignment.MissionShip.CrewSizeOnMainDeck)
 				.ToString();
-			list.Add(new TooltipProperty(new TextObject("{=oBbiVeKE}Hit Points").ToString(), value, 0));
-		}
-		else
-		{
-			string value2 = GameTexts.FindText("str_LEFT_over_RIGHT_no_space").SetTextVariable("LEFT", (int)missionShip.HitPoints).SetTextVariable("RIGHT", (int)ship.MaxHitPoints)
-				.ToString();
-			list.Add(new TooltipProperty(new TextObject("{=oBbiVeKE}Hit Points").ToString(), value2, 0));
-			string value3 = GameTexts.FindText("str_LEFT_over_RIGHT_no_space").SetTextVariable("LEFT", missionShip.Formation?.CountOfUnits ?? 0).SetTextVariable("RIGHT", missionShip.CrewSizeOnMainDeck)
-				.ToString();
-			list.Add(new TooltipProperty(new TextObject("{=aClquusd}Troop Count").ToString(), value3, 0));
+			list.Add(new TooltipProperty(new TextObject("{=aClquusd}Troop Count").ToString(), value2, 0));
 		}
 		List<ShipSlotAndPieceName> shipSlotAndPieceNames = ship.GetShipSlotAndPieceNames();
 		if (shipSlotAndPieceNames.Count > 0)

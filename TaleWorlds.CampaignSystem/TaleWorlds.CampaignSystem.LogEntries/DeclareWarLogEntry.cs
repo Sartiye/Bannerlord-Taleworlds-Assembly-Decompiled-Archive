@@ -97,7 +97,7 @@ public class DeclareWarLogEntry : LogEntry, IEncyclopediaLog, IChatNotification,
 	{
 		score = ImportanceEnum.Zero;
 		comment = "";
-		if (!Faction1.IsEliminated && Faction1.Leader.Clan.IsRebelClan && talkTroop.Clan == Faction1)
+		if (!Faction1.IsEliminated && Faction1.Leader != null && Faction1.Leader.Clan.IsRebelClan && talkTroop.Clan == Faction1)
 		{
 			score = ImportanceEnum.MatterOfLifeAndDeath;
 			if (findString)

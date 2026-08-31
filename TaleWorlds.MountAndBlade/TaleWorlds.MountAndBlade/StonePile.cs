@@ -238,7 +238,7 @@ public class StonePile : UsableMachine, IDetachment
 	protected internal override void OnInit()
 	{
 		base.OnInit();
-		_tickOccasionallyTimer = new Timer(Mission.Current.CurrentTime, 0.5f + MBRandom.RandomFloat * 0.5f);
+		_tickOccasionallyTimer = new Timer(0f, 0.5f + MBRandom.RandomFloat * 0.5f);
 		_givenItem = Game.Current.ObjectManager.GetObject<ItemObject>(GivenItemID);
 		MBList<VolumeBox> source = base.GameEntity.CollectScriptComponentsIncludingChildrenRecursive<VolumeBox>();
 		_throwingPoints = new List<ThrowingPoint>();

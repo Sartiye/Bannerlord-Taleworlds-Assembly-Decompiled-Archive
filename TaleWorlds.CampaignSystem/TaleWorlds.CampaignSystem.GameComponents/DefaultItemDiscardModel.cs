@@ -14,11 +14,13 @@ public class DefaultItemDiscardModel : ItemDiscardModel
 		bool result = false;
 		if (item.HasWeaponComponent)
 		{
-			result = MobileParty.MainParty.HasPerk(DefaultPerks.Steward.GivingHands);
+			Hero perkOwnerHero = null;
+			result = MobileParty.MainParty.HasPerk(DefaultPerks.Steward.GivingHands, out perkOwnerHero);
 		}
 		else if (item.HasArmorComponent)
 		{
-			result = MobileParty.MainParty.HasPerk(DefaultPerks.Steward.PaidInPromise, checkSecondaryRole: true);
+			Hero perkOwnerHero2 = null;
+			result = MobileParty.MainParty.HasPerk(DefaultPerks.Steward.PaidInPromise, out perkOwnerHero2, checkSecondaryRole: true);
 		}
 		return result;
 	}

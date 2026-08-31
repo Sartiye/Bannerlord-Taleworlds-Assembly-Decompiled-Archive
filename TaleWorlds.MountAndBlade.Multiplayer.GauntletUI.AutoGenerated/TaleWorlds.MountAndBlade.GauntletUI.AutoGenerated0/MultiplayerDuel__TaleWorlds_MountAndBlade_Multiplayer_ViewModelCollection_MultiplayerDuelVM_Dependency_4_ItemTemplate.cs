@@ -148,7 +148,6 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 		_widget_0_0_1.Brush = base.Context.GetBrush("MPHUD.Duel.Arena.Flag.Foreground");
 		_widget_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_1.Sprite = base.Context.SpriteData.GetSprite("MPHud\\kill_feed_bg_full_duel");
 		_widget_0_1.Brush = base.Context.GetBrush("MPHUD.Duel.KillFeed.Background");
 		_widget_0_1.Color = new Color(49f / 85f, 0.4392157f, 0.8588236f);
 		_widget_0_2.WidthSizePolicy = SizePolicy.Fixed;
@@ -158,6 +157,8 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 		_widget_0_2.PositionYOffset = 3f;
 		_widget_0_2.Brush = base.Context.GetBrush("MPHUD.KillFeed.Text");
 		_widget_0_2.DefaultTextHorizontalAlignment = TextHorizontalAlignment.Left;
+		_widget_0_2.ScrollPerSecond = 0f;
+		_widget_0_2.ScrollRatioPerSecond = 0.5f;
 		_widget_0_3.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_3.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_3.PositionYOffset = 7f;
@@ -171,6 +172,8 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 		_widget_0_4.Brush = base.Context.GetBrush("MPHUD.KillFeed.Text");
 		_widget_0_4.MarginLeft = 30f;
 		_widget_0_4.DefaultTextHorizontalAlignment = TextHorizontalAlignment.Right;
+		_widget_0_4.ScrollPerSecond = 0f;
+		_widget_0_4.ScrollRatioPerSecond = 0.5f;
 		_widget_0_5.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_5.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_5.VerticalAlignment = VerticalAlignment.Bottom;

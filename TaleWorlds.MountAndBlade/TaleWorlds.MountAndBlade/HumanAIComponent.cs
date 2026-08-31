@@ -583,7 +583,7 @@ public class HumanAIComponent : AgentComponent
 			if (flag)
 			{
 				Vec2 v = Agent.Formation.GetCurrentGlobalPositionOfUnit(Agent, blendWithOrderDirection: true) - Agent.Position.AsVec2;
-				float value = 0f - Agent.GetMovementDirection().DotProduct(v);
+				float value = 0f - Agent.AverageVelocity.AsVec2.DotProduct(v);
 				value = TaleWorlds.Library.MathF.Clamp(value, 0f, 100f);
 				float num4 = ((Agent.MountAgent != null) ? 4f : 2f);
 				float num5 = (isCharging ? Agent.Formation.CachedFormationIntegrityData.AverageMaxUnlimitedSpeedExcludeFarAgents : Agent.Formation.CachedMovementSpeed) / num;

@@ -123,13 +123,13 @@ public class ShipTradeCampaignBehavior : CampaignBehaviorBase
 	{
 		Ship ship = null;
 		MBList<Ship> mBList = mobileParty.Ships.ToMBList();
-		float num = NavalDLCManager.Instance.GameModels.ShipDistributionModel.GetScoreForPartyShipComposition(mobileParty, mBList);
+		float num = Campaign.Current.Models.ShipDistributionModel.GetScoreForPartyShipComposition(mobileParty, mBList);
 		foreach (Ship availableShip in town.AvailableShips)
 		{
-			if (NavalDLCManager.Instance.GameModels.ShipDistributionModel.CanPartyTakeShip(mobileParty.Party, availableShip) && Campaign.Current.Models.ShipCostModel.GetShipTradeValue(availableShip, town.Settlement.Party, mobileParty.Party) < (float)mobileParty.ActualClan.Gold * 0.2f)
+			if (Campaign.Current.Models.ShipDistributionModel.CanPartyTakeShip(mobileParty.Party, availableShip) && Campaign.Current.Models.ShipCostModel.GetShipTradeValue(availableShip, town.Settlement.Party, mobileParty.Party) < (float)mobileParty.ActualClan.Gold * 0.2f)
 			{
 				mBList.Add(availableShip);
-				float scoreForPartyShipComposition = NavalDLCManager.Instance.GameModels.ShipDistributionModel.GetScoreForPartyShipComposition(mobileParty, mBList);
+				float scoreForPartyShipComposition = Campaign.Current.Models.ShipDistributionModel.GetScoreForPartyShipComposition(mobileParty, mBList);
 				mBList.Remove(availableShip);
 				if (scoreForPartyShipComposition > num)
 				{
@@ -141,7 +141,7 @@ public class ShipTradeCampaignBehavior : CampaignBehaviorBase
 		Ship ship2 = null;
 		foreach (Ship availableShip2 in town.AvailableShips)
 		{
-			if (!NavalDLCManager.Instance.GameModels.ShipDistributionModel.CanPartyTakeShip(mobileParty.Party, availableShip2))
+			if (!Campaign.Current.Models.ShipDistributionModel.CanPartyTakeShip(mobileParty.Party, availableShip2))
 			{
 				continue;
 			}
@@ -151,7 +151,7 @@ public class ShipTradeCampaignBehavior : CampaignBehaviorBase
 				{
 					Ship ship3 = mBList[i];
 					mBList[i] = availableShip2;
-					float scoreForPartyShipComposition2 = NavalDLCManager.Instance.GameModels.ShipDistributionModel.GetScoreForPartyShipComposition(mobileParty, mBList);
+					float scoreForPartyShipComposition2 = Campaign.Current.Models.ShipDistributionModel.GetScoreForPartyShipComposition(mobileParty, mBList);
 					if (scoreForPartyShipComposition2 > num)
 					{
 						num = scoreForPartyShipComposition2;
@@ -180,7 +180,7 @@ public class ShipTradeCampaignBehavior : CampaignBehaviorBase
 		{
 			if (CanPartyTradeShip(warPartyComponent.MobileParty))
 			{
-				float scoreForPartyShipComposition = NavalDLCManager.Instance.GameModels.ShipDistributionModel.GetScoreForPartyShipComposition(warPartyComponent.MobileParty, warPartyComponent.MobileParty.Ships);
+				float scoreForPartyShipComposition = Campaign.Current.Models.ShipDistributionModel.GetScoreForPartyShipComposition(warPartyComponent.MobileParty, warPartyComponent.MobileParty.Ships);
 				if (scoreForPartyShipComposition < num)
 				{
 					num = scoreForPartyShipComposition;
@@ -226,12 +226,12 @@ public class ShipTradeCampaignBehavior : CampaignBehaviorBase
 			return;
 		}
 		MBList<Ship> mBList = clan.Leader.PartyBelongedTo.Ships.ToMBList();
-		float num = NavalDLCManager.Instance.GameModels.ShipDistributionModel.GetScoreForPartyShipComposition(clan.Leader.PartyBelongedTo, mBList);
+		float num = Campaign.Current.Models.ShipDistributionModel.GetScoreForPartyShipComposition(clan.Leader.PartyBelongedTo, mBList);
 		Tuple<Ship, Ship> tuple = new Tuple<Ship, Ship>(null, null);
 		for (int num2 = mBList.Count - 1; num2 >= 0; num2--)
 		{
 			Ship ship = mBList[num2];
-			if (ship.IsTradeable && NavalDLCManager.Instance.GameModels.ShipDistributionModel.CanPartyTakeShip(mobileParty.Party, ship))
+			if (ship.IsTradeable && Campaign.Current.Models.ShipDistributionModel.CanPartyTakeShip(mobileParty.Party, ship))
 			{
 				MBList<Ship> mBList2 = mobileParty.Ships.ToMBList();
 				if (mBList2.Any())
@@ -240,10 +240,10 @@ public class ShipTradeCampaignBehavior : CampaignBehaviorBase
 					for (int i = 0; i < mBList2.Count; i++)
 					{
 						Ship ship2 = mBList2[i];
-						if (ship2.IsTradeable && NavalDLCManager.Instance.GameModels.ShipDistributionModel.CanPartyTakeShip(clan.Leader.PartyBelongedTo.Party, ship2))
+						if (ship2.IsTradeable && Campaign.Current.Models.ShipDistributionModel.CanPartyTakeShip(clan.Leader.PartyBelongedTo.Party, ship2))
 						{
 							mBList.Add(ship2);
-							float scoreForPartyShipComposition = NavalDLCManager.Instance.GameModels.ShipDistributionModel.GetScoreForPartyShipComposition(clan.Leader.PartyBelongedTo, mBList);
+							float scoreForPartyShipComposition = Campaign.Current.Models.ShipDistributionModel.GetScoreForPartyShipComposition(clan.Leader.PartyBelongedTo, mBList);
 							if (scoreForPartyShipComposition > num)
 							{
 								num = scoreForPartyShipComposition;
@@ -277,19 +277,19 @@ public class ShipTradeCampaignBehavior : CampaignBehaviorBase
 		}
 		MBList<Ship> mBList = party1.Ships.ToMBList();
 		MBList<Ship> mBList2 = mobileParty.Ships.ToMBList();
-		float scoreForPartyShipComposition = NavalDLCManager.Instance.GameModels.ShipDistributionModel.GetScoreForPartyShipComposition(party1, mBList);
-		float scoreForPartyShipComposition2 = NavalDLCManager.Instance.GameModels.ShipDistributionModel.GetScoreForPartyShipComposition(mobileParty, mBList2);
+		float scoreForPartyShipComposition = Campaign.Current.Models.ShipDistributionModel.GetScoreForPartyShipComposition(party1, mBList);
+		float scoreForPartyShipComposition2 = Campaign.Current.Models.ShipDistributionModel.GetScoreForPartyShipComposition(mobileParty, mBList2);
 		float num = scoreForPartyShipComposition + scoreForPartyShipComposition2;
 		Tuple<Ship, Ship> tuple = new Tuple<Ship, Ship>(null, null);
 		for (int num2 = mBList.Count - 1; num2 >= 0; num2--)
 		{
 			Ship ship = mBList[num2];
-			if (ship.IsTradeable && NavalDLCManager.Instance.GameModels.ShipDistributionModel.CanPartyTakeShip(mobileParty.Party, ship))
+			if (ship.IsTradeable && Campaign.Current.Models.ShipDistributionModel.CanPartyTakeShip(mobileParty.Party, ship))
 			{
 				mBList.RemoveAt(num2);
-				float scoreForPartyShipComposition3 = NavalDLCManager.Instance.GameModels.ShipDistributionModel.GetScoreForPartyShipComposition(party1, mBList);
+				float scoreForPartyShipComposition3 = Campaign.Current.Models.ShipDistributionModel.GetScoreForPartyShipComposition(party1, mBList);
 				mBList2.Add(ship);
-				float scoreForPartyShipComposition4 = NavalDLCManager.Instance.GameModels.ShipDistributionModel.GetScoreForPartyShipComposition(mobileParty, mBList2);
+				float scoreForPartyShipComposition4 = Campaign.Current.Models.ShipDistributionModel.GetScoreForPartyShipComposition(mobileParty, mBList2);
 				mBList2.Remove(ship);
 				if (scoreForPartyShipComposition3 + scoreForPartyShipComposition4 > num && party1.Ships.Count > 1 && (clan.Leader.PartyBelongedTo != party1 || scoreForPartyShipComposition3 > scoreForPartyShipComposition) && (clan.Leader.PartyBelongedTo != mobileParty || scoreForPartyShipComposition4 > scoreForPartyShipComposition2))
 				{
@@ -299,13 +299,13 @@ public class ShipTradeCampaignBehavior : CampaignBehaviorBase
 				for (int num3 = mBList2.Count - 1; num3 >= 0; num3--)
 				{
 					Ship ship2 = mBList2[num3];
-					if (ship2.IsTradeable && NavalDLCManager.Instance.GameModels.ShipDistributionModel.CanPartyTakeShip(party1.Party, ship2))
+					if (ship2.IsTradeable && Campaign.Current.Models.ShipDistributionModel.CanPartyTakeShip(party1.Party, ship2))
 					{
 						mBList.Add(ship2);
 						mBList2.Add(ship);
 						mBList2.RemoveAt(num3);
-						scoreForPartyShipComposition3 = NavalDLCManager.Instance.GameModels.ShipDistributionModel.GetScoreForPartyShipComposition(party1, mBList);
-						scoreForPartyShipComposition4 = NavalDLCManager.Instance.GameModels.ShipDistributionModel.GetScoreForPartyShipComposition(mobileParty, mBList2);
+						scoreForPartyShipComposition3 = Campaign.Current.Models.ShipDistributionModel.GetScoreForPartyShipComposition(party1, mBList);
+						scoreForPartyShipComposition4 = Campaign.Current.Models.ShipDistributionModel.GetScoreForPartyShipComposition(mobileParty, mBList2);
 						if (scoreForPartyShipComposition3 + scoreForPartyShipComposition4 > num && (clan.Leader.PartyBelongedTo != party1 || scoreForPartyShipComposition3 > scoreForPartyShipComposition) && (clan.Leader.PartyBelongedTo != mobileParty || scoreForPartyShipComposition4 > scoreForPartyShipComposition2))
 						{
 							num = scoreForPartyShipComposition3 + scoreForPartyShipComposition4;
@@ -349,14 +349,14 @@ public class ShipTradeCampaignBehavior : CampaignBehaviorBase
 	{
 		shipToSell = null;
 		MBList<Ship> mBList = mobileParty.Ships.ToMBList();
-		float num = NavalDLCManager.Instance.GameModels.ShipDistributionModel.GetScoreForPartyShipComposition(mobileParty, mBList);
+		float num = Campaign.Current.Models.ShipDistributionModel.GetScoreForPartyShipComposition(mobileParty, mBList);
 		for (int num2 = mBList.Count - 1; num2 >= 0; num2--)
 		{
 			Ship ship = mBList[num2];
 			if (ship.IsTradeable)
 			{
 				mBList.RemoveAt(num2);
-				float scoreForPartyShipComposition = NavalDLCManager.Instance.GameModels.ShipDistributionModel.GetScoreForPartyShipComposition(mobileParty, mBList);
+				float scoreForPartyShipComposition = Campaign.Current.Models.ShipDistributionModel.GetScoreForPartyShipComposition(mobileParty, mBList);
 				if (scoreForPartyShipComposition > num)
 				{
 					num = scoreForPartyShipComposition;
@@ -408,7 +408,7 @@ public class ShipTradeCampaignBehavior : CampaignBehaviorBase
 			if (hero != null && (hero != Hero.MainHero || ship.Owner.LeaderHero != Hero.MainHero))
 			{
 				ExplainedNumber bonuses = new ExplainedNumber(0f, includeDescriptions: false, null);
-				PerkHelper.AddPerkBonusForTown(NavalPerks.Boatswain.MerchantPrince, hero.CurrentSettlement.Town, ref bonuses);
+				PerkHelper.AddPerkBonusForTown(NavalPerks.Boatswain.MerchantPrince, hero.CurrentSettlement.Town, isPrimaryBonus: false, ref bonuses);
 				GiveGoldAction.ApplyBetweenCharacters(null, hero, bonuses.RoundedResultNumber);
 			}
 		}
@@ -422,7 +422,7 @@ public class ShipTradeCampaignBehavior : CampaignBehaviorBase
 			if (governor != null && (governor != Hero.MainHero || ship.Owner.LeaderHero != Hero.MainHero))
 			{
 				ExplainedNumber bonuses = new ExplainedNumber(0f, includeDescriptions: false, null);
-				PerkHelper.AddPerkBonusForTown(NavalPerks.Boatswain.MasterShipwright, repairPort.Town, ref bonuses);
+				PerkHelper.AddPerkBonusForTown(NavalPerks.Boatswain.MasterShipwright, repairPort.Town, isPrimaryBonus: false, ref bonuses);
 				GiveGoldAction.ApplyBetweenCharacters(null, governor, bonuses.RoundedResultNumber);
 			}
 		}
@@ -436,7 +436,8 @@ public class ShipTradeCampaignBehavior : CampaignBehaviorBase
 		}
 		if (settlement.Town.Governor.GetPerkValue(NavalPerks.Boatswain.Salvage))
 		{
-			settlement.Town.TradeTaxAccumulated += TaleWorlds.Library.MathF.Round(NavalPerks.Boatswain.Salvage.SecondaryBonus);
+			int num = TaleWorlds.Library.MathF.Round(NavalPerks.Boatswain.Salvage.SecondaryBonus);
+			settlement.Town.TradeTaxAccumulated += num;
 		}
 		if (!settlement.Town.Governor.GetPerkValue(NavalPerks.Boatswain.ShipwrightsHand))
 		{
@@ -444,19 +445,18 @@ public class ShipTradeCampaignBehavior : CampaignBehaviorBase
 		}
 		CharacterObject basicTroop = settlement.MapFaction.BasicTroop;
 		int characterWage = Campaign.Current.Models.PartyWageModel.GetCharacterWage(basicTroop);
-		if (settlement.GarrisonWagePaymentLimit > characterWage + 5)
+		MobileParty garrisonParty = settlement.Town.GarrisonParty;
+		int num2 = garrisonParty?.TotalWage ?? 0;
+		int num3 = settlement.GarrisonWagePaymentLimit - num2 - 5;
+		if (num3 >= characterWage)
 		{
-			MobileParty garrisonParty = settlement.Town.GarrisonParty;
 			if (garrisonParty == null)
 			{
 				settlement.AddGarrisonParty();
 				garrisonParty = settlement.Town.GarrisonParty;
 			}
-			int num = Math.Min(garrisonParty.GetAvailableWageBudget() / characterWage, TaleWorlds.Library.MathF.Round(NavalPerks.Boatswain.ShipwrightsHand.SecondaryBonus));
-			if (num > 0)
-			{
-				garrisonParty.MemberRoster.AddToCounts(basicTroop, num);
-			}
+			int count = Math.Min(num3 / characterWage, TaleWorlds.Library.MathF.Round(NavalPerks.Boatswain.ShipwrightsHand.SecondaryBonus));
+			garrisonParty.MemberRoster.AddToCounts(basicTroop, count);
 		}
 	}
 

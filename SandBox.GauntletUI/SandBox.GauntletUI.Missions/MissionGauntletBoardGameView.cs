@@ -156,7 +156,7 @@ public class MissionGauntletBoardGameView : MissionView, IBoardGameHandler
 		{
 			Camera.Entity = _cameraHolder;
 		}
-		Camera.SetFovVertical(System.MathF.PI / 4f, 1.7777778f, 0.01f, 3000f);
+		Camera.SetFovVertical(System.MathF.PI / 4f, Screen.AspectRatio, 0.01f, 3000f);
 	}
 
 	private void SetStaticCamera()

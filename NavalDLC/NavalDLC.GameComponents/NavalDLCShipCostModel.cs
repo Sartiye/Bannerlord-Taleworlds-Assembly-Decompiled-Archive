@@ -48,14 +48,14 @@ public class NavalDLCShipCostModel : ShipCostModel
 				{
 					num *= 0.9f;
 				}
-				if (ship.Owner.IsSettlement && ship.Owner.Settlement.OwnerClan.Kingdom != null && ship.Owner.Settlement.OwnerClan.Kingdom == kingdom && kingdom.HasPolicy(NavalPolicies.ArsenalDepositoryAct))
+				if (seller.IsSettlement && seller.Settlement.OwnerClan.Kingdom != null && seller.Settlement.OwnerClan.Kingdom == kingdom && kingdom.HasPolicy(NavalPolicies.ArsenalDepositoryAct))
 				{
 					num *= 0.85f;
 				}
 			}
 			if (seller.IsMobile && buyer.IsSettlement)
 			{
-				num = num * 0.3f - Campaign.Current.Models.ShipCostModel.GetShipRepairCost(ship, ship.Owner);
+				num = num * 0.3f - Campaign.Current.Models.ShipCostModel.GetShipRepairCost(ship, seller);
 			}
 		}
 		return num;

@@ -209,9 +209,9 @@ public class NavalOrderOfBattleHeroItemVM : ViewModel
 				OnlyShowWhenNotExtended = true
 			});
 			List<PerkObject> compatiblePerks;
-			float captainRatingForTroopUsages = Campaign.Current.Models.BattleCaptainModel.GetCaptainRatingForTroopUsages(hero, FormationClass.Infantry.GetTroopUsageFlags(), out compatiblePerks);
+			float captainRatingForTroopUsages = Campaign.Current.Models.BattleCaptainModel.GetCaptainRatingForTroopUsages(hero, FormationClass.Infantry.GetTroopUsageFlags(), BattleEnvironment.Naval, out compatiblePerks);
 			List<PerkObject> compatiblePerks2;
-			float captainRatingForTroopUsages2 = Campaign.Current.Models.BattleCaptainModel.GetCaptainRatingForTroopUsages(hero, FormationClass.Ranged.GetTroopUsageFlags(), out compatiblePerks2);
+			float captainRatingForTroopUsages2 = Campaign.Current.Models.BattleCaptainModel.GetCaptainRatingForTroopUsages(hero, FormationClass.Ranged.GetTroopUsageFlags(), BattleEnvironment.Naval, out compatiblePerks2);
 			list.Add(new TooltipProperty(_infantryInfluenceText.ToString(), ((int)(captainRatingForTroopUsages * 100f)).ToString(), 0)
 			{
 				OnlyShowWhenNotExtended = true

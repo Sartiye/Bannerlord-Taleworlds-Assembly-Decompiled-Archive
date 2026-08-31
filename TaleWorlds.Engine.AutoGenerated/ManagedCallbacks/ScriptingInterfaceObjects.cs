@@ -87,6 +87,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_Config_get_debug_login_username,
 		enm_IMono_Config_get_default_rgl_config,
 		enm_IMono_Config_get_desktop_resolution,
+		enm_IMono_Config_get_detailed_debug_mode,
 		enm_IMono_Config_get_development_mode,
 		enm_IMono_Config_get_disable_gui_messages,
 		enm_IMono_Config_get_disable_sound,
@@ -907,6 +908,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_Scene_get_campaign_entity_with_name,
 		enm_IMono_Scene_get_engine_physics_enabled,
 		enm_IMono_Scene_get_entities,
+		enm_IMono_Scene_get_entities_as_weak,
 		enm_IMono_Scene_get_entity_count,
 		enm_IMono_Scene_get_entity_with_guid,
 		enm_IMono_Scene_get_fall_density,
@@ -1039,6 +1041,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_Scene_set_aberration_size,
 		enm_IMono_Scene_set_aberration_smooth,
 		enm_IMono_Scene_set_ability_of_faces_with_id,
+		enm_IMono_Scene_set_ability_of_face_with_index,
 		enm_IMono_Scene_set_active_visibility_levels,
 		enm_IMono_Scene_set_antialiasing_mode,
 		enm_IMono_Scene_set_atmosphere_with_name,
@@ -1410,6 +1413,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_Util_do_light_only_bake_all_levels_automated,
 		enm_IMono_Util_do_light_only_bake_single_level_automated,
 		enm_IMono_Util_dump_gpu_memory_statistics,
+		enm_IMono_Util_dump_render_buffer_memory,
 		enm_IMono_Util_enable_global_edit_data_cacher,
 		enm_IMono_Util_enable_global_loading_window,
 		enm_IMono_Util_enable_single_gpu_query_per_frame,
@@ -1467,6 +1471,8 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_Util_get_single_module_scenes_of_module,
 		enm_IMono_Util_get_steam_appid,
 		enm_IMono_Util_get_system_language,
+		enm_IMono_Util_get_unique_assert_count,
+		enm_IMono_Util_get_unique_warning_count,
 		enm_IMono_Util_get_vertex_buffer_chunk_system_memory_usage,
 		enm_IMono_Util_get_visual_tests_test_files_path,
 		enm_IMono_Util_get_visual_tests_validate_path,
@@ -1526,6 +1532,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_Util_set_window_title,
 		enm_IMono_Util_start_loading_stuck_check_state,
 		enm_IMono_Util_start_scene_performance_report,
+		enm_IMono_Util_take_screenshot_as_png,
 		enm_IMono_Util_take_screenshot_from_platform_path,
 		enm_IMono_Util_take_screenshot_from_string_path,
 		enm_IMono_Util_take_ss_from_top,
@@ -1971,6 +1978,9 @@ internal static class ScriptingInterfaceObjects
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Config_get_desktop_resolution:
 			ScriptingInterfaceOfIConfig.call_GetDesktopResolutionDelegate = (ScriptingInterfaceOfIConfig.GetDesktopResolutionDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIConfig.GetDesktopResolutionDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Config_get_detailed_debug_mode:
+			ScriptingInterfaceOfIConfig.call_GetDetailedDebugModeDelegate = (ScriptingInterfaceOfIConfig.GetDetailedDebugModeDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIConfig.GetDetailedDebugModeDelegate));
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Config_get_development_mode:
 			ScriptingInterfaceOfIConfig.call_GetDevelopmentModeDelegate = (ScriptingInterfaceOfIConfig.GetDevelopmentModeDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIConfig.GetDevelopmentModeDelegate));
@@ -4432,6 +4442,9 @@ internal static class ScriptingInterfaceObjects
 		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_get_entities:
 			ScriptingInterfaceOfIScene.call_GetEntitiesDelegate = (ScriptingInterfaceOfIScene.GetEntitiesDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.GetEntitiesDelegate));
 			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_get_entities_as_weak:
+			ScriptingInterfaceOfIScene.call_GetEntitiesAsWeakDelegate = (ScriptingInterfaceOfIScene.GetEntitiesAsWeakDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.GetEntitiesAsWeakDelegate));
+			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_get_entity_count:
 			ScriptingInterfaceOfIScene.call_GetEntityCountDelegate = (ScriptingInterfaceOfIScene.GetEntityCountDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.GetEntityCountDelegate));
 			break;
@@ -4827,6 +4840,9 @@ internal static class ScriptingInterfaceObjects
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_set_ability_of_faces_with_id:
 			ScriptingInterfaceOfIScene.call_SetAbilityOfFacesWithIdDelegate = (ScriptingInterfaceOfIScene.SetAbilityOfFacesWithIdDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.SetAbilityOfFacesWithIdDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_set_ability_of_face_with_index:
+			ScriptingInterfaceOfIScene.call_SetAbilityOfFaceWithIndexDelegate = (ScriptingInterfaceOfIScene.SetAbilityOfFaceWithIndexDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.SetAbilityOfFaceWithIndexDelegate));
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_set_active_visibility_levels:
 			ScriptingInterfaceOfIScene.call_SetActiveVisibilityLevelsDelegate = (ScriptingInterfaceOfIScene.SetActiveVisibilityLevelsDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.SetActiveVisibilityLevelsDelegate));
@@ -5941,6 +5957,9 @@ internal static class ScriptingInterfaceObjects
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_dump_gpu_memory_statistics:
 			ScriptingInterfaceOfIUtil.call_DumpGPUMemoryStatisticsDelegate = (ScriptingInterfaceOfIUtil.DumpGPUMemoryStatisticsDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.DumpGPUMemoryStatisticsDelegate));
 			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Util_dump_render_buffer_memory:
+			ScriptingInterfaceOfIUtil.call_DumpRenderBufferMemoryDelegate = (ScriptingInterfaceOfIUtil.DumpRenderBufferMemoryDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.DumpRenderBufferMemoryDelegate));
+			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_enable_global_edit_data_cacher:
 			ScriptingInterfaceOfIUtil.call_EnableGlobalEditDataCacherDelegate = (ScriptingInterfaceOfIUtil.EnableGlobalEditDataCacherDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.EnableGlobalEditDataCacherDelegate));
 			break;
@@ -6111,6 +6130,12 @@ internal static class ScriptingInterfaceObjects
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_get_system_language:
 			ScriptingInterfaceOfIUtil.call_GetSystemLanguageDelegate = (ScriptingInterfaceOfIUtil.GetSystemLanguageDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.GetSystemLanguageDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Util_get_unique_assert_count:
+			ScriptingInterfaceOfIUtil.call_GetUniqueAssertCountDelegate = (ScriptingInterfaceOfIUtil.GetUniqueAssertCountDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.GetUniqueAssertCountDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Util_get_unique_warning_count:
+			ScriptingInterfaceOfIUtil.call_GetUniqueWarningCountDelegate = (ScriptingInterfaceOfIUtil.GetUniqueWarningCountDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.GetUniqueWarningCountDelegate));
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_get_vertex_buffer_chunk_system_memory_usage:
 			ScriptingInterfaceOfIUtil.call_GetVertexBufferChunkSystemMemoryUsageDelegate = (ScriptingInterfaceOfIUtil.GetVertexBufferChunkSystemMemoryUsageDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.GetVertexBufferChunkSystemMemoryUsageDelegate));
@@ -6288,6 +6313,9 @@ internal static class ScriptingInterfaceObjects
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_start_scene_performance_report:
 			ScriptingInterfaceOfIUtil.call_StartScenePerformanceReportDelegate = (ScriptingInterfaceOfIUtil.StartScenePerformanceReportDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.StartScenePerformanceReportDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Util_take_screenshot_as_png:
+			ScriptingInterfaceOfIUtil.call_TakeScreenshotAsPngDelegate = (ScriptingInterfaceOfIUtil.TakeScreenshotAsPngDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.TakeScreenshotAsPngDelegate));
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_take_screenshot_from_platform_path:
 			ScriptingInterfaceOfIUtil.call_TakeScreenshotFromPlatformPathDelegate = (ScriptingInterfaceOfIUtil.TakeScreenshotFromPlatformPathDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.TakeScreenshotFromPlatformPathDelegate));

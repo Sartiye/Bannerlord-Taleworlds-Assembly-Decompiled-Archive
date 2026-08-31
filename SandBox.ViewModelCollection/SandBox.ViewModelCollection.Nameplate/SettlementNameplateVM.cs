@@ -111,6 +111,8 @@ public class SettlementNameplateVM : NameplateVM
 
 	private int _bindPortLevel;
 
+	private bool _bindHasFerry;
+
 	private List<Clan> _rebelliousClans;
 
 	private string _name;
@@ -134,6 +136,8 @@ public class SettlementNameplateVM : NameplateVM
 	private bool _hasPort;
 
 	private int _portLevel;
+
+	private bool _hasFerry;
 
 	private int _mapEventVisualType;
 
@@ -387,6 +391,22 @@ public class SettlementNameplateVM : NameplateVM
 		}
 	}
 
+	public bool HasFerry
+	{
+		get
+		{
+			return _hasFerry;
+		}
+		set
+		{
+			if (value != _hasFerry)
+			{
+				_hasFerry = value;
+				OnPropertyChangedWithValue(value, "HasFerry");
+			}
+		}
+	}
+
 	public int SettlementType
 	{
 		get
@@ -443,7 +463,7 @@ public class SettlementNameplateVM : NameplateVM
 		{
 			_worldPos = Settlement.GetPositionAsVec3();
 		}
-		RefreshDynamicProperties(forceUpdate: false);
+		RefreshDynamicProperties(forceUpdate: true);
 		_rebelliousClans = new List<Clan>();
 		if (Game.Current != null)
 		{
@@ -500,22 +520,21 @@ public class SettlementNameplateVM : NameplateVM
 		}
 		_bindHasPort = Settlement.HasPort;
 		_bindPortLevel = 0;
-		if (!_bindHasPort)
+		if (_bindHasPort)
 		{
-			return;
-		}
-		MBList<Building> mBList = Settlement?.Town?.Buildings;
-		if (mBList == null)
-		{
-			return;
-		}
-		for (int i = 0; i < mBList.Count; i++)
-		{
-			if (mBList[i].BuildingType.StringId == "building_shipyard")
+			MBList<Building> mBList = Settlement?.Town?.Buildings;
+			if (mBList != null)
 			{
-				_bindPortLevel = mBList[i].CurrentLevel;
+				for (int i = 0; i < mBList.Count; i++)
+				{
+					if (mBList[i].BuildingType.StringId == "building_shipyard")
+					{
+						_bindPortLevel = mBList[i].CurrentLevel;
+					}
+				}
 			}
 		}
+		_bindHasFerry = Settlement.FerryTarget != null;
 	}
 
 	public override void RefreshRelationStatus()
@@ -559,7 +578,7 @@ public class SettlementNameplateVM : NameplateVM
 		base.RefreshTutorialStatus(newTutorialHighlightElementID);
 		if (Settlement?.Party?.Id == null)
 		{
-			Debug.FailedAssert("Settlement party id is null when refreshing tutorial status", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Nameplate\\SettlementNameplateVM.cs", "RefreshTutorialStatus", 271);
+			Debug.FailedAssert("Settlement party id is null when refreshing tutorial status", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Nameplate\\SettlementNameplateVM.cs", "RefreshTutorialStatus", 274);
 		}
 		else
 		{
@@ -702,6 +721,7 @@ public class SettlementNameplateVM : NameplateVM
 		IsInRange = _bindIsInRange;
 		HasPort = _bindHasPort;
 		PortLevel = _bindPortLevel;
+		HasFerry = _bindHasFerry;
 		IsTracked = _bindIsTracked;
 		base.IsTargetedByTutorial = _bindIsTargetedByTutorial;
 		base.DistanceToCamera = _bindDistanceToCamera;

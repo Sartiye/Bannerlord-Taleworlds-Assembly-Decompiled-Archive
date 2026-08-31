@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using NavalDLC.Missions;
 using NavalDLC.Missions.Objects.UsableMachines;
 using NavalDLC.View.MissionViews;
@@ -48,11 +47,9 @@ public class MissionGauntletNavalOrderUIHandler : MissionGauntletSingleplayerOrd
 	protected override MissionOrderVM CreateDataSource(OrderController orderController)
 	{
 		NavalMissionOrderVM navalMissionOrderVM = new NavalMissionOrderVM(orderController, IsDeployment, isMultiplayer: false);
-		navalMissionOrderVM.SetDeploymentParemeters(base.MissionScreen.CombatCamera, IsSiegeDeployment ? _siegeDeploymentHandler.PlayerDeploymentPoints.ToList() : new List<DeploymentPoint>());
 		navalMissionOrderVM.SetCallbacks(new MissionOrderCallbacks
 		{
 			ToggleMissionInputs = base.ToggleScreenRotation,
-			RefreshVisuals = base.RefreshVisuals,
 			GetVisualOrderExecutionParameters = base.GetVisualOrderExecutionParameters,
 			SetSuspendTroopPlacer = SetSuspendTroopPlacer,
 			OnActivateToggleOrder = base.OnActivateToggleOrder,

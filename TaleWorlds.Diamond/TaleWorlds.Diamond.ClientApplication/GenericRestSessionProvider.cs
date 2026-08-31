@@ -3,7 +3,7 @@ using TaleWorlds.Library.Http;
 
 namespace TaleWorlds.Diamond.ClientApplication;
 
-public class GenericRestSessionProvider<T> : IClientSessionProvider<T> where T : Client<T>
+public class GenericRestSessionProvider : IClientSessionFactory
 {
 	private string _address;
 
@@ -15,8 +15,8 @@ public class GenericRestSessionProvider<T> : IClientSessionProvider<T> where T :
 		_httpDriver = httpDriver;
 	}
 
-	public IClientSession CreateSession(T session)
+	public IClientSession CreateSession(int aliveCheckInterval)
 	{
-		return new ClientRestSession(session, _address, _httpDriver);
+		return new ClientRestSession(_address, _httpDriver, aliveCheckInterval);
 	}
 }

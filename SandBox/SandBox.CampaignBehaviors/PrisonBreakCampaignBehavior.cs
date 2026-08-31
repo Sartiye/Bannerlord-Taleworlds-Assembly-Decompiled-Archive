@@ -111,6 +111,7 @@ public class PrisonBreakCampaignBehavior : CampaignBehaviorBase
 		campaignGameStarter.AddGameMenuOption("town_keep_dungeon", "town_prison_break", "{=lc0YIqby}Stage a prison break", game_menu_stage_prison_break_on_condition, game_menu_castle_prison_break_from_dungeon_on_consequence, isLeave: false, 2);
 		campaignGameStarter.AddGameMenuOption("castle_dungeon", "town_prison_break", "{=lc0YIqby}Stage a prison break", game_menu_stage_prison_break_on_condition, game_menu_castle_prison_break_from_castle_dungeon_on_consequence, isLeave: false, 2);
 		campaignGameStarter.AddGameMenuOption("town_enemy_town_keep", "town_prison_break", "{=lc0YIqby}Stage a prison break", game_menu_stage_prison_break_on_condition, game_menu_castle_prison_break_from_enemy_keep_on_consequence, isLeave: false, 0);
+		campaignGameStarter.AddGameMenuOption("castle_enemy_keep", "town_prison_break", "{=lc0YIqby}Stage a prison break", game_menu_stage_prison_break_on_condition, game_menu_castle_prison_break_from_castle_enemy_keep_on_consequence, isLeave: false, 0);
 		campaignGameStarter.AddGameMenu("start_prison_break", "{=aZaujaHb}The guard accepts your offer. He is ready to help you break {PRISONER.NAME} out, if you're willing to pay.", start_prison_break_on_init);
 		campaignGameStarter.AddGameMenuOption("start_prison_break", "start", "{=N6UeziT8}Start ({COST}{GOLD_ICON})", game_menu_castle_prison_break_on_condition, delegate
 		{
@@ -297,6 +298,12 @@ public class PrisonBreakCampaignBehavior : CampaignBehaviorBase
 	private void game_menu_castle_prison_break_from_enemy_keep_on_consequence(MenuCallbackArgs args)
 	{
 		_previousMenuId = "town_enemy_town_keep";
+		game_menu_castle_prison_break_on_consequence(args);
+	}
+
+	private void game_menu_castle_prison_break_from_castle_enemy_keep_on_consequence(MenuCallbackArgs args)
+	{
+		_previousMenuId = "castle_enemy_keep";
 		game_menu_castle_prison_break_on_consequence(args);
 	}
 

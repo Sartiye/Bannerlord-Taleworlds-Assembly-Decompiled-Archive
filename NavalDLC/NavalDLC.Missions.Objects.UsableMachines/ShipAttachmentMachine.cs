@@ -179,6 +179,12 @@ public class ShipAttachmentMachine : UsableMachine
 
 		private readonly int RopeStressSoundEventId = SoundManager.GetEventGlobalIndex("event:/mission/movement/vessel/rope_stress");
 
+		private float _lastActualDistance;
+
+		private const float SlackPullBoostMax = 3f;
+
+		private const float SlackPullBoostFullAtMeters = 2f;
+
 		private readonly GameEntity _shipSource;
 
 		private readonly GameEntity _shipTarget;
@@ -227,12 +233,15 @@ public class ShipAttachmentMachine : UsableMachine
 
 		public float CurrentAlignmentError { get; private set; }
 
+		public float TensionRatio { get; private set; }
+
 		public bool IsBroken { get; private set; }
 
 		public float CurrentDistanceError { get; private set; }
 
 		public ShipAttachmentJoint(ShipAttachmentMachine attachmentSource, ShipAttachmentPointMachine attachmentTarget, bool unbreakableJoint = false)
 		{
+			TensionRatio = 0f;
 			_shipSource = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(attachmentSource.GameEntity.Root);
 			_shipTarget = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(attachmentTarget.GameEntity.Root);
 			_attachmentEntitySource = attachmentSource;
@@ -401,6 +410,12 @@ public class ShipAttachmentMachine : UsableMachine
 			float num2 = 0.25f * (1f + 0.6f * num);
 			_currentPullSpeed = TaleWorlds.Library.MathF.Min(_currentPullSpeed + num2 * dt, 0.65f);
 			float num3 = _currentPullSpeed * dt;
+			float num4 = currentLength - _lastActualDistance;
+			if (num4 > 0f)
+			{
+				float num5 = 1f + TaleWorlds.Library.MathF.Min(num4 / 2f, 1f) * 2f;
+				num3 *= num5;
+			}
 			currentLength = Math.Max(target, currentLength - num3);
 		}
 
@@ -465,6 +480,7 @@ public class ShipAttachmentMachine : UsableMachine
 			MatrixFrame globalMassFrame2 = _shipTargetScript.Physics.GetGlobalMassFrame();
 			Vec3 origin = _attachmentEntitySource.ConnectionClipPlaneEntity.GetGlobalFrameImpreciseForFixedTick().origin;
 			Vec3 origin2 = _attachmentEntityTarget.ConnectionClipPlaneEntity.GetGlobalFrameImpreciseForFixedTick().origin;
+			_lastActualDistance = origin.Distance(origin2);
 			Vec3 linearVelocityAtGlobalPointForEntityWithDynamicBody = _shipSource.GetLinearVelocityAtGlobalPointForEntityWithDynamicBody(origin);
 			Vec3 relativeVelocityVector = _shipTarget.GetLinearVelocityAtGlobalPointForEntityWithDynamicBody(origin2) - linearVelocityAtGlobalPointForEntityWithDynamicBody;
 			float mass = _shipSourceScript.Physics.Mass;
@@ -485,6 +501,7 @@ public class ShipAttachmentMachine : UsableMachine
 			{
 				CheckBreaking(fixedDt, currentAttachment);
 			}
+			TensionRatio = (globalMassFrame.origin - globalMassFrame2.origin).Length / currentRopeLength;
 		}
 
 		private void AlignShips()
@@ -1112,11 +1129,10 @@ public class ShipAttachmentMachine : UsableMachine
 			ClearCommittedAgentInformation();
 			if (_state == ShipAttachmentState.BrokenAndWaitingForRemoval)
 			{
-				RopePileBaked ropeVisual = AttachmentSource.RopeVisual;
-				MatrixFrame globalFrame = AttachmentSource.RopeVisual.GameEntity.GetGlobalFrame();
-				ref Vec3 origin = ref globalFrame.origin;
-				MatrixFrame globalFrame2 = AttachmentSource.RopeVisual.GameEntity.GetGlobalFrame();
-				ropeVisual.UpdateRopeMeshVisualAccordingToTargetPointLinear(in origin, in globalFrame2.origin);
+				Vec3 sourceGlobalPosition = AttachmentSource.RopeVisual.GameEntity.GetGlobalFrame().origin;
+				AttachmentSource.RopeVisual.SetRopeState(RopePileBaked.RopeSlackPolicy.Collapsed, 0f);
+				AttachmentSource.RopeVisual.ClearClipPlanes();
+				AttachmentSource.RopeVisual.UpdateRopeMeshVisualAccordingToTargetPointLinear(in sourceGlobalPosition, in sourceGlobalPosition);
 				return;
 			}
 			if (_state == ShipAttachmentState.RopeThrown || _state == ShipAttachmentState.RopeFailedAndReloading)
@@ -1128,9 +1144,13 @@ public class ShipAttachmentMachine : UsableMachine
 				MatrixFrame globalFrame = AttachmentTarget.GameEntity.GetGlobalFrame();
 				Vec3 v = AttachmentTarget.HookAttachLocalPosition;
 				Vec3 targetGlobalPosition = globalFrame.TransformToParent(in v);
-				Vec3 sourceGlobalPosition = AttachmentSource.RopeVisual.GameEntity.GetGlobalFrame().origin;
-				_hookGlobalFrame.origin = AttachmentSource.RopeVisual.UpdateRopeMeshVisualAccordingToTargetPointLinear(in sourceGlobalPosition, in targetGlobalPosition);
-				_hookGlobalFrame.rotation.f = (targetGlobalPosition - sourceGlobalPosition).NormalizedCopy();
+				Vec3 sourceGlobalPosition2 = AttachmentSource.RopeVisual.GameEntity.GetGlobalFrame().origin;
+				float tension = ((ShipAttachmentJoint != null) ? TaleWorlds.Library.MathF.Clamp(ShipAttachmentJoint.CurrentDistanceError / 10f, 0f, 1f) : 0f);
+				AttachmentSource.RopeVisual.SetRopeState(RopePileBaked.RopeSlackPolicy.Taut, _currentRopeLength, tension);
+				AttachmentSource.RopeVisual.ClearMeshUnfurlOverride();
+				AttachmentSource.RopeVisual.SetClipPlaneEntities(AttachmentSource.ConnectionClipPlaneEntity, AttachmentTarget.ConnectionClipPlaneEntity);
+				_hookGlobalFrame.origin = AttachmentSource.RopeVisual.UpdateRopeMeshVisualAccordingToTargetPointLinear(in sourceGlobalPosition2, in targetGlobalPosition);
+				_hookGlobalFrame.rotation.f = (targetGlobalPosition - sourceGlobalPosition2).NormalizedCopy();
 				_hookGlobalFrame.rotation.s = _hookGlobalFrame.rotation.f.CrossProductWithUp().NormalizedCopy();
 				_hookGlobalFrame.rotation.u = Vec3.CrossProduct(_hookGlobalFrame.rotation.s, _hookGlobalFrame.rotation.f);
 				_hookGlobalFrame.rotation.RotateAboutSide(-System.MathF.PI / 2f);
@@ -1194,21 +1214,29 @@ public class ShipAttachmentMachine : UsableMachine
 			MatrixFrame globalFrame2 = AttachmentTarget.GameEntity.GetGlobalFrame();
 			if (globalFrame.rotation.u.z < 0.17364818f || globalFrame2.rotation.u.z < 0.17364818f)
 			{
-				SetAttachmentState(ShipAttachmentState.BrokenAndWaitingForRemoval);
+				BreakWithCutRope(0.5f, Vec3.Zero);
 				return;
 			}
 			if (_shipBetweenAttachmentsCheckTimer <= 0f)
 			{
 				_shipBetweenAttachmentsCheckTimer = MBRandom.RandomFloatRanged(0.1f, 0.15f);
-				if (IsShipBetweenAttachments(AttachmentSource, AttachmentTarget))
+				if (TryFindShipBetweenAttachments(AttachmentSource, AttachmentTarget, out var offendingShip))
 				{
+					if (State == ShipAttachmentState.RopesPulling)
+					{
+						Vec3 linearVelocity = offendingShip.Physics.LinearVelocity;
+						float num = TaleWorlds.Library.MathF.Min(linearVelocity.Normalize() * 1.5f, 8f);
+						Vec3 impulseAtBreakPoint = ((linearVelocity.LengthSquared > 0.0001f) ? (linearVelocity * num) : Vec3.Zero);
+						float breakFractionAlongRope = ClosestPointFractionOnSegment(offendingShip.GameEntity.GlobalPosition, AttachmentSource.GameEntity.GlobalPosition, AttachmentTarget.GameEntity.GlobalPosition);
+						BreakWithCutRope(breakFractionAlongRope, impulseAtBreakPoint, ShipAttachmentJoint.TensionRatio);
+						return;
+					}
 					SetAttachmentState(ShipAttachmentState.BrokenAndWaitingForRemoval);
-					return;
 				}
 			}
 			if (!CheckAttachmentsFacingEachOther(AttachmentSource, AttachmentTarget))
 			{
-				SetAttachmentState(ShipAttachmentState.BrokenAndWaitingForRemoval);
+				BreakWithCutRope(0.5f, Vec3.Zero);
 				return;
 			}
 			ShipAttachmentMachine attachmentSource = AttachmentSource;
@@ -1219,16 +1247,57 @@ public class ShipAttachmentMachine : UsableMachine
 				{
 					if (_state == ShipAttachmentState.RopesPulling && ((_ropesPullingTimer.Check() && (MBMath.ApproximatelyEquals(_currentRopeLength, AttachmentSource.RopeMinLength, 0.05f) || (AttachmentSource.OwnerShip.Team != null && (AttachmentSource.OwnerShip.Team.TeamAI as TeamAINavalComponent).TeamNavalQuerySystem.IsAnyShipInCriticalZoneBetween(AttachmentSource.OwnerShip, AttachmentTarget.OwnerShip)))) || CheckIntersectionsBetweenConnectionsWithState(AttachmentSource, AttachmentTarget, ShipAttachmentState.BridgeConnected)))
 					{
-						SetAttachmentState(ShipAttachmentState.BrokenAndWaitingForRemoval);
+						BreakWithCutRope(0.5f, Vec3.Zero, ShipAttachmentJoint.TensionRatio);
 					}
 					else if (ShipAttachmentJoint != null && ShipAttachmentJoint.IsBroken)
 					{
-						SetAttachmentState(ShipAttachmentState.BrokenAndWaitingForRemoval);
+						if (_state == ShipAttachmentState.RopesPulling)
+						{
+							float breakFractionAlongRope2 = MBRandom.RandomFloatRanged(0.25f, 0.75f);
+							BreakWithCutRope(breakFractionAlongRope2, Vec3.Zero, ShipAttachmentJoint.TensionRatio);
+						}
+						else
+						{
+							SetAttachmentState(ShipAttachmentState.BrokenAndWaitingForRemoval);
+						}
 					}
 					return;
 				}
 			}
+			BreakWithCutRope(0.5f, Vec3.Zero);
+		}
+
+		public void BreakWithCutRope(float breakFractionAlongRope, Vec3 impulseAtBreakPoint, float tensionRatio = 0f)
+		{
+			GameEntity ropeVisualEntity = AttachmentSource.RopeVisualEntity;
+			GameEntity gameEntity = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(AttachmentTarget.GameEntity);
+			Vec3 globalPosition = ropeVisualEntity.GlobalPosition;
+			Vec3 v = AttachmentTarget.HookAttachLocalPosition;
+			Vec3 vec = gameEntity.GetGlobalFrame().TransformToParent(in v);
+			float num = MBMath.ClampFloat(breakFractionAlongRope, 0.05f, 0.95f);
+			Vec3 freeEndGlobalPosition = Vec3.Lerp(globalPosition, vec, num);
+			RopePileBaked ropeVisual = AttachmentSource.RopeVisual;
+			GameEntity connectionClipPlaneEntity = AttachmentSource.ConnectionClipPlaneEntity;
+			GameEntity connectionClipPlaneEntity2 = AttachmentTarget.ConnectionClipPlaneEntity;
+			AttachmentSource.ActivateCutRopeSegment(0, ropeVisualEntity, Vec3.Zero, globalPosition, freeEndGlobalPosition, impulseAtBreakPoint, ropeVisual, 0f, num, connectionClipPlaneEntity, tensionRatio);
+			AttachmentSource.ActivateCutRopeSegment(1, gameEntity, v, vec, freeEndGlobalPosition, impulseAtBreakPoint, ropeVisual, 1f, num, connectionClipPlaneEntity2, tensionRatio);
+			ShipAttachmentMachine attachmentSource = AttachmentSource;
+			if (attachmentSource != null && (attachmentSource.RopeVisual?.GameEntity).HasValue)
+			{
+				AttachmentSource.RopeVisual.GameEntity.SetVisibilityExcludeParents(visible: false);
+			}
 			SetAttachmentState(ShipAttachmentState.BrokenAndWaitingForRemoval);
+		}
+
+		private static float ClosestPointFractionOnSegment(Vec3 point, Vec3 a, Vec3 b)
+		{
+			Vec3 v = b - a;
+			float lengthSquared = v.LengthSquared;
+			if (lengthSquared < 1E-06f)
+			{
+				return 0.5f;
+			}
+			return MBMath.ClampFloat(Vec3.DotProduct(point - a, v) / lengthSquared, 0f, 1f);
 		}
 
 		public void InitializeRopeFlightDataAccordingToTargetPoint(in Vec3 sourceGlobalPosition, in Vec3 targetGlobalPosition)
@@ -1240,12 +1309,43 @@ public class ShipAttachmentMachine : UsableMachine
 			}
 			(Vec3, float) tuple = CalculateInitialVelocityAndTime(sourceGlobalPosition, targetGlobalPosition, num);
 			_launchFlightData = new FlightData(in sourceGlobalPosition, in targetGlobalPosition, in tuple.Item1, num, tuple.Item2);
+			AttachmentSource.RopeVisual?.ClearMeshUnfurlOverride();
+			PrimeChainForThrow(in sourceGlobalPosition, in targetGlobalPosition, in tuple.Item1);
 		}
 
 		public void InitializeRopeFlightDataAccordingToTargetDirection(in Vec3 sourceGlobalPosition, in Vec3 targetGlobalDirection)
 		{
 			Vec3 globalVelocity = targetGlobalDirection * 25f;
 			_launchFlightData = new FlightData(in sourceGlobalPosition, in Vec3.Zero, in globalVelocity, TaleWorlds.Library.MathF.Asin(targetGlobalDirection.z) * 180f / System.MathF.PI, 0f);
+			AttachmentSource.RopeVisual?.ClearMeshUnfurlOverride();
+			Vec3 targetGlobalPosition = sourceGlobalPosition + targetGlobalDirection * 5f;
+			PrimeChainForThrow(in sourceGlobalPosition, in targetGlobalPosition, in globalVelocity);
+		}
+
+		private void PrimeChainForThrow(in Vec3 sourceGlobalPosition, in Vec3 targetGlobalPosition, in Vec3 launchVelocity)
+		{
+			if (AttachmentSource?.RopeVisual != null)
+			{
+				AttachmentSource.RopeVisual.SnapRopeState(RopePileBaked.RopeSlackPolicy.Natural, 0.5f);
+				AttachmentSource.RopeVisual.ResetChain();
+				ApplyThrowHandWobble(launchVelocity);
+			}
+		}
+
+		private void ApplyThrowHandWobble(Vec3 launchVelocity)
+		{
+			if (AttachmentSource?.RopeVisual != null && launchVelocity.LengthSquared >= 0.0001f)
+			{
+				Vec3 vec = launchVelocity.NormalizedCopy().CrossProductWithUp();
+				if (vec.LengthSquared < 0.0001f)
+				{
+					vec = new Vec3(1f);
+				}
+				vec = vec.NormalizedCopy();
+				vec.z = 0.35f;
+				vec = vec.NormalizedCopy();
+				AttachmentSource.RopeVisual.ApplyWobble(vec, 2.5f, 1f, 0.85f);
+			}
 		}
 
 		private Vec3 CalculateRelativeVelocityBetweenAttachments()
@@ -1266,9 +1366,17 @@ public class ShipAttachmentMachine : UsableMachine
 
 		private void UpdateRopeMeshVisualAccordingToTargetPoint(in Vec3 sourceGlobalPosition, in Vec3 targetGlobalPosition, float throwingAngleDegree)
 		{
-			throwingAngleDegree = TaleWorlds.Library.MathF.Clamp(throwingAngleDegree, Math.Min(89.99f, CalculateDifferenceVectorAngle(in sourceGlobalPosition, in targetGlobalPosition) + 0.1f), 89.999f);
-			(Vec3, float) tuple = CalculateInitialVelocityAndTime(sourceGlobalPosition, targetGlobalPosition, throwingAngleDegree);
-			_hookGlobalFrame = AttachmentSource.RopeVisual.UpdateRopeMeshVisualAccordingToTargetPoint(in sourceGlobalPosition, in targetGlobalPosition, in tuple.Item1, tuple.Item2);
+			float num = sourceGlobalPosition.Distance(targetGlobalPosition);
+			AttachmentSource.RopeVisual.SnapRopeState(RopePileBaked.RopeSlackPolicy.Natural, TaleWorlds.Library.MathF.Max(num * 1.1f, 0.5f));
+			_hookGlobalFrame.origin = AttachmentSource.RopeVisual.UpdateRopeMeshVisualAccordingToTargetPointLinear(in sourceGlobalPosition, in targetGlobalPosition);
+			Vec3 vec = targetGlobalPosition - sourceGlobalPosition;
+			if (vec.LengthSquared > 0.0001f)
+			{
+				_hookGlobalFrame.rotation.f = vec.NormalizedCopy();
+				_hookGlobalFrame.rotation.s = _hookGlobalFrame.rotation.f.CrossProductWithUp().NormalizedCopy();
+				_hookGlobalFrame.rotation.u = Vec3.CrossProduct(_hookGlobalFrame.rotation.s, _hookGlobalFrame.rotation.f);
+				_hookGlobalFrame.rotation.RotateAboutSide(-System.MathF.PI / 2f);
+			}
 		}
 
 		public void CheckAndConnectBridge(bool forceBridge = false)
@@ -1367,11 +1475,16 @@ public class ShipAttachmentMachine : UsableMachine
 					_launchFlightData.SourceGlobalPosition = sourceGlobalPosition + (_launchFlightData.SourceGlobalPosition - sourceGlobalPosition).NormalizedCopy() * 40f;
 					_launchFlightData.GlobalVelocity = (_launchFlightData.SourceGlobalPosition - sourceGlobalPosition2) / dt;
 				}
+				float waterLevelAtPosition = AttachmentSource.Scene.GetWaterLevelAtPosition(_launchFlightData.SourceGlobalPosition.AsVec2, useWaterRenderer: true, checkWaterBodyEntities: false);
 				if (_launchFlightData.IsUnderWater)
 				{
-					_launchFlightData.SourceGlobalPosition.z = Math.Min(AttachmentSource.Scene.GetWaterLevelAtPosition(_launchFlightData.SourceGlobalPosition.AsVec2, useWaterRenderer: true, checkWaterBodyEntities: false), _launchFlightData.SourceGlobalPosition.z);
+					float valueTo = waterLevelAtPosition - 0.15f;
+					_launchFlightData.SourceGlobalPosition.z = TaleWorlds.Library.MathF.Lerp(_launchFlightData.SourceGlobalPosition.z, valueTo, TaleWorlds.Library.MathF.Min(1f, dt * 6f));
+					_launchFlightData.GlobalVelocity.x *= 1f - dt * 3f;
+					_launchFlightData.GlobalVelocity.y *= 1f - dt * 3f;
+					_launchFlightData.GlobalVelocity.z = 0f;
 				}
-				else if (AttachmentSource.Scene.GetWaterLevelAtPosition(_launchFlightData.SourceGlobalPosition.AsVec2, useWaterRenderer: true, checkWaterBodyEntities: false) > _launchFlightData.SourceGlobalPosition.z)
+				else if (waterLevelAtPosition > _launchFlightData.SourceGlobalPosition.z)
 				{
 					_launchFlightData.IsUnderWater = true;
 				}
@@ -1385,6 +1498,8 @@ public class ShipAttachmentMachine : UsableMachine
 					if (num >= 1f)
 					{
 						_currentRopeLength = sourceGlobalPosition.Distance(_launchFlightData.SourceGlobalPosition);
+						AttachmentSource.RopeVisual.SetRopeState(RopePileBaked.RopeSlackPolicy.Natural, _currentRopeLength * 1.5f);
+						AttachmentSource.RopeVisual.ClearMeshUnfurlOverride();
 						_hookGlobalFrame.origin = AttachmentSource.RopeVisual.UpdateRopeMeshVisualAccordingToTargetPointLinear(in sourceGlobalPosition, in _launchFlightData.SourceGlobalPosition);
 						_hookGlobalFrame.rotation.f = (_launchFlightData.SourceGlobalPosition - sourceGlobalPosition).NormalizedCopy();
 						_hookGlobalFrame.rotation.s = _hookGlobalFrame.rotation.f.CrossProductWithUp().NormalizedCopy();
@@ -1400,6 +1515,8 @@ public class ShipAttachmentMachine : UsableMachine
 				{
 					_currentRopeLength -= dt * 4f;
 					_launchFlightData.SourceGlobalPosition = sourceGlobalPosition + (_launchFlightData.SourceGlobalPosition - sourceGlobalPosition).NormalizedCopy() * _currentRopeLength;
+					AttachmentSource.RopeVisual.SetRopeState(RopePileBaked.RopeSlackPolicy.Taut, _currentRopeLength);
+					AttachmentSource.RopeVisual.ClearMeshUnfurlOverride();
 					_hookGlobalFrame.origin = AttachmentSource.RopeVisual.UpdateRopeMeshVisualAccordingToTargetPointLinear(in sourceGlobalPosition, in _launchFlightData.SourceGlobalPosition);
 					_hookGlobalFrame.rotation.f = (_launchFlightData.SourceGlobalPosition - sourceGlobalPosition).NormalizedCopy();
 					_hookGlobalFrame.rotation.s = _hookGlobalFrame.rotation.f.CrossProductWithUp().NormalizedCopy();
@@ -1931,6 +2048,7 @@ public class ShipAttachmentMachine : UsableMachine
 				_navMeshBridge = null;
 			}
 			AttachmentSource.SetConnectionPhysicsEntitiesVisibility(visible: false);
+			AttachmentTarget?.SetPhysicsEntitiesVisibility(isEnabled: false);
 			if (_ropes != null)
 			{
 				foreach (RopeSegment rope in _ropes)
@@ -2643,6 +2761,10 @@ public class ShipAttachmentMachine : UsableMachine
 
 	private bool _checkedInitialConnections;
 
+	private readonly RopePileBaked[] _cutRopeSegmentsCached = new RopePileBaked[2];
+
+	private readonly GameEntity[] _cutRopeSegmentEntities = new GameEntity[2];
+
 	private WeakGameEntity _staticRopeVisual;
 
 	private ItemObject _hookItem;
@@ -2668,6 +2790,8 @@ public class ShipAttachmentMachine : UsableMachine
 	public ShipAttachment CurrentAttachment { get; private set; }
 
 	public RopePileBaked RopeVisual { get; private set; }
+
+	public GameEntity RopeVisualEntity { get; private set; }
 
 	public ShipAttachmentPointMachine LinkedAttachmentPointMachine { get; private set; }
 
@@ -2706,6 +2830,79 @@ public class ShipAttachmentMachine : UsableMachine
 				_navalShipsLogicCached = Mission.Current.GetMissionBehavior<NavalShipsLogic>();
 			}
 			return _navalShipsLogicCached;
+		}
+	}
+
+	public void ActivateCutRopeSegment(int slot, GameEntity anchorTracker, Vec3 anchorLocalOffset, Vec3 anchorGlobalPosition, Vec3 freeEndGlobalPosition, Vec3 freeEndImpulse, RopePileBaked seedFromRope, float seedStartFraction, float seedEndFraction, GameEntity hullClipPlaneEntity, float tensionRatio = 0f)
+	{
+		if (slot < 0 || slot >= _cutRopeSegmentsCached.Length)
+		{
+			return;
+		}
+		RopePileBaked ropePileBaked = _cutRopeSegmentsCached[slot];
+		GameEntity gameEntity = _cutRopeSegmentEntities[slot];
+		if (ropePileBaked == null || !(gameEntity != null))
+		{
+			return;
+		}
+		float num = 5f * ((tensionRatio > 1f) ? (tensionRatio * tensionRatio) : 0f);
+		Vec3 vec = -((freeEndGlobalPosition - anchorGlobalPosition).NormalizedCopy() * num + freeEndImpulse).NormalizedCopy() * num;
+		Mat3 rot = Mat3.Identity;
+		MatrixFrame frame = new MatrixFrame(in rot, in anchorGlobalPosition);
+		gameEntity.SetGlobalFrame(in frame);
+		gameEntity.SetVisibilityExcludeParents(visible: true);
+		gameEntity.SetFactorColor(uint.MaxValue);
+		ropePileBaked.SetEndPinning(sourcePinned: true, targetPinned: false);
+		ropePileBaked.SetMeshUnfurlOverride(1f);
+		ropePileBaked.ClearAnchorTrackers();
+		ropePileBaked.SetSourceAnchorTracker(anchorTracker, anchorLocalOffset);
+		ropePileBaked.SetDampingRamp(1.5f, 2f);
+		ropePileBaked.ClearDriftAcceleration();
+		ropePileBaked.SetClipPlaneEntities(hullClipPlaneEntity, null);
+		ropePileBaked.SnapRopeState(RopePileBaked.RopeSlackPolicy.Natural, TaleWorlds.Library.MathF.Max(anchorGlobalPosition.Distance(freeEndGlobalPosition) * 1.3f, 0.5f));
+		if (seedFromRope != null)
+		{
+			ropePileBaked.SeedChainFromSlice(seedFromRope, seedStartFraction, seedEndFraction);
+		}
+		else
+		{
+			ropePileBaked.SeedChain(in anchorGlobalPosition, in freeEndGlobalPosition);
+		}
+		if (freeEndImpulse.LengthSquared > 1E-06f)
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				float hitT = 1f - (float)i * 0.15f;
+				float num2 = TaleWorlds.Library.MathF.Pow(0.55f, i);
+				ropePileBaked.ApplyWobble(vec * num2, vec.Length * num2, 1f, hitT);
+			}
+		}
+		ropePileBaked.StartLifetime(5f, 2f);
+	}
+
+	private void InitializeCutRopeSegments()
+	{
+		if (RopeVisualEntity == null)
+		{
+			return;
+		}
+		Scene scene = Mission.Current?.Scene;
+		if (scene == null)
+		{
+			return;
+		}
+		for (int i = 0; i < _cutRopeSegmentsCached.Length; i++)
+		{
+			GameEntity gameEntity = TaleWorlds.Engine.GameEntity.CopyFrom(scene, RopeVisualEntity);
+			if (!(gameEntity == null))
+			{
+				Mat3 rot = Mat3.Identity;
+				MatrixFrame frame = new MatrixFrame(in rot, in Vec3.Zero);
+				gameEntity.SetGlobalFrame(in frame);
+				gameEntity.SetVisibilityExcludeParents(visible: false);
+				_cutRopeSegmentsCached[i] = gameEntity.GetFirstScriptOfType<RopePileBaked>();
+				_cutRopeSegmentEntities[i] = gameEntity;
+			}
 		}
 	}
 
@@ -2888,6 +3085,12 @@ public class ShipAttachmentMachine : UsableMachine
 	protected override void OnRemoved(int removeReason)
 	{
 		_navalShipsLogicCached = null;
+		for (int i = 0; i < _cutRopeSegmentsCached.Length; i++)
+		{
+			_cutRopeSegmentEntities[i]?.Remove(0);
+			_cutRopeSegmentEntities[i] = null;
+			_cutRopeSegmentsCached[i] = null;
+		}
 	}
 
 	protected override void OnInit()
@@ -2925,6 +3128,8 @@ public class ShipAttachmentMachine : UsableMachine
 		_hookItem = Game.Current.ObjectManager.GetObject<ItemObject>("hook");
 		SetScriptComponentToTick(GetTickRequirement());
 		RopeVisual = base.GameEntity.GetFirstScriptInFamilyDescending<RopePileBaked>();
+		RopeVisualEntity = TaleWorlds.Engine.GameEntity.CreateFromWeakEntity(RopeVisual.GameEntity);
+		InitializeCutRopeSegments();
 		_staticRopeVisual = base.GameEntity.GetFirstChildEntityWithTagRecursive("pile_hanged_static");
 		if (_staticRopeVisual == null)
 		{
@@ -3160,12 +3365,19 @@ public class ShipAttachmentMachine : UsableMachine
 		{
 			if (CurrentAttachment == null)
 			{
-				base.PilotAgent.AgentVisuals.SetAttachedPositionForMeshAfterAnimationPostIntegrate(RopeVisual.GameEntity, base.PilotAgent.Monster.MainHandItemBoneIndex);
 				if (base.PilotAgent.SetActionChannel(1, in ActionIndexCache.act_usage_hook_ready, ignorePriority: false, (AnimFlags)0uL))
 				{
 					RopeVisual.GameEntity.SetVisibilityExcludeParents(visible: true);
 					Hook.SetVisibilityExcludeParents(visible: false);
 					_staticRopeVisual.SetVisibilityExcludeParents(visible: false);
+					MatrixFrame frame = base.PilotAgent.Frame;
+					MatrixFrame boneEntitialFrame = base.PilotAgent.GetBoneEntitialFrame(base.PilotAgent.Monster.MainHandItemBoneIndex, useBoneMapping: false);
+					Vec3 targetGlobalPosition = frame.TransformToParent(in boneEntitialFrame.origin);
+					Vec3 sourceGlobalPosition = (_staticRopeVisual.IsValid ? _staticRopeVisual.GetGlobalFrame().origin : base.GameEntity.GetGlobalFrame().origin);
+					RopeVisual.SetRopeState(RopePileBaked.RopeSlackPolicy.Natural, TaleWorlds.Library.MathF.Max(sourceGlobalPosition.Distance(targetGlobalPosition) * 1.5f, 2f));
+					RopeVisual.ClearMeshUnfurlOverride();
+					RopeVisual.UpdateRopeMeshVisualAccordingToTargetPointLinearNoHookOffset(in sourceGlobalPosition, in targetGlobalPosition);
+					RopeVisual.SetApplyClipPlanes(applyClipPlanes: false);
 					if (base.PilotAgent.WieldedWeapon.Item != _hookItem)
 					{
 						Vec3 position = base.PilotAgent.Position;
@@ -3273,15 +3485,16 @@ public class ShipAttachmentMachine : UsableMachine
 		{
 			if (CurrentAttachment != null && (CurrentAttachment.State == ShipAttachment.ShipAttachmentState.RopeThrown || CurrentAttachment.State == ShipAttachment.ShipAttachmentState.RopesPulling || CurrentAttachment.State == ShipAttachment.ShipAttachmentState.BridgeConnected || CurrentAttachment.State == ShipAttachment.ShipAttachmentState.RopeFailedAndReloading))
 			{
+				RopeVisual.SetApplyClipPlanes(applyClipPlanes: true);
 				GameEntity hook = Hook;
-				MatrixFrame frame = CurrentAttachment.HookGlobalFrame;
-				hook.SetGlobalFrame(in frame);
+				MatrixFrame boneEntitialFrame = CurrentAttachment.HookGlobalFrame;
+				hook.SetGlobalFrame(in boneEntitialFrame);
 			}
 			else
 			{
 				GameEntity hook2 = Hook;
-				MatrixFrame frame = base.GameEntity.GetGlobalFrame().TransformToParent(in _initialHookLocalFrame);
-				hook2.SetGlobalFrame(in frame);
+				MatrixFrame boneEntitialFrame = base.GameEntity.GetGlobalFrame().TransformToParent(in _initialHookLocalFrame);
+				hook2.SetGlobalFrame(in boneEntitialFrame);
 			}
 		}
 		if (base.GameEntity.BodyFlag.HasAllFlags(BodyFlags.Sinking) && base.GameEntity.GetGlobalFrame().origin.z + SinkingReferenceOffset < base.Scene.GetWaterLevelAtPosition(base.GameEntity.GetFrame().origin.AsVec2, useWaterRenderer: true, checkWaterBodyEntities: false))
@@ -3402,6 +3615,13 @@ public class ShipAttachmentMachine : UsableMachine
 
 	public static bool IsShipBetweenAttachments(ShipAttachmentMachine attachmentMachineSource, ShipAttachmentPointMachine attachmentMachineTarget)
 	{
+		MissionShip offendingShip;
+		return TryFindShipBetweenAttachments(attachmentMachineSource, attachmentMachineTarget, out offendingShip);
+	}
+
+	public static bool TryFindShipBetweenAttachments(ShipAttachmentMachine attachmentMachineSource, ShipAttachmentPointMachine attachmentMachineTarget, out MissionShip offendingShip)
+	{
+		offendingShip = null;
 		Vec2 asVec = attachmentMachineSource.GameEntity.GlobalPosition.AsVec2;
 		Vec2 asVec2 = attachmentMachineTarget.GameEntity.GlobalPosition.AsVec2;
 		foreach (MissionShip allShip in attachmentMachineSource.NavalShipsLogicCached.AllShips)
@@ -3412,6 +3632,7 @@ public class ShipAttachmentMachine : UsableMachine
 				Vec2[] physicsBoundingBoxPointsOfShip = allShip.CalculateBoundingXYGlobalPlaneFromLocal(in shipFrame);
 				if (EarlyCrossCheckForShipIntersectingAttachmentMachine(physicsBoundingBoxPointsOfShip, asVec, asVec2) && IsShipNearAttachmentMachines(allShip, shipFrame, asVec, asVec2) && IsLineSegmentIntersectingShipBoundingXYPlane(physicsBoundingBoxPointsOfShip, asVec, asVec2))
 				{
+					offendingShip = allShip;
 					return true;
 				}
 			}

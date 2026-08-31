@@ -191,12 +191,14 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 		_widget_2_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0.StackLayout.LayoutMethod = LayoutMethod.HorizontalRightToLeft;
+		_widget_2_0_0.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_2_0_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_2_0_0.PositionXOffset = -80f;
+		_widget_2_0_0.PositionXOffset = -250f;
 		_widget_2_0_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_0_0_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_2_0_0_0.SuggestedWidth = 40f;
 		_widget_2_0_0_0.SuggestedHeight = 40f;
+		_widget_2_0_0_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_2_0_0_0.Sprite = base.Context.SpriteData.GetSprite("Map\\anchor_stroked");
 		_widget_2_0_0_0.IsVisible = false;
 		_widget_2_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
@@ -218,6 +220,7 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 		_widget_2_0_0_1.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_2_0_0_1.SuggestedWidth = 33f;
 		_widget_2_0_0_1.SuggestedHeight = 33f;
+		_widget_2_0_0_1.VerticalAlignment = VerticalAlignment.Center;
 		_widget_2_0_0_1.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\parley_icon");
 		_widget_2_0_0_1.AlphaFactor = 0f;
 		_widget_2_0_1.WidthSizePolicy = SizePolicy.CoverChildren;

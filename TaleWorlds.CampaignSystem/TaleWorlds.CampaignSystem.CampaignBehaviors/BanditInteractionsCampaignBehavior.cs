@@ -157,7 +157,7 @@ public class BanditInteractionsCampaignBehavior : CampaignBehaviorBase
 	{
 		if (MobileParty.MainParty.MemberRoster.TotalHealthyCount > 0)
 		{
-			return !MobileParty.MainParty.IsInRaftState;
+			return !MobileParty.MainParty.IsInNavalAutoTravel;
 		}
 		return false;
 	}
@@ -189,7 +189,7 @@ public class BanditInteractionsCampaignBehavior : CampaignBehaviorBase
 	private bool conversation_bandits_surrender_on_condition()
 	{
 		MobileParty conversationParty = MobileParty.ConversationParty;
-		if (conversationParty != null && conversationParty.IsInRaftState)
+		if (conversationParty != null && conversationParty.IsInNavalAutoTravel)
 		{
 			return true;
 		}
@@ -661,7 +661,7 @@ public class BanditInteractionsCampaignBehavior : CampaignBehaviorBase
 	{
 		if (PlayerEncounter.EncounteredParty != null)
 		{
-			if ((!(PlayerEncounter.EncounteredParty.CalculateCurrentStrength() <= PartyBase.MainParty.CalculateCurrentStrength()) || MobileParty.MainParty.IsInRaftState) && GetPlayerInteraction(PlayerEncounter.EncounteredMobileParty) != PlayerInteraction.PaidOffParty)
+			if ((!(PlayerEncounter.EncounteredParty.CalculateCurrentStrength() <= PartyBase.MainParty.CalculateCurrentStrength()) || MobileParty.MainParty.IsInNavalAutoTravel) && GetPlayerInteraction(PlayerEncounter.EncounteredMobileParty) != PlayerInteraction.PaidOffParty)
 			{
 				return GetPlayerInteraction(PlayerEncounter.EncounteredMobileParty) == PlayerInteraction.Friendly;
 			}

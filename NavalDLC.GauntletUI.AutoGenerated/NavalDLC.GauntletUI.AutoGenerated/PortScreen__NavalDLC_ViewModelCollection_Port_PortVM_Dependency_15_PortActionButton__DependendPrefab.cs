@@ -27,13 +27,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_15_
 
 	private TextWidget _widget_0_1_0_0;
 
-	private Widget _widget_0_1_0_1;
-
-	private RichTextWidget _widget_0_1_0_1_0;
-
-	private Widget _widget_0_1_0_2;
-
-	private RichTextWidget _widget_0_1_0_2_0;
+	private RichTextWidget _widget_0_1_0_1;
 
 	private HintWidget _widget_0_2;
 
@@ -65,14 +59,8 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_15_
 		_widget_0_1.AddChild(_widget_0_1_0);
 		_widget_0_1_0_0 = new TextWidget(base.Context);
 		_widget_0_1_0.AddChild(_widget_0_1_0_0);
-		_widget_0_1_0_1 = new Widget(base.Context);
+		_widget_0_1_0_1 = new RichTextWidget(base.Context);
 		_widget_0_1_0.AddChild(_widget_0_1_0_1);
-		_widget_0_1_0_1_0 = new RichTextWidget(base.Context);
-		_widget_0_1_0_1.AddChild(_widget_0_1_0_1_0);
-		_widget_0_1_0_2 = new Widget(base.Context);
-		_widget_0_1_0.AddChild(_widget_0_1_0_2);
-		_widget_0_1_0_2_0 = new RichTextWidget(base.Context);
-		_widget_0_1_0_2.AddChild(_widget_0_1_0_2_0);
 		_widget_0_2 = new HintWidget(base.Context);
 		_widget_0.AddChild(_widget_0_2);
 		_widget_1 = new HintWidget(base.Context);
@@ -124,24 +112,11 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_15_
 		_widget_0_1_0_0.Brush.TextHorizontalAlignment = TextHorizontalAlignment.Right;
 		_widget_0_1_0_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_1_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_1_0_1.MaxWidth = 95.5f;
 		_widget_0_1_0_1.MarginLeft = 5f;
-		_widget_0_1_0_1_0.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_1_0_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_1_0_1_0.MaxWidth = 95.5f;
-		_widget_0_1_0_1_0.Brush = base.Context.GetBrush("Port.Ship.Option.Gold.Text");
-		_widget_0_1_0_1_0.Brush.TextHorizontalAlignment = TextHorizontalAlignment.Left;
-		_widget_0_1_0_1_0.AutoHideIfEmpty = true;
-		_widget_0_1_0_1_0.IsEnabled = true;
-		_widget_0_1_0_2.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_1_0_2.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_1_0_2.MarginLeft = 5f;
-		_widget_0_1_0_2_0.WidthSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_1_0_2_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_1_0_2_0.MaxWidth = 95.5f;
-		_widget_0_1_0_2_0.Brush = base.Context.GetBrush("Port.Ship.Option.Gold.Text");
-		_widget_0_1_0_2_0.Brush.TextHorizontalAlignment = TextHorizontalAlignment.Left;
-		_widget_0_1_0_2_0.AutoHideIfEmpty = true;
-		_widget_0_1_0_2_0.IsEnabled = false;
+		_widget_0_1_0_1.Brush = base.Context.GetBrush("Port.Ship.Option.Gold.Text");
+		_widget_0_1_0_1.Brush.TextHorizontalAlignment = TextHorizontalAlignment.Left;
+		_widget_0_1_0_1.AutoHideIfEmpty = true;
 		_widget_0_2.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_2.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_2.IsEnabled = false;
@@ -240,33 +215,6 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_15_
 			_widget_0_1_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_1;
-			_widget_0_1_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_2_0;
 			if (_datasource_Root_RepairAllAction_Tooltip != null)
 			{
 				_datasource_Root_RepairAllAction_Tooltip.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_RepairAllAction_Tooltip;
@@ -689,168 +637,9 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_15_
 
 	private void HandleWidgetPropertyChangeOf_widget_0_1_0_1(string propertyName)
 	{
-		if (propertyName == "IsVisible")
-		{
-			_datasource_Root_RepairAllAction.IsEnabled = _widget_0_1_0_1.IsVisible;
-		}
-	}
-
-	private void PropertyChangedListenerOf_widget_0_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_1_0(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_0_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_1_0(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_0_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_1_0(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_0_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_1_0(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_0_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_1_0(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_0_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_1_0(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_0_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_1_0(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_0_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_1_0(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_0_1_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_1_0(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_0_1_0_1_0(string propertyName)
-	{
 		if (propertyName == "Text")
 		{
-			_datasource_Root_RepairAllAction.AdditionalInfo = _widget_0_1_0_1_0.Text;
-		}
-	}
-
-	private void PropertyChangedListenerOf_widget_0_1_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_0_1_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_0_1_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_0_1_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_0_1_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_0_1_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_0_1_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_0_1_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_0_1_0_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_0_1_0_2(string propertyName)
-	{
-		if (propertyName == "IsHidden")
-		{
-			_datasource_Root_RepairAllAction.IsEnabled = _widget_0_1_0_2.IsHidden;
-		}
-	}
-
-	private void PropertyChangedListenerOf_widget_0_1_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2_0(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_0_1_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2_0(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_0_1_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2_0(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_0_1_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2_0(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_0_1_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2_0(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_0_1_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2_0(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_0_1_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2_0(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_0_1_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2_0(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_0_1_0_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_0_1_0_2_0(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_0_1_0_2_0(string propertyName)
-	{
-		if (propertyName == "Text")
-		{
-			_datasource_Root_RepairAllAction.AdditionalInfo = _widget_0_1_0_2_0.Text;
+			_datasource_Root_RepairAllAction.AdditionalInfo = _widget_0_1_0_1.Text;
 		}
 	}
 
@@ -911,14 +700,11 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_15_
 			break;
 		case "IsEnabled":
 			_widget_0.IsEnabled = _datasource_Root_RepairAllAction.IsEnabled;
-			_widget_0_1_0_1.IsVisible = _datasource_Root_RepairAllAction.IsEnabled;
-			_widget_0_1_0_2.IsHidden = _datasource_Root_RepairAllAction.IsEnabled;
 			break;
 		case "AdditionalInfo":
 			_widget_0_0.FirstString = _datasource_Root_RepairAllAction.AdditionalInfo;
 			_widget_0_1.FirstString = _datasource_Root_RepairAllAction.AdditionalInfo;
-			_widget_0_1_0_1_0.Text = _datasource_Root_RepairAllAction.AdditionalInfo;
-			_widget_0_1_0_2_0.Text = _datasource_Root_RepairAllAction.AdditionalInfo;
+			_widget_0_1_0_1.Text = _datasource_Root_RepairAllAction.AdditionalInfo;
 			break;
 		case "Name":
 			_widget_0_0_0.Text = _datasource_Root_RepairAllAction.Name;
@@ -1106,33 +892,6 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_15_
 			_widget_0_1_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_1;
-			_widget_0_1_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_2_0;
 			if (_datasource_Root_RepairAllAction_Tooltip != null)
 			{
 				_datasource_Root_RepairAllAction_Tooltip.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_RepairAllAction_Tooltip;
@@ -1224,7 +983,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_15_
 			_widget_0_1_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0_0;
 			_widget_0_1_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0_0;
 			_widget_0_1_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0_0;
-			_widget_0_1_0_1.IsVisible = _datasource_Root_RepairAllAction.IsEnabled;
+			_widget_0_1_0_1.Text = _datasource_Root_RepairAllAction.AdditionalInfo;
 			_widget_0_1_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_0_1;
@@ -1234,36 +993,6 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_15_
 			_widget_0_1_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0_1;
-			_widget_0_1_0_1_0.Text = _datasource_Root_RepairAllAction.AdditionalInfo;
-			_widget_0_1_0_1_0.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_2.IsHidden = _datasource_Root_RepairAllAction.IsEnabled;
-			_widget_0_1_0_2.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2_0.Text = _datasource_Root_RepairAllAction.AdditionalInfo;
-			_widget_0_1_0_2_0.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0_2_0;
 			_datasource_Root_RepairAllAction_Tooltip = _datasource_Root_RepairAllAction.Tooltip;
 			if (_datasource_Root_RepairAllAction_Tooltip != null)
 			{
@@ -1405,33 +1134,6 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_15_
 				_widget_0_1_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_1;
 				_widget_0_1_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_1;
 				_widget_0_1_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_1;
-				_widget_0_1_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0_1_0;
-				_widget_0_1_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0_1_0;
-				_widget_0_1_0_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1_0_1_0;
-				_widget_0_1_0_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1_0_1_0;
-				_widget_0_1_0_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1_0_1_0;
-				_widget_0_1_0_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1_0_1_0;
-				_widget_0_1_0_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_1_0;
-				_widget_0_1_0_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_1_0;
-				_widget_0_1_0_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_1_0;
-				_widget_0_1_0_2.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0_2;
-				_widget_0_1_0_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0_2;
-				_widget_0_1_0_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1_0_2;
-				_widget_0_1_0_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1_0_2;
-				_widget_0_1_0_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1_0_2;
-				_widget_0_1_0_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1_0_2;
-				_widget_0_1_0_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_2;
-				_widget_0_1_0_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_2;
-				_widget_0_1_0_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_2;
-				_widget_0_1_0_2_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_1_0_2_0;
-				_widget_0_1_0_2_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_1_0_2_0;
-				_widget_0_1_0_2_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_1_0_2_0;
-				_widget_0_1_0_2_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_1_0_2_0;
-				_widget_0_1_0_2_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_1_0_2_0;
-				_widget_0_1_0_2_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_1_0_2_0;
-				_widget_0_1_0_2_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_1_0_2_0;
-				_widget_0_1_0_2_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_1_0_2_0;
-				_widget_0_1_0_2_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_1_0_2_0;
 				if (_datasource_Root_RepairAllAction_Tooltip != null)
 				{
 					_datasource_Root_RepairAllAction_Tooltip.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_RepairAllAction_Tooltip;
@@ -1538,7 +1240,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_15_
 			_widget_0_1_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0_0;
 			_widget_0_1_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0_0;
 			_widget_0_1_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0_0;
-			_widget_0_1_0_1.IsVisible = _datasource_Root_RepairAllAction.IsEnabled;
+			_widget_0_1_0_1.Text = _datasource_Root_RepairAllAction.AdditionalInfo;
 			_widget_0_1_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_0_1;
@@ -1548,36 +1250,6 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_15_
 			_widget_0_1_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0_1;
 			_widget_0_1_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0_1;
-			_widget_0_1_0_1_0.Text = _datasource_Root_RepairAllAction.AdditionalInfo;
-			_widget_0_1_0_1_0.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0_1_0;
-			_widget_0_1_0_2.IsHidden = _datasource_Root_RepairAllAction.IsEnabled;
-			_widget_0_1_0_2.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0_2;
-			_widget_0_1_0_2_0.Text = _datasource_Root_RepairAllAction.AdditionalInfo;
-			_widget_0_1_0_2_0.PropertyChanged += PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_1_0_2_0;
-			_widget_0_1_0_2_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_1_0_2_0;
 			_datasource_Root_RepairAllAction_Tooltip = _datasource_Root_RepairAllAction.Tooltip;
 			if (_datasource_Root_RepairAllAction_Tooltip != null)
 			{

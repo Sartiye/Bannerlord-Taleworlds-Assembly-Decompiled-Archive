@@ -17,7 +17,17 @@ public class MPMissionMarkers__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCol
 
 	private ListPanel _widget_0_0;
 
-	private TextWidget _widget_0_0_0;
+	private ListPanel _widget_0_0_0;
+
+	private TextWidget _widget_0_0_0_0;
+
+	private Widget _widget_0_0_1;
+
+	private SliderWidget _widget_0_0_1_0;
+
+	private Widget _widget_0_0_1_0_0;
+
+	private Widget _widget_0_0_1_0_1;
 
 	private MissionPeerMarkerTargetVM _datasource_Root;
 
@@ -33,14 +43,26 @@ public class MPMissionMarkers__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCol
 		_widget.AddChild(_widget_0);
 		_widget_0_0 = new ListPanel(base.Context);
 		_widget_0.AddChild(_widget_0_0);
-		_widget_0_0_0 = new TextWidget(base.Context);
+		_widget_0_0_0 = new ListPanel(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_0);
+		_widget_0_0_0_0 = new TextWidget(base.Context);
+		_widget_0_0_0.AddChild(_widget_0_0_0_0);
+		_widget_0_0_1 = new Widget(base.Context);
+		_widget_0_0.AddChild(_widget_0_0_1);
+		_widget_0_0_1_0 = new SliderWidget(base.Context);
+		_widget_0_0_1.AddChild(_widget_0_0_1_0);
+		_widget_0_0_1_0_0 = new Widget(base.Context);
+		_widget_0_0_1_0.AddChild(_widget_0_0_1_0_0);
+		_widget_0_0_1_0_1 = new Widget(base.Context);
+		_widget_0_0_1_0.AddChild(_widget_0_0_1_0_1);
 	}
 
 	public virtual void SetIds()
 	{
 		_widget_0.Id = "PeerWidget";
-		_widget_0_0_0.Id = "NameTextWidget";
+		_widget_0_0_0_0.Id = "NameTextWidget";
+		_widget_0_0_1_0_0.Id = "Filler";
+		_widget_0_0_1_0_1.Id = "SliderHandle";
 	}
 
 	public virtual void SetAttributes()
@@ -59,14 +81,51 @@ public class MPMissionMarkers__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCol
 		_widget_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
-		_widget_0_0.StackLayout.LayoutMethod = LayoutMethod.HorizontalRightToLeft;
+		_widget_0_0.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
+		_widget_0_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_0_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_0_0_0.StackLayout.LayoutMethod = LayoutMethod.HorizontalRightToLeft;
 		_widget_0_0_0.HorizontalAlignment = HorizontalAlignment.Center;
-		_widget_0_0_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_0_0_0.Brush = base.Context.GetBrush("PeerMarker.TextBrush");
-		_widget_0_0_0.ClipContents = false;
-		_widget_0_0_0.OverrideDefaultStateSwitchingEnabled = true;
+		_widget_0_0_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_0_0_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_0_0_0_0.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_0_0_0_0.VerticalAlignment = VerticalAlignment.Center;
+		_widget_0_0_0_0.Brush = base.Context.GetBrush("PeerMarker.TextBrush");
+		_widget_0_0_0_0.ClipContents = false;
+		_widget_0_0_0_0.OverrideDefaultStateSwitchingEnabled = true;
+		_widget_0_0_1.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_0_0_1.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_0_0_1.SuggestedWidth = 60f;
+		_widget_0_0_1.SuggestedHeight = 6f;
+		_widget_0_0_1.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_0_0_1.Sprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
+		_widget_0_0_1.Color = new Color(0f, 0f, 0f, 0.5019608f);
+		_widget_0_0_1_0.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_0_0_1_0.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_0_0_1_0.SuggestedWidth = 60f;
+		_widget_0_0_1_0.SuggestedHeight = 6f;
+		_widget_0_0_1_0.HorizontalAlignment = HorizontalAlignment.Center;
+		_widget_0_0_1_0.VerticalAlignment = VerticalAlignment.Center;
+		_widget_0_0_1_0.Filler = _widget_0_0_1_0_0;
+		_widget_0_0_1_0.Handle = _widget_0_0_1_0_1;
+		_widget_0_0_1_0.Locked = true;
+		_widget_0_0_1_0.MinValueFloat = 0f;
+		_widget_0_0_1_0_0.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_0_0_1_0_0.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_0_0_1_0_0.SuggestedWidth = 60f;
+		_widget_0_0_1_0_0.SuggestedHeight = 6f;
+		_widget_0_0_1_0_0.VerticalAlignment = VerticalAlignment.Center;
+		_widget_0_0_1_0_0.Sprite = base.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
+		_widget_0_0_1_0_0.Color = new Color(0.7686275f, 0.2235294f, 0.1843137f);
+		_widget_0_0_1_0_1.DoNotAcceptEvents = true;
+		_widget_0_0_1_0_1.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_0_0_1_0_1.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_0_0_1_0_1.SuggestedWidth = 2f;
+		_widget_0_0_1_0_1.SuggestedHeight = 6f;
+		_widget_0_0_1_0_1.HorizontalAlignment = HorizontalAlignment.Left;
+		_widget_0_0_1_0_1.VerticalAlignment = VerticalAlignment.Center;
+		_widget_0_0_1_0_1.IsVisible = false;
 	}
 
 	public virtual void DestroyDataSource()
@@ -91,15 +150,33 @@ public class MPMissionMarkers__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCol
 			_widget.intPropertyChanged -= intPropertyChangedListenerOf_widget;
 			_widget.uintPropertyChanged -= uintPropertyChangedListenerOf_widget;
 			_widget.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget;
-			_widget_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0_0;
+			_widget_0_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0_1_0;
 			_datasource_Root = null;
 		}
 	}
@@ -173,60 +250,170 @@ public class MPMissionMarkers__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCol
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_0_0_0_0(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_0_0_0_0(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_0_0_0_0(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_0_0_0_0(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_0_0_0_0(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_0_0_0_0(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_0_0_0_0(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_0_0_0_0(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_0_0_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_0_0_0_0(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_0_0_0(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_0_0_0_0(string propertyName)
 	{
 		if (propertyName == "Brush.FontColor")
 		{
-			_datasource_Root.Color2 = _widget_0_0_0.Brush.FontColor.ToString();
+			_datasource_Root.Color2 = _widget_0_0_0_0.Brush.FontColor.ToString();
 		}
 		else if (propertyName == "Text")
 		{
-			_datasource_Root.Name = _widget_0_0_0.Text;
+			_datasource_Root.Name = _widget_0_0_0_0.Text;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_0_0_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_0_0_1(string propertyName)
+	{
+		if (propertyName == "IsVisible")
+		{
+			_datasource_Root.ShowHealth = _widget_0_0_1.IsVisible;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_0_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1_0(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_0_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1_0(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_0_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1_0(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_0_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1_0(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_0_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1_0(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_0_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1_0(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_0_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1_0(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_0_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1_0(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_0_0_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_0_1_0(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_0_0_1_0(string propertyName)
+	{
+		if (propertyName == "MaxValueFloat")
+		{
+			_datasource_Root.HealthLimit = _widget_0_0_1_0.MaxValueFloat;
+		}
+		else if (propertyName == "ValueFloat")
+		{
+			_datasource_Root.CurrentHealth = _widget_0_0_1_0.ValueFloat;
 		}
 	}
 
@@ -294,11 +481,20 @@ public class MPMissionMarkers__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCol
 		case "Color2":
 			if (_datasource_Root.Color2 != null)
 			{
-				_widget_0_0_0.Brush.FontColor = Color.ConvertStringToColor(_datasource_Root.Color2);
+				_widget_0_0_0_0.Brush.FontColor = Color.ConvertStringToColor(_datasource_Root.Color2);
 			}
 			break;
 		case "Name":
-			_widget_0_0_0.Text = _datasource_Root.Name;
+			_widget_0_0_0_0.Text = _datasource_Root.Name;
+			break;
+		case "ShowHealth":
+			_widget_0_0_1.IsVisible = _datasource_Root.ShowHealth;
+			break;
+		case "HealthLimit":
+			_widget_0_0_1_0.MaxValueFloat = _datasource_Root.HealthLimit;
+			break;
+		case "CurrentHealth":
+			_widget_0_0_1_0.ValueFloat = _datasource_Root.CurrentHealth;
 			break;
 		}
 	}
@@ -325,15 +521,33 @@ public class MPMissionMarkers__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCol
 			_widget.intPropertyChanged -= intPropertyChangedListenerOf_widget;
 			_widget.uintPropertyChanged -= uintPropertyChangedListenerOf_widget;
 			_widget.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget;
-			_widget_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0_0;
+			_widget_0_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_0_1_0;
 			_datasource_Root = null;
 		}
 		_datasource_Root = newDataSource;
@@ -363,18 +577,39 @@ public class MPMissionMarkers__TaleWorlds_MountAndBlade_Multiplayer_ViewModelCol
 			_widget.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget;
 			if (_datasource_Root.Color2 != null)
 			{
-				_widget_0_0_0.Brush.FontColor = Color.ConvertStringToColor(_datasource_Root.Color2);
+				_widget_0_0_0_0.Brush.FontColor = Color.ConvertStringToColor(_datasource_Root.Color2);
 			}
-			_widget_0_0_0.Text = _datasource_Root.Name;
-			_widget_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_0_0;
-			_widget_0_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_0_0;
+			_widget_0_0_0_0.Text = _datasource_Root.Name;
+			_widget_0_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_0_0_0;
+			_widget_0_0_1.IsVisible = _datasource_Root.ShowHealth;
+			_widget_0_0_1.PropertyChanged += PropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.intPropertyChanged += intPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_0_1;
+			_widget_0_0_1_0.MaxValueFloat = _datasource_Root.HealthLimit;
+			_widget_0_0_1_0.ValueFloat = _datasource_Root.CurrentHealth;
+			_widget_0_0_1_0.PropertyChanged += PropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_0_1_0;
+			_widget_0_0_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_0_1_0;
 		}
 	}
 }

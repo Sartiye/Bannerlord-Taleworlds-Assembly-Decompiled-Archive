@@ -39,7 +39,7 @@ public abstract class RangedSiegeWeaponAi : UsableMachineAIBase
 			_getMostDangerousThreat = new FindMostDangerousThreat();
 		}
 
-		public void InitializeTargetableObjects()
+		public void ResetTargetableObjects()
 		{
 			IEnumerable<MissionObject> source = Mission.Current.ActiveMissionObjects.WhereQ((MissionObject mo) => mo is ITargetable);
 			_potentialTargetObjects = (from to in source.WhereQ((MissionObject to) => to is ITargetable targetable && targetable.IsDestructable() && targetable.GetTargetEntity() != null)
@@ -255,9 +255,9 @@ public abstract class RangedSiegeWeaponAi : UsableMachineAIBase
 		_targetEvaluationTimer = new Timer(Mission.Current.CurrentTime, 0.5f);
 	}
 
-	public void InitializeThreatSeeker()
+	public void ResetThreatSeeker()
 	{
-		_threatSeeker.InitializeTargetableObjects();
+		_threatSeeker.ResetTargetableObjects();
 	}
 
 	protected override void OnTick(Agent agentToCompareTo, Formation formationToCompareTo, Team potentialUsersTeam, float dt)

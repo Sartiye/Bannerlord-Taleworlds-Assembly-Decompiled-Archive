@@ -215,11 +215,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 
 		public override bool IssueStayAliveConditions()
 		{
-			if (base.IssueOwner.OwnedCaravans.Count < 2)
-			{
-				return base.IssueOwner.CurrentSettlement.Town.Security <= 80f;
-			}
-			return false;
+			return base.IssueOwner.OwnedCaravans.Count <= 2;
 		}
 
 		protected override void OnGameLoad()
@@ -1002,12 +998,13 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 			if (_questCaravanMobileParty.IsActive && !_questCaravanMobileParty.IsVisible)
 			{
 				float num = _questCaravanMobileParty.Position.Distance(MobileParty.MainParty.Position);
-				if (!_isPlayerNotifiedForDanger && num >= MobileParty.MainParty.SeeingRange + 3f)
+				float seeingRange = MobileParty.MainParty.SeeingRange;
+				if (!_isPlayerNotifiedForDanger && num >= seeingRange + 3f)
 				{
 					MBInformationManager.AddQuickInformation(new TextObject("{=2y9DhzCR}You are about to lose sight of the caravan. Find the caravan before they are in danger!"));
 					_isPlayerNotifiedForDanger = true;
 				}
-				else if (num >= MobileParty.MainParty.SeeingRange + 20f)
+				else if (num >= seeingRange + 20f)
 				{
 					AddLog(CaravanLostTheTrackLogText);
 					FailConsequences();
@@ -1085,22 +1082,25 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 					{
 						AddTrackedObject(settlement3);
 					}
-					if (_questBanditMobileParty == null || !_questBanditMobileParty.IsActive)
+					if (_questBanditMobileParty == null)
 					{
 						break;
 					}
-					float num4 = DistanceHelper.FindClosestDistanceFromMobilePartyToMobileParty(_questCaravanMobileParty, _questBanditMobileParty, MobileParty.NavigationType.Default);
-					if (_questBanditMobileParty.Speed < _questCaravanMobileParty.Speed || num4 > 10f)
+					if (_questBanditMobileParty.IsActive)
 					{
-						_questBanditMobileParty.SetMoveModeHold();
-						_questBanditMobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: false);
-						_questBanditMobileParty.IgnoreByOtherPartiesTill(CampaignTime.Now);
-						if (IsTracked(_questBanditMobileParty))
+						float num4 = DistanceHelper.FindClosestDistanceFromMobilePartyToMobileParty(_questCaravanMobileParty, _questBanditMobileParty, MobileParty.NavigationType.Default);
+						if (_questBanditMobileParty.Speed < _questCaravanMobileParty.Speed || num4 > 10f)
 						{
-							RemoveTrackedObject(_questBanditMobileParty);
+							_questBanditMobileParty.SetMoveModeHold();
+							_questBanditMobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: false);
+							_questBanditMobileParty.IgnoreByOtherPartiesTill(CampaignTime.Now);
+							if (IsTracked(_questBanditMobileParty))
+							{
+								RemoveTrackedObject(_questBanditMobileParty);
+							}
 						}
-						_questBanditMobileParty = null;
 					}
+					_questBanditMobileParty = null;
 					break;
 				}
 				while (num2 >= 0);
@@ -1282,6 +1282,7 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 			SetPartyAiAction.GetActionForEngagingParty(_questBanditMobileParty, _questCaravanMobileParty, MobileParty.NavigationType.Default, isFromPort: false);
 			_questBanditMobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: true);
 			AddTrackedObject(_questBanditMobileParty);
+			_questBanditMobileParty.InitializePartyTrade(QuestHelper.CalculateInitialGoldForBanditQuestParty(_questBanditMobileParty));
 		}
 
 		protected override void OnFinalize()
@@ -1400,9 +1401,9 @@ public class EscortMerchantCaravanIssueBehavior : CampaignBehaviorBase
 
 	private bool ConditionsHold(Hero issueGiver)
 	{
-		if (issueGiver.IsMerchant && issueGiver.CurrentSettlement != null && issueGiver.CurrentSettlement.IsTown && !issueGiver.CurrentSettlement.HasPort && issueGiver.CurrentSettlement.Town.Security <= 50f)
+		if (issueGiver.IsMerchant && issueGiver.CurrentSettlement != null && issueGiver.CurrentSettlement.IsTown && !issueGiver.CurrentSettlement.HasPort)
 		{
-			return issueGiver.OwnedCaravans.Count < 2;
+			return issueGiver.OwnedCaravans.Count <= 2;
 		}
 		return false;
 	}

@@ -36,6 +36,14 @@ public class WeaponDesignVM : ViewModel
 	{
 		public int Compare(CraftingPieceVM x, CraftingPieceVM y)
 		{
+			if (x.IsEmpty != y.IsEmpty)
+			{
+				if (!x.IsEmpty)
+				{
+					return 1;
+				}
+				return -1;
+			}
 			if (x.Tier != y.Tier)
 			{
 				return x.Tier.CompareTo(y.Tier);
@@ -69,7 +77,7 @@ public class WeaponDesignVM : ViewModel
 
 	private int _selectedWeaponClassIndex;
 
-	private readonly List<CraftingPiece> _newlyUnlockedPieces;
+	private readonly IViewDataTracker _viewDataTracker = Campaign.Current.GetCampaignBehavior<IViewDataTracker>();
 
 	private readonly List<CraftingTemplate> _primaryUsages;
 
@@ -1334,7 +1342,6 @@ public class WeaponDesignVM : ViewModel
 		_currentCraftingSkillText = new TextObject("{=LEiZWuZm}{SKILL_NAME}: {SKILL_VALUE}");
 		PrimaryPropertyList = new MBBindingList<CraftingListPropertyItem>();
 		DesignResultPropertyList = new MBBindingList<WeaponDesignResultPropertyItemVM>();
-		_newlyUnlockedPieces = new List<CraftingPiece>();
 		_pieceTierComparer = new PieceTierComparer();
 		BladePieceList = new CraftingPieceListVM(new MBBindingList<CraftingPieceVM>(), CraftingPiece.PieceTypes.Blade, OnSelectPieceType);
 		GuardPieceList = new CraftingPieceListVM(new MBBindingList<CraftingPieceVM>(), CraftingPiece.PieceTypes.Guard, OnSelectPieceType);
@@ -1375,10 +1382,10 @@ public class WeaponDesignVM : ViewModel
 		_primaryUsages.Sort(_templateComparer);
 		SecondaryUsageSelector = new SelectorVM<CraftingSecondaryUsageItemVM>(new List<string>(), 0, null);
 		CraftingOrderPopup = new CraftingOrderPopupVM(OnCraftingOrderSelected, _getCurrentCraftingHero, GetOrderStatDatas);
-		WeaponClassSelectionPopup = new WeaponClassSelectionPopupVM(_craftingBehavior, _primaryUsages, delegate(int x)
+		WeaponClassSelectionPopup = new WeaponClassSelectionPopupVM(_primaryUsages, delegate(int x)
 		{
 			RefreshWeaponDesignMode(null, x);
-		}, GetUnlockedPartsCount);
+		}, GetUnlockedPartsCount, GetUninspectedPartsCount);
 		WeaponFlagIconsList = new MBBindingList<ItemFlagVM>();
 		CraftedItemVisual = new ItemCollectionElementViewModel();
 		CampaignEvents.CraftingPartUnlockedEvent.AddNonSerializedListener(this, OnNewPieceUnlocked);
@@ -1457,7 +1464,7 @@ public class WeaponDesignVM : ViewModel
 			list.AddRange(new int[5] { 1, 2, 3, 4, 5 });
 			break;
 		default:
-			Debug.FailedAssert("Invalid tier filter", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Crafting\\WeaponDesign\\WeaponDesignVM.cs", "FilterPieces", 218);
+			Debug.FailedAssert("Invalid tier filter", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Crafting\\WeaponDesign\\WeaponDesignVM.cs", "FilterPieces", 216);
 			break;
 		case CraftingPieceTierFilter.None:
 			break;
@@ -1480,20 +1487,43 @@ public class WeaponDesignVM : ViewModel
 
 	private void OnNewPieceUnlocked(CraftingPiece piece)
 	{
-		if (piece.IsValid && !piece.IsHiddenOnDesigner)
+		if (piece.IsValid && !piece.IsHiddenOnDesigner && _pieceVMs.TryGetValue(piece, out var value))
 		{
-			SetPieceNewlyUnlocked(piece);
-			if (_pieceVMs.TryGetValue(piece, out var value))
+			value.PlayerHasPiece = true;
+			value.IsNewlyUnlocked = true;
+		}
+	}
+
+	private void InspectCraftingPiece(CraftingPiece craftingPiece)
+	{
+		if (_pieceVMs.TryGetValue(craftingPiece, out var value) && value.IsNewlyUnlocked)
+		{
+			_viewDataTracker.RemoveCraftingPieceNewlyUnlockedList(craftingPiece);
+			value.IsNewlyUnlocked = false;
+			PieceLists.ApplyActionOnAllItems(delegate(CraftingPieceListVM x)
 			{
-				value.PlayerHasPiece = true;
-				value.IsNewlyUnlocked = true;
-			}
+				x.Refresh();
+			});
 		}
 	}
 
 	private int GetUnlockedPartsCount(CraftingTemplate template)
 	{
-		return template.Pieces.Count((CraftingPiece piece) => _craftingBehavior.IsOpened(piece, template) && !string.IsNullOrEmpty(piece.MeshName));
+		return template.Pieces.Count((CraftingPiece piece) => IsPieceUnlocked(piece, template));
+	}
+
+	private int GetUninspectedPartsCount(CraftingTemplate template)
+	{
+		return template.Pieces.Count((CraftingPiece piece) => _viewDataTracker.IsCraftingPieceNewlyUnlocked(piece) && IsPieceUnlocked(piece, template));
+	}
+
+	private bool IsPieceUnlocked(CraftingPiece piece, CraftingTemplate template)
+	{
+		if (_craftingBehavior.IsOpened(piece, template))
+		{
+			return !string.IsNullOrEmpty(piece.MeshName);
+		}
+		return false;
 	}
 
 	private WeaponClassVM GetCurrentWeaponClass()
@@ -1510,7 +1540,7 @@ public class WeaponDesignVM : ViewModel
 		TaleWorlds.Core.WeaponDesign design = selector.Design;
 		if (design == null)
 		{
-			Debug.FailedAssert("History design returned null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Crafting\\WeaponDesign\\WeaponDesignVM.cs", "OnSelectItemFromHistory", 284);
+			Debug.FailedAssert("History design returned null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Crafting\\WeaponDesign\\WeaponDesignVM.cs", "OnSelectItemFromHistory", 301);
 			return;
 		}
 		(CraftingPiece, int)[] array = new(CraftingPiece, int)[design.UsedPieces.Length];
@@ -1519,24 +1549,6 @@ public class WeaponDesignVM : ViewModel
 			array[i] = (design.UsedPieces[i].CraftingPiece, design.UsedPieces[i].ScalePercentage);
 		}
 		SetDesignManually(design.Template, array, forceChangeTemplate: true);
-	}
-
-	public void SetPieceNewlyUnlocked(CraftingPiece piece)
-	{
-		if (!_newlyUnlockedPieces.Contains(piece))
-		{
-			_newlyUnlockedPieces.Add(piece);
-		}
-	}
-
-	private void UnsetPieceNewlyUnlocked(CraftingPieceVM pieceVM)
-	{
-		CraftingPiece craftingPiece = pieceVM.CraftingPiece.CraftingPiece;
-		if (_newlyUnlockedPieces.Contains(craftingPiece))
-		{
-			_newlyUnlockedPieces.Remove(craftingPiece);
-			pieceVM.IsNewlyUnlocked = false;
-		}
 	}
 
 	private void OnSelectPieceTierFilter(CraftingPieceTierFilter filter)
@@ -1549,17 +1561,6 @@ public class WeaponDesignVM : ViewModel
 
 	private void OnSelectPieceType(CraftingPiece.PieceTypes pieceType, bool fromClick = false)
 	{
-		CraftingPieceListVM craftingPieceListVM = PieceLists.ElementAt(SelectedPieceTypeIndex);
-		if (craftingPieceListVM != null && fromClick)
-		{
-			foreach (CraftingPieceVM piece in craftingPieceListVM.Pieces)
-			{
-				if (piece.IsNewlyUnlocked)
-				{
-					UnsetPieceNewlyUnlocked(piece);
-				}
-			}
-		}
 		foreach (CraftingPieceListVM pieceList in PieceLists)
 		{
 			pieceList.Refresh();
@@ -1634,9 +1635,9 @@ public class WeaponDesignVM : ViewModel
 				if (flag || !weaponDesignElement.CraftingPiece.IsHiddenOnDesigner)
 				{
 					bool flag2 = _craftingBehavior.IsOpened(weaponDesignElement.CraftingPiece, _crafting.CurrentCraftingTemplate);
-					CraftingPieceVM craftingPieceVM = new CraftingPieceVM(OnSetItemPieceManually, _crafting.CurrentCraftingTemplate.StringId, _crafting.UsablePiecesList[pieceType][i], pieceType, i, flag2);
+					CraftingPieceVM craftingPieceVM = new CraftingPieceVM(OnSetItemPieceManually, InspectCraftingPiece, _crafting.CurrentCraftingTemplate.StringId, _crafting.UsablePiecesList[pieceType][i], pieceType, i, flag2);
 					pieceList.Pieces.Add(craftingPieceVM);
-					craftingPieceVM.IsNewlyUnlocked = flag2 && _newlyUnlockedPieces.Contains(weaponDesignElement.CraftingPiece);
+					craftingPieceVM.IsNewlyUnlocked = flag2 && _viewDataTracker.IsCraftingPieceNewlyUnlocked(weaponDesignElement.CraftingPiece);
 					if (_crafting.SelectedPieces[pieceType].CraftingPiece == craftingPieceVM.CraftingPiece.CraftingPiece)
 					{
 						pieceList.SelectedPiece = craftingPieceVM;
@@ -1804,11 +1805,7 @@ public class WeaponDesignVM : ViewModel
 				flag = true;
 			}
 		}
-		WeaponClassVM weaponClassVM = WeaponClassSelectionPopup.WeaponClasses.FirstOrDefault((WeaponClassVM x) => x.Template == selectedCraftingTemplate);
-		if (weaponClassVM != null)
-		{
-			weaponClassVM.NewlyUnlockedPieceCount = 0;
-		}
+		WeaponClassSelectionPopup.WeaponClasses.FirstOrDefault((WeaponClassVM x) => x.Template == selectedCraftingTemplate);
 		CraftingOrderPopup.RefreshOrders();
 		CraftingHistory.RefreshAvailability();
 		IsOrderButtonActive = CraftingOrderPopup.HasEnabledOrders;
@@ -1868,7 +1865,6 @@ public class WeaponDesignVM : ViewModel
 
 	public void ExecuteOpenWeaponClassSelectionPopup()
 	{
-		WeaponClassSelectionPopup.UpdateNewlyUnlockedPiecesCount(_newlyUnlockedPieces);
 		WeaponClassSelectionPopup.WeaponClasses.ApplyActionOnAllItems(delegate(WeaponClassVM x)
 		{
 			x.IsSelected = x.SelectionIndex == _selectedWeaponClassIndex;
@@ -1880,7 +1876,6 @@ public class WeaponDesignVM : ViewModel
 	{
 		if (IsInOrderMode)
 		{
-			WeaponClassSelectionPopup.UpdateNewlyUnlockedPiecesCount(_newlyUnlockedPieces);
 			WeaponClassSelectionPopup.WeaponClasses.ApplyActionOnAllItems(delegate(WeaponClassVM x)
 			{
 				x.IsSelected = false;
@@ -2228,7 +2223,7 @@ public class WeaponDesignVM : ViewModel
 		bool updatePiece = _updatePiece;
 		if (!_isAutoSelectingPieces)
 		{
-			UnsetPieceNewlyUnlocked(piece);
+			InspectCraftingPiece(piece.CraftingPiece.CraftingPiece);
 		}
 		if (updatePiece)
 		{

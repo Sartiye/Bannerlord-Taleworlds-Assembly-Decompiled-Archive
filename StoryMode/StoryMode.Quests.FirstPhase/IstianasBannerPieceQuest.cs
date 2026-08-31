@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Helpers;
 using StoryMode.StoryModePhases;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
@@ -161,9 +162,7 @@ public class IstianasBannerPieceQuest : StoryModeQuestBase
 		mobileParty.ActualClan = hideoutClan;
 		mobileParty.Position = _hideout.Position;
 		mobileParty.Party.SetVisualAsDirty();
-		float num = mobileParty.Party.CalculateCurrentStrength();
-		int initialGold = (int)(1f * MBRandom.RandomFloat * 20f * num + 50f);
-		mobileParty.InitializePartyTrade(initialGold);
+		mobileParty.InitializePartyTrade(QuestHelper.CalculateInitialGoldForBanditQuestParty(mobileParty));
 		mobileParty.SetMoveGoToSettlement(_hideout, MobileParty.NavigationType.Default, isTargetingThePort: false);
 		mobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: true);
 		mobileParty.SetPartyUsedByQuest(isActivelyUsed: true);

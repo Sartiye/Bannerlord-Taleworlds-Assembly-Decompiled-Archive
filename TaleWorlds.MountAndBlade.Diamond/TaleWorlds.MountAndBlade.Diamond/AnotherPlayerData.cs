@@ -9,6 +9,8 @@ public class AnotherPlayerData
 
 	public int Experience { get; set; }
 
+	public CustomBattleId? SpectatableCustomBattleId { get; set; }
+
 	public AnotherPlayerData()
 	{
 	}
@@ -17,5 +19,12 @@ public class AnotherPlayerData
 	{
 		PlayerState = anotherPlayerState;
 		Experience = anotherPlayerExperience;
+	}
+
+	public AnotherPlayerData(AnotherPlayerState anotherPlayerState, int anotherPlayerExperience, CustomBattleId? spectatableCustomBattleId)
+	{
+		PlayerState = anotherPlayerState;
+		Experience = anotherPlayerExperience;
+		SpectatableCustomBattleId = spectatableCustomBattleId;
 	}
 }

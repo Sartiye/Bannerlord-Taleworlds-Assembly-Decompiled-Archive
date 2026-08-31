@@ -158,7 +158,7 @@ public class PiratesCampaignBehavior : CampaignBehaviorBase, IPiratePatrolBehavi
 			}
 			else
 			{
-				Debug.FailedAssert("This should only be possible for cheats & mods.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\CampaignBehaviors\\PiratesCampaignBehavior.cs", "AiHourlyTick", 244);
+				Debug.FailedAssert("This should only be possible for cheats & mods.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\CampaignBehaviors\\PiratesCampaignBehavior.cs", "AiHourlyTick", 248);
 			}
 		}
 	}
@@ -285,7 +285,7 @@ public class PiratesCampaignBehavior : CampaignBehaviorBase, IPiratePatrolBehavi
 				PatrolZone patrolZone = GetClosestPatrolZone(allBanditParty);
 				if (patrolZone == null)
 				{
-					Debug.FailedAssert("zone != null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\CampaignBehaviors\\PiratesCampaignBehavior.cs", "AdjustAssignedPatrolZones", 387);
+					Debug.FailedAssert("zone != null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\CampaignBehaviors\\PiratesCampaignBehavior.cs", "AdjustAssignedPatrolZones", 391);
 					List<PatrolZone> patrolZones = GetPatrolZones(allBanditParty.ActualClan);
 					patrolZone = ((patrolZones.Count != 0) ? patrolZones.GetRandomElement() : new PatrolZone(allBanditParty.TargetPosition, 20f));
 				}
@@ -488,7 +488,8 @@ public class PiratesCampaignBehavior : CampaignBehaviorBase, IPiratePatrolBehavi
 
 	private bool IsPointVisibleToPlayer(PatrolZone zone)
 	{
-		return MobileParty.MainParty.Position.DistanceSquared(zone.Position) < (MobileParty.MainParty.SeeingRange + zone.Radius) * (MobileParty.MainParty.SeeingRange + zone.Radius);
+		float seeingRange = MobileParty.MainParty.SeeingRange;
+		return MobileParty.MainParty.Position.DistanceSquared(zone.Position) < (seeingRange + zone.Radius) * (seeingRange + zone.Radius);
 	}
 
 	private static void CreatePartyTrade(MobileParty banditParty)

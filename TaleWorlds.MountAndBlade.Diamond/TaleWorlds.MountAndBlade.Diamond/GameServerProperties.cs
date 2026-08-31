@@ -27,7 +27,13 @@ public class GameServerProperties
 
 	public string AdminPassword { get; set; }
 
+	public string SpectatorPassword { get; set; }
+
 	public int MaxPlayerCount { get; set; }
+
+	public int MaxSpectatorCount { get; set; }
+
+	public bool EnableSpectators { get; set; }
 
 	public bool PasswordProtected { get; set; }
 
@@ -51,7 +57,7 @@ public class GameServerProperties
 	{
 	}
 
-	public GameServerProperties(string name, string address, int port, string region, string gameModule, string gameType, string map, string uniqueMapId, string gamePassword, string adminPassword, int maxPlayerCount, bool isOfficial, bool byOfficialProvider, bool crossplayEnabled, PlayerId hostId, string hostName, List<ModuleInfoModel> loadedModules, bool allowsOptionalModules, int permission)
+	public GameServerProperties(string name, string address, int port, string region, string gameModule, string gameType, string map, string uniqueMapId, string gamePassword, string adminPassword, string spectatorPassword, int maxPlayerCount, bool isOfficial, bool byOfficialProvider, bool crossplayEnabled, PlayerId hostId, string hostName, List<ModuleInfoModel> loadedModules, bool allowsOptionalModules, int permission, int maxSpectatorCount, bool enableSpectators = false)
 	{
 		Name = name;
 		Address = address;
@@ -63,6 +69,7 @@ public class GameServerProperties
 		GamePassword = gamePassword;
 		UniqueMapId = uniqueMapId;
 		AdminPassword = adminPassword;
+		SpectatorPassword = spectatorPassword;
 		MaxPlayerCount = maxPlayerCount;
 		IsOfficial = isOfficial;
 		ByOfficialProvider = byOfficialProvider;
@@ -73,6 +80,8 @@ public class GameServerProperties
 		AllowsOptionalModules = allowsOptionalModules;
 		PasswordProtected = gamePassword != null;
 		Permission = permission;
+		MaxSpectatorCount = maxSpectatorCount;
+		EnableSpectators = enableSpectators;
 	}
 
 	public void CheckAndReplaceProxyAddress(IReadOnlyDictionary<string, string> proxyAddressMap)

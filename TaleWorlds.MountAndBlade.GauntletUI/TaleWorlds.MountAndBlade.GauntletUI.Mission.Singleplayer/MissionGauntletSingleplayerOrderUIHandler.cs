@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using TaleWorlds.Core;
-using TaleWorlds.Engine;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
@@ -17,13 +15,11 @@ using TaleWorlds.ScreenSystem;
 namespace TaleWorlds.MountAndBlade.GauntletUI.Mission.Singleplayer;
 
 [OverrideView(typeof(MissionOrderUIHandler))]
-public class MissionGauntletSingleplayerOrderUIHandler : GauntletOrderUIHandler, ISiegeDeploymentView
+public class MissionGauntletSingleplayerOrderUIHandler : GauntletOrderUIHandler
 {
 	private const float _slowDownAmountWhileOrderIsOpen = 0.25f;
 
 	private const int _missionTimeSpeedRequestID = 864;
-
-	private List<DeploymentSiegeMachineVM> _deploymentPointDataSources;
 
 	public override bool IsValidForTick
 	{
@@ -69,11 +65,9 @@ public class MissionGauntletSingleplayerOrderUIHandler : GauntletOrderUIHandler,
 	protected virtual MissionOrderVM CreateDataSource(OrderController orderController)
 	{
 		MissionOrderVM missionOrderVM = new MissionOrderVM(orderController, IsDeployment, isMultiplayer: false);
-		missionOrderVM.SetDeploymentParemeters(base.MissionScreen.CombatCamera, IsSiegeDeployment ? _siegeDeploymentHandler.PlayerDeploymentPoints.ToList() : new List<DeploymentPoint>());
 		missionOrderVM.SetCallbacks(new MissionOrderCallbacks
 		{
 			ToggleMissionInputs = base.ToggleScreenRotation,
-			RefreshVisuals = RefreshVisuals,
 			GetVisualOrderExecutionParameters = base.GetVisualOrderExecutionParameters,
 			SetSuspendTroopPlacer = SetSuspendTroopPlacer,
 			OnActivateToggleOrder = base.OnActivateToggleOrder,
@@ -104,7 +98,7 @@ public class MissionGauntletSingleplayerOrderUIHandler : GauntletOrderUIHandler,
 		_orderTroopPlacer = base.Mission.GetMissionBehavior<OrderTroopPlacer>();
 		if (_orderTroopPlacer?.OrderFlag == null)
 		{
-			Debug.FailedAssert("Order troop placer's order flag is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\Mission\\Singleplayer\\MissionGauntletSingleplayerOrderUIHandler.cs", "OnMissionScreenInitialize", 74);
+			Debug.FailedAssert("Order troop placer's order flag is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\Mission\\Singleplayer\\MissionGauntletSingleplayerOrderUIHandler.cs", "OnMissionScreenInitialize", 70);
 		}
 		base.MissionScreen.OrderFlag = _orderTroopPlacer.OrderFlag;
 		Debug.Print("MissionScreen.OrderFlag has been set (SP)");
@@ -115,7 +109,6 @@ public class MissionGauntletSingleplayerOrderUIHandler : GauntletOrderUIHandler,
 		{
 			_formationTargetHandler.OnFormationFocused += OnFormationFocused;
 		}
-		_deploymentPointDataSources = new List<DeploymentSiegeMachineVM>();
 		_dataSource = CreateDataSource(base.Mission.PlayerTeam.PlayerOrderController);
 		_dataSource.SetCancelInputKey(category2.GetHotKey("ToggleEscapeMenu"));
 		_dataSource.TroopController.SetDoneInputKey(category2.GetHotKey("Confirm"));
@@ -131,24 +124,6 @@ public class MissionGauntletSingleplayerOrderUIHandler : GauntletOrderUIHandler,
 		_dataSource.SetOrderIndexKey(7, category.GetGameKey(76));
 		_dataSource.SetOrderIndexKey(8, category.GetGameKey(77));
 		_dataSource.SetReturnKey(category.GetGameKey(77));
-		if (IsSiegeDeployment)
-		{
-			foreach (DeploymentPoint playerDeploymentPoint in _siegeDeploymentHandler.PlayerDeploymentPoints)
-			{
-				DeploymentSiegeMachineVM deploymentSiegeMachineVM = new DeploymentSiegeMachineVM(playerDeploymentPoint, null, base.MissionScreen.CombatCamera, _dataSource.DeploymentController.OnRefreshSelectedDeploymentPoint, _dataSource.DeploymentController.OnEntityHover, isSelected: false);
-				Vec3 origin = playerDeploymentPoint.GameEntity.GetFrame().origin;
-				for (int i = 0; i < playerDeploymentPoint.GameEntity.ChildCount; i++)
-				{
-					if (playerDeploymentPoint.GameEntity.GetChild(i).HasTag("deployment_point_icon_target"))
-					{
-						origin += playerDeploymentPoint.GameEntity.GetChild(i).GetFrame().origin;
-						break;
-					}
-				}
-				_deploymentPointDataSources.Add(deploymentSiegeMachineVM);
-				deploymentSiegeMachineVM.RemainingCount = 0;
-			}
-		}
 		_gauntletLayer = new GauntletLayer("MissionOrder", ViewOrderPriority);
 		_gauntletLayer.Input.RegisterHotKeyCategory(category2);
 		string movieName = ((!IsDeployment) ? ((BannerlordConfig.OrderType == 0) ? _barOrderMovieName : _radialOrderMovieName) : _radialOrderMovieName);
@@ -201,7 +176,6 @@ public class MissionGauntletSingleplayerOrderUIHandler : GauntletOrderUIHandler,
 		{
 			_formationTargetHandler.OnFormationFocused -= OnFormationFocused;
 		}
-		_deploymentPointDataSources = null;
 		_orderTroopPlacer = null;
 		_movie = null;
 		_gauntletLayer = null;
@@ -226,9 +200,9 @@ public class MissionGauntletSingleplayerOrderUIHandler : GauntletOrderUIHandler,
 		ClearFormationSelection();
 	}
 
-	public void OnBeginMission()
+	public void OnBeginMission(bool showSiegeMachineInquiry = false)
 	{
-		_dataSource.DeploymentController.ExecuteBeginMission();
+		_dataSource.DeploymentController.ExecuteBeginMission(showSiegeMachineInquiry);
 	}
 
 	protected override void SetLayerEnabled(bool isEnabled)
@@ -237,10 +211,7 @@ public class MissionGauntletSingleplayerOrderUIHandler : GauntletOrderUIHandler,
 		{
 			if (!base.MissionScreen.IsRadialMenuActive)
 			{
-				if (_dataSource == null || _dataSource.ActiveTargetState == 0)
-				{
-					_orderTroopPlacer.SuspendTroopPlacer = false;
-				}
+				_orderTroopPlacer.SuspendTroopPlacer = false;
 				if (!_slowedDownMission && BannerlordConfig.SlowDownOnOrder)
 				{
 					base.Mission.AddTimeSpeedRequest(new TaleWorlds.MountAndBlade.Mission.TimeSpeedRequest(0.25f, 864));
@@ -267,7 +238,6 @@ public class MissionGauntletSingleplayerOrderUIHandler : GauntletOrderUIHandler,
 		base.OnDeploymentFinished();
 		_dataSource.OnDeploymentFinished();
 		_dataSource.TryCloseToggleOrder();
-		_deploymentPointDataSources.Clear();
 		SetSuspendTroopPlacer(value: true);
 		_gauntletLayer.IsFocusLayer = false;
 		ScreenManager.TryLoseFocus(_gauntletLayer);
@@ -286,21 +256,8 @@ public class MissionGauntletSingleplayerOrderUIHandler : GauntletOrderUIHandler,
 		_dataSource.OnAfterDeploymentFinished();
 	}
 
-	protected void RefreshVisuals()
-	{
-		if (!IsSiegeDeployment)
-		{
-			return;
-		}
-		foreach (DeploymentSiegeMachineVM deploymentPointDataSource in _deploymentPointDataSources)
-		{
-			deploymentPointDataSource.RefreshWithDeployedWeapon();
-		}
-	}
-
 	public void ClearFormationSelection()
 	{
-		_dataSource?.DeploymentController.ExecuteCancelSelectedDeploymentPoint();
 		_dataSource?.OrderController.ClearSelectedFormations();
 		_dataSource?.TryCloseToggleOrder();
 	}
@@ -313,19 +270,5 @@ public class MissionGauntletSingleplayerOrderUIHandler : GauntletOrderUIHandler,
 	private void OnFormationFocused(MBReadOnlyList<Formation> focusedFormations)
 	{
 		_focusedFormationsCache = focusedFormations;
-		_dataSource.SetFocusedFormations(_focusedFormationsCache);
-	}
-
-	void ISiegeDeploymentView.OnEntityHover(WeakGameEntity hoveredEntity)
-	{
-		if (!_gauntletLayer.IsHitThisFrame)
-		{
-			_dataSource.DeploymentController.OnEntityHover(hoveredEntity);
-		}
-	}
-
-	void ISiegeDeploymentView.OnEntitySelection(WeakGameEntity selectedEntity)
-	{
-		_dataSource.DeploymentController.OnEntitySelect(selectedEntity);
 	}
 }

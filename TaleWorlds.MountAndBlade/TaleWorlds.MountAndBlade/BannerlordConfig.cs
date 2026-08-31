@@ -543,6 +543,22 @@ public static class BannerlordConfig
 	public static bool IAPNoticeConfirmed { get; set; } = false;
 
 
+	[ConfigPropertyUnbounded]
+	public static bool CompletedKingPlaythrough { get; set; } = false;
+
+
+	[ConfigPropertyUnbounded]
+	public static bool CompletedTraderPlaythrough { get; set; } = false;
+
+
+	[ConfigPropertyUnbounded]
+	public static bool CompletedVassalPlaythrough { get; set; } = false;
+
+
+	[ConfigPropertyUnbounded]
+	public static bool CompletedMercenaryPlaythrough { get; set; } = false;
+
+
 	public static void Initialize()
 	{
 		string text = Utilities.LoadBannerlordConfigFile();

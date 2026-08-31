@@ -126,7 +126,7 @@ public abstract class ImageIdentifierTextureProvider : TextureProvider, IDisposa
 				Debug.FailedAssert("Created thumbnail data but trying to release it before its processed", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\TextureProviders\\ImageIdentifiers\\ImageIdentifierTextureProvider.cs", "ReleaseCache", 50);
 				return;
 			}
-			ThumbnailCacheManager.Current.DestroyTexture(ThumbnailCreationData);
+			ThumbnailCacheManager.Current?.DestroyTexture(ThumbnailCreationData);
 			ThumbnailCreationData = null;
 		}
 	}

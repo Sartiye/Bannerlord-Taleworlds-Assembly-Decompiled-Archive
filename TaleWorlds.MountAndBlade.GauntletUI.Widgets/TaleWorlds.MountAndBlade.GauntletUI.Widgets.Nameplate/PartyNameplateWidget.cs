@@ -38,6 +38,8 @@ public class PartyNameplateWidget : Widget
 
 	private Widget _speedIconWidget;
 
+	private Widget _bloodFeudIconWidget;
+
 	private Widget _parleyIconWidget;
 
 	private TextWidget _nameplateExtraInfoTextWidget;
@@ -71,6 +73,8 @@ public class PartyNameplateWidget : Widget
 	private bool _canParley;
 
 	private bool _isDisorganized;
+
+	private bool _hasBloodFeud;
 
 	protected float _animSpeedModifier => 8f;
 
@@ -335,6 +339,22 @@ public class PartyNameplateWidget : Widget
 		}
 	}
 
+	public bool HasBloodFeud
+	{
+		get
+		{
+			return _hasBloodFeud;
+		}
+		set
+		{
+			if (_hasBloodFeud != value)
+			{
+				_hasBloodFeud = value;
+				OnPropertyChanged(value, "HasBloodFeud");
+			}
+		}
+	}
+
 	public TextWidget NameplateTextWidget
 	{
 		get
@@ -415,6 +435,22 @@ public class PartyNameplateWidget : Widget
 		}
 	}
 
+	public Widget BloodFeudIconWidget
+	{
+		get
+		{
+			return _bloodFeudIconWidget;
+		}
+		set
+		{
+			if (value != _bloodFeudIconWidget)
+			{
+				_bloodFeudIconWidget = value;
+				OnPropertyChanged(value, "BloodFeudIconWidget");
+			}
+		}
+	}
+
 	public Widget ParleyIconWidget
 	{
 		get
@@ -483,6 +519,7 @@ public class PartyNameplateWidget : Widget
 		PartyBannerWidget.IsVisible = true;
 		NameplateTextWidget.IsVisible = IsVisibleOnMap;
 		NameplateFullNameTextWidget.IsVisible = IsVisibleOnMap;
+		BloodFeudIconWidget.IsVisible = IsVisibleOnMap && HasBloodFeud;
 		SpeedTextWidget.IsVisible = IsVisibleOnMap;
 		SpeedIconWidget.IsVisible = IsVisibleOnMap;
 		DisorganizedWidget.IsVisible = IsVisibleOnMap && IsDisorganized;
@@ -506,6 +543,7 @@ public class PartyNameplateWidget : Widget
 		SpeedTextWidget.Brush.GlobalAlphaFactor = MathF.Lerp(SpeedTextWidget.ReadOnlyBrush.GlobalAlphaFactor, valueTo, dt * _animSpeedModifier);
 		float alphaFactor = MathF.Lerp(SpeedIconWidget.AlphaFactor, valueTo, dt * _animSpeedModifier);
 		SpeedIconWidget.SetGlobalAlphaRecursively(alphaFactor);
+		BloodFeudIconWidget.SetGlobalAlphaRecursively(alphaFactor);
 		NameplateExtraInfoTextWidget.Brush.GlobalAlphaFactor = MathF.Lerp(NameplateExtraInfoTextWidget.ReadOnlyBrush.GlobalAlphaFactor, ShouldShowFullName ? 1 : 0, dt * _animSpeedModifier);
 		PartyBannerWidget.Brush.GlobalAlphaFactor = MathF.Lerp(PartyBannerWidget.ReadOnlyBrush.GlobalAlphaFactor, num, dt * _animSpeedModifier);
 		ParleyIconWidget.AlphaFactor = MathF.Lerp(ParleyIconWidget.AlphaFactor, CanParley ? 1 : 0, dt * _animSpeedModifier);

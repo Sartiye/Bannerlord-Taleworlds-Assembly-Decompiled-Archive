@@ -16,8 +16,6 @@ public class MultiplayerGeneralKillFeedItemWidget : Widget
 
 	private bool _initialized;
 
-	private float CurrentAlpha => base.AlphaFactor;
-
 	public float TimeSinceCreation { get; private set; }
 
 	public MultiplayerGeneralKillFeedItemWidget(UIContext context)
@@ -36,7 +34,7 @@ public class MultiplayerGeneralKillFeedItemWidget : Widget
 		TimeSinceCreation += dt * _speedModifier;
 		if (TimeSinceCreation <= 0.15f)
 		{
-			this.SetGlobalAlphaRecursively(Mathf.Lerp(CurrentAlpha, 1f, TimeSinceCreation / 0.15f));
+			this.SetGlobalAlphaRecursively(Mathf.Lerp(base.AlphaFactor, 1f, TimeSinceCreation / 0.15f));
 		}
 		else if (TimeSinceCreation - 0.15f <= 3.5f)
 		{
@@ -44,8 +42,8 @@ public class MultiplayerGeneralKillFeedItemWidget : Widget
 		}
 		else if (TimeSinceCreation - 3.65f <= 1f)
 		{
-			this.SetGlobalAlphaRecursively(Mathf.Lerp(CurrentAlpha, 0f, (TimeSinceCreation - 3.65f) / 1f));
-			if (CurrentAlpha <= 0.1f)
+			this.SetGlobalAlphaRecursively(Mathf.Lerp(base.AlphaFactor, 0f, (TimeSinceCreation - 3.65f) / 1f));
+			if (base.AlphaFactor <= 0.1f)
 			{
 				EventFired("OnRemove");
 			}

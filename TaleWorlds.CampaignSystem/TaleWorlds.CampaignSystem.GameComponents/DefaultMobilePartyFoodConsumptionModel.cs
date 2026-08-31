@@ -51,14 +51,11 @@ public class DefaultMobilePartyFoodConsumptionModel : MobilePartyFoodConsumption
 			float value = (float)num / (float)party.MemberRoster.TotalManCount * DefaultPerks.Roguery.Promises.PrimaryBonus;
 			result.AddFactor(value, DefaultPerks.Roguery.Promises.Name);
 		}
-		PerkHelper.AddPerkBonusForParty(DefaultPerks.Athletics.Spartan, party, isPrimaryBonus: false, ref result, party.IsCurrentlyAtSea);
-		if (!party.IsCurrentlyAtSea)
-		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.WarriorsDiet, party, isPrimaryBonus: true, ref result);
-		}
+		PerkHelper.AddPerkBonusForParty(DefaultPerks.Athletics.Spartan, party, isPrimaryBonus: false, ref result);
+		PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.WarriorsDiet, party, isPrimaryBonus: true, ref result);
 		if (party.EffectiveQuartermaster != null)
 		{
-			PerkHelper.AddEpicPerkBonusForCharacter(DefaultPerks.Steward.PriceOfLoyalty, party.EffectiveQuartermaster.CharacterObject, DefaultSkills.Steward, applyPrimaryBonus: true, ref result, Campaign.Current.Models.CharacterDevelopmentModel.MaxSkillRequiredForEpicPerkBonus);
+			PerkHelper.AddEpicPerkBonusForCharacter(DefaultPerks.Steward.PriceOfLoyalty, party.CurrentBattleEnvironment, party.EffectiveQuartermaster.CharacterObject, DefaultSkills.Steward, isPrimaryBonus: true, ref result, Campaign.Current.Models.CharacterDevelopmentModel.MaxSkillRequiredForEpicPerkBonus);
 		}
 		TerrainType faceTerrainType = Campaign.Current.MapSceneWrapper.GetFaceTerrainType(party.CurrentNavigationFace);
 		if (faceTerrainType == TerrainType.Forest || faceTerrainType == TerrainType.Steppe)
@@ -67,22 +64,23 @@ public class DefaultMobilePartyFoodConsumptionModel : MobilePartyFoodConsumption
 		}
 		if (party.IsGarrison && party.CurrentSettlement != null && party.CurrentSettlement.Town.IsUnderSiege)
 		{
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Athletics.StrongLegs, party.CurrentSettlement.Town, ref result);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Athletics.StrongLegs, party.CurrentSettlement.Town, isPrimaryBonus: false, ref result);
 		}
 		if (party.Army != null)
 		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.StiffUpperLip, party, isPrimaryBonus: true, ref result, party.IsCurrentlyAtSea);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.StiffUpperLip, party, isPrimaryBonus: true, ref result);
 		}
 		if (party.SiegeEvent?.BesiegerCamp != null)
 		{
-			if (party.HasPerk(DefaultPerks.Steward.SoundReserves, checkSecondaryRole: true))
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.SoundReserves, party, isPrimaryBonus: false, ref result);
+			if (party.SiegeEvent.BesiegerCamp.HasInvolvedPartyForEventType(party.Party))
 			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.SoundReserves, party, isPrimaryBonus: false, ref result);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.MasterOfPlanning, party, isPrimaryBonus: true, ref result);
 			}
-			if (party.SiegeEvent.BesiegerCamp.HasInvolvedPartyForEventType(party.Party) && party.HasPerk(DefaultPerks.Steward.MasterOfPlanning))
-			{
-				result.AddFactor(DefaultPerks.Steward.MasterOfPlanning.PrimaryBonus, DefaultPerks.Steward.MasterOfPlanning.Name);
-			}
+		}
+		if (party.LeaderHero != null)
+		{
+			TraitEffectHelper.ApplyTraitEffect(party.LeaderHero, DefaultPersonalityTraitEffects.GenerosityFoodCostEffect, ref result);
 		}
 	}
 

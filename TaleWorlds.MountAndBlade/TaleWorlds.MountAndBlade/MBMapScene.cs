@@ -12,7 +12,7 @@ public static class MBMapScene
 
 	public static Vec2 GetNearestFaceCenterForPosition(Scene mapScene, Vec2 position, bool isRegionMap0, int[] excludedFaceIds)
 	{
-		return MBAPI.IMBMapScene.GetNearestFaceCenterPositionForPosition(mapScene.Pointer, position.ToVec3(), isRegionMap0, excludedFaceIds, excludedFaceIds.Length);
+		return MBAPI.IMBMapScene.GetNearestFaceCenterPositionForPosition(mapScene.Pointer, position.ToVec3(), isRegionMap0, excludedFaceIds, excludedFaceIds.Length, float.MaxValue);
 	}
 
 	public static Vec2 GetNearestFaceCenterForPositionWithPath(Scene mapScene, PathFaceRecord pathFaceRecord, bool targetRegionMap0, float maxDist, int[] excludedFaceIds)

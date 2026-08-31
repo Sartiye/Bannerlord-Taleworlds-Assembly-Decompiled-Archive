@@ -26,7 +26,7 @@ public class NavalRaidMissionDeploymentPlanningLogic : MissionDeploymentPlanning
 		_defenderSideTeamDeploymentPlans.Clear();
 		foreach (Team team in base.Mission.Teams)
 		{
-			if (team.Side == BattleSideEnum.Defender)
+			if (team.IsDefender)
 			{
 				DefaultTeamDeploymentPlan item = new DefaultTeamDeploymentPlan(base.Mission, team);
 				_defenderSideTeamDeploymentPlans.Add((team, item));
@@ -51,7 +51,7 @@ public class NavalRaidMissionDeploymentPlanningLogic : MissionDeploymentPlanning
 
 	public override bool SupportsNavmesh(Team team)
 	{
-		if (team.Side == BattleSideEnum.Defender)
+		if (team.IsDefender)
 		{
 			return true;
 		}
@@ -153,7 +153,7 @@ public class NavalRaidMissionDeploymentPlanningLogic : MissionDeploymentPlanning
 	public override bool RemakeDeploymentPlan(Team team)
 	{
 		IsPlanMade(team);
-		if (team.Side == BattleSideEnum.Defender)
+		if (team.IsDefender)
 		{
 			(int, int)[] array = new(int, int)[11];
 			foreach (Agent item in base.Mission.AllAgents.Where((Agent agent) => agent.IsHuman && agent.Team != null && agent.Team == team && agent.Formation != null))
@@ -227,8 +227,7 @@ public class NavalRaidMissionDeploymentPlanningLogic : MissionDeploymentPlanning
 		Vec2 position = endPosition.AsVec2;
 		if (!IsPositionInsideDeploymentBoundaries(team, in position))
 		{
-			MatrixFrame deploymentFrame = GetDeploymentFrame(team);
-			WorldPosition startPosition = new WorldPosition(Mission.Current.Scene, UIntPtr.Zero, deploymentFrame.origin, hasValidZ: false);
+			WorldPosition startPosition = GetNavmeshValidPositionInDeploymentZone(team);
 			if (GetPathDeploymentBoundaryIntersection(team, in startPosition, in endPosition, out var foundPosition))
 			{
 				endPosition = foundPosition;
@@ -248,39 +247,27 @@ public class NavalRaidMissionDeploymentPlanningLogic : MissionDeploymentPlanning
 
 	public override MatrixFrame GetZoomFocusFrame(Team team)
 	{
-		if (team.Side == BattleSideEnum.Defender)
+		Vec2 halfExtents;
+		if (team.IsDefender)
 		{
-			return GetDeploymentFrame(team);
+			return GetFormationsCenterFrameAndExtents(team, out halfExtents);
 		}
-		NavalTeamDeploymentPlan teamPlan = GetTeamPlan<NavalTeamDeploymentPlan>(team);
-		MatrixFrame deploymentFrame = teamPlan.GetDeploymentFrame();
-		Vec3 zero = Vec3.Zero;
-		int num = 0;
-		for (int i = 0; i < 11; i++)
-		{
-			IFormationDeploymentPlan formationPlan = teamPlan.GetFormationPlan((FormationClass)i);
-			if (formationPlan.HasFrame())
-			{
-				zero += formationPlan.GetFrame().origin;
-				num++;
-			}
-		}
-		zero /= (float)num;
-		deploymentFrame.origin = zero;
-		return deploymentFrame;
+		GetTeamPlan<NavalTeamDeploymentPlan>(team);
+		return GetFormationsCenterFrameAndExtents(team, out halfExtents);
 	}
 
 	public override float GetZoomOffset(Team team, float fovAngle)
 	{
 		ITeamDeploymentPlan teamPlan = GetTeamPlan<ITeamDeploymentPlan>(team);
-		MatrixFrame deploymentFrame = teamPlan.GetDeploymentFrame();
+		Vec2 halfExtents;
+		MatrixFrame formationsCenterFrameAndExtents = GetFormationsCenterFrameAndExtents(team, out halfExtents);
 		float num = float.MinValue;
 		for (int i = 0; i < 11; i++)
 		{
 			IFormationDeploymentPlan formationPlan = teamPlan.GetFormationPlan((FormationClass)i);
 			if (formationPlan.HasFrame())
 			{
-				float b = formationPlan.GetFrame().origin.AsVec2.DistanceSquared(deploymentFrame.origin.AsVec2);
+				float b = formationPlan.GetFrame().origin.AsVec2.DistanceSquared(formationsCenterFrameAndExtents.origin.AsVec2);
 				num = TaleWorlds.Library.MathF.Max(num, b);
 			}
 		}
@@ -324,9 +311,18 @@ public class NavalRaidMissionDeploymentPlanningLogic : MissionDeploymentPlanning
 		return GetTeamPlanAux(team)?.HasDeploymentBoundaries() ?? false;
 	}
 
-	public override MatrixFrame GetDeploymentFrame(Team team)
+	public override MatrixFrame GetDeploymentZoneFrame(Team team)
 	{
-		return GetTeamPlan<ITeamDeploymentPlan>(team).GetDeploymentFrame();
+		return GetTeamPlan<ITeamDeploymentPlan>(team).GetDeploymentZoneFrame();
+	}
+
+	public override MatrixFrame GetFormationsCenterFrameAndExtents(Team team, out Vec2 halfExtents, bool ignoreDimensionlessFormations = true)
+	{
+		if (team.IsAttacker)
+		{
+			return GetTeamPlan<NavalTeamDeploymentPlan>(team).GetFormationsCenterFrameAndExtents(out halfExtents, ignoreDimensionlessFormations);
+		}
+		return GetTeamPlan<DefaultTeamDeploymentPlan>(team).GetFormationsCenterFrameAndExtents(out halfExtents, ignoreDimensionlessFormations);
 	}
 
 	public float GetTargetOffset(Team team)
@@ -358,17 +354,17 @@ public class NavalRaidMissionDeploymentPlanningLogic : MissionDeploymentPlanning
 		{
 			return (T)teamPlanAux;
 		}
-		Debug.FailedAssert("Unable to cast team plan to given type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Missions\\Deployment\\NavalRaidMissionDeploymentPlanningLogic.cs", "GetTeamPlan", 514);
+		Debug.FailedAssert("Unable to cast team plan to given type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Missions\\Deployment\\NavalRaidMissionDeploymentPlanningLogic.cs", "GetTeamPlan", 530);
 		return default(T);
 	}
 
 	private ITeamDeploymentPlan GetTeamPlanAux(Team team)
 	{
-		if (team.Side == BattleSideEnum.Defender)
+		if (team.IsDefender)
 		{
 			return _defenderSideTeamDeploymentPlans.FirstOrDefault(((Team team, DefaultTeamDeploymentPlan plan) t) => t.team == team).plan;
 		}
-		if (team.Side == BattleSideEnum.Attacker)
+		if (team.IsAttacker)
 		{
 			return _attackerSideTeamDeploymentPlans.FirstOrDefault(((Team team, NavalTeamDeploymentPlan plan) t) => t.team == team).plan;
 		}
@@ -455,5 +451,28 @@ public class NavalRaidMissionDeploymentPlanningLogic : MissionDeploymentPlanning
 	private bool IsInitialPlanSuitableForFormations(Team team, (int footTroopCount, int mountedTroopCount)[] troopDataPerFormationClass)
 	{
 		return GetTeamPlan<DefaultTeamDeploymentPlan>(team).IsInitialPlanSuitableForFormations(troopDataPerFormationClass);
+	}
+
+	private WorldPosition GetNavmeshValidPositionInDeploymentZone(Team team)
+	{
+		ITeamDeploymentPlan teamPlan = GetTeamPlan<ITeamDeploymentPlan>(team);
+		Scene scene = Mission.Current.Scene;
+		Vec3 position = teamPlan.GetDeploymentZoneFrame().origin;
+		UIntPtr navigationMeshForPosition = scene.GetNavigationMeshForPosition(in position);
+		if (navigationMeshForPosition != UIntPtr.Zero)
+		{
+			return new WorldPosition(scene, navigationMeshForPosition, position, hasValidZ: false);
+		}
+		for (FormationClass formationClass = FormationClass.Infantry; formationClass < FormationClass.NumberOfAllFormations; formationClass++)
+		{
+			IFormationDeploymentPlan formationPlan = teamPlan.GetFormationPlan(formationClass);
+			if (formationPlan.HasFrame())
+			{
+				Vec3 origin = formationPlan.GetFrame().origin;
+				return new WorldPosition(scene, UIntPtr.Zero, origin, hasValidZ: false);
+			}
+		}
+		Debug.FailedAssert("Unable to find a formation frame that is on navmesh", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Missions\\Deployment\\NavalRaidMissionDeploymentPlanningLogic.cs", "GetNavmeshValidPositionInDeploymentZone", 693);
+		return new WorldPosition(scene, UIntPtr.Zero, position, hasValidZ: false);
 	}
 }

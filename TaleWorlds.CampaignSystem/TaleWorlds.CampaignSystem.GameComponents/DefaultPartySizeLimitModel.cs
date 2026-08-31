@@ -30,7 +30,7 @@ public class DefaultPartySizeLimitModel : PartySizeLimitModel
 
 	private const int BaseSettlementPrisonerSize = 60;
 
-	private const int SettlementPrisonerSizeBonusPerWallLevel = 40;
+	private const int BaseTownPrisonerSizeBonus = 40;
 
 	private const int BaseGarrisonPartySize = 200;
 
@@ -185,10 +185,9 @@ public class DefaultPartySizeLimitModel : PartySizeLimitModel
 	private ExplainedNumber CalculateSettlementPartyPrisonerSizeLimitInternal(Settlement settlement, bool includeDescriptions = false)
 	{
 		ExplainedNumber result = new ExplainedNumber(60f, includeDescriptions, _baseSizeText);
-		int num = settlement.Town?.GetWallLevel() ?? 0;
-		if (num > 0)
+		if (settlement.Town != null)
 		{
-			result.Add(num * 40, _wallLevelBonusText);
+			result.Add(40f, _baseSizeText);
 		}
 		AddSettlementProjectPrisonerBonuses(settlement, ref result);
 		return result;
@@ -208,33 +207,18 @@ public class DefaultPartySizeLimitModel : PartySizeLimitModel
 
 	private void AddMobilePartyLeaderPrisonerSizePerkEffects(PartyBase party, ref ExplainedNumber result)
 	{
-		if (party.LeaderHero != null)
-		{
-			if (party.LeaderHero.GetPerkValue(DefaultPerks.TwoHanded.Terror))
-			{
-				result.Add(DefaultPerks.TwoHanded.Terror.SecondaryBonus, DefaultPerks.TwoHanded.Terror.Name);
-			}
-			if (!party.MobileParty.IsCurrentlyAtSea && party.LeaderHero.GetPerkValue(DefaultPerks.Athletics.Stamina))
-			{
-				result.Add(DefaultPerks.Athletics.Stamina.SecondaryBonus, DefaultPerks.Athletics.Stamina.Name);
-			}
-			if (party.LeaderHero.GetPerkValue(DefaultPerks.Roguery.Manhunter))
-			{
-				result.Add(DefaultPerks.Roguery.Manhunter.SecondaryBonus, DefaultPerks.Roguery.Manhunter.Name);
-			}
-			if (party.LeaderHero != null && party.LeaderHero.GetPerkValue(DefaultPerks.Scouting.VantagePoint))
-			{
-				result.Add(DefaultPerks.Scouting.VantagePoint.SecondaryBonus, DefaultPerks.Scouting.VantagePoint.Name);
-			}
-		}
+		PerkHelper.AddPerkBonusForParty(DefaultPerks.TwoHanded.Terror, party.MobileParty, isPrimaryBonus: false, ref result);
+		PerkHelper.AddPerkBonusForParty(DefaultPerks.Athletics.Stamina, party.MobileParty, isPrimaryBonus: false, ref result);
+		PerkHelper.AddPerkBonusForParty(DefaultPerks.Roguery.Manhunter, party.MobileParty, isPrimaryBonus: false, ref result);
+		PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.VantagePoint, party.MobileParty, isPrimaryBonus: false, ref result);
 	}
 
 	private void AddGarrisonOwnerPerkEffects(Settlement currentSettlement, ref ExplainedNumber result)
 	{
 		if (currentSettlement != null && currentSettlement.IsFortification)
 		{
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.OneHanded.CorpsACorps, currentSettlement.Town, ref result);
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Leadership.VeteransRespect, currentSettlement.Town, ref result);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.OneHanded.CorpsACorps, currentSettlement.Town, isPrimaryBonus: false, ref result);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Leadership.VeteransRespect, currentSettlement.Town, isPrimaryBonus: true, ref result);
 		}
 	}
 
@@ -300,61 +284,33 @@ public class DefaultPartySizeLimitModel : PartySizeLimitModel
 		{
 			result.Add(20f, _factionLeaderText);
 		}
-		if (partyLeader.GetPerkValue(DefaultPerks.OneHanded.Prestige))
+		if (partyLeader.PartyBelongedTo != null)
 		{
-			result.Add(DefaultPerks.OneHanded.Prestige.SecondaryBonus, DefaultPerks.OneHanded.Prestige.Name);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.OneHanded.Prestige, partyLeader.PartyBelongedTo, isPrimaryBonus: false, ref result);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.TwoHanded.Hope, partyLeader.PartyBelongedTo, isPrimaryBonus: false, ref result);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Athletics.ImposingStature, partyLeader.PartyBelongedTo, isPrimaryBonus: false, ref result);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Bow.MerryMen, partyLeader.PartyBelongedTo, isPrimaryBonus: true, ref result);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.HordeLeader, partyLeader.PartyBelongedTo, isPrimaryBonus: true, ref result);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.MountedScouts, partyLeader.PartyBelongedTo, isPrimaryBonus: false, ref result);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.Authority, partyLeader.PartyBelongedTo, isPrimaryBonus: false, ref result);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.UpliftingSpirit, partyLeader.PartyBelongedTo, isPrimaryBonus: false, ref result);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.TalentMagnet, partyLeader.PartyBelongedTo, isPrimaryBonus: true, ref result);
 		}
-		if (partyLeader.GetPerkValue(DefaultPerks.TwoHanded.Hope))
-		{
-			result.Add(DefaultPerks.TwoHanded.Hope.SecondaryBonus, DefaultPerks.TwoHanded.Hope.Name);
-		}
-		if (partyLeader.GetPerkValue(DefaultPerks.Athletics.ImposingStature))
-		{
-			result.Add(DefaultPerks.Athletics.ImposingStature.SecondaryBonus, DefaultPerks.Athletics.ImposingStature.Name);
-		}
-		if (partyLeader.GetPerkValue(DefaultPerks.Bow.MerryMen))
-		{
-			result.Add(DefaultPerks.Bow.MerryMen.PrimaryBonus, DefaultPerks.Bow.MerryMen.Name);
-		}
-		if (partyLeader.GetPerkValue(DefaultPerks.Tactics.HordeLeader))
-		{
-			result.Add(DefaultPerks.Tactics.HordeLeader.PrimaryBonus, DefaultPerks.Tactics.HordeLeader.Name);
-		}
-		if (partyLeader.GetPerkValue(DefaultPerks.Scouting.MountedScouts))
-		{
-			result.Add(DefaultPerks.Scouting.MountedScouts.SecondaryBonus, DefaultPerks.Scouting.MountedScouts.Name);
-		}
-		if (partyLeader.GetPerkValue(DefaultPerks.Leadership.Authority))
-		{
-			result.Add(DefaultPerks.Leadership.Authority.SecondaryBonus, DefaultPerks.Leadership.Authority.Name);
-		}
-		if (partyLeader.GetPerkValue(DefaultPerks.Leadership.UpliftingSpirit))
-		{
-			result.Add(DefaultPerks.Leadership.UpliftingSpirit.SecondaryBonus, DefaultPerks.Leadership.UpliftingSpirit.Name);
-		}
-		if (partyLeader.GetPerkValue(DefaultPerks.Leadership.TalentMagnet))
-		{
-			result.Add(DefaultPerks.Leadership.TalentMagnet.PrimaryBonus, DefaultPerks.Leadership.TalentMagnet.Name);
-		}
-		if (partyLeader.GetSkillValue(DefaultSkills.Leadership) > Campaign.Current.Models.CharacterDevelopmentModel.MaxSkillRequiredForEpicPerkBonus && partyLeader.GetPerkValue(DefaultPerks.Leadership.UltimateLeader))
-		{
-			int num = partyLeader.GetSkillValue(DefaultSkills.Leadership) - Campaign.Current.Models.CharacterDevelopmentModel.MaxSkillRequiredForEpicPerkBonus;
-			result.Add((float)num * DefaultPerks.Leadership.UltimateLeader.PrimaryBonus, _leadershipPerkUltimateLeaderBonusText);
-		}
+		PerkHelper.AddEpicPerkBonusForCharacter(DefaultPerks.Leadership.UltimateLeader, BattleEnvironment.Any, partyLeader.CharacterObject, DefaultSkills.Leadership, isPrimaryBonus: true, ref result, Campaign.Current.Models.CharacterDevelopmentModel.MaxSkillRequiredForEpicPerkBonus);
 		if (actualClan != null && actualClan.Leader?.GetPerkValue(DefaultPerks.Leadership.LeaderOfMasses) == true)
 		{
-			int num2 = 0;
+			int num = 0;
 			foreach (Settlement settlement in actualClan.Settlements)
 			{
 				if (settlement.IsTown)
 				{
-					num2++;
+					num++;
 				}
 			}
-			float num3 = (float)num2 * DefaultPerks.Leadership.LeaderOfMasses.PrimaryBonus;
-			if (num3 > 0f)
+			float num2 = (float)num * DefaultPerks.Leadership.LeaderOfMasses.PrimaryBonus;
+			if (num2 > 0f)
 			{
-				result.Add(num3, DefaultPerks.Leadership.LeaderOfMasses.Name);
+				result.Add(num2, DefaultPerks.Leadership.LeaderOfMasses.Name);
 			}
 		}
 		if (partyLeader.Clan.Leader == partyLeader)
@@ -443,7 +399,7 @@ public class DefaultPartySizeLimitModel : PartySizeLimitModel
 			}
 			else
 			{
-				Debug.FailedAssert("initialPartySizeRatio should not be above 1", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultPartySizeLimitModel.cs", "FindAppropriateInitialRosterForMobileParty", 538);
+				Debug.FailedAssert("initialPartySizeRatio should not be above 1", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultPartySizeLimitModel.cs", "FindAppropriateInitialRosterForMobileParty", 494);
 				num = maxValue;
 			}
 			if (party.IsVillager)

@@ -202,31 +202,36 @@ public class DefaultSettlementSecurityModel : SettlementSecurityModel
 		if (town.GarrisonParty != null && town.GarrisonParty.MemberRoster.Count != 0 && town.GarrisonParty.MemberRoster.TotalHealthyCount != 0)
 		{
 			ExplainedNumber bonuses = new ExplainedNumber(0.01f);
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.OneHanded.StandUnited, town, ref bonuses);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.OneHanded.StandUnited, town, isPrimaryBonus: false, ref bonuses);
 			CalculateStrengthOfGarrisonParty(town.GarrisonParty.Party, out var totalStrength, out var archerStrength, out var cavalryStrength);
 			float num = totalStrength * bonuses.ResultNumber;
 			result.Add(num, GarrisonText);
 			if (PerkHelper.GetPerkValueForTown(DefaultPerks.Leadership.Authority, town))
 			{
-				result.Add(num * DefaultPerks.Leadership.Authority.PrimaryBonus, DefaultPerks.Leadership.Authority.Name);
+				float value = num * DefaultPerks.Leadership.Authority.PrimaryBonus;
+				result.Add(value, DefaultPerks.Leadership.Authority.Name);
 			}
 			if (PerkHelper.GetPerkValueForTown(DefaultPerks.Riding.ReliefForce, town))
 			{
 				float num2 = cavalryStrength / totalStrength;
-				result.Add(num * num2 * DefaultPerks.Riding.ReliefForce.SecondaryBonus, DefaultPerks.Riding.ReliefForce.Name);
+				float value2 = num * num2 * DefaultPerks.Riding.ReliefForce.SecondaryBonus;
+				result.Add(value2, DefaultPerks.Riding.ReliefForce.Name);
 			}
 			float num3 = archerStrength / totalStrength;
 			if (PerkHelper.GetPerkValueForTown(DefaultPerks.Bow.MountedArchery, town))
 			{
-				result.Add(num * num3 * DefaultPerks.Bow.MountedArchery.SecondaryBonus, DefaultPerks.Bow.MountedArchery.Name);
+				float value3 = num * num3 * DefaultPerks.Bow.MountedArchery.SecondaryBonus;
+				result.Add(value3, DefaultPerks.Bow.MountedArchery.Name);
 			}
 			if (PerkHelper.GetPerkValueForTown(DefaultPerks.Bow.RangersSwiftness, town))
 			{
-				result.Add(num * num3 * DefaultPerks.Bow.RangersSwiftness.SecondaryBonus, DefaultPerks.Bow.RangersSwiftness.Name);
+				float value4 = num * num3 * DefaultPerks.Bow.RangersSwiftness.SecondaryBonus;
+				result.Add(value4, DefaultPerks.Bow.RangersSwiftness.Name);
 			}
 			if (PerkHelper.GetPerkValueForTown(DefaultPerks.Crossbow.RenownMarksmen, town))
 			{
-				result.Add(num * num3 * DefaultPerks.Crossbow.RenownMarksmen.SecondaryBonus, DefaultPerks.Crossbow.RenownMarksmen.Name);
+				float value5 = num * num3 * DefaultPerks.Crossbow.RenownMarksmen.SecondaryBonus;
+				result.Add(value5, DefaultPerks.Crossbow.RenownMarksmen.Name);
 			}
 		}
 	}
@@ -278,12 +283,12 @@ public class DefaultSettlementSecurityModel : SettlementSecurityModel
 		}
 		if (town.Governor != null && town.Governor.GetPerkValue(DefaultPerks.Roguery.KnowHow))
 		{
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Roguery.KnowHow, town, ref result);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Roguery.KnowHow, town, isPrimaryBonus: false, ref result);
 		}
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.OneHanded.ToBeBlunt, town, ref result);
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.Throwing.Focus, town, ref result);
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.Polearm.Skewer, town, ref result);
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.Tactics.Gensdarmes, town, ref result);
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.OneHanded.ToBeBlunt, town, isPrimaryBonus: false, ref result);
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Throwing.Focus, town, isPrimaryBonus: false, ref result);
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Polearm.Skewer, town, isPrimaryBonus: false, ref result);
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Tactics.Gensdarmes, town, isPrimaryBonus: false, ref result);
 	}
 
 	private void CalculateProjectEffectsOnSecurity(Town town, ref ExplainedNumber explainedNumber)

@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
 namespace TaleWorlds.Diamond;
@@ -8,25 +8,95 @@ public class ThreadedClientSession : IClientSession
 {
 	private IClientSession _session;
 
-	private ThreadedClient _threadedClient;
-
-	private Queue<ThreadedClientSessionTask> _tasks;
-
 	private ThreadedClientSessionTask _task;
 
-	private volatile bool _tasBegunJob;
+	private volatile bool _taskBegunJob;
 
 	private readonly int _threadSleepTime;
 
-	public ThreadedClientSession(ThreadedClient threadedClient, IClientSession session, int threadSleepTime)
+	private ConcurrentQueue<Action> _eventQueue = new ConcurrentQueue<Action>();
+
+	private ConcurrentQueue<ThreadedClientSessionTask> _tasks = new ConcurrentQueue<ThreadedClientSessionTask>();
+
+	public int AliveCheckInterval
+	{
+		set
+		{
+			_session.AliveCheckInterval = value;
+		}
+	}
+
+	public int MaxConsecutiveFailuresBeforeDisconnect
+	{
+		set
+		{
+			_session.MaxConsecutiveFailuresBeforeDisconnect = value;
+		}
+	}
+
+	public string Address
+	{
+		get
+		{
+			return _session.Address;
+		}
+		set
+		{
+			_session.Address = value;
+		}
+	}
+
+	public event MessageHandledDelegate MessageReceived;
+
+	public event ConnectedDelegate Connected;
+
+	public event DisconnectedDelegate Disconnected;
+
+	public event OnCantConnectDelegate ConnectionFailed;
+
+	public ThreadedClientSession(IClientSession session, int threadSleepTime)
 	{
 		_session = session;
-		_threadedClient = threadedClient;
-		_tasks = new Queue<ThreadedClientSessionTask>();
+		_session.Connected += SessionConnected;
+		_session.Disconnected += SessionDisconnected;
+		_session.ConnectionFailed += SessionConnectionFailed;
+		_session.MessageReceived += SessionMessageReceived;
 		_task = null;
-		_tasBegunJob = false;
+		_taskBegunJob = false;
 		_threadSleepTime = threadSleepTime;
 		RefreshTask(null);
+	}
+
+	private void SessionConnected()
+	{
+		_eventQueue.Enqueue(delegate
+		{
+			this.Connected?.Invoke();
+		});
+	}
+
+	private void SessionDisconnected()
+	{
+		_eventQueue.Enqueue(delegate
+		{
+			this.Disconnected?.Invoke();
+		});
+	}
+
+	private void SessionConnectionFailed()
+	{
+		_eventQueue.Enqueue(delegate
+		{
+			this.ConnectionFailed?.Invoke();
+		});
+	}
+
+	private void SessionMessageReceived(Message message)
+	{
+		_eventQueue.Enqueue(delegate
+		{
+			this.MessageReceived?.Invoke(message);
+		});
 	}
 
 	private void RefreshTask(Task previousTask)
@@ -53,63 +123,47 @@ public class ThreadedClientSession : IClientSession
 	private void ThreadMain()
 	{
 		_session.Tick();
-		if (_tasBegunJob)
-		{
-			return;
-		}
-		lock (_tasks)
-		{
-			if (_tasks.Count > 0)
-			{
-				_task = _tasks.Dequeue();
-			}
-		}
-		if (_task != null)
+		if (!_taskBegunJob && _tasks.TryDequeue(out _task))
 		{
 			_task.BeginJob();
-			_tasBegunJob = true;
+			_taskBegunJob = true;
 		}
 	}
 
 	void IClientSession.Connect()
 	{
 		ThreadedClientSessionConnectTask item = new ThreadedClientSessionConnectTask(_session);
-		lock (_tasks)
-		{
-			_tasks.Enqueue(item);
-		}
+		_tasks.Enqueue(item);
 	}
 
 	void IClientSession.Disconnect()
 	{
 		ThreadedClientSessionDisconnectTask item = new ThreadedClientSessionDisconnectTask(_session);
-		lock (_tasks)
-		{
-			_tasks.Enqueue(item);
-		}
+		_tasks.Enqueue(item);
 	}
 
 	void IClientSession.Tick()
 	{
-		_threadedClient.Tick();
-		if (_tasBegunJob)
+		if (_taskBegunJob)
 		{
 			_task.DoMainThreadJob();
 			if (_task.Finished)
 			{
 				_task = null;
-				_tasBegunJob = false;
+				_taskBegunJob = false;
 			}
+		}
+		Action result;
+		while (_eventQueue.TryDequeue(out result))
+		{
+			result();
 		}
 	}
 
 	async Task<LoginResult> IClientSession.Login(LoginMessage message)
 	{
 		ThreadedClientSessionLoginTask task = new ThreadedClientSessionLoginTask(_session, message);
-		lock (_tasks)
-		{
-			_tasks.Enqueue(task);
-		}
+		_tasks.Enqueue(task);
 		await task.Wait();
 		return task.LoginResult;
 	}
@@ -117,21 +171,15 @@ public class ThreadedClientSession : IClientSession
 	void IClientSession.SendMessage(Message message)
 	{
 		ThreadedClientSessionMessageTask item = new ThreadedClientSessionMessageTask(_session, message);
-		lock (_tasks)
-		{
-			_tasks.Enqueue(item);
-		}
+		_tasks.Enqueue(item);
 	}
 
-	async Task<TReturn> IClientSession.CallFunction<TReturn>(Message message)
+	async Task<CallResult> IClientSession.CallFunction<TReturn>(Message message)
 	{
 		ThreadedClientSessionFunctionTask task = new ThreadedClientSessionFunctionTask(_session, message);
-		lock (_tasks)
-		{
-			_tasks.Enqueue(task);
-		}
+		_tasks.Enqueue(task);
 		await task.Wait();
-		return (TReturn)task.FunctionResult;
+		return task.CallResult;
 	}
 
 	Task<bool> IClientSession.CheckConnection()

@@ -272,10 +272,6 @@ public class TutorialVM : ViewModel
 		};
 	}
 
-	public void Tick(float dt)
-	{
-	}
-
 	public void CloseTutorialStep(bool finalizeAllSteps = false)
 	{
 		_currentTutorialItem?.CloseTutorialPanel();

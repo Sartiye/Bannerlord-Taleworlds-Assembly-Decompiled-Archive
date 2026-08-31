@@ -66,7 +66,9 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 
 	private BrushWidget _widget_1_0_2_1;
 
-	private EditableTextWidget _widget_1_0_2_1_0;
+	private NavigationScopeTargeter _widget_1_0_2_1_0;
+
+	private EditableTextWidget _widget_1_0_2_1_1;
 
 	private InventoryCenterPanelWidget _widget_1_1;
 
@@ -366,7 +368,9 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 
 	private BrushWidget _widget_1_2_2_1;
 
-	private EditableTextWidget _widget_1_2_2_1_0;
+	private NavigationScopeTargeter _widget_1_2_2_1_0;
+
+	private EditableTextWidget _widget_1_2_2_1_1;
 
 	private InputKeyVisualWidget _widget_2;
 
@@ -549,8 +553,10 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget_1_0_2_0.CreateWidgets();
 		_widget_1_0_2_1 = new BrushWidget(base.Context);
 		_widget_1_0_2.AddChild(_widget_1_0_2_1);
-		_widget_1_0_2_1_0 = new EditableTextWidget(base.Context);
+		_widget_1_0_2_1_0 = new NavigationScopeTargeter(base.Context);
 		_widget_1_0_2_1.AddChild(_widget_1_0_2_1_0);
+		_widget_1_0_2_1_1 = new EditableTextWidget(base.Context);
+		_widget_1_0_2_1.AddChild(_widget_1_0_2_1_1);
 		_widget_1_1 = new InventoryCenterPanelWidget(base.Context);
 		_widget_1.AddChild(_widget_1_1);
 		_widget_1_1_0 = new Widget(base.Context);
@@ -863,8 +869,10 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget_1_2_2_0.CreateWidgets();
 		_widget_1_2_2_1 = new BrushWidget(base.Context);
 		_widget_1_2_2.AddChild(_widget_1_2_2_1);
-		_widget_1_2_2_1_0 = new EditableTextWidget(base.Context);
+		_widget_1_2_2_1_0 = new NavigationScopeTargeter(base.Context);
 		_widget_1_2_2_1.AddChild(_widget_1_2_2_1_0);
+		_widget_1_2_2_1_1 = new EditableTextWidget(base.Context);
+		_widget_1_2_2_1.AddChild(_widget_1_2_2_1_1);
 		_widget_2 = new InputKeyVisualWidget(base.Context);
 		_widget.AddChild(_widget_2);
 		_widget_3 = new Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_SPInventoryVM_Dependency_17_InventoryTooltip__DependendPrefab(base.Context);
@@ -1101,14 +1109,18 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget_1_0_2_1.MarginTop = 2f;
 		_widget_1_0_2_1.MarginBottom = 2f;
 		_widget_1_0_2_1.Brush = base.Context.GetBrush("SaveLoad.Search.Button");
-		_widget_1_0_2_1_0.UpdateChildrenStates = true;
-		_widget_1_0_2_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_0_2_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_0_2_1_0.MarginTop = 10f;
-		_widget_1_0_2_1_0.MarginBottom = 10f;
-		_widget_1_0_2_1_0.MarginLeft = 10f;
-		_widget_1_0_2_1_0.MarginRight = 10f;
-		_widget_1_0_2_1_0.Brush = base.Context.GetBrush("SaveLoad.Search.InputText");
+		_widget_1_0_2_1.GamepadNavigationIndex = 0;
+		_widget_1_0_2_1_0.ScopeID = "LeftSearchBarScope";
+		_widget_1_0_2_1_0.ScopeParent = _widget_1_0_2_1;
+		_widget_1_0_2_1_0.DownNavigationScope = "LeftListHeadersScope";
+		_widget_1_0_2_1_1.UpdateChildrenStates = true;
+		_widget_1_0_2_1_1.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_1_0_2_1_1.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_1_0_2_1_1.MarginTop = 10f;
+		_widget_1_0_2_1_1.MarginBottom = 10f;
+		_widget_1_0_2_1_1.MarginLeft = 10f;
+		_widget_1_0_2_1_1.MarginRight = 10f;
+		_widget_1_0_2_1_1.Brush = base.Context.GetBrush("SaveLoad.Search.InputText");
 		_widget_1_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1.AcceptDrop = true;
@@ -2022,14 +2034,18 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget_1_2_2_1.MarginTop = 2f;
 		_widget_1_2_2_1.MarginBottom = 2f;
 		_widget_1_2_2_1.Brush = base.Context.GetBrush("SaveLoad.Search.Button");
-		_widget_1_2_2_1_0.UpdateChildrenStates = true;
-		_widget_1_2_2_1_0.WidthSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_2_2_1_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_1_2_2_1_0.MarginTop = 10f;
-		_widget_1_2_2_1_0.MarginBottom = 10f;
-		_widget_1_2_2_1_0.MarginLeft = 10f;
-		_widget_1_2_2_1_0.MarginRight = 10f;
-		_widget_1_2_2_1_0.Brush = base.Context.GetBrush("SaveLoad.Search.InputText");
+		_widget_1_2_2_1.GamepadNavigationIndex = 0;
+		_widget_1_2_2_1_0.ScopeID = "RightSearchBarScope";
+		_widget_1_2_2_1_0.ScopeParent = _widget_1_2_2_1;
+		_widget_1_2_2_1_0.DownNavigationScope = "RightListHeadersScope";
+		_widget_1_2_2_1_1.UpdateChildrenStates = true;
+		_widget_1_2_2_1_1.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_1_2_2_1_1.HeightSizePolicy = SizePolicy.StretchToParent;
+		_widget_1_2_2_1_1.MarginTop = 10f;
+		_widget_1_2_2_1_1.MarginBottom = 10f;
+		_widget_1_2_2_1_1.MarginLeft = 10f;
+		_widget_1_2_2_1_1.MarginRight = 10f;
+		_widget_1_2_2_1_1.Brush = base.Context.GetBrush("SaveLoad.Search.InputText");
 		_widget_2.DoNotAcceptEvents = true;
 		_widget_2.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2.HeightSizePolicy = SizePolicy.Fixed;
@@ -2154,15 +2170,15 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget_1_0_2_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_0_2_1;
 		_widget_1_0_2_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_0_2_1;
 		_widget_1_0_2_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_0_2_1;
-		_widget_1_0_2_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_0_2_1_0;
-		_widget_1_0_2_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_0_2_1_0;
-		_widget_1_0_2_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_0_2_1_0;
-		_widget_1_0_2_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_0_2_1_0;
-		_widget_1_0_2_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_0_2_1_0;
-		_widget_1_0_2_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_0_2_1_0;
-		_widget_1_0_2_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_0_2_1_0;
-		_widget_1_0_2_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_0_2_1_0;
-		_widget_1_0_2_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_0_2_1_0;
+		_widget_1_0_2_1_1.PropertyChanged -= PropertyChangedListenerOf_widget_1_0_2_1_1;
+		_widget_1_0_2_1_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_0_2_1_1;
+		_widget_1_0_2_1_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_0_2_1_1;
+		_widget_1_0_2_1_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_0_2_1_1;
+		_widget_1_0_2_1_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_0_2_1_1;
+		_widget_1_0_2_1_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_0_2_1_1;
+		_widget_1_0_2_1_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_0_2_1_1;
+		_widget_1_0_2_1_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_0_2_1_1;
+		_widget_1_0_2_1_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_0_2_1_1;
 		_widget_1_1.EventFire -= EventListenerOf_widget_1_1;
 		_widget_1_1_0_1_0.EventFire -= EventListenerOf_widget_1_1_0_1_0;
 		_widget_1_1_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_1_0_1_0;
@@ -2597,15 +2613,15 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget_1_2_2_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_2_2_1;
 		_widget_1_2_2_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_2_2_1;
 		_widget_1_2_2_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_2_2_1;
-		_widget_1_2_2_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_2_2_1_0;
-		_widget_1_2_2_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_2_2_1_0;
-		_widget_1_2_2_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_2_2_1_0;
-		_widget_1_2_2_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_2_2_1_0;
-		_widget_1_2_2_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_2_2_1_0;
-		_widget_1_2_2_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_2_2_1_0;
-		_widget_1_2_2_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_2_2_1_0;
-		_widget_1_2_2_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_2_2_1_0;
-		_widget_1_2_2_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_2_2_1_0;
+		_widget_1_2_2_1_1.PropertyChanged -= PropertyChangedListenerOf_widget_1_2_2_1_1;
+		_widget_1_2_2_1_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_2_2_1_1;
+		_widget_1_2_2_1_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_2_2_1_1;
+		_widget_1_2_2_1_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_2_2_1_1;
+		_widget_1_2_2_1_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_2_2_1_1;
+		_widget_1_2_2_1_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_2_2_1_1;
+		_widget_1_2_2_1_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_2_2_1_1;
+		_widget_1_2_2_1_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_2_2_1_1;
+		_widget_1_2_2_1_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_2_2_1_1;
 		if (_datasource_Root_MainCharacter != null)
 		{
 			_datasource_Root_MainCharacter.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_MainCharacter;
@@ -4264,60 +4280,60 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_1_0_2_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_1_0_2_1_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_0_2_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_0_2_1_1(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_1_0_2_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_1_0_2_1_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_0_2_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_0_2_1_1(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_1_0_2_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_1_0_2_1_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_0_2_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_0_2_1_1(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_1_0_2_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_1_0_2_1_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_0_2_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_0_2_1_1(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_1_0_2_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_1_0_2_1_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_0_2_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_0_2_1_1(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_1_0_2_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_1_0_2_1_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_0_2_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_0_2_1_1(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_1_0_2_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_1_0_2_1_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_0_2_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_0_2_1_1(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_1_0_2_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_1_0_2_1_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_0_2_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_0_2_1_1(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_1_0_2_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_1_0_2_1_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_0_2_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_0_2_1_1(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_1_0_2_1_0(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_1_0_2_1_1(string propertyName)
 	{
 		if (propertyName == "DefaultSearchText")
 		{
-			_datasource_Root.SearchPlaceholderText = _widget_1_0_2_1_0.DefaultSearchText;
+			_datasource_Root.SearchPlaceholderText = _widget_1_0_2_1_1.DefaultSearchText;
 		}
 		else if (propertyName == "Text")
 		{
-			_datasource_Root.LeftSearchText = _widget_1_0_2_1_0.Text;
+			_datasource_Root.LeftSearchText = _widget_1_0_2_1_1.Text;
 		}
 	}
 
@@ -6868,60 +6884,60 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		}
 	}
 
-	private void PropertyChangedListenerOf_widget_1_2_2_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	private void PropertyChangedListenerOf_widget_1_2_2_1_1(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_2_2_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_2_2_1_1(propertyName);
 	}
 
-	private void boolPropertyChangedListenerOf_widget_1_2_2_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	private void boolPropertyChangedListenerOf_widget_1_2_2_1_1(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_2_2_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_2_2_1_1(propertyName);
 	}
 
-	private void floatPropertyChangedListenerOf_widget_1_2_2_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	private void floatPropertyChangedListenerOf_widget_1_2_2_1_1(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_2_2_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_2_2_1_1(propertyName);
 	}
 
-	private void Vec2PropertyChangedListenerOf_widget_1_2_2_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	private void Vec2PropertyChangedListenerOf_widget_1_2_2_1_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_2_2_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_2_2_1_1(propertyName);
 	}
 
-	private void Vector2PropertyChangedListenerOf_widget_1_2_2_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	private void Vector2PropertyChangedListenerOf_widget_1_2_2_1_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_2_2_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_2_2_1_1(propertyName);
 	}
 
-	private void doublePropertyChangedListenerOf_widget_1_2_2_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	private void doublePropertyChangedListenerOf_widget_1_2_2_1_1(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_2_2_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_2_2_1_1(propertyName);
 	}
 
-	private void intPropertyChangedListenerOf_widget_1_2_2_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	private void intPropertyChangedListenerOf_widget_1_2_2_1_1(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_2_2_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_2_2_1_1(propertyName);
 	}
 
-	private void uintPropertyChangedListenerOf_widget_1_2_2_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	private void uintPropertyChangedListenerOf_widget_1_2_2_1_1(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_2_2_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_2_2_1_1(propertyName);
 	}
 
-	private void ColorPropertyChangedListenerOf_widget_1_2_2_1_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	private void ColorPropertyChangedListenerOf_widget_1_2_2_1_1(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
 	{
-		HandleWidgetPropertyChangeOf_widget_1_2_2_1_0(propertyName);
+		HandleWidgetPropertyChangeOf_widget_1_2_2_1_1(propertyName);
 	}
 
-	private void HandleWidgetPropertyChangeOf_widget_1_2_2_1_0(string propertyName)
+	private void HandleWidgetPropertyChangeOf_widget_1_2_2_1_1(string propertyName)
 	{
 		if (propertyName == "DefaultSearchText")
 		{
-			_datasource_Root.SearchPlaceholderText = _widget_1_2_2_1_0.DefaultSearchText;
+			_datasource_Root.SearchPlaceholderText = _widget_1_2_2_1_1.DefaultSearchText;
 		}
 		else if (propertyName == "Text")
 		{
-			_datasource_Root.RightSearchText = _widget_1_2_2_1_0.Text;
+			_datasource_Root.RightSearchText = _widget_1_2_2_1_1.Text;
 		}
 	}
 
@@ -7720,11 +7736,11 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 			_widget_1_2_2_1.IsVisible = _datasource_Root.IsSearchAvailable;
 			break;
 		case "SearchPlaceholderText":
-			_widget_1_0_2_1_0.DefaultSearchText = _datasource_Root.SearchPlaceholderText;
-			_widget_1_2_2_1_0.DefaultSearchText = _datasource_Root.SearchPlaceholderText;
+			_widget_1_0_2_1_1.DefaultSearchText = _datasource_Root.SearchPlaceholderText;
+			_widget_1_2_2_1_1.DefaultSearchText = _datasource_Root.SearchPlaceholderText;
 			break;
 		case "LeftSearchText":
-			_widget_1_0_2_1_0.Text = _datasource_Root.LeftSearchText;
+			_widget_1_0_2_1_1.Text = _datasource_Root.LeftSearchText;
 			break;
 		case "IsCivilianMode":
 			_widget_1_1_0_1_0.IsSelected = _datasource_Root.IsCivilianMode;
@@ -7863,7 +7879,7 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 			_widget_1_2_1_2_1_2_2.Text = _datasource_Root.MainPartySeaCapacityText;
 			break;
 		case "RightSearchText":
-			_widget_1_2_2_1_0.Text = _datasource_Root.RightSearchText;
+			_widget_1_2_2_1_1.Text = _datasource_Root.RightSearchText;
 			break;
 		}
 	}
@@ -10069,15 +10085,15 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 			_widget_1_0_2_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_0_2_1;
 			_widget_1_0_2_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_0_2_1;
 			_widget_1_0_2_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_0_2_1;
-			_widget_1_0_2_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_0_2_1_0;
-			_widget_1_0_2_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_0_2_1_0;
-			_widget_1_0_2_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_0_2_1_0;
-			_widget_1_0_2_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_0_2_1_0;
-			_widget_1_0_2_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_0_2_1_0;
-			_widget_1_0_2_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_0_2_1_0;
-			_widget_1_0_2_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_0_2_1_0;
-			_widget_1_0_2_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_0_2_1_0;
-			_widget_1_0_2_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_0_2_1_0;
+			_widget_1_0_2_1_1.PropertyChanged -= PropertyChangedListenerOf_widget_1_0_2_1_1;
+			_widget_1_0_2_1_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_0_2_1_1;
+			_widget_1_0_2_1_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_0_2_1_1;
+			_widget_1_0_2_1_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_0_2_1_1;
+			_widget_1_0_2_1_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_0_2_1_1;
+			_widget_1_0_2_1_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_0_2_1_1;
+			_widget_1_0_2_1_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_0_2_1_1;
+			_widget_1_0_2_1_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_0_2_1_1;
+			_widget_1_0_2_1_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_0_2_1_1;
 			_widget_1_1.EventFire -= EventListenerOf_widget_1_1;
 			_widget_1_1_0_1_0.EventFire -= EventListenerOf_widget_1_1_0_1_0;
 			_widget_1_1_0_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_1_0_1_0;
@@ -10512,15 +10528,15 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 			_widget_1_2_2_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_2_2_1;
 			_widget_1_2_2_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_2_2_1;
 			_widget_1_2_2_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_2_2_1;
-			_widget_1_2_2_1_0.PropertyChanged -= PropertyChangedListenerOf_widget_1_2_2_1_0;
-			_widget_1_2_2_1_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_2_2_1_0;
-			_widget_1_2_2_1_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_2_2_1_0;
-			_widget_1_2_2_1_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_2_2_1_0;
-			_widget_1_2_2_1_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_2_2_1_0;
-			_widget_1_2_2_1_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_2_2_1_0;
-			_widget_1_2_2_1_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_2_2_1_0;
-			_widget_1_2_2_1_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_2_2_1_0;
-			_widget_1_2_2_1_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_2_2_1_0;
+			_widget_1_2_2_1_1.PropertyChanged -= PropertyChangedListenerOf_widget_1_2_2_1_1;
+			_widget_1_2_2_1_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1_2_2_1_1;
+			_widget_1_2_2_1_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1_2_2_1_1;
+			_widget_1_2_2_1_1.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_1_2_2_1_1;
+			_widget_1_2_2_1_1.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_1_2_2_1_1;
+			_widget_1_2_2_1_1.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_1_2_2_1_1;
+			_widget_1_2_2_1_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_1_2_2_1_1;
+			_widget_1_2_2_1_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_1_2_2_1_1;
+			_widget_1_2_2_1_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_1_2_2_1_1;
 			if (_datasource_Root_MainCharacter != null)
 			{
 				_datasource_Root_MainCharacter.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_MainCharacter;
@@ -11286,17 +11302,17 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget_1_0_2_1.intPropertyChanged += intPropertyChangedListenerOf_widget_1_0_2_1;
 		_widget_1_0_2_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_0_2_1;
 		_widget_1_0_2_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_0_2_1;
-		_widget_1_0_2_1_0.DefaultSearchText = _datasource_Root.SearchPlaceholderText;
-		_widget_1_0_2_1_0.Text = _datasource_Root.LeftSearchText;
-		_widget_1_0_2_1_0.PropertyChanged += PropertyChangedListenerOf_widget_1_0_2_1_0;
-		_widget_1_0_2_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_0_2_1_0;
-		_widget_1_0_2_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_0_2_1_0;
-		_widget_1_0_2_1_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_0_2_1_0;
-		_widget_1_0_2_1_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_0_2_1_0;
-		_widget_1_0_2_1_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_0_2_1_0;
-		_widget_1_0_2_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_0_2_1_0;
-		_widget_1_0_2_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_0_2_1_0;
-		_widget_1_0_2_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_0_2_1_0;
+		_widget_1_0_2_1_1.DefaultSearchText = _datasource_Root.SearchPlaceholderText;
+		_widget_1_0_2_1_1.Text = _datasource_Root.LeftSearchText;
+		_widget_1_0_2_1_1.PropertyChanged += PropertyChangedListenerOf_widget_1_0_2_1_1;
+		_widget_1_0_2_1_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_0_2_1_1;
+		_widget_1_0_2_1_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_0_2_1_1;
+		_widget_1_0_2_1_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_0_2_1_1;
+		_widget_1_0_2_1_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_0_2_1_1;
+		_widget_1_0_2_1_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_0_2_1_1;
+		_widget_1_0_2_1_1.intPropertyChanged += intPropertyChangedListenerOf_widget_1_0_2_1_1;
+		_widget_1_0_2_1_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_0_2_1_1;
+		_widget_1_0_2_1_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_0_2_1_1;
 		_widget_1_1.EventFire += EventListenerOf_widget_1_1;
 		_widget_1_1_0_1_0.IsSelected = _datasource_Root.IsCivilianMode;
 		_widget_1_1_0_1_0.EventFire += EventListenerOf_widget_1_1_0_1_0;
@@ -11792,17 +11808,17 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget_1_2_2_1.intPropertyChanged += intPropertyChangedListenerOf_widget_1_2_2_1;
 		_widget_1_2_2_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_2_2_1;
 		_widget_1_2_2_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_2_2_1;
-		_widget_1_2_2_1_0.DefaultSearchText = _datasource_Root.SearchPlaceholderText;
-		_widget_1_2_2_1_0.Text = _datasource_Root.RightSearchText;
-		_widget_1_2_2_1_0.PropertyChanged += PropertyChangedListenerOf_widget_1_2_2_1_0;
-		_widget_1_2_2_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_2_2_1_0;
-		_widget_1_2_2_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_2_2_1_0;
-		_widget_1_2_2_1_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_2_2_1_0;
-		_widget_1_2_2_1_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_2_2_1_0;
-		_widget_1_2_2_1_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_2_2_1_0;
-		_widget_1_2_2_1_0.intPropertyChanged += intPropertyChangedListenerOf_widget_1_2_2_1_0;
-		_widget_1_2_2_1_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_2_2_1_0;
-		_widget_1_2_2_1_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_2_2_1_0;
+		_widget_1_2_2_1_1.DefaultSearchText = _datasource_Root.SearchPlaceholderText;
+		_widget_1_2_2_1_1.Text = _datasource_Root.RightSearchText;
+		_widget_1_2_2_1_1.PropertyChanged += PropertyChangedListenerOf_widget_1_2_2_1_1;
+		_widget_1_2_2_1_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_2_2_1_1;
+		_widget_1_2_2_1_1.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_2_2_1_1;
+		_widget_1_2_2_1_1.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_1_2_2_1_1;
+		_widget_1_2_2_1_1.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_1_2_2_1_1;
+		_widget_1_2_2_1_1.doublePropertyChanged += doublePropertyChangedListenerOf_widget_1_2_2_1_1;
+		_widget_1_2_2_1_1.intPropertyChanged += intPropertyChangedListenerOf_widget_1_2_2_1_1;
+		_widget_1_2_2_1_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_2_2_1_1;
+		_widget_1_2_2_1_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_2_2_1_1;
 		_datasource_Root_MainCharacter = _datasource_Root.MainCharacter;
 		if (_datasource_Root_MainCharacter != null)
 		{

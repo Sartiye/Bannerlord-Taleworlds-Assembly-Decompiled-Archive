@@ -111,6 +111,8 @@ public class Army : ITrackableCampaignObject, ITrackableBase
 
 	public int CohesionThresholdForDispersion => Campaign.Current.Models.ArmyManagementCalculationModel.CohesionThresholdForDispersion;
 
+	public bool IsDispersing => _armyIsDispersing;
+
 	[SaveableProperty(13)]
 	public float Morale { get; private set; }
 

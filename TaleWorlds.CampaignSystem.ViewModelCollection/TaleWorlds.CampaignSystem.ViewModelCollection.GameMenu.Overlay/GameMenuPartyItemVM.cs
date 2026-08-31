@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Helpers;
+using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Locations;
@@ -84,6 +85,8 @@ public class GameMenuPartyItemVM : ViewModel
 	private bool _isCharacterInPrison;
 
 	private bool _hasShips;
+
+	private bool _hasBloodFeud;
 
 	[DataSourceProperty]
 	public int Relation
@@ -268,6 +271,23 @@ public class GameMenuPartyItemVM : ViewModel
 			{
 				_isMergedWithArmy = value;
 				OnPropertyChangedWithValue(value, "IsMergedWithArmy");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool HasBloodFeud
+	{
+		get
+		{
+			return _hasBloodFeud;
+		}
+		set
+		{
+			if (value != _hasBloodFeud)
+			{
+				_hasBloodFeud = value;
+				OnPropertyChangedWithValue(value, "HasBloodFeud");
 			}
 		}
 	}
@@ -627,24 +647,7 @@ public class GameMenuPartyItemVM : ViewModel
 			if (Party.IsMobile)
 			{
 				name = Party.MobileParty.Name;
-				float getEncounterJoiningRadius = Campaign.Current.Models.EncounterModel.GetEncounterJoiningRadius;
-				if (Party.MobileParty.Position.DistanceSquared(MobileParty.MainParty.Position) > getEncounterJoiningRadius * getEncounterJoiningRadius)
-				{
-					if (Party.MobileParty.MapEvent == null)
-					{
-						GameTexts.SetVariable("LEFT", GameTexts.FindText("str_distance_to_army_leader"));
-						float num = DistanceHelper.FindClosestDistanceFromMobilePartyToMobileParty(Party.MobileParty, MobileParty.MainParty, Party.MobileParty.NavigationCapability);
-						GameTexts.SetVariable("RIGHT", CampaignUIHelper.GetPartyDistanceByTimeText((int)num, Party.MobileParty.Speed));
-						LocationText = GameTexts.FindText("str_LEFT_colon_RIGHT_wSpaceAfterColon").ToString();
-					}
-					else
-					{
-						TextObject variable = GameTexts.FindText("str_at_map_event");
-						TextObject textObject = new TextObject("{=zawBaxl5}Distance : {DISTANCE}");
-						textObject.SetTextVariable("DISTANCE", variable);
-						LocationText = textObject.ToString();
-					}
-				}
+				UpdateLocationText();
 				DescriptionText = GetPartyDescriptionTextFromValues();
 				IsMergedWithArmy = true;
 				if (Party.MobileParty.Army != null)
@@ -709,6 +712,29 @@ public class GameMenuPartyItemVM : ViewModel
 		Quests.Sort(new QuestMarkerComparer());
 	}
 
+	private void UpdateLocationText()
+	{
+		float getEncounterJoiningRadius = Campaign.Current.Models.EncounterModel.GetEncounterJoiningRadius;
+		LocationText = string.Empty;
+		if (!(Party.MobileParty.Position.DistanceSquared(MobileParty.MainParty.Position) < getEncounterJoiningRadius * getEncounterJoiningRadius))
+		{
+			if (Party.MobileParty.MapEvent != null)
+			{
+				TextObject variable = GameTexts.FindText("str_at_map_event");
+				TextObject textObject = new TextObject("{=zawBaxl5}Distance : {DISTANCE}");
+				textObject.SetTextVariable("DISTANCE", variable);
+				LocationText = textObject.ToString();
+			}
+			else if (Party.MobileParty.AttachedTo?.Army == null)
+			{
+				GameTexts.SetVariable("LEFT", GameTexts.FindText("str_distance_to_army_leader"));
+				float num = DistanceHelper.FindClosestDistanceFromMobilePartyToMobileParty(Party.MobileParty, MobileParty.MainParty, Party.MobileParty.NavigationCapability);
+				GameTexts.SetVariable("RIGHT", CampaignUIHelper.GetPartyDistanceByTimeText((int)num, Party.MobileParty.Speed));
+				LocationText = GameTexts.FindText("str_LEFT_colon_RIGHT_wSpaceAfterColon").ToString();
+			}
+		}
+	}
+
 	private void RefreshRelationStatus()
 	{
 		IsEnemy = false;
@@ -721,12 +747,34 @@ public class GameMenuPartyItemVM : ViewModel
 			IsPlayer = Character.IsPlayerCharacter;
 			flag = Character.IsHero && Character.HeroObject.IsNotable;
 			faction = (IsPlayer ? null : Character?.HeroObject.MapFaction);
+			int hasBloodFeud;
+			if (!IsPlayer)
+			{
+				Hero heroObject = Character.HeroObject;
+				hasBloodFeud = ((heroObject != null && heroObject.Clan?.HasBloodFeudWithPlayer == true) ? 1 : 0);
+			}
+			else
+			{
+				hasBloodFeud = 0;
+			}
+			HasBloodFeud = (byte)hasBloodFeud != 0;
 		}
 		else if (Party != null)
 		{
 			IsPlayer = Party.IsMobile && (Party.MobileParty?.IsMainParty ?? false);
 			flag = false;
 			faction = (IsPlayer ? null : Party?.MobileParty?.MapFaction);
+			int hasBloodFeud2;
+			if (!IsPlayer)
+			{
+				MobileParty mobileParty = Party.MobileParty;
+				hasBloodFeud2 = ((mobileParty != null && mobileParty.ActualClan?.HasBloodFeudWithPlayer == true) ? 1 : 0);
+			}
+			else
+			{
+				hasBloodFeud2 = 0;
+			}
+			HasBloodFeud = (byte)hasBloodFeud2 != 0;
 		}
 		if (!IsPlayer && faction != null && !flag)
 		{
@@ -820,6 +868,7 @@ public class GameMenuPartyItemVM : ViewModel
 	private void RegisterEvents()
 	{
 		CampaignEvents.OnPlayerBodyPropertiesChangedEvent.AddNonSerializedListener(this, OnPlayerCharacterChangedEvent);
+		CampaignEvents.OnBloodFeudStateChangedEvent.AddNonSerializedListener(this, OnBloodFeudStateChanged);
 	}
 
 	private void OnPlayerCharacterChangedEvent()
@@ -829,6 +878,14 @@ public class GameMenuPartyItemVM : ViewModel
 		{
 			CharacterCode characterCode = CampaignUIHelper.GetCharacterCode(characterObject);
 			Visual = new CharacterImageIdentifierVM(characterCode);
+		}
+	}
+
+	private void OnBloodFeudStateChanged(Clan clan, Hero executedHero, ChangeBloodFeudStateAction.ChangeBloodFeudActionDetail detail)
+	{
+		if (Party?.MobileParty?.ActualClan == clan || Character?.HeroObject?.Clan == clan)
+		{
+			RefreshRelationStatus();
 		}
 	}
 

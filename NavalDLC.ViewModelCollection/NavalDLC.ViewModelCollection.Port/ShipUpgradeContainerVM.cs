@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NavalDLC.ViewModelCollection.Port.PortScreenHandlers;
+using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -15,8 +16,6 @@ public class ShipUpgradeContainerVM : ViewModel
 	private bool _canTradeUpgrades;
 
 	private bool _hasSelectedSlot;
-
-	private ShipItemVM _ship;
 
 	private ShipUpgradeSlotBaseVM _selectedSlot;
 
@@ -52,23 +51,6 @@ public class ShipUpgradeContainerVM : ViewModel
 			{
 				_hasSelectedSlot = value;
 				OnPropertyChangedWithValue(value, "HasSelectedSlot");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public ShipItemVM Ship
-	{
-		get
-		{
-			return _ship;
-		}
-		set
-		{
-			if (value != _ship)
-			{
-				_ship = value;
-				OnPropertyChangedWithValue(value, "Ship");
 			}
 		}
 	}
@@ -116,17 +98,16 @@ public class ShipUpgradeContainerVM : ViewModel
 		}
 	}
 
-	public ShipUpgradeContainerVM(ShipItemVM ship)
+	public ShipUpgradeContainerVM(Ship ship)
 	{
-		Ship = ship;
 		UpgradeSlots = new MBBindingList<ShipUpgradeSlotBaseVM>();
-		foreach (KeyValuePair<string, ShipSlot> availableSlot in Ship.Ship.ShipHull.AvailableSlots)
+		foreach (KeyValuePair<string, ShipSlot> availableSlot in ship.ShipHull.AvailableSlots)
 		{
-			UpgradeSlots.Add(new ShipUpgradeSlotVM(Ship.Ship, availableSlot.Value.GetSlotTypeName(), availableSlot.Key, availableSlot.Value.TypeId, OnSlotSelectedAux));
+			UpgradeSlots.Add(new ShipUpgradeSlotVM(ship, availableSlot.Value.GetSlotTypeName(), availableSlot.Key, availableSlot.Value.TypeId, OnSlotSelectedAux));
 		}
-		if (Ship.Ship.CanEquipFigurehead)
+		if (ship.CanEquipFigurehead)
 		{
-			UpgradeSlots.Add(new ShipFigureheadSlotVM(Ship.Ship, new TextObject("{=YLbBHN0Z}Figurehead"), "figurehead", "figurehead", OnSlotSelectedAux));
+			UpgradeSlots.Add(new ShipFigureheadSlotVM(ship, new TextObject("{=YLbBHN0Z}Figurehead"), "figurehead", "figurehead", OnSlotSelectedAux));
 		}
 	}
 

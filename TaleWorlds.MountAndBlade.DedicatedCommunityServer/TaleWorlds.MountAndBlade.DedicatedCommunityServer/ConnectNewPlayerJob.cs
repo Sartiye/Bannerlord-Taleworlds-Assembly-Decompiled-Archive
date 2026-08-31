@@ -36,7 +36,7 @@ public class ConnectNewPlayerJob : Job
 		int num = 1;
 		bool isAdmin = false;
 		bool authorized = true;
-		bool isFull = MultiplayerOptions.OptionType.MaxNumberOfPlayers.GetIntValue() < GameNetwork.NetworkPeerCount + num;
+		bool isFull = MultiplayerOptions.OptionType.CultureTeam2.GetIntValue() < GameNetwork.NetworkPeerCount + num;
 		bool peerTriedToJoinDuringLoading = false;
 		while (Mission.Current != null && Mission.Current.CurrentState != Mission.State.Continuing)
 		{

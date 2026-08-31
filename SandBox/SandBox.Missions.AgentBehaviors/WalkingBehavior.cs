@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using SandBox.Missions.MissionLogics;
 using SandBox.Objects.AnimationPoints;
 using TaleWorlds.CampaignSystem;
@@ -26,6 +27,8 @@ public class WalkingBehavior : AgentBehavior
 	private bool _outdoorWanderingIsActive;
 
 	private bool _wasSimulation;
+
+	private bool _isWaitingNearOccupiedTarget;
 
 	private bool CanWander
 	{
@@ -66,10 +69,55 @@ public class WalkingBehavior : AgentBehavior
 
 	public override void Tick(float dt, bool isSimulation)
 	{
+		if (Mission.Current.CurrentState == Mission.State.EndingNextFrame)
+		{
+			return;
+		}
 		if (_wanderTarget == null || base.Navigator.TargetUsableMachine == null || _wanderTarget.IsDisabled || !_wanderTarget.IsStandingPointAvailableForAgent(base.OwnerAgent))
 		{
 			_wanderTarget = FindTarget();
 			_lastTarget = _wanderTarget;
+			if (_wanderTarget == null)
+			{
+				string specialTargetTag = base.OwnerAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.SpecialTargetTag;
+				if (specialTargetTag != null && _missionAgentHandler.HasUsablePointWithTag(specialTargetTag))
+				{
+					if (!_isWaitingNearOccupiedTarget)
+					{
+						List<UsableMachine> allUsablePointsWithTag = _missionAgentHandler.GetAllUsablePointsWithTag(specialTargetTag);
+						if (allUsablePointsWithTag != null && allUsablePointsWithTag.Count > 0)
+						{
+							UsableMachine usableMachine = allUsablePointsWithTag[0];
+							Vec3 globalPosition = usableMachine.GameEntity.GlobalPosition;
+							Vec3 vec = base.OwnerAgent.Position - globalPosition;
+							vec.z = 0f;
+							if (vec.Length < 0.01f)
+							{
+								vec = new Vec3(1f);
+							}
+							vec.Normalize();
+							Vec3 position = globalPosition + vec * 2f;
+							WorldPosition position2 = new WorldPosition(usableMachine.GameEntity.Scene, position);
+							base.Navigator.SetTargetFrame(position2, 0f, 1f, -10f, Agent.AIScriptedFrameFlags.DoNotRun);
+							_isWaitingNearOccupiedTarget = true;
+						}
+					}
+					else if (_waitTimer == null)
+					{
+						_waitTimer = new Timer(base.Mission.CurrentTime, 3f);
+					}
+					else if (_waitTimer.Check(base.Mission.CurrentTime))
+					{
+						_waitTimer = null;
+						_isWaitingNearOccupiedTarget = false;
+					}
+					return;
+				}
+			}
+			else
+			{
+				_isWaitingNearOccupiedTarget = false;
+			}
 		}
 		else if (base.Navigator.GetDistanceToTarget(_wanderTarget) < 5f)
 		{
@@ -86,20 +134,31 @@ public class WalkingBehavior : AgentBehavior
 				if (CanWander)
 				{
 					_waitTimer = null;
-					UsableMachine usableMachine = FindTarget();
-					if (usableMachine == null || IsChildrenOfSameParent(usableMachine, _wanderTarget))
+					UsableMachine usableMachine2 = FindTarget();
+					if (usableMachine2 == null || IsChildrenOfSameParent(usableMachine2, _wanderTarget))
 					{
 						SetTimerForTheAgent(isSimulation);
 					}
 					else
 					{
 						_lastTarget = _wanderTarget;
-						_wanderTarget = usableMachine;
+						_wanderTarget = usableMachine2;
 					}
 				}
 				else
 				{
 					_waitTimer.Reset(100f);
+				}
+			}
+		}
+		else if (_wanderTarget != null)
+		{
+			foreach (StandingPoint standingPoint in _wanderTarget.StandingPoints)
+			{
+				if (standingPoint.HasUser)
+				{
+					_wanderTarget = null;
+					break;
 				}
 			}
 		}
@@ -146,6 +205,10 @@ public class WalkingBehavior : AgentBehavior
 
 	public override float GetAvailability(bool isSimulation)
 	{
+		if (_isWaitingNearOccupiedTarget)
+		{
+			return 1f;
+		}
 		if (FindTarget() == null)
 		{
 			return 0f;
@@ -241,5 +304,6 @@ public class WalkingBehavior : AgentBehavior
 		base.Navigator.ClearTarget();
 		_wanderTarget = null;
 		_waitTimer = null;
+		_isWaitingNearOccupiedTarget = false;
 	}
 }

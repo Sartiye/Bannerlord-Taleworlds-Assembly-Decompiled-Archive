@@ -40,8 +40,12 @@ public class TrainingFieldCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.OnCharacterCreationIsOverEvent.AddNonSerializedListener(this, OnCharacterCreationIsOver);
 	}
 
-	private void OnCharacterCreationIsOver()
+	private void OnCharacterCreationIsOver(int index)
 	{
+		if (index != 1)
+		{
+			return;
+		}
 		if (!SkipTutorialMission)
 		{
 			Settlement settlement = Settlement.Find("tutorial_training_field");

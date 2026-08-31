@@ -58,7 +58,7 @@ public class SeaDamageCampaignBehavior : CampaignBehaviorBase
 
 	private void HourlyTickParty(MobileParty party)
 	{
-		if (!party.IsActive || !party.IsCurrentlyAtSea || party.IsInRaftState || party.MapEvent != null)
+		if (!party.IsActive || !party.IsCurrentlyAtSea || party.IsInNavalAutoTravel || party.MapEvent != null)
 		{
 			return;
 		}
@@ -70,9 +70,11 @@ public class SeaDamageCampaignBehavior : CampaignBehaviorBase
 				party.Ships[num].OnShipDamaged(num2, null, out var _);
 			}
 		}
-		if (party.HasPerk(NavalPerks.Shipmaster.MasterAndCommander))
+		Hero perkOwnerHero = null;
+		if (party.HasPerk(NavalPerks.Shipmaster.MasterAndCommander, out perkOwnerHero))
 		{
-			AddXpToTroops(party, TaleWorlds.Library.MathF.Round(NavalPerks.Shipmaster.MasterAndCommander.PrimaryBonus));
+			int amount = TaleWorlds.Library.MathF.Round(NavalPerks.Shipmaster.MasterAndCommander.PrimaryBonus);
+			AddXpToTroops(party, amount);
 		}
 	}
 

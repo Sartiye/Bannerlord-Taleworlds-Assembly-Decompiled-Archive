@@ -21,13 +21,6 @@ namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
 
 public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 {
-	private enum HostileActionType
-	{
-		Raid,
-		ForceTroop,
-		ForceSupply
-	}
-
 	private const int IntervalForHostileActionAsDay = 10;
 
 	private readonly TextObject EnemyNotAttackableTooltip = GameTexts.FindText("str_enemy_not_attackable_tooltip");
@@ -51,6 +44,46 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.ItemsLooted.AddNonSerializedListener(this, OnItemsLooted);
 		CampaignEvents.MapEventEnded.AddNonSerializedListener(this, OnMapEventEnded);
 		CampaignEvents.BeforeGameMenuOpenedEvent.AddNonSerializedListener(this, BeforeGameMenuOpened);
+		CampaignEvents.OnGameEarlyLoadedEvent.AddNonSerializedListener(this, OnGameEarlyLoaded);
+	}
+
+	private static void OnGameEarlyLoaded(CampaignGameStarter starter)
+	{
+		if (Campaign.Current.MapStateData == null)
+		{
+			return;
+		}
+		string gameMenuId = Campaign.Current.MapStateData.GameMenuId;
+		switch (gameMenuId)
+		{
+		case "raid_village_no_resist_warn_player":
+		case "raid_village_resisted":
+			Campaign.Current.MapStateData.GameMenuId = "raid_village_resist";
+			break;
+		case "force_supplies_village_resist_warn_player":
+			Campaign.Current.MapStateData.GameMenuId = "force_supplies_resist";
+			break;
+		}
+		switch (gameMenuId)
+		{
+		case "force_troops_village_resist_warn_player":
+			Campaign.Current.MapStateData.GameMenuId = "force_volunteers_resist";
+			break;
+		case "village_loot_no_resist":
+		case "village_take_food_confirm":
+		case "village_press_into_service_confirm":
+		case "menu_press_into_service_success":
+		case "menu_village_take_food_success":
+			if (PlayerEncounter.Current != null)
+			{
+				PlayerEncounter.Finish();
+			}
+			else
+			{
+				Campaign.Current.MapStateData.GameMenuId = null;
+			}
+			break;
+		}
 	}
 
 	private static void BeforeGameMenuOpened(MenuCallbackArgs args)
@@ -102,17 +135,26 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		campaignGameSystemStarter.AddGameMenuOption("raiding_village", "abandon_army", "{=0vnegjxf}Abandon Army", wait_menu_end_raiding_at_army_by_abandoning_on_condition, wait_menu_end_raiding_at_army_by_abandoning_on_consequence, isLeave: true);
 		campaignGameSystemStarter.AddGameMenu("raid_occupied", "{=!}{RAID_OCCUPPIED_TEXT}", raid_occupied_on_init);
 		campaignGameSystemStarter.AddGameMenuOption("raid_occupied", "raid_occuppied_continue", "{=DM6luo3c}Continue", raid_occupied_on_condition, raid_occupied_on_consequence, isLeave: true);
-		campaignGameSystemStarter.AddGameMenu("raid_village_no_resist_warn_player", "{=!}{RAID_WARN_PLAYER_EXPLANATION}", game_menu_raid_warn_player_on_init);
-		campaignGameSystemStarter.AddGameMenuOption("raid_village_no_resist_warn_player", "raid_village_warn_continue", "{=DM6luo3c}Continue", game_menu_village_hostile_action_raid_village_warn_continue_on_condition, game_menu_village_hostile_action_raid_village_warn_continue_on_consequence);
-		campaignGameSystemStarter.AddGameMenuOption("raid_village_no_resist_warn_player", "raid_village_warn_leave", "{=sP9ohQTs}Forget it", hostile_action_common_back_on_condition, game_menu_village_hostile_action_warn_leave_on_consequence, isLeave: true);
+		campaignGameSystemStarter.AddGameMenu("raid_village_no_resist", "{=!}{RAID_NO_RESIST_DESC}", game_menu_raid_no_resist_on_init);
+		campaignGameSystemStarter.AddGameMenuOption("raid_village_no_resist", "raid_village_no_resist_continue", "{=DM6luo3c}Continue", game_menu_raid_continue_on_condition, game_menu_raid_continue_on_consequence);
+		campaignGameSystemStarter.AddGameMenuOption("raid_village_no_resist", "raid_village_no_resist_leave", "{=sP9ohQTs}Forget it", hostile_action_common_back_on_condition, game_menu_hostile_action_leave_on_consequence, isLeave: true);
+		campaignGameSystemStarter.AddGameMenu("raid_village_resist", "{=!}{RAID_RESIST_DESC}", game_menu_raid_resist_on_init);
+		campaignGameSystemStarter.AddGameMenuOption("raid_village_resist", "raid_village_resist_continue", "{=DM6luo3c}Continue", game_menu_raid_continue_on_condition, game_menu_raid_continue_on_consequence);
+		campaignGameSystemStarter.AddGameMenuOption("raid_village_resist", "raid_village_resist_leave", "{=sP9ohQTs}Forget it", hostile_action_common_back_on_condition, game_menu_hostile_action_leave_on_consequence, isLeave: true);
+		campaignGameSystemStarter.AddGameMenu("force_supplies_no_resist", "{=!}{FORCE_SUPPLIES_NO_RESIST_DESC}", game_menu_force_supplies_no_resist_on_init);
+		campaignGameSystemStarter.AddGameMenuOption("force_supplies_no_resist", "force_supplies_no_resist_continue", "{=DM6luo3c}Continue", game_menu_force_supplies_continue_on_condition, game_menu_force_supplies_no_resist_continue_on_consequence);
+		campaignGameSystemStarter.AddGameMenuOption("force_supplies_no_resist", "force_supplies_no_resist_leave", "{=sP9ohQTs}Forget it", hostile_action_common_back_on_condition, game_menu_hostile_action_leave_on_consequence, isLeave: true);
+		campaignGameSystemStarter.AddGameMenu("force_supplies_resist", "{=!}{FORCE_SUPPLIES_DESC}", game_menu_force_supplies_resist_on_init);
+		campaignGameSystemStarter.AddGameMenuOption("force_supplies_resist", "force_supplies_resist_continue", "{=DM6luo3c}Continue", game_menu_force_supplies_continue_on_condition, game_menu_force_supplies_resist_continue_on_consequence);
+		campaignGameSystemStarter.AddGameMenuOption("force_supplies_resist", "force_supplies_resist_leave", "{=sP9ohQTs}Forget it", hostile_action_common_back_on_condition, game_menu_hostile_action_leave_on_consequence, isLeave: true);
+		campaignGameSystemStarter.AddGameMenu("force_volunteers_no_resist", "{=!}{FORCE_TROOPS_NO_RESIST_DESC}", game_menu_force_troops_no_resist_on_init);
+		campaignGameSystemStarter.AddGameMenuOption("force_volunteers_no_resist", "force_volunteers_no_resist_continue", "{=DM6luo3c}Continue", game_menu_force_volunteers_continue_on_condition, game_menu_force_volunteers_no_resist_continue_on_consequence);
+		campaignGameSystemStarter.AddGameMenuOption("force_volunteers_no_resist", "force_volunteers_no_resist_leave", "{=sP9ohQTs}Forget it", hostile_action_common_back_on_condition, game_menu_hostile_action_leave_on_consequence, isLeave: true);
+		campaignGameSystemStarter.AddGameMenu("force_volunteers_resist", "{=!}{FORCE_TROOPS_DESC}", game_menu_force_troops_resist_on_init);
+		campaignGameSystemStarter.AddGameMenuOption("force_volunteers_resist", "force_volunteers_resist_continue", "{=DM6luo3c}Continue", game_menu_force_volunteers_continue_on_condition, game_menu_force_volunteers_resist_continue_on_consequence);
+		campaignGameSystemStarter.AddGameMenuOption("force_volunteers_resist", "force_volunteers_resist_leave", "{=sP9ohQTs}Forget it", hostile_action_common_back_on_condition, game_menu_hostile_action_leave_on_consequence, isLeave: true);
 		campaignGameSystemStarter.AddGameMenu("force_supplies_village", "{=EqFbNha8}The villagers grudgingly bring out what they have for you.", force_supply_game_menu_init);
 		campaignGameSystemStarter.AddGameMenuOption("force_supplies_village", "force_supplies_village_continue", "{=DM6luo3c}Continue", hostile_action_common_continue_on_condition, village_force_supplies_ended_successfully_on_consequence, isLeave: true);
-		campaignGameSystemStarter.AddGameMenu("force_supplies_village_resist_warn_player", "{=!}{FORCE_SUPPLY_WARN_PLAYER_EXPLANATION}", game_menu_force_supply_warn_player_on_init);
-		campaignGameSystemStarter.AddGameMenuOption("force_supplies_village_resist_warn_player", "force_supplies_village_resist_warn_player_continue", "{=DM6luo3c}Continue", game_menu_force_supplies_village_resist_warn_player_continue_on_condition, game_menu_force_supplies_village_resist_warn_player_continue_on_consequence);
-		campaignGameSystemStarter.AddGameMenuOption("force_supplies_village_resist_warn_player", "force_supplies_village_resist_warn_player_leave", "{=sP9ohQTs}Forget it", hostile_action_common_back_on_condition, game_menu_village_hostile_action_warn_leave_on_consequence, isLeave: true);
-		campaignGameSystemStarter.AddGameMenu("force_troops_village_resist_warn_player", "{=!}{FORCE_TROOP_WARN_PLAYER_EXPLANATION}", game_menu_force_troop_warn_player_on_init);
-		campaignGameSystemStarter.AddGameMenuOption("force_troops_village_resist_warn_player", "force_supplies_village_resist_warn_player_continue", "{=DM6luo3c}Continue", game_menu_force_troops_village_resist_warn_player_continue_on_condition, game_menu_force_troops_village_resist_warn_player_continue_on_consequence);
-		campaignGameSystemStarter.AddGameMenuOption("force_troops_village_resist_warn_player", "force_supplies_village_resist_warn_player_leave", "{=sP9ohQTs}Forget it", hostile_action_common_back_on_condition, game_menu_village_hostile_action_warn_leave_on_consequence, isLeave: true);
 		campaignGameSystemStarter.AddGameMenu("force_volunteers_village", "{=BqkD4YWr}You manage to round up some men from the village who look like they might make decent recruits.", force_troop_game_menu_init);
 		campaignGameSystemStarter.AddGameMenuOption("force_volunteers_village", "force_supplies_village_continue", "{=DM6luo3c}Continue", hostile_action_common_continue_on_condition, village_force_volunteers_ended_successfully_on_consequence, isLeave: true);
 		campaignGameSystemStarter.AddGameMenu("village_looted", "{=NxcXfUxu}The village has been looted. A handful of souls scatter as you pass through the burnt-out houses.", village_looted_init);
@@ -152,6 +194,16 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		MBTextManager.SetTextVariable("RAID_OCCUPPIED_TEXT", textObject);
 	}
 
+	private static bool wait_menu_end_raiding_at_army_by_leaving_on_condition(MenuCallbackArgs args)
+	{
+		args.optionLeaveType = GameMenuOption.LeaveType.Leave;
+		if (MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty != MobileParty.MainParty)
+		{
+			return MobileParty.MainParty.MapEvent == null;
+		}
+		return false;
+	}
+
 	private static bool raid_occupied_on_condition(MenuCallbackArgs args)
 	{
 		args.optionLeaveType = GameMenuOption.LeaveType.Leave;
@@ -164,14 +216,40 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		MobileParty.MainParty.SetMoveModeHold();
 	}
 
-	private static bool wait_menu_end_raiding_at_army_by_leaving_on_condition(MenuCallbackArgs args)
+	private static bool WillVillageResistHostileAction(Settlement settlement)
 	{
-		args.optionLeaveType = GameMenuOption.LeaveType.Leave;
-		if (MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty != MobileParty.MainParty)
+		MobileParty mobileParty = settlement.MilitiaPartyComponent?.MobileParty;
+		if (mobileParty == null || mobileParty.MemberRoster.TotalHealthyCount == 0)
 		{
-			return MobileParty.MainParty.MapEvent == null;
+			return false;
 		}
-		return false;
+		float num = 0f;
+		num += mobileParty.Party.CalculateCurrentStrength();
+		if (mobileParty.IsLordParty)
+		{
+			return true;
+		}
+		foreach (MobileParty party in settlement.Parties)
+		{
+			if (party != mobileParty && party.MapFaction == settlement.MapFaction && !party.IsCaravan)
+			{
+				num += party.Party.CalculateCurrentStrength();
+				if (party.IsLordParty)
+				{
+					return true;
+				}
+			}
+		}
+		float num2 = MobileParty.MainParty.Party.CalculateCurrentStrength();
+		if (MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty)
+		{
+			foreach (MobileParty attachedParty in MobileParty.MainParty.Army.LeaderParty.AttachedParties)
+			{
+				num2 += attachedParty.Party.CalculateCurrentStrength();
+			}
+		}
+		float num3 = ((settlement.OwnerClan?.Leader?.PartyBelongedTo != null) ? settlement.OwnerClan.Leader.PartyBelongedTo.Party.RandomFloatWithSeed(1u, 0.05f, 0.15f) : 0.1f);
+		return !(num2 * num3 > num);
 	}
 
 	private static void game_menu_village_hostile_menu_on_init(MenuCallbackArgs args)
@@ -185,7 +263,7 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		}
 		else if (Settlement.CurrentSettlement.SettlementHitPoints <= 0f)
 		{
-			Debug.FailedAssert("This case should not be possible, check here", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "game_menu_village_hostile_menu_on_init", 236);
+			Debug.FailedAssert("This case should not be possible, check here", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "game_menu_village_hostile_menu_on_init", 322);
 		}
 	}
 
@@ -209,7 +287,7 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 			else if (Math.Min(MobileParty.MainParty.MemberRoster.TotalHealthyCount, ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().SumQ((Ship x) => x.MainDeckCrewCapacity)) < minimumNumberOfMenForAttackingVillageViaScene)
 			{
 				args.IsEnabled = false;
-				args.Tooltip = new TextObject("{=*}Your shallow ship's crew capacity is too low for a hostile action. A minimum of {NUMBER} crew is required. Use a larger or additional vessel.");
+				args.Tooltip = new TextObject("{=aeUaoEYs}Your shallow ship's crew capacity is too low for a hostile action. A minimum of {NUMBER} crew is required. Use a larger or additional vessel.");
 				args.Tooltip.SetTextVariable("NUMBER", minimumNumberOfMenForAttackingVillageViaScene);
 			}
 		}
@@ -234,25 +312,25 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 
 	private static void game_menu_village_hostile_action_raid_village_on_consequence(MenuCallbackArgs args)
 	{
-		if (!FactionManager.IsAtWarAgainstFaction(Hero.MainHero.MapFaction, Settlement.CurrentSettlement.MapFaction))
+		if (WillVillageResistHostileAction(Settlement.CurrentSettlement))
 		{
-			GameMenu.SwitchToMenu("raid_village_no_resist_warn_player");
+			GameMenu.SwitchToMenu("raid_village_resist");
 		}
 		else
 		{
-			StartHostileAction(HostileActionType.Raid);
+			GameMenu.SwitchToMenu("raid_village_no_resist");
 		}
 	}
 
 	private static void game_menu_village_hostile_action_force_volunteers_on_consequence(MenuCallbackArgs args)
 	{
-		if (!FactionManager.IsAtWarAgainstFaction(Clan.PlayerClan.MapFaction, Settlement.CurrentSettlement.MapFaction))
+		if (WillVillageResistHostileAction(Settlement.CurrentSettlement))
 		{
-			GameMenu.SwitchToMenu("force_troops_village_resist_warn_player");
+			GameMenu.SwitchToMenu("force_volunteers_resist");
 		}
 		else
 		{
-			StartHostileAction(HostileActionType.ForceTroop);
+			GameMenu.SwitchToMenu("force_volunteers_no_resist");
 		}
 	}
 
@@ -284,13 +362,13 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 
 	private static void game_menu_village_hostile_action_take_food_on_consequence(MenuCallbackArgs args)
 	{
-		if (!FactionManager.IsAtWarAgainstFaction(Clan.PlayerClan.MapFaction, Settlement.CurrentSettlement.MapFaction))
+		if (WillVillageResistHostileAction(Settlement.CurrentSettlement))
 		{
-			GameMenu.SwitchToMenu("force_supplies_village_resist_warn_player");
+			GameMenu.SwitchToMenu("force_supplies_resist");
 		}
 		else
 		{
-			StartHostileAction(HostileActionType.ForceSupply);
+			GameMenu.SwitchToMenu("force_supplies_no_resist");
 		}
 	}
 
@@ -318,27 +396,132 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		GameMenu.SwitchToMenu("village_hostile_action");
 	}
 
-	private static bool game_menu_village_hostile_action_raid_village_warn_continue_on_condition(MenuCallbackArgs args)
+	private static void game_menu_raid_no_resist_on_init(MenuCallbackArgs args)
+	{
+		TextObject text = new TextObject("{=m5Mxxqqg}The villagers, seeing the size of your force, watch helplessly as your troops prepare to sweep through the village. If you proceed you will gain loot and the village militia will disband, but the {KINGDOM} will regard your act as a crime.");
+		if (PlayerEncounter.Current.EncounterSettlementAux.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
+		{
+			text = new TextObject("{=*}The villagers, seeing the size of your force, watch helplessly as your troops prepare to sweep through the village. This will hurt your relations with the village.");
+		}
+		MBTextManager.SetTextVariable("RAID_NO_RESIST_DESC", text);
+		MBTextManager.SetTextVariable("KINGDOM", PlayerEncounter.Current.EncounterSettlementAux.MapFaction.InformalName);
+		SetHostileActionWarnPlayerInitBackground(args);
+	}
+
+	private static void game_menu_force_supplies_no_resist_on_init(MenuCallbackArgs args)
+	{
+		TextObject text = new TextObject("{=Z6JlB48N}The villagers grudgingly bring out what they have for you. You may take the supplies. The village militia will disband, but the {KINGDOM} will regard your act as a crime.");
+		if (PlayerEncounter.Current.EncounterSettlementAux.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
+		{
+			text = new TextObject("{=*}The villagers grudgingly bring out what they have for you. Taking their supplies will hurt your relations with the village.");
+		}
+		MBTextManager.SetTextVariable("FORCE_SUPPLIES_NO_RESIST_DESC", text);
+		MBTextManager.SetTextVariable("KINGDOM", PlayerEncounter.Current.EncounterSettlementAux.MapFaction.InformalName);
+		SetHostileActionWarnPlayerInitBackground(args);
+	}
+
+	private static void game_menu_force_troops_no_resist_on_init(MenuCallbackArgs args)
+	{
+		TextObject text = new TextObject("{=aNfu8vPF}You spot some men from the village who look like they might make decent recruits. The village militia will not resist you and will disband if you proceed, but the {KINGDOM} will regard your act as a crime.");
+		if (PlayerEncounter.Current.EncounterSettlementAux.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
+		{
+			text = new TextObject("{=*}You spot some men from the village who look like they might make decent recruits. You may force them to come with you, though this will hurt your relations with the village.");
+		}
+		MBTextManager.SetTextVariable("FORCE_TROOPS_NO_RESIST_DESC", text);
+		MBTextManager.SetTextVariable("KINGDOM", PlayerEncounter.Current.EncounterSettlementAux.MapFaction.InformalName);
+		SetHostileActionWarnPlayerInitBackground(args);
+	}
+
+	private static void game_menu_raid_resist_on_init(MenuCallbackArgs args)
+	{
+		TextObject text = new TextObject("{=QBRtMnrM}The villagers take up arms and prepare to defend their homes. If you win you may loot the village, but once you give the order to attack you will be at war with the {KINGDOM}.");
+		if (PlayerEncounter.Current.EncounterSettlementAux.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
+		{
+			text = new TextObject("{=*}The villagers take up arms and prepare to defend their homes. This will hurt your relations with the village.");
+		}
+		MBTextManager.SetTextVariable("RAID_RESIST_DESC", text);
+		MBTextManager.SetTextVariable("KINGDOM", PlayerEncounter.Current.EncounterSettlementAux.MapFaction.InformalName);
+		SetHostileActionWarnPlayerInitBackground(args);
+	}
+
+	private static void game_menu_force_supplies_resist_on_init(MenuCallbackArgs args)
+	{
+		TextObject text = new TextObject("{=eDZk4ajJ}The villagers refuse to hand over their goods and take up a defensive position. If you defeat them you may take their supplies, but once you give the order to attack you will be at war with the {KINGDOM}.");
+		if (PlayerEncounter.Current.EncounterSettlementAux.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
+		{
+			text = new TextObject("{=*}The villagers refuse to hand over their goods and take up a defensive position. If you defeat them you may take their supplies but this will hurt your relations with the village.");
+		}
+		MBTextManager.SetTextVariable("FORCE_SUPPLIES_DESC", text);
+		MBTextManager.SetTextVariable("KINGDOM", PlayerEncounter.Current.EncounterSettlementAux.MapFaction.InformalName);
+		SetHostileActionWarnPlayerInitBackground(args);
+	}
+
+	private static void game_menu_force_troops_resist_on_init(MenuCallbackArgs args)
+	{
+		TextObject text = new TextObject("{=rySjTkeH}The village notables refuse your demand for recruits, and stand ready to resist you along with their followers. If you defeat them you may round up some of the survivors and force them into your ranks, but once you give the order to attack you will be at war with the {KINGDOM}.");
+		if (PlayerEncounter.Current.EncounterSettlementAux.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
+		{
+			text = new TextObject("{=*}The village notables refuse your demand for recruits, and stand ready to resist you along with their followers. If you defeat them you may round up some of the survivors and force them into your ranks. However, this will hurt your relations with the village.");
+		}
+		MBTextManager.SetTextVariable("FORCE_TROOPS_DESC", text);
+		MBTextManager.SetTextVariable("KINGDOM", PlayerEncounter.Current.EncounterSettlementAux.MapFaction.InformalName);
+		SetHostileActionWarnPlayerInitBackground(args);
+	}
+
+	private static bool game_menu_raid_continue_on_condition(MenuCallbackArgs args)
 	{
 		args.optionLeaveType = GameMenuOption.LeaveType.Raid;
 		return true;
 	}
 
-	private static bool game_menu_force_supplies_village_resist_warn_player_continue_on_condition(MenuCallbackArgs args)
+	private static void game_menu_raid_continue_on_consequence(MenuCallbackArgs args)
+	{
+		BeHostileAction.ApplyEncounterHostileAction(PartyBase.MainParty, Settlement.CurrentSettlement.Party);
+		PlayerEncounter.Current.ForceRaid = true;
+		GameMenu.SwitchToMenu("encounter");
+	}
+
+	private static bool game_menu_force_supplies_continue_on_condition(MenuCallbackArgs args)
 	{
 		args.optionLeaveType = GameMenuOption.LeaveType.ForceToGiveGoods;
 		return true;
 	}
 
-	private static void game_menu_force_supplies_village_resist_warn_player_continue_on_consequence(MenuCallbackArgs args)
+	private void game_menu_force_supplies_no_resist_continue_on_consequence(MenuCallbackArgs args)
 	{
-		StartHostileAction(HostileActionType.ForceSupply);
+		BeHostileAction.ApplyMinorCoercionHostileAction(PartyBase.MainParty, Settlement.CurrentSettlement.Party);
+		village_force_supplies_ended_successfully_on_consequence(args);
 	}
 
-	private static bool game_menu_force_troops_village_resist_warn_player_continue_on_condition(MenuCallbackArgs args)
+	private static void game_menu_force_supplies_resist_continue_on_consequence(MenuCallbackArgs args)
+	{
+		BeHostileAction.ApplyEncounterHostileAction(PartyBase.MainParty, Settlement.CurrentSettlement.Party);
+		PlayerEncounter.Current.ForceSupplies = true;
+		GameMenu.SwitchToMenu("encounter");
+	}
+
+	private static bool game_menu_force_volunteers_continue_on_condition(MenuCallbackArgs args)
 	{
 		args.optionLeaveType = GameMenuOption.LeaveType.ForceToGiveTroops;
 		return true;
+	}
+
+	private void game_menu_force_volunteers_no_resist_continue_on_consequence(MenuCallbackArgs args)
+	{
+		BeHostileAction.ApplyMajorCoercionHostileAction(PartyBase.MainParty, Settlement.CurrentSettlement.Party);
+		village_force_volunteers_ended_successfully_on_consequence(args);
+	}
+
+	private static void game_menu_force_volunteers_resist_continue_on_consequence(MenuCallbackArgs args)
+	{
+		BeHostileAction.ApplyEncounterHostileAction(PartyBase.MainParty, Settlement.CurrentSettlement.Party);
+		PlayerEncounter.Current.ForceVolunteers = true;
+		GameMenu.SwitchToMenu("encounter");
+	}
+
+	private static void game_menu_hostile_action_leave_on_consequence(MenuCallbackArgs args)
+	{
+		GameMenu.SwitchToMenu("village");
 	}
 
 	private static void village_raid_game_menu_init(MenuCallbackArgs args)
@@ -350,13 +533,8 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		}
 		else
 		{
-			Debug.FailedAssert("Party is in raid but mapevent is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "village_raid_game_menu_init", 414);
+			Debug.FailedAssert("Party is in raid but mapevent is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "village_raid_game_menu_init", 624);
 		}
-	}
-
-	private static void game_menu_force_troops_village_resist_warn_player_continue_on_consequence(MenuCallbackArgs args)
-	{
-		StartHostileAction(HostileActionType.ForceTroop);
 	}
 
 	private static bool wait_menu_start_raiding_on_condition(MenuCallbackArgs args)
@@ -366,16 +544,8 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 			MBTextManager.SetTextVariable("SETTLEMENT_NAME", PlayerEncounter.Battle.MapEventSettlement.Name);
 			return true;
 		}
-		Debug.FailedAssert("Party is in raid but mapevent is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "wait_menu_start_raiding_on_condition", 431);
+		Debug.FailedAssert("Party is in raid but mapevent is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "wait_menu_start_raiding_on_condition", 636);
 		return false;
-	}
-
-	private static void game_menu_raid_warn_player_on_init(MenuCallbackArgs args)
-	{
-		SetHostileActionWarnPlayerInitBackground(args);
-		TextObject textObject = new TextObject("{=Hhq7nq9U}Villagers gathering around to defend their land. {DETAILED_HOSTILE_EXPLANATION}");
-		textObject.SetTextVariable("DETAILED_HOSTILE_EXPLANATION", GetHostileActionGenericWarnExplanation());
-		MBTextManager.SetTextVariable("RAID_WARN_PLAYER_EXPLANATION", textObject);
 	}
 
 	private static void wait_menu_end_raiding_on_consequence(MenuCallbackArgs args)
@@ -509,7 +679,7 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		}
 		else
 		{
-			Debug.FailedAssert("Party is in raid but mapEvent is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "wait_menu_raiding_village_on_tick", 595);
+			Debug.FailedAssert("Party is in raid but mapEvent is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\VillageHostileActionCampaignBehavior.cs", "wait_menu_raiding_village_on_tick", 786);
 		}
 	}
 
@@ -532,19 +702,6 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 	private static void SetHostileActionWarnPlayerInitBackground(MenuCallbackArgs args)
 	{
 		args.MenuContext.SetBackgroundMeshName(Settlement.CurrentSettlement.SettlementComponent.WaitMeshName);
-	}
-
-	private static void game_menu_force_supply_warn_player_on_init(MenuCallbackArgs args)
-	{
-		SetHostileActionWarnPlayerInitBackground(args);
-		TextObject textObject = new TextObject("{=EBQ8qOYA}The villagers seem ready to resist the seizure of their goods.{DETAILED_HOSTILE_EXPLANATION}");
-		textObject.SetTextVariable("DETAILED_HOSTILE_EXPLANATION", GetHostileActionGenericWarnExplanation());
-		MBTextManager.SetTextVariable("FORCE_SUPPLY_WARN_PLAYER_EXPLANATION", textObject);
-	}
-
-	private static void game_menu_village_hostile_action_raid_village_warn_continue_on_consequence(MenuCallbackArgs args)
-	{
-		StartHostileAction(HostileActionType.Raid);
 	}
 
 	private void village_force_supplies_ended_successfully_on_consequence(MenuCallbackArgs args)
@@ -578,22 +735,17 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 			PartyBase.MainParty,
 			itemRoster
 		} });
-		bool attacked = MapEvent.PlayerMapEvent == null;
+		bool attacked = MapEvent.PlayerMapEvent != null;
 		SkillLevelingManager.OnForceSupplies(MobileParty.MainParty, itemRoster, attacked);
-		PlayerEncounter.Current.ForceSupplies = false;
-		PlayerEncounter.Current.FinalizeBattle();
+		if (PlayerEncounter.Current != null)
+		{
+			PlayerEncounter.Current.ForceSupplies = false;
+			PlayerEncounter.Current.FinalizeBattle();
+		}
 	}
 
 	private static void force_troop_game_menu_init(MenuCallbackArgs args)
 	{
-	}
-
-	private static void game_menu_force_troop_warn_player_on_init(MenuCallbackArgs args)
-	{
-		SetHostileActionWarnPlayerInitBackground(args);
-		TextObject textObject = new TextObject("{=BsEeUfbk}The village elder balks at your demand. He says the villagers might resist.{DETAILED_HOSTILE_EXPLANATION}");
-		textObject.SetTextVariable("DETAILED_HOSTILE_EXPLANATION", GetHostileActionGenericWarnExplanation());
-		MBTextManager.SetTextVariable("FORCE_TROOP_WARN_PLAYER_EXPLANATION", textObject);
 	}
 
 	private void village_force_volunteers_ended_successfully_on_consequence(MenuCallbackArgs args)
@@ -602,7 +754,8 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		GameMenu.SwitchToMenu("village");
 		TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
 		int num = (int)Math.Ceiling(Settlement.CurrentSettlement.Village.Hearth / 30f);
-		if (MobileParty.MainParty.HasPerk(DefaultPerks.Roguery.InBestLight))
+		Hero perkOwnerHero = null;
+		if (MobileParty.MainParty.HasPerk(DefaultPerks.Roguery.InBestLight, out perkOwnerHero))
 		{
 			num += Settlement.CurrentSettlement.Notables.Count;
 		}
@@ -618,15 +771,12 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		Settlement.CurrentSettlement.SettlementHitPoints -= Settlement.CurrentSettlement.SettlementHitPoints * 0.8f;
 		Settlement.CurrentSettlement.Village.Hearth -= num / 2;
 		PartyScreenHelper.OpenScreenAsLoot(troopRoster, TroopRoster.CreateDummyTroopRoster(), MobileParty.MainParty.CurrentSettlement.Name, troopRoster.TotalManCount);
-		PlayerEncounter.Current.ForceVolunteers = false;
+		if (PlayerEncounter.Current != null)
+		{
+			PlayerEncounter.Current.ForceVolunteers = false;
+			PlayerEncounter.Current.FinalizeBattle();
+		}
 		SkillLevelingManager.OnForceVolunteers(MobileParty.MainParty, Settlement.CurrentSettlement.Party);
-		PlayerEncounter.Current.FinalizeBattle();
-	}
-
-	private static void game_menu_village_hostile_action_warn_leave_on_consequence(MenuCallbackArgs args)
-	{
-		GameMenu.SwitchToMenu("village_hostile_action");
-		PlayerEncounter.Finish();
 	}
 
 	private static void village_looted_init(MenuCallbackArgs args)
@@ -672,27 +822,17 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private static TextObject GetHostileActionGenericWarnExplanation()
-	{
-		Settlement currentSettlement = Settlement.CurrentSettlement;
-		TextObject textObject;
-		if (Clan.PlayerClan.IsUnderMercenaryService)
-		{
-			textObject = new TextObject("{=d6KbdIWg}As a result of your hostile intent towards a neutral village, the {MERCENARY_KINGDOM} ends its contract with you, and the {KINGDOM} declares war on you.");
-			textObject.SetTextVariable("MERCENARY_KINGDOM", Clan.PlayerClan.Kingdom.EncyclopediaTitle);
-		}
-		else
-		{
-			textObject = new TextObject("{=bjEN2OzZ}As a result of your hostile intent towards a neutral village, the {KINGDOM} declares war on you.");
-		}
-		textObject.SetTextVariable("KINGDOM", currentSettlement.MapFaction.IsKingdomFaction ? ((Kingdom)currentSettlement.MapFaction).EncyclopediaTitle : currentSettlement.MapFaction.Name);
-		return textObject;
-	}
-
 	[GameMenuInitializationHandler("village_player_raid_ended")]
 	private static void game_menu_village_raid_ended_menu_sound_on_init(MenuCallbackArgs args)
 	{
-		args.MenuContext.SetBackgroundMeshName("wait_raiding_village");
+		if (MobileParty.MainParty.IsCurrentlyAtSea)
+		{
+			args.MenuContext.SetBackgroundMeshName("wait_raiding_village_naval");
+		}
+		else
+		{
+			args.MenuContext.SetBackgroundMeshName("wait_raiding_village");
+		}
 		if (MobileParty.MainParty.LastVisitedSettlement != null && MobileParty.MainParty.LastVisitedSettlement.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
 		{
 			args.MenuContext.SetAmbientSound("event:/map/ambient/node/settlements/2d/village_raided");
@@ -704,19 +844,25 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 	[GameMenuInitializationHandler("raiding_village")]
 	private static void game_menu_ui_village_hostile_raid_on_init(MenuCallbackArgs args)
 	{
-		args.MenuContext.SetBackgroundMeshName("wait_raiding_village");
+		if (MobileParty.MainParty.IsCurrentlyAtSea)
+		{
+			args.MenuContext.SetBackgroundMeshName("wait_raiding_village_naval");
+		}
+		else
+		{
+			args.MenuContext.SetBackgroundMeshName("wait_raiding_village");
+		}
 	}
 
 	[GameMenuInitializationHandler("village_hostile_action")]
 	[GameMenuInitializationHandler("force_volunteers_village")]
 	[GameMenuInitializationHandler("force_supplies_village")]
-	[GameMenuInitializationHandler("raid_village_no_resist_warn_player")]
-	[GameMenuInitializationHandler("raid_village_resisted")]
-	[GameMenuInitializationHandler("village_loot_no_resist")]
-	[GameMenuInitializationHandler("village_take_food_confirm")]
-	[GameMenuInitializationHandler("village_press_into_service_confirm")]
-	[GameMenuInitializationHandler("menu_press_into_service_success")]
-	[GameMenuInitializationHandler("menu_village_take_food_success")]
+	[GameMenuInitializationHandler("force_supplies_no_resist")]
+	[GameMenuInitializationHandler("force_supplies_resist")]
+	[GameMenuInitializationHandler("force_volunteers_no_resist")]
+	[GameMenuInitializationHandler("force_volunteers_resist")]
+	[GameMenuInitializationHandler("raid_village_no_resist")]
+	[GameMenuInitializationHandler("raid_village_resist")]
 	private static void game_menu_village_menu_on_init(MenuCallbackArgs args)
 	{
 		Village village = Settlement.CurrentSettlement.Village;
@@ -733,24 +879,6 @@ public class VillageHostileActionCampaignBehavior : CampaignBehaviorBase
 	{
 		args.optionLeaveType = GameMenuOption.LeaveType.Continue;
 		return true;
-	}
-
-	private static void StartHostileAction(HostileActionType hostileActionType)
-	{
-		BeHostileAction.ApplyEncounterHostileAction(PartyBase.MainParty, Settlement.CurrentSettlement.Party);
-		switch (hostileActionType)
-		{
-		case HostileActionType.Raid:
-			PlayerEncounter.Current.ForceRaid = true;
-			break;
-		case HostileActionType.ForceTroop:
-			PlayerEncounter.Current.ForceVolunteers = true;
-			break;
-		case HostileActionType.ForceSupply:
-			PlayerEncounter.Current.ForceSupplies = true;
-			break;
-		}
-		GameMenu.SwitchToMenu("encounter");
 	}
 
 	private void CheckVillageAttackableHonorably(MenuCallbackArgs args)

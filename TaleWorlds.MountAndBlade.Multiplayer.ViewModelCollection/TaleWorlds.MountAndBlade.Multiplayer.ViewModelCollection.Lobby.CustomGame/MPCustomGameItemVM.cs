@@ -47,6 +47,18 @@ public class MPCustomGameItemVM : ViewModel
 
 	private int _maxPlayerCount;
 
+	private int _spectatorCount;
+
+	private int _maxSpectatorCount;
+
+	private string _spectatorCountText;
+
+	private string _spectatorCountHintText;
+
+	private bool _showSpectatorCount;
+
+	private bool _enableSpectators;
+
 	private string _hostText;
 
 	private string _nameText;
@@ -237,6 +249,108 @@ public class MPCustomGameItemVM : ViewModel
 			{
 				_maxPlayerCount = value;
 				OnPropertyChanged("MaxPlayerCount");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public int SpectatorCount
+	{
+		get
+		{
+			return _spectatorCount;
+		}
+		set
+		{
+			if (value != _spectatorCount)
+			{
+				_spectatorCount = value;
+				OnPropertyChanged("SpectatorCount");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public int MaxSpectatorCount
+	{
+		get
+		{
+			return _maxSpectatorCount;
+		}
+		set
+		{
+			if (value != _maxSpectatorCount)
+			{
+				_maxSpectatorCount = value;
+				OnPropertyChanged("MaxSpectatorCount");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string SpectatorCountText
+	{
+		get
+		{
+			return _spectatorCountText;
+		}
+		set
+		{
+			if (value != _spectatorCountText)
+			{
+				_spectatorCountText = value;
+				OnPropertyChanged("SpectatorCountText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string SpectatorCountHintText
+	{
+		get
+		{
+			return _spectatorCountHintText;
+		}
+		set
+		{
+			if (value != _spectatorCountHintText)
+			{
+				_spectatorCountHintText = value;
+				OnPropertyChanged("SpectatorCountHintText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool ShowSpectatorCount
+	{
+		get
+		{
+			return _showSpectatorCount;
+		}
+		set
+		{
+			if (value != _showSpectatorCount)
+			{
+				_showSpectatorCount = value;
+				OnPropertyChanged("ShowSpectatorCount");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool EnableSpectators
+	{
+		get
+		{
+			return _enableSpectators;
+		}
+		set
+		{
+			if (value != _enableSpectators)
+			{
+				_enableSpectators = value;
+				OnPropertyChanged("EnableSpectators");
 			}
 		}
 	}
@@ -448,6 +562,23 @@ public class MPCustomGameItemVM : ViewModel
 		GameTexts.SetVariable("LEFT", PlayerCount);
 		GameTexts.SetVariable("RIGHT", MaxPlayerCount);
 		PlayerCountText = GameTexts.FindText("str_LEFT_over_RIGHT").ToString();
+		SpectatorCount = GameServerInfo.SpectatorCount;
+		MaxSpectatorCount = GameServerInfo.MaxSpectatorCount;
+		if (MaxSpectatorCount > 0)
+		{
+			GameTexts.SetVariable("LEFT", SpectatorCount);
+			GameTexts.SetVariable("RIGHT", MaxSpectatorCount);
+			SpectatorCountText = GameTexts.FindText("str_LEFT_over_RIGHT").ToString();
+		}
+		else
+		{
+			SpectatorCountText = SpectatorCount.ToString();
+		}
+		ShowSpectatorCount = SpectatorCount > 0;
+		TextObject textObject2 = new TextObject("{=vGnGbK9I}Spectators: {COUNT}");
+		textObject2.SetTextVariable("COUNT", SpectatorCountText);
+		SpectatorCountHintText = textObject2.ToString();
+		EnableSpectators = GameServerInfo.EnableSpectators;
 		IsOfficialServer = GameServerInfo.IsOfficial;
 		IsByOfficialServerProvider = GameServerInfo.ByOfficialProvider;
 		IsCommunityServer = !IsOfficialServer && !IsByOfficialServerProvider;

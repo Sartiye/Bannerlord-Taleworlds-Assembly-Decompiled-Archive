@@ -66,6 +66,8 @@ public sealed class NetworkCommunicator : ICommunicator
 
 	public bool IsAdmin { get; private set; }
 
+	public bool IsSpectator { get; private set; }
+
 	public int Index => VirtualPlayer.Index;
 
 	public string UserName => VirtualPlayer.UserName;
@@ -185,12 +187,13 @@ public sealed class NetworkCommunicator : ICommunicator
 		VirtualPlayer = new VirtualPlayer(index, name, playerID, this);
 	}
 
-	internal static NetworkCommunicator CreateAsServer(PlayerConnectionInfo playerConnectionInfo, int index, bool isAdmin)
+	internal static NetworkCommunicator CreateAsServer(PlayerConnectionInfo playerConnectionInfo, int index, bool isAdmin, bool isSpectator)
 	{
 		NetworkCommunicator obj = new NetworkCommunicator(index, playerConnectionInfo.Name, playerConnectionInfo.PlayerID)
 		{
 			PlayerConnectionInfo = playerConnectionInfo,
-			IsAdmin = isAdmin
+			IsAdmin = isAdmin,
+			IsSpectator = isSpectator
 		};
 		MBNetworkPeer data = new MBNetworkPeer(obj);
 		MBAPI.IMBPeer.SetUserData(index, data);
@@ -295,10 +298,11 @@ public sealed class NetworkCommunicator : ICommunicator
 		return MBAPI.IMBPeer.GetPort(Index);
 	}
 
-	public void UpdateConnectionInfoForReconnect(PlayerConnectionInfo playerConnectionInfo, bool isAdmin)
+	public void UpdateConnectionInfoForReconnect(PlayerConnectionInfo playerConnectionInfo, bool isAdmin, bool isSpectator)
 	{
 		PlayerConnectionInfo = playerConnectionInfo;
 		IsAdmin = isAdmin;
+		IsSpectator = isSpectator;
 	}
 
 	public void UpdateIndexForReconnectingPlayer(int newIndex)
@@ -307,8 +311,9 @@ public sealed class NetworkCommunicator : ICommunicator
 		VirtualPlayer.UpdateIndexForReconnectingPlayer(newIndex);
 	}
 
-	public void UpdateForJoiningCustomGame(bool isAdmin)
+	internal void SetJoinFlagsAsClient(bool isSpectator, bool isAdmin)
 	{
+		IsSpectator = isSpectator;
 		IsAdmin = isAdmin;
 	}
 }

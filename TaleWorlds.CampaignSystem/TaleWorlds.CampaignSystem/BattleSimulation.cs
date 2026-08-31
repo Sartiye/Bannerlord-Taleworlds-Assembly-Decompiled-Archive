@@ -59,6 +59,7 @@ public class BattleSimulation : IBattleObserver
 		_mapEvent = PlayerEncounter.Battle ?? PlayerEncounter.StartBattle();
 		_mapEvent.IsPlayerSimulation = true;
 		_mapEvent.BattleObserver = this;
+		_isPlayerRetreated = false;
 		SelectedTroops[(int)_mapEvent.PlayerSide] = selectedTroopsForPlayerSide;
 		SelectedTroops[(int)_mapEvent.GetOtherSide(_mapEvent.PlayerSide)] = selectedTroopsForOtherSide;
 		_mapEvent.GetNumberOfInvolvedMen();
@@ -145,7 +146,7 @@ public class BattleSimulation : IBattleObserver
 		}
 		if (PlayerEncounter.Current == null)
 		{
-			Debug.FailedAssert("PlayerEncounter.Current == null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\BattleSimulation.cs", "Tick", 158);
+			Debug.FailedAssert("PlayerEncounter.Current == null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\BattleSimulation.cs", "Tick", 159);
 			IsSimulationFinished = true;
 			return;
 		}

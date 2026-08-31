@@ -26,7 +26,7 @@ public static class BannerlordNetwork
 	{
 		if (MBCommon.CurrentGameType == MBCommon.GameType.MultiClientServer)
 		{
-			GameNetwork.AddNewPlayerOnServer(CreateServerPeerConnectionInfo(), serverPeer: true, isAdmin: true);
+			GameNetwork.AddNewPlayerOnServer(CreateServerPeerConnectionInfo(), serverPeer: true, isAdmin: true, isSpectator: false);
 		}
 	}
 

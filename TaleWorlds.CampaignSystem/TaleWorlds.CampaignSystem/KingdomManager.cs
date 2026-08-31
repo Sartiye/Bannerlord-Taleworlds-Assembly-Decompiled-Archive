@@ -121,9 +121,9 @@ public class KingdomManager
 		kingdom.Aggressiveness += -1f;
 	}
 
-	public void CreateKingdom(TextObject kingdomName, TextObject informalName, CultureObject culture, Clan founderClan, MBReadOnlyList<PolicyObject> initialPolicies = null, TextObject encyclopediaText = null, TextObject encyclopediaTitle = null, TextObject encyclopediaRulerTitle = null)
+	public Kingdom CreateKingdom(TextObject kingdomName, TextObject informalName, CultureObject culture, Clan founderClan, TextObject formalName, MBReadOnlyList<PolicyObject> initialPolicies = null, TextObject encyclopediaText = null, TextObject encyclopediaTitle = null, TextObject encyclopediaRulerTitle = null, string stringId = "new_kingdom", Banner banner = null, uint? color1 = null, uint? color2 = null, uint? primaryBannerColor = null, uint? secondaryBannerColor = null)
 	{
-		Kingdom kingdom = Kingdom.CreateKingdom("new_kingdom");
+		Kingdom kingdom = Kingdom.CreateKingdom(stringId);
 		if (encyclopediaTitle == null)
 		{
 			encyclopediaTitle = new TextObject("{=ZOEamqUd}Kingdom of {NAME}");
@@ -142,7 +142,10 @@ public class KingdomManager
 			Kingdom kingdom2 = Kingdom.All.FirstOrDefault((Kingdom x) => x.Culture == culture);
 			encyclopediaRulerTitle = ((kingdom2 != null) ? kingdom2.EncyclopediaRulerTitle : TextObject.GetEmpty());
 		}
-		kingdom.InitializeKingdom(kingdomName, informalName, culture, founderClan.Banner, founderClan.Color, founderClan.Color2, founderClan.HomeSettlement, encyclopediaText, encyclopediaTitle, encyclopediaRulerTitle);
+		Banner banner2 = banner ?? founderClan.Banner;
+		uint kingdomColor = color1 ?? founderClan.Color;
+		uint kingdomColor2 = color2 ?? founderClan.Color2;
+		kingdom.InitializeKingdom(kingdomName, informalName, culture, banner2, kingdomColor, kingdomColor2, founderClan.HomeSettlement, encyclopediaText, encyclopediaTitle, encyclopediaRulerTitle, primaryBannerColor, secondaryBannerColor);
 		List<IFaction> list = new List<IFaction>(founderClan.FactionsAtWarWith.WhereQ((IFaction x) => !Campaign.Current.Models.DiplomacyModel.GetShallowDiplomaticStance(x, founderClan).HasValue));
 		ChangeKingdomAction.ApplyByCreateKingdom(founderClan, kingdom, showNotification: false);
 		foreach (IFaction item in list)
@@ -157,6 +160,7 @@ public class KingdomManager
 			}
 		}
 		CampaignEventDispatcher.Instance.OnKingdomCreated(kingdom);
+		return kingdom;
 	}
 
 	public void AbdicateTheThrone(Kingdom kingdom)
@@ -197,7 +201,7 @@ public class KingdomManager
 			}
 			else if (item.IsAtWarWith(rulingClan))
 			{
-				Debug.FailedAssert("Deviation in peace states between ruling clan & kingdom in abdication", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\KingdomManager.cs", "AbdicateTheThrone", 236);
+				Debug.FailedAssert("Deviation in peace states between ruling clan & kingdom in abdication", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\KingdomManager.cs", "AbdicateTheThrone", 246);
 			}
 		}
 		if (!kingdom.IsEliminated)
@@ -259,7 +263,7 @@ public class KingdomManager
 		{
 			if (isBlockadeActive && item2.Ships.Any())
 			{
-				item2.Anchor.SetSettlement(settlement);
+				item2.Anchor.Settlement = settlement;
 			}
 			if (!((MobileParty.MainParty.Army != null) ? MobileParty.MainParty.Army.Parties.Contains(item2) : (item2 == MobileParty.MainParty)))
 			{

@@ -11,6 +11,13 @@ namespace TaleWorlds.MountAndBlade;
 
 public class MultiplayerOptions
 {
+	public enum FormationTargetingVisibilityModes
+	{
+		Disabled,
+		Percentage,
+		AbsoluteCount
+	}
+
 	public enum MultiplayerOptionsAccessMode
 	{
 		DefaultMapOptions,
@@ -37,6 +44,8 @@ public class MultiplayerOptions
 		GamePassword,
 		[MultiplayerOptionsProperty(OptionValueType.String, MultiplayerOptionsProperty.ReplicationOccurrence.Never, "Sets a password that allows players access to admin tools during the game.", 0, 0, null, false, null)]
 		AdminPassword,
+		[MultiplayerOptionsProperty(OptionValueType.String, MultiplayerOptionsProperty.ReplicationOccurrence.Never, "Sets a password that allows players to join as spectators for detailed spectation of the game.", 0, 0, null, false, null)]
+		SpectatorPassword,
 		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.Never, "Sets ID of the private game definition.", int.MinValue, int.MaxValue, null, false, null)]
 		GameDefinitionId,
 		[MultiplayerOptionsProperty(OptionValueType.Bool, MultiplayerOptionsProperty.ReplicationOccurrence.Immediately, "Allow players to start polls to kick other players.", 0, 0, null, false, null)]
@@ -79,7 +88,7 @@ public class MultiplayerOptions
 		FriendlyFireDamageRangedSelfPercent,
 		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.Immediately, "A percentage of how much ranged damage inflicted upon a friend is actually dealt.", 0, 2000, new string[] { "Battle", "NewBattle", "ClassicBattle", "Captain", "Skirmish", "Siege", "TeamDeathmatch" }, false, null)]
 		FriendlyFireDamageRangedFriendPercent,
-		[MultiplayerOptionsProperty(OptionValueType.Enum, MultiplayerOptionsProperty.ReplicationOccurrence.AtMapLoad, "Who can spectators look at, and how.", 0, 7, null, true, typeof(SpectatorCameraTypes))]
+		[MultiplayerOptionsProperty(OptionValueType.Enum, MultiplayerOptionsProperty.ReplicationOccurrence.AtMapLoad, "Who can spectators look at, and how.", 0, 8, null, true, typeof(SpectatorCameraTypes))]
 		SpectatorCamera,
 		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.AtMapLoad, "Maximum duration for the warmup. In seconds.", 60, 3600, null, false, null)]
 		WarmupTimeLimitInSeconds,
@@ -115,6 +124,24 @@ public class MultiplayerOptions
 		SingleSpawn,
 		[MultiplayerOptionsProperty(OptionValueType.Bool, MultiplayerOptionsProperty.ReplicationOccurrence.AtMapLoad, "Disables the inactivity kick timer.", 0, 0, null, false, null)]
 		DisableInactivityKick,
+		[MultiplayerOptionsProperty(OptionValueType.Bool, MultiplayerOptionsProperty.ReplicationOccurrence.Immediately, "Enables the dedicated streamer overlay (all-players overlay + through-wall silhouettes) for spectators.", 0, 0, null, false, null)]
+		StreamerModeEnabled,
+		[MultiplayerOptionsProperty(OptionValueType.Bool, MultiplayerOptionsProperty.ReplicationOccurrence.AtMapLoad, "Allows players to join this server as spectators. Disabled by default.", 0, 0, null, false, null)]
+		EnableSpectators,
+		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.AtMapLoad, "Set the maximum amount of spectators allowed on the server. 0 means unlimited.", 0, 1023, null, false, null)]
+		MaxSpectatorCount,
+		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.Immediately, "Visibility rule that must be satisfied before an enemy formation can be focused for targeting. 0 = Disabled, 1 = Percentage of visible troops, 2 = Absolute count of visible troops.", 0, 2, new string[] { "Captain" }, false, null)]
+		FormationTargetingVisibilityMode,
+		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.Immediately, "Threshold for the formation targeting visibility rule. In Percentage mode: minimum percent of sampled troops that must be visible (0-100). In AbsoluteCount mode: minimum estimated visible troop count (0-100).", 0, 100, new string[] { "Captain" }, false, null)]
+		FormationTargetingVisibilityThreshold,
+		[MultiplayerOptionsProperty(OptionValueType.Bool, MultiplayerOptionsProperty.ReplicationOccurrence.Immediately, "If true, the formation targeting visibility rule also applies to formations within close range (under 10 meters). If false, close-range formations are always focusable.", 0, 0, new string[] { "Captain" }, false, null)]
+		FormationTargetingVisibilityAppliesAtCloseRange,
+		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.Immediately, "Distance (in metres) beyond which the formation marker is drawn at FarAlphaTarget. The marker fades from full alpha at close range to FarAlphaTarget at this distance. -1 uses the default hardcoded value.", -1, 1000, new string[] { "Captain" }, false, null)]
+		FormationMarkerFarDistanceCutoff,
+		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.Immediately, "Alpha of the formation marker at and beyond FarDistanceCutoff, as an integer percent (0-100, where 0 hides the marker completely). -1 uses the default hardcoded value.", -1, 100, new string[] { "Captain" }, false, null)]
+		FormationMarkerFarAlphaTarget,
+		[MultiplayerOptionsProperty(OptionValueType.Integer, MultiplayerOptionsProperty.ReplicationOccurrence.Immediately, "Distance (in metres) within which a visible formation marker is always drawn at full alpha. Beyond it the marker fades toward FarAlphaTarget. -1 uses the default hardcoded value.", -1, 1000, new string[] { "Captain" }, false, null)]
+		FormationMarkerAlwaysOnDistance,
 		NumOfSlots
 	}
 
@@ -243,7 +270,7 @@ public class MultiplayerOptions
 
 		public MultiplayerOptionsContainer()
 		{
-			_multiplayerOptions = new MultiplayerOption[43];
+			_multiplayerOptions = new MultiplayerOption[53];
 		}
 
 		public MultiplayerOption GetOptionFromOptionType(OptionType optionType)
@@ -289,6 +316,10 @@ public class MultiplayerOptions
 
 	private const int PlayerCountLimitMax = 1023;
 
+	private const int SpectatorCountLimitMin = 0;
+
+	private const int SpectatorCountLimitMax = 1023;
+
 	private const int PlayerCountLimitForMatchStartMin = 0;
 
 	private const int PlayerCountLimitForMatchStartMax = 20;
@@ -333,6 +364,24 @@ public class MultiplayerOptions
 
 	private const int BotsPerFormationLimitMax = 100;
 
+	private const int FormationTargetingVisibilityThresholdMin = 0;
+
+	private const int FormationTargetingVisibilityThresholdMax = 100;
+
+	public const int FormationMarkerUseDefault = -1;
+
+	private const int FormationMarkerFarDistanceCutoffMin = -1;
+
+	private const int FormationMarkerFarDistanceCutoffMax = 1000;
+
+	private const int FormationMarkerFarAlphaTargetMin = -1;
+
+	private const int FormationMarkerFarAlphaTargetMax = 100;
+
+	private const int FormationMarkerAlwaysOnDistanceMin = -1;
+
+	private const int FormationMarkerAlwaysOnDistanceMax = 1000;
+
 	private const int FriendlyFireDamagePercentMin = 0;
 
 	private const int FriendlyFireDamagePercentMax = 2000;
@@ -376,6 +425,7 @@ public class MultiplayerOptions
 		_current.UpdateOptionValue(OptionType.CultureTeam1, MBObjectManager.Instance.GetObjectTypeList<BasicCultureObject>()[0].StringId);
 		_current.UpdateOptionValue(OptionType.CultureTeam2, MBObjectManager.Instance.GetObjectTypeList<BasicCultureObject>()[2].StringId);
 		_current.UpdateOptionValue(OptionType.MaxNumberOfPlayers, 120);
+		_current.UpdateOptionValue(OptionType.MaxSpectatorCount, 0);
 		_current.UpdateOptionValue(OptionType.MinNumberOfPlayersForMatchStart, 1);
 		_current.UpdateOptionValue(OptionType.WarmupTimeLimitInSeconds, 300);
 		_current.UpdateOptionValue(OptionType.MapTimeLimit, 30);
@@ -463,6 +513,7 @@ public class MultiplayerOptions
 		OptionType.GoldGainChangePercentageTeam2.SetValue(0, mode);
 		OptionType.MinScoreToWinMatch.SetValue(120000, mode);
 		OptionType.AutoTeamBalanceThreshold.SetValue(2, mode);
+		InitializeFormationMarkerDefaults(mode);
 	}
 
 	private void InitializeForDuel(MultiplayerOptionsAccessMode mode)
@@ -482,6 +533,7 @@ public class MultiplayerOptions
 		OptionType.GoldGainChangePercentageTeam2.SetValue(0, mode);
 		OptionType.AutoTeamBalanceThreshold.SetValue(0, mode);
 		OptionType.MinScoreToWinDuel.SetValue(3, mode);
+		InitializeFormationMarkerDefaults(mode);
 	}
 
 	private void InitializeForSiege(MultiplayerOptionsAccessMode mode)
@@ -501,6 +553,7 @@ public class MultiplayerOptions
 		OptionType.GoldGainChangePercentageTeam1.SetValue(30, mode);
 		OptionType.GoldGainChangePercentageTeam2.SetValue(0, mode);
 		OptionType.AutoTeamBalanceThreshold.SetValue(2, mode);
+		InitializeFormationMarkerDefaults(mode);
 	}
 
 	private void InitializeForCaptain(MultiplayerOptionsAccessMode mode)
@@ -525,6 +578,17 @@ public class MultiplayerOptions
 		OptionType.AutoTeamBalanceThreshold.SetValue(2, mode);
 		OptionType.AllowPollsToKickPlayers.SetValue(value: true, mode);
 		OptionType.SingleSpawn.SetValue(value: true);
+		OptionType.FormationTargetingVisibilityMode.SetValue(1, mode);
+		OptionType.FormationTargetingVisibilityThreshold.SetValue(20, mode);
+		OptionType.FormationTargetingVisibilityAppliesAtCloseRange.SetValue(value: false, mode);
+		InitializeFormationMarkerDefaults(mode);
+	}
+
+	private void InitializeFormationMarkerDefaults(MultiplayerOptionsAccessMode mode)
+	{
+		OptionType.FormationMarkerFarDistanceCutoff.SetValue(-1, mode);
+		OptionType.FormationMarkerFarAlphaTarget.SetValue(-1, mode);
+		OptionType.FormationMarkerAlwaysOnDistance.SetValue(-1, mode);
 	}
 
 	private void InitializeForSkirmish(MultiplayerOptionsAccessMode mode)
@@ -548,6 +612,7 @@ public class MultiplayerOptions
 		OptionType.GoldGainChangePercentageTeam2.SetValue(0, mode);
 		OptionType.AutoTeamBalanceThreshold.SetValue(2, mode);
 		OptionType.AllowPollsToKickPlayers.SetValue(value: true, mode);
+		InitializeFormationMarkerDefaults(mode);
 	}
 
 	private void InitializeForBattle(MultiplayerOptionsAccessMode mode)
@@ -571,6 +636,7 @@ public class MultiplayerOptions
 		OptionType.GoldGainChangePercentageTeam2.SetValue(0, mode);
 		OptionType.AutoTeamBalanceThreshold.SetValue(2, mode);
 		OptionType.SingleSpawn.SetValue(value: true);
+		InitializeFormationMarkerDefaults(mode);
 	}
 
 	public int GetNumberOfPlayersForGameMode(string gameModeID)
@@ -878,9 +944,19 @@ public class MultiplayerOptions
 		case "aserai":
 			return new TextObject("{=aseraifaction}Aserai").ToString();
 		default:
-			Debug.FailedAssert("Unidentified culture id: " + cultureID, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\Gameplay\\MultiplayerOptions.cs", "GetLocalizedCultureNameFromStringID", 974);
+			Debug.FailedAssert("Unidentified culture id: " + cultureID, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Network\\Gameplay\\MultiplayerOptions.cs", "GetLocalizedCultureNameFromStringID", 1042);
 			return "";
 		}
+	}
+
+	public static bool IsSpectatorCameraFreedomAllowed()
+	{
+		SpectatorCameraTypes intValue = (SpectatorCameraTypes)OptionType.SpectatorCamera.GetIntValue();
+		if (intValue == SpectatorCameraTypes.LockToMainPlayer || (uint)(intValue - 4) <= 2u)
+		{
+			return false;
+		}
+		return true;
 	}
 
 	public static bool TryGetOptionTypeFromString(string optionTypeString, out OptionType optionType, out MultiplayerOptionsProperty optionAttribute)

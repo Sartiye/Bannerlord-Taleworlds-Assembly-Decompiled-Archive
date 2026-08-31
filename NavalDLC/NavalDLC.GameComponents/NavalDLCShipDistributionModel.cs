@@ -1,5 +1,5 @@
-using NavalDLC.ComponentInterfaces;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
@@ -23,9 +23,9 @@ public class NavalDLCShipDistributionModel : ShipDistributionModel
 
 	public override bool CanSendShipToParty(Ship ship, MobileParty mobileParty)
 	{
-		if (mobileParty != MobileParty.MainParty && mobileParty.IsActive && (!mobileParty.IsCurrentlyAtSea || mobileParty.MapEvent == null) && !mobileParty.IsDisbanding && !mobileParty.IsCaravan && !mobileParty.IsCurrentlyUsedByAQuest && !mobileParty.IsMilitia && !mobileParty.IsPatrolParty)
+		if (mobileParty != MobileParty.MainParty && mobileParty.IsActive && (!mobileParty.IsCurrentlyAtSea || mobileParty.MapEvent == null) && !mobileParty.IsDisbanding && !mobileParty.IsCaravan && !mobileParty.IsCurrentlyUsedByAQuest && !mobileParty.IsMilitia && !mobileParty.IsPatrolParty && !mobileParty.IsVillager)
 		{
-			return !mobileParty.IsVillager;
+			return mobileParty.LeaderHero?.CanHaveFleet ?? true;
 		}
 		return false;
 	}

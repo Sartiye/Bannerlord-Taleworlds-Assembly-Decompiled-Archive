@@ -188,7 +188,7 @@ public class CharacterCreationClanNamingStageVM : CharacterCreationStageBaseVM
 	{
 		base.RefreshValues();
 		base.Title = new TextObject("{=wNUcqcJP}Clan Name").ToString();
-		base.Description = new TextObject("{=JJiKk4ow}Select your family name: ").ToString();
+		base.Description = new TextObject("{=RSn1j3tA}Choose your family name: ").ToString();
 		BottomHintText = new TextObject("{=dbBAJ8yi}You can change your banner and clan name later on clan screen").ToString();
 	}
 

@@ -87,7 +87,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 
 	private TextWidget _widget_0_0_2_0_3_0_1;
 
-	private ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_23_Standard_VerticalScrollbar__DependendPrefab _widget_0_0_2_1;
+	private ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_Standard_VerticalScrollbar__DependendPrefab _widget_0_0_2_1;
 
 	private Widget _widget_0_1;
 
@@ -121,7 +121,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 
 	private ImageWidget _widget_0_1_0_0_1_5_0_1;
 
-	private ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_24_ProfitStatItem__DependendPrefab _widget_0_1_0_0_1_5_0_2;
+	private ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_23_ProfitStatItem__DependendPrefab _widget_0_1_0_0_1_5_0_2;
 
 	private ScrollbarWidget _widget_0_1_0_0_1_5_1;
 
@@ -335,7 +335,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		_widget_0_0_2_0_3_0.AddChild(_widget_0_0_2_0_3_0_0);
 		_widget_0_0_2_0_3_0_1 = new TextWidget(base.Context);
 		_widget_0_0_2_0_3_0.AddChild(_widget_0_0_2_0_3_0_1);
-		_widget_0_0_2_1 = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_23_Standard_VerticalScrollbar__DependendPrefab(base.Context);
+		_widget_0_0_2_1 = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_Standard_VerticalScrollbar__DependendPrefab(base.Context);
 		_widget_0_0_2.AddChild(_widget_0_0_2_1);
 		_widget_0_0_2_1.CreateWidgets();
 		_widget_0_1 = new Widget(base.Context);
@@ -370,7 +370,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		_widget_0_1_0_0_1_5_0_0_0.AddChild(_widget_0_1_0_0_1_5_0_0_0_0);
 		_widget_0_1_0_0_1_5_0_1 = new ImageWidget(base.Context);
 		_widget_0_1_0_0_1_5_0.AddChild(_widget_0_1_0_0_1_5_0_1);
-		_widget_0_1_0_0_1_5_0_2 = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_24_ProfitStatItem__DependendPrefab(base.Context);
+		_widget_0_1_0_0_1_5_0_2 = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_23_ProfitStatItem__DependendPrefab(base.Context);
 		_widget_0_1_0_0_1_5_0.AddChild(_widget_0_1_0_0_1_5_0_2);
 		_widget_0_1_0_0_1_5_0_2.CreateWidgets();
 		_widget_0_1_0_0_1_5_1 = new ScrollbarWidget(base.Context);
@@ -1283,8 +1283,8 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			for (int num = _widget_0_0_2_0_1_0_2.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child = _widget_0_0_2_0_1_0_2.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate)child).OnBeforeRemovedChild(child);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate)_widget_0_0_2_0_1_0_2.GetChild(num)).DestroyDataSource();
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate)_widget_0_0_2_0_1_0_2.GetChild(num)).DestroyDataSource();
 			}
 			_datasource_Root_Settlements = null;
 		}
@@ -1294,8 +1294,8 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			for (int num2 = _widget_0_0_2_0_1_0_5.ChildCount - 1; num2 >= 0; num2--)
 			{
 				Widget child2 = _widget_0_0_2_0_1_0_5.GetChild(num2);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)child2).OnBeforeRemovedChild(child2);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)_widget_0_0_2_0_1_0_5.GetChild(num2)).DestroyDataSource();
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate)child2).OnBeforeRemovedChild(child2);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate)_widget_0_0_2_0_1_0_5.GetChild(num2)).DestroyDataSource();
 			}
 			_datasource_Root_Castles = null;
 		}
@@ -1399,8 +1399,8 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				for (int num3 = _widget_0_1_0_0_1_3.ChildCount - 1; num3 >= 0; num3--)
 				{
 					Widget child3 = _widget_0_1_0_0_1_3.GetChild(num3);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child3).OnBeforeRemovedChild(child3);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)_widget_0_1_0_0_1_3.GetChild(num3)).DestroyDataSource();
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)_widget_0_1_0_0_1_3.GetChild(num3)).DestroyDataSource();
 				}
 				_datasource_Root_CurrentSelectedFief_ItemProperties = null;
 			}
@@ -1410,8 +1410,8 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				for (int num4 = _widget_0_1_0_0_1_5_0_0_0_0.ChildCount - 1; num4 >= 0; num4--)
 				{
 					Widget child4 = _widget_0_1_0_0_1_5_0_0_0_0.GetChild(num4);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child4).OnBeforeRemovedChild(child4);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)_widget_0_1_0_0_1_5_0_0_0_0.GetChild(num4)).DestroyDataSource();
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child4).OnBeforeRemovedChild(child4);
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)_widget_0_1_0_0_1_5_0_0_0_0.GetChild(num4)).DestroyDataSource();
 				}
 				_datasource_Root_CurrentSelectedFief_ProfitItemProperties = null;
 			}
@@ -1435,8 +1435,8 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				for (int num5 = _widget_0_1_0_0_2_0_1_0_0_1.ChildCount - 1; num5 >= 0; num5--)
 				{
 					Widget child5 = _widget_0_1_0_0_2_0_1_0_0_1.GetChild(num5);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child5).OnBeforeRemovedChild(child5);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)_widget_0_1_0_0_2_0_1_0_0_1.GetChild(num5)).DestroyDataSource();
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child5).OnBeforeRemovedChild(child5);
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)_widget_0_1_0_0_2_0_1_0_0_1.GetChild(num5)).DestroyDataSource();
 				}
 				_datasource_Root_CurrentSelectedFief_Notables = null;
 			}
@@ -1461,8 +1461,8 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				for (int num6 = _widget_0_1_0_0_2_1_1_0_1_0.ChildCount - 1; num6 >= 0; num6--)
 				{
 					Widget child6 = _widget_0_1_0_0_2_1_1_0_1_0.GetChild(num6);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child6).OnBeforeRemovedChild(child6);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)_widget_0_1_0_0_2_1_1_0_1_0.GetChild(num6)).DestroyDataSource();
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child6).OnBeforeRemovedChild(child6);
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)_widget_0_1_0_0_2_1_1_0_1_0.GetChild(num6)).DestroyDataSource();
 				}
 				_datasource_Root_CurrentSelectedFief_Members = null;
 			}
@@ -1472,8 +1472,8 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				for (int num7 = _widget_0_1_0_0_6.ChildCount - 1; num7 >= 0; num7--)
 				{
 					Widget child7 = _widget_0_1_0_0_6.GetChild(num7);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate)child7).OnBeforeRemovedChild(child7);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate)_widget_0_1_0_0_6.GetChild(num7)).DestroyDataSource();
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child7).OnBeforeRemovedChild(child7);
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)_widget_0_1_0_0_6.GetChild(num7)).DestroyDataSource();
 				}
 				_datasource_Root_CurrentSelectedFief_VillagesOwned = null;
 			}
@@ -3695,9 +3695,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			for (int num = _widget_0_0_2_0_1_0_2.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child3 = _widget_0_0_2_0_1_0_2.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate)child3).OnBeforeRemovedChild(child3);
 				Widget child4 = _widget_0_0_2_0_1_0_2.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate)child4).SetDataSource(null);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate)child4).SetDataSource(null);
 				_widget_0_0_2_0_1_0_2.RemoveChild(child4);
 			}
 			break;
@@ -3713,27 +3713,27 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		}
 		case TaleWorlds.Library.ListChangedType.ItemAdded:
 		{
-			ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate(base.Context);
-			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate);
+			ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate(base.Context);
+			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate);
 			ClanSettlementItemVM dataSource = (ClanSettlementItemVM)(generatedWidgetData.Data = _datasource_Root_Settlements[e.NewIndex]);
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.AddComponent(generatedWidgetData);
-			_widget_0_0_2_0_1_0_2.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate, e.NewIndex);
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.CreateWidgets();
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.SetIds();
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.SetAttributes();
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.SetDataSource(dataSource);
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate.AddComponent(generatedWidgetData);
+			_widget_0_0_2_0_1_0_2.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate, e.NewIndex);
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate.CreateWidgets();
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate.SetIds();
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate.SetAttributes();
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate.SetDataSource(dataSource);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
 		{
 			Widget child2 = _widget_0_0_2_0_1_0_2.GetChild(e.NewIndex);
-			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate)child2).OnBeforeRemovedChild(child2);
+			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate)child2).OnBeforeRemovedChild(child2);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemDeleted:
 		{
 			Widget child = _widget_0_0_2_0_1_0_2.GetChild(e.NewIndex);
-			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate)child).SetDataSource(null);
+			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate)child).SetDataSource(null);
 			_widget_0_0_2_0_1_0_2.RemoveChild(child);
 			break;
 		}
@@ -3751,9 +3751,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			for (int num = _widget_0_0_2_0_1_0_5.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child3 = _widget_0_0_2_0_1_0_5.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate)child3).OnBeforeRemovedChild(child3);
 				Widget child4 = _widget_0_0_2_0_1_0_5.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)child4).SetDataSource(null);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate)child4).SetDataSource(null);
 				_widget_0_0_2_0_1_0_5.RemoveChild(child4);
 			}
 			break;
@@ -3769,27 +3769,27 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		}
 		case TaleWorlds.Library.ListChangedType.ItemAdded:
 		{
-			ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate(base.Context);
-			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate);
+			ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate(base.Context);
+			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate);
 			ClanSettlementItemVM dataSource = (ClanSettlementItemVM)(generatedWidgetData.Data = _datasource_Root_Castles[e.NewIndex]);
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.AddComponent(generatedWidgetData);
-			_widget_0_0_2_0_1_0_5.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate, e.NewIndex);
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.CreateWidgets();
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.SetIds();
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.SetAttributes();
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.SetDataSource(dataSource);
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.AddComponent(generatedWidgetData);
+			_widget_0_0_2_0_1_0_5.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate, e.NewIndex);
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.CreateWidgets();
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.SetIds();
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.SetAttributes();
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.SetDataSource(dataSource);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
 		{
 			Widget child2 = _widget_0_0_2_0_1_0_5.GetChild(e.NewIndex);
-			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)child2).OnBeforeRemovedChild(child2);
+			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate)child2).OnBeforeRemovedChild(child2);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemDeleted:
 		{
 			Widget child = _widget_0_0_2_0_1_0_5.GetChild(e.NewIndex);
-			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)child).SetDataSource(null);
+			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate)child).SetDataSource(null);
 			_widget_0_0_2_0_1_0_5.RemoveChild(child);
 			break;
 		}
@@ -3807,9 +3807,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			for (int num = _widget_0_1_0_0_1_3.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child3 = _widget_0_1_0_0_1_3.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)child3).OnBeforeRemovedChild(child3);
 				Widget child4 = _widget_0_1_0_0_1_3.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child4).SetDataSource(null);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)child4).SetDataSource(null);
 				_widget_0_1_0_0_1_3.RemoveChild(child4);
 			}
 			break;
@@ -3825,27 +3825,27 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		}
 		case TaleWorlds.Library.ListChangedType.ItemAdded:
 		{
-			ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate(base.Context);
-			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate);
+			ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate(base.Context);
+			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate);
 			SelectableFiefItemPropertyVM dataSource = (SelectableFiefItemPropertyVM)(generatedWidgetData.Data = _datasource_Root_CurrentSelectedFief_ItemProperties[e.NewIndex]);
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.AddComponent(generatedWidgetData);
-			_widget_0_1_0_0_1_3.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate, e.NewIndex);
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.CreateWidgets();
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetIds();
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetAttributes();
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetDataSource(dataSource);
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.AddComponent(generatedWidgetData);
+			_widget_0_1_0_0_1_3.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate, e.NewIndex);
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.CreateWidgets();
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.SetIds();
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.SetAttributes();
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.SetDataSource(dataSource);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
 		{
 			Widget child2 = _widget_0_1_0_0_1_3.GetChild(e.NewIndex);
-			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child2).OnBeforeRemovedChild(child2);
+			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)child2).OnBeforeRemovedChild(child2);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemDeleted:
 		{
 			Widget child = _widget_0_1_0_0_1_3.GetChild(e.NewIndex);
-			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child).SetDataSource(null);
+			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)child).SetDataSource(null);
 			_widget_0_1_0_0_1_3.RemoveChild(child);
 			break;
 		}
@@ -3863,9 +3863,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			for (int num = _widget_0_1_0_0_1_5_0_0_0_0.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child3 = _widget_0_1_0_0_1_5_0_0_0_0.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child3).OnBeforeRemovedChild(child3);
 				Widget child4 = _widget_0_1_0_0_1_5_0_0_0_0.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child4).SetDataSource(null);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child4).SetDataSource(null);
 				_widget_0_1_0_0_1_5_0_0_0_0.RemoveChild(child4);
 			}
 			break;
@@ -3881,27 +3881,27 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		}
 		case TaleWorlds.Library.ListChangedType.ItemAdded:
 		{
-			ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate(base.Context);
-			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate);
+			ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate(base.Context);
+			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate);
 			ProfitItemPropertyVM dataSource = (ProfitItemPropertyVM)(generatedWidgetData.Data = _datasource_Root_CurrentSelectedFief_ProfitItemProperties[e.NewIndex]);
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.AddComponent(generatedWidgetData);
-			_widget_0_1_0_0_1_5_0_0_0_0.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate, e.NewIndex);
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.CreateWidgets();
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetIds();
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetAttributes();
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetDataSource(dataSource);
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.AddComponent(generatedWidgetData);
+			_widget_0_1_0_0_1_5_0_0_0_0.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate, e.NewIndex);
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.CreateWidgets();
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetIds();
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetAttributes();
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetDataSource(dataSource);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
 		{
 			Widget child2 = _widget_0_1_0_0_1_5_0_0_0_0.GetChild(e.NewIndex);
-			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child2).OnBeforeRemovedChild(child2);
+			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child2).OnBeforeRemovedChild(child2);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemDeleted:
 		{
 			Widget child = _widget_0_1_0_0_1_5_0_0_0_0.GetChild(e.NewIndex);
-			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child).SetDataSource(null);
+			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child).SetDataSource(null);
 			_widget_0_1_0_0_1_5_0_0_0_0.RemoveChild(child);
 			break;
 		}
@@ -3919,9 +3919,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			for (int num = _widget_0_1_0_0_2_0_1_0_0_1.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child3 = _widget_0_1_0_0_2_0_1_0_0_1.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child3).OnBeforeRemovedChild(child3);
 				Widget child4 = _widget_0_1_0_0_2_0_1_0_0_1.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child4).SetDataSource(null);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child4).SetDataSource(null);
 				_widget_0_1_0_0_2_0_1_0_0_1.RemoveChild(child4);
 			}
 			break;
@@ -3937,27 +3937,27 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		}
 		case TaleWorlds.Library.ListChangedType.ItemAdded:
 		{
-			ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate(base.Context);
-			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate);
+			ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate(base.Context);
+			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate);
 			HeroVM dataSource = (HeroVM)(generatedWidgetData.Data = _datasource_Root_CurrentSelectedFief_Notables[e.NewIndex]);
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.AddComponent(generatedWidgetData);
-			_widget_0_1_0_0_2_0_1_0_0_1.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate, e.NewIndex);
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.CreateWidgets();
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetIds();
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetAttributes();
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetDataSource(dataSource);
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.AddComponent(generatedWidgetData);
+			_widget_0_1_0_0_2_0_1_0_0_1.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate, e.NewIndex);
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.CreateWidgets();
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetIds();
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetAttributes();
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetDataSource(dataSource);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
 		{
 			Widget child2 = _widget_0_1_0_0_2_0_1_0_0_1.GetChild(e.NewIndex);
-			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child2).OnBeforeRemovedChild(child2);
+			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child2).OnBeforeRemovedChild(child2);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemDeleted:
 		{
 			Widget child = _widget_0_1_0_0_2_0_1_0_0_1.GetChild(e.NewIndex);
-			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child).SetDataSource(null);
+			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child).SetDataSource(null);
 			_widget_0_1_0_0_2_0_1_0_0_1.RemoveChild(child);
 			break;
 		}
@@ -3975,9 +3975,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			for (int num = _widget_0_1_0_0_2_1_1_0_1_0.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child3 = _widget_0_1_0_0_2_1_1_0_1_0.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child3).OnBeforeRemovedChild(child3);
 				Widget child4 = _widget_0_1_0_0_2_1_1_0_1_0.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child4).SetDataSource(null);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child4).SetDataSource(null);
 				_widget_0_1_0_0_2_1_1_0_1_0.RemoveChild(child4);
 			}
 			break;
@@ -3993,27 +3993,27 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		}
 		case TaleWorlds.Library.ListChangedType.ItemAdded:
 		{
-			ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate(base.Context);
-			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate);
+			ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate(base.Context);
+			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate);
 			HeroVM dataSource = (HeroVM)(generatedWidgetData.Data = _datasource_Root_CurrentSelectedFief_Members[e.NewIndex]);
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.AddComponent(generatedWidgetData);
-			_widget_0_1_0_0_2_1_1_0_1_0.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate, e.NewIndex);
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.CreateWidgets();
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetIds();
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetAttributes();
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetDataSource(dataSource);
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.AddComponent(generatedWidgetData);
+			_widget_0_1_0_0_2_1_1_0_1_0.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate, e.NewIndex);
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.CreateWidgets();
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetIds();
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetAttributes();
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetDataSource(dataSource);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
 		{
 			Widget child2 = _widget_0_1_0_0_2_1_1_0_1_0.GetChild(e.NewIndex);
-			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child2).OnBeforeRemovedChild(child2);
+			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child2).OnBeforeRemovedChild(child2);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemDeleted:
 		{
 			Widget child = _widget_0_1_0_0_2_1_1_0_1_0.GetChild(e.NewIndex);
-			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child).SetDataSource(null);
+			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child).SetDataSource(null);
 			_widget_0_1_0_0_2_1_1_0_1_0.RemoveChild(child);
 			break;
 		}
@@ -4031,9 +4031,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			for (int num = _widget_0_1_0_0_6.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child3 = _widget_0_1_0_0_6.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child3).OnBeforeRemovedChild(child3);
 				Widget child4 = _widget_0_1_0_0_6.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate)child4).SetDataSource(null);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child4).SetDataSource(null);
 				_widget_0_1_0_0_6.RemoveChild(child4);
 			}
 			break;
@@ -4049,27 +4049,27 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		}
 		case TaleWorlds.Library.ListChangedType.ItemAdded:
 		{
-			ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate(base.Context);
-			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate);
+			ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate(base.Context);
+			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate);
 			ClanSettlementItemVM dataSource = (ClanSettlementItemVM)(generatedWidgetData.Data = _datasource_Root_CurrentSelectedFief_VillagesOwned[e.NewIndex]);
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate.AddComponent(generatedWidgetData);
-			_widget_0_1_0_0_6.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate, e.NewIndex);
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate.CreateWidgets();
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate.SetIds();
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate.SetAttributes();
-			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate.SetDataSource(dataSource);
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.AddComponent(generatedWidgetData);
+			_widget_0_1_0_0_6.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate, e.NewIndex);
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.CreateWidgets();
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetIds();
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetAttributes();
+			clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetDataSource(dataSource);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
 		{
 			Widget child2 = _widget_0_1_0_0_6.GetChild(e.NewIndex);
-			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate)child2).OnBeforeRemovedChild(child2);
+			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child2).OnBeforeRemovedChild(child2);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemDeleted:
 		{
 			Widget child = _widget_0_1_0_0_6.GetChild(e.NewIndex);
-			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate)child).SetDataSource(null);
+			((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child).SetDataSource(null);
 			_widget_0_1_0_0_6.RemoveChild(child);
 			break;
 		}
@@ -4268,9 +4268,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				for (int num = _widget_0_0_2_0_1_0_2.ChildCount - 1; num >= 0; num--)
 				{
 					Widget child = _widget_0_0_2_0_1_0_2.GetChild(num);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate)child).OnBeforeRemovedChild(child);
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate)child).OnBeforeRemovedChild(child);
 					Widget child2 = _widget_0_0_2_0_1_0_2.GetChild(num);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate)child2).SetDataSource(null);
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate)child2).SetDataSource(null);
 					_widget_0_0_2_0_1_0_2.RemoveChild(child2);
 				}
 				_datasource_Root_Settlements = null;
@@ -4281,9 +4281,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				for (int num2 = _widget_0_0_2_0_1_0_5.ChildCount - 1; num2 >= 0; num2--)
 				{
 					Widget child3 = _widget_0_0_2_0_1_0_5.GetChild(num2);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate)child3).OnBeforeRemovedChild(child3);
 					Widget child4 = _widget_0_0_2_0_1_0_5.GetChild(num2);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)child4).SetDataSource(null);
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate)child4).SetDataSource(null);
 					_widget_0_0_2_0_1_0_5.RemoveChild(child4);
 				}
 				_datasource_Root_Castles = null;
@@ -4388,9 +4388,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 					for (int num3 = _widget_0_1_0_0_1_3.ChildCount - 1; num3 >= 0; num3--)
 					{
 						Widget child5 = _widget_0_1_0_0_1_3.GetChild(num3);
-						((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child5).OnBeforeRemovedChild(child5);
+						((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)child5).OnBeforeRemovedChild(child5);
 						Widget child6 = _widget_0_1_0_0_1_3.GetChild(num3);
-						((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child6).SetDataSource(null);
+						((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)child6).SetDataSource(null);
 						_widget_0_1_0_0_1_3.RemoveChild(child6);
 					}
 					_datasource_Root_CurrentSelectedFief_ItemProperties = null;
@@ -4401,9 +4401,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 					for (int num4 = _widget_0_1_0_0_1_5_0_0_0_0.ChildCount - 1; num4 >= 0; num4--)
 					{
 						Widget child7 = _widget_0_1_0_0_1_5_0_0_0_0.GetChild(num4);
-						((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child7).OnBeforeRemovedChild(child7);
+						((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child7).OnBeforeRemovedChild(child7);
 						Widget child8 = _widget_0_1_0_0_1_5_0_0_0_0.GetChild(num4);
-						((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child8).SetDataSource(null);
+						((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child8).SetDataSource(null);
 						_widget_0_1_0_0_1_5_0_0_0_0.RemoveChild(child8);
 					}
 					_datasource_Root_CurrentSelectedFief_ProfitItemProperties = null;
@@ -4428,9 +4428,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 					for (int num5 = _widget_0_1_0_0_2_0_1_0_0_1.ChildCount - 1; num5 >= 0; num5--)
 					{
 						Widget child9 = _widget_0_1_0_0_2_0_1_0_0_1.GetChild(num5);
-						((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child9).OnBeforeRemovedChild(child9);
+						((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child9).OnBeforeRemovedChild(child9);
 						Widget child10 = _widget_0_1_0_0_2_0_1_0_0_1.GetChild(num5);
-						((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child10).SetDataSource(null);
+						((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child10).SetDataSource(null);
 						_widget_0_1_0_0_2_0_1_0_0_1.RemoveChild(child10);
 					}
 					_datasource_Root_CurrentSelectedFief_Notables = null;
@@ -4456,9 +4456,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 					for (int num6 = _widget_0_1_0_0_2_1_1_0_1_0.ChildCount - 1; num6 >= 0; num6--)
 					{
 						Widget child11 = _widget_0_1_0_0_2_1_1_0_1_0.GetChild(num6);
-						((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child11).OnBeforeRemovedChild(child11);
+						((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child11).OnBeforeRemovedChild(child11);
 						Widget child12 = _widget_0_1_0_0_2_1_1_0_1_0.GetChild(num6);
-						((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child12).SetDataSource(null);
+						((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child12).SetDataSource(null);
 						_widget_0_1_0_0_2_1_1_0_1_0.RemoveChild(child12);
 					}
 					_datasource_Root_CurrentSelectedFief_Members = null;
@@ -4469,9 +4469,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 					for (int num7 = _widget_0_1_0_0_6.ChildCount - 1; num7 >= 0; num7--)
 					{
 						Widget child13 = _widget_0_1_0_0_6.GetChild(num7);
-						((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate)child13).OnBeforeRemovedChild(child13);
+						((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child13).OnBeforeRemovedChild(child13);
 						Widget child14 = _widget_0_1_0_0_6.GetChild(num7);
-						((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate)child14).SetDataSource(null);
+						((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child14).SetDataSource(null);
 						_widget_0_1_0_0_6.RemoveChild(child14);
 					}
 					_datasource_Root_CurrentSelectedFief_VillagesOwned = null;
@@ -4749,15 +4749,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_Settlements.ListChanged += OnList_datasource_Root_SettlementsChanged;
 			for (int i = 0; i < _datasource_Root_Settlements.Count; i++)
 			{
-				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate);
+				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate);
 				ClanSettlementItemVM dataSource = (ClanSettlementItemVM)(generatedWidgetData.Data = _datasource_Root_Settlements[i]);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_0_2_0_1_0_2.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate, i);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.CreateWidgets();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.SetIds();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.SetAttributes();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.SetDataSource(dataSource);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_0_2_0_1_0_2.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate, i);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate.CreateWidgets();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate.SetIds();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate.SetAttributes();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 		_datasource_Root_Castles = _datasource_Root.Castles;
@@ -4766,15 +4766,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_Castles.ListChanged += OnList_datasource_Root_CastlesChanged;
 			for (int j = 0; j < _datasource_Root_Castles.Count; j++)
 			{
-				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData2 = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate);
+				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData2 = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate);
 				ClanSettlementItemVM dataSource2 = (ClanSettlementItemVM)(generatedWidgetData2.Data = _datasource_Root_Castles[j]);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.AddComponent(generatedWidgetData2);
-				_widget_0_0_2_0_1_0_5.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate, j);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.CreateWidgets();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.SetIds();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.SetAttributes();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.SetDataSource(dataSource2);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.AddComponent(generatedWidgetData2);
+				_widget_0_0_2_0_1_0_5.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate, j);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.CreateWidgets();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.SetIds();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.SetAttributes();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.SetDataSource(dataSource2);
 			}
 		}
 		_datasource_Root_CurrentSelectedFief = _datasource_Root.CurrentSelectedFief;
@@ -4890,15 +4890,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				_datasource_Root_CurrentSelectedFief_ItemProperties.ListChanged += OnList_datasource_Root_CurrentSelectedFief_ItemPropertiesChanged;
 				for (int k = 0; k < _datasource_Root_CurrentSelectedFief_ItemProperties.Count; k++)
 				{
-					ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate(base.Context);
-					GeneratedWidgetData generatedWidgetData3 = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate);
+					ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate(base.Context);
+					GeneratedWidgetData generatedWidgetData3 = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate);
 					SelectableFiefItemPropertyVM dataSource3 = (SelectableFiefItemPropertyVM)(generatedWidgetData3.Data = _datasource_Root_CurrentSelectedFief_ItemProperties[k]);
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.AddComponent(generatedWidgetData3);
-					_widget_0_1_0_0_1_3.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate, k);
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.CreateWidgets();
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetIds();
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetAttributes();
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetDataSource(dataSource3);
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.AddComponent(generatedWidgetData3);
+					_widget_0_1_0_0_1_3.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate, k);
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.CreateWidgets();
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.SetIds();
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.SetAttributes();
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.SetDataSource(dataSource3);
 				}
 			}
 			_datasource_Root_CurrentSelectedFief_ProfitItemProperties = _datasource_Root_CurrentSelectedFief.ProfitItemProperties;
@@ -4907,15 +4907,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				_datasource_Root_CurrentSelectedFief_ProfitItemProperties.ListChanged += OnList_datasource_Root_CurrentSelectedFief_ProfitItemPropertiesChanged;
 				for (int l = 0; l < _datasource_Root_CurrentSelectedFief_ProfitItemProperties.Count; l++)
 				{
-					ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate(base.Context);
-					GeneratedWidgetData generatedWidgetData4 = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate);
+					ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate(base.Context);
+					GeneratedWidgetData generatedWidgetData4 = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate);
 					ProfitItemPropertyVM dataSource4 = (ProfitItemPropertyVM)(generatedWidgetData4.Data = _datasource_Root_CurrentSelectedFief_ProfitItemProperties[l]);
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.AddComponent(generatedWidgetData4);
-					_widget_0_1_0_0_1_5_0_0_0_0.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate, l);
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.CreateWidgets();
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetIds();
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetAttributes();
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetDataSource(dataSource4);
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.AddComponent(generatedWidgetData4);
+					_widget_0_1_0_0_1_5_0_0_0_0.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate, l);
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.CreateWidgets();
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetIds();
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetAttributes();
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetDataSource(dataSource4);
 				}
 			}
 			_datasource_Root_CurrentSelectedFief_TotalProfit = _datasource_Root_CurrentSelectedFief.TotalProfit;
@@ -4938,15 +4938,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				_datasource_Root_CurrentSelectedFief_Notables.ListChanged += OnList_datasource_Root_CurrentSelectedFief_NotablesChanged;
 				for (int m = 0; m < _datasource_Root_CurrentSelectedFief_Notables.Count; m++)
 				{
-					ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate(base.Context);
-					GeneratedWidgetData generatedWidgetData5 = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate);
+					ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate(base.Context);
+					GeneratedWidgetData generatedWidgetData5 = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate);
 					HeroVM dataSource5 = (HeroVM)(generatedWidgetData5.Data = _datasource_Root_CurrentSelectedFief_Notables[m]);
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.AddComponent(generatedWidgetData5);
-					_widget_0_1_0_0_2_0_1_0_0_1.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate, m);
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.CreateWidgets();
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetIds();
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetAttributes();
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetDataSource(dataSource5);
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.AddComponent(generatedWidgetData5);
+					_widget_0_1_0_0_2_0_1_0_0_1.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate, m);
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.CreateWidgets();
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetIds();
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetAttributes();
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetDataSource(dataSource5);
 				}
 			}
 			_datasource_Root_CurrentSelectedFief_SendMembersHint = _datasource_Root_CurrentSelectedFief.SendMembersHint;
@@ -4970,15 +4970,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				_datasource_Root_CurrentSelectedFief_Members.ListChanged += OnList_datasource_Root_CurrentSelectedFief_MembersChanged;
 				for (int n = 0; n < _datasource_Root_CurrentSelectedFief_Members.Count; n++)
 				{
-					ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate(base.Context);
-					GeneratedWidgetData generatedWidgetData6 = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate);
+					ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate(base.Context);
+					GeneratedWidgetData generatedWidgetData6 = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate);
 					HeroVM dataSource6 = (HeroVM)(generatedWidgetData6.Data = _datasource_Root_CurrentSelectedFief_Members[n]);
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.AddComponent(generatedWidgetData6);
-					_widget_0_1_0_0_2_1_1_0_1_0.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate, n);
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.CreateWidgets();
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetIds();
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetAttributes();
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetDataSource(dataSource6);
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.AddComponent(generatedWidgetData6);
+					_widget_0_1_0_0_2_1_1_0_1_0.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate, n);
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.CreateWidgets();
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetIds();
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetAttributes();
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetDataSource(dataSource6);
 				}
 			}
 			_datasource_Root_CurrentSelectedFief_VillagesOwned = _datasource_Root_CurrentSelectedFief.VillagesOwned;
@@ -4987,15 +4987,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				_datasource_Root_CurrentSelectedFief_VillagesOwned.ListChanged += OnList_datasource_Root_CurrentSelectedFief_VillagesOwnedChanged;
 				for (int num8 = 0; num8 < _datasource_Root_CurrentSelectedFief_VillagesOwned.Count; num8++)
 				{
-					ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate(base.Context);
-					GeneratedWidgetData generatedWidgetData7 = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate);
+					ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate(base.Context);
+					GeneratedWidgetData generatedWidgetData7 = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate);
 					ClanSettlementItemVM dataSource7 = (ClanSettlementItemVM)(generatedWidgetData7.Data = _datasource_Root_CurrentSelectedFief_VillagesOwned[num8]);
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate.AddComponent(generatedWidgetData7);
-					_widget_0_1_0_0_6.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate, num8);
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate.CreateWidgets();
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate.SetIds();
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate.SetAttributes();
-					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate.SetDataSource(dataSource7);
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.AddComponent(generatedWidgetData7);
+					_widget_0_1_0_0_6.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate, num8);
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.CreateWidgets();
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetIds();
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetAttributes();
+					clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetDataSource(dataSource7);
 				}
 			}
 			_datasource_Root_CurrentSelectedFief_Governor = _datasource_Root_CurrentSelectedFief.Governor;
@@ -5226,9 +5226,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			for (int num = _widget_0_0_2_0_1_0_2.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child = _widget_0_0_2_0_1_0_2.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate)child).OnBeforeRemovedChild(child);
 				Widget child2 = _widget_0_0_2_0_1_0_2.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate)child2).SetDataSource(null);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate)child2).SetDataSource(null);
 				_widget_0_0_2_0_1_0_2.RemoveChild(child2);
 			}
 			_datasource_Root_Settlements = null;
@@ -5240,15 +5240,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_Settlements.ListChanged += OnList_datasource_Root_SettlementsChanged;
 			for (int i = 0; i < _datasource_Root_Settlements.Count; i++)
 			{
-				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate);
+				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate);
 				ClanSettlementItemVM dataSource = (ClanSettlementItemVM)(generatedWidgetData.Data = _datasource_Root_Settlements[i]);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_0_2_0_1_0_2.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate, i);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.CreateWidgets();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.SetIds();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.SetAttributes();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.SetDataSource(dataSource);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_0_2_0_1_0_2.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate, i);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate.CreateWidgets();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate.SetIds();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate.SetAttributes();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_15_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}
@@ -5261,9 +5261,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			for (int num = _widget_0_0_2_0_1_0_5.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child = _widget_0_0_2_0_1_0_5.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate)child).OnBeforeRemovedChild(child);
 				Widget child2 = _widget_0_0_2_0_1_0_5.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)child2).SetDataSource(null);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate)child2).SetDataSource(null);
 				_widget_0_0_2_0_1_0_5.RemoveChild(child2);
 			}
 			_datasource_Root_Castles = null;
@@ -5275,15 +5275,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_Castles.ListChanged += OnList_datasource_Root_CastlesChanged;
 			for (int i = 0; i < _datasource_Root_Castles.Count; i++)
 			{
-				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate);
+				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate);
 				ClanSettlementItemVM dataSource = (ClanSettlementItemVM)(generatedWidgetData.Data = _datasource_Root_Castles[i]);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_0_2_0_1_0_5.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate, i);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.CreateWidgets();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.SetIds();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.SetAttributes();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.SetDataSource(dataSource);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_0_2_0_1_0_5.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate, i);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.CreateWidgets();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.SetIds();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.SetAttributes();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_16_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}
@@ -5390,9 +5390,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				for (int num = _widget_0_1_0_0_1_3.ChildCount - 1; num >= 0; num--)
 				{
 					Widget child = _widget_0_1_0_0_1_3.GetChild(num);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child).OnBeforeRemovedChild(child);
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)child).OnBeforeRemovedChild(child);
 					Widget child2 = _widget_0_1_0_0_1_3.GetChild(num);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child2).SetDataSource(null);
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)child2).SetDataSource(null);
 					_widget_0_1_0_0_1_3.RemoveChild(child2);
 				}
 				_datasource_Root_CurrentSelectedFief_ItemProperties = null;
@@ -5403,9 +5403,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				for (int num2 = _widget_0_1_0_0_1_5_0_0_0_0.ChildCount - 1; num2 >= 0; num2--)
 				{
 					Widget child3 = _widget_0_1_0_0_1_5_0_0_0_0.GetChild(num2);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child3).OnBeforeRemovedChild(child3);
 					Widget child4 = _widget_0_1_0_0_1_5_0_0_0_0.GetChild(num2);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child4).SetDataSource(null);
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child4).SetDataSource(null);
 					_widget_0_1_0_0_1_5_0_0_0_0.RemoveChild(child4);
 				}
 				_datasource_Root_CurrentSelectedFief_ProfitItemProperties = null;
@@ -5430,9 +5430,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				for (int num3 = _widget_0_1_0_0_2_0_1_0_0_1.ChildCount - 1; num3 >= 0; num3--)
 				{
 					Widget child5 = _widget_0_1_0_0_2_0_1_0_0_1.GetChild(num3);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child5).OnBeforeRemovedChild(child5);
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child5).OnBeforeRemovedChild(child5);
 					Widget child6 = _widget_0_1_0_0_2_0_1_0_0_1.GetChild(num3);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child6).SetDataSource(null);
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child6).SetDataSource(null);
 					_widget_0_1_0_0_2_0_1_0_0_1.RemoveChild(child6);
 				}
 				_datasource_Root_CurrentSelectedFief_Notables = null;
@@ -5458,9 +5458,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				for (int num4 = _widget_0_1_0_0_2_1_1_0_1_0.ChildCount - 1; num4 >= 0; num4--)
 				{
 					Widget child7 = _widget_0_1_0_0_2_1_1_0_1_0.GetChild(num4);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child7).OnBeforeRemovedChild(child7);
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child7).OnBeforeRemovedChild(child7);
 					Widget child8 = _widget_0_1_0_0_2_1_1_0_1_0.GetChild(num4);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child8).SetDataSource(null);
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child8).SetDataSource(null);
 					_widget_0_1_0_0_2_1_1_0_1_0.RemoveChild(child8);
 				}
 				_datasource_Root_CurrentSelectedFief_Members = null;
@@ -5471,9 +5471,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 				for (int num5 = _widget_0_1_0_0_6.ChildCount - 1; num5 >= 0; num5--)
 				{
 					Widget child9 = _widget_0_1_0_0_6.GetChild(num5);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate)child9).OnBeforeRemovedChild(child9);
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child9).OnBeforeRemovedChild(child9);
 					Widget child10 = _widget_0_1_0_0_6.GetChild(num5);
-					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate)child10).SetDataSource(null);
+					((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child10).SetDataSource(null);
 					_widget_0_1_0_0_6.RemoveChild(child10);
 				}
 				_datasource_Root_CurrentSelectedFief_VillagesOwned = null;
@@ -5640,15 +5640,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_CurrentSelectedFief_ItemProperties.ListChanged += OnList_datasource_Root_CurrentSelectedFief_ItemPropertiesChanged;
 			for (int i = 0; i < _datasource_Root_CurrentSelectedFief_ItemProperties.Count; i++)
 			{
-				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate);
+				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate);
 				SelectableFiefItemPropertyVM dataSource = (SelectableFiefItemPropertyVM)(generatedWidgetData.Data = _datasource_Root_CurrentSelectedFief_ItemProperties[i]);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_1_0_0_1_3.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate, i);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.CreateWidgets();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetIds();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetAttributes();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetDataSource(dataSource);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_1_0_0_1_3.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate, i);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.CreateWidgets();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.SetIds();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.SetAttributes();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 		_datasource_Root_CurrentSelectedFief_ProfitItemProperties = _datasource_Root_CurrentSelectedFief.ProfitItemProperties;
@@ -5657,15 +5657,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_CurrentSelectedFief_ProfitItemProperties.ListChanged += OnList_datasource_Root_CurrentSelectedFief_ProfitItemPropertiesChanged;
 			for (int j = 0; j < _datasource_Root_CurrentSelectedFief_ProfitItemProperties.Count; j++)
 			{
-				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData2 = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate);
+				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData2 = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate);
 				ProfitItemPropertyVM dataSource2 = (ProfitItemPropertyVM)(generatedWidgetData2.Data = _datasource_Root_CurrentSelectedFief_ProfitItemProperties[j]);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.AddComponent(generatedWidgetData2);
-				_widget_0_1_0_0_1_5_0_0_0_0.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate, j);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.CreateWidgets();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetIds();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetAttributes();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetDataSource(dataSource2);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.AddComponent(generatedWidgetData2);
+				_widget_0_1_0_0_1_5_0_0_0_0.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate, j);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.CreateWidgets();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetIds();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetAttributes();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetDataSource(dataSource2);
 			}
 		}
 		_datasource_Root_CurrentSelectedFief_TotalProfit = _datasource_Root_CurrentSelectedFief.TotalProfit;
@@ -5688,15 +5688,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_CurrentSelectedFief_Notables.ListChanged += OnList_datasource_Root_CurrentSelectedFief_NotablesChanged;
 			for (int k = 0; k < _datasource_Root_CurrentSelectedFief_Notables.Count; k++)
 			{
-				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData3 = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate);
+				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData3 = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate);
 				HeroVM dataSource3 = (HeroVM)(generatedWidgetData3.Data = _datasource_Root_CurrentSelectedFief_Notables[k]);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.AddComponent(generatedWidgetData3);
-				_widget_0_1_0_0_2_0_1_0_0_1.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate, k);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.CreateWidgets();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetIds();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetAttributes();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetDataSource(dataSource3);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.AddComponent(generatedWidgetData3);
+				_widget_0_1_0_0_2_0_1_0_0_1.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate, k);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.CreateWidgets();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetIds();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetAttributes();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetDataSource(dataSource3);
 			}
 		}
 		_datasource_Root_CurrentSelectedFief_SendMembersHint = _datasource_Root_CurrentSelectedFief.SendMembersHint;
@@ -5720,15 +5720,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_CurrentSelectedFief_Members.ListChanged += OnList_datasource_Root_CurrentSelectedFief_MembersChanged;
 			for (int l = 0; l < _datasource_Root_CurrentSelectedFief_Members.Count; l++)
 			{
-				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData4 = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate);
+				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData4 = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate);
 				HeroVM dataSource4 = (HeroVM)(generatedWidgetData4.Data = _datasource_Root_CurrentSelectedFief_Members[l]);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.AddComponent(generatedWidgetData4);
-				_widget_0_1_0_0_2_1_1_0_1_0.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate, l);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.CreateWidgets();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetIds();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetAttributes();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetDataSource(dataSource4);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.AddComponent(generatedWidgetData4);
+				_widget_0_1_0_0_2_1_1_0_1_0.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate, l);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.CreateWidgets();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetIds();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetAttributes();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetDataSource(dataSource4);
 			}
 		}
 		_datasource_Root_CurrentSelectedFief_VillagesOwned = _datasource_Root_CurrentSelectedFief.VillagesOwned;
@@ -5737,15 +5737,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_CurrentSelectedFief_VillagesOwned.ListChanged += OnList_datasource_Root_CurrentSelectedFief_VillagesOwnedChanged;
 			for (int m = 0; m < _datasource_Root_CurrentSelectedFief_VillagesOwned.Count; m++)
 			{
-				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData5 = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate);
+				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData5 = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate);
 				ClanSettlementItemVM dataSource5 = (ClanSettlementItemVM)(generatedWidgetData5.Data = _datasource_Root_CurrentSelectedFief_VillagesOwned[m]);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate.AddComponent(generatedWidgetData5);
-				_widget_0_1_0_0_6.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate, m);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate.CreateWidgets();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate.SetIds();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate.SetAttributes();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate.SetDataSource(dataSource5);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.AddComponent(generatedWidgetData5);
+				_widget_0_1_0_0_6.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate, m);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.CreateWidgets();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetIds();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetAttributes();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetDataSource(dataSource5);
 			}
 		}
 		_datasource_Root_CurrentSelectedFief_Governor = _datasource_Root_CurrentSelectedFief.Governor;
@@ -5806,9 +5806,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			for (int num = _widget_0_1_0_0_1_3.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child = _widget_0_1_0_0_1_3.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)child).OnBeforeRemovedChild(child);
 				Widget child2 = _widget_0_1_0_0_1_3.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child2).SetDataSource(null);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate)child2).SetDataSource(null);
 				_widget_0_1_0_0_1_3.RemoveChild(child2);
 			}
 			_datasource_Root_CurrentSelectedFief_ItemProperties = null;
@@ -5820,15 +5820,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_CurrentSelectedFief_ItemProperties.ListChanged += OnList_datasource_Root_CurrentSelectedFief_ItemPropertiesChanged;
 			for (int i = 0; i < _datasource_Root_CurrentSelectedFief_ItemProperties.Count; i++)
 			{
-				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate);
+				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate);
 				SelectableFiefItemPropertyVM dataSource = (SelectableFiefItemPropertyVM)(generatedWidgetData.Data = _datasource_Root_CurrentSelectedFief_ItemProperties[i]);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_1_0_0_1_3.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate, i);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.CreateWidgets();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetIds();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetAttributes();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetDataSource(dataSource);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_1_0_0_1_3.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate, i);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.CreateWidgets();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.SetIds();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.SetAttributes();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_17_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}
@@ -5841,9 +5841,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			for (int num = _widget_0_1_0_0_1_5_0_0_0_0.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child = _widget_0_1_0_0_1_5_0_0_0_0.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child).OnBeforeRemovedChild(child);
 				Widget child2 = _widget_0_1_0_0_1_5_0_0_0_0.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child2).SetDataSource(null);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate)child2).SetDataSource(null);
 				_widget_0_1_0_0_1_5_0_0_0_0.RemoveChild(child2);
 			}
 			_datasource_Root_CurrentSelectedFief_ProfitItemProperties = null;
@@ -5855,15 +5855,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_CurrentSelectedFief_ProfitItemProperties.ListChanged += OnList_datasource_Root_CurrentSelectedFief_ProfitItemPropertiesChanged;
 			for (int i = 0; i < _datasource_Root_CurrentSelectedFief_ProfitItemProperties.Count; i++)
 			{
-				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate);
+				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate);
 				ProfitItemPropertyVM dataSource = (ProfitItemPropertyVM)(generatedWidgetData.Data = _datasource_Root_CurrentSelectedFief_ProfitItemProperties[i]);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_1_0_0_1_5_0_0_0_0.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate, i);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.CreateWidgets();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetIds();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetAttributes();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetDataSource(dataSource);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_1_0_0_1_5_0_0_0_0.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate, i);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.CreateWidgets();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetIds();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetAttributes();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_18_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}
@@ -5909,9 +5909,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			for (int num = _widget_0_1_0_0_2_0_1_0_0_1.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child = _widget_0_1_0_0_2_0_1_0_0_1.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child).OnBeforeRemovedChild(child);
 				Widget child2 = _widget_0_1_0_0_2_0_1_0_0_1.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child2).SetDataSource(null);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate)child2).SetDataSource(null);
 				_widget_0_1_0_0_2_0_1_0_0_1.RemoveChild(child2);
 			}
 			_datasource_Root_CurrentSelectedFief_Notables = null;
@@ -5923,15 +5923,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_CurrentSelectedFief_Notables.ListChanged += OnList_datasource_Root_CurrentSelectedFief_NotablesChanged;
 			for (int i = 0; i < _datasource_Root_CurrentSelectedFief_Notables.Count; i++)
 			{
-				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate);
+				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate);
 				HeroVM dataSource = (HeroVM)(generatedWidgetData.Data = _datasource_Root_CurrentSelectedFief_Notables[i]);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_1_0_0_2_0_1_0_0_1.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate, i);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.CreateWidgets();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetIds();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetAttributes();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetDataSource(dataSource);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_1_0_0_2_0_1_0_0_1.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate, i);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.CreateWidgets();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetIds();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetAttributes();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_19_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}
@@ -5979,9 +5979,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			for (int num = _widget_0_1_0_0_2_1_1_0_1_0.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child = _widget_0_1_0_0_2_1_1_0_1_0.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child).OnBeforeRemovedChild(child);
 				Widget child2 = _widget_0_1_0_0_2_1_1_0_1_0.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child2).SetDataSource(null);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate)child2).SetDataSource(null);
 				_widget_0_1_0_0_2_1_1_0_1_0.RemoveChild(child2);
 			}
 			_datasource_Root_CurrentSelectedFief_Members = null;
@@ -5993,15 +5993,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_CurrentSelectedFief_Members.ListChanged += OnList_datasource_Root_CurrentSelectedFief_MembersChanged;
 			for (int i = 0; i < _datasource_Root_CurrentSelectedFief_Members.Count; i++)
 			{
-				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate);
+				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate);
 				HeroVM dataSource = (HeroVM)(generatedWidgetData.Data = _datasource_Root_CurrentSelectedFief_Members[i]);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_1_0_0_2_1_1_0_1_0.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate, i);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.CreateWidgets();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetIds();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetAttributes();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetDataSource(dataSource);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_1_0_0_2_1_1_0_1_0.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate, i);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.CreateWidgets();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetIds();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetAttributes();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_20_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}
@@ -6014,9 +6014,9 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			for (int num = _widget_0_1_0_0_6.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child = _widget_0_1_0_0_6.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child).OnBeforeRemovedChild(child);
 				Widget child2 = _widget_0_1_0_0_6.GetChild(num);
-				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate)child2).SetDataSource(null);
+				((ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate)child2).SetDataSource(null);
 				_widget_0_1_0_0_6.RemoveChild(child2);
 			}
 			_datasource_Root_CurrentSelectedFief_VillagesOwned = null;
@@ -6028,15 +6028,15 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 			_datasource_Root_CurrentSelectedFief_VillagesOwned.ListChanged += OnList_datasource_Root_CurrentSelectedFief_VillagesOwnedChanged;
 			for (int i = 0; i < _datasource_Root_CurrentSelectedFief_VillagesOwned.Count; i++)
 			{
-				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate);
+				ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate = new ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate);
 				ClanSettlementItemVM dataSource = (ClanSettlementItemVM)(generatedWidgetData.Data = _datasource_Root_CurrentSelectedFief_VillagesOwned[i]);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_1_0_0_6.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate, i);
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate.CreateWidgets();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate.SetIds();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate.SetAttributes();
-				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_22_ItemTemplate.SetDataSource(dataSource);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_1_0_0_6.AddChildAtIndex(clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate, i);
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.CreateWidgets();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetIds();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetAttributes();
+				clanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_21_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}

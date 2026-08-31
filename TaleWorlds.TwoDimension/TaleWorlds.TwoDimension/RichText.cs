@@ -806,23 +806,25 @@ public class RichText : IText
 					{
 						sprite = spriteData.GetSprite(attribute2);
 					}
-					if (sprite != null)
+					if (sprite == null)
 					{
-						float num6 = (float)font.Base * num * 0.2f;
-						num6 -= num5 * renderScale;
-						float num7 = (float)sprite.Width / (float)sprite.Height;
-						float num8 = (float)font.Base * num * 0.1f;
-						num8 -= num5 * renderScale * num7;
-						num8 += 4f * renderScale;
-						float x3 = x + num8;
-						float y3 = y + num6;
-						RichTextPart richTextPart = new RichTextPart();
-						richTextPart.Sprite = sprite;
-						richTextPart.SpritePosition = new Vector2(x3, y3);
-						richTextPart.Type = RichTextPartType.Sprite;
-						richTextPart.Extend = num5;
-						_richTextParts.Add(richTextPart);
+						Debug.FailedAssert("Sprite with name was not found while parsing rich text: " + attribute2 + ".\nRelated text: " + _text, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\GauntletUI\\TaleWorlds.TwoDimension\\BitmapFont\\RichText.cs", "FillPartsWithTokens", 973);
+						continue;
 					}
+					float num6 = (float)font.Base * num * 0.2f;
+					num6 -= num5 * renderScale;
+					float num7 = (float)sprite.Width / (float)sprite.Height;
+					float num8 = (float)font.Base * num * 0.1f;
+					num8 -= num5 * renderScale * num7;
+					num8 += 4f * renderScale;
+					float x3 = x + num8;
+					float y3 = y + num6;
+					RichTextPart richTextPart = new RichTextPart();
+					richTextPart.Sprite = sprite;
+					richTextPart.SpritePosition = new Vector2(x3, y3);
+					richTextPart.Type = RichTextPartType.Sprite;
+					richTextPart.Extend = num5;
+					_richTextParts.Add(richTextPart);
 				}
 			}
 		}

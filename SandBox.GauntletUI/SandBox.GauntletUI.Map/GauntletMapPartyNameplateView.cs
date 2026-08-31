@@ -25,7 +25,16 @@ public class GauntletMapPartyNameplateView : MapView
 		base.Layer = mapView.GauntletNameplateLayer;
 		_layerAsGauntletLayer = base.Layer as GauntletLayer;
 		_movie = _layerAsGauntletLayer.LoadMovie("PartyNameplate", _dataSource);
+		CampaignEvents.OnCharacterCreationIsOverEvent.AddNonSerializedListener(this, OnCharacterCreationIsOver);
 		_dataSource.Initialize();
+	}
+
+	private void OnCharacterCreationIsOver(int index)
+	{
+		if (index == 9)
+		{
+			_dataSource.Reset();
+		}
 	}
 
 	protected override void OnMapScreenUpdate(float dt)
@@ -57,6 +66,7 @@ public class GauntletMapPartyNameplateView : MapView
 
 	protected override void OnFinalize()
 	{
+		CampaignEvents.OnCharacterCreationIsOverEvent.ClearListeners(this);
 		_layerAsGauntletLayer.ReleaseMovie(_movie);
 		_dataSource.OnFinalize();
 		_layerAsGauntletLayer = null;

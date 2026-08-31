@@ -36,7 +36,7 @@ public static class PartyScreenHelper
 		{
 			return result;
 		}
-		Debug.FailedAssert("GetActivePartyState requested but the active state is not PartyState!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetActivePartyState", 7609);
+		Debug.FailedAssert("GetActivePartyState requested but the active state is not PartyState!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetActivePartyState", 8153);
 		return null;
 	}
 
@@ -94,7 +94,7 @@ public static class PartyScreenHelper
 		PartyScreenLogic partyScreenLogic = activePartyState?.PartyScreenLogic;
 		if (partyScreenLogic == null)
 		{
-			Debug.FailedAssert("Trying to close party screen when it's already closed!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "ClosePartyPresentation", 7676);
+			Debug.FailedAssert("Trying to close party screen when it's already closed!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "ClosePartyPresentation", 8220);
 			return;
 		}
 		bool flag = true;
@@ -272,6 +272,11 @@ public static class PartyScreenHelper
 		PartyScreenLogic partyScreenLogic = new PartyScreenLogic();
 		PartyScreenLogicInitializationData initializationData = PartyScreenLogicInitializationData.CreateBasicInitDataWithMainPartyAndOther(leftParty, PartyScreenLogic.TransferState.Transferable, PartyScreenLogic.TransferState.NotTransferable, PartyScreenLogic.TransferState.Transferable, ClanManageTroopTransferableDelegate, partyState.PartyScreenMode, new TextObject("{=uQgNPJnc}Manage Troops"), DefaultDoneHandler);
 		partyScreenLogic.Initialize(initializationData);
+		partyScreenLogic.CanTalkToHeroDelegate = delegate(Hero hero, PartyScreenLogic.TroopType type, PartyScreenLogic.PartyRosterSide side, PartyBase party, out TextObject reason)
+		{
+			reason = new TextObject("{=SfpoMma5}You can't talk to your companions while managing the garrison.");
+			return false;
+		};
 		partyState.PartyScreenLogic = partyScreenLogic;
 		Game.Current.GameStateManager.PushState(partyState);
 	}

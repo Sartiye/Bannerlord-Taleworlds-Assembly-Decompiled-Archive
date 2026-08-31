@@ -21,7 +21,7 @@ public class NavalFishingCampaignBehaviour : CampaignBehaviorBase
 		if (settlement.IsVillage && settlement.Village.TradeBound != null)
 		{
 			ExplainedNumber bonuses = new ExplainedNumber(0f, includeDescriptions: false, null);
-			PerkHelper.AddPerkBonusForTown(NavalPerks.Shipmaster.NightRaider, settlement.Village.TradeBound.Town, ref bonuses);
+			PerkHelper.AddPerkBonusForTown(NavalPerks.Shipmaster.NightRaider, settlement.Village.TradeBound.Town, isPrimaryBonus: false, ref bonuses);
 			if (bonuses.RoundedResultNumber > 0)
 			{
 				ItemObject @object = MBObjectManager.Instance.GetObject<ItemObject>("fish");
@@ -34,17 +34,15 @@ public class NavalFishingCampaignBehaviour : CampaignBehaviorBase
 
 	private void OnHourlyTickParty(MobileParty party)
 	{
-		if (party.IsCurrentlyAtSea)
+		Hero perkOwnerHero = null;
+		if (party.HasPerk(NavalPerks.Shipmaster.MasterAngler, out perkOwnerHero))
 		{
-			float num = 0f;
-			if (party.HasPerk(NavalPerks.Shipmaster.MasterAngler))
-			{
-				num += NavalPerks.Shipmaster.MasterAngler.PrimaryBonus;
-			}
-			if (MBRandom.RandomFloat < num)
+			float primaryBonus = NavalPerks.Shipmaster.MasterAngler.PrimaryBonus;
+			if (MBRandom.RandomFloat < primaryBonus)
 			{
 				ItemObject @object = MBObjectManager.Instance.GetObject<ItemObject>("fish");
-				party.ItemRoster.AddToCounts(@object, 1);
+				int number = 1;
+				party.ItemRoster.AddToCounts(@object, number);
 			}
 		}
 	}

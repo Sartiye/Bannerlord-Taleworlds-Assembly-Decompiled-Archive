@@ -420,11 +420,13 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		MaxValue = 0x1FFFFu
 	}
 
-	public enum UnderAttackType
+	public enum LastRecievedAttackType
 	{
-		NotUnderAttack,
-		UnderMeleeAttack,
-		UnderRangedAttack
+		None,
+		MeleeHit,
+		RangedHit,
+		MeleeContact,
+		RangedContact
 	}
 
 	[EngineStruct("Usage_direction", true, "ud", false)]
@@ -667,6 +669,30 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	public bool IsUsingGameObject => CurrentlyUsedGameObject != null;
 
+	public BattleEnvironment CurrentBattleEnvironment
+	{
+		get
+		{
+			if (Mission.Current.IsNavalBattle)
+			{
+				return BattleEnvironment.Naval;
+			}
+			if (Mission.Current.IsNavalRaidBattle)
+			{
+				return BattleEnvironment.Land;
+			}
+			if (RiderAgent != null)
+			{
+				return RiderAgent.CurrentBattleEnvironment;
+			}
+			if (Origin != null && Origin.BattleCombatant != null)
+			{
+				return Origin.BattleCombatant.CurrentBattleEnvironment;
+			}
+			return BattleEnvironment.Land;
+		}
+	}
+
 	public bool CanLeadFormationsRemotely => _canLeadFormationsRemotely;
 
 	public bool IsDetachableFromFormation => _isDetachableFromFormation;
@@ -791,16 +817,22 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	public int BodyPropertiesSeed { get; internal set; }
 
+	public float LastRecievedRangedHitTime { get; private set; } = float.MinValue;
+
+
+	public float LastRecievedMeleeHitTime { get; private set; } = float.MinValue;
+
+
+	public float LastRecievedRangedContactTime { get; private set; } = float.MinValue;
+
+
 	public float LastRangedHitTime { get; private set; } = float.MinValue;
 
 
+	public float LastRecievedMeleeContactTime { get; private set; } = float.MinValue;
+
+
 	public float LastMeleeHitTime { get; private set; } = float.MinValue;
-
-
-	public float LastRangedAttackTime { get; private set; } = float.MinValue;
-
-
-	public float LastMeleeAttackTime { get; private set; } = float.MinValue;
 
 
 	public bool IsFemale { get; set; }
@@ -1077,7 +1109,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 				SetAlarmState(AIStateFlag.Alarmed);
 				break;
 			default:
-				TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "CurrentWatchState", 933);
+				TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "CurrentWatchState", 978);
 				break;
 			}
 		}
@@ -1126,6 +1158,10 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 				{
 					detachment = Detachment;
 					detachmentWeight = DetachmentWeight;
+				}
+				if (_formation.AttackEntityOrderSecondaryDetachment != null && GetScriptedCombatFlags().HasAnyFlag(AISpecialCombatModeFlags.AttackEntity))
+				{
+					DisableScriptedCombatMovement();
 				}
 				_formation.RemoveUnit(this);
 				foreach (IDetachment detachment2 in _formation.Detachments)
@@ -1271,7 +1307,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			{
 				return Team.Color;
 			}
-			TaleWorlds.Library.Debug.FailedAssert("Clothing color is not set.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "ClothingColor1", 1150);
+			TaleWorlds.Library.Debug.FailedAssert("Clothing color is not set.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "ClothingColor1", 1200);
 			return uint.MaxValue;
 		}
 	}
@@ -3122,7 +3158,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		case BoneBodyPartType.ShoulderRight:
 			return GetAgentDrivenPropertyValue(DrivenProperty.ArmorTorso);
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "GetBaseArmorEffectivenessForBodyPart", 3238);
+			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "GetBaseArmorEffectivenessForBodyPart", 3288);
 			return GetAgentDrivenPropertyValue(DrivenProperty.ArmorTorso);
 		}
 	}
@@ -3552,7 +3588,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 	{
 		if (other == null)
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Comparing distance with null agent", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "GetDistanceTo", 3749);
+			TaleWorlds.Library.Debug.FailedAssert("Comparing distance with null agent", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Agent.cs", "GetDistanceTo", 3799);
 			return 0f;
 		}
 		return Position.Distance(other.Position);
@@ -3769,7 +3805,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			{
 				GetFormationFileAndRankInfo(out var fileIndex, out var rankIndex, out var fileCount, out var rankCount);
 				Vec2 wallDirectionOfRelativeFormationLocation = GetWallDirectionOfRelativeFormationLocation();
-				MBAPI.IMBAgent.SetFormationInfo(GetPtr(), fileIndex, rankIndex, fileCount, rankCount, Formation.CountOfUnits, wallDirectionOfRelativeFormationLocation, Formation.UnitSpacing);
+				MBAPI.IMBAgent.SetFormationInfo(GetPtr(), fileIndex, rankIndex, fileCount, rankCount, Formation.CountOfUnits, wallDirectionOfRelativeFormationLocation, Formation.UnitSpacing, Formation.QuerySystem.IsUnderRangedAttack);
 			}
 		}
 	}
@@ -3786,7 +3822,7 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 
 	public void UpdateLastRangedAttackTimeDueToAnAttack(float newTime)
 	{
-		LastRangedAttackTime = newTime;
+		LastRangedHitTime = newTime;
 	}
 
 	public void InvalidateTargetAgent()
@@ -5361,22 +5397,36 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 		float currentTime = Mission.CurrentTime;
 		if (isMissile)
 		{
-			LastRangedHitTime = currentTime;
+			LastRecievedRangedHitTime = currentTime;
+			LastRecievedRangedContactTime = currentTime;
 		}
 		else
 		{
-			LastMeleeHitTime = currentTime;
+			LastRecievedMeleeHitTime = currentTime;
+			LastRecievedMeleeContactTime = currentTime;
 		}
 		if (attackerAgent != this && attackerAgent != null)
 		{
 			if (isMissile)
 			{
-				attackerAgent.LastRangedAttackTime = currentTime;
+				attackerAgent.LastRangedHitTime = currentTime;
 			}
 			else
 			{
-				attackerAgent.LastMeleeAttackTime = currentTime;
+				attackerAgent.LastMeleeHitTime = currentTime;
 			}
+		}
+	}
+
+	public void UpdateLastRecievedContactTimes(bool isMissile)
+	{
+		if (isMissile)
+		{
+			LastRecievedRangedContactTime = Mission.CurrentTime;
+		}
+		else
+		{
+			LastRecievedMeleeContactTime = Mission.CurrentTime;
 		}
 	}
 
@@ -5453,6 +5503,17 @@ public sealed class Agent : DotNetObject, IAgent, IFocusable, IUsable, IFormatio
 			return;
 		}
 		UpdateLastAttackAndHitTimes(agent, b.IsMissile);
+		if (Controller == AgentControllerType.AI && Formation != null && IsEnemyOf(agent))
+		{
+			if (!agent.IsMount)
+			{
+				Formation.TestTaskForce(this, agent);
+			}
+			else if (agent.RiderAgent != null)
+			{
+				Formation.TestTaskForce(this, agent.RiderAgent);
+			}
+		}
 		float health = Health;
 		float num = (((float)b.InflictedDamage > health) ? health : ((float)b.InflictedDamage));
 		if (CurrentMortalityState == MortalityState.Immortal || Mission.DisableDying || Mission.Current.Mode == MissionMode.Conversation || Mission.Current.Mode == MissionMode.CutScene)

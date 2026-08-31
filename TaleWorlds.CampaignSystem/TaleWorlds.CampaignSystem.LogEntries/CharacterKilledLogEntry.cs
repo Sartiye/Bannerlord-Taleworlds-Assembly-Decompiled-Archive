@@ -148,7 +148,7 @@ public class CharacterKilledLogEntry : LogEntry, IEncyclopediaLog, IChatNotifica
 			textObject = GameTexts.FindText("str_notification_maternal_death");
 			StringHelpers.SetCharacterProperties("MOTHER", Victim.CharacterObject, textObject);
 		}
-		else if (_actionDetail == KillCharacterAction.KillCharacterActionDetail.Executed || _actionDetail == KillCharacterAction.KillCharacterActionDetail.ExecutionAfterMapEvent)
+		else if (_actionDetail == KillCharacterAction.KillCharacterActionDetail.Executed)
 		{
 			if (Killer != null)
 			{
@@ -219,7 +219,7 @@ public class CharacterKilledLogEntry : LogEntry, IEncyclopediaLog, IChatNotifica
 			textObject = GameTexts.FindText("str_notification_maternal_death");
 			StringHelpers.SetCharacterProperties("MOTHER", Victim.CharacterObject, textObject);
 		}
-		else if (_actionDetail == KillCharacterAction.KillCharacterActionDetail.Executed || _actionDetail == KillCharacterAction.KillCharacterActionDetail.ExecutionAfterMapEvent)
+		else if (_actionDetail == KillCharacterAction.KillCharacterActionDetail.Executed)
 		{
 			if (Killer != null)
 			{
@@ -247,7 +247,7 @@ public class CharacterKilledLogEntry : LogEntry, IEncyclopediaLog, IChatNotifica
 		IFaction faction2 = stance.Faction2;
 		effector = VictimMapFaction;
 		effected = KillerMapFaction;
-		if ((_actionDetail == KillCharacterAction.KillCharacterActionDetail.DiedInBattle || _actionDetail == KillCharacterAction.KillCharacterActionDetail.Executed || _actionDetail == KillCharacterAction.KillCharacterActionDetail.ExecutionAfterMapEvent) && effector != null && effected != null)
+		if ((_actionDetail == KillCharacterAction.KillCharacterActionDetail.DiedInBattle || _actionDetail == KillCharacterAction.KillCharacterActionDetail.Executed) && effector != null && effected != null)
 		{
 			if (faction != VictimMapFaction || faction2 != KillerMapFaction)
 			{

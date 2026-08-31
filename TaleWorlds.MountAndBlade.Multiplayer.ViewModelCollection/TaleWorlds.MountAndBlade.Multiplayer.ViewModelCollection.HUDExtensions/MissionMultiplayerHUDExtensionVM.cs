@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
@@ -19,9 +18,25 @@ public class MissionMultiplayerHUDExtensionVM : ViewModel
 
 	private readonly Dictionary<MissionPeer, MPPlayerVM> _enemyDictionary;
 
-	private readonly MissionScoreboardComponent _missionScoreboardComponent;
+	private readonly List<MPPlayerVM> _teammatesToRemoveScratch = new List<MPPlayerVM>();
 
-	private readonly MissionLobbyEquipmentNetworkComponent _missionLobbyEquipmentNetworkComponent;
+	private readonly List<MPPlayerVM> _enemiesToRemoveScratch = new List<MPPlayerVM>();
+
+	private const int MaxVisibleOverlayRows = 8;
+
+	private readonly Dictionary<MissionPeer, MPOverlayPlayerVM> _overlayPlayerDictionary;
+
+	private readonly List<MPOverlayPlayerVM> _overlayPlayersToRemoveScratch = new List<MPOverlayPlayerVM>();
+
+	private readonly List<MPOverlayPlayerVM> _overlayAttackersScratch = new List<MPOverlayPlayerVM>();
+
+	private readonly List<MPOverlayPlayerVM> _overlayDefendersScratch = new List<MPOverlayPlayerVM>();
+
+	private MissionPeer _followedPeer;
+
+	private MPOverlayPlayerVM _focusedOverlayPlayer;
+
+	private readonly MissionScoreboardComponent _missionScoreboardComponent;
 
 	private readonly MissionMultiplayerGameModeBaseClient _gameMode;
 
@@ -69,6 +84,12 @@ public class MissionMultiplayerHUDExtensionVM : ViewModel
 
 	private MBBindingList<MPPlayerVM> _enemiesList;
 
+	private MPOverlaySideVM _overlayAttackerSide;
+
+	private MPOverlaySideVM _overlayDefenderSide;
+
+	private bool _showAllPlayersOverlay;
+
 	private bool _showHUD;
 
 	private bool _showCommanderInfo;
@@ -94,10 +115,6 @@ public class MissionMultiplayerHUDExtensionVM : ViewModel
 				return null;
 			}
 			MissionPeer component = GameNetwork.MyPeer.GetComponent<MissionPeer>();
-			if (component == null)
-			{
-				return null;
-			}
 			if (component == null)
 			{
 				return null;
@@ -191,6 +208,57 @@ public class MissionMultiplayerHUDExtensionVM : ViewModel
 			{
 				_enemiesList = value;
 				OnPropertyChangedWithValue(value, "Enemies");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public MPOverlaySideVM OverlayAttackerSide
+	{
+		get
+		{
+			return _overlayAttackerSide;
+		}
+		set
+		{
+			if (value != _overlayAttackerSide)
+			{
+				_overlayAttackerSide = value;
+				OnPropertyChangedWithValue(value, "OverlayAttackerSide");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public MPOverlaySideVM OverlayDefenderSide
+	{
+		get
+		{
+			return _overlayDefenderSide;
+		}
+		set
+		{
+			if (value != _overlayDefenderSide)
+			{
+				_overlayDefenderSide = value;
+				OnPropertyChangedWithValue(value, "OverlayDefenderSide");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool ShowAllPlayersOverlay
+	{
+		get
+		{
+			return _showAllPlayersOverlay;
+		}
+		set
+		{
+			if (value != _showAllPlayersOverlay)
+			{
+				_showAllPlayersOverlay = value;
+				OnPropertyChangedWithValue(value, "ShowAllPlayersOverlay");
 			}
 		}
 	}
@@ -538,6 +606,8 @@ public class MissionMultiplayerHUDExtensionVM : ViewModel
 		}
 	}
 
+	public event Action<Agent> OnPlayerFollowRequested;
+
 	public MissionMultiplayerHUDExtensionVM(Mission mission)
 	{
 		_mission = mission;
@@ -558,7 +628,6 @@ public class MissionMultiplayerHUDExtensionVM : ViewModel
 		Mission.Current.OnMissionReset += OnMissionReset;
 		MissionLobbyComponent missionBehavior = mission.GetMissionBehavior<MissionLobbyComponent>();
 		_isTeamsEnabled = missionBehavior.MissionType != MultiplayerGameType.Duel;
-		_missionLobbyEquipmentNetworkComponent = mission.GetMissionBehavior<MissionLobbyEquipmentNetworkComponent>();
 		IsRoundCountdownAvailable = _gameMode.IsGameModeUsingRoundCountdown;
 		IsRoundCountdownSuspended = false;
 		_isTeamScoresEnabled = _isTeamsEnabled;
@@ -567,6 +636,9 @@ public class MissionMultiplayerHUDExtensionVM : ViewModel
 		Enemies = new MBBindingList<MPPlayerVM>();
 		_teammateDictionary = new Dictionary<MissionPeer, MPPlayerVM>();
 		_enemyDictionary = new Dictionary<MissionPeer, MPPlayerVM>();
+		OverlayAttackerSide = new MPOverlaySideVM();
+		OverlayDefenderSide = new MPOverlaySideVM();
+		_overlayPlayerDictionary = new Dictionary<MissionPeer, MPOverlayPlayerVM>();
 		ShowHud = true;
 		RefreshValues();
 	}
@@ -593,8 +665,10 @@ public class MissionMultiplayerHUDExtensionVM : ViewModel
 			MissionRepresentativeBase missionRepresentative = GameNetwork.MyPeer?.VirtualPlayer.GetComponent<MissionRepresentativeBase>();
 			AllyTeamScore = _missionScoreboardComponent.GetRoundScore(BattleSideEnum.Attacker);
 			EnemyTeamScore = _missionScoreboardComponent.GetRoundScore(BattleSideEnum.Defender);
-			_isTeammateAndEnemiesRelevant = Mission.Current.GetMissionBehavior<MissionMultiplayerGameModeBaseClient>().IsGameModeTactical && !Mission.Current.HasMissionBehavior<MissionMultiplayerSiegeClient>() && _gameMode.GameType != MultiplayerGameType.Battle;
+			bool flag = MultiplayerSpectatorHelper.IsStreamerModeActive();
+			_isTeammateAndEnemiesRelevant = flag || (Mission.Current.GetMissionBehavior<MissionMultiplayerGameModeBaseClient>().IsGameModeTactical && !Mission.Current.HasMissionBehavior<MissionMultiplayerSiegeClient>() && _gameMode.GameType != MultiplayerGameType.Battle);
 			CommanderInfo = new CommanderInfoVM(missionRepresentative);
+			CommanderInfo.OnTeamChanged();
 			ShowCommanderInfo = true;
 			if (_isTeammateAndEnemiesRelevant)
 			{
@@ -629,10 +703,15 @@ public class MissionMultiplayerHUDExtensionVM : ViewModel
 	{
 		IsInWarmup = _gameMode.IsInWarmup;
 		CheckTimers();
-		if (_isTeammateAndEnemiesRelevant)
+		if (_isTeammateAndEnemiesRelevant || MultiplayerSpectatorHelper.IsStreamerModeActive())
 		{
 			OnRefreshTeamMembers();
 			OnRefreshEnemyMembers();
+		}
+		ShowAllPlayersOverlay = MultiplayerSpectatorHelper.IsStreamerModeActive();
+		if (ShowAllPlayersOverlay)
+		{
+			OnRefreshOverlayMembers();
 		}
 		if (_isTeamScoresDirty)
 		{
@@ -657,19 +736,48 @@ public class MissionMultiplayerHUDExtensionVM : ViewModel
 		}
 	}
 
-	private void OnToggleLoadout(bool isActive)
-	{
-		ShowHud = !isActive;
-	}
-
 	public void OnSpectatedAgentFocusIn(Agent followedAgent)
 	{
 		_spectatorControls?.OnSpectatedAgentFocusIn(followedAgent);
+		_followedPeer = followedAgent?.MissionPeer ?? followedAgent?.Formation?.PlayerOwner?.MissionPeer;
+		RefreshFollowedOverlayRow();
 	}
 
 	public void OnSpectatedAgentFocusOut(Agent followedPeer)
 	{
 		_spectatorControls?.OnSpectatedAgentFocusOut(followedPeer);
+		_followedPeer = null;
+		RefreshFollowedOverlayRow();
+	}
+
+	private void OnOverlayPlayerSelected(MPOverlayPlayerVM overlayPlayer)
+	{
+		OnAvatarPlayerSelected(overlayPlayer);
+	}
+
+	private void OnAvatarPlayerSelected(MPPlayerVM player)
+	{
+		Agent agent = player?.Peer?.ControlledAgent;
+		if (agent != null)
+		{
+			this.OnPlayerFollowRequested?.Invoke(agent);
+		}
+	}
+
+	private void RefreshFollowedOverlayRow()
+	{
+		if (_focusedOverlayPlayer != null)
+		{
+			_focusedOverlayPlayer.IsFocused = false;
+			_focusedOverlayPlayer = null;
+		}
+		if (_followedPeer != null && _overlayPlayerDictionary.TryGetValue(_followedPeer, out var value))
+		{
+			value.IsFocused = true;
+			_focusedOverlayPlayer = value;
+		}
+		OverlayAttackerSide.SetFollowedPeer(_followedPeer);
+		OverlayDefenderSide.SetFollowedPeer(_followedPeer);
 	}
 
 	private void OnCurrentGameModeStateChanged()
@@ -716,7 +824,11 @@ public class MissionMultiplayerHUDExtensionVM : ViewModel
 		{
 			return;
 		}
-		Teammates.SingleOrDefault((MPPlayerVM x) => x.Peer.GetNetworkPeer() == peer)?.RefreshTeam();
+		MissionPeer missionPeer = peer?.GetComponent<MissionPeer>();
+		if (missionPeer != null && _teammateDictionary.TryGetValue(missionPeer, out var value))
+		{
+			value.RefreshTeam();
+		}
 		GetTeamColors(Mission.Current.AttackerTeam, out var color, out var color2);
 		if (_isTeamScoresEnabled || _gameMode.GameType == MultiplayerGameType.Battle)
 		{
@@ -756,63 +868,188 @@ public class MissionMultiplayerHUDExtensionVM : ViewModel
 		color2 = "#" + color2 + "FF";
 	}
 
+	private bool IsPeerOnAllySide(MissionPeer lobbyPeer)
+	{
+		Team team = lobbyPeer?.Team;
+		if (team == null || team == Mission.Current.SpectatorTeam)
+		{
+			return false;
+		}
+		if (MultiplayerSpectatorHelper.IsLocalPeerSpectator())
+		{
+			return team.Side == BattleSideEnum.Attacker;
+		}
+		if (_playerTeam != null)
+		{
+			return team == _playerTeam;
+		}
+		return false;
+	}
+
+	private bool IsPeerOnEnemySide(MissionPeer lobbyPeer)
+	{
+		Team team = lobbyPeer?.Team;
+		if (team == null || team == Mission.Current.SpectatorTeam)
+		{
+			return false;
+		}
+		if (MultiplayerSpectatorHelper.IsLocalPeerSpectator())
+		{
+			return team.Side == BattleSideEnum.Defender;
+		}
+		if (_playerTeam != null)
+		{
+			return team != _playerTeam;
+		}
+		return false;
+	}
+
 	private void OnRefreshTeamMembers()
 	{
-		List<MPPlayerVM> list = Teammates.ToList();
+		_teammatesToRemoveScratch.Clear();
+		for (int i = 0; i < Teammates.Count; i++)
+		{
+			_teammatesToRemoveScratch.Add(Teammates[i]);
+		}
+		List<MPPlayerVM> teammatesToRemoveScratch = _teammatesToRemoveScratch;
 		foreach (MissionPeer item in VirtualPlayer.Peers<MissionPeer>())
 		{
-			if (item.GetNetworkPeer().GetComponent<MissionPeer>() != null && _playerTeam != null && item.Team != null && item.Team == _playerTeam && item.Team != Mission.Current.SpectatorTeam)
+			if (item.GetNetworkPeer().GetComponent<MissionPeer>() != null && IsPeerOnAllySide(item))
 			{
 				if (_teammateDictionary.TryGetValue(item, out var value))
 				{
-					list.Remove(value);
+					teammatesToRemoveScratch.Remove(value);
 					continue;
 				}
 				MPPlayerVM mPPlayerVM = new MPPlayerVM(item);
+				mPPlayerVM.SetSelectionHandler(OnAvatarPlayerSelected);
 				Teammates.Add(mPPlayerVM);
 				_teammateDictionary.Add(item, mPPlayerVM);
 			}
 		}
-		foreach (MPPlayerVM item2 in list)
+		foreach (MPPlayerVM item2 in teammatesToRemoveScratch)
 		{
 			Teammates.Remove(item2);
 			_teammateDictionary.Remove(item2.Peer);
 		}
+		bool isSelectable = MultiplayerSpectatorHelper.IsLocalPeerSpectator();
 		foreach (MPPlayerVM teammate in Teammates)
 		{
 			teammate.RefreshDivision();
 			teammate.RefreshGold();
 			teammate.RefreshProperties();
 			teammate.UpdateDisabled();
+			teammate.IsSelectable = isSelectable;
 		}
 	}
 
 	private void OnRefreshEnemyMembers()
 	{
-		List<MPPlayerVM> list = Enemies.ToList();
+		_enemiesToRemoveScratch.Clear();
+		for (int i = 0; i < Enemies.Count; i++)
+		{
+			_enemiesToRemoveScratch.Add(Enemies[i]);
+		}
+		List<MPPlayerVM> enemiesToRemoveScratch = _enemiesToRemoveScratch;
 		foreach (MissionPeer item in VirtualPlayer.Peers<MissionPeer>())
 		{
-			if (item.GetNetworkPeer().GetComponent<MissionPeer>() != null && _playerTeam != null && item.Team != null && item.Team != _playerTeam && item.Team != Mission.Current.SpectatorTeam)
+			if (item.GetNetworkPeer().GetComponent<MissionPeer>() != null && IsPeerOnEnemySide(item))
 			{
 				if (_enemyDictionary.TryGetValue(item, out var value))
 				{
-					list.Remove(value);
+					enemiesToRemoveScratch.Remove(value);
 					continue;
 				}
 				MPPlayerVM mPPlayerVM = new MPPlayerVM(item);
+				mPPlayerVM.SetSelectionHandler(OnAvatarPlayerSelected);
 				Enemies.Add(mPPlayerVM);
 				_enemyDictionary.Add(item, mPPlayerVM);
 			}
 		}
-		foreach (MPPlayerVM item2 in list)
+		foreach (MPPlayerVM item2 in enemiesToRemoveScratch)
 		{
 			Enemies.Remove(item2);
 			_enemyDictionary.Remove(item2.Peer);
 		}
+		bool isSelectable = MultiplayerSpectatorHelper.IsLocalPeerSpectator();
 		foreach (MPPlayerVM enemy in Enemies)
 		{
 			enemy.RefreshDivision();
 			enemy.UpdateDisabled();
+			enemy.IsSelectable = isSelectable;
+		}
+	}
+
+	private void OnRefreshOverlayMembers()
+	{
+		MissionScoreboardComponent.ScoreboardHeader[] headers = _missionScoreboardComponent?.Headers;
+		OverlayAttackerSide.RefreshStatHeaders(headers);
+		OverlayDefenderSide.RefreshStatHeaders(headers);
+		_overlayPlayersToRemoveScratch.Clear();
+		foreach (MPOverlayPlayerVM value2 in _overlayPlayerDictionary.Values)
+		{
+			_overlayPlayersToRemoveScratch.Add(value2);
+		}
+		_overlayAttackersScratch.Clear();
+		_overlayDefendersScratch.Clear();
+		foreach (MissionPeer item in VirtualPlayer.Peers<MissionPeer>())
+		{
+			Team team = item?.Team;
+			if (team != null && team != Mission.Current.SpectatorTeam && (team.Side == BattleSideEnum.Attacker || team.Side == BattleSideEnum.Defender))
+			{
+				if (!_overlayPlayerDictionary.TryGetValue(item, out var value))
+				{
+					value = new MPOverlayPlayerVM(item, OnOverlayPlayerSelected);
+					value.RebuildStats(headers);
+					_overlayPlayerDictionary.Add(item, value);
+				}
+				else
+				{
+					_overlayPlayersToRemoveScratch.Remove(value);
+					value.RefreshStats(headers);
+				}
+				value.RefreshDivision();
+				value.RefreshProperties();
+				value.UpdateDisabled();
+				if (team.Side == BattleSideEnum.Attacker)
+				{
+					_overlayAttackersScratch.Add(value);
+				}
+				else
+				{
+					_overlayDefendersScratch.Add(value);
+				}
+			}
+		}
+		foreach (MPOverlayPlayerVM item2 in _overlayPlayersToRemoveScratch)
+		{
+			_overlayPlayerDictionary.Remove(item2.Peer);
+			if (item2 == _focusedOverlayPlayer)
+			{
+				_focusedOverlayPlayer = null;
+			}
+		}
+		OverlayAttackerSide.ApplyPlayers(_overlayAttackersScratch);
+		OverlayDefenderSide.ApplyPlayers(_overlayDefendersScratch);
+		RefreshFollowedOverlayRow();
+		UpdateOverlayOverflow();
+	}
+
+	private void UpdateOverlayOverflow()
+	{
+		UpdateOverlaySideOverflow(OverlayAttackerSide);
+		UpdateOverlaySideOverflow(OverlayDefenderSide);
+	}
+
+	private static void UpdateOverlaySideOverflow(MPOverlaySideVM side)
+	{
+		int num = MBMath.ClampInt(side.Players.Count - 8, 0, int.MaxValue);
+		side.ShowOverflow = num > 0;
+		if (side.ShowOverflow)
+		{
+			TextObject textObject = new TextObject("{=n8jxXmgP}+{COUNT} more");
+			textObject.SetTextVariable("COUNT", num);
+			side.OverflowText = textObject.ToString();
 		}
 	}
 

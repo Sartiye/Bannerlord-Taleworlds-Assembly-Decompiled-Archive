@@ -181,7 +181,6 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget_0_0.ScopeParent = _widget_0_1;
 		_widget_0_0.ScopeMovements = GamepadNavigationTypes.Vertical;
 		_widget_0_0.HasCircularMovement = false;
-		_widget_0_0.DownNavigationScope = "LeftListHeadersScope";
 		_widget_0_0.IsDefaultNavigationScope = true;
 		_widget_0_0.ForceGainNavigationBasedOnDirection = true;
 		_widget_0_0.ForceGainNavigationOnClosestChild = true;
@@ -217,7 +216,7 @@ public class Inventory__TaleWorlds_CampaignSystem_ViewModelCollection_Inventory_
 		_widget_2.ScopeParent = _widget_3;
 		_widget_2.ScopeMovements = GamepadNavigationTypes.Horizontal;
 		_widget_2.HasCircularMovement = false;
-		_widget_2.UpNavigationScope = "LeftListItemsScope";
+		_widget_2.UpNavigationScope = "LeftSearchBarScope";
 		_widget_2.NavigateFromScopeEdges = true;
 		_widget_3.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_3.HeightSizePolicy = SizePolicy.Fixed;

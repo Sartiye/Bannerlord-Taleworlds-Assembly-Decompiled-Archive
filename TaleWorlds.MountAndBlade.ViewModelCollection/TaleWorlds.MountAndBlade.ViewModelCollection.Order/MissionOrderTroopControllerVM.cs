@@ -871,7 +871,7 @@ public class MissionOrderTroopControllerVM : ViewModel
 			Formation formation = orderTroopItemVM.Formation;
 			if (formation != null && formation.CountOfUnits > 0)
 			{
-				orderTroopItemVM.UnderAttackOfType = (int)formation.GetUnderAttackTypeOfUnits();
+				orderTroopItemVM.UnderAttackOfType = (int)formation.GetLastRecievedHitTypeOfUnits();
 				orderTroopItemVM.BehaviorType = (int)formation.GetMovementTypeOfUnits();
 				if (!IsDeployment)
 				{

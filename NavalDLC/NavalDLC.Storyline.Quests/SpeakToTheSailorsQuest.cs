@@ -456,7 +456,7 @@ public class SpeakToTheSailorsQuest : NavalStorylineQuestBase
 
 	private void AddBjolgurDialogs()
 	{
-		Campaign.Current.ConversationManager.AddDialogFlow(DialogFlow.CreateDialogFlow("start", 1300).NpcLine("{=J6QLFwbb}Welcome to {SETTLEMENT_LINK}, friend. Is that grizzled fellow with you, coming up now, is that my old comrade Gunnar of Lagshofn? A bit greyer than I remember from the days when we stood together in the shield wall facing Volbjorn's host, but, well, aren't we all…").Condition(delegate
+		Campaign.Current.ConversationManager.AddDialogFlow(DialogFlow.CreateDialogFlow("start", 1300).NpcLine("{=J6QLFwbb}[if:convo_delighted][ib:hip]Welcome to {SETTLEMENT_LINK}, friend. Is that grizzled fellow with you, coming up now, is that my old comrade Gunnar of Lagshofn? A bit greyer than I remember from the days when we stood together in the shield wall facing Volbjorn's host, but, well, aren't we all…").Condition(delegate
 		{
 			MBTextManager.SetTextVariable("SETTLEMENT_LINK", NavalStorylineData.Act3Quest3TargetSettlement.EncyclopediaLinkWithName);
 			int num;
@@ -483,14 +483,14 @@ public class SpeakToTheSailorsQuest : NavalStorylineQuestBase
 			{
 				AddState(QuestState.HadEncounterWithBjolgor);
 			})
-			.NpcLine("{=KYqqVZh1}We received his letter a while back, about your run-in with Purig. Hah! That worm must have cursed like an old woman when he learned that his captives stole his ship. You two are making quite a name for yourselves.")
-			.NpcLine("{=4bsY9noo}Bjolgur of Gauksdal! Well met! Are the Skolderbroda working for the merchants of {SETTLEMENT_LINK} now?", IsGunnar, IsBjolgur)
+			.NpcLine("{=KYqqVZh1}[ib:confident]We received his letter a while back, about your run-in with Purig. Hah! That worm must have cursed like an old woman when he learned that his captives stole his ship. You two are making quite a name for yourselves.")
+			.NpcLine("{=4bsY9noo}[if:convo_delighted][ib:confident3]Bjolgur of Gauksdal! Well met! Are the Skolderbroda working for the merchants of {SETTLEMENT_LINK} now?", IsGunnar, IsBjolgur)
 			.Condition(delegate
 			{
 				MBTextManager.SetTextVariable("SETTLEMENT_LINK", NavalStorylineData.Act3Quest3TargetSettlement.EncyclopediaLinkWithName);
 				return true;
 			})
-			.NpcLine("{=lTjvOdoX}Not yet. As you know, our brotherhood does not fight before it's paid.", IsBjolgur, IsGunnar)
+			.NpcLine("{=lTjvOdoX}[ib:closed]Not yet. As you know, our brotherhood does not fight before it's paid.", IsBjolgur, IsGunnar)
 			.NpcLine("{=iSKIBXnj}See, the {SETTLEMENT_LINK} merchants promised us a hoard of silver to protect their ships from the Sea Hounds, but it never arrived. I was sent down to learn what was going on, and I find the silver just sitting here, loaded onto a ship in the harbor, and the Sturgians are burning through it paying their men double wages not to run off. Some Vlandian pirates were sighted in the estuary, and the Sturgians refuse to venture out.", IsBjolgur, IsMainAgent)
 			.Condition(delegate
 			{
@@ -504,11 +504,11 @@ public class SpeakToTheSailorsQuest : NavalStorylineQuestBase
 			.PlayerOption("{=2YEmSZq1}Pirates are scum. Let's just sail out and crush them.")
 			.GotoDialogState(token)
 			.EndPlayerOptions()
-			.NpcLine("{=kbug6MQB}Much as I would like to simply sail forth and bathe my sword in Sea Hound blood, my brotherhood has commanded me to do my best to ensure that the silver gets through safely.", IsBjolgur, IsMainAgent, token)
-			.NpcLine("{=rlpVWadN}Listen. I've been watching these Vlandian blockaders, and mulling over a plan. Their flagship has a lofty deck and it would be hard to board, but it doesn't seem very maneuverable. I think we can hit them with a trick that can be deadly in estuaries.", IsBjolgur, IsMainAgent)
+			.NpcLine("{=kbug6MQB}[ib:confident2]Much as I would like to simply sail forth and bathe my sword in Sea Hound blood, my brotherhood has commanded me to do my best to ensure that the silver gets through safely.", IsBjolgur, IsMainAgent, token)
+			.NpcLine("{=rlpVWadN}[ib:normal2][if:convo_thinking]Listen. I've been watching these Vlandian blockaders, and mulling over a plan. Their flagship has a lofty deck and it would be hard to board, but it doesn't seem very maneuverable. I think we can hit them with a trick that can be deadly in estuaries.", IsBjolgur, IsMainAgent)
 			.NpcLine("{=K3B52zD6}We will be upstream of them. I'll have the merchants here donate some leaky old vessel that they are about to scrap. We load it up with oil and pitch. Then we steer it towards the pirates, throw a torch in the hull, and jump.", IsBjolgur, IsMainAgent)
-			.NpcLine("{=8PmocyQy}Good, very good. With luck, the current shall carry it right into them, and they shall all merrily blaze up like a bonfire at a midwinter feast. The silver ship will make for the open sea, while the rest of us can have it out with any surviving Sea Hounds.", IsGunnar, IsBjolgur)
-			.NpcLine("{=867iaibq}Listen, though… We need someone to steer the fireship. I'd do it myself, but my order wants me to stay close to the silver. I'd found a few volunteers who've offered to do it, but they keep sobering up.", IsBjolgur, IsMainAgent)
+			.NpcLine("{=8PmocyQy}[ib:normal]Good, very good. With luck, the current shall carry it right into them, and they shall all merrily blaze up like a bonfire at a midwinter feast. The silver ship will make for the open sea, while the rest of us can have it out with any surviving Sea Hounds.", IsGunnar, IsBjolgur)
+			.NpcLine("{=867iaibq}[ib:closed2][if:convo_relaxed_happy]Listen, though… We need someone to steer the fireship. I'd do it myself, but my order wants me to stay close to the silver. I'd found a few volunteers who've offered to do it, but they keep sobering up.", IsBjolgur, IsMainAgent)
 			.BeginPlayerOptions()
 			.PlayerOption("{=ybDSa8Xr}I'll steer the fireship. Let us sail forth.")
 			.Consequence(OnTalkedToSailors)
@@ -551,8 +551,8 @@ public class SpeakToTheSailorsQuest : NavalStorylineQuestBase
 
 	private void AddBjolgurDialogsEndBattle()
 	{
-		Campaign.Current.ConversationManager.AddDialogFlow(DialogFlow.CreateDialogFlow("start", 1300).NpcLine("{=8OtmPWCK}So! {PLAYER.NAME}... You did well with that fireship! The silver is on its way to my order, and that bastard Purig will no doubt be much discomfitted. You helped me out there, so let me see if I can now help you.", IsBjolgur, IsMainAgent).Condition(MultiAgentConversationCondition)
-			.NpcLine("{=5GMbKn4x}Just before I set sail for {SETTLEMENT_LINK}, my brothers and I had a visitor, a merchant named Salautas Crusas who said he was acting as an “ambassador” for Purig. He wanted us to break our contract with Balgard and ally with the Sea Hounds instead. He offered a great deal of money, too, and more - we could share in Purig's grand plan of conquest.", IsBjolgur, IsMainAgent)
+		Campaign.Current.ConversationManager.AddDialogFlow(DialogFlow.CreateDialogFlow("start", 1300).NpcLine("{=8OtmPWCK}[ib:hip][if:convo_delighted]So! {PLAYER.NAME}... You did well with that fireship! The silver is on its way to my order, and that bastard Purig will no doubt be much discomfitted. You helped me out there, so let me see if I can now help you.", IsBjolgur, IsMainAgent).Condition(MultiAgentConversationCondition)
+			.NpcLine("{=5GMbKn4x}[ib:confident][if:convo_nonchalant]Just before I set sail for {SETTLEMENT_LINK}, my brothers and I had a visitor, a merchant named Salautas Crusas who said he was acting as an “ambassador” for Purig. He wanted us to break our contract with Balgard and ally with the Sea Hounds instead. He offered a great deal of money, too, and more - we could share in Purig's grand plan of conquest.", IsBjolgur, IsMainAgent)
 			.Condition(delegate
 			{
 				MBTextManager.SetTextVariable("SETTLEMENT_LINK", NavalStorylineData.Act3Quest3TargetSettlement.EncyclopediaLinkWithName);
@@ -570,10 +570,10 @@ public class SpeakToTheSailorsQuest : NavalStorylineQuestBase
 			.PlayerOption("{=jce9rAAu}I'm not interested in Purig's lies, just how to find him.", IsBjolgur)
 			.GotoDialogState(token2)
 			.EndPlayerOptions()
-			.NpcLine("{=n4bIAwNN}Well, first we would join the Sea Hounds in ravaging the coasts of Sturgia and Vlandia, so that no ship would dare sail on the Byalic Sea without paying us our due. Then Purig would raise an army out of the king's old enemies and take the Nordvyg, and crown himself in Thronderlag, and shower upon us lands, and titles, and anything else we might want.", IsBjolgur, IsMainAgent, token)
-			.NpcLine("{=2oEhDTjU}Well, some of the brothers listened to him, men who had fought against Volbjorn to whom a fine meal of wealth seasoned with revenge sounded rather tasty. But the rest of us… We'd heard such promises before, and we had no wish to serve any king. Better to fight for gold… and if you want the gold to flow, you honor your contracts, even if some fancy Calradian merchant comes along offering you the riches of the seven seas.", IsBjolgur, IsMainAgent, null, token3)
-			.NpcLine("{=3mxtyo2y}Here's the detail that would interest you…. In addition to all the other delights that Crusas dangled before us, he also offered to build us ships. Purig was going to construct them in some northern anchorage called Angranfjord, where he had brought a large number of captives to work in a shipyard.", IsBjolgur, IsMainAgent, token2, token3)
-			.NpcLine("{=GlV3EsEv}This must be the slave colony that Fahda mentioned. Pirates value safe havens to build new ships. With an anchorage like that, Purig can have the Sea Hounds out of his hands.", IsGunnar, IsMainAgent, token3, token4)
+			.NpcLine("{=n4bIAwNN}[ib:closed]Well, first we would join the Sea Hounds in ravaging the coasts of Sturgia and Vlandia, so that no ship would dare sail on the Byalic Sea without paying us our due. Then Purig would raise an army out of the king's old enemies and take the Nordvyg, and crown himself in Thronderlag, and shower upon us lands, and titles, and anything else we might want.", IsBjolgur, IsMainAgent, token)
+			.NpcLine("{=2oEhDTjU}[if:convo_grave]Well, some of the brothers listened to him, men who had fought against Volbjorn to whom a fine meal of wealth seasoned with revenge sounded rather tasty. But the rest of us… We'd heard such promises before, and we had no wish to serve any king. Better to fight for gold… and if you want the gold to flow, you honor your contracts, even if some fancy Calradian merchant comes along offering you the riches of the seven seas.", IsBjolgur, IsMainAgent, null, token3)
+			.NpcLine("{=3mxtyo2y}[if:convo_normal][ib:normal]Here's the detail that would interest you…. In addition to all the other delights that Crusas dangled before us, he also offered to build us ships. Purig was going to construct them in some northern anchorage called Angranfjord, where he had brought a large number of captives to work in a shipyard.", IsBjolgur, IsMainAgent, token2, token3)
+			.NpcLine("{=GlV3EsEv}[ib:closed]This must be the slave colony that Fahda mentioned. Pirates value safe havens to build new ships. With an anchorage like that, Purig can have the Sea Hounds out of his hands.", IsGunnar, IsMainAgent, token3, token4)
 			.NpcLine("{=v2664Qeo}...", IsGunnar, IsMainAgent, token4)
 			.BeginPlayerOptions()
 			.PlayerOption("{=WtODG7Mc}Bjolgur... you've known this for some time, you say?", IsBjolgur)
@@ -581,21 +581,21 @@ public class SpeakToTheSailorsQuest : NavalStorylineQuestBase
 			.PlayerOption("{=X14bPFvN}Why didn't you tell us this before the battle?", IsBjolgur)
 			.GotoDialogState(token6)
 			.EndPlayerOptions()
-			.NpcLine("{=7UNOf0DZ}Come now, I couldn't have you dash off to hunt Crusas before the silver got past the Sea Hounds. My brothers named me their emissary, you see, and we diplomats need to be crafty.", IsBjolgur, IsMainAgent, token5)
+			.NpcLine("{=7UNOf0DZ}[ib:confident][if:convo_nonchalant]Come now, I couldn't have you dash off to hunt Crusas before the silver got past the Sea Hounds. My brothers named me their emissary, you see, and we diplomats need to be crafty.", IsBjolgur, IsMainAgent, token5)
 			.PlayerLine("{=l8Rbjazw}It sounds as though, if we find Crusas, we can find Purig.", IsBjolgur)
 			.NpcLine("{=vhr55efV}So… I need to get this silver safely to harbor, but after that, I shall request permission from my order to fit out a ship and sail to Ostican to join your hunt. I'm not saying I owe you anything, mind you - but those bastards did try to take our money, and all Crusas' talk about gold and riches made me think that I wouldn't mind taking one of his ships and having a rummage through his holds.", IsBjolgur, IsMainAgent)
 			.PlayerLine("{=JEpBDamz}We are grateful for your help. We shall meet you back in Ostican.", IsBjolgur)
-			.NpcLine("{=Sl45Pmxg}I shall see you shortly in Ostican, then.", IsBjolgur, IsMainAgent)
+			.NpcLine("{=Sl45Pmxg}[ib:hip]I shall see you shortly in Ostican, then.", IsBjolgur, IsMainAgent)
 			.Consequence(delegate
 			{
 				Campaign.Current.ConversationManager.ConversationEndOneShot += FinishQuest;
 			})
 			.CloseDialog()
-			.NpcLine("{=7UNOf0DZ}Come now, I couldn't have you dash off to hunt Crusas before the silver got past the Sea Hounds. My brothers named me their emissary, you see, and we diplomats need to be crafty.", IsBjolgur, IsMainAgent, token6)
+			.NpcLine("{=7UNOf0DZ}[ib:confident][if:convo_nonchalant]Come now, I couldn't have you dash off to hunt Crusas before the silver got past the Sea Hounds. My brothers named me their emissary, you see, and we diplomats need to be crafty.", IsBjolgur, IsMainAgent, token6)
 			.PlayerLine("{=U9e7WbOS}I piloted a fireship. I think you owe us more than just information.", IsBjolgur)
 			.NpcLine("{=vhr55efV}So… I need to get this silver safely to harbor, but after that, I shall request permission from my order to fit out a ship and sail to Ostican to join your hunt. I'm not saying I owe you anything, mind you - but those bastards did try to take our money, and all Crusas' talk about gold and riches made me think that I wouldn't mind taking one of his ships and having a rummage through his holds.", IsBjolgur, IsMainAgent)
 			.PlayerLine("{=8zxLaxKn}You'll get your share of Crusas' ill-gained wealth, never fear.", IsBjolgur)
-			.NpcLine("{=Sl45Pmxg}I shall see you shortly in Ostican, then.", IsBjolgur, IsMainAgent)
+			.NpcLine("{=Sl45Pmxg}[ib:hip]I shall see you shortly in Ostican, then.", IsBjolgur, IsMainAgent)
 			.Consequence(delegate
 			{
 				Campaign.Current.ConversationManager.ConversationEndOneShot += FinishQuest;

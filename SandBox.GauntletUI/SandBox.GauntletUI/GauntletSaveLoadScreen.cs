@@ -52,13 +52,14 @@ public class GauntletSaveLoadScreen : ScreenBase
 			Utilities.SetForceVsync(value: true);
 		}
 		InformationManager.HideAllMessages();
-		_dataSource.InitializeAsync();
+		_dataSource.LoadSavesAsync();
 	}
 
 	protected override void OnPostFrameTick(float dt)
 	{
 		base.OnPostFrameTick(dt);
 		UpdateInputRestrictions();
+		_dataSource.OnTick(dt);
 	}
 
 	protected override void OnFrameTick(float dt)

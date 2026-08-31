@@ -64,6 +64,20 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_7_I
 		return visualDefinition;
 	}
 
+	private VisualDefinition CreateVisualDefinitionBottomMenu()
+	{
+		VisualDefinition visualDefinition = new VisualDefinition("BottomMenu", 0.45f, 0f, AnimationInterpolation.Type.EaseOut, AnimationInterpolation.Function.Quint);
+		visualDefinition.AddVisualState(new VisualState("Default")
+		{
+			PositionYOffset = 6f
+		});
+		visualDefinition.AddVisualState(new VisualState("Opened")
+		{
+			PositionYOffset = 100f
+		});
+		return visualDefinition;
+	}
+
 	public void CreateWidgets()
 	{
 		_widget = this;

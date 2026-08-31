@@ -16,16 +16,16 @@ public class RequestJoinCustomGameMessage : Message
 	public string Password { get; private set; }
 
 	[JsonProperty]
-	public bool IsJoinAsAdminOnly { get; private set; }
+	public CustomGameJoinType JoinType { get; private set; }
 
 	public RequestJoinCustomGameMessage()
 	{
 	}
 
-	public RequestJoinCustomGameMessage(CustomBattleId customBattleId, string password = "", bool isJoinAsAdminOnly = false)
+	public RequestJoinCustomGameMessage(CustomBattleId customBattleId, CustomGameJoinType joinType, string password)
 	{
 		CustomBattleId = customBattleId;
 		Password = password;
-		IsJoinAsAdminOnly = isJoinAsAdminOnly;
+		JoinType = joinType;
 	}
 }

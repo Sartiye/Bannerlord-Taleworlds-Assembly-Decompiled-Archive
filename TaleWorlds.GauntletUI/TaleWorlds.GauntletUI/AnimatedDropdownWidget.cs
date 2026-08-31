@@ -277,7 +277,7 @@ public class AnimatedDropdownWidget : Widget
 					{
 						CurrentSelectedIndex--;
 					}
-					else
+					else if (ListPanel.ChildCount > 0)
 					{
 						CurrentSelectedIndex = ListPanel.ChildCount - 1;
 					}

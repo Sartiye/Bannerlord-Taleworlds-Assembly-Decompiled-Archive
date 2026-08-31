@@ -88,7 +88,6 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 		_widget_0_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0.MarginRight = 3f;
 		_widget_0_0_0.Brush = base.Context.GetBrush("MPHUD.PersonalNotification.AmountText");
-		_widget_0_0_0.ClipContents = false;
 		_widget_0_0_1.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_1.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_1.SuggestedWidth = 38f;
@@ -111,7 +110,6 @@ public class SingleplayerKillfeed__TaleWorlds_MountAndBlade_ViewModelCollection_
 		_widget_0_0_3.VerticalAlignment = VerticalAlignment.Center;
 		_widget_0_0_3.MarginLeft = 3f;
 		_widget_0_0_3.Brush = base.Context.GetBrush("MPHUD.PersonalNotification.MessageText");
-		_widget_0_0_3.ClipContents = false;
 	}
 
 	public void DestroyDataSource()

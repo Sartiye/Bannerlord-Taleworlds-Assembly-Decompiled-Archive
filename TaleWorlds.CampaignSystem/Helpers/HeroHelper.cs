@@ -19,18 +19,91 @@ public static class HeroHelper
 {
 	public static TextObject GetLastSeenText(Hero hero)
 	{
-		TextObject textObject;
-		if (hero.LastKnownClosestSettlement == null)
+		if (hero.IsDead)
 		{
-			textObject = GameTexts.FindText("str_never_seen_encyclopedia_entry");
+			return TextObject.GetEmpty();
 		}
-		else
+		if (hero.IsFugitive)
 		{
-			textObject = GameTexts.FindText("str_last_seen_encyclopedia_entry");
-			textObject.SetTextVariable("SETTLEMENT", hero.LastKnownClosestSettlement.EncyclopediaLinkWithName);
+			return GameTexts.FindText("str_last_seen_encyclopedia_entry_fugitive");
+		}
+		if (hero.IsKnownToPlayer && (hero.IsActive || hero.IsPrisoner))
+		{
+			hero.UpdateLastKnownClosestSettlement(GetClosestSettlement(hero));
+		}
+		if (hero.LastKnownClosestSettlement == null || !hero.IsKnownToPlayer)
+		{
+			return GameTexts.FindText("str_never_seen_encyclopedia_entry");
+		}
+		PartyBase partyBase = hero.PartyBelongedTo?.Party ?? hero.PartyBelongedToAsPrisoner;
+		if (partyBase == null)
+		{
+			TextObject textObject = GameTexts.FindText("str_last_seen_encyclopedia_entry");
 			textObject.SetTextVariable("IS_IN_SETTLEMENT", (hero.LastKnownClosestSettlement == hero.CurrentSettlement) ? 1 : 0);
+			textObject.SetTextVariable("SETTLEMENT", hero.LastKnownClosestSettlement.EncyclopediaLinkWithName);
+			return textObject;
 		}
-		return textObject;
+		if (partyBase.IsMobile && partyBase.MobileParty.IsCurrentlyAtSea)
+		{
+			if (hero.IsPrisoner)
+			{
+				if (partyBase.MobileParty.Army != null)
+				{
+					TextObject textObject2 = GameTexts.FindText("str_last_seen_encyclopedia_entry_at_sea_in_army_as_prisoner");
+					textObject2.SetTextVariable("ARMY_LEADER", partyBase.MobileParty.Army.LeaderParty.LeaderHero.EncyclopediaLinkWithName);
+					textObject2.SetTextVariable("SETTLEMENT", hero.LastKnownClosestSettlement.EncyclopediaLinkWithName);
+					return textObject2;
+				}
+				TextObject textObject3 = GameTexts.FindText("str_last_seen_encyclopedia_entry_at_sea_as_prisoner");
+				textObject3.SetTextVariable("PARTY_LEADER", partyBase.LeaderHero.EncyclopediaLinkWithName);
+				textObject3.SetTextVariable("SETTLEMENT", hero.LastKnownClosestSettlement.EncyclopediaLinkWithName);
+				return textObject3;
+			}
+			if (partyBase.MobileParty.Army != null)
+			{
+				TextObject textObject4 = GameTexts.FindText("str_last_seen_encyclopedia_entry_at_sea_in_army");
+				textObject4.SetTextVariable("ARMY_LEADER", partyBase.MobileParty.Army.LeaderParty.LeaderHero.EncyclopediaLinkWithName);
+				textObject4.SetTextVariable("SETTLEMENT", hero.LastKnownClosestSettlement.EncyclopediaLinkWithName);
+				return textObject4;
+			}
+			TextObject textObject5 = GameTexts.FindText("str_last_seen_encyclopedia_entry_at_sea");
+			textObject5.SetTextVariable("SETTLEMENT", hero.LastKnownClosestSettlement.EncyclopediaLinkWithName);
+			return textObject5;
+		}
+		if (hero.IsPrisoner)
+		{
+			if (partyBase.IsMobile)
+			{
+				if (partyBase.MobileParty.Army != null)
+				{
+					TextObject textObject6 = GameTexts.FindText("str_last_seen_encyclopedia_entry_in_army_as_prisoner");
+					textObject6.SetTextVariable("ARMY_LEADER", partyBase.MobileParty.Army.LeaderParty.LeaderHero.EncyclopediaLinkWithName);
+					textObject6.SetTextVariable("IS_IN_SETTLEMENT", (hero.LastKnownClosestSettlement == hero.CurrentSettlement) ? 1 : 0);
+					textObject6.SetTextVariable("SETTLEMENT", hero.LastKnownClosestSettlement.EncyclopediaLinkWithName);
+					return textObject6;
+				}
+				TextObject textObject7 = GameTexts.FindText("str_last_seen_encyclopedia_entry_as_prisoner");
+				textObject7.SetTextVariable("PARTY_LEADER", partyBase.LeaderHero.EncyclopediaLinkWithName);
+				textObject7.SetTextVariable("IS_IN_SETTLEMENT", (hero.LastKnownClosestSettlement == hero.CurrentSettlement) ? 1 : 0);
+				textObject7.SetTextVariable("SETTLEMENT", hero.LastKnownClosestSettlement.EncyclopediaLinkWithName);
+				return textObject7;
+			}
+			TextObject textObject8 = GameTexts.FindText("str_last_seen_encyclopedia_entry_as_prisoner_in_settlement");
+			textObject8.SetTextVariable("SETTLEMENT", hero.LastKnownClosestSettlement.EncyclopediaLinkWithName);
+			return textObject8;
+		}
+		if (partyBase.MobileParty.Army != null)
+		{
+			TextObject textObject9 = GameTexts.FindText("str_last_seen_encyclopedia_entry_in_army");
+			textObject9.SetTextVariable("ARMY_LEADER", partyBase.MobileParty.Army.LeaderParty.LeaderHero.EncyclopediaLinkWithName);
+			textObject9.SetTextVariable("IS_IN_SETTLEMENT", (hero.LastKnownClosestSettlement == hero.CurrentSettlement) ? 1 : 0);
+			textObject9.SetTextVariable("SETTLEMENT", hero.LastKnownClosestSettlement.EncyclopediaLinkWithName);
+			return textObject9;
+		}
+		TextObject textObject10 = GameTexts.FindText("str_last_seen_encyclopedia_entry");
+		textObject10.SetTextVariable("IS_IN_SETTLEMENT", (hero.LastKnownClosestSettlement == hero.CurrentSettlement) ? 1 : 0);
+		textObject10.SetTextVariable("SETTLEMENT", hero.LastKnownClosestSettlement.EncyclopediaLinkWithName);
+		return textObject10;
 	}
 
 	public static Settlement GetClosestSettlement(Hero hero)
@@ -57,21 +130,27 @@ public static class HeroHelper
 					{
 						float num = Campaign.MapDiagonalSquared;
 						LocatableSearchData<Settlement> data = Settlement.StartFindingLocatablesAroundPosition(mobileParty.Position.ToVec2(), averageDistanceBetweenClosestTwoTownsWithNavigationType * 1.5f);
-						Settlement settlement2 = Settlement.FindNextLocatable(ref data);
-						while (settlement2 != null && (settlement2.IsVillage || settlement2.IsFortification))
+						for (Settlement settlement2 = Settlement.FindNextLocatable(ref data); settlement2 != null; settlement2 = Settlement.FindNextLocatable(ref data))
 						{
-							float num2 = settlement2.Position.DistanceSquared(mobileParty.Position);
-							if (num2 < num)
+							if (settlement2.IsVillage || settlement2.IsFortification)
 							{
-								num = num2;
+								float num2 = settlement2.Position.DistanceSquared(mobileParty.Position);
+								if (num2 < num)
+								{
+									num = num2;
+									settlement = settlement2;
+								}
 							}
-							settlement2 = Settlement.FindNextLocatable(ref data);
 						}
-						settlement = settlement2 ?? SettlementHelper.FindNearestSettlementToMobileParty(mobileParty, MobileParty.NavigationType.All, (Settlement x) => x.IsVillage || x.IsFortification);
+						if (settlement == null)
+						{
+							CampaignVec2 point = mobileParty.Position;
+							settlement = SettlementHelper.FindNearestSettlementToPoint(in point, (Settlement x) => x.IsVillage || x.IsFortification);
+						}
 					}
 					else
 					{
-						Debug.FailedAssert("Mobileparty is nowhere to be found", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetClosestSettlement", 2424);
+						Debug.FailedAssert("Mobileparty is nowhere to be found", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetClosestSettlement", 2517);
 					}
 				}
 			}
@@ -536,7 +615,7 @@ public static class HeroHelper
 			}
 			return GameTexts.FindText(id, variation);
 		}
-		Debug.FailedAssert("Given trait is not a personality trait!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetPersonalityTraitChangeName", 2998);
+		Debug.FailedAssert("Given trait is not a personality trait!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetPersonalityTraitChangeName", 3084);
 		return TextObject.GetEmpty();
 	}
 }

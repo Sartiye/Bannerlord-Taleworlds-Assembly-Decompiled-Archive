@@ -352,10 +352,15 @@ public class BasicCharacterObject : MBObjectBase
 		{
 			if (childNode.Name == "Skills" || childNode.Name == "skills")
 			{
-				if (mBCharacterSkills == null)
+				if (mBCharacterSkills != null)
 				{
-					DefaultCharacterSkills.Init(objectManager, childNode);
+					DefaultCharacterSkills = MBObjectManager.Instance.CreateObject<MBCharacterSkills>(base.StringId);
+					foreach (SkillObject property in mBCharacterSkills.Skills.GetProperties())
+					{
+						DefaultCharacterSkills.Skills.SetPropertyValue(property, mBCharacterSkills.Skills.GetPropertyValue(property));
+					}
 				}
+				DefaultCharacterSkills.Init(objectManager, childNode);
 			}
 			else if (childNode.Name == "Equipments" || childNode.Name == "equipments")
 			{
@@ -389,12 +394,12 @@ public class BasicCharacterObject : MBObjectBase
 						{
 							if (!Enum.TryParse<Equipment.EquipmentType>(childNode3.Attributes["equipmentType"].Value, out result))
 							{
-								Debug.FailedAssert("This equipment definition is wrong", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\BasicCharacterObject.cs", "Deserialize", 449);
+								Debug.FailedAssert("This equipment definition is wrong", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\BasicCharacterObject.cs", "Deserialize", 460);
 							}
 						}
 						else if (childNode3.Attributes["civilian"] != null)
 						{
-							Debug.FailedAssert("This civilian tag should not be used anymore, the equipmentSet type should be defined as equipmentType=civilian in the .xml file", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\BasicCharacterObject.cs", "Deserialize", 454);
+							Debug.FailedAssert("This civilian tag should not be used anymore, the equipmentSet type should be defined as equipmentType=civilian in the .xml file", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\BasicCharacterObject.cs", "Deserialize", 465);
 							if (bool.Parse(childNode3.Attributes["civilian"].InnerText))
 							{
 								result = Equipment.EquipmentType.Civilian;
@@ -441,7 +446,7 @@ public class BasicCharacterObject : MBObjectBase
 					{
 						if (!BodyProperties.FromXmlNode(childNode4, out bodyProperties))
 						{
-							Debug.FailedAssert("cannot read body properties", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\BasicCharacterObject.cs", "Deserialize", 513);
+							Debug.FailedAssert("cannot read body properties", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\BasicCharacterObject.cs", "Deserialize", 524);
 						}
 					}
 					else if (childNode4.Name == "BodyPropertiesMax")
@@ -449,7 +454,7 @@ public class BasicCharacterObject : MBObjectBase
 						if (!BodyProperties.FromXmlNode(childNode4, out bodyProperties2))
 						{
 							bodyProperties = bodyProperties2;
-							Debug.FailedAssert("cannot read max body properties", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\BasicCharacterObject.cs", "Deserialize", 522);
+							Debug.FailedAssert("cannot read max body properties", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\BasicCharacterObject.cs", "Deserialize", 533);
 						}
 					}
 					else if (childNode4.Name == "face_key_template")

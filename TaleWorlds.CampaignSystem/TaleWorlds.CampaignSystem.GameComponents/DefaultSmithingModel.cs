@@ -139,32 +139,23 @@ public class DefaultSmithingModel : SmithingModel
 
 	public override int GetEnergyCostForRefining(ref Crafting.RefiningFormula refineFormula, Hero hero)
 	{
-		ExplainedNumber explainedNumber = new ExplainedNumber(6f);
-		if (hero.GetPerkValue(DefaultPerks.Crafting.PracticalRefiner))
-		{
-			explainedNumber.AddFactor(DefaultPerks.Crafting.PracticalRefiner.PrimaryBonus);
-		}
-		return (int)explainedNumber.ResultNumber;
+		ExplainedNumber bonuses = new ExplainedNumber(6f);
+		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Crafting.PracticalRefiner, BattleEnvironment.Any, hero.CharacterObject, isPrimaryBonus: true, ref bonuses);
+		return (int)bonuses.ResultNumber;
 	}
 
 	public override int GetEnergyCostForSmithing(ItemObject item, Hero hero)
 	{
-		ExplainedNumber explainedNumber = new ExplainedNumber(10 + 5 * (int)item.Tier);
-		if (hero.GetPerkValue(DefaultPerks.Crafting.PracticalSmith))
-		{
-			explainedNumber.AddFactor(DefaultPerks.Crafting.PracticalSmith.PrimaryBonus);
-		}
-		return (int)explainedNumber.ResultNumber;
+		ExplainedNumber bonuses = new ExplainedNumber(10 + 5 * (int)item.Tier);
+		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Crafting.PracticalSmith, BattleEnvironment.Any, hero.CharacterObject, isPrimaryBonus: true, ref bonuses);
+		return (int)bonuses.ResultNumber;
 	}
 
 	public override int GetEnergyCostForSmelting(ItemObject item, Hero hero)
 	{
-		ExplainedNumber explainedNumber = new ExplainedNumber(10f);
-		if (hero.GetPerkValue(DefaultPerks.Crafting.PracticalSmelter))
-		{
-			explainedNumber.AddFactor(DefaultPerks.Crafting.PracticalSmelter.PrimaryBonus);
-		}
-		return (int)explainedNumber.ResultNumber;
+		ExplainedNumber bonuses = new ExplainedNumber(10f);
+		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Crafting.PracticalSmelter, BattleEnvironment.Any, hero.CharacterObject, isPrimaryBonus: true, ref bonuses);
+		return (int)bonuses.ResultNumber;
 	}
 
 	public override ItemObject GetCraftingMaterialItem(CraftingMaterials craftingMaterial)
@@ -398,25 +389,19 @@ public class DefaultSmithingModel : SmithingModel
 
 	public override int GetPartResearchGainForSmeltingItem(ItemObject item, Hero hero)
 	{
-		ExplainedNumber explainedNumber = new ExplainedNumber(1f + (float)TaleWorlds.Library.MathF.Round(0.02f * (float)item.Value));
-		if (hero.GetPerkValue(DefaultPerks.Crafting.CuriousSmelter))
-		{
-			explainedNumber.AddFactor(DefaultPerks.Crafting.CuriousSmelter.PrimaryBonus);
-		}
-		return (int)explainedNumber.ResultNumber;
+		ExplainedNumber bonuses = new ExplainedNumber(1f + (float)TaleWorlds.Library.MathF.Round(0.02f * (float)item.Value));
+		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Crafting.CuriousSmelter, BattleEnvironment.Any, hero.CharacterObject, isPrimaryBonus: true, ref bonuses);
+		return (int)bonuses.ResultNumber;
 	}
 
 	public override int GetPartResearchGainForSmithingItem(ItemObject item, Hero hero, bool isFreeBuild)
 	{
-		ExplainedNumber explainedNumber = new ExplainedNumber(1f);
-		if (hero.GetPerkValue(DefaultPerks.Crafting.CuriousSmith))
-		{
-			explainedNumber.AddFactor(DefaultPerks.Crafting.CuriousSmith.PrimaryBonus);
-		}
+		ExplainedNumber bonuses = new ExplainedNumber(1f);
+		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Crafting.CuriousSmith, BattleEnvironment.Any, hero.CharacterObject, isPrimaryBonus: true, ref bonuses);
 		if (isFreeBuild)
 		{
-			explainedNumber.AddFactor(0.1f);
+			bonuses.AddFactor(0.1f);
 		}
-		return 1 + TaleWorlds.Library.MathF.Floor(0.1f * (float)item.Value * explainedNumber.ResultNumber);
+		return 1 + TaleWorlds.Library.MathF.Floor(0.1f * (float)item.Value * bonuses.ResultNumber);
 	}
 }

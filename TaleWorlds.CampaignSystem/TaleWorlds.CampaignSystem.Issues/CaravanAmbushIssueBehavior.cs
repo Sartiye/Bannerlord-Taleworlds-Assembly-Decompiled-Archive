@@ -572,6 +572,7 @@ public class CaravanAmbushIssueBehavior : CampaignBehaviorBase
 			_banditParty.IgnoreByOtherPartiesTill(base.QuestDueTime);
 			SetPartyAiAction.GetActionForEngagingParty(_banditParty, _caravanParty, MobileParty.NavigationType.Default, isFromPort: false);
 			_banditParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: true);
+			_banditParty.InitializePartyTrade(QuestHelper.CalculateInitialGoldForBanditQuestParty(_banditParty));
 			for (int j = 0; j < 3; j++)
 			{
 				_rewardItems.Add(Items.All.GetRandomElementWithPredicate((ItemObject t) => t.IsTradeGood && !t.NotMerchandise));
@@ -673,7 +674,7 @@ public class CaravanAmbushIssueBehavior : CampaignBehaviorBase
 		{
 			if (party == _caravanParty)
 			{
-				Debug.FailedAssert("Caravan has arrived at settlement without encountering the bandits", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Issues\\CaravanAmbushIssueBehavior.cs", "OnSettlementEntered", 718);
+				Debug.FailedAssert("Caravan has arrived at settlement without encountering the bandits", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Issues\\CaravanAmbushIssueBehavior.cs", "OnSettlementEntered", 719);
 				DestroyPartyAction.Apply(_caravanParty.Party, _caravanParty);
 				_caravanParty = null;
 				_banditParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: false);

@@ -18,7 +18,7 @@ public class EncyclopediaHeroPage__TaleWorlds_CampaignSystem_ViewModelCollection
 
 	private EncyclopediaTraitItemVM _datasource_Root;
 
-	private HintViewModel _datasource_Root_Hint;
+	private BasicTooltipViewModel _datasource_Root_Hint;
 
 	public EncyclopediaHeroPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaHeroPageVM_Dependency_1_ItemTemplate(UIContext context)
 		: base(context)
@@ -354,7 +354,7 @@ public class EncyclopediaHeroPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_Hint(HintViewModel newDataSource)
+	private void RefreshDataSource_datasource_Root_Hint(BasicTooltipViewModel newDataSource)
 	{
 		if (_datasource_Root_Hint != null)
 		{

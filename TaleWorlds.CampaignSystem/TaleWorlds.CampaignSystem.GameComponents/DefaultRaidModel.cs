@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.MapEvents;
@@ -46,20 +47,24 @@ public class DefaultRaidModel : RaidModel
 	public override ExplainedNumber CalculateHitDamage(MapEventSide attackerSide, float settlementHitPoints)
 	{
 		float num = (MathF.Sqrt(attackerSide.TroopCount) + 5f) / 900f;
-		ExplainedNumber result = new ExplainedNumber(num * (float)CampaignTime.DeltaTime.ToHours);
+		ExplainedNumber stat = new ExplainedNumber(num * (float)CampaignTime.DeltaTime.ToHours);
 		foreach (MapEventParty party in attackerSide.Parties)
 		{
-			if (party.Party.MobileParty?.LeaderHero != null && party.Party.MobileParty.LeaderHero.GetPerkValue(DefaultPerks.Roguery.NoRestForTheWicked))
-			{
-				result.AddFactor(DefaultPerks.Roguery.NoRestForTheWicked.SecondaryBonus);
-			}
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Roguery.NoRestForTheWicked, party.Party.MobileParty, isPrimaryBonus: false, ref stat);
 		}
-		return result;
+		return stat;
 	}
 
-	public override ExplainedNumber GetRaidLootMultiplier(PartyBase receivingParty)
+	public override float GetRaidLootMultiplier(PartyBase receivingParty)
 	{
-		return new ExplainedNumber(1f);
+		float num = 1f;
+		MobileParty mobileParty = receivingParty.MobileParty;
+		Hero hero = mobileParty?.Army?.LeaderParty?.LeaderHero ?? mobileParty?.LeaderHero;
+		if (hero != null)
+		{
+			num += TraitEffectHelper.GetTraitEffectBonus(hero, DefaultPersonalityTraitEffects.MercyRaidLootEffect);
+		}
+		return num;
 	}
 
 	public override MBReadOnlyList<(ItemObject, float)> GetCommonLootItemScores()

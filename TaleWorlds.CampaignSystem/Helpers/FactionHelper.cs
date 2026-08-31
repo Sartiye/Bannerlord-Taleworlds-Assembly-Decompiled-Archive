@@ -81,7 +81,7 @@ public static class FactionHelper
 		List<TextObject> list = new List<TextObject>();
 		if (name == null)
 		{
-			Debug.FailedAssert("Calling IsFactionNameApplicable with null string!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "IsFactionNameApplicable", 5560);
+			Debug.FailedAssert("Calling IsFactionNameApplicable with null string!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "IsFactionNameApplicable", 5947);
 			name = string.Empty;
 		}
 		if (name.Length > 50 || name.Length < 1)
@@ -451,15 +451,6 @@ public static class FactionHelper
 		return GameTexts.FindText("str_adjective_for_culture", factionCulture.StringId);
 	}
 
-	public static TextObject GetAdjectiveForFaction(IFaction faction)
-	{
-		if (faction is Kingdom)
-		{
-			return GameTexts.FindText("str_adjective_for_faction", faction.StringId);
-		}
-		return faction.Name;
-	}
-
 	public static TextObject GenerateClanNameforPlayer()
 	{
 		CultureObject culture = CharacterObject.PlayerCharacter.Culture;
@@ -760,25 +751,28 @@ public static class FactionHelper
 			explanation.SetCharacterProperties("HERO", hero.CharacterObject);
 			return false;
 		}
-		if (targetParty.MemberRoster.Count == 1 && targetParty.LeaderHero != null)
+		if (targetParty != null)
 		{
-			explanation = new TextObject("{=pwuEqegC}Party leader is the only member of the party right now.");
-			return false;
-		}
-		if (targetParty.MapEvent != null)
-		{
-			explanation = new TextObject("{=yC52EBCb}Target party is currently in a battle right now.");
-			return false;
-		}
-		if (targetParty.Army != null)
-		{
-			explanation = new TextObject("{=2iRg3vpP}Target party is currently in an army right now.");
-			return false;
-		}
-		if (targetParty.IsCurrentlyAtSea)
-		{
-			explanation = new TextObject("{=TbD2qPLy}Target party is currently sailing.");
-			return false;
+			if (targetParty.MemberRoster.Count == 1 && targetParty.LeaderHero != null)
+			{
+				explanation = new TextObject("{=pwuEqegC}Party leader is the only member of the party right now.");
+				return false;
+			}
+			if (targetParty.MapEvent != null)
+			{
+				explanation = new TextObject("{=yC52EBCb}Target party is currently in a battle right now.");
+				return false;
+			}
+			if (targetParty.Army != null)
+			{
+				explanation = new TextObject("{=2iRg3vpP}Target party is currently in an army right now.");
+				return false;
+			}
+			if (targetParty.IsCurrentlyAtSea)
+			{
+				explanation = new TextObject("{=TbD2qPLy}Target party is currently sailing.");
+				return false;
+			}
 		}
 		if (hero.CurrentSettlement != null && (hero.CurrentSettlement.IsUnderSiege || hero.CurrentSettlement.IsUnderRaid))
 		{
@@ -810,14 +804,14 @@ public static class FactionHelper
 		}
 		explanation = new TextObject("{=NAseSXPl}It would take {HOUR} {?HOUR > 1}hours{?}hour{\\?} for {HERO.NAME} to arrive at your party.");
 		explanation.SetCharacterProperties("HERO", hero.CharacterObject);
-		float resultNumber = Campaign.Current.Models.DelayedTeleportationModel.GetTeleportationDelayAsHours(hero, targetParty.Party).ResultNumber;
-		explanation.SetTextVariable("HOUR", (int)Math.Ceiling(resultNumber));
+		float num = ((targetParty != null) ? Campaign.Current.Models.DelayedTeleportationModel.GetTeleportationDelayAsHours(hero, targetParty.Party).ResultNumber : Campaign.Current.Models.DelayedTeleportationModel.MaximumDistanceForDelayAsDays);
+		explanation.SetTextVariable("HOUR", (int)Math.Ceiling(num));
 		return true;
 	}
 
 	public static bool IsMainClanMemberAvailableForSendingSettlement(Hero hero, Settlement targetSettlement, out TextObject explanation)
 	{
-		if (hero.PartyBelongedTo != null && (hero.PartyBelongedTo.IsCurrentlyAtSea || hero.PartyBelongedTo.IsInRaftState))
+		if (hero.PartyBelongedTo != null && (hero.PartyBelongedTo.IsCurrentlyAtSea || hero.PartyBelongedTo.IsInNavalAutoTravel))
 		{
 			explanation = new TextObject("{=1ELK1UbN}{HERO.NAME} is currently sailing.");
 			explanation.SetCharacterProperties("HERO", hero.CharacterObject);
@@ -865,7 +859,7 @@ public static class FactionHelper
 		}
 		if (hero.PartyBelongedTo != null)
 		{
-			if (hero.PartyBelongedTo.IsCurrentlyAtSea || hero.PartyBelongedTo.IsInRaftState)
+			if (hero.PartyBelongedTo.IsCurrentlyAtSea || hero.PartyBelongedTo.IsInNavalAutoTravel)
 			{
 				explanation = new TextObject("{=1ELK1UbN}{HERO.NAME} is currently sailing.");
 				explanation.SetCharacterProperties("HERO", hero.CharacterObject);
@@ -899,5 +893,14 @@ public static class FactionHelper
 		}
 		explanation = null;
 		return true;
+	}
+
+	public static bool IsLooterFaction(IFaction faction)
+	{
+		if (faction.IsBanditFaction && !faction.Culture.CanHaveSettlement && !faction.HasNavalNavigationCapability)
+		{
+			return faction.StringId != "deserters";
+		}
+		return false;
 	}
 }

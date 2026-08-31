@@ -44,6 +44,8 @@ public abstract class MapDistanceModel : MBGameModel<MapDistanceModel>
 
 	public abstract float GetDistance(MobileParty fromMobileParty, in CampaignVec2 toPoint, MobileParty.NavigationType navigationType, out float landRatio);
 
+	public abstract float GetDistance(in CampaignVec2 fromPoint, in CampaignVec2 toPoint, MobileParty.NavigationType navigationType, out float landRatio);
+
 	public abstract float GetDistance(Settlement fromSettlement, in CampaignVec2 toPoint, bool isFromPort, MobileParty.NavigationType navigationType);
 
 	public abstract float GetPortToGateDistanceForSettlement(Settlement settlement);

@@ -499,7 +499,7 @@ public class PartyScreenLogic
 		SetPartyGoldChangeAmount(0);
 		SetHorseChangeAmount(0);
 		SetInfluenceChangeAmount(0, 0, 0);
-		SetMoraleChangeAmount(0);
+		SetMoraleChangeAmount(0f);
 		CurrentData.BindRostersFrom(MemberRosters[1], PrisonerRosters[1], MemberRosters[0], PrisonerRosters[0], RightOwnerParty, LeftOwnerParty);
 		_initialData.InitializeCopyFrom(initializationData.RightOwnerParty, initializationData.LeftOwnerParty);
 		_initialData.CopyFromPartyAndRoster(MemberRosters[1], PrisonerRosters[1], MemberRosters[0], PrisonerRosters[0], RightOwnerParty);
@@ -537,7 +537,7 @@ public class PartyScreenLogic
 		this.PartyGoldChange?.Invoke();
 	}
 
-	private void SetMoraleChangeAmount(int newAmount)
+	private void SetMoraleChangeAmount(float newAmount)
 	{
 		CurrentData.PartyMoraleChangeAmount = newAmount;
 		this.PartyMoraleChange?.Invoke();
@@ -1265,7 +1265,7 @@ public class PartyScreenLogic
 			SetPartyGoldChangeAmount(0);
 			SetHorseChangeAmount(0);
 			SetInfluenceChangeAmount(0, 0, 0);
-			SetMoraleChangeAmount(0);
+			SetMoraleChangeAmount(0f);
 			CurrentData.UpgradedTroopsHistory = new List<Tuple<CharacterObject, CharacterObject, int>>();
 			CurrentData.TransferredPrisonersHistory = new List<Tuple<CharacterObject, int>>();
 			CurrentData.RecruitedPrisonersHistory = new List<Tuple<CharacterObject, int>>();
@@ -1487,7 +1487,7 @@ public class PartyScreenLogic
 		{
 			CurrentData.RecruitedPrisonersHistory.Add(new Tuple<CharacterObject, int>(troop, amount));
 		}
-		int prisonerRecruitmentMoraleEffect = Campaign.Current.Models.PrisonerRecruitmentCalculationModel.GetPrisonerRecruitmentMoraleEffect(RightOwnerParty, troop, amount);
+		float prisonerRecruitmentMoraleEffect = Campaign.Current.Models.PrisonerRecruitmentCalculationModel.GetPrisonerRecruitmentMoraleEffect(RightOwnerParty, troop, amount);
 		SetMoraleChangeAmount(CurrentData.PartyMoraleChangeAmount + prisonerRecruitmentMoraleEffect);
 	}
 

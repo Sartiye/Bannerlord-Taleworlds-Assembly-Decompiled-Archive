@@ -165,9 +165,15 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 
 	private bool _rightButtonDraggingMode;
 
+	private int _requestedSpectatorCycleDirection;
+
 	private Vec2 _clickedPositionPixel = Vec2.Zero;
 
 	private Agent _agentToFollowOverride;
+
+	private SpectatorCameraTypes? _spectatorCameraOverride;
+
+	private bool _suppressSpectatorCyclingThisFrame;
 
 	private Agent _lastFollowedAgent;
 
@@ -243,7 +249,7 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 				}
 				else
 				{
-					Debug.FailedAssert("MyPeer.IsSynchronized but myMissionPeer == null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Screens\\MissionScreen.cs", "LastFollowedAgent", 221);
+					Debug.FailedAssert("MyPeer.IsSynchronized but myMissionPeer == null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Screens\\MissionScreen.cs", "LastFollowedAgent", 225);
 				}
 			}
 			ResetMaxCameraZoom();
@@ -285,6 +291,8 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 			return false;
 		}
 	}
+
+	public bool IsRightButtonDragging => _rightButtonDraggingMode;
 
 	public event OnSpectateAgentDelegate OnSpectateAgentFocusIn;
 
@@ -511,6 +519,7 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 
 	protected override void OnFrameTick(float dt)
 	{
+		_suppressSpectatorCyclingThisFrame = false;
 		if (SceneLayer != null)
 		{
 			bool flag = MBDebug.IsErrorReportModeActive();
@@ -526,6 +535,11 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 			if (IsPhotoModeEnabled)
 			{
 				flag = flag || PhotoModeRequiresMouse;
+			}
+			flag = flag || (GameNetwork.IsMultiplayer && IsLocalPeerSpectator());
+			if (_rightButtonDraggingMode)
+			{
+				flag = false;
 			}
 			SceneLayer.InputRestrictions.SetMouseVisibility(flag);
 		}
@@ -768,6 +782,10 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 				CameraViewAngle = MBMath.Lerp(Mission.GetFirstPersonFov(), valueTo, _zoomAmount, 0.005f);
 				CustomCamera.SetFovVertical(_cameraSpecialCurrentFOV * (CameraViewAngle / 65f) * (System.MathF.PI / 180f), Screen.AspectRatio, 0.065f, 12500f);
 			}
+			else
+			{
+				CustomCamera.SetFovVertical(CustomCamera.GetFovVertical(), Screen.AspectRatio, CustomCamera.Near, CustomCamera.Far);
+			}
 			CombatCamera.FillParametersFrom(CustomCamera);
 			if (CustomCamera.Entity != null)
 			{
@@ -823,7 +841,7 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 		UpdateDragData();
 		MatrixFrame cameraFrame = MatrixFrame.Identity;
 		MissionPeer missionPeer = ((GameNetwork.MyPeer != null) ? GameNetwork.MyPeer.GetComponent<MissionPeer>() : null);
-		Mission.SpectatorData spectatingData = GetSpectatingData(CombatCamera.Frame.origin);
+		Mission.SpectatorData spectatingData = GetSpectatingData(CombatCamera.Frame.origin, consumeSpectatorCycleRequest: true);
 		Agent agentToFollow = spectatingData.AgentToFollow;
 		IAgentVisual agentVisualToFollow = spectatingData.AgentVisualToFollow;
 		SpectatorCameraTypes cameraType = spectatingData.CameraType;
@@ -1714,7 +1732,7 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 			}
 			else
 			{
-				Debug.FailedAssert("Multiplayer scene does not contain a camera frame", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Screens\\MissionScreen.cs", "SetCameraFrameToMapView", 2240);
+				Debug.FailedAssert("Multiplayer scene does not contain a camera frame", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Screens\\MissionScreen.cs", "SetCameraFrameToMapView", 2257);
 				flag = true;
 			}
 		}
@@ -1820,7 +1838,7 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 		{
 			if (MouseVisible && !SceneLayer.Input.IsKeyDown(InputKey.RightMouseButton))
 			{
-				if (Mission.Mode != MissionMode.Conversation)
+				if ((!GameNetwork.IsMultiplayer || !IsLocalPeerSpectator()) && Mission.Mode != MissionMode.Conversation)
 				{
 					if (Mission.Mode == MissionMode.Deployment)
 					{
@@ -1948,19 +1966,16 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 			Agent mainAgent = Mission.MainAgent;
 			if (mainAgent == null || mainAgent.WieldedWeapon.CurrentUsageItem?.IsRangedWeapon != true)
 			{
-				goto IL_0750;
+				goto IL_0765;
 			}
 		}
 		if (!(CustomCamera == null) || IsRadialMenuActive)
 		{
-			goto IL_0750;
+			goto IL_0765;
 		}
 		int num14 = 1;
-		goto IL_0759;
-		IL_0750:
-		num14 = (_forceCanZoom ? 1 : 0);
-		goto IL_0759;
-		IL_0759:
+		goto IL_076e;
+		IL_076e:
 		bool flag3 = (byte)num14 != 0;
 		if (flag3)
 		{
@@ -2133,6 +2148,10 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 			CameraElevation += _cameraElevationDelta;
 			CameraElevation = MBMath.ClampFloat(CameraElevation, -1.3659099f, System.MathF.PI * 5f / 14f);
 		}
+		return;
+		IL_0765:
+		num14 = (_forceCanZoom ? 1 : 0);
+		goto IL_076e;
 	}
 
 	public float GetCameraToggleProgress()
@@ -2366,6 +2385,11 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 		return false;
 	}
 
+	public bool MissionLoadingWindowDisabled()
+	{
+		return _onSceneRenderingStartedCalled;
+	}
+
 	public Vec3 GetOrderFlagPosition()
 	{
 		if (OrderFlag != null)
@@ -2508,8 +2532,38 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 		_agentToFollowOverride = agent;
 	}
 
+	public void SetSpectatorCameraOverride(SpectatorCameraTypes? cameraMode)
+	{
+		_spectatorCameraOverride = cameraMode;
+	}
+
+	private bool IsLocalPeerSpectator()
+	{
+		return SpectatorHelper.IsLocalPeerSpectator();
+	}
+
+	public void RequestSpectatorCycle(int direction)
+	{
+		if (direction != 0)
+		{
+			_agentToFollowOverride = null;
+			_requestedSpectatorCycleDirection = ((direction >= 0) ? 1 : (-1));
+		}
+	}
+
+	public void SuppressSpectatorCyclingThisFrame()
+	{
+		_suppressSpectatorCyclingThisFrame = true;
+	}
+
 	public Mission.SpectatorData GetSpectatingData(Vec3 currentCameraPosition)
 	{
+		return GetSpectatingData(currentCameraPosition, consumeSpectatorCycleRequest: false);
+	}
+
+	private Mission.SpectatorData GetSpectatingData(Vec3 currentCameraPosition, bool consumeSpectatorCycleRequest)
+	{
+		bool suppressSpectatorCyclingThisFrame = _suppressSpectatorCyclingThisFrame;
 		Agent agentToFollow = null;
 		IAgentVisual agentVisualToFollow = null;
 		SpectatorCameraTypes spectatorCameraTypes = SpectatorCameraTypes.Invalid;
@@ -2517,9 +2571,10 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 		bool flag2 = flag || (LastFollowedAgent != null && LastFollowedAgent.Controller == AgentControllerType.Player && LastFollowedAgent.IsCameraAttachable());
 		MissionPeer missionPeer = ((GameNetwork.MyPeer != null) ? GameNetwork.MyPeer.GetComponent<MissionPeer>() : null);
 		bool flag3 = missionPeer?.HasSpawnedAgentVisuals ?? false;
-		bool flag4 = (_missionLobbyComponent != null && (_missionLobbyComponent.MissionType == MultiplayerGameType.Siege || _missionLobbyComponent.MissionType == MultiplayerGameType.TeamDeathmatch)) || Mission.Mode == MissionMode.Deployment;
+		bool flag4 = IsLocalPeerSpectator();
+		bool flag5 = flag4 || (_missionLobbyComponent != null && (_missionLobbyComponent.MissionType == MultiplayerGameType.Siege || _missionLobbyComponent.MissionType == MultiplayerGameType.TeamDeathmatch)) || Mission.Mode == MissionMode.Deployment;
 		SpectatorCameraTypes spectatorCameraTypes2;
-		if (!IsCheatGhostMode && !flag2 && flag4 && _agentToFollowOverride != null && _agentToFollowOverride.IsCameraAttachable() && !flag3)
+		if (!IsCheatGhostMode && !flag2 && flag5 && _agentToFollowOverride != null && _agentToFollowOverride.IsCameraAttachable() && !flag3)
 		{
 			agentToFollow = _agentToFollowOverride;
 			spectatorCameraTypes2 = SpectatorCameraTypes.LockToAnyAgent;
@@ -2533,6 +2588,10 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 			if (IsCheatGhostMode)
 			{
 				spectatorCameraTypes2 = SpectatorCameraTypes.Free;
+			}
+			else if (flag4 && _spectatorCameraOverride.HasValue && MultiplayerOptions.IsSpectatorCameraFreedomAllowed())
+			{
+				spectatorCameraTypes2 = _spectatorCameraOverride.Value;
 			}
 			else if (spectatorCameraTypes != SpectatorCameraTypes.Invalid)
 			{
@@ -2571,17 +2630,14 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 				{
 					agentToFollow = FindNextCameraAttachableAgent(LastFollowedAgent, spectatorCameraTypes2, 1, currentCameraPosition);
 				}
-				bool flag5 = Game.Current.CheatMode && InputManager.IsControlDown();
-				if (InputManager.IsGameKeyReleased(10) || InputManager.IsGameKeyReleased(11))
+				bool flag6 = Game.Current.CheatMode && InputManager.IsControlDown();
+				if (consumeSpectatorCycleRequest && _requestedSpectatorCycleDirection != 0)
 				{
-					if (!flag5)
-					{
-						agentToFollow = FindNextCameraAttachableAgent(LastFollowedAgent, spectatorCameraTypes2, -1, currentCameraPosition);
-					}
+					agentToFollow = FindNextCameraAttachableAgent(LastFollowedAgent, spectatorCameraTypes2, _requestedSpectatorCycleDirection, currentCameraPosition);
 				}
-				else if ((InputManager.IsGameKeyReleased(9) || InputManager.IsGameKeyReleased(12)) && !_rightButtonDraggingMode)
+				else if (!flag4 && (InputManager.IsGameKeyReleased(9) || InputManager.IsGameKeyReleased(12)) && !_rightButtonDraggingMode && !suppressSpectatorCyclingThisFrame)
 				{
-					if (!flag5)
+					if (!flag6)
 					{
 						agentToFollow = FindNextCameraAttachableAgent(LastFollowedAgent, spectatorCameraTypes2, 1, currentCameraPosition);
 					}
@@ -2592,6 +2648,10 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 					agentVisualToFollow = null;
 				}
 			}
+		}
+		if (consumeSpectatorCycleRequest)
+		{
+			_requestedSpectatorCycleDirection = 0;
 		}
 		return new Mission.SpectatorData(agentToFollow, agentVisualToFollow, spectatorCameraTypes2);
 	}
@@ -2624,6 +2684,7 @@ public class MissionScreen : ScreenBase, IMissionSystemHandler, IGameStateListen
 				list = Mission.AllAgents.Where((Agent x) => (x.Formation != null && x.Formation == missionPeer?.ControlledFormation && x.IsCameraAttachable()) || x == currentAgent).ToList();
 				break;
 			case SpectatorCameraTypes.LockToAnyPlayer:
+			case SpectatorCameraTypes.OrbitAroundTarget:
 				list = Mission.AllAgents.Where((Agent x) => (x.MissionPeer != null && x.IsCameraAttachable()) || x == currentAgent).ToList();
 				break;
 			case SpectatorCameraTypes.LockToAnyAgent:

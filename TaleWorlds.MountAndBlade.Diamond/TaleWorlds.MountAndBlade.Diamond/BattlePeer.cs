@@ -15,6 +15,8 @@ public class BattlePeer
 
 	public BattleJoinType BattleJoinType { get; private set; }
 
+	public bool IsSpectator { get; private set; }
+
 	public bool Quit => QuitType != BattlePeerQuitType.None;
 
 	public PlayerData PlayerData { get; private set; }
@@ -25,7 +27,7 @@ public class BattlePeer
 
 	public BattlePeerQuitType QuitType { get; private set; }
 
-	public BattlePeer(string name, PlayerData playerData, Dictionary<string, List<string>> usedCosmetics, int teamNo, BattleJoinType battleJoinType)
+	public BattlePeer(string name, PlayerData playerData, Dictionary<string, List<string>> usedCosmetics, int teamNo, BattleJoinType battleJoinType, bool isSpectator = false)
 	{
 		Index = -1;
 		Name = name;
@@ -33,6 +35,7 @@ public class BattlePeer
 		UsedCosmetics = usedCosmetics;
 		TeamNo = teamNo;
 		BattleJoinType = battleJoinType;
+		IsSpectator = isSpectator;
 	}
 
 	internal void Flee()

@@ -38,12 +38,12 @@ public class DefaultTradeItemPriceFactorModel : TradeItemPriceFactorModel
 		}
 		if (!item.IsTradeGood && !item.IsAnimal && !item.HasHorseComponent && !flag && isSelling)
 		{
-			ExplainedNumber explainedNumber = new ExplainedNumber(1.5f + Math.Max(0f, item.Tierf - 1f) * 0.25f);
-			if (item.IsCraftedWeapon && item.IsCraftedByPlayer && clientParty != null && clientParty.HasPerk(DefaultPerks.Crafting.ArtisanSmith))
+			ExplainedNumber stat = new ExplainedNumber(1.5f + Math.Max(0f, item.Tierf - 1f) * 0.25f);
+			if (item.IsCraftedWeapon && item.IsCraftedByPlayer && clientParty != null)
 			{
-				explainedNumber.AddFactor(DefaultPerks.Crafting.ArtisanSmith.PrimaryBonus);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Crafting.ArtisanSmith, clientParty, isPrimaryBonus: true, ref stat);
 			}
-			num += explainedNumber.ResultNumber;
+			num += stat.ResultNumber;
 		}
 		if (item.HasHorseComponent && item.HorseComponent.IsPackAnimal && !flag && isSelling)
 		{
@@ -76,84 +76,78 @@ public class DefaultTradeItemPriceFactorModel : TradeItemPriceFactorModel
 		}
 		float num3 = ((clientParty != null) ? Campaign.Current.Models.PartyTradeModel.GetTradePenaltyFactor(clientParty) : 1f);
 		num *= num3;
-		ExplainedNumber stat = new ExplainedNumber(num);
+		ExplainedNumber stat2 = new ExplainedNumber(num);
 		if (clientParty != null)
 		{
 			if (settlement != null && clientParty.MapFaction == settlement.MapFaction)
 			{
 				if (settlement.IsVillage)
 				{
-					PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.VillageNetwork, clientParty, isPrimaryBonus: true, ref stat);
+					PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.VillageNetwork, clientParty, isPrimaryBonus: true, ref stat2);
 				}
 				else if (settlement.IsTown)
 				{
-					PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.RumourNetwork, clientParty, isPrimaryBonus: true, ref stat);
+					PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.RumourNetwork, clientParty, isPrimaryBonus: true, ref stat2);
 				}
 			}
 			if (item.IsTradeGood)
 			{
-				if (clientParty.HasPerk(DefaultPerks.Trade.WholeSeller) && isSelling)
+				if (isSelling)
 				{
-					PerkHelper.AddPerkBonusForParty(DefaultPerks.Trade.WholeSeller, clientParty, isPrimaryBonus: true, ref stat);
+					PerkHelper.AddPerkBonusForParty(DefaultPerks.Trade.WholeSeller, clientParty, isPrimaryBonus: true, ref stat2);
 				}
-				if (isSelling && item.IsFood && clientParty.LeaderHero != null)
+				if (isSelling && item.IsFood)
 				{
-					PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Trade.GranaryAccountant, clientParty.LeaderHero.CharacterObject, isPrimaryBonus: true, ref stat);
+					PerkHelper.AddPerkBonusForParty(DefaultPerks.Trade.GranaryAccountant, clientParty, isPrimaryBonus: true, ref stat2);
 				}
 			}
-			else if (!item.IsTradeGood && clientParty.HasPerk(DefaultPerks.Trade.Appraiser) && isSelling)
+			else if (!item.IsTradeGood && isSelling)
 			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Trade.Appraiser, clientParty, isPrimaryBonus: true, ref stat);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Trade.Appraiser, clientParty, isPrimaryBonus: true, ref stat2);
 			}
 			if (PartyBaseHelper.HasFeat(clientParty.Party, DefaultCulturalFeats.AseraiTraderFeat))
 			{
-				stat.AddFactor(-0.1f);
+				stat2.AddFactor(-0.1f);
 			}
 			if (item.WeaponComponent != null && isSelling)
 			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Roguery.ArmsDealer, clientParty, isPrimaryBonus: true, ref stat);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Roguery.ArmsDealer, clientParty, isPrimaryBonus: true, ref stat2);
 			}
 			if (!isSelling && item.IsFood)
 			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Trade.InsurancePlans, clientParty, isPrimaryBonus: false, ref stat);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Trade.InsurancePlans, clientParty, isPrimaryBonus: false, ref stat2);
 			}
-			if (item.HorseComponent != null && item.HorseComponent.IsPackAnimal && clientParty.HasPerk(DefaultPerks.Steward.ArenicosMules, checkSecondaryRole: true))
+			if (item.HorseComponent != null && item.HorseComponent.IsPackAnimal)
 			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.ArenicosMules, clientParty, isPrimaryBonus: false, ref stat);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.ArenicosMules, clientParty, isPrimaryBonus: false, ref stat2);
 			}
 			if (item.IsMountable)
 			{
-				if (clientParty.HasPerk(DefaultPerks.Riding.DeeperSacks, checkSecondaryRole: true))
-				{
-					stat.AddFactor(DefaultPerks.Riding.DeeperSacks.SecondaryBonus, DefaultPerks.Riding.DeeperSacks.Name);
-				}
-				if (clientParty.LeaderHero != null && clientParty.LeaderHero.GetPerkValue(DefaultPerks.Steward.ArenicosHorses))
-				{
-					PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Steward.ArenicosHorses, clientParty.LeaderHero.CharacterObject, isPrimaryBonus: false, ref stat);
-				}
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Riding.DeeperSacks, clientParty, isPrimaryBonus: false, ref stat2);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.ArenicosHorses, clientParty, isPrimaryBonus: false, ref stat2);
 			}
 			if (clientParty.IsMainParty && Hero.MainHero.GetPerkValue(DefaultPerks.Roguery.SmugglerConnections) && merchant?.MapFaction != null && merchant.MapFaction.MainHeroCrimeRating > 0f)
 			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Roguery.SmugglerConnections, clientParty, isPrimaryBonus: false, ref stat);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Roguery.SmugglerConnections, clientParty, isPrimaryBonus: false, ref stat2);
 			}
-			if (!isSelling && merchant != null && merchant.IsSettlement && merchant.Settlement.IsVillage && clientParty.HasPerk(DefaultPerks.Trade.DistributedGoods, checkSecondaryRole: true))
+			if (!isSelling && merchant != null && merchant.IsSettlement && merchant.Settlement.IsVillage)
 			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Trade.DistributedGoods, clientParty, isPrimaryBonus: false, ref stat);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Trade.DistributedGoods, clientParty, isPrimaryBonus: false, ref stat2);
 			}
-			if (isSelling && item.HasHorseComponent && clientParty.HasPerk(DefaultPerks.Trade.LocalConnection, checkSecondaryRole: true))
+			if (isSelling && item.HasHorseComponent)
 			{
-				stat.AddFactor(DefaultPerks.Trade.LocalConnection.SecondaryBonus, DefaultPerks.Trade.LocalConnection.Name);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Trade.LocalConnection, clientParty, isPrimaryBonus: false, ref stat2);
 			}
-			if (isSelling && (item.ItemCategory == DefaultItemCategories.Pottery || item.ItemCategory == DefaultItemCategories.Tools || item.ItemCategory == DefaultItemCategories.Jewelry || item.ItemCategory == DefaultItemCategories.Cotton) && clientParty.LeaderHero != null)
+			if (isSelling && (item.ItemCategory == DefaultItemCategories.Pottery || item.ItemCategory == DefaultItemCategories.Tools || item.ItemCategory == DefaultItemCategories.Jewelry || item.ItemCategory == DefaultItemCategories.Cotton))
 			{
-				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Trade.TradeyardForeman, clientParty.LeaderHero.CharacterObject, isPrimaryBonus: true, ref stat);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Trade.TradeyardForeman, clientParty, isPrimaryBonus: true, ref stat2);
 			}
-			if (!isSelling && (item.ItemCategory == DefaultItemCategories.Clay || item.ItemCategory == DefaultItemCategories.Iron || item.ItemCategory == DefaultItemCategories.Silver || item.ItemCategory == DefaultItemCategories.Cotton) && clientParty.HasPerk(DefaultPerks.Trade.RapidDevelopment))
+			if (!isSelling && (item.ItemCategory == DefaultItemCategories.Clay || item.ItemCategory == DefaultItemCategories.Iron || item.ItemCategory == DefaultItemCategories.Silver || item.ItemCategory == DefaultItemCategories.Cotton))
 			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Trade.RapidDevelopment, clientParty, isPrimaryBonus: false, ref stat);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Trade.RapidDevelopment, clientParty, isPrimaryBonus: false, ref stat2);
 			}
 		}
-		return stat.ResultNumber;
+		return stat2.ResultNumber;
 	}
 
 	private float GetPriceFactor(ItemObject item, MobileParty tradingParty, PartyBase merchant, float inStoreValue, float supply, float demand, bool isSelling)
@@ -186,7 +180,8 @@ public class DefaultTradeItemPriceFactorModel : TradeItemPriceFactorModel
 		float priceFactor = GetPriceFactor(itemRosterElement.Item, clientParty, merchant, inStoreValue, supply, demand, isSelling);
 		float f = (float)itemRosterElement.ItemValue * priceFactor;
 		int num = (isSelling ? TaleWorlds.Library.MathF.Floor(f) : TaleWorlds.Library.MathF.Ceiling(f));
-		if (!isSelling && merchant?.MobileParty != null && merchant.MobileParty.IsCaravan && clientParty.HasPerk(DefaultPerks.Trade.SilverTongue, checkSecondaryRole: true))
+		Hero perkOwnerHero = null;
+		if (!isSelling && merchant?.MobileParty != null && merchant.MobileParty.IsCaravan && clientParty.HasPerk(DefaultPerks.Trade.SilverTongue, out perkOwnerHero, checkSecondaryRole: true))
 		{
 			num = TaleWorlds.Library.MathF.Ceiling((float)num * (1f - DefaultPerks.Trade.SilverTongue.SecondaryBonus));
 		}

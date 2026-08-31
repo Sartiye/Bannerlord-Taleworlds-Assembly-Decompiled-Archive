@@ -201,7 +201,7 @@ public abstract class GauntletOrderUIHandler : MissionView
 					OrderSetVM selectedOrderSet = _dataSource.SelectedOrderSet;
 					if (selectedOrderSet == null || selectedOrderSet.HasSingleOrder)
 					{
-						if (_orderTroopPlacer.SuspendTroopPlacer && _dataSource.ActiveTargetState == 0)
+						if (_orderTroopPlacer.SuspendTroopPlacer)
 						{
 							_orderTroopPlacer.SuspendTroopPlacer = false;
 						}
@@ -235,7 +235,7 @@ public abstract class GauntletOrderUIHandler : MissionView
 					_gauntletLayer.InputRestrictions.SetMouseVisibility(isVisible: true);
 				}
 			}
-			base.MissionScreen.OrderFlag.IsTroop = _dataSource.ActiveTargetState == 0;
+			base.MissionScreen.OrderFlag.IsTroop = true;
 			TickOrderFlag(_latestDt, forceUpdate: false);
 		}
 		bool flag = IsOrderRadialActive();
@@ -309,7 +309,7 @@ public abstract class GauntletOrderUIHandler : MissionView
 		}
 		if (_dataSource.IsToggleOrderShown)
 		{
-			if (_dataSource.ActiveTargetState == 0 && (base.Input.IsKeyReleased(InputKey.LeftMouseButton) || base.Input.IsKeyReleased(InputKey.ControllerRTrigger)))
+			if (base.Input.IsKeyReleased(InputKey.LeftMouseButton) || base.Input.IsKeyReleased(InputKey.ControllerRTrigger))
 			{
 				if (_dataSource.SelectedOrderSet != null && TaleWorlds.InputSystem.Input.IsGamepadActive)
 				{
@@ -345,7 +345,7 @@ public abstract class GauntletOrderUIHandler : MissionView
 							}
 							else
 							{
-								Debug.FailedAssert("No selected formations when issuing order", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOrderUIBase.cs", "TickInput", 370);
+								Debug.FailedAssert("No selected formations when issuing order", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOrderUIBase.cs", "TickInput", 369);
 							}
 						}
 						break;
@@ -357,7 +357,7 @@ public abstract class GauntletOrderUIHandler : MissionView
 						_dataSource.OrderController.SetOrderWithPosition(OrderType.FormCustom, new WorldPosition(TaleWorlds.MountAndBlade.Mission.Current.Scene, UIntPtr.Zero, base.MissionScreen.GetOrderFlagPosition(), hasValidZ: false));
 						break;
 					default:
-						Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOrderUIBase.cs", "TickInput", 385);
+						Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOrderUIBase.cs", "TickInput", 384);
 						break;
 					}
 				}

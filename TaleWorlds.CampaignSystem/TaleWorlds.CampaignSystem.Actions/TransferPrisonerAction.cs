@@ -9,10 +9,16 @@ public static class TransferPrisonerAction
 		if (prisonerTroop.HeroObject == Hero.MainHero)
 		{
 			PlayerCaptivity.CaptorParty = newParty;
-			return;
 		}
-		prisonerOwnerParty.PrisonRoster.AddToCounts(prisonerTroop, -1);
-		newParty.AddPrisoner(prisonerTroop, 1);
+		else
+		{
+			prisonerOwnerParty.PrisonRoster.AddToCounts(prisonerTroop, -1);
+			newParty.AddPrisoner(prisonerTroop, 1);
+		}
+		if (prisonerTroop.HeroObject != null && newParty.IsSettlement)
+		{
+			CampaignEventDispatcher.Instance.OnPrisonersChangeInSettlement(newParty.Settlement, null, prisonerTroop.HeroObject, takenFromDungeon: false);
+		}
 	}
 
 	public static void Apply(CharacterObject prisonerTroop, PartyBase prisonerOwnerParty, PartyBase newParty)

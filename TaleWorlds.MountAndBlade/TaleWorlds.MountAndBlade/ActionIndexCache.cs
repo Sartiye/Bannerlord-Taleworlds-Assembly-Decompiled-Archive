@@ -302,9 +302,9 @@ public readonly struct ActionIndexCache : IEquatable<ActionIndexCache>
 
 	public static readonly ActionIndexCache act_greeting_left_4 = Create("act_greeting_left_4");
 
-	public static readonly ActionIndexCache act_guard_cautious_look_around_1 = Create("act_guard_cautious_look_around_1");
+	public static readonly ActionIndexCache act_stealth_mission_guard_look_around_cautious_1 = Create("act_stealth_mission_guard_look_around_cautious_1");
 
-	public static readonly ActionIndexCache act_guard_patrolling_cautious_look_around_1 = Create("act_guard_patrolling_cautious_look_around_1");
+	public static readonly ActionIndexCache act_stealth_mission_guard_look_around_patrolling_cautious_1 = Create("act_stealth_mission_guard_look_around_patrolling_cautious_1");
 
 	public static readonly ActionIndexCache act_use_smithing_machine_ready = Create("act_use_smithing_machine_ready");
 
@@ -433,6 +433,16 @@ public readonly struct ActionIndexCache : IEquatable<ActionIndexCache>
 	public static readonly ActionIndexCache act_escape_jump = Create("act_escape_jump");
 
 	public static readonly ActionIndexCache act_raid_jump = Create("act_raid_jump_1");
+
+	public static readonly ActionIndexCache act_wreckage_death_01 = Create("act_cutscene_main_hero_battle_death_01");
+
+	public static readonly ActionIndexCache act_wreckage_death_02 = Create("act_cutscene_main_hero_battle_death_02");
+
+	public static readonly ActionIndexCache act_horse_fall_right_continue = Create("act_horse_fall_right_continue");
+
+	public static readonly ActionIndexCache act_death_swim_1 = Create("act_death_swim_1");
+
+	public static readonly ActionIndexCache act_death_swim_2 = Create("act_death_swim_2");
 
 	public int Index { get; }
 

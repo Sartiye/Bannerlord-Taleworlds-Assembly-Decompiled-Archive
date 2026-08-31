@@ -8,7 +8,7 @@ using TaleWorlds.TwoDimension;
 
 namespace TaleWorlds.GauntletUI.BaseTypes;
 
-public class RichTextWidget : BrushWidget
+public class RichTextWidget : ImageWidget
 {
 	private enum MouseState
 	{
@@ -185,32 +185,7 @@ public class RichTextWidget : BrushWidget
 		if (flag)
 		{
 			SetMeasureAndLayoutDirty();
-		}
-	}
-
-	protected override void RefreshState()
-	{
-		base.RefreshState();
-		UpdateText();
-	}
-
-	private void UpdateText()
-	{
-		if (base.IsDisabled)
-		{
-			SetState("Disabled");
-		}
-		else if (base.IsPressed)
-		{
-			SetState("Pressed");
-		}
-		else if (base.IsHovered)
-		{
-			SetState("Hovered");
-		}
-		else
-		{
-			SetState("Default");
+			_richText.SetAllDirty();
 		}
 	}
 
@@ -363,7 +338,7 @@ public class RichTextWidget : BrushWidget
 		{
 			ImageDrawObject drawObject = richTextPart.ImageDrawObject;
 			Rectangle2D rectangle = drawObject.Rectangle;
-			rectangle.LocalPosition = new Vector2(base.LocalPosition.X + richTextPart.SpritePosition.X, base.LocalPosition.Y + richTextPart.SpritePosition.Y);
+			rectangle.LocalPosition = new Vector2(base.LocalPosition.X + richTextPart.SpritePosition.X + _renderOffset.X, base.LocalPosition.Y + richTextPart.SpritePosition.Y + _renderOffset.Y);
 			if (!_textureMaterialDict.ContainsKey(sprite.Texture))
 			{
 				_textureMaterialDict[sprite.Texture] = new SimpleMaterial(sprite.Texture);

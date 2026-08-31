@@ -220,6 +220,11 @@ public class ConversationMissionLogic : MissionLogic
 		SpawnOtherSide(OtherSideConversationData, initialFrame, flag, !base.Mission.PlayerTeam.IsDefender);
 	}
 
+	public override void OnAfterMissionLoadingFinished()
+	{
+		base.Mission.OnInitialSpawnCompleted();
+	}
+
 	private void SpawnPlayer(ConversationCharacterData playerConversationData, MatrixFrame initialFrame)
 	{
 		MatrixFrame initialFrame2 = new MatrixFrame(in initialFrame.rotation, in initialFrame.origin);

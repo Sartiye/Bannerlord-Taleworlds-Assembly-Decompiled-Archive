@@ -14,7 +14,7 @@ public class CharacterDeveloper__TaleWorlds_CampaignSystem_ViewModelCollection_C
 
 	private ImageWidget _widget_0;
 
-	private ScrollingTextWidget _widget_1;
+	private ScrollingRichTextWidget _widget_1;
 
 	private SelectorItemVM _datasource_Root;
 
@@ -78,7 +78,7 @@ public class CharacterDeveloper__TaleWorlds_CampaignSystem_ViewModelCollection_C
 		_widget = this;
 		_widget_0 = new ImageWidget(base.Context);
 		_widget.AddChild(_widget_0);
-		_widget_1 = new ScrollingTextWidget(base.Context);
+		_widget_1 = new ScrollingRichTextWidget(base.Context);
 		_widget.AddChild(_widget_1);
 	}
 

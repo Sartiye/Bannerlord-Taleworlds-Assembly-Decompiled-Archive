@@ -299,7 +299,7 @@ public class KingdomArmyItemVM : KingdomItemVM
 		GameTexts.SetVariable("RIGHT", Strength.ToString());
 		StrengthLabel = GameTexts.FindText("str_LEFT_colon_RIGHT_wSpaceAfterColon").ToString();
 		ShipCount = Army.Parties.Sum((MobileParty p) => p.Ships?.Count ?? 0);
-		ShipCountLabel = GameTexts.FindText("str_LEFT_colon_RIGHT_wSpaceAfterColon").SetTextVariable("LEFT", new TextObject("{=URbKirPS}Ship Count")).SetTextVariable("RIGHT", ShipCount)
+		ShipCountLabel = GameTexts.FindText("str_LEFT_colon_RIGHT_wSpaceAfterColon").SetTextVariable("LEFT", new TextObject("{=7Q8ufo5X}Ships")).SetTextVariable("RIGHT", ShipCount)
 			.ToString();
 		Parties.ApplyActionOnAllItems(delegate(KingdomArmyPartyItemVM x)
 		{

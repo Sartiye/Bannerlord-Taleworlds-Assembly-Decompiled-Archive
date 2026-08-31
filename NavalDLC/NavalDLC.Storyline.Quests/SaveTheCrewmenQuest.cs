@@ -64,9 +64,9 @@ public class SaveTheCrewmenQuest : NavalStorylineQuestBase
 
 	private void AddPlayerSavedCrewDialog()
 	{
-		Campaign.Current.ConversationManager.AddDialogFlow(DialogFlow.CreateDialogFlow("start", 1200).NpcLine("{=kPB4vvTD}Thank you. Heaven be praised. We thought we'd escaped the arrows only to be drowned by the waves. Heaven protect us all.", IsSavedCrew, IsMainAgent).Condition(() => IsSavedCrew(ConversationMission.OneToOneConversationAgent))
+		Campaign.Current.ConversationManager.AddDialogFlow(DialogFlow.CreateDialogFlow("start", 1200).NpcLine("{=kPB4vvTD}[ib:weary]Thank you. Heaven be praised. We thought we'd escaped the arrows only to be drowned by the waves. Heaven protect us all.", IsSavedCrew, IsMainAgent).Condition(() => IsSavedCrew(ConversationMission.OneToOneConversationAgent))
 			.NpcLine("{=GVBtIsvA}Think nothing of it, lads. You'd have done the same for any of us, one sailor for another.", IsGunnar, IsSavedCrew)
-			.NpcLine("{=zQRrXKQH}So look, lads… Purig is still around, but I suspect he's overladen and undermanned. I doubt he can find us before nightfall, which is good, because I don't think we can outfight him. By my reckoning, we're still not far from Ostican. So row, my boys, for Ostican and safety!", IsGunnar, IsMainAgent)
+			.NpcLine("{=zQRrXKQH}[ib:hip]So look, lads… Purig is still around, but I suspect he's overladen and undermanned. I doubt he can find us before nightfall, which is good, because I don't think we can outfight him. By my reckoning, we're still not far from Ostican. So row, my boys, for Ostican and safety!", IsGunnar, IsSavedCrew)
 			.Consequence(delegate
 			{
 				Campaign.Current.ConversationManager.ConversationEndOneShot += OnCrewSaved;

@@ -20,11 +20,13 @@ public class NavalGameMenuTroopSelectionVM : GameMenuTroopSelectionVM
 
 	private readonly bool _anyOtherPartiesOnPlayerSide;
 
+	private readonly List<Ship> _initialShipSelections;
+
 	private string _currentSelectedShipAmountTitle;
 
-	private MBBindingList<NavalGameMenuShipItemVM> _ships;
-
 	private string _currentSelectedShipAmountText;
+
+	private MBBindingList<NavalGameMenuShipItemVM> _ships;
 
 	[DataSourceProperty]
 	public string CurrentSelectedShipAmountTitle
@@ -86,12 +88,13 @@ public class NavalGameMenuTroopSelectionVM : GameMenuTroopSelectionVM
 		_minSelectableShipCount = minSelectableShipCount;
 		_maxSelectableShipCount = maxSelectableShipCount;
 		_anyOtherPartiesOnPlayerSide = anyOtherPartiesOnPlayerSide;
+		_initialShipSelections = initialShipSelections;
 		Ships = new MBBindingList<NavalGameMenuShipItemVM>();
 		for (int i = 0; i < eligibleShips.Count; i++)
 		{
 			Ships.Add(new NavalGameMenuShipItemVM(eligibleShips[i], OnSelectedShipsChanged)
 			{
-				IsSelected = initialShipSelections.Contains(eligibleShips[i])
+				IsSelected = _initialShipSelections.Contains(eligibleShips[i])
 			});
 		}
 		OnSelectedShipsChanged();
@@ -101,7 +104,7 @@ public class NavalGameMenuTroopSelectionVM : GameMenuTroopSelectionVM
 	public override void RefreshValues()
 	{
 		base.RefreshValues();
-		CurrentSelectedShipAmountTitle = new TextObject("{=*}Chosen Ships").ToString();
+		CurrentSelectedShipAmountTitle = new TextObject("{=4QvmDZoR}Chosen Ships").ToString();
 	}
 
 	private List<Ship> GetSelectedShips()
@@ -165,11 +168,11 @@ public class NavalGameMenuTroopSelectionVM : GameMenuTroopSelectionVM
 		}
 		else if (count < _minSelectableShipCount)
 		{
-			base.DoneHint.HintText = new TextObject("{=*}You must select at least {SHIP_COUNT} {?SHIP_COUNT > 1}ships{?}ship{\\?}").SetTextVariable("SHIP_COUNT", _minSelectableShipCount);
+			base.DoneHint.HintText = new TextObject("{=ibM1yGMC}You must select at least {SHIP_COUNT} {?SHIP_COUNT > 1}ships{?}ship{\\?}").SetTextVariable("SHIP_COUNT", _minSelectableShipCount);
 		}
 		else if (count > _maxSelectableShipCount)
 		{
-			base.DoneHint.HintText = new TextObject("{=*}You cannot select more than {SHIP_COUNT} {?SHIP_COUNT > 1}ships{?}ship{\\?}").SetTextVariable("SHIP_COUNT", _maxSelectableShipCount);
+			base.DoneHint.HintText = new TextObject("{=5xfLMBOu}You cannot select more than {SHIP_COUNT} {?SHIP_COUNT > 1}ships{?}ship{\\?}").SetTextVariable("SHIP_COUNT", _maxSelectableShipCount);
 		}
 		else
 		{
@@ -177,7 +180,17 @@ public class NavalGameMenuTroopSelectionVM : GameMenuTroopSelectionVM
 		}
 	}
 
-	public new void ExecuteClearSelection()
+	public override void ExecuteReset()
+	{
+		base.ExecuteReset();
+		for (int i = 0; i < Ships.Count; i++)
+		{
+			Ships[i].IsSelected = _initialShipSelections.Contains(Ships[i].Ship);
+		}
+		OnSelectedShipsChanged();
+	}
+
+	public override void ExecuteClearSelection()
 	{
 		base.ExecuteClearSelection();
 		for (int i = 0; i < Ships.Count; i++)
@@ -198,7 +211,7 @@ public class NavalGameMenuTroopSelectionVM : GameMenuTroopSelectionVM
 	{
 		if (GetAvailableSelectableTroopCount() > 0 && _anyOtherPartiesOnPlayerSide)
 		{
-			return new TextObject("{=*}The remaining room for soldiers will be filled by the other parties on your side. Do you want to proceed?");
+			return new TextObject("{=lJRQx5lZ}The remaining room for soldiers will be filled by the other parties on your side. Do you want to proceed?");
 		}
 		return base.GetWarningMessageOnDone();
 	}

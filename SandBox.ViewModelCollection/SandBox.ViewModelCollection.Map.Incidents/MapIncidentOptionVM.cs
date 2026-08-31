@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using TaleWorlds.CampaignSystem.ViewModelCollection;
+using TaleWorlds.CampaignSystem.Incidents;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -13,8 +11,6 @@ public class MapIncidentOptionVM : ViewModel
 
 	private readonly TextObject _descriptionText;
 
-	private readonly List<TextObject> _hints;
-
 	private readonly Action<MapIncidentOptionVM> _onSelected;
 
 	private readonly Action<MapIncidentOptionVM> _onFocused;
@@ -25,7 +21,7 @@ public class MapIncidentOptionVM : ViewModel
 
 	private string _description;
 
-	private string _hint;
+	private MapIncidentHintVM _hint;
 
 	[DataSourceProperty]
 	public bool IsSelected
@@ -79,7 +75,7 @@ public class MapIncidentOptionVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public string Hint
+	public MapIncidentHintVM Hint
 	{
 		get
 		{
@@ -95,25 +91,20 @@ public class MapIncidentOptionVM : ViewModel
 		}
 	}
 
-	public MapIncidentOptionVM(TextObject description, List<TextObject> hints, int index, Action<MapIncidentOptionVM> onSelected, Action<MapIncidentOptionVM> onFocused)
+	public MapIncidentOptionVM(TextObject description, IncidentHint hint, int index, Action<MapIncidentOptionVM> onSelected, Action<MapIncidentOptionVM> onFocused)
 	{
 		Index = index;
 		_descriptionText = description;
-		_hints = hints.ToList();
 		_onSelected = onSelected;
 		_onFocused = onFocused;
+		Hint = new MapIncidentHintVM(hint);
 	}
 
 	public override void RefreshValues()
 	{
 		base.RefreshValues();
 		Description = _descriptionText.ToString();
-		Hint = CampaignUIHelper.MergeTextObjectsWithNewline(_hints);
-	}
-
-	public override void OnFinalize()
-	{
-		base.OnFinalize();
+		Hint.RefreshValues();
 	}
 
 	public void ExecuteSelect()

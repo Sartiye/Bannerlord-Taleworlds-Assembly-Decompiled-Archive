@@ -15,8 +15,6 @@ namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
 
 public class RebellionsCampaignBehavior : CampaignBehaviorBase
 {
-	private const int UpdateClanAfterDays = 30;
-
 	private const int LoyaltyAfterRebellion = 100;
 
 	private const int InitialRelationPenalty = -80;
@@ -40,8 +38,6 @@ public class RebellionsCampaignBehavior : CampaignBehaviorBase
 	private const float ThrowGarrisonTroopToPrisonPercentage = 0.5f;
 
 	private const float ThrowMilitiaTroopToGarrisonPercentage = 0.6f;
-
-	private const float DailyRebellionCheckChance = 0.25f;
 
 	private Dictionary<Clan, int> _rebelClansAndDaysPassedAfterCreation;
 
@@ -101,20 +97,45 @@ public class RebellionsCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
+	private int GetUpdateClanAfterDays()
+	{
+		if (!Campaign.Current.Options.IsHighRebellionEnabled)
+		{
+			return 30;
+		}
+		return 60;
+	}
+
+	private float GetDailyRebellionCheckChance()
+	{
+		if (!Campaign.Current.Options.IsHighRebellionEnabled)
+		{
+			return 0.25f;
+		}
+		return 0.5f;
+	}
+
 	private void DailyTickSettlement(Settlement settlement)
 	{
 		if (_rebellionEnabled && settlement.IsTown && settlement.Party.MapEvent == null && settlement.Party.SiegeEvent == null && !settlement.OwnerClan.IsRebelClan && Settlement.CurrentSettlement != settlement)
 		{
 			CheckAndSetTownRebelliousState(settlement);
-			if (MBRandom.RandomFloat < 0.25f && CheckRebellionEvent(settlement))
+			float num = GetDailyRebellionCheckChance();
+			Hero hero = settlement.Town?.Governor;
+			if (hero != null && hero.CurrentSettlement == settlement)
+			{
+				num *= 1f + TraitEffectHelper.GetTraitEffectBonus(hero, DefaultPersonalityTraitEffects.MercyRebellionChanceEffect);
+			}
+			if (MBRandom.RandomFloat < num && CheckRebellionEvent(settlement))
 			{
 				StartRebellionEvent(settlement);
 			}
 		}
 		if (settlement.IsTown && settlement.OwnerClan.IsRebelClan)
 		{
-			float num = MBMath.Map(_rebelClansAndDaysPassedAfterCreation[settlement.OwnerClan] - 1, 0f, 30f, Campaign.Current.Models.SettlementLoyaltyModel.LoyaltyBoostAfterRebellionStartValue, 0f);
-			settlement.Town.Loyalty += num;
+			float inputMaximum = GetUpdateClanAfterDays();
+			float num2 = MBMath.Map(_rebelClansAndDaysPassedAfterCreation[settlement.OwnerClan] - 1, 0f, inputMaximum, Campaign.Current.Models.SettlementLoyaltyModel.LoyaltyBoostAfterRebellionStartValue, 0f);
+			settlement.Town.Loyalty += num2;
 		}
 	}
 
@@ -149,7 +170,8 @@ public class RebellionsCampaignBehavior : CampaignBehaviorBase
 		if (_rebelClansAndDaysPassedAfterCreation.ContainsKey(clan))
 		{
 			_rebelClansAndDaysPassedAfterCreation[clan]++;
-			if (_rebelClansAndDaysPassedAfterCreation[clan] >= 30 && clan.Leader != null && clan.Settlements.Count > 0)
+			float num = GetUpdateClanAfterDays();
+			if ((float)_rebelClansAndDaysPassedAfterCreation[clan] >= num && clan.Leader != null && clan.Settlements.Count > 0)
 			{
 				TextObject textObject = new TextObject("{=aKaGaOQx}{CLAN_LEADER.NAME}{.o} Clan");
 				StringHelpers.SetCharacterProperties("CLAN_LEADER", clan.Leader.CharacterObject, textObject);
@@ -163,9 +185,9 @@ public class RebellionsCampaignBehavior : CampaignBehaviorBase
 		{
 			return;
 		}
-		for (int num = clan.Heroes.Count - 1; num >= 0; num--)
+		for (int num2 = clan.Heroes.Count - 1; num2 >= 0; num2--)
 		{
-			Hero hero = clan.Heroes[num];
+			Hero hero = clan.Heroes[num2];
 			if (hero.IsAlive)
 			{
 				if (hero.IsPrisoner && hero.PartyBelongedToAsPrisoner != null && hero.PartyBelongedToAsPrisoner != PartyBase.MainParty && hero.PartyBelongedToAsPrisoner.LeaderHero != null)
@@ -176,7 +198,7 @@ public class RebellionsCampaignBehavior : CampaignBehaviorBase
 				{
 					KillCharacterAction.ApplyByRemove(hero);
 				}
-				else if (_rebelClansAndDaysPassedAfterCreation[clan] > 90 && hero.PartyBelongedTo != null && hero.PartyBelongedTo.MapEvent == null)
+				else if (_rebelClansAndDaysPassedAfterCreation[clan] > GetUpdateClanAfterDays() * 3 && hero.PartyBelongedTo != null && hero.PartyBelongedTo.MapEvent == null)
 				{
 					KillCharacterAction.ApplyByRemove(hero);
 				}

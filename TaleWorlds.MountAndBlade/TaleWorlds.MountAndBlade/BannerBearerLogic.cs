@@ -514,7 +514,7 @@ public class BannerBearerLogic : MissionLogic
 
 	private readonly Dictionary<Agent, Equipment> _initialSpawnEquipments = new Dictionary<Agent, Equipment>();
 
-	private readonly BasicMissionTimer _bannerSearcherUpdateTimer;
+	private BasicMissionTimer _bannerSearcherUpdateTimer;
 
 	private readonly List<FormationBannerController> _playerFormationsRequiringUpdate = new List<FormationBannerController>();
 
@@ -525,11 +525,6 @@ public class BannerBearerLogic : MissionLogic
 	public event Action<Formation> OnBannerBearersUpdated;
 
 	public event Action<Agent, bool> OnBannerBearerAgentUpdated;
-
-	public BannerBearerLogic()
-	{
-		_bannerSearcherUpdateTimer = new BasicMissionTimer();
-	}
 
 	public bool IsFormationBanner(Formation formation, SpawnedItemEntity spawnedItem)
 	{
@@ -651,6 +646,7 @@ public class BannerBearerLogic : MissionLogic
 		AgentSpawnLogic = base.Mission.GetMissionBehavior<DefaultBattleMissionAgentSpawnLogic>();
 		base.Mission.OnItemPickUp += OnItemPickup;
 		base.Mission.OnItemDrop += OnItemDrop;
+		_bannerSearcherUpdateTimer = new BasicMissionTimer();
 		_initialSpawnEquipments.Clear();
 	}
 

@@ -16,7 +16,7 @@ public class SPChatLog__TaleWorlds_MountAndBlade_ViewModelCollection_Multiplayer
 {
 	private Widget _widget;
 
-	private BoolStateChangerWidget _widget_0;
+	private BoolStateChangerBrushWidget _widget_0;
 
 	private ChatLogWidget _widget_1;
 
@@ -94,7 +94,7 @@ public class SPChatLog__TaleWorlds_MountAndBlade_ViewModelCollection_Multiplayer
 	public void CreateWidgets()
 	{
 		_widget = this;
-		_widget_0 = new BoolStateChangerWidget(base.Context);
+		_widget_0 = new BoolStateChangerBrushWidget(base.Context);
 		_widget.AddChild(_widget_0);
 		_widget_1 = new ChatLogWidget(base.Context);
 		_widget.AddChild(_widget_1);

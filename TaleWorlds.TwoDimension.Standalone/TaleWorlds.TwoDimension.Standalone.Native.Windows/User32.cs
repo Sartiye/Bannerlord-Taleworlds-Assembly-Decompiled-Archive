@@ -34,6 +34,12 @@ public static class User32
 		public string szDevice;
 	}
 
+	public const uint MONITOR_DEFAULTTONULL = 0u;
+
+	public const uint MONITOR_DEFAULTTOPRIMARY = 1u;
+
+	public const uint MONITOR_DEFAULTTONEAREST = 2u;
+
 	[DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
 	public static extern short GetAsyncKeyState(int vkey);
 
@@ -109,6 +115,9 @@ public static class User32
 
 	[DllImport("user32.dll")]
 	public static extern IntPtr GetDesktopWindow();
+
+	[DllImport("user32.dll")]
+	public static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
 
 	[DllImport("user32.dll")]
 	public static extern bool GetClientRect(IntPtr hWnd, out Rectangle lpRect);

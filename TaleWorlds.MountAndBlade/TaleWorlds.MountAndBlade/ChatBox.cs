@@ -252,6 +252,11 @@ public class ChatBox : GameHandler
 		return ServerPrepareAndSendMessage(networkPeer, toTeamOnly: true, message.Message, message.ReceiverList);
 	}
 
+	private static bool IsPeerSpectator(NetworkCommunicator networkPeer)
+	{
+		return SpectatorHelper.IsPeerSpectator(networkPeer);
+	}
+
 	public static void ServerSendServerMessageToEveryone(string message)
 	{
 		_chatBox.OnServerMessage(message);
@@ -265,6 +270,10 @@ public class ChatBox : GameHandler
 		if (GameNetwork.IsDedicatedServer)
 		{
 			OnMessageReceivedAtDedicatedServer?.Invoke(fromPeer, message);
+		}
+		if (!toTeamOnly && IsPeerSpectator(fromPeer))
+		{
+			toTeamOnly = true;
 		}
 		if (fromPeer.IsMuted || MultiplayerGlobalMutedPlayersManager.IsUserMuted(fromPeer.VirtualPlayer.Id))
 		{
@@ -328,7 +337,7 @@ public class ChatBox : GameHandler
 		MissionPeer missionPeer = networkPeer.GetComponent<MissionPeer>();
 		if (missionPeer?.Team != null)
 		{
-			foreach (NetworkCommunicator item in GameNetwork.NetworkPeers.Where((NetworkCommunicator x) => !x.IsServerPeer && x.IsSynchronized && x.GetComponent<MissionPeer>().Team == missionPeer.Team))
+			foreach (NetworkCommunicator item in GameNetwork.NetworkPeers.Where((NetworkCommunicator x) => !x.IsServerPeer && x.IsSynchronized && x.GetComponent<MissionPeer>()?.Team == missionPeer.Team))
 			{
 				if (receiverList == null || receiverList.Contains(item.VirtualPlayer))
 				{
@@ -339,7 +348,10 @@ public class ChatBox : GameHandler
 			}
 			return;
 		}
-		ServerSendMessageToEveryone(networkPeer, message, receiverList);
+		if (!IsPeerSpectator(networkPeer))
+		{
+			ServerSendMessageToEveryone(networkPeer, message, receiverList);
+		}
 	}
 
 	private static void ServerSendMessageToEveryone(NetworkCommunicator networkPeer, string message, List<VirtualPlayer> receiverList)
@@ -493,6 +505,15 @@ public class ChatBox : GameHandler
 	public void SetChatFilterLists(string[] profanityList, string[] allowList)
 	{
 		_profanityChecker = new ProfanityChecker(profanityList, allowList);
+	}
+
+	public string CensorClientText(string text)
+	{
+		if (string.IsNullOrEmpty(text) || _profanityChecker == null)
+		{
+			return text;
+		}
+		return _profanityChecker.CensorText(text);
 	}
 
 	public void InitializeForMultiplayer()

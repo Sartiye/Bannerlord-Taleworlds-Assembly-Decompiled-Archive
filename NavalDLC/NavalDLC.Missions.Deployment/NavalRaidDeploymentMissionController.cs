@@ -37,11 +37,6 @@ public class NavalRaidDeploymentMissionController : DeploymentMissionController
 		_navalRaidDeploymentHandler = base.Mission.GetMissionBehavior<NavalRaidDeploymentHandler>();
 	}
 
-	public override void OnRemoveBehavior()
-	{
-		base.OnRemoveBehavior();
-	}
-
 	protected override void OnAfterStart()
 	{
 		for (int i = 0; i < 2; i++)

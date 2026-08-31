@@ -113,7 +113,7 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 		_widget_1.SuggestedHeight = 18f;
 		_widget_1.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_1.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_1.PositionYOffset = -145f;
+		_widget_1.PositionYOffset = -120f;
 		_widget_1.Sprite = base.Context.SpriteData.GetSprite("SelectionBorder@2x_9");
 		_widget_1.Color = new Color(0.8000001f, 0.8000001f, 0.8000001f);
 		_widget_2.WidthSizePolicy = SizePolicy.Fixed;
@@ -122,7 +122,7 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 		_widget_2.SuggestedHeight = 8f;
 		_widget_2.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2.VerticalAlignment = VerticalAlignment.Bottom;
-		_widget_2.PositionYOffset = -150f;
+		_widget_2.PositionYOffset = -125f;
 		_widget_2.Brush = base.Context.GetBrush("HealthBarBrush");
 		_widget_2.IsVertical = false;
 		_widget_2.MaxAmount = 100;

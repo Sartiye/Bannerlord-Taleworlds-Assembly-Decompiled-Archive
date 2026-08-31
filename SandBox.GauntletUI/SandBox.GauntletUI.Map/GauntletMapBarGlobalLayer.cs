@@ -21,8 +21,6 @@ public class GauntletMapBarGlobalLayer : GlobalLayer
 
 	protected GauntletLayer _gauntletLayer;
 
-	protected GauntletMovieIdentifier _movie;
-
 	protected SpriteCategory _mapBarCategory;
 
 	protected MapScreen _mapScreen;
@@ -40,8 +38,6 @@ public class GauntletMapBarGlobalLayer : GlobalLayer
 	private SpriteCategory _armyManagementCategory;
 
 	private ArmyManagementVM _armyManagementVM;
-
-	private GauntletMovieIdentifier _gauntletArmyManagementMovie;
 
 	private CampaignTimeControlMode _timeControlModeBeforeArmyManagementOpened;
 
@@ -72,23 +68,12 @@ public class GauntletMapBarGlobalLayer : GlobalLayer
 		_gauntletLayer = new GauntletLayer("MapBar", 202);
 		base.Layer = _gauntletLayer;
 		_mapBarCategory = UIResourceManager.LoadSpriteCategory("ui_mapbar");
-		_movie = _gauntletLayer.LoadMovie("MapBar", _dataSource);
+		_gauntletLayer.LoadMovie("MapBar", _dataSource);
 		_encyclopediaManager = _mapScreen.EncyclopediaScreenManager;
 	}
 
 	public void OnFinalize()
 	{
-		if (_gauntletLayer != null)
-		{
-			if (_gauntletArmyManagementMovie != null)
-			{
-				_gauntletLayer.ReleaseMovie(_gauntletArmyManagementMovie);
-			}
-			if (_movie != null)
-			{
-				_gauntletLayer.ReleaseMovie(_movie);
-			}
-		}
 		_armyManagementVM?.OnFinalize();
 		_dataSource.OnFinalize();
 		_mapBarCategory.Unload();
@@ -279,7 +264,7 @@ public class GauntletMapBarGlobalLayer : GlobalLayer
 			_armyManagementLayer = new GauntletLayer("MapBar_ArmyManagement", 300);
 			_armyManagementCategory = UIResourceManager.LoadSpriteCategory("ui_armymanagement");
 			_armyManagementVM = new ArmyManagementVM(CloseArmyManagement);
-			_gauntletArmyManagementMovie = _armyManagementLayer.LoadMovie("ArmyManagement", _armyManagementVM);
+			_armyManagementLayer.LoadMovie("ArmyManagement", _armyManagementVM);
 			_armyManagementLayer.InputRestrictions.SetInputRestrictions();
 			_armyManagementLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("Generic"));
 			_armyManagementLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericPanelGameKeyCategory"));
@@ -305,11 +290,9 @@ public class GauntletMapBarGlobalLayer : GlobalLayer
 	private void CloseArmyManagement()
 	{
 		_armyManagementVM.OnFinalize();
-		_armyManagementLayer.ReleaseMovie(_gauntletArmyManagementMovie);
 		_mapScreen.RemoveLayer(_armyManagementLayer);
 		_armyManagementCategory.Unload();
 		Game.Current.EventManager.TriggerEvent(new TutorialContextChangedEvent(TutorialContexts.MapWindow));
-		_gauntletArmyManagementMovie = null;
 		_armyManagementVM = null;
 		_armyManagementLayer = null;
 		Campaign.Current.SetTimeControlModeLock(isLocked: false);

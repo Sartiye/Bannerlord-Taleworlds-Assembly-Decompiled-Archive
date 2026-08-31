@@ -24,6 +24,8 @@ public class HeadmanVillageNeedsDraughtAnimalsIssueBehavior : CampaignBehaviorBa
 
 		private const int VillageHearthConstant = 300;
 
+		private const int VillageHearthStayAliveDelta = 30;
+
 		private const int AlternativeSolutionTroopTierRequirement = 2;
 
 		private const int CompanionRequiredSkillLevel = 120;
@@ -233,9 +235,9 @@ public class HeadmanVillageNeedsDraughtAnimalsIssueBehavior : CampaignBehaviorBa
 
 		public override bool IssueStayAliveConditions()
 		{
-			if (!base.IssueOwner.CurrentSettlement.IsRaided)
+			if (!base.IssueOwner.CurrentSettlement.IsRaided && !base.IssueOwner.CurrentSettlement.IsUnderRaid && ((!_isQuestWithMeatOffer && base.IssueOwner.CurrentSettlement.Village.Hearth > 270f) || (_isQuestWithMeatOffer && base.IssueOwner.CurrentSettlement.Village.Hearth < 330f)))
 			{
-				return !base.IssueOwner.CurrentSettlement.IsUnderRaid;
+				return true;
 			}
 			return false;
 		}
@@ -710,6 +712,11 @@ public class HeadmanVillageNeedsDraughtAnimalsIssueBehavior : CampaignBehaviorBa
 
 		protected override void OnFinalize()
 		{
+		}
+
+		public override void OnFailed()
+		{
+			base.QuestGiver.AddPower(-10f);
 		}
 
 		protected override void InitializeQuestOnGameLoad()

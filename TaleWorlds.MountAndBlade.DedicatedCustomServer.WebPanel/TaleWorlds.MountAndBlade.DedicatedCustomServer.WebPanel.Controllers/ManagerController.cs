@@ -103,25 +103,25 @@ public class ManagerController : Controller
 	{
 		return type switch
 		{
-			MultiplayerOptions.OptionType.GameType => "Game Mode", 
+			MultiplayerOptions.OptionType.PremadeMatchGameMode => "Game Mode", 
 			MultiplayerOptions.OptionType.ServerName => "Server Name", 
 			MultiplayerOptions.OptionType.GamePassword => "Password", 
-			MultiplayerOptions.OptionType.CultureTeam1 => "First Team's Culture", 
-			MultiplayerOptions.OptionType.CultureTeam2 => "Second Team's Culture", 
-			MultiplayerOptions.OptionType.Map => "Map", 
-			MultiplayerOptions.OptionType.MapTimeLimit => "Time Limit", 
-			MultiplayerOptions.OptionType.AllowPollsToKickPlayers => "Allow Polls to Kick Players", 
-			MultiplayerOptions.OptionType.MaxNumberOfPlayers => "Server Capacity", 
-			MultiplayerOptions.OptionType.WarmupTimeLimitInSeconds => "Warmup Duration", 
-			MultiplayerOptions.OptionType.RoundTimeLimit => "Round Duration", 
-			MultiplayerOptions.OptionType.RoundPreparationTimeLimit => "Round Preparation Duration", 
-			MultiplayerOptions.OptionType.RoundTotal => "Maximum Number of Rounds", 
-			MultiplayerOptions.OptionType.RespawnPeriodTeam1 => "First Team's Respawn Period", 
-			MultiplayerOptions.OptionType.RespawnPeriodTeam2 => "Second Team's Respawn Period", 
-			MultiplayerOptions.OptionType.GoldGainChangePercentageTeam1 => "First Team's Gold Gain Change Percentage", 
-			MultiplayerOptions.OptionType.GoldGainChangePercentageTeam2 => "Second Team's Gold Gain Change Percentage", 
-			MultiplayerOptions.OptionType.MinScoreToWinDuel => "Minimum Score to Win Duel", 
-			MultiplayerOptions.OptionType.SingleSpawn => "Has Single Spawn", 
+			MultiplayerOptions.OptionType.Map => "First Team's Culture", 
+			MultiplayerOptions.OptionType.CultureTeam1 => "Second Team's Culture", 
+			MultiplayerOptions.OptionType.PremadeGameType => "Map", 
+			MultiplayerOptions.OptionType.WarmupTimeLimitInSeconds => "Time Limit", 
+			MultiplayerOptions.OptionType.GameDefinitionId => "Allow Polls to Kick Players", 
+			MultiplayerOptions.OptionType.CultureTeam2 => "Server Capacity", 
+			MultiplayerOptions.OptionType.SpectatorCamera => "Warmup Duration", 
+			MultiplayerOptions.OptionType.MapTimeLimit => "Round Duration", 
+			MultiplayerOptions.OptionType.RoundTimeLimit => "Round Preparation Duration", 
+			MultiplayerOptions.OptionType.RoundPreparationTimeLimit => "Maximum Number of Rounds", 
+			MultiplayerOptions.OptionType.RoundTotal => "First Team's Respawn Period", 
+			MultiplayerOptions.OptionType.RespawnPeriodTeam1 => "Second Team's Respawn Period", 
+			MultiplayerOptions.OptionType.UnlimitedGold => "First Team's Gold Gain Change Percentage", 
+			MultiplayerOptions.OptionType.GoldGainChangePercentageTeam1 => "Second Team's Gold Gain Change Percentage", 
+			MultiplayerOptions.OptionType.MinScoreToWinMatch => "Minimum Score to Win Duel", 
+			MultiplayerOptions.OptionType.EnableMissionRecording => "Has Single Spawn", 
 			_ => type.ToString(), 
 		};
 	}
@@ -178,22 +178,22 @@ public class ManagerController : Controller
 		List<OptionVM> list = new List<OptionVM>();
 		if (MultiplayerOptions.Instance != null)
 		{
-			list.Add(GetOptionVM(MultiplayerOptions.OptionType.GameType));
+			list.Add(GetOptionVM(MultiplayerOptions.OptionType.PremadeMatchGameMode));
 			list.Add(GetOptionVM(MultiplayerOptions.OptionType.ServerName));
 			list.Add(GetOptionVM(MultiplayerOptions.OptionType.GamePassword));
-			list.Add(GetOptionVM(MultiplayerOptions.OptionType.CultureTeam1));
-			list.Add(GetOptionVM(MultiplayerOptions.OptionType.CultureTeam2));
 			list.Add(GetOptionVM(MultiplayerOptions.OptionType.Map));
-			list.Add(GetOptionVM(MultiplayerOptions.OptionType.MapTimeLimit));
-			list.Add(GetOptionVM(MultiplayerOptions.OptionType.MaxNumberOfPlayers));
-			string strValue = MultiplayerOptions.OptionType.GameType.GetStrValue();
+			list.Add(GetOptionVM(MultiplayerOptions.OptionType.CultureTeam1));
+			list.Add(GetOptionVM(MultiplayerOptions.OptionType.PremadeGameType));
+			list.Add(GetOptionVM(MultiplayerOptions.OptionType.WarmupTimeLimitInSeconds));
+			list.Add(GetOptionVM(MultiplayerOptions.OptionType.CultureTeam2));
+			string strValue = MultiplayerOptions.OptionType.PremadeMatchGameMode.GetStrValue();
 			switch (strValue)
 			{
 			case "Skirmish":
 			case "Captain":
 			case "Battle":
 			case "Siege":
-				list.Add(GetOptionVM(MultiplayerOptions.OptionType.WarmupTimeLimitInSeconds));
+				list.Add(GetOptionVM(MultiplayerOptions.OptionType.SpectatorCamera));
 				break;
 			}
 			switch (strValue)
@@ -201,25 +201,25 @@ public class ManagerController : Controller
 			case "Skirmish":
 			case "Captain":
 			case "Battle":
+				list.Add(GetOptionVM(MultiplayerOptions.OptionType.MapTimeLimit));
 				list.Add(GetOptionVM(MultiplayerOptions.OptionType.RoundTimeLimit));
 				list.Add(GetOptionVM(MultiplayerOptions.OptionType.RoundPreparationTimeLimit));
-				list.Add(GetOptionVM(MultiplayerOptions.OptionType.RoundTotal));
 				break;
 			}
 			if (strValue == "TeamDeathmatch" || strValue == "Siege")
 			{
+				list.Add(GetOptionVM(MultiplayerOptions.OptionType.RoundTotal));
 				list.Add(GetOptionVM(MultiplayerOptions.OptionType.RespawnPeriodTeam1));
-				list.Add(GetOptionVM(MultiplayerOptions.OptionType.RespawnPeriodTeam2));
+				list.Add(GetOptionVM(MultiplayerOptions.OptionType.UnlimitedGold));
 				list.Add(GetOptionVM(MultiplayerOptions.OptionType.GoldGainChangePercentageTeam1));
-				list.Add(GetOptionVM(MultiplayerOptions.OptionType.GoldGainChangePercentageTeam2));
 			}
 			if (strValue == "Duel")
 			{
-				list.Add(GetOptionVM(MultiplayerOptions.OptionType.MinScoreToWinDuel));
+				list.Add(GetOptionVM(MultiplayerOptions.OptionType.MinScoreToWinMatch));
 			}
 			if (strValue != "Duel")
 			{
-				list.Add(GetOptionVM(MultiplayerOptions.OptionType.SingleSpawn));
+				list.Add(GetOptionVM(MultiplayerOptions.OptionType.EnableMissionRecording));
 			}
 		}
 		return list.Where((OptionVM o) => o != null);
@@ -306,10 +306,10 @@ public class ManagerController : Controller
 		if (DedicatedCustomServerSubModule.Instance != null)
 		{
 			runningServerInfoVM.Name = MultiplayerOptions.OptionType.ServerName.GetStrValue();
-			runningServerInfoVM.GameMode = MultiplayerOptions.OptionType.GameType.GetStrValue();
-			runningServerInfoVM.MapName = MultiplayerOptions.OptionType.Map.GetStrValue();
+			runningServerInfoVM.GameMode = MultiplayerOptions.OptionType.PremadeMatchGameMode.GetStrValue();
+			runningServerInfoVM.MapName = MultiplayerOptions.OptionType.PremadeGameType.GetStrValue();
 			int value = GameNetwork.NetworkPeers?.Where((NetworkCommunicator p) => !p.IsServerPeer).Count() ?? 0;
-			int intValue = MultiplayerOptions.OptionType.MaxNumberOfPlayers.GetIntValue();
+			int intValue = MultiplayerOptions.OptionType.CultureTeam2.GetIntValue();
 			runningServerInfoVM.PlayerCount = $"{value} / {intValue}";
 			int value2 = ServerSideIntermissionManager.Instance.AutomatedBattleCount - ServerSideIntermissionManager.Instance.RemainedAutomatedBattleCount;
 			int automatedBattleCount = ServerSideIntermissionManager.Instance.AutomatedBattleCount;

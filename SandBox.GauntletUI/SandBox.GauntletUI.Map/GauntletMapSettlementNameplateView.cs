@@ -32,15 +32,9 @@ public class GauntletMapSettlementNameplateView : MapView, IGauntletMapEventVisu
 		base.Layer = mapView.GauntletNameplateLayer;
 		_layerAsGauntletLayer = base.Layer as GauntletLayer;
 		_movie = _layerAsGauntletLayer.LoadMovie("SettlementNameplate", _dataSource);
-		List<Tuple<Settlement, GameEntity>> list = new List<Tuple<Settlement, GameEntity>>();
-		foreach (Settlement item2 in Settlement.All)
-		{
-			GameEntity strategicEntity = SettlementVisualManager.Current.GetSettlementVisual(item2).StrategicEntity;
-			Tuple<Settlement, GameEntity> item = new Tuple<Settlement, GameEntity>(item2, strategicEntity);
-			list.Add(item);
-		}
 		CampaignEvents.OnHideoutSpottedEvent.AddNonSerializedListener(this, OnHideoutSpotted);
-		_dataSource.Initialize(list);
+		CampaignEvents.OnCharacterCreationIsOverEvent.AddNonSerializedListener(this, OnCharacterCreationIsOver);
+		_dataSource.Initialize(BuildSettlementEntityList());
 		if (!(Campaign.Current.VisualCreator.MapEventVisualCreator is GauntletMapEventVisualCreator gauntletMapEventVisualCreator))
 		{
 			return;
@@ -80,6 +74,7 @@ public class GauntletMapSettlementNameplateView : MapView, IGauntletMapEventVisu
 			gauntletMapEventVisualCreator.Handlers.Remove(this);
 		}
 		CampaignEvents.OnHideoutSpottedEvent.ClearListeners(this);
+		CampaignEvents.OnCharacterCreationIsOverEvent.ClearListeners(this);
 		_layerAsGauntletLayer.ReleaseMovie(_movie);
 		_dataSource.OnFinalize();
 		_layerAsGauntletLayer = null;
@@ -110,6 +105,26 @@ public class GauntletMapSettlementNameplateView : MapView, IGauntletMapEventVisu
 	private void OnHideoutSpotted(PartyBase party, PartyBase hideoutParty)
 	{
 		MBSoundEvent.PlaySound(SoundEvent.GetEventIdFromString("event:/ui/notification/hideout_found"), hideoutParty.Settlement.GetPosition());
+	}
+
+	private void OnCharacterCreationIsOver(int index)
+	{
+		if (index == 9)
+		{
+			_dataSource.Reset(BuildSettlementEntityList());
+		}
+	}
+
+	private List<Tuple<Settlement, GameEntity>> BuildSettlementEntityList()
+	{
+		List<Tuple<Settlement, GameEntity>> list = new List<Tuple<Settlement, GameEntity>>();
+		foreach (Settlement item2 in Settlement.All)
+		{
+			GameEntity strategicEntity = SettlementVisualManager.Current.GetSettlementVisual(item2).StrategicEntity;
+			Tuple<Settlement, GameEntity> item = new Tuple<Settlement, GameEntity>(item2, strategicEntity);
+			list.Add(item);
+		}
+		return list;
 	}
 
 	private SettlementNameplateVM GetNameplateOfMapEvent(GauntletMapEventVisual mapEvent)

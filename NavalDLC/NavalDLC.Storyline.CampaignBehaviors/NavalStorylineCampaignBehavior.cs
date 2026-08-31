@@ -115,7 +115,7 @@ public class NavalStorylineCampaignBehavior : CampaignBehaviorBase
 
 	private void HourlyTick()
 	{
-		if (MobileParty.MainParty.MapEvent == null && MobileParty.MainParty.SiegeEvent == null && Hero.MainHero.IsActive && !MobileParty.MainParty.IsInRaftState && IsWaitingForSistersReturn() && _sisterReturnTime.IsPast)
+		if (MobileParty.MainParty.MapEvent == null && MobileParty.MainParty.SiegeEvent == null && Hero.MainHero.IsActive && !MobileParty.MainParty.IsInNavalAutoTravel && IsWaitingForSistersReturn() && _sisterReturnTime.IsPast)
 		{
 			ShowSisterPopUp();
 			_sisterReturnTime = CampaignTime.Zero;
@@ -162,6 +162,10 @@ public class NavalStorylineCampaignBehavior : CampaignBehaviorBase
 
 	private void OnGameLoadFinished()
 	{
+		if (!MBSaveLoad.IsUpdatingGameVersion)
+		{
+			return;
+		}
 		if (StoryModeHeroes.LittleSister.IsAlive && MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.3.15.109185"))
 		{
 			AgingCampaignBehavior campaignBehavior = Campaign.Current.GetCampaignBehavior<AgingCampaignBehavior>();
@@ -207,28 +211,39 @@ public class NavalStorylineCampaignBehavior : CampaignBehaviorBase
 			}
 			CheckAndUpdateGovernorStatusOfStoryModeHero(StoryModeHeroes.LittleSister);
 		}
-		if (!MBSaveLoad.IsUpdatingGameVersion || !MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.3.15")))
+		if (MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.3.15")))
+		{
+			if (NavalStorylineData.GetStorylineStage() >= NavalStorylineData.NavalStorylineStage.Act3Quest5 && !NavalStorylineData.Gunnar.IsDead)
+			{
+				Settlement currentSettlement = NavalStorylineData.Gunnar.CurrentSettlement;
+				Village village = Village.All.FirstOrDefault((Village x) => x.Settlement.StringId == "village_N1_2");
+				if (village != null && currentSettlement != village.Settlement)
+				{
+					TeleportHeroAction.ApplyImmediateTeleportToSettlement(NavalStorylineData.Gunnar, village.Settlement);
+				}
+			}
+			NavalStorylineData.SetHeroText(NavalStorylineData.Gunnar);
+			NavalStorylineData.SetHeroText(NavalStorylineData.Purig);
+			NavalStorylineData.SetHeroText(NavalStorylineData.Lahar);
+			NavalStorylineData.SetHeroText(NavalStorylineData.EmiraAlFahda);
+			NavalStorylineData.SetHeroText(NavalStorylineData.Prusas);
+			NavalStorylineData.SetHeroText(NavalStorylineData.Bjolgur);
+			if (NavalStorylineData.Purig.IsDead)
+			{
+				SetOnPurigKilledTexts();
+			}
+		}
+		if (!MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.4.0")) || !_isNavalStorylineActive)
 		{
 			return;
 		}
-		if (NavalStorylineData.GetStorylineStage() >= NavalStorylineData.NavalStorylineStage.Act3Quest5 && !NavalStorylineData.Gunnar.IsDead)
+		for (int num = Campaign.Current.QuestManager.Quests.Count - 1; num >= 0; num--)
 		{
-			Settlement currentSettlement = NavalStorylineData.Gunnar.CurrentSettlement;
-			Village village = Village.All.FirstOrDefault((Village x) => x.Settlement.StringId == "village_N1_2");
-			if (village != null && currentSettlement != village.Settlement)
+			QuestBase questBase = Campaign.Current.QuestManager.Quests[num];
+			if (NavalStorylineData.ShouldIssueQuestCancelled(questBase))
 			{
-				TeleportHeroAction.ApplyImmediateTeleportToSettlement(NavalStorylineData.Gunnar, village.Settlement);
+				questBase.CompleteQuestWithCancel(GameTexts.FindText("str_quest_cancellation_due_to_naval_storyline"));
 			}
-		}
-		NavalStorylineData.SetHeroText(NavalStorylineData.Gunnar);
-		NavalStorylineData.SetHeroText(NavalStorylineData.Purig);
-		NavalStorylineData.SetHeroText(NavalStorylineData.Lahar);
-		NavalStorylineData.SetHeroText(NavalStorylineData.EmiraAlFahda);
-		NavalStorylineData.SetHeroText(NavalStorylineData.Prusas);
-		NavalStorylineData.SetHeroText(NavalStorylineData.Bjolgur);
-		if (NavalStorylineData.Purig.IsDead)
-		{
-			SetOnPurigKilledTexts();
 		}
 	}
 
@@ -274,7 +289,7 @@ public class NavalStorylineCampaignBehavior : CampaignBehaviorBase
 	{
 		if (hero.GovernorOf != null && hero.CurrentSettlement != hero.GovernorOf.Settlement)
 		{
-			Debug.FailedAssert("Last governor check might be unnecessary, check this case", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Storyline\\CampaignBehaviors\\NavalStorylineCampaignBehavior.cs", "CheckAndUpdateGovernorStatusOfStoryModeHero", 343);
+			Debug.FailedAssert("Last governor check might be unnecessary, check this case", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Storyline\\CampaignBehaviors\\NavalStorylineCampaignBehavior.cs", "CheckAndUpdateGovernorStatusOfStoryModeHero", 361);
 			ChangeGovernorAction.RemoveGovernorOf(StoryModeHeroes.LittleSister);
 		}
 	}
@@ -459,16 +474,16 @@ public class NavalStorylineCampaignBehavior : CampaignBehaviorBase
 
 	private void AddGunnarRansomConversations()
 	{
-		Campaign.Current.ConversationManager.AddDialogFlow(DialogFlow.CreateDialogFlow("gunnar_ransom_sister", 1200).NpcLine("{=F94IaWhk}Ah... So be it. I understand why you must put your sister's safety above other considerations. I know people who can pass a message to the Sea Hounds, and I can make inquiries about a ransom, if you like.").ClickableCondition(CanRansomSister)
+		Campaign.Current.ConversationManager.AddDialogFlow(DialogFlow.CreateDialogFlow("gunnar_ransom_sister", 1200).NpcLine("{=F94IaWhk}[ib:demure][if:convo_grave]Ah... So be it. I understand why you must put your sister's safety above other considerations. I know people who can pass a message to the Sea Hounds, and I can make inquiries about a ransom, if you like.").ClickableCondition(CanRansomSister)
 			.GenerateToken(out var token)
 			.BeginPlayerOptions()
 			.PlayerOption("{=JIoiP1Is}Do that.")
 			.GotoDialogState(token)
 			.PlayerOption("{=NvCbw6VY}No. I will not pay money to pirates.")
-			.NpcLine("{=BpQZOVIp}I am glad that you see things that way.")
+			.NpcLine("{=BpQZOVIp}[ib:confident][if:convo_approving]I am glad that you see things that way.")
 			.CloseDialog()
 			.EndPlayerOptions()
-			.NpcLine("{=R9byg5mp}Very well. But I should warn you... By now, I am sure, the Sea Hounds know your name. You are building a bit of a reputation. I doubt that they’d give up your sister as cheaply as they would some common captive. If you left me {GOLD}{GOLD_ICON} denars, I'm sure that would suffice, but that kind of money may be hard to come by.", null, null, token)
+			.NpcLine("{=R9byg5mp}[ib:closed]Very well. But I should warn you... By now, I am sure, the Sea Hounds know your name. You are building a bit of a reputation. I doubt that they’d give up your sister as cheaply as they would some common captive. If you left me {GOLD}{GOLD_ICON} denars, I'm sure that would suffice, but that kind of money may be hard to come by.", null, null, token)
 			.Condition(delegate
 			{
 				MBTextManager.SetTextVariable("GOLD", 10000);
@@ -482,10 +497,10 @@ public class NavalStorylineCampaignBehavior : CampaignBehaviorBase
 			.Consequence(RequestRansomSister)
 			.CloseDialog()
 			.PlayerOption("{=UgWdVbxn}Somehow, I will raise the money.")
-			.NpcLine("{=S5cioFLJ}Very well. If you are able to raise the money, and still wish to proceed with the ransom, then let me know. I owe you my life, and I am always ready to help you in whatever course you choose.")
+			.NpcLine("{=S5cioFLJ}[ib:normal]Very well. If you are able to raise the money, and still wish to proceed with the ransom, then let me know. I owe you my life, and I am always ready to help you in whatever course you choose.")
 			.CloseDialog()
 			.PlayerOption("{=OONSEXb2}I will never pay that kind of money to brigands.")
-			.NpcLine("{=BpQZOVIp}I am glad that you see things that way.")
+			.NpcLine("{=BpQZOVIp}[ib:confident][if:convo_approving]I am glad that you see things that way.")
 			.CloseDialog()
 			.EndPlayerOptions());
 	}
@@ -519,7 +534,7 @@ public class NavalStorylineCampaignBehavior : CampaignBehaviorBase
 			{
 				SpawnSister(GetSisterTeleportPosition());
 			})
-			.NpcLine("{=MmGO1qT4}{?PLAYER.GENDER}Sister{?}Brother{\\?}! Is that you? Heaven's mercy! I had all but given up hope, and then they told me that you had arranged for my ransom. Thank you, from the bottom of my heart, thank you!", IsSister, IsPlayer)
+			.NpcLine("{=MmGO1qT4}{?PLAYER.GENDER}[if:convo_astonished]Sister{?}Brother{\\?}! Is that you? Heaven's mercy! I had all but given up hope, and then they told me that you had arranged for my ransom. Thank you, from the bottom of my heart, thank you!", IsSister, IsPlayer)
 			.GenerateToken(out var token)
 			.GenerateToken(out var token2)
 			.BeginPlayerOptions()
@@ -528,15 +543,15 @@ public class NavalStorylineCampaignBehavior : CampaignBehaviorBase
 			.PlayerOption("{=5Drb4hBh}A small price to pay for your safety. Well, maybe not that small...", IsSister)
 			.GotoDialogState(token)
 			.EndPlayerOptions()
-			.NpcLine("{=QunHWmAo}That terrible night... Father, mother... Those vile slavers, dragging me from port to port. I won’t speak of it now. But Gunnar says that you have risen in the world, that our fortunes have changed. Know that I am ready to do my part, for our family and our future...", IsSister, IsPlayer, token)
-			.NpcLine("{=LZSRoGTN}{PLAYER.NAME}... I am glad to have helped you reunite your family, and I hope it repays part of my debt to you. But now I must take my leave. I have unfinished business with the Sea Hounds, and with Purig in particular. I do not think we shall meet again.", IsGunnar, IsPlayer)
+			.NpcLine("{=QunHWmAo}[ib:demure][if:convo_grateful]That terrible night... Father, mother... Those vile slavers, dragging me from port to port. I won’t speak of it now. But Gunnar says that you have risen in the world, that our fortunes have changed. Know that I am ready to do my part, for our family and our future...", IsSister, IsPlayer, token)
+			.NpcLine("{=LZSRoGTN}[if:convo_grave][ib:confident]{PLAYER.NAME}... I am glad to have helped you reunite your family, and I hope it repays part of my debt to you. But now I must take my leave. I have unfinished business with the Sea Hounds, and with Purig in particular. I do not think we shall meet again.", IsGunnar, IsPlayer)
 			.BeginPlayerOptions()
 			.PlayerOption("{=I2Ab1kzZ}Good hunting, Gunnar. Give that bastard Purig one from me.", IsGunnar)
 			.GotoDialogState(token2)
 			.PlayerOption("{=agCqAQuA}It seems a bit of a doomed errand, but good luck anyway.", IsGunnar)
 			.GotoDialogState(token2)
 			.EndPlayerOptions()
-			.NpcLine("{=2g2FhKb5}Farewell.", null, null, token2)
+			.NpcLine("{=2g2FhKb5}[ib:normal]Farewell.", null, null, token2)
 			.Consequence(EndStorylineByRansom)
 			.CloseDialog());
 	}
@@ -657,7 +672,14 @@ public class NavalStorylineCampaignBehavior : CampaignBehaviorBase
 			_isFirstReturnToOstican = false;
 		}
 		Settlement settlement = Settlement.CurrentSettlement ?? PlayerEncounter.EncounterSettlement;
-		GameMenu.SwitchToMenu((MobileParty.MainParty.HasNavalNavigationCapability && MobileParty.MainParty.Anchor.IsAtSettlement(settlement)) ? "naval_town_outside" : Campaign.Current.Models.EncounterGameMenuModel.GetEncounterMenu(PartyBase.MainParty, settlement.Party, out var _, out var _));
+		if (settlement == null)
+		{
+			GameMenu.ExitToLast();
+		}
+		else
+		{
+			GameMenu.SwitchToMenu((MobileParty.MainParty.HasNavalNavigationCapability && MobileParty.MainParty.Anchor.IsAtSettlement(settlement)) ? "naval_town_outside" : Campaign.Current.Models.EncounterGameMenuModel.GetEncounterMenu(PartyBase.MainParty, settlement.Party, out var _, out var _));
+		}
 	}
 
 	private bool leave_on_condition(MenuCallbackArgs args)
@@ -952,7 +974,7 @@ public class NavalStorylineCampaignBehavior : CampaignBehaviorBase
 
 	private void Tick(float dt)
 	{
-		if (!_inquiryFired && !MobileParty.MainParty.IsInRaftState && _isNavalStorylineActive && MobileParty.MainParty.IsCurrentlyAtSea && MobileParty.MainParty.IsTransitionInProgress)
+		if (!_inquiryFired && !MobileParty.MainParty.IsInNavalAutoTravel && _isNavalStorylineActive && MobileParty.MainParty.IsCurrentlyAtSea && MobileParty.MainParty.IsTransitionInProgress)
 		{
 			InformationManager.ShowInquiry(new InquiryData(new TextObject("{=461jcc87}Leaving Story Mode").ToString(), new TextObject("{=dV92VE8i}When you leave story mode, you will be returned to Ostican. You can speak to Gunnar in port to try again later. Do you wish to continue?").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_ok").ToString(), GameTexts.FindText("str_cancel").ToString(), OnAcceptDeactivatingNavalStoryline, OnRejectDeactivatingNavalStoryline), pauseGameActiveState: true);
 		}
@@ -1121,8 +1143,7 @@ public class NavalStorylineCampaignBehavior : CampaignBehaviorBase
 		_prisoners.Clear();
 		for (int num3 = _ships.Count - 1; num3 >= 0; num3--)
 		{
-			Ship ship = _ships[num3];
-			ChangeShipOwnerAction.ApplyByTransferring(PartyBase.MainParty, ship);
+			ChangeShipOwnerAction.ApplyByGivingBackShipsToPlayer(_ships[num3]);
 		}
 		if (_cachedAnchor != null)
 		{
@@ -1197,7 +1218,7 @@ public class NavalStorylineCampaignBehavior : CampaignBehaviorBase
 		for (int num3 = MobileParty.MainParty.Ships.Count - 1; num3 >= 0; num3--)
 		{
 			Ship ship = MobileParty.MainParty.Ships[num3];
-			ship.Owner = null;
+			ChangeShipOwnerAction.ApplyByTemporarilyRemovingShipsFromPlayer(ship);
 			_ships.Add(ship);
 		}
 		MobileParty.MainParty.Anchor.ResetPosition();

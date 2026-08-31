@@ -18,67 +18,11 @@ public class VisualShipFactory
 		_shipEntityCache.Clear();
 		foreach (MissionShipObject objectType in MBObjectManager.Instance.GetObjectTypeList<MissionShipObject>())
 		{
-			if (_shipEntityCache.ContainsKey(objectType.Prefab))
+			if (!_shipEntityCache.ContainsKey(objectType.Prefab))
 			{
-				continue;
+				GameEntity value = CreateShipEntityForCache(scene, objectType.Prefab);
+				_shipEntityCache.Add(objectType.Prefab, value);
 			}
-			GameEntity gameEntity = GameEntity.Instantiate(scene, objectType.Prefab, callScriptCallbacks: false, createPhysics: false, "ship_visual_only");
-			List<GameEntity> list = new List<GameEntity>();
-			foreach (GameEntity child in gameEntity.GetChildren())
-			{
-				if (child.Name.Equals("attachment_machine_holder") || child.Name.Equals("spawn_point_holder") || child.Name.Equals("barrier_holder") || child.Name.Equals("control_point_holder") || child.Name.Equals("knobs_holder") || child.Name.Equals("floater_volume_holder") || child.Name.Equals("torch_holder") || child.HasTag("wetness_decals") || child.Name.Equals("deck_upgrade_holder"))
-				{
-					list.Add(child);
-				}
-				else
-				{
-					if (!child.Name.Equals("oars_holder"))
-					{
-						continue;
-					}
-					foreach (GameEntity item in child.CollectChildrenEntitiesWithTag("Pilot"))
-					{
-						list.Add(item);
-					}
-				}
-			}
-			foreach (GameEntity item2 in list)
-			{
-				if (item2.Parent != null)
-				{
-					item2.Parent.RemoveChild(item2, keepPhysics: false, keepScenePointer: false, callScriptCallbacks: false, 32);
-				}
-			}
-			list.Clear();
-			List<GameEntity> children = new List<GameEntity>();
-			gameEntity.GetChildrenRecursive(ref children);
-			foreach (GameEntity item3 in children)
-			{
-				if (item3.Name.Equals("state1") || item3.Name.Equals("state2") || item3.Name.Equals("state3") || item3.Name.Equals("destroyed") || item3.Name.Contains("knot_point") || item3.HasTag("sail_mesh_free_entity"))
-				{
-					list.Add(item3);
-				}
-			}
-			foreach (GameEntity item4 in list)
-			{
-				item4.Parent.RemoveChild(item4, keepPhysics: false, keepScenePointer: false, callScriptCallbacks: false, 32);
-			}
-			List<GameEntity> children2 = new List<GameEntity>();
-			gameEntity.GetChildrenRecursive(ref children2);
-			foreach (GameEntity item5 in children2)
-			{
-				item5.RemoveAllParticleSystems();
-			}
-			gameEntity.SetVisibilityExcludeParents(visible: false);
-			gameEntity.CreateAndAddScriptComponent(typeof(ShipVisual).Name, callScriptCallbacks: false);
-			foreach (ScriptComponentBehavior item6 in gameEntity.GetScriptComponents().ToList())
-			{
-				if (item6.ScriptComponent.GetName() == "NavalPhysics")
-				{
-					gameEntity.RemoveScriptComponent(item6.ScriptComponent.Pointer, 32);
-				}
-			}
-			_shipEntityCache.Add(objectType.Prefab, gameEntity);
 		}
 		scene.SetDoNotAddEntitiesToTickList(value: false);
 	}
@@ -88,7 +32,7 @@ public class VisualShipFactory
 		_shipEntityCache.Clear();
 	}
 
-	public static GameEntity CreateVisualShip(string shipPrefab, Scene scene, List<ShipVisualSlotInfo> upgrades, int shipSeed, float hitPointRatio, uint sailColor1 = uint.MaxValue, uint sailColor2 = uint.MaxValue, bool createPhysics = false, bool keepFireEntities = true)
+	public static GameEntity CreateVisualShip(string shipPrefab, Scene scene, List<ShipVisualSlotInfo> upgrades, int shipSeed, float hitPointRatio, uint sailColor1 = uint.MaxValue, uint sailColor2 = uint.MaxValue, bool createPhysics = false, float floatingForceMultiplier = 1f, bool keepFireEntities = true)
 	{
 		Debug.Print("VisualShipFactory.CreateVisualShip: " + shipPrefab);
 		GameEntity gameEntity = GameEntity.InstantiateWithRestOffset(scene, shipPrefab, createPhysics, MatrixFrame.Identity, -0.1f, callScriptCallbacks: false, "ship_visual_only");
@@ -116,10 +60,7 @@ public class VisualShipFactory
 		{
 			RefreshUpgrades(gameEntity.WeakEntity, upgrades);
 			gameEntity.CreateAndAddScriptComponent(typeof(ShipVisual).Name, callScriptCallbacks: false);
-			ShipVisual firstScriptOfType = gameEntity.GetFirstScriptOfType<ShipVisual>();
-			firstScriptOfType.Initialize(shipSeed);
-			firstScriptOfType.SailColors = (sailColor1: sailColor1, sailColor2: sailColor2);
-			firstScriptOfType.Health = hitPointRatio;
+			gameEntity.GetFirstScriptOfType<ShipVisual>().Initialize(shipSeed, "", hitPointRatio, (sailColor1, sailColor2), floatingForceMultiplier);
 			gameEntity.CallScriptCallbacks(registerScriptComponents: true);
 		}
 		foreach (Mesh item3 in gameEntity.WeakEntity.GetAllMeshesWithTag("faction_color"))
@@ -133,14 +74,17 @@ public class VisualShipFactory
 	public static GameEntity CreateVisualShipForCampaign(string shipPrefab, Scene scene, List<ShipVisualSlotInfo> upgrades, int shipSeed, string shipCustomSailPatternId, uint sailColor1 = uint.MaxValue, uint sailColor2 = uint.MaxValue)
 	{
 		Debug.Print("VisualShipFactory.CreateVisualShip: " + shipPrefab);
-		GameEntity gameEntity = GameEntity.CopyFrom(scene, _shipEntityCache[shipPrefab], createPhysics: false, callScriptCallbacks: false);
+		if (!_shipEntityCache.TryGetValue(shipPrefab, out var value))
+		{
+			value = CreateShipEntityForCache(scene, shipPrefab);
+			_shipEntityCache.Add(shipPrefab, value);
+		}
+		GameEntity gameEntity = GameEntity.CopyFrom(scene, value, createPhysics: false, callScriptCallbacks: false);
 		if (gameEntity != null)
 		{
 			RefreshUpgrades(gameEntity.WeakEntity, upgrades);
 		}
-		ShipVisual firstScriptOfType = gameEntity.GetFirstScriptOfType<ShipVisual>();
-		firstScriptOfType.Initialize(shipSeed, shipCustomSailPatternId);
-		firstScriptOfType.SailColors = (sailColor1: sailColor1, sailColor2: sailColor2);
+		gameEntity.GetFirstScriptOfType<ShipVisual>().Initialize(shipSeed, shipCustomSailPatternId, null, (sailColor1, sailColor2));
 		foreach (Mesh item in gameEntity.WeakEntity.GetAllMeshesWithTag("faction_color"))
 		{
 			item.Color = sailColor1;
@@ -224,5 +168,66 @@ public class VisualShipFactory
 			}
 			list.Clear();
 		}
+	}
+
+	private static GameEntity CreateShipEntityForCache(Scene scene, string missionShipObjectPrefab)
+	{
+		GameEntity gameEntity = GameEntity.Instantiate(scene, missionShipObjectPrefab, callScriptCallbacks: false, createPhysics: false, "ship_visual_only");
+		List<GameEntity> list = new List<GameEntity>();
+		foreach (GameEntity child in gameEntity.GetChildren())
+		{
+			if (child.Name.Equals("attachment_machine_holder") || child.Name.Equals("spawn_point_holder") || child.Name.Equals("barrier_holder") || child.Name.Equals("control_point_holder") || child.Name.Equals("knobs_holder") || child.Name.Equals("floater_volume_holder") || child.Name.Equals("torch_holder") || child.HasTag("wetness_decals") || child.Name.Equals("deck_upgrade_holder"))
+			{
+				list.Add(child);
+			}
+			else
+			{
+				if (!child.Name.Equals("oars_holder"))
+				{
+					continue;
+				}
+				foreach (GameEntity item in child.CollectChildrenEntitiesWithTag("Pilot"))
+				{
+					list.Add(item);
+				}
+			}
+		}
+		foreach (GameEntity item2 in list)
+		{
+			if (item2.Parent != null)
+			{
+				item2.Parent.RemoveChild(item2, keepPhysics: false, keepScenePointer: false, callScriptCallbacks: false, 32);
+			}
+		}
+		list.Clear();
+		List<GameEntity> children = new List<GameEntity>();
+		gameEntity.GetChildrenRecursive(ref children);
+		foreach (GameEntity item3 in children)
+		{
+			if (item3.Name.Equals("state1") || item3.Name.Equals("state2") || item3.Name.Equals("state3") || item3.Name.Equals("destroyed") || item3.Name.Contains("knot_point") || item3.HasTag("sail_mesh_free_entity"))
+			{
+				list.Add(item3);
+			}
+		}
+		foreach (GameEntity item4 in list)
+		{
+			item4.Parent.RemoveChild(item4, keepPhysics: false, keepScenePointer: false, callScriptCallbacks: false, 32);
+		}
+		List<GameEntity> children2 = new List<GameEntity>();
+		gameEntity.GetChildrenRecursive(ref children2);
+		foreach (GameEntity item5 in children2)
+		{
+			item5.RemoveAllParticleSystems();
+		}
+		gameEntity.SetVisibilityExcludeParents(visible: false);
+		gameEntity.CreateAndAddScriptComponent(typeof(ShipVisual).Name, callScriptCallbacks: false);
+		foreach (ScriptComponentBehavior item6 in gameEntity.GetScriptComponents().ToList())
+		{
+			if (item6.ScriptComponent.GetName() == "NavalPhysics")
+			{
+				gameEntity.RemoveScriptComponent(item6.ScriptComponent.Pointer, 32);
+			}
+		}
+		return gameEntity;
 	}
 }

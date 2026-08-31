@@ -161,6 +161,28 @@ public static class ViewCreatorManager
 		return new T();
 	}
 
+	public static GlobalLayer CreateGlobalLayer<T>(params object[] parameters) where T : GlobalLayer, new()
+	{
+		if (_actualViewTypes.TryGetValue(typeof(T), out var value))
+		{
+			MBList<Assembly> activeGameAssemblies = ModuleHelper.GetActiveGameAssemblies();
+			Type type = null;
+			for (int num = value.Count - 1; num >= 0; num--)
+			{
+				if (activeGameAssemblies.Contains(value[num].Assembly))
+				{
+					type = value[num];
+					break;
+				}
+			}
+			if (type != null)
+			{
+				return Activator.CreateInstance(type, parameters) as GlobalLayer;
+			}
+		}
+		return new T();
+	}
+
 	public static ScreenBase CreateScreenView<T>(params object[] parameters) where T : ScreenBase
 	{
 		Type type = typeof(T);
@@ -220,7 +242,7 @@ public static class ViewCreatorManager
 	{
 		foreach (Type item in assembly.GetTypesSafe())
 		{
-			if (!typeof(MissionView).IsAssignableFrom(item) && !typeof(ScreenBase).IsAssignableFrom(item))
+			if (!typeof(MissionView).IsAssignableFrom(item) && !typeof(ScreenBase).IsAssignableFrom(item) && !typeof(GlobalLayer).IsAssignableFrom(item))
 			{
 				continue;
 			}

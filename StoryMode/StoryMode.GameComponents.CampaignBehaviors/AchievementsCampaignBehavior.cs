@@ -170,7 +170,7 @@ public class AchievementsCampaignBehavior : CampaignBehaviorBase
 
 	public override void RegisterEvents()
 	{
-		CampaignEvents.OnCharacterCreationIsOverEvent.AddNonSerializedListener(this, CacheHighestSkillValue);
+		CampaignEvents.OnCharacterCreationIsOverEvent.AddNonSerializedListener(this, OnCharacterCreationOver);
 		CampaignEvents.WorkshopOwnerChangedEvent.AddNonSerializedListener(this, ProgressOwnedWorkshopCount);
 		CampaignEvents.MobilePartyCreated.AddNonSerializedListener(this, ProgressOwnedCaravanCount);
 		CampaignEvents.OnSettlementOwnerChangedEvent.AddNonSerializedListener(this, OnSettlementOwnerChanged);
@@ -449,6 +449,14 @@ public class AchievementsCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
+	private void OnCharacterCreationOver(int index)
+	{
+		if (index == 1)
+		{
+			CacheHighestSkillValue();
+		}
+	}
+
 	private void CacheHighestSkillValue()
 	{
 		int num = 0;
@@ -529,7 +537,7 @@ public class AchievementsCampaignBehavior : CampaignBehaviorBase
 
 	private void CheckBestServedCold(Hero victim, Hero killer, KillCharacterAction.KillCharacterActionDetail detail)
 	{
-		if (killer != Hero.MainHero || (detail != KillCharacterAction.KillCharacterActionDetail.Executed && detail != KillCharacterAction.KillCharacterActionDetail.ExecutionAfterMapEvent && detail != KillCharacterAction.KillCharacterActionDetail.Murdered && detail != KillCharacterAction.KillCharacterActionDetail.DiedInBattle && detail != KillCharacterAction.KillCharacterActionDetail.WoundedInBattle))
+		if (killer != Hero.MainHero || (detail != KillCharacterAction.KillCharacterActionDetail.Executed && detail != KillCharacterAction.KillCharacterActionDetail.Murdered && detail != KillCharacterAction.KillCharacterActionDetail.DiedInBattle && detail != KillCharacterAction.KillCharacterActionDetail.WoundedInBattle))
 		{
 			return;
 		}
@@ -685,7 +693,7 @@ public class AchievementsCampaignBehavior : CampaignBehaviorBase
 
 	private void ProgressImperialBarbarianVictory(QuestBase quest, QuestBase.QuestCompleteDetails detail)
 	{
-		if (quest.IsSpecialQuest && quest.GetType() == typeof(DefeatTheConspiracyQuestBehavior.DefeatTheConspiracyQuest))
+		if (quest.IsSpecialQuest && detail == QuestBase.QuestCompleteDetails.Success && quest.GetType() == typeof(DefeatTheConspiracyQuestBehavior.DefeatTheConspiracyQuest))
 		{
 			if (StoryModeManager.Current.MainStoryLine.MainStoryLineSide == MainStoryLineSide.CreateAntiImperialKingdom || StoryModeManager.Current.MainStoryLine.MainStoryLineSide == MainStoryLineSide.SupportAntiImperialKingdom)
 			{
@@ -779,7 +787,7 @@ public class AchievementsCampaignBehavior : CampaignBehaviorBase
 
 	private void CheckExecutedLordRelation(Hero victim, Hero killer, KillCharacterAction.KillCharacterActionDetail detail)
 	{
-		if (((killer == Hero.MainHero && detail == KillCharacterAction.KillCharacterActionDetail.Executed) || detail == KillCharacterAction.KillCharacterActionDetail.ExecutionAfterMapEvent) && (int)victim.GetRelationWithPlayer() <= -100)
+		if (killer == Hero.MainHero && detail == KillCharacterAction.KillCharacterActionDetail.Executed && (int)victim.GetRelationWithPlayer() <= -100)
 		{
 			SetStatInternal("ExecutedLordRelation100", 1);
 		}

@@ -132,6 +132,12 @@ public class MapNotificationVM : ViewModel
 		_itemConstructors.Add(typeof(AcceptCallToWarOfferMapNotification), typeof(AcceptCallToWarOfferNotificationItemVM));
 		_itemConstructors.Add(typeof(ProposeCallToWarOfferMapNotification), typeof(ProposeCallToWarOfferNotificationItemVM));
 		_itemConstructors.Add(typeof(TributeFinishedMapNotification), typeof(TributeFinishedMapNotificationVM));
+		_itemConstructors.Add(typeof(BloodFeudEndedMapNotification), typeof(BloodFeudEndedMapNotificationItemVM));
+		_itemConstructors.Add(typeof(BloodFeudClanMemberCapturedMapNotification), typeof(BloodFeudClanMemberCapturedMapNotificationItemVM));
+		_itemConstructors.Add(typeof(BloodFeudClanMemberGotExecutedMapNotification), typeof(BloodFeudClanMemberGotExecutedMapNotificationItemVM));
+		_itemConstructors.Add(typeof(BloodFeudClanMemberExecuteCancelledMapNotification), typeof(BloodFeudClanMemberReleasedMapNotificationItemVM));
+		_itemConstructors.Add(typeof(BloodFeudClanMemberExecutedLordMapNotification), typeof(BloodFeudClanMemberExecutedLordMapNotificationItemVM));
+		_itemConstructors.Add(typeof(BloodFeudStartedMapNotification), typeof(BloodFeudStartedMapNotificationItemVM));
 	}
 
 	public void RegisterMapNotificationType(Type data, Type item)

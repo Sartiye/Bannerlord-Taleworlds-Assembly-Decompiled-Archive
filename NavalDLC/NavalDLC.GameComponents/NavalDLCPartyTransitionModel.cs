@@ -1,3 +1,4 @@
+using Helpers;
 using NavalDLC.CharacterDevelopment;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
@@ -26,21 +27,21 @@ public class NavalDLCPartyTransitionModel : PartyTransitionModel
 		{
 			return CampaignTime.Hours(48f);
 		}
-		float distance;
-		if (mobileParty.CurrentSettlement == null)
+		float num = float.MaxValue;
+		if (mobileParty.CurrentSettlement != null)
 		{
 			MapDistanceModel mapDistanceModel = Campaign.Current.Models.MapDistanceModel;
-			CampaignVec2 toPoint = mobileParty.Anchor.GetInteractionPosition(mobileParty);
-			distance = mapDistanceModel.GetDistance(mobileParty, in toPoint, MobileParty.NavigationType.Default, out var _);
+			Settlement currentSettlement = mobileParty.CurrentSettlement;
+			CampaignVec2 toPoint = mobileParty.Anchor.Position;
+			num = mapDistanceModel.GetDistance(currentSettlement, in toPoint, isFromPort: true, MobileParty.NavigationType.Naval);
 		}
-		else
+		else if (mobileParty.EndPositionForNavigationTransition.IsValid())
 		{
 			MapDistanceModel mapDistanceModel2 = Campaign.Current.Models.MapDistanceModel;
-			Settlement currentSettlement = mobileParty.CurrentSettlement;
-			CampaignVec2 toPoint2 = mobileParty.Anchor.Position;
-			distance = mapDistanceModel2.GetDistance(currentSettlement, in toPoint2, isFromPort: true, MobileParty.NavigationType.Naval);
+			CampaignVec2 toPoint = mobileParty.Anchor.Position;
+			CampaignVec2 toPoint2 = mobileParty.EndPositionForNavigationTransition;
+			num = mapDistanceModel2.GetDistance(in toPoint, in toPoint2, MobileParty.NavigationType.Naval, out var _);
 		}
-		float num = distance;
 		if (num < 10f)
 		{
 			return CampaignTime.Zero;
@@ -50,42 +51,48 @@ public class NavalDLCPartyTransitionModel : PartyTransitionModel
 
 	public override CampaignTime GetTransitionTimeDisembarking(MobileParty mobileParty)
 	{
-		CampaignTime result = CampaignTime.Zero;
-		if (!mobileParty.IsInRaftState)
+		if (mobileParty.IsInNavalAutoTravel)
 		{
-			result = CampaignTime.Hours(2f);
-			if (mobileParty.HasPerk(NavalPerks.Shipmaster.Unflinching))
-			{
-				float num = NavalPerks.Shipmaster.Unflinching.PrimaryBonus * 100f;
-				float num2 = (0f - num * 100f) / (100f + num);
-				result = CampaignTime.Hours((float)result.ToHours * num2);
-			}
+			return CampaignTime.Zero;
 		}
-		return result;
+		ExplainedNumber stat = new ExplainedNumber(2f);
+		PerkHelper.AddPerkBonusForParty(NavalPerks.Shipmaster.Unflinching, mobileParty, isPrimaryBonus: true, ref stat);
+		return CampaignTime.Hours(stat.ResultNumber);
 	}
 
 	public override CampaignTime GetFleetTravelTimeToSettlement(MobileParty mobileParty, Settlement targetSettlement)
 	{
 		AnchorPoint anchor = mobileParty.Anchor;
-		if (anchor.Position.IsValid() || anchor.IsMovingToPoint)
+		float num = 0f;
+		float distance = 0f;
+		if (anchor.IsMovingToPoint)
 		{
-			float currentTravelTime = (anchor.IsMovingToPoint ? ((float)(anchor.ArrivalTime - CampaignTime.Now).ToHours) : 0f);
-			MapDistanceModel mapDistanceModel = Campaign.Current.Models.MapDistanceModel;
-			CampaignVec2 toPoint = (anchor.Position.IsValid() ? anchor.Position : anchor.TargetPosition);
-			float distance = mapDistanceModel.GetDistance(targetSettlement, in toPoint, isFromPort: true, MobileParty.NavigationType.Naval);
-			return CampaignTime.Hours(GetAnchorReachDurationInHours(distance, currentTravelTime));
+			num = (float)(anchor.ArrivalTime - CampaignTime.Now).ToHours;
+			if (!anchor.IsTargetingSettlement(targetSettlement))
+			{
+				MapDistanceModel mapDistanceModel = Campaign.Current.Models.MapDistanceModel;
+				CampaignVec2 toPoint = anchor.GetTargetPosition();
+				distance = mapDistanceModel.GetDistance(targetSettlement, in toPoint, isFromPort: true, MobileParty.NavigationType.Naval);
+			}
 		}
-		CampaignTime result = CampaignTime.Hours(48f);
-		if (mobileParty.HasPerk(NavalPerks.Shipmaster.ShoreMaster))
+		else
 		{
-			result = CampaignTime.Hours((float)result.ToHours * NavalPerks.Shipmaster.ShoreMaster.PrimaryBonus * -1f);
+			if (!anchor.Position.IsValid())
+			{
+				return CampaignTime.Hours(48f);
+			}
+			MapDistanceModel mapDistanceModel2 = Campaign.Current.Models.MapDistanceModel;
+			CampaignVec2 toPoint = anchor.Position;
+			distance = mapDistanceModel2.GetDistance(targetSettlement, in toPoint, isFromPort: true, MobileParty.NavigationType.Naval);
 		}
-		return result;
+		ExplainedNumber stat = new ExplainedNumber(GetAnchorReachDurationInHours(distance));
+		PerkHelper.AddPerkBonusForParty(NavalPerks.Shipmaster.ShoreMaster, mobileParty, isPrimaryBonus: true, ref stat);
+		return CampaignTime.Hours(MBMath.ClampFloat(stat.ResultNumber + num, 3f, 48f));
 	}
 
-	private float GetAnchorReachDurationInHours(float distance, float currentTravelTime = 0f)
+	private float GetAnchorReachDurationInHours(float distance)
 	{
 		distance = MathF.Pow(distance, 0.95f);
-		return MBMath.ClampFloat(distance / 35f + currentTravelTime, 3f, 48f);
+		return MBMath.ClampFloat(distance / 35f, 3f, 48f);
 	}
 }

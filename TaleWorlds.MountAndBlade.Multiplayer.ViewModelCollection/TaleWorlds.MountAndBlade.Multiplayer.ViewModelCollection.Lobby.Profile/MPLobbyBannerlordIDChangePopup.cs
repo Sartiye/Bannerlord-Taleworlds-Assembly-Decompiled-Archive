@@ -280,9 +280,8 @@ public class MPLobbyBannerlordIDChangePopup : ViewModel
 	{
 		if (!HasRequestSent)
 		{
-			if (await IsInputValid())
+			if (await IsInputValid() && await NetworkMain.GameClient.ChangeUsername(BannerlordIDInputText))
 			{
-				NetworkMain.GameClient.ChangeUsername(BannerlordIDInputText);
 				HasRequestSent = true;
 				ErrorText = "";
 			}

@@ -5,6 +5,7 @@ using NavalDLC.HotKeyCategories;
 using NavalDLC.ViewModelCollection.Port.PortScreenHandlers;
 using TaleWorlds.CampaignSystem.GameState;
 using TaleWorlds.CampaignSystem.Naval;
+using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Input;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Information;
@@ -28,6 +29,12 @@ public class PortVM : ViewModel
 
 	private readonly Action _onUpgradeSlotSelected;
 
+	private PortShipStashPopupVM _shipSelectionPopup;
+
+	private readonly bool _isAtPortSettlement;
+
+	private readonly Settlement _portSettlement;
+
 	private readonly MBList<ShipItemVM> _allShips;
 
 	private List<PortChangeInfo> _cachedChanges;
@@ -42,6 +49,12 @@ public class PortVM : ViewModel
 
 	private PortActionVM _repairAllAction;
 
+	private PortActionVM _stashShipAction;
+
+	private PortActionVM _viewStashedShipsAction;
+
+	private PortActionVM _retrieveStashedShipsAction;
+
 	private bool _isConfirmDisabled;
 
 	private bool _canUseKeyboardInputs;
@@ -49,6 +62,8 @@ public class PortVM : ViewModel
 	private bool _canUseGamepadInputs;
 
 	private bool _isControllingCamera;
+
+	private bool _showPortScreenGamepadInputs;
 
 	private bool _canToggleCamera = true;
 
@@ -217,6 +232,74 @@ public class PortVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public PortActionVM StashShipAction
+	{
+		get
+		{
+			return _stashShipAction;
+		}
+		set
+		{
+			if (value != _stashShipAction)
+			{
+				_stashShipAction = value;
+				OnPropertyChangedWithValue(value, "StashShipAction");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public PortActionVM ViewStashedShipsAction
+	{
+		get
+		{
+			return _viewStashedShipsAction;
+		}
+		set
+		{
+			if (value != _viewStashedShipsAction)
+			{
+				_viewStashedShipsAction = value;
+				OnPropertyChangedWithValue(value, "ViewStashedShipsAction");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public PortActionVM RetrieveStashedShipsAction
+	{
+		get
+		{
+			return _retrieveStashedShipsAction;
+		}
+		set
+		{
+			if (value != _retrieveStashedShipsAction)
+			{
+				_retrieveStashedShipsAction = value;
+				OnPropertyChangedWithValue(value, "RetrieveStashedShipsAction");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public PortShipStashPopupVM ShipSelectionPopup
+	{
+		get
+		{
+			return _shipSelectionPopup;
+		}
+		set
+		{
+			if (value != _shipSelectionPopup)
+			{
+				_shipSelectionPopup = value;
+				OnPropertyChangedWithValue(value, "ShipSelectionPopup");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public bool CanUseKeyboardInputs
 	{
 		get
@@ -246,6 +329,23 @@ public class PortVM : ViewModel
 			{
 				_canUseGamepadInputs = value;
 				OnPropertyChangedWithValue(value, "CanUseGamepadInputs");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool ShowPortScreenGamepadInputs
+	{
+		get
+		{
+			return _showPortScreenGamepadInputs;
+		}
+		set
+		{
+			if (value != _showPortScreenGamepadInputs)
+			{
+				_showPortScreenGamepadInputs = value;
+				OnPropertyChangedWithValue(value, "ShowPortScreenGamepadInputs");
 			}
 		}
 	}
@@ -810,7 +910,7 @@ public class PortVM : ViewModel
 		}
 	}
 
-	public PortVM(PortScreenHandler portScreenHandler, PortScreenModes portScreenMode, Action<Ship> onShipSelected, Action onRostersRefreshed, Action<ShipItemVM> refreshShipVisual, Action onUpgradeSlotSelected)
+	public PortVM(PortScreenHandler portScreenHandler, PortScreenModes portScreenMode, Action<Ship> onShipSelected, Action onRostersRefreshed, Action<ShipItemVM> refreshShipVisual, Action onUpgradeSlotSelected, bool isAtPortSettlement = false, Settlement portSettlement = null)
 	{
 		_portScreenHandler = portScreenHandler;
 		_portScreenMode = portScreenMode;
@@ -818,6 +918,8 @@ public class PortVM : ViewModel
 		_onRostersRefreshed = onRostersRefreshed;
 		_refreshShipVisual = refreshShipVisual;
 		_onUpgradeSlotSelected = onUpgradeSlotSelected;
+		_isAtPortSettlement = isAtPortSettlement;
+		_portSettlement = portSettlement;
 		ShipItemVM.OnSelected += OnShipSelected;
 		ShipItemVM.OnRenamed += OnShipRenamed;
 		ShipItemVM.OnNameReset += OnShipNameReset;
@@ -837,9 +939,16 @@ public class PortVM : ViewModel
 		{
 			_allShips.Add(new ShipItemVM(_portScreenHandler.RightShips[j]));
 		}
-		for (int k = 0; k < _allShips.Count; k++)
+		if (_isAtPortSettlement)
 		{
-			_allShips[k].RefreshProperties(_portScreenHandler);
+			for (int k = 0; k < Settlement.CurrentSettlement.ShipStash.Count; k++)
+			{
+				_allShips.Add(new ShipItemVM(Settlement.CurrentSettlement.ShipStash[k]));
+			}
+		}
+		for (int l = 0; l < _allShips.Count; l++)
+		{
+			_allShips[l].RefreshProperties(_portScreenHandler);
 		}
 		_cachedChanges = new List<PortChangeInfo>();
 		CanConfirmHint = new HintViewModel();
@@ -851,6 +960,9 @@ public class PortVM : ViewModel
 		RepairAction = new PortActionVM(ExecuteRepair);
 		RepairAllAction = new PortActionVM(ExecuteRepairAll);
 		SendToClanAction = new PortActionVM(ExecuteSendToClan);
+		ShipSelectionPopup = new PortShipStashPopupVM();
+		StashShipAction = new PortActionVM(ExecuteSendToStash);
+		ViewStashedShipsAction = new PortActionVM(ExecuteOpenViewStashPopup);
 		GamepadCameraControlKeys = new MBBindingList<InputKeyItemVM>();
 		KeyboardMoveCameraInputKeys = new MBBindingList<InputKeyItemVM>();
 		RefreshRosters();
@@ -861,8 +973,8 @@ public class PortVM : ViewModel
 	public override void RefreshValues()
 	{
 		base.RefreshValues();
-		CancelText = new TextObject("{=3CpNUnVl}Cancel").ToString();
-		ConfirmText = new TextObject("{=5Unqsx3N}Confirm").ToString();
+		CancelText = GameTexts.FindText("str_cancel").ToString();
+		ConfirmText = GameTexts.FindText("str_confirm").ToString();
 		LeftRoster.RefreshValues();
 		RightRoster.RefreshValues();
 		KeyboardMoveCameraText = GameTexts.FindText("str_key_name", typeof(PortHotKeyCategory).Name + "_MovementAxisX").ToString();
@@ -896,6 +1008,7 @@ public class PortVM : ViewModel
 		ShipFigureheadSlotVM.GetShipOfFigurehead -= GetShipOfFigurehead;
 		ShipFigureheadSlotVM.GetIsRightSide -= GetIsShipRightSide;
 		ShipUpgradePieceVM.GetUpgradePrice -= GetUpgradePrice;
+		ShipSelectionPopup?.OnFinalize();
 		DoneInputKey?.OnFinalize();
 		CancelInputKey?.OnFinalize();
 		ResetInputKey?.OnFinalize();
@@ -1025,7 +1138,7 @@ public class PortVM : ViewModel
 		}
 		else
 		{
-			Debug.FailedAssert("There are no ships on either roster!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\Port\\PortVM.cs", "SelectFirstAvailableRosterAndShip", 280);
+			Debug.FailedAssert("There are no ships on either roster!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\Port\\PortVM.cs", "SelectFirstAvailableRosterAndShip", 306);
 		}
 	}
 
@@ -1202,6 +1315,35 @@ public class PortVM : ViewModel
 		SelectClosestShipFromActiveRoster(previousSelectedIndex);
 	}
 
+	public void ExecuteSendToStash()
+	{
+		int previousSelectedIndex = GetSelectedRoster().Ships.IndexOf(SelectedShip);
+		_portScreenHandler.OnSendToStash(SelectedShip.Ship);
+		UpdateTotalGoldCost();
+		RefreshRosters();
+		SelectClosestShipFromActiveRoster(previousSelectedIndex);
+	}
+
+	public void ExecuteOpenViewStashPopup()
+	{
+		ShipSelectionPopup.Open(_portSettlement, _portScreenHandler, GetShipItemVM, OnViewStashPopupClosed);
+	}
+
+	private ShipItemVM GetShipItemVM(Ship ship)
+	{
+		return AllShips.FirstOrDefault((ShipItemVM x) => x.Ship == ship);
+	}
+
+	private void OnViewStashPopupClosed(List<Ship> takenShips)
+	{
+		foreach (Ship takenShip in takenShips)
+		{
+			_portScreenHandler.OnRetrieveFromStash(takenShip);
+		}
+		UpdateTotalGoldCost();
+		RefreshRosters();
+	}
+
 	public void ExecuteDeselectSlot()
 	{
 		SelectedUpgradeSlot?.ExecuteDeselect();
@@ -1217,7 +1359,7 @@ public class PortVM : ViewModel
 		int num = selectedRoster.Ships.IndexOf(SelectedShip);
 		if (num == -1)
 		{
-			Debug.FailedAssert("Selected ship not found in selected roster!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\Port\\PortVM.cs", "ExecuteSelectPreviousShip", 552);
+			Debug.FailedAssert("Selected ship not found in selected roster!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\Port\\PortVM.cs", "ExecuteSelectPreviousShip", 617);
 			selectedRoster.Ships[0].ExecuteSelect();
 		}
 		else
@@ -1242,7 +1384,7 @@ public class PortVM : ViewModel
 		int num = selectedRoster.Ships.IndexOf(SelectedShip);
 		if (num == -1)
 		{
-			Debug.FailedAssert("Selected ship not found in selected roster!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\Port\\PortVM.cs", "ExecuteSelectNextShip", 581);
+			Debug.FailedAssert("Selected ship not found in selected roster!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\Port\\PortVM.cs", "ExecuteSelectNextShip", 646);
 			selectedRoster.Ships[0].ExecuteSelect();
 		}
 		else
@@ -1267,6 +1409,7 @@ public class PortVM : ViewModel
 			{
 				LeftRoster.Ships[0].ExecuteSelect();
 			}
+			RefreshActionAvailabilities();
 		}
 	}
 
@@ -1280,6 +1423,7 @@ public class PortVM : ViewModel
 			{
 				RightRoster.Ships[0].ExecuteSelect();
 			}
+			RefreshActionAvailabilities();
 		}
 	}
 
@@ -1300,7 +1444,7 @@ public class PortVM : ViewModel
 	{
 		if (ship == null || string.IsNullOrEmpty(shipSlotTag))
 		{
-			Debug.FailedAssert("Ship piece selected in an invalid state!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\Port\\PortVM.cs", "OnShipPieceSelected", 647);
+			Debug.FailedAssert("Ship piece selected in an invalid state!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\Port\\PortVM.cs", "OnShipPieceSelected", 716);
 		}
 		else if (pieceVM == null || !pieceVM.IsDisabled)
 		{
@@ -1489,7 +1633,7 @@ public class PortVM : ViewModel
 			}
 			if (shipItemVM2 == null)
 			{
-				Debug.FailedAssert($"Unable to find vm for ship: {ship2}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\Port\\PortVM.cs", "GetRosterDifferences", 870);
+				Debug.FailedAssert($"Unable to find vm for ship: {ship2}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\Port\\PortVM.cs", "GetRosterDifferences", 939);
 			}
 			else
 			{
@@ -1525,6 +1669,12 @@ public class PortVM : ViewModel
 			PortActionInfo canSendToClan = _portScreenHandler.GetCanSendToClan(SelectedShip.Ship);
 			SendToClanAction.RefreshWith(canSendToClan);
 			SendToClanAction.AdditionalInfo = string.Empty;
+			PortActionInfo canStashShip = _portScreenHandler.GetCanStashShip(SelectedShip.Ship);
+			StashShipAction.RefreshWith(canStashShip);
+			StashShipAction.AdditionalInfo = string.Empty;
+			PortActionInfo canViewStash = _portScreenHandler.GetCanViewStash(RightRoster.IsSelected);
+			ViewStashedShipsAction.RefreshWith(canViewStash);
+			ViewStashedShipsAction.AdditionalInfo = string.Empty;
 		}
 	}
 
@@ -1545,11 +1695,13 @@ public class PortVM : ViewModel
 	public void SetCancelInputKey(HotKey hotKey)
 	{
 		CancelInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
+		ShipSelectionPopup.SetCancelInputKey(hotKey);
 	}
 
 	public void SetDoneInputKey(HotKey hotKey)
 	{
 		DoneInputKey = InputKeyItemVM.CreateFromHotKey(hotKey, isConsoleOnly: true);
+		ShipSelectionPopup.SetDoneInputKey(hotKey);
 	}
 
 	public void SetSelectPreviousShipInputKey(HotKey hotKey)

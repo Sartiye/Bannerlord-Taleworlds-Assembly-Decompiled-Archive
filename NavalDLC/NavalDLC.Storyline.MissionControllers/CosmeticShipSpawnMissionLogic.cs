@@ -45,7 +45,7 @@ public class CosmeticShipSpawnMissionLogic : MissionLogic
 		MissionShipObject @object = MBObjectManager.Instance.GetObject<MissionShipObject>(shipHull.MissionShipObjectId);
 		uint sailColor = 4291609515u;
 		uint sailColor2 = 4291609515u;
-		GameEntity gameEntity = VisualShipFactory.CreateVisualShip(@object.Prefab, base.Mission.Scene, new List<ShipVisualSlotInfo>(), MBRandom.RandomInt(), 1f, sailColor, sailColor2, createPhysics: true);
+		GameEntity gameEntity = VisualShipFactory.CreateVisualShip(@object.Prefab, base.Mission.Scene, new List<ShipVisualSlotInfo>(), MBRandom.RandomInt(), 1f, sailColor, sailColor2, createPhysics: true, shipHull.FloatingForceMultiplier);
 		MatrixFrame frame = _cosmeticShipSpawnPointEntities.Dequeue().GetGlobalFrame();
 		frame.rotation.MakeUnit();
 		float waterLevelAtPosition = base.Mission.Scene.GetWaterLevelAtPosition(frame.origin.AsVec2, useWaterRenderer: true, checkWaterBodyEntities: true);

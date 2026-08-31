@@ -138,6 +138,23 @@ public class SpawnedItemEntity : UsableMissionObject
 		SpawnFlags = spawnFlags;
 		_fakeSimulationVelocity = fakeSimulationVelocity;
 		SpawnedOnACorpse = spawnedOnACorpse;
+		if (SpawnFlags.HasAnyFlag(Mission.WeaponSpawnFlags.WithPhysics))
+		{
+			_disablePhysicsTimer = new Timer(0f, 10f);
+		}
+		if (Mission.Current.IsLoadingFinished)
+		{
+			InitializeTimers();
+		}
+	}
+
+	public override void AfterMissionStart()
+	{
+		InitializeTimers();
+	}
+
+	private void InitializeTimers()
+	{
 		if (HasLifeTime)
 		{
 			float duration = 0f;
@@ -164,9 +181,9 @@ public class SpawnedItemEntity : UsableMissionObject
 		{
 			_deletionTimer = new Timer(Mission.Current.CurrentTime, float.MaxValue);
 		}
-		if (spawnFlags.HasAnyFlag(Mission.WeaponSpawnFlags.WithPhysics))
+		if (_disablePhysicsTimer != null)
 		{
-			_disablePhysicsTimer = new Timer(Mission.Current.CurrentTime, 10f);
+			_disablePhysicsTimer.Reset(Mission.Current.CurrentTime, 10f);
 		}
 	}
 
@@ -665,7 +682,7 @@ public class SpawnedItemEntity : UsableMissionObject
 				num3++;
 				break;
 			default:
-				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Usables\\SpawnedItemEntity.cs", "OnPhysicsCollision", 804);
+				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Usables\\SpawnedItemEntity.cs", "OnPhysicsCollision", 823);
 				break;
 			}
 		}

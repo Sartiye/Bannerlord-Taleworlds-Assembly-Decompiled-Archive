@@ -64,12 +64,11 @@ public class DefaultCutscenesCampaignBehavior : CampaignBehaviorBase
 					}
 					break;
 				case KillCharacterAction.KillCharacterActionDetail.Executed:
-				case KillCharacterAction.KillCharacterActionDetail.ExecutionAfterMapEvent:
 				{
 					TextObject to = new TextObject("{=uYjEknNX}{VICTIM.NAME}'s execution by {EXECUTER.NAME}");
 					to.SetCharacterProperties("VICTIM", victim.CharacterObject);
 					to.SetCharacterProperties("EXECUTER", killer.CharacterObject);
-					sceneNotificationData = HeroExecutionSceneNotificationData.CreateForInformingPlayer(killer, victim, SceneNotificationData.RelevantContextType.Map);
+					sceneNotificationData = HeroExecutionSceneNotificationData.CreateForInformingPlayer(killer, victim, CampaignTime.Now, SceneNotificationData.RelevantContextType.Map, null, isVisualOnly: false, useExecutioner: false, shouldAutoConfirm: true);
 					break;
 				}
 				}

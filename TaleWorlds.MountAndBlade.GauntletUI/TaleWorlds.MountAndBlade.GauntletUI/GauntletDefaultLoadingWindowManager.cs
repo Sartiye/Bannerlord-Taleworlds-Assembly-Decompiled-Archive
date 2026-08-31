@@ -10,8 +10,6 @@ namespace TaleWorlds.MountAndBlade.GauntletUI;
 
 public class GauntletDefaultLoadingWindowManager : GlobalLayer, ILoadingWindowManager
 {
-	private GauntletMovieIdentifier _movie;
-
 	private GauntletLayer _gauntletLayer;
 
 	private LoadingWindowViewModel _loadingWindowViewModel;
@@ -36,7 +34,7 @@ public class GauntletDefaultLoadingWindowManager : GlobalLayer, ILoadingWindowMa
 		_loadingWindowViewModel.IsNavalDLCEnabled = ModuleHelper.IsModuleActive("NavalDLC");
 		bool shouldClear = false;
 		_gauntletLayer = new GauntletLayer("LoadingWindow", 115003, shouldClear);
-		_movie = _gauntletLayer.LoadMovie("LoadingWindow", _loadingWindowViewModel);
+		_gauntletLayer.LoadMovie("LoadingWindow", _loadingWindowViewModel);
 		base.Layer = _gauntletLayer;
 		ScreenManager.AddGlobalLayer(this, isFocusable: false);
 	}
@@ -45,11 +43,10 @@ public class GauntletDefaultLoadingWindowManager : GlobalLayer, ILoadingWindowMa
 	{
 		if (_gauntletLayer == null)
 		{
-			Debug.FailedAssert("Trying to destroy loading window but it was not initialized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletDefaultLoadingWindowManager.cs", "Destroy", 64);
+			Debug.FailedAssert("Trying to destroy loading window but it was not initialized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletDefaultLoadingWindowManager.cs", "Destroy", 63);
 			return;
 		}
 		_loadingWindowViewModel?.OnFinalize();
-		_gauntletLayer?.ReleaseMovie(_movie);
 		ScreenManager.RemoveGlobalLayer(this);
 	}
 

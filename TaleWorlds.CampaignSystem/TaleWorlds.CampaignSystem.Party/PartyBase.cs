@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
+using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.MapEvents;
@@ -301,7 +302,7 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 			}
 			if (value != null && IsMobile && MapEvent != null && MapEvent.DefenderSide.LeaderParty == this)
 			{
-				Debug.FailedAssert($"Double MapEvent For {Name}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyBase.cs", "MapEventSide", 242);
+				Debug.FailedAssert($"Double MapEvent For {Name}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyBase.cs", "MapEventSide", 247);
 			}
 			if (_mapEventSide != null)
 			{
@@ -338,6 +339,18 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 				return BattleSideEnum.Defender;
 			}
 			return BattleSideEnum.Attacker;
+		}
+	}
+
+	BattleEnvironment IBattleCombatant.CurrentBattleEnvironment
+	{
+		get
+		{
+			if (!IsMobile || !MobileParty.IsCurrentlyAtSea)
+			{
+				return BattleEnvironment.Land;
+			}
+			return BattleEnvironment.Naval;
 		}
 	}
 
@@ -625,6 +638,10 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 			float length = (mobileParty.Position.ToVec2() - targetPoint.ToVec2()).Length;
 			flag = (mobileParty.BesiegedSettlement != null && mobileParty.BesiegedSettlement == mobileParty.TargetSettlement) || length < neededMaximumDistanceForEncountering;
 		}
+		if (flag && MobileParty.MainParty.ShortTermTargetParty?.Party == this && PlayerEncounter.Current != null && PlayerEncounter.EncounteredParty == this && PlayerEncounter.Current.EncounterState == PlayerEncounterState.Begin)
+		{
+			flag = false;
+		}
 		return flag;
 	}
 
@@ -687,6 +704,11 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 		SetVisualAsDirty();
 	}
 
+	public int GetNumberOfMissionReadyTroops()
+	{
+		return NumberOfHealthyMembers;
+	}
+
 	int IBattleCombatant.GetTacticsSkillAmount()
 	{
 		if (LeaderHero != null)
@@ -694,11 +716,6 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 			return LeaderHero.GetSkillValue(DefaultSkills.Tactics);
 		}
 		return 0;
-	}
-
-	public int GetNumberOfMissionReadyTroops()
-	{
-		return NumberOfHealthyMembers;
 	}
 
 	public bool IsUnderPlayersCommand(BattleSideEnum playerSide)
@@ -802,7 +819,7 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 	{
 		if (tier < 0)
 		{
-			Debug.FailedAssert("Requested men count for negative tier.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyBase.cs", "GetNumberOfHealthyMenOfTier", 655);
+			Debug.FailedAssert("Requested men count for negative tier.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyBase.cs", "GetNumberOfHealthyMenOfTier", 675);
 			return 0;
 		}
 		bool flag = false;
@@ -1095,18 +1112,16 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 
 	private static bool CalculateSettlementInspected(Vec2 fromPosition, IMapPoint mapPoint, float mainPartySeeingRange = 0f)
 	{
-		float num = 1.5f;
-		return CalculateVisibilityRangeOfMapPoint(fromPosition, mapPoint, mainPartySeeingRange) <= num;
+		return CalculateVisibilityRangeOfMapPoint(fromPosition, mapPoint, mainPartySeeingRange) <= 1.5f;
 	}
 
 	private static float CalculateVisibilityRangeOfMapPoint(Vec2 fromPosition, IMapPoint mapPoint, float mainPartySeeingRange)
 	{
-		MobileParty mainParty = MobileParty.MainParty;
 		Vec2 vec = fromPosition - mapPoint.Position.ToVec2();
 		float num = mainPartySeeingRange;
-		if (mainPartySeeingRange == 0f)
+		if (mainPartySeeingRange.ApproximatelyEqualsTo(0f))
 		{
-			num = mainParty.SeeingRange;
+			num = MobileParty.MainParty.SeeingRange;
 		}
 		return vec.Length / num;
 	}

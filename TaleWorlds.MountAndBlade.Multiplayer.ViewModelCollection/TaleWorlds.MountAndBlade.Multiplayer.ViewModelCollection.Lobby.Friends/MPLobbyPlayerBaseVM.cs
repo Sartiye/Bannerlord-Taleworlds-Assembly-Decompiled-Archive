@@ -48,6 +48,8 @@ public class MPLobbyPlayerBaseVM : ViewModel
 
 	private const int DefaultBannerBackgroundColorId = 99;
 
+	private CustomBattleId? _spectatableCustomBattleId;
+
 	private PlayerId _providedID;
 
 	private readonly string _forcedName = string.Empty;
@@ -201,6 +203,8 @@ public class MPLobbyPlayerBaseVM : ViewModel
 	private MBBindingList<MPLobbyPlayerStatItemVM> _displayedStats;
 
 	private MBBindingList<MPLobbyGameTypeVM> _gameTypes;
+
+	private bool _canSpectate;
 
 	public OnlineStatus CurrentOnlineStatus { get; private set; }
 
@@ -381,6 +385,23 @@ public class MPLobbyPlayerBaseVM : ViewModel
 			{
 				_canInviteToParty = value;
 				OnPropertyChangedWithValue(value, "CanInviteToParty");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool CanSpectate
+	{
+		get
+		{
+			return _canSpectate;
+		}
+		set
+		{
+			if (value != _canSpectate)
+			{
+				_canSpectate = value;
+				OnPropertyChangedWithValue(value, "CanSpectate");
 			}
 		}
 	}
@@ -1409,6 +1430,8 @@ public class MPLobbyPlayerBaseVM : ViewModel
 				State = playerData.PlayerState;
 				StateText = GameTexts.FindText("str_multiplayer_lobby_state", State.ToString()).ToString();
 			}
+			_spectatableCustomBattleId = playerData.SpectatableCustomBattleId;
+			CanSpectate = _spectatableCustomBattleId.HasValue;
 			TimeSinceLastStateUpdate = Game.Current.ApplicationTime;
 		}
 	}
@@ -1417,7 +1440,7 @@ public class MPLobbyPlayerBaseVM : ViewModel
 	{
 		if (playerData == null)
 		{
-			Debug.FailedAssert("PlayerData shouldn't be null at this stage!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyPlayerBaseVM.cs", "UpdateWith", 280);
+			Debug.FailedAssert("PlayerData shouldn't be null at this stage!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyPlayerBaseVM.cs", "UpdateWith", 283);
 			return;
 		}
 		PlayerData = playerData;
@@ -1439,6 +1462,8 @@ public class MPLobbyPlayerBaseVM : ViewModel
 		BannerlordID = $"{playerData.Username}#{playerData.UserId}";
 		SelectedBadgeID = playerData.ShownBadgeId;
 		StateText = "";
+		_spectatableCustomBattleId = null;
+		CanSpectate = false;
 		_hasReceivedPlayerStats = false;
 		_isReceivingPlayerStats = false;
 	}
@@ -1721,6 +1746,22 @@ public class MPLobbyPlayerBaseVM : ViewModel
 	public void ExecuteInviteToParty()
 	{
 		_onInviteToParty?.Invoke(ProvidedID);
+	}
+
+	public void ExecuteSpectateMatch()
+	{
+		if (_spectatableCustomBattleId.HasValue)
+		{
+			SpectateMatchAsync(_spectatableCustomBattleId.Value);
+		}
+	}
+
+	private async void SpectateMatchAsync(CustomBattleId battleId)
+	{
+		if (!(await NetworkMain.GameClient.RequestJoinCustomGame(battleId, CustomGameJoinType.Spectator, null)))
+		{
+			InformationManager.ShowInquiry(new InquiryData("", GameTexts.FindText("str_couldnt_join_server").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, GameTexts.FindText("str_ok").ToString(), "", null, null));
+		}
 	}
 
 	public void ExecuteInviteToClan()

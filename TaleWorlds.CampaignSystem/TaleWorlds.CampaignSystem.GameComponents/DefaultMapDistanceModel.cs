@@ -112,31 +112,38 @@ public class DefaultMapDistanceModel : MapDistanceModel
 		return distance <= maxDistance;
 	}
 
-	public override float GetDistance(MobileParty fromMobileParty, in CampaignVec2 toPoint, MobileParty.NavigationType customCapability, out float landRatio)
+	public override float GetDistance(in CampaignVec2 fromPoint, in CampaignVec2 toPoint, MobileParty.NavigationType customCapability, out float landRatio)
 	{
 		float value = float.MaxValue;
 		landRatio = 1f;
 		PathFaceRecord face = toPoint.Face;
-		if (fromMobileParty.CurrentNavigationFace.FaceIndex == face.FaceIndex)
+		if (fromPoint.Face.FaceIndex == face.FaceIndex)
 		{
-			if (Campaign.Current.Models.PartyNavigationModel.IsTerrainTypeValidForNavigationType(Campaign.Current.MapSceneWrapper.GetFaceTerrainType(fromMobileParty.Position.Face), MobileParty.NavigationType.Default))
+			if (Campaign.Current.Models.PartyNavigationModel.IsTerrainTypeValidForNavigationType(Campaign.Current.MapSceneWrapper.GetFaceTerrainType(fromPoint.Face), MobileParty.NavigationType.Default))
 			{
-				value = fromMobileParty.Position.Distance(toPoint);
+				value = fromPoint.Distance(toPoint);
 			}
 		}
 		else
 		{
 			MapDistanceModel mapDistanceModel = Campaign.Current.Models.MapDistanceModel;
-			(Settlement, bool) closestEntranceToFace = mapDistanceModel.GetClosestEntranceToFace(fromMobileParty.CurrentNavigationFace, MobileParty.NavigationType.Default);
+			(Settlement, bool) closestEntranceToFace = mapDistanceModel.GetClosestEntranceToFace(fromPoint.Face, MobileParty.NavigationType.Default);
 			(Settlement, bool) closestEntranceToFace2 = mapDistanceModel.GetClosestEntranceToFace(face, MobileParty.NavigationType.Default);
 			var (settlement, _) = closestEntranceToFace;
 			var (settlement2, _) = closestEntranceToFace2;
 			if (settlement != null && settlement2 != null)
 			{
-				value = fromMobileParty.Position.Distance(toPoint) - settlement.GatePosition.Distance(settlement2.GatePosition) + GetDistance(settlement, settlement2, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default);
+				value = fromPoint.Distance(toPoint) - settlement.GatePosition.Distance(settlement2.GatePosition) + GetDistance(settlement, settlement2, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default);
 			}
 		}
 		return MBMath.ClampFloat(value, 0f, float.MaxValue);
+	}
+
+	public override float GetDistance(MobileParty fromMobileParty, in CampaignVec2 toPoint, MobileParty.NavigationType customCapability, out float landRatio)
+	{
+		MapDistanceModel mapDistanceModel = Campaign.Current.Models.MapDistanceModel;
+		CampaignVec2 fromPoint = fromMobileParty.Position;
+		return mapDistanceModel.GetDistance(in fromPoint, in toPoint, customCapability, out landRatio);
 	}
 
 	public override float GetDistance(Settlement fromSettlement, in CampaignVec2 toPoint, bool isFromPort, MobileParty.NavigationType customCapability)

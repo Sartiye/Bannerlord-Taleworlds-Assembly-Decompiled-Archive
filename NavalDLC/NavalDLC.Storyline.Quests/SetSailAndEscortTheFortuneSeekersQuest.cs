@@ -229,7 +229,7 @@ public class SetSailAndEscortTheFortuneSeekersQuest : NavalStorylineQuestBase
 		Campaign.Current.ConversationManager.AddDialogFlow(DialogFlow.CreateDialogFlow("start").NpcLine("{=6QkMVCgz}Ahoy! It's good to have you with us. We've seen sails, and I reckon that there are still pirates about.").Condition(() => _hasMetMerchantParty && !_isMerchantPartySaved && CharacterObject.OneToOneConversationCharacter == _merchantCharacter)
 			.CloseDialog(), this);
 		Campaign.Current.ConversationManager.AddDialogFlow(DialogFlow.CreateDialogFlow("start").NpcLine("{=acz9UxsD}Thank the Heavens. And thank you. Those Sea Hound vessels would have torn us to pieces. You came just in time.").Condition(() => _isMerchantPartySaved && !_isAfterFightDialogDone && CharacterObject.OneToOneConversationCharacter == _merchantCharacter)
-			.NpcLine("{=CowdyMzB}We would still wish to show you our gratitude. I took a collection among the men whose lives you saved today. We wish to offer you a barrel of oil and a bundle of ivory. These are the rewards of our labor over the past months, but they would mean nothing to us if our ship were seized by pirates.")
+			.NpcLine("{=CowdyMzB}[ib:confident3]We would still wish to show you our gratitude. I took a collection among the men whose lives you saved today. We wish to offer you a barrel of oil and a bundle of ivory. These are the rewards of our labor over the past months, but they would mean nothing to us if our ship were seized by pirates.")
 			.Consequence(delegate
 			{
 				AddLog(QuestSecondPhaseStartLog);
@@ -490,6 +490,7 @@ public class SetSailAndEscortTheFortuneSeekersQuest : NavalStorylineQuestBase
 		mobileParty.IgnoreByOtherPartiesTill(base.QuestDueTime);
 		mobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: true);
 		mobileParty.Party.SetCustomBanner(NavalStorylineData.CorsairBanner);
+		mobileParty.InitializePartyTrade(QuestHelper.CalculateInitialGoldForBanditQuestParty(mobileParty));
 		return mobileParty;
 	}
 

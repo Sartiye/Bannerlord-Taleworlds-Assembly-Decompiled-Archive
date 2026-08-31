@@ -134,9 +134,21 @@ public abstract class MissionMultiplayerGameModeBase : MissionNetwork
 			missionPeer.KillCount = 0;
 			missionPeer.Score = 0;
 			missionPeer.ResetRequestedKickPollCount();
+			missionPeer.ResetKillRegistry();
+			missionPeer.ResetSpectatorStats();
 			GameNetwork.BeginBroadcastModuleEvent();
 			GameNetwork.WriteMessage(new KillDeathCountChange(missionPeer.GetNetworkPeer(), null, missionPeer.KillCount, missionPeer.AssistCount, missionPeer.DeathCount, missionPeer.Score));
 			GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.None);
+			NetworkCommunicator networkPeer = missionPeer.GetNetworkPeer();
+			if (networkPeer != null)
+			{
+				GameNetwork.BeginBroadcastModuleEvent();
+				GameNetwork.WriteMessage(new PeerLastKillChange(networkPeer, string.Empty));
+				GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.None);
+				GameNetwork.BeginBroadcastModuleEvent();
+				GameNetwork.WriteMessage(new PeerMostUsedWeaponChange(networkPeer, WeaponClass.Undefined));
+				GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.None);
+			}
 		}
 	}
 
@@ -364,7 +376,7 @@ public abstract class MissionMultiplayerGameModeBase : MissionNetwork
 		{
 			return MissionLobbyComponent.IsClassAvailable(result);
 		}
-		Debug.FailedAssert("\"" + heroClass.ClassGroup.StringId + "\" does not match with any FormationClass.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MultiplayerGameModeLogics\\ServerGameModeLogics\\MissionMultiplayerGameModeBase.cs", "IsClassAvailable", 389);
+		Debug.FailedAssert("\"" + heroClass.ClassGroup.StringId + "\" does not match with any FormationClass.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MultiplayerGameModeLogics\\ServerGameModeLogics\\MissionMultiplayerGameModeBase.cs", "IsClassAvailable", 404);
 		return false;
 	}
 }

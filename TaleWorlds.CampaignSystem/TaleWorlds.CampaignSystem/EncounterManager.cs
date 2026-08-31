@@ -47,7 +47,7 @@ public static class EncounterManager
 				return;
 			}
 		}
-		if ((!mobileParty.IsCurrentlyEngagingSettlement || mobileParty.ShortTermTargetSettlement == null || mobileParty.ShortTermTargetSettlement != mobileParty.CurrentSettlement) && (!mobileParty.IsCurrentlyEngagingParty || (mobileParty.ShortTermTargetParty.IsActive && (mobileParty.ShortTermTargetParty.CurrentSettlement == null || (mobileParty.ShortTermTargetParty.MapEvent != null && (mobileParty.ShortTermTargetParty.MapEvent.GetLeaderParty(BattleSideEnum.Attacker).MapFaction == mobileParty.MapFaction || mobileParty.ShortTermTargetParty.MapEvent.GetLeaderParty(BattleSideEnum.Defender).MapFaction == mobileParty.MapFaction))))) && mobileParty.Ai.AiBehaviorInteractable.CanPartyInteract(mobileParty, dt))
+		if ((!mobileParty.IsCurrentlyEngagingSettlement || mobileParty.ShortTermTargetSettlement == null || mobileParty.ShortTermTargetSettlement != mobileParty.CurrentSettlement) && (!mobileParty.IsCurrentlyEngagingParty || (mobileParty.ShortTermTargetParty.IsActive && (mobileParty.ShortTermTargetParty.CurrentSettlement == null || (mobileParty.ShortTermTargetParty.MapEvent != null && (mobileParty.ShortTermTargetParty.MapEvent.GetLeaderParty(BattleSideEnum.Attacker).MapFaction == mobileParty.MapFaction || mobileParty.ShortTermTargetParty.MapEvent.GetLeaderParty(BattleSideEnum.Defender).MapFaction == mobileParty.MapFaction))) && (mobileParty == MobileParty.MainParty || mobileParty.ShortTermTargetParty.MapEvent == null || mobileParty.ShortTermTargetParty.MapEvent.CanPartyJoinBattle(mobileParty.Party, BattleSideEnum.Attacker) || mobileParty.ShortTermTargetParty.MapEvent.CanPartyJoinBattle(mobileParty.Party, BattleSideEnum.Defender)))) && mobileParty.Ai.AiBehaviorInteractable.CanPartyInteract(mobileParty, dt))
 		{
 			mobileParty.Ai.AiBehaviorInteractable.OnPartyInteraction(mobileParty);
 		}
@@ -95,6 +95,7 @@ public static class EncounterManager
 		{
 			GameMenu.SwitchToMenu("join_sally_out");
 		}
+		CampaignEventDispatcher.Instance.OnPartyEncounter(attackerParty, defenderParty);
 	}
 
 	public static void StartSettlementEncounter(MobileParty attackerParty, Settlement settlement)
@@ -128,7 +129,7 @@ public static class EncounterManager
 			{
 				if (settlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEventSide == null)
 				{
-					BlockadeBattleMapEvent.CreateBlockadeBattleMapEvent(attackerParty.Party, settlement.SiegeEvent.BesiegerCamp.LeaderParty.Party, isSallyOut: false);
+					BlockadeBattleEventComponent.CreateBlockadeBattleMapEvent(attackerParty.Party, settlement.SiegeEvent.BesiegerCamp.LeaderParty.Party, isSallyOut: false);
 				}
 				else
 				{

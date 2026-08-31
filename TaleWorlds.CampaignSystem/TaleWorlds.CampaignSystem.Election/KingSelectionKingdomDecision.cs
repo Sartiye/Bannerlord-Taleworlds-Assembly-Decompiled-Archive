@@ -214,7 +214,10 @@ public class KingSelectionKingdomDecision : KingdomDecision
 		{
 			ChangeClanLeaderAction.ApplyWithSelectedNewLeader(king.Clan, king);
 		}
-		ChangeRulingClanAction.Apply(base.Kingdom, king.Clan);
+		if (base.Kingdom.RulingClan != king.Clan)
+		{
+			ChangeRulingClanAction.Apply(base.Kingdom, king.Clan);
+		}
 	}
 
 	public override TextObject GetSecondaryEffects()

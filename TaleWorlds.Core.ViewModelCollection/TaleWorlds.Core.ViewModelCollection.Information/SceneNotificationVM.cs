@@ -84,6 +84,9 @@ public class SceneNotificationVM : ViewModel
 	public string TitleText => ActiveData?.TitleText.ToString() ?? string.Empty;
 
 	[DataSourceProperty]
+	public string DescriptionText => ActiveData?.DescriptionText?.ToString() ?? string.Empty;
+
+	[DataSourceProperty]
 	public string AffirmativeDescription => ActiveData?.AffirmativeDescriptionText?.ToString() ?? string.Empty;
 
 	[DataSourceProperty]
@@ -186,13 +189,14 @@ public class SceneNotificationVM : ViewModel
 		ActiveData = null;
 		Scene = null;
 		OnPropertyChanged("TitleText");
+		OnPropertyChanged("DescriptionText");
 		OnPropertyChanged("AffirmativeDescription");
 		OnPropertyChanged("CancelDescription");
 		OnPropertyChanged("SceneID");
-		OnPropertyChanged("IsAffirmativeOptionShown");
-		OnPropertyChanged("IsNegativeOptionShown");
-		OnPropertyChanged("AffirmativeText");
-		OnPropertyChanged("NegativeText");
+		OnPropertyChanged("IsButtonOkShown");
+		OnPropertyChanged("IsButtonCancelShown");
+		OnPropertyChanged("ButtonOkLabel");
+		OnPropertyChanged("ButtonCancelLabel");
 		OnPropertyChanged("AffirmativeAction");
 		OnPropertyChanged("NegativeAction");
 		OnPropertyChanged("AffirmativeTitleText");
@@ -203,6 +207,7 @@ public class SceneNotificationVM : ViewModel
 	{
 		ActiveData = data;
 		OnPropertyChanged("TitleText");
+		OnPropertyChanged("DescriptionText");
 		OnPropertyChanged("AffirmativeDescription");
 		OnPropertyChanged("CancelDescription");
 		OnPropertyChanged("SceneID");

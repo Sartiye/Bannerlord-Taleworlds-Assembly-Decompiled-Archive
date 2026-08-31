@@ -2,6 +2,7 @@ using SandBox.View.Map;
 using SandBox.ViewModelCollection.Map.Tracker;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Map;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Map.Tracker;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.Library;
@@ -12,7 +13,7 @@ using TaleWorlds.ScreenSystem;
 namespace SandBox.GauntletUI.Map;
 
 [OverrideView(typeof(MapTrackersView))]
-public class GauntletMapTrackersView : MapTrackersView
+public class GauntletMapTrackersView : MapTrackersView, IMapTrackersHandler
 {
 	private GauntletLayer _layerAsGauntletLayer;
 
@@ -29,6 +30,40 @@ public class GauntletMapTrackersView : MapTrackersView
 		base.Layer = mapView.GauntletNameplateLayer;
 		_layerAsGauntletLayer = base.Layer as GauntletLayer;
 		_movie = _layerAsGauntletLayer.LoadMovie("MapTrackers", _dataSource);
+		Campaign.Current.MapTrackerManager.Handler = this;
+		CampaignEvents.OnCharacterCreationIsOverEvent.AddNonSerializedListener(this, OnCharacterCreationIsOver);
+		((IMapTrackersHandler)this).ResetTrackers();
+	}
+
+	private void OnCharacterCreationIsOver(int index)
+	{
+		if (index == 9)
+		{
+			((IMapTrackersHandler)this).ResetTrackers();
+		}
+	}
+
+	private void AddTrackerForObject(ITrackableCampaignObject trackable)
+	{
+		if (!_dataSource.HasTrackerFor(trackable))
+		{
+			if (trackable is MobileParty party)
+			{
+				_dataSource.AddTracker(new MapMobilePartyTrackItemVM(party));
+			}
+			else if (trackable is Army trackableObject)
+			{
+				_dataSource.AddTracker(new MapArmyTrackItemVM(trackableObject));
+			}
+			else if (trackable is MapMarker marker)
+			{
+				_dataSource.AddTracker(new MapMarkerTrackerItemVM(marker));
+			}
+			else
+			{
+				Debug.FailedAssert("Unsupported trackable object type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.GauntletUI\\Map\\GauntletMapTrackersView.cs", "AddTrackerForObject", 77);
+			}
+		}
 	}
 
 	protected override void OnResume()
@@ -52,11 +87,13 @@ public class GauntletMapTrackersView : MapTrackersView
 	{
 		base.OnMapScreenUpdate(dt);
 		TWParallel.For(0, _dataSource.Trackers.Count, UpdateTrackerPropertiesAux, 32);
-		_dataSource.Tick(dt);
+		_dataSource.Update();
 	}
 
 	protected override void OnFinalize()
 	{
+		Campaign.Current.MapTrackerManager.Handler = null;
+		CampaignEventDispatcher.Instance.RemoveListeners(this);
 		MapTrackerItemVM.OnFastMoveCameraToPosition = null;
 		_dataSource.OnFinalize();
 		_layerAsGauntletLayer.ReleaseMovie(_movie);
@@ -102,5 +139,24 @@ public class GauntletMapTrackersView : MapTrackersView
 	private void FastMoveCameraToPosition(CampaignVec2 target)
 	{
 		base.MapScreen.FastMoveCameraToPosition(target);
+	}
+
+	void IMapTrackersHandler.OnTrackerAdded(ITrackableCampaignObject trackable)
+	{
+		AddTrackerForObject(trackable);
+	}
+
+	void IMapTrackersHandler.OnTrackerRemoved(ITrackableCampaignObject trackable)
+	{
+		_dataSource.RemoveTrackerIfExists(trackable);
+	}
+
+	void IMapTrackersHandler.ResetTrackers()
+	{
+		_dataSource.Trackers.Clear();
+		foreach (ITrackableCampaignObject allTracker in Campaign.Current.MapTrackerManager.GetAllTrackers())
+		{
+			AddTrackerForObject(allTracker);
+		}
 	}
 }

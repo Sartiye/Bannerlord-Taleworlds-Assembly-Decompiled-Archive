@@ -993,7 +993,7 @@ public class Crafting
 	public string GetXmlCodeForCurrentItem(ItemObject item)
 	{
 		string text = "";
-		text = string.Concat(text, "<CraftedItem id=\"", CurrentWeaponDesign.HashedCode, "\"\n\t\t\t\t\t\t\t name=\"", CraftedWeaponName, "\"\n\t\t\t\t\t\t\t crafting_template=\"", CurrentCraftingTemplate.StringId, "\">");
+		text = string.Concat(text, "<CraftedItem id=\"Crafted-", CurrentCraftingTemplate.StringId, "\"\n\t\t\t\t\t\t\t name=\"", CraftedWeaponName, "\"\n\t\t\t\t\t\t\t crafting_template=\"", CurrentCraftingTemplate.StringId, "\">");
 		text += "\n";
 		text += "<Pieces>";
 		text += "\n";

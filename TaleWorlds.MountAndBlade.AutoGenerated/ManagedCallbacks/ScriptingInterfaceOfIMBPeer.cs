@@ -16,6 +16,11 @@ internal class ScriptingInterfaceOfIMBPeer : IMBPeer
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void DebugRefreshDisconnectTimeoutDelegate(int index);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void EndModuleEventDelegate([MarshalAs(UnmanagedType.U1)] bool isReliable);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -89,6 +94,8 @@ internal class ScriptingInterfaceOfIMBPeer : IMBPeer
 
 	public static BeginModuleEventDelegate call_BeginModuleEventDelegate;
 
+	public static DebugRefreshDisconnectTimeoutDelegate call_DebugRefreshDisconnectTimeoutDelegate;
+
 	public static EndModuleEventDelegate call_EndModuleEventDelegate;
 
 	public static GetAverageLossPercentDelegate call_GetAverageLossPercentDelegate;
@@ -120,6 +127,11 @@ internal class ScriptingInterfaceOfIMBPeer : IMBPeer
 	public void BeginModuleEvent(int index, bool isReliable)
 	{
 		call_BeginModuleEventDelegate(index, isReliable);
+	}
+
+	public void DebugRefreshDisconnectTimeout(int index)
+	{
+		call_DebugRefreshDisconnectTimeoutDelegate(index);
 	}
 
 	public void EndModuleEvent(bool isReliable)

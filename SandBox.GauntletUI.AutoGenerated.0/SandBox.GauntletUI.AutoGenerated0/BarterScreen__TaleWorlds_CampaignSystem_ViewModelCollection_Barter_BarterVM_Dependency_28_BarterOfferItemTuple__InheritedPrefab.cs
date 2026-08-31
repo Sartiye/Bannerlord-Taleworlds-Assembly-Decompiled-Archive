@@ -194,7 +194,7 @@ public class BarterScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Barter_
 		_widget_0_0_0_1_0.ScrollOnHoverWidget = _widget_0;
 		_widget_0_0_0_1_0.IsAutoScrolling = false;
 		_widget_0_0_0_1_0.InbetweenScrollDuration = 0.6f;
-		_widget_0_0_0_1_0.ScrollPerTick = 45f;
+		_widget_0_0_0_1_0.ScrollPerSecond = 45f;
 		_widget_0_0_0_1_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0_1_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_0_1_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;

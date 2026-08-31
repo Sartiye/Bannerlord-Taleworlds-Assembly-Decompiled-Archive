@@ -212,8 +212,6 @@ public sealed class GameModels : GameModelsManager
 
 	public BattleCaptainModel BattleCaptainModel { get; private set; }
 
-	public ExecutionRelationModel ExecutionRelationModel { get; private set; }
-
 	public BannerItemModel BannerItemModel { get; private set; }
 
 	public DelayedTeleportationModel DelayedTeleportationModel { get; private set; }
@@ -253,6 +251,12 @@ public sealed class GameModels : GameModelsManager
 	public FleetManagementModel FleetManagementModel { get; private set; }
 
 	public ClanMemberPartyRoleModel ClanMemberPartyRoleModel { get; private set; }
+
+	public BattleWreckageModel BattleWreckageModel { get; private set; }
+
+	public ShipDistributionModel ShipDistributionModel { get; private set; }
+
+	public FerryModel FerryModel { get; private set; }
 
 	private void GetSpecificGameBehaviors()
 	{
@@ -360,7 +364,6 @@ public sealed class GameModels : GameModelsManager
 			PrisonerDonationModel = GetGameModel<PrisonerDonationModel>();
 			PrisonBreakModel = GetGameModel<PrisonBreakModel>();
 			BattleCaptainModel = GetGameModel<BattleCaptainModel>();
-			ExecutionRelationModel = GetGameModel<ExecutionRelationModel>();
 			BannerItemModel = GetGameModel<BannerItemModel>();
 			DelayedTeleportationModel = GetGameModel<DelayedTeleportationModel>();
 			TroopSupplierProbabilityModel = GetGameModel<TroopSupplierProbabilityModel>();
@@ -383,6 +386,9 @@ public sealed class GameModels : GameModelsManager
 			FleetManagementModel = GetGameModel<FleetManagementModel>();
 			ShipStatModel = GetGameModel<ShipStatModel>();
 			ClanMemberPartyRoleModel = GetGameModel<ClanMemberPartyRoleModel>();
+			BattleWreckageModel = GetGameModel<BattleWreckageModel>();
+			ShipDistributionModel = GetGameModel<ShipDistributionModel>();
+			FerryModel = GetGameModel<FerryModel>();
 		}
 	}
 

@@ -4,11 +4,13 @@ using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
+using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.CampaignSystem.ViewModelCollection.ClanManagement.ClanPartyItem;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
@@ -19,15 +21,39 @@ namespace TaleWorlds.CampaignSystem.ViewModelCollection.ClanManagement.Categorie
 
 public class ClanPartiesVM : ViewModel
 {
+	private class ClanRoleMemberComparer : IComparer<ClanPartyMemberItemVM>
+	{
+		private readonly PartyRole _role;
+
+		public ClanRoleMemberComparer(PartyRole role)
+		{
+			_role = role;
+		}
+
+		public int Compare(ClanPartyMemberItemVM x, ClanPartyMemberItemVM y)
+		{
+			int num = SkillHelper.GetHeroRelevantSkillValueForPartyRole(y.HeroObject, _role).CompareTo(SkillHelper.GetHeroRelevantSkillValueForPartyRole(x.HeroObject, _role));
+			if (num == 0)
+			{
+				return x.HeroObject.Name.ToString().CompareTo(y.HeroObject.Name.ToString());
+			}
+			return num;
+		}
+	}
+
 	private Action _onExpenseChange;
 
 	private Action<Hero> _openPartyAsManage;
 
 	private Action<ClanCardSelectionInfo> _openCardSelectionPopup;
 
+	private PartyRole _currentSelectedRole;
+
 	private readonly IDisbandPartyCampaignBehavior _disbandBehavior;
 
 	private readonly ITeleportationCampaignBehavior _teleportationBehavior;
+
+	private readonly IEmptyClanPartiesCampaignBehavior _emptyClanPartiesCampaignBehavior;
 
 	private readonly Action _onRefresh;
 
@@ -375,6 +401,7 @@ public class ClanPartiesVM : ViewModel
 		_onRefresh = onRefresh;
 		_disbandBehavior = Campaign.Current.GetCampaignBehavior<IDisbandPartyCampaignBehavior>();
 		_teleportationBehavior = Campaign.Current.GetCampaignBehavior<ITeleportationCampaignBehavior>();
+		_emptyClanPartiesCampaignBehavior = Campaign.Current.GetCampaignBehavior<IEmptyClanPartiesCampaignBehavior>();
 		_openPartyAsManage = openPartyAsManage;
 		_openCardSelectionPopup = openCardSelectionPopup;
 		_faction = Hero.MainHero.Clan;
@@ -432,18 +459,18 @@ public class ClanPartiesVM : ViewModel
 		{
 			if (warPartyComponent.MobileParty == MobileParty.MainParty)
 			{
-				Parties.Insert(0, new ClanPartyItemVM(warPartyComponent.Party, OnPartySelection, OnAnyExpenseChange, OnShowChangeLeaderPopup, ClanPartyItemVM.ClanPartyType.Main, _disbandBehavior, _teleportationBehavior));
+				Parties.Insert(0, new ClanPartyItemWithPartyVM(warPartyComponent.Party, OnPartySelection, OnAnyExpenseChange, OnShowChangeLeaderPopup, OnShowChangeRolePopup, ClanPartyItemVM.ClanPartyType.Main, _disbandBehavior, _teleportationBehavior));
 			}
 			else
 			{
-				Parties.Add(new ClanPartyItemVM(warPartyComponent.Party, OnPartySelection, OnAnyExpenseChange, OnShowChangeLeaderPopup, ClanPartyItemVM.ClanPartyType.Member, _disbandBehavior, _teleportationBehavior));
+				Parties.Add(new ClanPartyItemWithPartyVM(warPartyComponent.Party, OnPartySelection, OnAnyExpenseChange, OnShowChangeLeaderPopup, OnShowChangeRolePopup, ClanPartyItemVM.ClanPartyType.Member, _disbandBehavior, _teleportationBehavior));
 			}
 		}
 		foreach (CaravanPartyComponent party in _faction.Heroes.SelectMany((Hero h) => h.OwnedCaravans))
 		{
-			if (!Caravans.Any((ClanPartyItemVM c) => c.Party.MobileParty == party.MobileParty))
+			if (!Caravans.Any((ClanPartyItemVM c) => (c.Party == null) ? (c.Leader == party.MobileParty.LeaderHero) : (c.Party.MobileParty == party.MobileParty)))
 			{
-				Caravans.Add(new ClanPartyItemVM(party.Party, OnPartySelection, OnAnyExpenseChange, OnShowChangeLeaderPopup, ClanPartyItemVM.ClanPartyType.Caravan, _disbandBehavior, _teleportationBehavior));
+				Caravans.Add(new ClanPartyItemWithPartyVM(party.Party, OnPartySelection, OnAnyExpenseChange, OnShowChangeLeaderPopup, OnShowChangeRolePopup, ClanPartyItemVM.ClanPartyType.Caravan, _disbandBehavior, _teleportationBehavior));
 			}
 		}
 		foreach (MobileParty garrison in from a in _faction.Settlements
@@ -451,16 +478,24 @@ public class ClanPartiesVM : ViewModel
 			select a into s
 			select s.Town.GarrisonParty)
 		{
-			if (garrison != null && !Garrisons.Any((ClanPartyItemVM c) => c.Party == garrison.Party))
+			if (garrison != null && !Garrisons.Any((ClanPartyItemVM c) => (c.Party == null) ? (c.Leader == garrison.LeaderHero) : (c.Party.MobileParty == garrison)))
 			{
-				Garrisons.Add(new ClanPartyItemVM(garrison.Party, OnPartySelection, OnAnyExpenseChange, OnShowChangeLeaderPopup, ClanPartyItemVM.ClanPartyType.Garrison, _disbandBehavior, _teleportationBehavior));
+				Garrisons.Add(new ClanPartyItemWithPartyVM(garrison.Party, OnPartySelection, OnAnyExpenseChange, OnShowChangeLeaderPopup, OnShowChangeRolePopup, ClanPartyItemVM.ClanPartyType.Garrison, _disbandBehavior, _teleportationBehavior));
 			}
 		}
-		int count = _faction.WarPartyComponents.Count;
+		int num = _faction.WarPartyComponents.Count;
+		if (_emptyClanPartiesCampaignBehavior != null && _faction == Hero.MainHero.Clan)
+		{
+			foreach (Hero emptyClanPartyLeader in _emptyClanPartiesCampaignBehavior.GetEmptyClanPartyLeaders())
+			{
+				Parties.Add(new ClanPartyItemWithHeroVM(emptyClanPartyLeader, OnPartySelection, OnAnyExpenseChange, OnShowChangeLeaderPopup, OnShowChangeRolePopup, ClanPartyItemVM.ClanPartyType.Member, _disbandBehavior, _teleportationBehavior));
+			}
+			num += _emptyClanPartiesCampaignBehavior.GetEmptyClanPartyLeaders().Count;
+		}
 		_faction.Heroes.Where((Hero h) => !h.IsDisabled).Union(_faction.Companions).Any((Hero h) => h.IsActive && h.PartyBelongedToAsPrisoner == null && !h.IsChild && h.CanLeadParty() && (h.PartyBelongedTo == null || h.PartyBelongedTo.LeaderHero != h));
 		CanCreateNewParty = GetCanCreateNewParty(out var disabledReason);
 		CreateNewPartyActionHint.HintText = disabledReason;
-		GameTexts.SetVariable("CURRENT", count);
+		GameTexts.SetVariable("CURRENT", num);
 		GameTexts.SetVariable("LIMIT", _faction.WarPartyLimit);
 		PartiesText = GameTexts.FindText("str_clan_parties").ToString();
 		GameTexts.SetVariable("CURRENT", Caravans.Count);
@@ -488,7 +523,12 @@ public class ClanPartiesVM : ViewModel
 			disabledReason = GameTexts.FindText("str_cannot_perform_action_while_sailing");
 			return false;
 		}
-		if (_faction.WarPartyLimit - _faction.WarPartyComponents.Count <= 0)
+		int num = _faction.WarPartyLimit - _faction.WarPartyComponents.Count;
+		if (_emptyClanPartiesCampaignBehavior != null && _faction == Hero.MainHero.Clan)
+		{
+			num -= _emptyClanPartiesCampaignBehavior.GetEmptyClanPartyLeaders().Count;
+		}
+		if (num <= 0)
 		{
 			disabledReason = GameTexts.FindText("str_clan_doesnt_have_empty_party_slots");
 			return false;
@@ -647,7 +687,8 @@ public class ClanPartiesVM : ViewModel
 
 	private IEnumerable<ClanCardSelectionItemPropertyInfo> GetNewPartyLeaderCandidateProperties(Hero hero)
 	{
-		yield return new ClanCardSelectionItemPropertyInfo(TextObject.GetEmpty());
+		TextObject value = ClanCardSelectionItemPropertyInfo.CreateLabeledValueText(new TextObject("{=IXwOaa98}Party Size"), new TextObject(CampaignUIHelper.GetPartySizeLimitForLeader(hero)));
+		yield return new ClanCardSelectionItemPropertyInfo(value);
 		TextObject textObject = new TextObject("{=hwrQqWir}No Skills");
 		int num = 0;
 		foreach (SkillObject leaderAssignmentRelevantSkill in _leaderAssignmentRelevantSkills)
@@ -717,11 +758,8 @@ public class ClanPartiesVM : ViewModel
 
 	public void OnShowChangeLeaderPopup()
 	{
-		if (CurrentSelectedParty?.Party?.MobileParty != null)
-		{
-			ClanCardSelectionInfo obj = new ClanCardSelectionInfo(GameTexts.FindText("str_change_party_leader"), GetChangeLeaderCandidates(), OnChangeLeaderOver, isMultiSelection: false);
-			_openCardSelectionPopup?.Invoke(obj);
-		}
+		ClanCardSelectionInfo obj = new ClanCardSelectionInfo(GameTexts.FindText("str_change_party_leader"), GetChangeLeaderCandidates(), OnChangeLeaderOver, isMultiSelection: false);
+		_openCardSelectionPopup?.Invoke(obj);
 	}
 
 	private IEnumerable<ClanCardSelectionItemInfo> GetChangeLeaderCandidates()
@@ -734,7 +772,7 @@ public class ClanPartiesVM : ViewModel
 			if ((item.IsActive || item.IsReleased || item.IsFugitive || item.IsTraveling) && !item.IsChild && item != Hero.MainHero && item.CanLeadParty() && item != CurrentSelectedParty.LeaderMember?.HeroObject)
 			{
 				TextObject explanation;
-				bool flag = FactionHelper.IsMainClanMemberAvailableForPartyLeaderChange(item, isSend: true, CurrentSelectedParty.Party.MobileParty, out explanation);
+				bool flag = FactionHelper.IsMainClanMemberAvailableForPartyLeaderChange(item, isSend: true, CurrentSelectedParty.Party?.MobileParty, out explanation);
 				CharacterImageIdentifier image = new CharacterImageIdentifier(CampaignUIHelper.GetCharacterCode(item.CharacterObject));
 				yield return new ClanCardSelectionItemInfo(item, item.Name, image, CardSelectionItemSpriteType.None, null, null, GetChangeLeaderCandidateProperties(item), !flag, explanation, null);
 			}
@@ -745,6 +783,9 @@ public class ClanPartiesVM : ViewModel
 	{
 		TextObject teleportationDelayText = CampaignUIHelper.GetTeleportationDelayText(hero, CurrentSelectedParty.Party);
 		yield return new ClanCardSelectionItemPropertyInfo(teleportationDelayText);
+		TextObject value = ((CurrentSelectedParty.Party?.LeaderHero != null || CurrentSelectedParty.Leader == null) ? CampaignUIHelper.GetPartySizeLimitWithDifferentLeader(CurrentSelectedParty.Party, hero) : CampaignUIHelper.GetPartySizeLimitWithDifferentLeader(CurrentSelectedParty.Leader, hero));
+		TextObject value2 = ClanCardSelectionItemPropertyInfo.CreateLabeledValueText(new TextObject("{=IXwOaa98}Party Size"), value);
+		yield return new ClanCardSelectionItemPropertyInfo(value2);
 		TextObject textObject = new TextObject("{=hwrQqWir}No Skills");
 		int num = 0;
 		foreach (SkillObject leaderAssignmentRelevantSkill in _leaderAssignmentRelevantSkills)
@@ -828,15 +869,36 @@ public class ClanPartiesVM : ViewModel
 				TeleportHeroAction.ApplyDelayedTeleportToParty(CurrentSelectedParty.Party.LeaderHero, MobileParty.MainParty);
 			}
 		}
+		else if (CurrentSelectedParty.Leader != null && CurrentSelectedParty is ClanPartyItemWithHeroVM && newLeader == null)
+		{
+			Campaign.Current.GetCampaignBehavior<IEmptyClanPartiesCampaignBehavior>()?.DisbandCachedLordPartyForPlayerClan(CurrentSelectedParty.Leader);
+		}
 		if (newLeader != null)
 		{
-			TeleportHeroAction.ApplyDelayedTeleportToPartyAsPartyLeader(newLeader, CurrentSelectedParty.Party.MobileParty);
+			if (CurrentSelectedParty.Leader != null && CurrentSelectedParty is ClanPartyItemWithHeroVM)
+			{
+				ClanPartyItemVM currentSelectedParty = CurrentSelectedParty;
+				int partyGoldLowerThreshold = Campaign.Current.Models.ClanFinanceModel.PartyGoldLowerThreshold;
+				CreateNewClanParty(newLeader, partyGoldLowerThreshold);
+				Campaign.Current.GetCampaignBehavior<IEmptyClanPartiesCampaignBehavior>()?.TransferCachedLordPartyToNewPartyForPlayerClan(currentSelectedParty.Leader, newLeader.PartyBelongedTo.Party);
+			}
+			else
+			{
+				TeleportHeroAction.ApplyDelayedTeleportToPartyAsPartyLeader(newLeader, CurrentSelectedParty.Party.MobileParty);
+			}
 		}
 	}
 
 	private void OnDisbandCurrentParty()
 	{
-		DisbandPartyAction.StartDisband(CurrentSelectedParty.Party.MobileParty);
+		if (CurrentSelectedParty is ClanPartyItemWithHeroVM)
+		{
+			Campaign.Current.GetCampaignBehavior<IEmptyClanPartiesCampaignBehavior>()?.DisbandCachedLordPartyForPlayerClan(CurrentSelectedParty.Leader);
+		}
+		else
+		{
+			DisbandPartyAction.StartDisband(CurrentSelectedParty.Party.MobileParty);
+		}
 	}
 
 	private bool GetCanDisbandParty(out TextObject cannotDisbandReason)
@@ -875,6 +937,190 @@ public class ClanPartiesVM : ViewModel
 				result = true;
 			}
 		}
+		if (CurrentSelectedParty is ClanPartyItemWithHeroVM)
+		{
+			if (CurrentSelectedParty.IsDisbanding)
+			{
+				cannotDisbandReason = GameTexts.FindText("str_cannot_disband_already_disbanding_party");
+			}
+			else
+			{
+				result = true;
+			}
+		}
 		return result;
+	}
+
+	public void OnShowChangeRolePopup(ClanRoleItemVM role)
+	{
+		if (CurrentSelectedParty?.Party?.MobileParty != null && role != null)
+		{
+			_currentSelectedRole = role.Role;
+			ClanCardSelectionInfo obj = new ClanCardSelectionInfo(new TextObject("{=gxdqiK8m}Assign as {PARTY_ROLE}").SetTextVariable("PARTY_ROLE", GameTexts.FindText("role", _currentSelectedRole.ToString())), GetChangeRoleCandidates(), OnChangeRoleOver, isMultiSelection: false);
+			_openCardSelectionPopup?.Invoke(obj);
+		}
+	}
+
+	private IEnumerable<ClanCardSelectionItemInfo> GetChangeRoleCandidates()
+	{
+		Hero roleHolder = CurrentSelectedParty.Party.MobileParty.GetRoleHolder(_currentSelectedRole);
+		yield return new ClanCardSelectionItemInfo(new TextObject("{=DWYEZAMC}No Assignee"), isDisabled: false, null, null, roleHolder == null);
+		MBBindingList<ClanPartyMemberItemVM> mBBindingList = new MBBindingList<ClanPartyMemberItemVM>();
+		foreach (ClanPartyMemberItemVM heroMember in CurrentSelectedParty.HeroMembers)
+		{
+			mBBindingList.Add(heroMember);
+		}
+		mBBindingList.Sort(new ClanRoleMemberComparer(_currentSelectedRole));
+		foreach (ClanPartyMemberItemVM item in mBBindingList)
+		{
+			Hero heroObject = item.HeroObject;
+			CharacterImageIdentifier image = new CharacterImageIdentifier(CampaignUIHelper.GetCharacterCode(heroObject.CharacterObject));
+			TextObject reason;
+			bool isDisabled = !IsHeroAssignableForRole(heroObject, _currentSelectedRole, CurrentSelectedParty.Party.MobileParty, out reason);
+			yield return new ClanCardSelectionItemInfo(heroObject, heroObject.Name, image, CardSelectionItemSpriteType.Skill, Campaign.Current.Models.ClanMemberPartyRoleModel.GetRelevantSkillForPartyRole(_currentSelectedRole).ToString(), SkillHelper.GetHeroRelevantSkillValueForPartyRole(heroObject, _currentSelectedRole).ToString(), GetChangeRoleCandidateProperties(heroObject, _currentSelectedRole), isDisabled, reason, null, roleHolder == heroObject);
+		}
+	}
+
+	private bool IsHeroAssignableForRole(Hero hero, PartyRole role, MobileParty party, out TextObject reason)
+	{
+		reason = null;
+		if (!Campaign.Current.Models.ClanMemberPartyRoleModel.IsHeroAssignableForPartyRole(hero, role, party))
+		{
+			if (!Campaign.Current.Models.ClanMemberPartyRoleModel.DoesHeroHaveEnoughSkillForPartyRole(hero, role, party))
+			{
+				reason = GameTexts.FindText("str_character_role_disabled_tooltip").SetTextVariable("SKILL_NAME", Campaign.Current.Models.ClanMemberPartyRoleModel.GetRelevantSkillForPartyRole(role).Name.ToString()).SetTextVariable("MIN_SKILL_AMOUNT", 0);
+				return false;
+			}
+			reason = new TextObject("{=DBabgrcC}This hero is not available right now.");
+			return false;
+		}
+		if (!party.GetHeroPartyRoles(hero).Contains(_currentSelectedRole) && !party.CanAssignMoreRolesToHero(hero))
+		{
+			reason = new TextObject("{=3O5eo4Ws}This hero is already assigned to the maximum amount of roles allowed.");
+			return false;
+		}
+		return true;
+	}
+
+	private IEnumerable<ClanCardSelectionItemPropertyInfo> GetChangeRoleCandidateProperties(Hero hero, PartyRole role)
+	{
+		GameTexts.SetVariable("newline", "\n");
+		IEnumerable<SkillEffect> enumerable = SkillEffect.All.Where((SkillEffect x) => x.Role == role);
+		IEnumerable<PerkObject> perks = PerkObject.All.Where((PerkObject x) => hero.GetPerkValue(x) && (x.PrimaryRole == role || x.SecondaryRole == role));
+		if (SkillHelper.GetHeroRelevantSkillValueForPartyRole(hero, role) > 0 && (enumerable.Count() > 0 || perks.Count() > 0))
+		{
+			int num = 0;
+			TextObject textObject = null;
+			foreach (SkillEffect item in enumerable)
+			{
+				TextObject effectDescriptionForSkillLevel = SkillHelper.GetEffectDescriptionForSkillLevel(item, SkillHelper.GetHeroRelevantSkillValueForPartyRole(hero, role));
+				if (num == 0)
+				{
+					textObject = effectDescriptionForSkillLevel;
+				}
+				else
+				{
+					TextObject textObject2 = GameTexts.FindText("str_string_newline_newline_string");
+					textObject2.SetTextVariable("STR1", textObject);
+					textObject2.SetTextVariable("STR2", effectDescriptionForSkillLevel);
+					textObject = textObject2;
+				}
+				num++;
+			}
+			yield return new ClanCardSelectionItemPropertyInfo(new TextObject("{=DKJIp6xG}Effects"), (num > 0) ? textObject : new TextObject("{=trbPP3ae}No effects"));
+			int num2 = 0;
+			TextObject textObject3 = null;
+			foreach (PerkObject item2 in perks)
+			{
+				TextObject textObject4 = ClanCardSelectionItemPropertyInfo.CreateLabeledValueText(item2.Name, item2.PrimaryDescription);
+				if (num2 == 0)
+				{
+					textObject3 = textObject4;
+				}
+				else
+				{
+					TextObject textObject5 = GameTexts.FindText("str_string_newline_newline_string");
+					textObject5.SetTextVariable("STR1", textObject3);
+					textObject5.SetTextVariable("STR2", textObject4);
+					textObject3 = textObject5;
+				}
+				num2++;
+			}
+			yield return new ClanCardSelectionItemPropertyInfo(new TextObject("{=Avy8Gua1}Perks"), (num2 > 0) ? textObject3 : new TextObject("{=oSfsqBwJ}No perks"));
+		}
+		else
+		{
+			yield return new ClanCardSelectionItemPropertyInfo(new TextObject("{=a1snO91x}No relevant perks/effects"), TextObject.GetEmpty());
+		}
+	}
+
+	private void OnChangeRoleOver(List<object> selectedItems, Action closePopup)
+	{
+		if (selectedItems.Count != 1)
+		{
+			return;
+		}
+		MobileParty mobileParty = CurrentSelectedParty?.Party.MobileParty;
+		if (selectedItems[0] is Hero hero && mobileParty != null)
+		{
+			if (!mobileParty.GetHeroPartyRoles(hero).Contains(_currentSelectedRole) && !mobileParty.CanAssignMoreRolesToHero(hero))
+			{
+				TextObject textObject = new TextObject("{=lra67ngl}{HERO.NAME} is assigned to the maximum amount of roles, and will be unassigned from {?HERO.GENDER}her{?}his{\\?} role as {OTHER_ROLE}. Continue anyway?").SetTextVariable("OTHER_ROLE", GameTexts.FindText("role", mobileParty.GetHeroPartyRoles(hero).FirstOrDefault().ToString()));
+				textObject.SetCharacterProperties("HERO", hero.CharacterObject);
+				InformationManager.ShowInquiry(new InquiryData(new TextObject("{=RFXFM2Az}Maximum Roles Reached").ToString(), textObject.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), delegate
+				{
+					AssignHeroToRole(selectedItems[0] as Hero, _currentSelectedRole);
+					closePopup?.Invoke();
+				}, null));
+			}
+			else
+			{
+				AssignHeroToRole(selectedItems[0] as Hero, _currentSelectedRole);
+				closePopup?.Invoke();
+			}
+		}
+		else
+		{
+			AssignHeroToRole(null, _currentSelectedRole);
+			closePopup?.Invoke();
+		}
+	}
+
+	private void AssignHeroToRole(Hero hero, PartyRole role)
+	{
+		MobileParty mobileParty = CurrentSelectedParty?.Party.MobileParty;
+		if (mobileParty == null)
+		{
+			Debug.FailedAssert("No MobileParty selected while assigning hero to a role!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\ClanManagement\\Categories\\ClanPartiesVM.cs", "AssignHeroToRole", 887);
+		}
+		else if (hero == null || !mobileParty.GetHeroPartyRoles(hero).Contains(role))
+		{
+			switch (role)
+			{
+			case PartyRole.Quartermaster:
+				mobileParty.SetPartyQuartermaster(hero);
+				break;
+			case PartyRole.Scout:
+				mobileParty.SetPartyScout(hero);
+				break;
+			case PartyRole.Surgeon:
+				mobileParty.SetPartySurgeon(hero);
+				break;
+			case PartyRole.Engineer:
+				mobileParty.SetPartyEngineer(hero);
+				break;
+			case PartyRole.FirstMate:
+				mobileParty.SetPartyFirstMate(hero);
+				break;
+			case PartyRole.Navigator:
+				mobileParty.SetPartyNavigator(hero);
+				break;
+			}
+			Game.Current?.EventManager.TriggerEvent(new ClanRoleAssignedThroughClanScreenEvent(role, hero));
+			CurrentSelectedParty?.Roles.ApplyActionOnAllItems(delegate(ClanRoleItemVM x)
+			{
+				x.Refresh();
+			});
+		}
 	}
 }

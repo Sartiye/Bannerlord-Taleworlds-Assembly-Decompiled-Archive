@@ -1,6 +1,7 @@
 using Helpers;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
+using TaleWorlds.Core;
 using TaleWorlds.MountAndBlade;
 
 namespace NavalDLC.Missions.Objects.UsableMachines;
@@ -20,11 +21,11 @@ public class UserDamageCalculateComponent : UsableMissionObjectComponent
 		DamageReductionFactor = damageReductionFactor;
 	}
 
-	public void ApplyPerkBonusForCharacter(PerkObject perkObject, bool isPrimaryBonus, CharacterObject agentCharacterObject, ref ExplainedNumber damageResult)
+	public void ApplyPerkBonusForCharacter(PerkObject perkObject, bool isPrimaryBonus, CharacterObject agentCharacterObject, BattleEnvironment battleEnvironment, ref ExplainedNumber damageResult)
 	{
 		if (perkObject == _perkObject && isPrimaryBonus == _isPrimaryBonus)
 		{
-			PerkHelper.AddPerkBonusForCharacter(_perkObject, agentCharacterObject, _isPrimaryBonus, ref damageResult);
+			PerkHelper.AddPerkBonusForCharacter(_perkObject, battleEnvironment, agentCharacterObject, _isPrimaryBonus, ref damageResult);
 		}
 	}
 }

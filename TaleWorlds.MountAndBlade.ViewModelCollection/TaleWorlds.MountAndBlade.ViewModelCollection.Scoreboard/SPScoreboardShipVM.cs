@@ -8,6 +8,8 @@ namespace TaleWorlds.MountAndBlade.ViewModelCollection.Scoreboard;
 
 public class SPScoreboardShipVM : ViewModel
 {
+	public int FormationIndex;
+
 	public readonly IShipOrigin Ship;
 
 	public readonly IBattleCombatant Owner;
@@ -29,6 +31,8 @@ public class SPScoreboardShipVM : ViewModel
 	private bool _isDestroyed;
 
 	private bool _isInactive;
+
+	private bool _isRetreated;
 
 	private BasicTooltipViewModel _tooltip;
 
@@ -170,6 +174,23 @@ public class SPScoreboardShipVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public bool IsRetreated
+	{
+		get
+		{
+			return _isRetreated;
+		}
+		set
+		{
+			if (value != _isRetreated)
+			{
+				_isRetreated = value;
+				OnPropertyChangedWithValue(value, "IsRetreated");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public BasicTooltipViewModel Tooltip
 	{
 		get
@@ -186,7 +207,7 @@ public class SPScoreboardShipVM : ViewModel
 		}
 	}
 
-	public SPScoreboardShipVM(IShipOrigin ship, string shipType, IBattleCombatant owner, TeamSideEnum teamSideEnum)
+	public SPScoreboardShipVM(IShipOrigin ship, string shipType, IBattleCombatant owner, TeamSideEnum teamSideEnum, int formationIndex)
 	{
 		Ship = ship;
 		ShipType = "Ship_" + shipType;
@@ -196,6 +217,7 @@ public class SPScoreboardShipVM : ViewModel
 		IsEnemyTeam = teamSideEnum == TeamSideEnum.EnemyTeam;
 		MaxHealth = Ship.MaxHitPoints;
 		CurrentHealth = Ship.HitPoints;
+		FormationIndex = formationIndex;
 		Tooltip = new BasicTooltipViewModel(() => GetTooltip?.Invoke(this));
 	}
 }

@@ -61,6 +61,7 @@ public sealed class MissionNetworkComponent : MissionNetwork
 			registerer.RegisterBaseHandler<SetMissionObjectGlobalFrameOverTime>(HandleServerEventSetMissionObjectGlobalFrameOverTime);
 			registerer.RegisterBaseHandler<SetMissionObjectAnimationAtChannel>(HandleServerEventSetMissionObjectAnimationAtChannel);
 			registerer.RegisterBaseHandler<SetMissionObjectAnimationChannelParameter>(HandleServerEventSetMissionObjectAnimationChannelParameter);
+			registerer.RegisterBaseHandler<SetMissionObjectAnimationChannelSpeed>(HandleServerEventSetMissionObjectAnimationChannelSpeed);
 			registerer.RegisterBaseHandler<SetMissionObjectAnimationPaused>(HandleServerEventSetMissionObjectAnimationPaused);
 			registerer.RegisterBaseHandler<SetMissionObjectVertexAnimation>(HandleServerEventSetMissionObjectVertexAnimation);
 			registerer.RegisterBaseHandler<SetMissionObjectVertexAnimationProgress>(HandleServerEventSetMissionObjectVertexAnimationProgress);
@@ -360,7 +361,7 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		}
 		else
 		{
-			Debug.FailedAssert("Invalid item type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MissionNetworkComponent.cs", "HandleServerEventSetWeaponAmmoData", 468);
+			Debug.FailedAssert("Invalid item type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MissionNetworkComponent.cs", "HandleServerEventSetWeaponAmmoData", 469);
 		}
 	}
 
@@ -399,7 +400,11 @@ public sealed class MissionNetworkComponent : MissionNetwork
 	{
 		AddTeam addTeam = (AddTeam)baseMessage;
 		Banner banner = (string.IsNullOrEmpty(addTeam.BannerCode) ? null : new Banner(addTeam.BannerCode, addTeam.Color, addTeam.Color2));
-		base.Mission.Teams.Add(addTeam.Side, addTeam.Color, addTeam.Color2, banner, addTeam.IsPlayerGeneral, addTeam.IsPlayerSergeant);
+		Team spectatorTeam = base.Mission.Teams.Add(addTeam.Side, addTeam.Color, addTeam.Color2, banner, addTeam.IsPlayerGeneral, addTeam.IsPlayerSergeant);
+		if (addTeam.IsSpectatorTeam)
+		{
+			base.Mission.SpectatorTeam = spectatorTeam;
+		}
 	}
 
 	private void HandleServerEventTeamSetIsEnemyOf(GameNetworkMessage baseMessage)
@@ -595,6 +600,12 @@ public sealed class MissionNetworkComponent : MissionNetwork
 	{
 		SetMissionObjectAnimationChannelParameter setMissionObjectAnimationChannelParameter = (SetMissionObjectAnimationChannelParameter)baseMessage;
 		Mission.MissionNetworkHelper.GetMissionObjectFromMissionObjectId(setMissionObjectAnimationChannelParameter.MissionObjectId)?.GameEntity.Skeleton.SetAnimationParameterAtChannel(setMissionObjectAnimationChannelParameter.ChannelNo, setMissionObjectAnimationChannelParameter.Parameter);
+	}
+
+	private void HandleServerEventSetMissionObjectAnimationChannelSpeed(GameNetworkMessage baseMessage)
+	{
+		SetMissionObjectAnimationChannelSpeed setMissionObjectAnimationChannelSpeed = (SetMissionObjectAnimationChannelSpeed)baseMessage;
+		Mission.MissionNetworkHelper.GetMissionObjectFromMissionObjectId(setMissionObjectAnimationChannelSpeed.MissionObjectId)?.GameEntity.Skeleton.SetAnimationSpeedAtChannel(setMissionObjectAnimationChannelSpeed.ChannelNo, setMissionObjectAnimationChannelSpeed.Speed);
 	}
 
 	private void HandleServerEventSetMissionObjectVertexAnimation(GameNetworkMessage baseMessage)
@@ -1266,6 +1277,10 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		{
 			return false;
 		}
+		if (networkPeer.IsSpectator || component.Team == null || component.Team == base.Mission.SpectatorTeam)
+		{
+			return true;
+		}
 		if (component.HasSpawnTimerExpired)
 		{
 			component.WantsToSpawnAsBot = true;
@@ -1335,7 +1350,7 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		{
 			MBDebug.Print("Syncing a team to peer: " + networkPeer.UserName + " with index: " + networkPeer.Index, 0, Debug.DebugColor.White, 17179869184uL);
 			GameNetwork.BeginModuleEventAsServer(networkPeer);
-			GameNetwork.WriteMessage(new AddTeam(team.TeamIndex, team.Side, team.Color, team.Color2, (team.Banner != null) ? team.Banner.BannerCode : string.Empty, team.IsPlayerGeneral, team.IsPlayerSergeant));
+			GameNetwork.WriteMessage(new AddTeam(team.TeamIndex, team.Side, team.Color, team.Color2, (team.Banner != null) ? team.Banner.BannerCode : string.Empty, team.IsPlayerGeneral, team.IsPlayerSergeant, team == base.Mission.Teams.Spectator));
 			GameNetwork.EndModuleEventAsServer();
 		}
 	}
@@ -1735,12 +1750,8 @@ public sealed class MissionNetworkComponent : MissionNetwork
 			MBDebug.Print("----------OnAddTeam-");
 			MBDebug.Print("Adding a team and sending it to all clients", 0, Debug.DebugColor.White, 17179869184uL);
 			GameNetwork.BeginBroadcastModuleEvent();
-			GameNetwork.WriteMessage(new AddTeam(team.TeamIndex, team.Side, team.Color, team.Color2, (team.Banner != null) ? team.Banner.BannerCode : string.Empty, team.IsPlayerGeneral, team.IsPlayerSergeant));
+			GameNetwork.WriteMessage(new AddTeam(team.TeamIndex, team.Side, team.Color, team.Color2, (team.Banner != null) ? team.Banner.BannerCode : string.Empty, team.IsPlayerGeneral, team.IsPlayerSergeant, team == base.Mission.Teams.Spectator));
 			GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.AddToMissionRecord);
-		}
-		else if (team.Side != BattleSideEnum.Attacker && team.Side != 0 && base.Mission.SpectatorTeam == null)
-		{
-			base.Mission.SpectatorTeam = team;
 		}
 	}
 

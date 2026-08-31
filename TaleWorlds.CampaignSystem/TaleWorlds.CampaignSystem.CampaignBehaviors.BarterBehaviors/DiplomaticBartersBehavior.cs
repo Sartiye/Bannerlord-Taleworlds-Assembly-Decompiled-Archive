@@ -91,7 +91,7 @@ public class DiplomaticBartersBehavior : CampaignBehaviorBase
 					break;
 				}
 			}
-			if (randomElement2.Kingdom != null && clan.Kingdom != randomElement2.Kingdom && !Campaign.Current.Models.DiplomacyModel.IsAtConstantWar(clan, randomElement2.Kingdom) && !flag && randomElement2.MapFaction.IsKingdomFaction && !randomElement2.IsEliminated && randomElement2 != Clan.PlayerClan && randomElement2.MapFaction.Leader != Hero.MainHero && clan.WarPartyComponents.All((WarPartyComponent x) => x.MobileParty.MapEvent == null))
+			if (randomElement2.Kingdom != null && clan.Kingdom != randomElement2.Kingdom && !Campaign.Current.Models.DiplomacyModel.IsAtConstantWar(clan, randomElement2.Kingdom) && !flag && randomElement2.MapFaction.IsKingdomFaction && !randomElement2.IsEliminated && randomElement2 != Clan.PlayerClan && randomElement2.MapFaction.Leader != Hero.MainHero && (randomElement2.Kingdom.RulingClan != Clan.PlayerClan || !clan.HasBloodFeudWithPlayer) && clan.WarPartyComponents.All((WarPartyComponent x) => x.MobileParty.MapEvent == null))
 			{
 				ConsiderDefection(clan, randomElement2.MapFaction as Kingdom);
 			}

@@ -621,7 +621,7 @@ public class LordsNeedsTutorIssueBehavior : CampaignBehaviorBase
 
 		protected override void HourlyTick()
 		{
-			if (base.IsOngoing && !Hero.MainHero.IsPrisoner && !MobileParty.MainParty.IsInRaftState && Settlement.CurrentSettlement == null && PlayerEncounter.Current == null && MapEvent.PlayerMapEvent == null && _youngHero.PartyBelongedTo == MobileParty.MainParty && GameStateManager.Current.ActiveState is MapState && ((_checkForMissionEnd && !_firstConversationInitialized) || _questCompletedStartConversation))
+			if (base.IsOngoing && !Hero.MainHero.IsPrisoner && !MobileParty.MainParty.IsInNavalAutoTravel && Settlement.CurrentSettlement == null && PlayerEncounter.Current == null && MapEvent.PlayerMapEvent == null && _youngHero.PartyBelongedTo == MobileParty.MainParty && GameStateManager.Current.ActiveState is MapState && ((_checkForMissionEnd && !_firstConversationInitialized) || _questCompletedStartConversation))
 			{
 				CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, PartyBase.MainParty), new ConversationCharacterData(_youngHero.CharacterObject, PartyBase.MainParty));
 				if (_checkForMissionEnd)

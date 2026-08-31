@@ -92,6 +92,10 @@ public struct AttackInformation
 
 	public IAgentOriginBase VictimRiderAgentOrigin;
 
+	public BattleEnvironment AttackerBattleEnvironment;
+
+	public BattleEnvironment VictimBattleEnvironment;
+
 	public Vec3 AttackerAgentPosition;
 
 	public Vec2 AttackerAgentMovementDirection;
@@ -242,6 +246,7 @@ public struct AttackInformation
 		IsVictimPlayer = false;
 		VictimAgentCharacter = null;
 		VictimRiderAgentCharacter = null;
+		VictimBattleEnvironment = BattleEnvironment.None;
 		VictimAgentMovementVelocity = default(Vec2);
 		VictimAgentPosition = default(Vec3);
 		VictimAgentMovementDirection = default(Vec2);
@@ -277,6 +282,7 @@ public struct AttackInformation
 			VictimAgentFlags = victimAgent.GetAgentFlags();
 			VictimAgentAIStateFlags = victimAgent.AIStateFlags;
 			VictimAgentCharacter = victimAgent.Character;
+			VictimBattleEnvironment = victimAgent.CurrentBattleEnvironment;
 			VictimAgentOrigin = victimAgent.Origin;
 			if (DoesVictimHaveRiderAgent)
 			{
@@ -309,6 +315,7 @@ public struct AttackInformation
 		AttackerAgentMovementVelocity = default(Vec2);
 		AttackerAgentCharacter = null;
 		AttackerRiderAgentCharacter = null;
+		AttackerBattleEnvironment = BattleEnvironment.None;
 		AttackerAgentMonster = null;
 		AttackerAgentOrigin = null;
 		AttackerRiderAgentOrigin = null;
@@ -343,6 +350,7 @@ public struct AttackInformation
 				AttackerAgentCurrentWeaponOffset = attackerAgent.GetCurWeaponOffset();
 			}
 			AttackerAgentCharacter = attackerAgent.Character;
+			AttackerBattleEnvironment = attackerAgent.CurrentBattleEnvironment;
 			AttackerAgentMonster = AttackerAgent.Monster;
 			AttackerAgentOrigin = attackerAgent.Origin;
 			if (DoesAttackerHaveRiderAgent)
@@ -369,7 +377,7 @@ public struct AttackInformation
 		}
 	}
 
-	public AttackInformation(Agent attackerAgent, Agent victimAgent, float armorAmountFloat, WeaponComponentData shieldOnBack, AgentFlag victimAgentFlags, Agent.AIStateFlag victimAgentAIStateFlags, float victimAgentAbsorbedDamageRatio, float damageMultiplierOfBone, float combatDifficultyMultiplier, MissionWeapon attackerWeapon, MissionWeapon victimMainHandWeapon, MissionWeapon victimShield, bool canGiveDamageToAgentShield, bool isVictimAgentLeftStance, bool isFriendlyFire, bool doesAttackerHaveMountAgent, bool doesVictimHaveMountAgent, Vec2 attackerAgentMovementVelocity, Vec2 attackerAgentMountMovementDirection, float attackerMovementDirectionAsAngle, Vec2 victimAgentMovementVelocity, Vec2 victimAgentMountMovementDirection, float victimMovementDirectionAsAngle, bool isVictimAgentSameWithAttackerAgent, bool isAttackerAgentMine, bool doesAttackerHaveRiderAgent, bool isAttackerAgentRiderAgentMine, bool isAttackerAgentMount, bool isVictimAgentMine, bool doesVictimHaveRiderAgent, bool isVictimAgentRiderAgentMine, bool isVictimAgentMount, bool isAttackerAgentNull, bool isAttackerAIControlled, BasicCharacterObject attackerAgentCharacter, BasicCharacterObject attackerRiderAgentCharacter, Monster attackerAgentMonster, IAgentOriginBase attackerAgentOrigin, IAgentOriginBase attackerRiderAgentOrigin, BasicCharacterObject victimAgentCharacter, BasicCharacterObject victimRiderAgentCharacter, IAgentOriginBase victimAgentOrigin, IAgentOriginBase victimRiderAgentOrigin, Vec3 attackerAgentPosition, Vec2 attackerAgentMovementDirection, Vec3 attackerAgentVelocity, float attackerAgentMountChargeDamageProperty, Vec3 attackerAgentCurrentWeaponOffset, bool isAttackerAgentHuman, bool isAttackerAgentActive, bool isAttackerAgentDoingPassiveAttack, bool isVictimAgentNull, float victimAgentScale, float victimAgentHealth, float victimAgentMaxHealth, float victimAgentWeight, float victimAgentTotalEncumbrance, bool isVictimAgentHuman, Vec3 victimAgentPosition, Vec2 victimAgentMovementDirection, Vec3 victimAgentVelocity, int weaponAttachBoneIndex, MissionWeapon offHandItem, bool isHeadShot, bool isVictimRiderAgentSameAsAttackerAgent, bool isAttackerPlayer, bool isVictimPlayer, DestructableComponent hitObjectDestructibleComponent)
+	public AttackInformation(Agent attackerAgent, Agent victimAgent, float armorAmountFloat, WeaponComponentData shieldOnBack, AgentFlag victimAgentFlags, Agent.AIStateFlag victimAgentAIStateFlags, float victimAgentAbsorbedDamageRatio, float damageMultiplierOfBone, float combatDifficultyMultiplier, MissionWeapon attackerWeapon, MissionWeapon victimMainHandWeapon, MissionWeapon victimShield, bool canGiveDamageToAgentShield, bool isVictimAgentLeftStance, bool isFriendlyFire, bool doesAttackerHaveMountAgent, bool doesVictimHaveMountAgent, Vec2 attackerAgentMovementVelocity, Vec2 attackerAgentMountMovementDirection, float attackerMovementDirectionAsAngle, Vec2 victimAgentMovementVelocity, Vec2 victimAgentMountMovementDirection, float victimMovementDirectionAsAngle, bool isVictimAgentSameWithAttackerAgent, bool isAttackerAgentMine, bool doesAttackerHaveRiderAgent, bool isAttackerAgentRiderAgentMine, bool isAttackerAgentMount, bool isVictimAgentMine, bool doesVictimHaveRiderAgent, bool isVictimAgentRiderAgentMine, bool isVictimAgentMount, bool isAttackerAgentNull, bool isAttackerAIControlled, BasicCharacterObject attackerAgentCharacter, BasicCharacterObject attackerRiderAgentCharacter, BattleEnvironment attackerBattleEnvironment, Monster attackerAgentMonster, IAgentOriginBase attackerAgentOrigin, IAgentOriginBase attackerRiderAgentOrigin, BasicCharacterObject victimAgentCharacter, BasicCharacterObject victimRiderAgentCharacter, BattleEnvironment victimBattleEnvironment, IAgentOriginBase victimAgentOrigin, IAgentOriginBase victimRiderAgentOrigin, Vec3 attackerAgentPosition, Vec2 attackerAgentMovementDirection, Vec3 attackerAgentVelocity, float attackerAgentMountChargeDamageProperty, Vec3 attackerAgentCurrentWeaponOffset, bool isAttackerAgentHuman, bool isAttackerAgentActive, bool isAttackerAgentDoingPassiveAttack, bool isVictimAgentNull, float victimAgentScale, float victimAgentHealth, float victimAgentMaxHealth, float victimAgentWeight, float victimAgentTotalEncumbrance, bool isVictimAgentHuman, Vec3 victimAgentPosition, Vec2 victimAgentMovementDirection, Vec3 victimAgentVelocity, int weaponAttachBoneIndex, MissionWeapon offHandItem, bool isHeadShot, bool isVictimRiderAgentSameAsAttackerAgent, bool isAttackerPlayer, bool isVictimPlayer, DestructableComponent hitObjectDestructibleComponent)
 	{
 		AttackerAgent = attackerAgent;
 		VictimAgent = victimAgent;
@@ -406,11 +414,13 @@ public struct AttackInformation
 		IsAttackerAgentNull = isAttackerAgentNull;
 		IsAttackerAIControlled = isAttackerAIControlled;
 		AttackerAgentCharacter = attackerAgentCharacter;
+		AttackerBattleEnvironment = attackerBattleEnvironment;
 		AttackerRiderAgentCharacter = attackerRiderAgentCharacter;
 		AttackerAgentMonster = attackerAgentMonster;
 		AttackerAgentOrigin = attackerAgentOrigin;
 		AttackerRiderAgentOrigin = attackerRiderAgentOrigin;
 		VictimAgentCharacter = victimAgentCharacter;
+		VictimBattleEnvironment = victimBattleEnvironment;
 		VictimRiderAgentCharacter = victimRiderAgentCharacter;
 		VictimAgentOrigin = victimAgentOrigin;
 		VictimRiderAgentOrigin = victimRiderAgentOrigin;

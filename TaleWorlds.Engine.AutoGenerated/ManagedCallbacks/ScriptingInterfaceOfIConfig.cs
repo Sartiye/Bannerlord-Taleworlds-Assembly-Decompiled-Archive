@@ -75,6 +75,12 @@ internal class ScriptingInterfaceOfIConfig : IConfig
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool GetDetailedDebugModeDelegate();
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool GetDevelopmentModeDelegate();
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -310,6 +316,8 @@ internal class ScriptingInterfaceOfIConfig : IConfig
 
 	public static GetDesktopResolutionDelegate call_GetDesktopResolutionDelegate;
 
+	public static GetDetailedDebugModeDelegate call_GetDetailedDebugModeDelegate;
+
 	public static GetDevelopmentModeDelegate call_GetDevelopmentModeDelegate;
 
 	public static GetDisableGuiMessagesDelegate call_GetDisableGuiMessagesDelegate;
@@ -456,6 +464,11 @@ internal class ScriptingInterfaceOfIConfig : IConfig
 	public void GetDesktopResolution(ref int width, ref int height)
 	{
 		call_GetDesktopResolutionDelegate(ref width, ref height);
+	}
+
+	public bool GetDetailedDebugMode()
+	{
+		return call_GetDetailedDebugModeDelegate();
 	}
 
 	public bool GetDevelopmentMode()

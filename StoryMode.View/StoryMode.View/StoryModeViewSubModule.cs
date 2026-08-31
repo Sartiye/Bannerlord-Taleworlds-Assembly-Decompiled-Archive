@@ -6,6 +6,7 @@ using SandBox.View.Map.Visuals;
 using StoryMode.Extensions;
 using StoryMode.View.Permissions;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.AdvancedStartOptions;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
@@ -63,7 +64,7 @@ public class StoryModeViewSubModule : MBSubModuleBase
 	private void StartGame()
 	{
 		_startedStoryMode = true;
-		MBGameManager.StartNewGame(new SandBoxGameManager(() => new CampaignStoryMode(CampaignGameMode.Campaign)));
+		MBGameManager.StartNewGame(new SandBoxGameManager(() => new CampaignStoryMode(CampaignGameMode.Campaign, new AdvancedStartOptionsData())));
 		_startedStoryMode = false;
 	}
 

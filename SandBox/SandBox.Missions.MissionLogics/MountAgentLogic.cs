@@ -34,11 +34,10 @@ public class MountAgentLogic : MissionLogic
 		float randomFloat = MBRandom.RandomFloat;
 		float num = 0.05f;
 		float num2 = 0.2f;
-		if (Hero.MainHero.GetPerkValue(DefaultPerks.Riding.WellStraped))
+		if (Hero.MainHero.GetPerkValue(DefaultPerks.Riding.WellStraped, isPrimaryEffect: true, out var effectValue, affectedAgent.CurrentBattleEnvironment))
 		{
-			float primaryBonus = DefaultPerks.Riding.WellStraped.PrimaryBonus;
-			num += num * primaryBonus;
-			num2 += num2 * primaryBonus;
+			num += num * effectValue;
+			num2 += num2 * effectValue;
 		}
 		bool flag = randomFloat < num2;
 		if (randomFloat < num || equipment[EquipmentIndex.ArmorItemEndSlot].ItemModifier?.StringId == "lame_horse")

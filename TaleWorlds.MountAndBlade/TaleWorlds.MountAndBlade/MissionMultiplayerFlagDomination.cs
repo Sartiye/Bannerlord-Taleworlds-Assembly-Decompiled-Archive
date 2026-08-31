@@ -259,12 +259,12 @@ public class MissionMultiplayerFlagDomination : MissionMultiplayerGameModeBase, 
 	{
 		foreach (NetworkCommunicator networkPeer in GameNetwork.NetworkPeers)
 		{
-			if (!networkPeer.IsSynchronized)
+			if (!networkPeer.IsSynchronized || networkPeer.IsSpectator)
 			{
 				continue;
 			}
 			MissionPeer component = networkPeer.GetComponent<MissionPeer>();
-			if (component == null || component.ControlledAgent != null || component.Team == null || component.ControlledFormation == null || component.SpawnCountThisRound <= 0)
+			if (component == null || component.ControlledAgent != null || component.Team == null || component.Team == base.Mission.SpectatorTeam || component.ControlledFormation == null || component.SpawnCountThisRound <= 0)
 			{
 				continue;
 			}
@@ -696,7 +696,7 @@ public class MissionMultiplayerFlagDomination : MissionMultiplayerGameModeBase, 
 		AgentVictoryLogic missionBehavior = base.Mission.GetMissionBehavior<AgentVictoryLogic>();
 		if (missionBehavior == null)
 		{
-			Debug.FailedAssert("Agent victory logic should not be null after someone just won/lost!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MultiplayerGameModeLogics\\ServerGameModeLogics\\MissionMultiplayerFlagDomination.cs", "HandleRoundEnd", 774);
+			Debug.FailedAssert("Agent victory logic should not be null after someone just won/lost!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MultiplayerGameModeLogics\\ServerGameModeLogics\\MissionMultiplayerFlagDomination.cs", "HandleRoundEnd", 775);
 			return;
 		}
 		switch (roundResult)
@@ -803,7 +803,7 @@ public class MissionMultiplayerFlagDomination : MissionMultiplayerGameModeBase, 
 			if (networkPeer.IsSynchronized)
 			{
 				MissionPeer component = networkPeer.GetComponent<MissionPeer>();
-				if (PlayerDistanceToFormation(component) >= component.CaptainBeingDetachedThreshold)
+				if (component != null && PlayerDistanceToFormation(component) >= component.CaptainBeingDetachedThreshold)
 				{
 					MakePlayerFormationFollowPlayer(component.GetNetworkPeer());
 				}

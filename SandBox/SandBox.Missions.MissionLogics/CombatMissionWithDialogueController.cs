@@ -58,7 +58,7 @@ public class CombatMissionWithDialogueController : MissionLogic, IMissionAgentSp
 		{
 			SpawnAgents();
 			_isMissionInitialized = true;
-			Mission.Current.OnDeploymentFinished();
+			base.Mission.OnInitialSpawnCompleted();
 			return;
 		}
 		if (!_troopsInitialized)

@@ -211,6 +211,10 @@ public class DestroyRaidersConspiracyQuest : ConspiracyQuestBase
 	{
 		SetDialogs();
 		DetermineClosestHideouts();
+		if (_specialRaiderParty != null && _specialRaiderParty.IsActive && _specialRaiderParty.MapEventSide == null)
+		{
+			_specialRaiderParty.ActualClan = StoryModeManager.Current.MainStoryLine.SecondPhase.ConspiracyClan;
+		}
 		if (_directedRaidersToEngagePlayer == null)
 		{
 			_directedRaidersToEngagePlayer = new List<MobileParty>(3);
@@ -278,7 +282,7 @@ public class DestroyRaidersConspiracyQuest : ConspiracyQuestBase
 		}
 		if (settlement == null)
 		{
-			Debug.FailedAssert("Destroy raiders conspiracy quest settlement is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Quests\\SecondPhase\\ConspiracyQuests\\DestroyRaidersConspiracyQuest.cs", "DetermineTargetSettlement", 306);
+			Debug.FailedAssert("Destroy raiders conspiracy quest settlement is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Quests\\SecondPhase\\ConspiracyQuests\\DestroyRaidersConspiracyQuest.cs", "DetermineTargetSettlement", 311);
 			settlement = Settlement.All.GetRandomElementWithPredicate(delegate(Settlement t)
 			{
 				if (t.IsTown || t.IsCastle)
@@ -338,7 +342,7 @@ public class DestroyRaidersConspiracyQuest : ConspiracyQuestBase
 			num = RegularRaiderPartyTroopCount;
 			customName = _banditFaction.Name;
 		}
-		MobileParty mobileParty = BanditPartyComponent.CreateBanditParty(string.Concat("destroy_raiders_conspiracy_quest_", _banditFaction.Name, "_", CampaignTime.Now.ElapsedSecondsUntilNow), _banditFaction, hideout.Hideout, isBossParty: false, partyTemplateObject, hideout.GatePosition);
+		MobileParty mobileParty = BanditPartyComponent.CreateBanditParty(string.Concat("destroy_raiders_conspiracy_quest_", _banditFaction.Name, "_", CampaignTime.Now.ElapsedSecondsUntilNow), StoryModeManager.Current.MainStoryLine.SecondPhase.ConspiracyClan, hideout.Hideout, isBossParty: false, partyTemplateObject, hideout.GatePosition);
 		mobileParty.Party.SetCustomName(customName);
 		mobileParty.MemberRoster.Clear();
 		mobileParty.SetPartyUsedByQuest(isActivelyUsed: true);
@@ -357,6 +361,7 @@ public class DestroyRaidersConspiracyQuest : ConspiracyQuestBase
 		}
 		DistributeConspiracyRaiderTroopsByLevel(partyTemplateObject, mobileParty.Party, num);
 		AddTrackedObject(mobileParty);
+		mobileParty.InitializePartyTrade(QuestHelper.CalculateInitialGoldForBanditQuestParty(mobileParty));
 	}
 
 	private void SetDefaultRaiderAi(MobileParty raiderParty)
@@ -453,7 +458,7 @@ public class DestroyRaidersConspiracyQuest : ConspiracyQuestBase
 	{
 		if (prisoner.Clan != Clan.PlayerClan && capturer.IsMobile && (_regularRaiderParties.Contains(capturer.MobileParty) || _specialRaiderParty == capturer.MobileParty))
 		{
-			Debug.FailedAssert("Hero has been taken prisoner by conspiracy raider party", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Quests\\SecondPhase\\ConspiracyQuests\\DestroyRaidersConspiracyQuest.cs", "OnHeroTakenPrisoner", 533);
+			Debug.FailedAssert("Hero has been taken prisoner by conspiracy raider party", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Quests\\SecondPhase\\ConspiracyQuests\\DestroyRaidersConspiracyQuest.cs", "OnHeroTakenPrisoner", 540);
 			EndCaptivityAction.ApplyByEscape(prisoner);
 		}
 	}

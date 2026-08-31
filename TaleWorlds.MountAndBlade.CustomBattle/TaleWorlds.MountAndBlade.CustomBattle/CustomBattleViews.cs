@@ -25,17 +25,15 @@ public class CustomBattleViews
 			ViewCreator.CreateOptionsUIHandler(),
 			ViewCreator.CreateMissionMainAgentEquipDropView(mission)
 		};
-		MissionView missionView = ViewCreator.CreateMissionOrderUIHandler();
-		obj.Add(missionView);
+		MissionView item = ViewCreator.CreateMissionOrderUIHandler();
+		obj.Add(item);
 		obj.Add(new OrderTroopPlacer(null));
 		obj.Add(ViewCreator.CreateMissionAgentStatusUIHandler(mission));
 		obj.Add(ViewCreator.CreateMissionMainAgentEquipmentController(mission));
 		obj.Add(ViewCreator.CreateMissionMainAgentCheerBarkControllerView(mission));
 		obj.Add(ViewCreator.CreateMissionAgentLockVisualizerView(mission));
-		obj.Add(new MusicBattleMissionView(isSiegeBattle: false));
+		obj.Add(new MusicBattleMissionView(isSiegeBattle: false, isKeepBattle: false));
 		obj.Add(new DeploymentMissionView());
-		ISiegeDeploymentView siegeDeploymentView = missionView as ISiegeDeploymentView;
-		obj.Add(new MissionEntitySelectionUIHandler(siegeDeploymentView.OnEntitySelection, siegeDeploymentView.OnEntityHover));
 		obj.Add(new MissionFormationTargetSelectionHandler());
 		obj.Add(ViewCreator.CreateMissionBoundaryCrossingView());
 		obj.Add(new MissionBoundaryWallView());
@@ -63,17 +61,15 @@ public class CustomBattleViews
 		list.Add(ViewCreator.CreateMissionBattleScoreUIHandler(mission, new CustomBattleScoreboardVM(new CustomBattleScoreContext(mission))));
 		list.Add(ViewCreator.CreateOptionsUIHandler());
 		list.Add(ViewCreator.CreateMissionMainAgentEquipDropView(mission));
-		MissionView missionView = ViewCreator.CreateMissionOrderUIHandler();
-		list.Add(missionView);
+		MissionView item = ViewCreator.CreateMissionOrderUIHandler();
+		list.Add(item);
 		list.Add(new OrderTroopPlacer(null));
 		list.Add(ViewCreator.CreateMissionAgentStatusUIHandler(mission));
 		list.Add(ViewCreator.CreateMissionMainAgentEquipmentController(mission));
 		list.Add(ViewCreator.CreateMissionMainAgentCheerBarkControllerView(mission));
 		list.Add(ViewCreator.CreateMissionAgentLockVisualizerView(mission));
-		list.Add(new MusicBattleMissionView(isSiegeBattle: true));
+		list.Add(new MusicBattleMissionView(isSiegeBattle: true, isKeepBattle: false));
 		list.Add(new DeploymentMissionView());
-		ISiegeDeploymentView siegeDeploymentView = missionView as ISiegeDeploymentView;
-		list.Add(new MissionEntitySelectionUIHandler(siegeDeploymentView.OnEntitySelection, siegeDeploymentView.OnEntityHover));
 		list.Add(new MissionFormationTargetSelectionHandler());
 		list.Add(ViewCreator.CreateMissionBoundaryCrossingView());
 		list.Add(new MissionDeploymentBoundaryMarker("swallowtail_banner"));
@@ -106,6 +102,7 @@ public class CustomBattleViews
 			ViewCreator.CreateMissionMainAgentCheerBarkControllerView(mission),
 			ViewCreator.CreateMissionBoundaryCrossingView(),
 			new MissionBoundaryWallView(),
+			new MusicBattleMissionView(isSiegeBattle: false, isKeepBattle: true),
 			ViewCreator.CreateMissionFormationMarkerUIHandler(mission),
 			ViewCreator.CreateSingleplayerMissionKillNotificationUIHandler(),
 			ViewCreator.CreateMissionSpectatorControlView(mission),

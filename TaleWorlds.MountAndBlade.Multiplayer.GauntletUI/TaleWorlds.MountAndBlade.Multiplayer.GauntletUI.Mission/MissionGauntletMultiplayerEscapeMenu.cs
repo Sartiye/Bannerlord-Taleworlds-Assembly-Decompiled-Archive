@@ -86,7 +86,7 @@ public class MissionGauntletMultiplayerEscapeMenu : MissionGauntletEscapeMenuBas
 			_missionOptionsComponent?.OnAddOptionsUIHandler();
 		}, null, () => new Tuple<bool, TextObject>(item1: false, null)));
 		MultiplayerTeamSelectComponent missionTeamSelectComponent = _missionTeamSelectComponent;
-		if (missionTeamSelectComponent != null && missionTeamSelectComponent.TeamSelectionEnabled)
+		if (missionTeamSelectComponent != null && missionTeamSelectComponent.TeamSelectionEnabled && !GameNetwork.MyPeer.IsSpectator)
 		{
 			list.Add(new EscapeMenuItemVM(new TextObject("{=2SEofGth}Change Team"), delegate
 			{

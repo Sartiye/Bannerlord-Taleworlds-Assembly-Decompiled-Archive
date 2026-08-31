@@ -17,6 +17,7 @@ public class ShipUpgradeCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.SettlementEntered.AddNonSerializedListener(this, OnSettlementEntered);
 		CampaignEvents.DailyTickPartyEvent.AddNonSerializedListener(this, DailyTickPartyEvent);
 		CampaignEvents.OnNewGameCreatedPartialFollowUpEvent.AddNonSerializedListener(this, OnNewGameCreatedPartialFollowUp);
+		CampaignEvents.CanHaveUnlockedUpgradePieceEvent.AddNonSerializedListener(this, CanHaveUnlockedUpgradePiece);
 	}
 
 	private void OnSettlementEntered(MobileParty mobileParty, Settlement settlement, Hero hero)
@@ -62,6 +63,21 @@ public class ShipUpgradeCampaignBehavior : CampaignBehaviorBase
 		foreach (MobileParty item in MobileParty.All)
 		{
 			DailyTickPartyEvent(item);
+		}
+	}
+
+	private void CanHaveUnlockedUpgradePiece(Ship ship, ChangeShipOwnerAction.ShipOwnerChangeDetail detail, ref bool result)
+	{
+		if (detail != ChangeShipOwnerAction.ShipOwnerChangeDetail.ApplyByStashing && detail != ChangeShipOwnerAction.ShipOwnerChangeDetail.ApplyByUnstashing && detail != ChangeShipOwnerAction.ShipOwnerChangeDetail.ApplyByTemporarilyRemovingShipsFromPlayer && detail != ChangeShipOwnerAction.ShipOwnerChangeDetail.ApplyByGivingBackShipsToPlayer)
+		{
+			if (ship.Owner == PartyBase.MainParty)
+			{
+				result = true;
+			}
+		}
+		else
+		{
+			result = true;
 		}
 	}
 

@@ -91,13 +91,13 @@ public class DefeatTheCaptorsQuest : NavalStorylineQuestBase
 
 	private void AddAllyDialog()
 	{
-		Campaign.Current.ConversationManager.AddDialogFlow(DialogFlow.CreateDialogFlow("start", 1200).NpcLine("{=qtQXIguv}Well done, {PLAYER.NAME}! That's twice now you've gotten me out of a bad spot.").Condition(delegate
+		Campaign.Current.ConversationManager.AddDialogFlow(DialogFlow.CreateDialogFlow("start", 1200).NpcLine("{=qtQXIguv}[ib:warrior][if:convo_happy]Well done, {PLAYER.NAME}! That's twice now you've gotten me out of a bad spot.").Condition(delegate
 		{
 			StringHelpers.SetCharacterProperties("PLAYER", Hero.MainHero.CharacterObject);
 			NavalStorylineCaptivityMissionController navalStorylineCaptivityMissionController = Mission.Current?.GetMissionBehavior<NavalStorylineCaptivityMissionController>();
 			return Hero.OneToOneConversationHero == NavalStorylineData.Gunnar && NavalStorylineData.Gunnar.HasMet && navalStorylineCaptivityMissionController != null && !navalStorylineCaptivityMissionController.WasPlayerKnockedOut;
 		})
-			.NpcLine("{=utFgkzhx}Well… Normally I'd say we put as much distance between us and Purig as quickly as we can, but those merchants are still out there floundering in the waves. We can't leave them there. I can get the sail up. Take the steering oar. Let's see if we can  get them out of the water.")
+			.NpcLine("{=utFgkzhx}[ib:normal][if:convo_calm_friendly]Well… Normally I'd say we put as much distance between us and Purig as quickly as we can, but those merchants are still out there floundering in the waves. We can't leave them there. I can get the sail up. Take the steering oar. Let's see if we can  get them out of the water.")
 			.Consequence(delegate
 			{
 				Campaign.Current.ConversationManager.ConversationEndOneShot += OnDialogueEnded;
@@ -107,13 +107,13 @@ public class DefeatTheCaptorsQuest : NavalStorylineQuestBase
 
 	private void AddPlayerUnconsciousAllyDialog()
 	{
-		Campaign.Current.ConversationManager.AddDialogFlow(DialogFlow.CreateDialogFlow("start", 1200).NpcLine("{=nQJohWdO}Are you all right, {PLAYER.NAME}? Don't worry, the rest of us managed to break free and took care of those bastards.").Condition(delegate
+		Campaign.Current.ConversationManager.AddDialogFlow(DialogFlow.CreateDialogFlow("start", 1200).NpcLine("{=nQJohWdO}[ib:warrior][if:convo_happy]Are you all right, {PLAYER.NAME}? Don't worry, the rest of us managed to break free and took care of those bastards.").Condition(delegate
 		{
 			StringHelpers.SetCharacterProperties("PLAYER", Hero.MainHero.CharacterObject);
 			NavalStorylineCaptivityMissionController navalStorylineCaptivityMissionController = Mission.Current?.GetMissionBehavior<NavalStorylineCaptivityMissionController>();
 			return Hero.OneToOneConversationHero == NavalStorylineData.Gunnar && NavalStorylineData.Gunnar.HasMet && navalStorylineCaptivityMissionController != null && navalStorylineCaptivityMissionController.WasPlayerKnockedOut;
 		})
-			.NpcLine("{=evfMsY6h}Well… Normally I'd say we put as much distance between us and Purig as quickly as we can, but those merchants are still out there floundering in the waves. We can't leave them there. I can get the sail up. Take the steering oar. Let's see if we can't get them out of the water.")
+			.NpcLine("{=evfMsY6h}[ib:normal][if:convo_calm_friendly]Well… Normally I'd say we put as much distance between us and Purig as quickly as we can, but those merchants are still out there floundering in the waves. We can't leave them there. I can get the sail up. Take the steering oar. Let's see if we can't get them out of the water.")
 			.Consequence(delegate
 			{
 				Campaign.Current.ConversationManager.ConversationEndOneShot += OnDialogueEnded;

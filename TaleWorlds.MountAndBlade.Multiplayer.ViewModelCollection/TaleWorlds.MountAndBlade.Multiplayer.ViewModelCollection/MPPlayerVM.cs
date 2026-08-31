@@ -1,3 +1,4 @@
+using System;
 using TaleWorlds.Avatar.PlayerServices;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
@@ -13,6 +14,8 @@ namespace TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection;
 
 public class MPPlayerVM : ViewModel
 {
+	private Action<MPPlayerVM> _onSelected;
+
 	private MultiplayerClassDivisions.MPHeroClass _cachedClass;
 
 	private BasicCultureObject _cachedCulture;
@@ -50,6 +53,8 @@ public class MPPlayerVM : ViewModel
 	private bool _isSpawnActive;
 
 	private bool _isFocused;
+
+	private bool _isSelectable;
 
 	private MPTeammateCompassTargetVM _compassElement;
 
@@ -232,6 +237,23 @@ public class MPPlayerVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public bool IsSelectable
+	{
+		get
+		{
+			return _isSelectable;
+		}
+		set
+		{
+			if (value != _isSelectable)
+			{
+				_isSelectable = value;
+				OnPropertyChangedWithValue(value, "IsSelectable");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public MPTeammateCompassTargetVM CompassElement
 	{
 		get
@@ -403,7 +425,7 @@ public class MPPlayerVM : ViewModel
 			}
 			else
 			{
-				ValuePercent = ((Peer.ControlledAgent != null) ? MathF.Ceiling(Peer.ControlledAgent.Health / Peer.ControlledAgent.HealthLimit * 100f) : 0);
+				ValuePercent = ((Peer.ControlledAgent != null) ? TaleWorlds.Library.MathF.Ceiling(Peer.ControlledAgent.Health / Peer.ControlledAgent.HealthLimit * 100f) : 0);
 			}
 		}
 	}
@@ -432,16 +454,26 @@ public class MPPlayerVM : ViewModel
 	{
 		if (NetworkMain.GameClient == null)
 		{
-			Debug.FailedAssert("Network is not enabled when trying to refresh avatars", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MPPlayerVM.cs", "RefreshAvatar", 205);
+			Debug.FailedAssert("Network is not enabled when trying to refresh avatars", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MPPlayerVM.cs", "RefreshAvatar", 208);
 		}
 		else if (Peer == null)
 		{
-			Debug.FailedAssert("Trying to refresh avatar of a player without peer!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MPPlayerVM.cs", "RefreshAvatar", 211);
+			Debug.FailedAssert("Trying to refresh avatar of a player without peer!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MPPlayerVM.cs", "RefreshAvatar", 214);
 		}
 		else
 		{
 			Avatar = new PlayerAvatarImageIdentifierVM(forcedAvatarIndex: NetworkMain.GameClient.HasUserGeneratedContentPrivilege ? ((!BannerlordConfig.EnableGenericAvatars || _isKnownPlayer) ? (-1) : AvatarServices.GetForcedAvatarIndexOfPlayer(Peer.Peer.Id)) : AvatarServices.GetForcedAvatarIndexOfPlayer(Peer.Peer.Id), playerId: Peer.Peer.Id);
 		}
+	}
+
+	public void SetSelectionHandler(Action<MPPlayerVM> onSelected)
+	{
+		_onSelected = onSelected;
+	}
+
+	public virtual void ExecuteSelectPlayer()
+	{
+		_onSelected?.Invoke(this);
 	}
 
 	public void ExecuteFocusBegin()

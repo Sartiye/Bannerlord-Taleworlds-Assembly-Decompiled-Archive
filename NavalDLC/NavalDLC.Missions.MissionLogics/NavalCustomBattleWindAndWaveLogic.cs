@@ -50,14 +50,15 @@ public class NavalCustomBattleWindAndWaveLogic : MissionLogic
 		int num2 = 0;
 		foreach (Team team in Mission.Current.Teams)
 		{
+			Vec2 halfExtents;
 			if (team.Side == BattleSideEnum.Attacker)
 			{
-				zero += base.Mission.DeploymentPlan.GetDeploymentFrame(team).origin.AsVec2;
+				zero += base.Mission.DeploymentPlan.GetFormationsCenterFrameAndExtents(team, out halfExtents).origin.AsVec2;
 				num++;
 			}
 			else if (team.Side == BattleSideEnum.Defender)
 			{
-				zero2 += base.Mission.DeploymentPlan.GetDeploymentFrame(team).origin.AsVec2;
+				zero2 += base.Mission.DeploymentPlan.GetFormationsCenterFrameAndExtents(team, out halfExtents).origin.AsVec2;
 				num2++;
 			}
 		}

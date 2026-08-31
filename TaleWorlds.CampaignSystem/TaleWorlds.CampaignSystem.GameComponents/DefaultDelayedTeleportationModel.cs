@@ -9,7 +9,7 @@ namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultDelayedTeleportationModel : DelayedTeleportationModel
 {
-	private float MaximumDistanceForDelayAsDays => 2f;
+	public override float MaximumDistanceForDelayAsDays => 2f;
 
 	public override float DefaultTeleportationSpeed => 0.24f;
 

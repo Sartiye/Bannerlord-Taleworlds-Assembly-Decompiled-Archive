@@ -1984,7 +1984,7 @@ public static class CampaignCheats
 		{
 			return "Format is \"campaign.create_player_kingdom\".";
 		}
-		Campaign.Current.KingdomManager.CreateKingdom(Clan.PlayerClan.Name, Clan.PlayerClan.InformalName, Clan.PlayerClan.Culture, Clan.PlayerClan);
+		Campaign.Current.KingdomManager.CreateKingdom(Clan.PlayerClan.Name, Clan.PlayerClan.InformalName, Clan.PlayerClan.Culture, Clan.PlayerClan, Clan.PlayerClan.Name, null, null, Clan.PlayerClan.Name);
 		return "Success";
 	}
 
@@ -2047,6 +2047,21 @@ public static class CampaignCheats
 		}
 		ChangeRulingClanAction.Apply(Clan.PlayerClan.Kingdom, Clan.PlayerClan);
 		return "OK";
+	}
+
+	[CommandLineFunctionality.CommandLineArgumentFunction("print_criminal_ratings", "campaign")]
+	public static string PrintCriminalRatingWithAllKingdoms(List<string> strings)
+	{
+		if (!CheckCheatUsage(ref ErrorType))
+		{
+			return ErrorType;
+		}
+		string text = "Criminal Ratings\n";
+		foreach (Kingdom item in Kingdom.All)
+		{
+			text = string.Concat(text, item.Name, ": ", item.MainHeroCrimeRating, "\n");
+		}
+		return text;
 	}
 
 	[CommandLineFunctionality.CommandLineArgumentFunction("join_kingdom", "campaign")]

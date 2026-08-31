@@ -25,7 +25,7 @@ public static class CharacterHelper
 		{
 			empty = GameTexts.FindText("str_on_hero_killed", detail.ToString());
 		}
-		else if ((detail == KillCharacterAction.KillCharacterActionDetail.Executed || detail == KillCharacterAction.KillCharacterActionDetail.ExecutionAfterMapEvent) && killer != null)
+		else if (detail == KillCharacterAction.KillCharacterActionDetail.Executed && killer != null)
 		{
 			empty = GameTexts.FindText("str_on_hero_killed", detail.ToString());
 			StringHelpers.SetCharacterProperties("KILLER", killer.CharacterObject, empty);

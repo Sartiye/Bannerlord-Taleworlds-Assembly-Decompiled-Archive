@@ -46,9 +46,14 @@ public class DefaultWorkshopModel : WorkshopModel
 		if (settlement.IsFortification)
 		{
 			settlement.Town.AddEffectOfBuildings(BuildingEffectEnum.WorkshopProduction, ref result);
+			Hero governor = settlement.Town.Governor;
+			if (governor != null && governor.CurrentSettlement == settlement.Town.Settlement)
+			{
+				TraitEffectHelper.ApplyTraitEffect(governor, DefaultPersonalityTraitEffects.CalculatingWorkshopEffect, ref result);
+			}
 		}
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.Trade.MercenaryConnections, settlement.Town, ref result);
-		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Steward.Sweatshops, workshop.Owner.CharacterObject, isPrimaryBonus: true, ref result);
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Trade.MercenaryConnections, settlement.Town, isPrimaryBonus: true, ref result);
+		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Steward.Sweatshops, BattleEnvironment.Any, workshop.Owner.CharacterObject, isPrimaryBonus: true, ref result);
 		return result;
 	}
 

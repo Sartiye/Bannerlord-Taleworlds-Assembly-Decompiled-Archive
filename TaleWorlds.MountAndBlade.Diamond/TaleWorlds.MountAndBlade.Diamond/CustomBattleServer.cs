@@ -8,11 +8,12 @@ using TaleWorlds.Diamond;
 using TaleWorlds.Diamond.ClientApplication;
 using TaleWorlds.Library;
 using TaleWorlds.ModuleManager;
+using TaleWorlds.MountAndBlade.Diamond.Cosmetics;
 using TaleWorlds.PlayerServices;
 
 namespace TaleWorlds.MountAndBlade.Diamond;
 
-public class CustomBattleServer : Client<CustomBattleServer>
+public class CustomBattleServer : Client
 {
 	public enum State
 	{
@@ -157,7 +158,9 @@ public class CustomBattleServer : Client<CustomBattleServer>
 
 	public MultipleBattleResult BattleResult { get; private set; }
 
-	public CustomBattleServer(DiamondClientApplication diamondClientApplication, IClientSessionProvider<CustomBattleServer> provider)
+	public override int MaxConsecutiveFailuresBeforeDisconnect => 15;
+
+	public CustomBattleServer(DiamondClientApplication diamondClientApplication, IClientSessionFactory provider)
 		: base(diamondClientApplication, provider, autoReconnect: false)
 	{
 		_peerId = new PeerId(Guid.NewGuid());
@@ -175,6 +178,13 @@ public class CustomBattleServer : Client<CustomBattleServer>
 		_badgeComponent = null;
 		_badgeComponentPlayers = new List<PlayerData>();
 		BattleResult = new MultipleBattleResult();
+		try
+		{
+			CosmeticsManager.Initialize(ModuleHelper.GetModuleFullPath("Native") + "ModuleData");
+		}
+		catch
+		{
+		}
 		_pendingDisconnects = new List<PlayerDisconnectData>();
 		_pendingJoinResponses = new List<PlayerJoinGameResponseDataFromHost>();
 		AddMessageHandler<ClientWantsToConnectCustomGameMessage>(OnClientWantsToConnectCustomGameMessage);
@@ -467,12 +477,12 @@ public class CustomBattleServer : Client<CustomBattleServer>
 		SendMessage(new ResponseCustomGameClientConnectionMessage(playerJoinData));
 	}
 
-	public async Task RegisterGame(string gameModule, string gameType, string serverName, int maxPlayerCount, string scene, string uniqueSceneId, int port, string region, string gamePassword, string adminPassword, int permission)
+	public async Task RegisterGame(string gameModule, string gameType, string serverName, int maxPlayerCount, string scene, string uniqueSceneId, int port, string region, string gamePassword, string adminPassword, string spectatorPassword, int permission, int maxSpectatorCount = 0, bool enableSpectators = false)
 	{
-		await RegisterGame(0, gameModule, gameType, serverName, maxPlayerCount, scene, uniqueSceneId, port, region, gamePassword, adminPassword, permission, string.Empty);
+		await RegisterGame(0, gameModule, gameType, serverName, maxPlayerCount, scene, uniqueSceneId, port, region, gamePassword, adminPassword, spectatorPassword, permission, string.Empty, maxSpectatorCount, enableSpectators);
 	}
 
-	public async Task RegisterGame(int gameDefinitionId, string gameModule, string gameType, string serverName, int maxPlayerCount, string scene, string uniqueSceneId, int port, string region, string gamePassword, string adminPassword, int permission, string overriddenIP)
+	public async Task RegisterGame(int gameDefinitionId, string gameModule, string gameType, string serverName, int maxPlayerCount, string scene, string uniqueSceneId, int port, string region, string gamePassword, string adminPassword, string spectatorPassword, int permission, string overriddenIP, int maxSpectatorCount = 0, bool enableSpectators = false)
 	{
 		Port = port;
 		CustomGameType = gameType;
@@ -488,7 +498,8 @@ public class CustomBattleServer : Client<CustomBattleServer>
 			isOverridingIP = true;
 			outValue = overriddenIP;
 		}
-		_shouldReportActivities = (await CallFunction<RegisterCustomGameMessageResponseMessage>(new RegisterCustomGameMessage(gameDefinitionId, gameModule, gameType, serverName, outValue, maxPlayerCount, scene, uniqueSceneId, gamePassword, adminPassword, port, region, permission, !_isSinglePlatformServer, isOverridingIP))).ShouldReportActivities;
+		RegisterCustomGameMessageResponseMessage registerCustomGameMessageResponseMessage = (await CallFunction<RegisterCustomGameMessageResponseMessage>(new RegisterCustomGameMessage(gameDefinitionId, gameModule, gameType, serverName, outValue, maxPlayerCount, scene, uniqueSceneId, gamePassword, adminPassword, spectatorPassword, port, region, permission, !_isSinglePlatformServer, isOverridingIP, maxSpectatorCount, enableSpectators))).Result as RegisterCustomGameMessageResponseMessage;
+		_shouldReportActivities = registerCustomGameMessageResponseMessage.ShouldReportActivities;
 		CurrentState = State.RegisteredGame;
 		_timeoutTimer.Start();
 		if (_handler != null)

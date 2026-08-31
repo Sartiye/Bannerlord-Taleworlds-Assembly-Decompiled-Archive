@@ -1,7 +1,6 @@
 using SandBox.View.Map;
 using SandBox.ViewModelCollection.Map.Incidents;
 using TaleWorlds.CampaignSystem;
-using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Incidents;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.InputSystem;
@@ -54,7 +53,7 @@ public class GauntletMapIncidentView : MapIncidentView
 		base.CreateLayout();
 		if (Incident == null)
 		{
-			Debug.FailedAssert("Failed to start incident view", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.GauntletUI\\Map\\GauntletMapIncidentView.cs", "CreateLayout", 57);
+			Debug.FailedAssert("Failed to start incident view", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.GauntletUI\\Map\\GauntletMapIncidentView.cs", "CreateLayout", 60);
 			return;
 		}
 		_controlModeBeforeIncident = Campaign.Current.TimeControlMode;
@@ -135,7 +134,7 @@ public class GauntletMapIncidentView : MapIncidentView
 		}
 		else if (_dataSource != null || _spriteCategory != null)
 		{
-			Debug.FailedAssert("Incident view is was not propertly initialized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.GauntletUI\\Map\\GauntletMapIncidentView.cs", "OnFinalize", 162);
+			Debug.FailedAssert("Incident view is was not propertly initialized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.GauntletUI\\Map\\GauntletMapIncidentView.cs", "OnFinalize", 166);
 			_dataSource?.OnFinalize();
 			_spriteCategory?.Unload();
 		}
@@ -144,52 +143,49 @@ public class GauntletMapIncidentView : MapIncidentView
 	private void PlayIncidentSound()
 	{
 		string text = "";
-		switch (Incident.Type)
+		switch (Incident.TypeId)
 		{
-		case IncidentsCampaignBehaviour.IncidentType.TroopSettlementRelation:
+		case "TroopSettlementRelation":
 			text = "event:/ui/encounter/troop_settlement";
 			break;
-		case IncidentsCampaignBehaviour.IncidentType.FoodConsumption:
+		case "FoodConsumption":
 			text = "event:/ui/encounter/food_spoil";
 			break;
-		case IncidentsCampaignBehaviour.IncidentType.PlightOfCivilians:
+		case "PlightOfCivilians":
 			text = "event:/ui/encounter/plight";
 			break;
-		case IncidentsCampaignBehaviour.IncidentType.PartyCampLife:
+		case "PartyCampLife":
 			text = "event:/ui/encounter/camp";
 			break;
-		case IncidentsCampaignBehaviour.IncidentType.AnimalIllness:
+		case "AnimalIllness":
 			text = "event:/ui/encounter/sick_animals";
 			break;
-		case IncidentsCampaignBehaviour.IncidentType.Illness:
+		case "Illness":
 			text = "event:/ui/encounter/illness";
 			break;
-		case IncidentsCampaignBehaviour.IncidentType.HuntingForaging:
+		case "HuntingForaging":
 			text = "event:/ui/encounter/hunting_foraging";
 			break;
-		case IncidentsCampaignBehaviour.IncidentType.PostBattle:
+		case "PostBattle":
 			text = "event:/ui/encounter/post_battle";
 			break;
-		case IncidentsCampaignBehaviour.IncidentType.HardTravel:
+		case "HardTravel":
 			text = "event:/ui/encounter/hard_travel";
 			break;
-		case IncidentsCampaignBehaviour.IncidentType.Profit:
+		case "Profit":
 			text = "event:/ui/encounter/profit";
 			break;
-		case IncidentsCampaignBehaviour.IncidentType.DreamsSongsAndSigns:
+		case "DreamsSongsAndSigns":
 			text = "event:/ui/encounter/dreams_signs";
 			break;
-		case IncidentsCampaignBehaviour.IncidentType.FiefManagement:
+		case "FiefManagement":
 			text = "event:/ui/encounter/fief";
 			break;
-		case IncidentsCampaignBehaviour.IncidentType.Siege:
+		case "Siege":
 			text = "event:/ui/encounter/siege";
 			break;
-		case IncidentsCampaignBehaviour.IncidentType.Workshop:
+		case "Workshop":
 			text = "event:/ui/encounter/workshops";
-			break;
-		default:
-			Debug.FailedAssert("Incident sound cannot be found!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.GauntletUI\\Map\\GauntletMapIncidentView.cs", "PlayIncidentSound", 233);
 			break;
 		}
 		if (!string.IsNullOrEmpty(text))

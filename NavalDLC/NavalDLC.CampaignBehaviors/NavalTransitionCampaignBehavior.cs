@@ -53,6 +53,22 @@ public class NavalTransitionCampaignBehavior : CampaignBehaviorBase
 			PlayerEncounter.Current.IsPlayerWaiting = false;
 			GameMenu.SwitchToMenu("port_menu");
 		}, isLeave: true);
+		campaignGameStarter.AddGameMenuOption("castle", "leave_at_sea", "{=3sRdGQou}Leave", game_menu_leave_at_sea_on_condition, set_sail_consequence, isLeave: true);
+		campaignGameStarter.AddGameMenuOption("village", "leave_at_sea", "{=3sRdGQou}Leave", game_menu_leave_at_sea_on_condition, set_sail_consequence, isLeave: true);
+	}
+
+	private static bool game_menu_leave_at_sea_on_condition(MenuCallbackArgs args)
+	{
+		args.optionLeaveType = GameMenuOption.LeaveType.Leave;
+		if (MobileParty.MainParty.IsCurrentlyAtSea)
+		{
+			if (MobileParty.MainParty.Army != null)
+			{
+				return MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty;
+			}
+			return true;
+		}
+		return false;
 	}
 
 	[GameMenuInitializationHandler("port_menu")]
@@ -73,7 +89,7 @@ public class NavalTransitionCampaignBehavior : CampaignBehaviorBase
 	private bool call_fleet_condition(MenuCallbackArgs args)
 	{
 		args.optionLeaveType = GameMenuOption.LeaveType.CallFleet;
-		if (!CanMainPartySail() || MobileParty.MainParty.Anchor.IsAtSettlement(Settlement.CurrentSettlement))
+		if (!MobileParty.MainParty.HasNavalNavigationCapability || MobileParty.MainParty.Anchor.IsAtSettlement(Settlement.CurrentSettlement))
 		{
 			return false;
 		}
@@ -84,7 +100,7 @@ public class NavalTransitionCampaignBehavior : CampaignBehaviorBase
 
 	private TextObject GetWaitingForFleetText()
 	{
-		if (!CanMainPartySail() || MobileParty.MainParty.Anchor == null)
+		if (MobileParty.MainParty.Anchor == null || !MobileParty.MainParty.HasNavalNavigationCapability)
 		{
 			return null;
 		}
@@ -99,7 +115,7 @@ public class NavalTransitionCampaignBehavior : CampaignBehaviorBase
 
 	private TextObject GetETAText()
 	{
-		int num = (IsFleetMovingToCurrentSettlement() ? ((int)Math.Ceiling((MobileParty.MainParty.Anchor.ArrivalTime - CampaignTime.Now).ToHours + 1.0)) : ((int)Math.Ceiling(Campaign.Current.Models.PartyTransitionModel.GetFleetTravelTimeToSettlement(MobileParty.MainParty, Settlement.CurrentSettlement).ToHours)));
+		int num = Math.Max(1, (int)Math.Ceiling(Campaign.Current.Models.PartyTransitionModel.GetFleetTravelTimeToSettlement(MobileParty.MainParty, Settlement.CurrentSettlement).ToHours));
 		if ((float)num < 6f)
 		{
 			TextObject textObject = new TextObject("{=QDWuxaQI}{HOURS} {?(HOURS > 1)}hours{?}hour{\\?} away");
@@ -162,11 +178,6 @@ public class NavalTransitionCampaignBehavior : CampaignBehaviorBase
 		GameMenu.ActivateGameMenu("port_menu");
 	}
 
-	private bool CanMainPartySail()
-	{
-		return MobileParty.MainParty.HasNavalNavigationCapability;
-	}
-
 	private void SetSail()
 	{
 		MobileParty.MainParty.SetSailAtPosition(Settlement.CurrentSettlement.PortPosition);
@@ -197,7 +208,7 @@ public class NavalTransitionCampaignBehavior : CampaignBehaviorBase
 
 	private bool GetIsSetSailEnabled()
 	{
-		if (CanMainPartySail())
+		if ((MobileParty.MainParty.Army == null || MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty) && MobileParty.MainParty.HasNavalNavigationCapability)
 		{
 			return MobileParty.MainParty.Anchor.IsAtSettlement(Settlement.CurrentSettlement);
 		}
@@ -231,7 +242,7 @@ public class NavalTransitionCampaignBehavior : CampaignBehaviorBase
 			}
 			else
 			{
-				Debug.FailedAssert("There is a problem in here with ship repair cost calculation", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\CampaignBehaviors\\NavalTransitionCampaignBehavior.cs", "repair_ships_condition", 256);
+				Debug.FailedAssert("There is a problem in here with ship repair cost calculation", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\CampaignBehaviors\\NavalTransitionCampaignBehavior.cs", "repair_ships_condition", 260);
 			}
 		}
 		else
@@ -258,7 +269,12 @@ public class NavalTransitionCampaignBehavior : CampaignBehaviorBase
 	private bool set_sail_condition(MenuCallbackArgs args)
 	{
 		args.optionLeaveType = GameMenuOption.LeaveType.SetSail;
-		if (!CanMainPartySail())
+		if (MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty != MobileParty.MainParty)
+		{
+			args.Tooltip = new TextObject("{=*}You cannot set sail while you're a member of an army.");
+			args.IsEnabled = false;
+		}
+		else if (!MobileParty.MainParty.HasNavalNavigationCapability)
 		{
 			args.Tooltip = new TextObject("{=HUUd7Ohd}You don't own any ships!");
 			args.IsEnabled = false;

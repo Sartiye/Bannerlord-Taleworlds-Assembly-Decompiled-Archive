@@ -370,8 +370,22 @@ public class MissionMultiplayerDuel : MissionMultiplayerGameModeBase
 	protected override void HandleNewClientAfterSynchronized(NetworkCommunicator networkPeer)
 	{
 		MissionPeer component = networkPeer.GetComponent<MissionPeer>();
-		component.Team = base.Mission.AttackerTeam;
-		_peersAndSelections.Add(new KeyValuePair<MissionPeer, TroopType>(component, TroopType.Invalid));
+		if (networkPeer.IsSpectator)
+		{
+			if (base.Mission.SpectatorTeam != null)
+			{
+				component.Team = base.Mission.SpectatorTeam;
+			}
+			else
+			{
+				Debug.FailedAssert("Spectator joined a duel mission but Mission.SpectatorTeam is null; the peer will stay teamless.", "MissionMultiplayerDuel.cs", "HandleNewClientAfterSynchronized", 390);
+			}
+		}
+		else
+		{
+			component.Team = base.Mission.AttackerTeam;
+			_peersAndSelections.Add(new KeyValuePair<MissionPeer, TroopType>(component, TroopType.Invalid));
+		}
 	}
 
 	private bool HandleClientEventDuelRequest(NetworkCommunicator peer, GameNetworkMessage baseMessage)
@@ -643,7 +657,7 @@ public class MissionMultiplayerDuel : MissionMultiplayerGameModeBase
 		}
 		else
 		{
-			Debug.FailedAssert("IsHavingDuel(duel.RequesteePeer) || IsHavingDuel(duel.RequesterPeer)", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MultiplayerGameModeLogics\\ServerGameModeLogics\\MissionMultiplayerDuel.cs", "PrepareDuel", 714);
+			Debug.FailedAssert("IsHavingDuel(duel.RequesteePeer) || IsHavingDuel(duel.RequesterPeer)", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MultiplayerGameModeLogics\\ServerGameModeLogics\\MissionMultiplayerDuel.cs", "PrepareDuel", 730);
 		}
 	}
 

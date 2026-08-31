@@ -18,14 +18,14 @@ public class NavalMissionSiegeEngineCalculationModel : MissionSiegeEngineCalcula
 		ExplainedNumber bonuses = new ExplainedNumber(baseNumber);
 		if (Mission.Current.IsNavalBattle)
 		{
-			CharacterObject characterObject = (CharacterObject)(userAgent?.Formation?.Captain?.Character);
+			CharacterObject characterObject = (userAgent?.Formation?.Captain)?.Character as CharacterObject;
 			if (userAgent?.Character == characterObject)
 			{
 				characterObject = null;
 			}
 			if (characterObject != null)
 			{
-				PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Boatswain.StreamlinedOperations, characterObject, ref bonuses);
+				PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Boatswain.StreamlinedOperations, userAgent.CurrentBattleEnvironment, characterObject, ref bonuses);
 			}
 			AgentNavalComponent agentNavalComponent = userAgent?.GetComponent<AgentNavalComponent>();
 			if (agentNavalComponent != null && agentNavalComponent.SteppedShip != null)
@@ -45,7 +45,7 @@ public class NavalMissionSiegeEngineCalculationModel : MissionSiegeEngineCalcula
 		ExplainedNumber bonuses = new ExplainedNumber(weapon.AmmoCount);
 		if (captain?.Character is CharacterObject captainCharacter && weapon is Ballista)
 		{
-			PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Boatswain.SmoothOperator, captainCharacter, ref bonuses);
+			PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Boatswain.SmoothOperator, captain.CurrentBattleEnvironment, captainCharacter, ref bonuses);
 		}
 		return MathF.Ceiling(bonuses.ResultNumber);
 	}
@@ -53,19 +53,11 @@ public class NavalMissionSiegeEngineCalculationModel : MissionSiegeEngineCalcula
 	public override int CalculateDamage(Agent attackerAgent, float baseDamage)
 	{
 		int num = base.BaseModel.CalculateDamage(attackerAgent, baseDamage);
-		CharacterObject characterObject = attackerAgent.Formation?.Captain?.Character as CharacterObject;
-		ExplainedNumber explainedNumber = new ExplainedNumber(num);
-		if (characterObject != null)
+		ExplainedNumber bonuses = new ExplainedNumber(num);
+		if (attackerAgent.IsHero && attackerAgent.Character is CharacterObject character)
 		{
-			if (attackerAgent?.Character == characterObject)
-			{
-				characterObject = null;
-			}
-			if (characterObject != null && characterObject.GetPerkValue(NavalPerks.Boatswain.ShipwrightsInsight))
-			{
-				explainedNumber.AddFactor(NavalPerks.Boatswain.ShipwrightsInsight.PrimaryBonus);
-			}
+			PerkHelper.AddPerkBonusForCharacter(NavalPerks.Boatswain.ShipwrightsInsight, attackerAgent.CurrentBattleEnvironment, character, isPrimaryBonus: true, ref bonuses);
 		}
-		return MBMath.ClampInt(MathF.Ceiling(explainedNumber.ResultNumber), 0, 2000);
+		return MBMath.ClampInt(MathF.Ceiling(bonuses.ResultNumber), 0, 2000);
 	}
 }

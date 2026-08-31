@@ -25,7 +25,8 @@ public class NavalDLCTroopSacrificeModel : TroopSacrificeModel
 	public override ExplainedNumber GetLostTroopCountForBreakingInBesiegedSettlement(MobileParty party, SiegeEvent siegeEvent)
 	{
 		ExplainedNumber lostTroopCountForBreakingInBesiegedSettlement = base.BaseModel.GetLostTroopCountForBreakingInBesiegedSettlement(party, siegeEvent);
-		if (party.IsCurrentlyAtSea && party.HasPerk(NavalPerks.Shipmaster.GhostShip))
+		Hero perkOwnerHero = null;
+		if (party.HasPerk(NavalPerks.Shipmaster.GhostShip, out perkOwnerHero))
 		{
 			lostTroopCountForBreakingInBesiegedSettlement.AddFactor(NavalPerks.Shipmaster.GhostShip.PrimaryBonus * -1f, NavalPerks.Shipmaster.GhostShip.Name);
 		}
@@ -35,7 +36,8 @@ public class NavalDLCTroopSacrificeModel : TroopSacrificeModel
 	public override ExplainedNumber GetLostTroopCountForBreakingOutOfBesiegedSettlement(MobileParty party, SiegeEvent siegeEvent, bool isBreakingOutFromPort)
 	{
 		ExplainedNumber lostTroopCountForBreakingOutOfBesiegedSettlement = base.BaseModel.GetLostTroopCountForBreakingOutOfBesiegedSettlement(party, siegeEvent, isBreakingOutFromPort);
-		if (isBreakingOutFromPort && party.HasPerk(NavalPerks.Shipmaster.GhostShip))
+		Hero perkOwnerHero = null;
+		if (isBreakingOutFromPort && party.HasPerk(NavalPerks.Shipmaster.GhostShip, out perkOwnerHero))
 		{
 			lostTroopCountForBreakingOutOfBesiegedSettlement.AddFactor(NavalPerks.Shipmaster.GhostShip.PrimaryBonus * -1f, NavalPerks.Shipmaster.GhostShip.Name);
 		}
@@ -75,7 +77,8 @@ public class NavalDLCTroopSacrificeModel : TroopSacrificeModel
 			ExplainedNumber explainedNumber = new ExplainedNumber(totalDamageToApply);
 			SkillHelper.AddSkillBonusForParty(NavalSkillEffects.ShipDamageReduction, MobileParty.MainParty, ref explainedNumber);
 			float num3 = explainedNumber.ResultNumber;
-			if (MobileParty.MainParty.HasPerk(NavalPerks.Shipmaster.GhostShip))
+			Hero perkOwnerHero = null;
+			if (MobileParty.MainParty.HasPerk(NavalPerks.Shipmaster.GhostShip, out perkOwnerHero))
 			{
 				num3 -= num3 * 0.5f;
 			}
@@ -132,7 +135,7 @@ public class NavalDLCTroopSacrificeModel : TroopSacrificeModel
 		}
 		else
 		{
-			Debug.FailedAssert("This can't be possible anymore (Should already handled in previous menu)", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\GameComponents\\NavalDLCTroopSacrificeModel.cs", "GetShipsToSacrificeForTryingToGetAway", 174);
+			Debug.FailedAssert("This can't be possible anymore (Should already handled in previous menu)", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\GameComponents\\NavalDLCTroopSacrificeModel.cs", "GetShipsToSacrificeForTryingToGetAway", 198);
 		}
 	}
 

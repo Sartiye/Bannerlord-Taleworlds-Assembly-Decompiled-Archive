@@ -387,7 +387,7 @@ public abstract class KingdomDecision
 			result = GetInfluenceCostOfSupport(clan, Supporter.SupportWeights.FullyPush);
 			break;
 		default:
-			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Election\\KingdomDecision.cs", "GetInfluenceCost", 345);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Election\\KingdomDecision.cs", "GetInfluenceCost", 347);
 			break;
 		}
 		return result;

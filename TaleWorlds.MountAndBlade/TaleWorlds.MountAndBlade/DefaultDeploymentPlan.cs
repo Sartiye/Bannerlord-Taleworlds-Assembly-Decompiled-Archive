@@ -20,6 +20,8 @@ public class DefaultDeploymentPlan
 
 	public readonly SpawnPathData SpawnPathData;
 
+	public readonly float SpawnPathReinforcementOffset;
+
 	private readonly Mission _mission;
 
 	private int _planCount;
@@ -101,12 +103,12 @@ public class DefaultDeploymentPlan
 		return new DefaultDeploymentPlan(mission, team, isReinforcement: true, null);
 	}
 
-	public static DefaultDeploymentPlan CreateReinforcementPlanWithSpawnPath(Mission mission, Team team, SpawnPathData spawnPathData)
+	public static DefaultDeploymentPlan CreateReinforcementPlanWithSpawnPath(Mission mission, Team team, SpawnPathData spawnPathData, float reinforcementOffset)
 	{
-		return new DefaultDeploymentPlan(mission, team, isReinforcement: true, spawnPathData);
+		return new DefaultDeploymentPlan(mission, team, isReinforcement: true, spawnPathData, reinforcementOffset);
 	}
 
-	private DefaultDeploymentPlan(Mission mission, Team team, bool isReinforcement, SpawnPathData spawnPathData)
+	private DefaultDeploymentPlan(Mission mission, Team team, bool isReinforcement, SpawnPathData spawnPathData, float spawnPathReinforcementOffset = 0f)
 	{
 		_mission = mission;
 		_planCount = 0;
@@ -120,6 +122,7 @@ public class DefaultDeploymentPlan
 		_meanPosition = Vec3.Zero;
 		IsPlanMade = false;
 		SpawnPathOffset = 0f;
+		SpawnPathReinforcementOffset = spawnPathReinforcementOffset;
 		TargetOffset = 0f;
 		SafetyScore = 100f;
 		for (int i = 0; i < _formationPlans.Length; i++)
@@ -140,14 +143,12 @@ public class DefaultDeploymentPlan
 		_spawnWithHorses = value;
 	}
 
-	public void MakeDeploymentPlan(float spawnPathOffset = 0f, float targetOffset = 0f, FormationSceneSpawnEntry[,] formationSceneSpawnEntries = null)
+	public void MakeDeploymentPlan(FormationSceneSpawnEntry[,] formationSceneSpawnEntries = null)
 	{
-		SpawnPathOffset = spawnPathOffset;
-		TargetOffset = targetOffset;
 		PlanFormationDimensions();
 		if (_mission.HasSpawnPath)
 		{
-			PlanFieldBattleDeploymentFromSpawnPath(spawnPathOffset, targetOffset);
+			PlanFieldBattleDeploymentFromSpawnPath();
 		}
 		else if (_mission.IsFieldBattle)
 		{
@@ -210,12 +211,12 @@ public class DefaultDeploymentPlan
 		return false;
 	}
 
-	public bool GetFirstValidFormationDeploymentFrame(out MatrixFrame frame)
+	public bool GetFirstValidFormationFrame(out MatrixFrame frame, bool checkDimensions)
 	{
 		DefaultFormationDeploymentPlan[] formationPlans = _formationPlans;
 		foreach (DefaultFormationDeploymentPlan defaultFormationDeploymentPlan in formationPlans)
 		{
-			if (defaultFormationDeploymentPlan.HasFrame())
+			if (defaultFormationDeploymentPlan.HasFrame() && (!checkDimensions || defaultFormationDeploymentPlan.HasDimensions))
 			{
 				frame = defaultFormationDeploymentPlan.GetFrame();
 				return true;
@@ -223,6 +224,44 @@ public class DefaultDeploymentPlan
 		}
 		frame = MatrixFrame.Identity;
 		return false;
+	}
+
+	public MatrixFrame ComputeFormationsCenterFrameAndExtents(bool ignoreDimensionlessFormations, out Vec2 halfExtents)
+	{
+		GetFirstValidFormationFrame(out var frame, checkDimensions: true);
+		float num = float.MinValue;
+		float num2 = float.MaxValue;
+		float num3 = float.MaxValue;
+		float num4 = float.MinValue;
+		DefaultFormationDeploymentPlan[] formationPlans = _formationPlans;
+		foreach (DefaultFormationDeploymentPlan defaultFormationDeploymentPlan in formationPlans)
+		{
+			if (defaultFormationDeploymentPlan.HasFrame() && (!ignoreDimensionlessFormations || defaultFormationDeploymentPlan.HasDimensions))
+			{
+				MatrixFrame m = defaultFormationDeploymentPlan.GetFrame();
+				MatrixFrame matrixFrame = frame.TransformToLocal(in m);
+				float num5 = defaultFormationDeploymentPlan.PlannedWidth * 0.5f;
+				float plannedDepth = defaultFormationDeploymentPlan.PlannedDepth;
+				float num6 = TaleWorlds.Library.MathF.Abs(matrixFrame.rotation.s.x) * num5 + TaleWorlds.Library.MathF.Abs(matrixFrame.rotation.f.x) * plannedDepth;
+				float num7 = TaleWorlds.Library.MathF.Abs(matrixFrame.rotation.s.y) * num5;
+				float num8 = TaleWorlds.Library.MathF.Abs(matrixFrame.rotation.s.y) * num5 + TaleWorlds.Library.MathF.Abs(matrixFrame.rotation.f.y) * plannedDepth;
+				float b = matrixFrame.origin.y + num7;
+				float b2 = matrixFrame.origin.y - num8;
+				float b3 = matrixFrame.origin.x - num6;
+				float b4 = matrixFrame.origin.x + num6;
+				num = TaleWorlds.Library.MathF.Max(num, b);
+				num2 = TaleWorlds.Library.MathF.Min(num2, b2);
+				num3 = TaleWorlds.Library.MathF.Min(num3, b3);
+				num4 = TaleWorlds.Library.MathF.Max(num4, b4);
+			}
+		}
+		float x = (num3 + num4) * 0.5f;
+		float y = (num2 + num) * 0.5f;
+		halfExtents = new Vec2((num4 - num3) / 2f, (num - num2) / 2f);
+		Vec3 v = new Vec3(x, y);
+		Vec3 o = frame.TransformToParent(in v);
+		o.z = Mission.Current.Scene.GetTerrainHeight(o.AsVec2);
+		return new MatrixFrame(in frame.rotation, in o);
 	}
 
 	public bool IsPlanSuitableForFormations((int, int)[] troopDataPerFormationClass)
@@ -284,6 +323,12 @@ public class DefaultDeploymentPlan
 		SafetyScore = num;
 	}
 
+	public void SetSpawnPathOffset(float pathOffset = 0f, float targetOffset = 0f)
+	{
+		SpawnPathOffset = pathOffset;
+		TargetOffset = targetOffset;
+	}
+
 	public WorldFrame GetFrameFromFormationSpawnEntity(GameEntity formationSpawnEntity, float depthOffset = 0f)
 	{
 		MatrixFrame globalFrame = formationSpawnEntity.GetGlobalFrame();
@@ -301,7 +346,7 @@ public class DefaultDeploymentPlan
 		return new WorldFrame(globalFrame.rotation, origin);
 	}
 
-	private void PlanFieldBattleDeploymentFromSpawnPath(float pathOffset, float targetOffset)
+	private void PlanFieldBattleDeploymentFromSpawnPath()
 	{
 		bool teamPlanHasAnyFootTroops = FootTroopCount > 0;
 		for (int i = 0; i < _formationPlans.Length; i++)
@@ -323,12 +368,12 @@ public class DefaultDeploymentPlan
 		Vec2 spawnPathDirection;
 		if (IsReinforcement)
 		{
-			spawnPathPosition = SpawnPathData.GetSpawnFrame(SpawnPathData.GetBaseOffset(), searchNearestValidFrame: true, SpawnPathData.SearchDirection.Forward).origin.AsVec2;
-			spawnPathDirection = (initialSpawnPathData.GetSpawnFrame(0f).origin.AsVec2 - spawnPathPosition).Normalized();
+			spawnPathPosition = SpawnPathData.GetSpawnFrame(SpawnPathReinforcementOffset, searchNearestValidFrame: true, SpawnPathData.SearchDirection.Forward).origin.AsVec2;
+			spawnPathDirection = (initialSpawnPathData.GetCenterFrame().origin.AsVec2 - spawnPathPosition).Normalized();
 		}
 		else
 		{
-			initialSpawnPathData.GetSpawnPathFrameFacingTarget(pathOffset, targetOffset, useTangentDirection: false, out spawnPathPosition, out spawnPathDirection, decideDirectionDynamically: true);
+			initialSpawnPathData.GetSpawnPathFrameFacingTarget(SpawnPathOffset, TargetOffset, useTangentDirection: false, out spawnPathPosition, out spawnPathDirection, decideDirectionDynamically: true);
 		}
 		DeployFlanks(spawnPathPosition, spawnPathDirection, horizontalCenterOffset);
 		SortedList<FormationDeploymentOrder, DefaultFormationDeploymentPlan>[] deploymentFlanks = _deploymentFlanks;

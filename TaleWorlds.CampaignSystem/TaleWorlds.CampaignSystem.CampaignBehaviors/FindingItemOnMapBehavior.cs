@@ -20,7 +20,8 @@ public class FindingItemOnMapBehavior : CampaignBehaviorBase
 
 	public void DailyTickParty(MobileParty party)
 	{
-		if (!(MBRandom.RandomFloat < DefaultPerks.Scouting.BeastWhisperer.PrimaryBonus) || !party.HasPerk(DefaultPerks.Scouting.BeastWhisperer))
+		Hero perkOwnerHero = null;
+		if (!(MBRandom.RandomFloat < DefaultPerks.Scouting.BeastWhisperer.PrimaryBonus) || !party.HasPerk(DefaultPerks.Scouting.BeastWhisperer, out perkOwnerHero))
 		{
 			return;
 		}

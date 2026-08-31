@@ -236,16 +236,16 @@ public class MPLobbyClanInvitationPopupVM : ViewModel
 		}
 	}
 
-	private void ExecuteAcceptInvitation()
+	private async void ExecuteAcceptInvitation()
 	{
-		IsEnabled = false;
 		if (_invitationMode == InvitationMode.Creation)
 		{
 			NetworkMain.GameClient.AcceptClanCreationRequest();
+			IsEnabled = false;
 		}
-		else
+		else if (await NetworkMain.GameClient.AcceptClanInvitation())
 		{
-			NetworkMain.GameClient.AcceptClanInvitation();
+			IsEnabled = false;
 		}
 	}
 

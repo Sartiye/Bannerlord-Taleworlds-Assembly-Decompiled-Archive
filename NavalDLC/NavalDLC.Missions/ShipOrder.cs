@@ -1204,7 +1204,10 @@ public class ShipOrder
 	{
 		MatrixFrame globalFrame = shipToEngage.GlobalFrame;
 		bool effectiveSideOfOutermostShip = (_ownerShip.GlobalFrame.origin - globalFrame.origin).AsVec2.DotProduct(globalFrame.rotation.f.AsVec2.RightVec()) > 0f;
-		shipToEngage = shipToEngage.GetOutermostConnectedShipFromSide(effectiveSideOfOutermostShip, out effectiveSideOfOutermostShip, 0uL);
+		if (!_ownerShip.GetIsConnected())
+		{
+			shipToEngage = shipToEngage.GetOutermostConnectedShipFromSide(effectiveSideOfOutermostShip, out effectiveSideOfOutermostShip, 0uL);
+		}
 		Vec2 positionOffset = new Vec2(effectiveSideOfOutermostShip ? 12f : (-12f), 0f);
 		float directionOffset = ((Vec2.DotProduct(_ownerShip.GlobalFrame.rotation.f.AsVec2.Normalized(), globalFrame.rotation.f.AsVec2.Normalized()) >= 0f) ? 0f : System.MathF.PI);
 		SetMovementTargetShip(shipToEngage, in positionOffset, directionOffset);
@@ -1357,7 +1360,7 @@ public class ShipOrder
 			{
 				shipControllerMachine.PilotAgent.StopUsingGameObject(isSuccessful: true, Agent.StopUsingGameObjectFlags.AutoAttachAfterStoppingUsingGameObject | Agent.StopUsingGameObjectFlags.DoNotWieldWeaponAfterStoppingUsingGameObject);
 			}
-			if (captain.Detachment == null && !shipControllerMachine.IsDisabledForAI)
+			if (captain.Detachment == null && !captain.IsUsingGameObject && !shipControllerMachine.IsDisabledForAI)
 			{
 				shipControllerMachine.AddAgentAtSlotIndex(captain, shipControllerMachine.PilotStandingPointSlotIndex);
 			}
@@ -1426,7 +1429,7 @@ public class ShipOrder
 					}
 				}
 			}
-			if (_ownerShip.ShipControllerMachine.PilotAgent == null && !_ownerShip.ShipControllerMachine.PilotStandingPoint.HasAIMovingTo && !_ownerShip.ShipControllerMachine.IsDisabledForBattleSideAI(_ownerFormation.Team.Side) && (!_ownerShip.IsPlayerShip || Mission.Current.MainAgent == null))
+			if (_ownerShip.ShipControllerMachine.PilotAgent == null && !_ownerShip.ShipControllerMachine.PilotStandingPoint.HasAIMovingTo && !_ownerShip.ShipControllerMachine.IsDisabledForBattleSideAI(_ownerFormation.Team.Side) && (!_ownerShip.IsPlayerShip || Mission.Current.MainAgent == null || (_ownerFormation != null && _ownerFormation.IsAIControlled)))
 			{
 				Agent nextAgent = GetNextAgent(ref currentIndex);
 				if (nextAgent != null)
@@ -1498,7 +1501,7 @@ public class ShipOrder
 			}
 			if (detachment != null)
 			{
-				goto IL_0ab2;
+				goto IL_0aea;
 			}
 		}
 		if (_cutLooseOrderActive || _boardingTargetShip != null)
@@ -1513,7 +1516,7 @@ public class ShipOrder
 			}
 			if (detachment != null)
 			{
-				goto IL_0ab2;
+				goto IL_0aea;
 			}
 		}
 		shipDetachmentPriority--;
@@ -1523,13 +1526,13 @@ public class ShipOrder
 			if (shipSiegeWeapon2.PilotAgent == null && !shipSiegeWeapon2.PilotStandingPoint.HasAIMovingTo && !shipSiegeWeapon2.IsDisabledForBattleSideAI(_ownerFormation.Team.Side))
 			{
 				detachment = shipSiegeWeapon2;
-				goto IL_0ab2;
+				goto IL_0aea;
 			}
 		}
 		if (detachment == null)
 		{
 			shipDetachmentPriority--;
-			if (_ownerShip.ShipControllerMachine.PilotAgent == null && !_ownerShip.ShipControllerMachine.PilotStandingPoint.HasAIMovingTo && !_ownerShip.ShipControllerMachine.IsDisabledForBattleSideAI(_ownerFormation.Team.Side) && (!_ownerShip.IsPlayerShip || Mission.Current.MainAgent == null))
+			if (_ownerShip.ShipControllerMachine.PilotAgent == null && !_ownerShip.ShipControllerMachine.PilotStandingPoint.HasAIMovingTo && !_ownerShip.ShipControllerMachine.IsDisabledForBattleSideAI(_ownerFormation.Team.Side) && (!_ownerShip.IsPlayerShip || Mission.Current.MainAgent == null || (_ownerFormation != null && _ownerFormation.IsAIControlled)))
 			{
 				detachment = _ownerShip.ShipControllerMachine;
 			}
@@ -1563,8 +1566,8 @@ public class ShipOrder
 				}
 			}
 		}
-		goto IL_0ab2;
-		IL_0ab2:
+		goto IL_0aea;
+		IL_0aea:
 		if (shipDetachmentPriority > ShipDetachmentPriority.PlacementDetachment)
 		{
 			int slotIndex = ((detachment is UsableMachine usableMachine) ? usableMachine.PilotStandingPointSlotIndex : 0);
@@ -1973,6 +1976,10 @@ public class ShipOrder
 		if (_ownerShip == ship)
 		{
 			RefreshOrders();
+			if (ship.IsPlayerShip && ship.IsAIControlled)
+			{
+				ManageShipDetachments();
+			}
 		}
 	}
 

@@ -39,6 +39,9 @@ public class RegisterCustomGameMessage : Message
 	public string AdminPassword { get; private set; }
 
 	[JsonProperty]
+	public string SpectatorPassword { get; private set; }
+
+	[JsonProperty]
 	public int Port { get; private set; }
 
 	[JsonProperty]
@@ -53,11 +56,17 @@ public class RegisterCustomGameMessage : Message
 	[JsonProperty]
 	public bool CrossplayEnabled { get; private set; }
 
+	[JsonProperty]
+	public int MaxSpectatorCount { get; private set; }
+
+	[JsonProperty]
+	public bool EnableSpectators { get; private set; }
+
 	public RegisterCustomGameMessage()
 	{
 	}
 
-	public RegisterCustomGameMessage(int gameDefinitionId, string gameModule, string gameType, string serverName, string serverAddress, int maxPlayerCount, string map, string uniqueMapId, string gamePassword, string adminPassword, int port, string region, int permission, bool crossplayEnabled, bool isOverridingIP)
+	public RegisterCustomGameMessage(int gameDefinitionId, string gameModule, string gameType, string serverName, string serverAddress, int maxPlayerCount, string map, string uniqueMapId, string gamePassword, string adminPassword, string spectatorPassword, int port, string region, int permission, bool crossplayEnabled, bool isOverridingIP, int maxSpectatorCount, bool enableSpectators)
 	{
 		GameDefinitionId = gameDefinitionId;
 		GameModule = gameModule;
@@ -69,10 +78,13 @@ public class RegisterCustomGameMessage : Message
 		UniqueMapId = uniqueMapId;
 		GamePassword = gamePassword;
 		AdminPassword = adminPassword;
+		SpectatorPassword = spectatorPassword;
 		Port = port;
 		Region = region;
 		Permission = permission;
 		CrossplayEnabled = crossplayEnabled;
 		IsOverridingIP = isOverridingIP;
+		MaxSpectatorCount = maxSpectatorCount;
+		EnableSpectators = enableSpectators;
 	}
 }

@@ -54,6 +54,16 @@ public class DefaultEquipmentSelectionModel : EquipmentSelectionModel
 		return (item, item2);
 	}
 
+	private bool IsRosterAppropriateForHeroAsTemplate(MBEquipmentRoster equipmentRoster, CultureObject culture, EquipmentCategories customFlags)
+	{
+		bool result = false;
+		if (equipmentRoster.EquipmentCulture == culture && equipmentRoster.EquipmentCategories == customFlags)
+		{
+			result = true;
+		}
+		return result;
+	}
+
 	private Equipment GetSuitableEquipmentSet(Hero hero, EquipmentCategories customFlags, Equipment.EquipmentType equipmentType)
 	{
 		MBList<Equipment> mBList = new MBList<Equipment>();
@@ -76,15 +86,5 @@ public class DefaultEquipmentSelectionModel : EquipmentSelectionModel
 			}
 		}
 		return mBList.GetRandomElement();
-	}
-
-	private bool IsRosterAppropriateForHeroAsTemplate(MBEquipmentRoster equipmentRoster, CultureObject culture, EquipmentCategories customFlags)
-	{
-		bool result = false;
-		if (equipmentRoster.EquipmentCulture == culture && equipmentRoster.EquipmentCategories == customFlags)
-		{
-			result = true;
-		}
-		return result;
 	}
 }

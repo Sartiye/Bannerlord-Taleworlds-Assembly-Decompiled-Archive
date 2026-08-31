@@ -225,7 +225,8 @@ public class DesertersCampaignBehavior : CampaignBehaviorBase
 	private CampaignVec2 GetDeserterSpawnPosition(Settlement settlement)
 	{
 		CampaignVec2 campaignVec = NavigationHelper.FindPointAroundPosition(settlement.GatePosition, MobileParty.NavigationType.Default, DesertersSpawnRadiusAroundVillages);
-		float num = MobileParty.MainParty.SeeingRange * MobileParty.MainParty.SeeingRange;
+		float seeingRange = MobileParty.MainParty.SeeingRange;
+		float num = seeingRange * seeingRange;
 		if (campaignVec.DistanceSquared(MobileParty.MainParty.Position) < num)
 		{
 			for (int i = 0; i < 15; i++)

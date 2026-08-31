@@ -2256,6 +2256,15 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
+	public override void CanHaveUnlockedUpgradePiece(Ship ship, ChangeShipOwnerAction.ShipOwnerChangeDetail detail, ref bool canHaveUpgradePiece)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].CanHaveUnlockedUpgradePiece(ship, detail, ref canHaveUpgradePiece);
+		}
+	}
+
 	public override void OnShipRepaired(Ship ship, Settlement repairPort)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
@@ -2337,24 +2346,6 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		}
 	}
 
-	public override void OnMapMarkerCreated(MapMarker mapMarker)
-	{
-		CampaignEventReceiver[] eventReceivers = _eventReceivers;
-		for (int i = 0; i < eventReceivers.Length; i++)
-		{
-			eventReceivers[i].OnMapMarkerCreated(mapMarker);
-		}
-	}
-
-	public override void OnMapMarkerRemoved(MapMarker mapMarker)
-	{
-		CampaignEventReceiver[] eventReceivers = _eventReceivers;
-		for (int i = 0; i < eventReceivers.Length; i++)
-		{
-			eventReceivers[i].OnMapMarkerRemoved(mapMarker);
-		}
-	}
-
 	public override void OnMercenaryServiceStarted(Clan mercenaryClan, StartMercenaryServiceAction.StartMercenaryServiceActionDetails details)
 	{
 		CampaignEventReceiver[] eventReceivers = _eventReceivers;
@@ -2406,6 +2397,33 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
 			eventReceivers[i].OnCallToWarAgreementEnded(callingKingdom, calledKingdom, kingdomToCallToWarAgainst);
+		}
+	}
+
+	public override void OnPartyEncounter(PartyBase attacker, PartyBase defender)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnPartyEncounter(attacker, defender);
+		}
+	}
+
+	public override void OnBloodFeudStateChanged(Clan clan, Hero executedHero, ChangeBloodFeudStateAction.ChangeBloodFeudActionDetail detail)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnBloodFeudStateChanged(clan, executedHero, detail);
+		}
+	}
+
+	public override void OnDeathMarkAdded(Hero hero, Hero killerHero)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].OnDeathMarkAdded(hero, killerHero);
 		}
 	}
 
@@ -2467,6 +2485,19 @@ public class CampaignEventDispatcher : CampaignEventReceiver
 		for (int i = 0; i < eventReceivers.Length; i++)
 		{
 			eventReceivers[i].CanHeroDie(hero, causeOfDeath, ref result);
+			if (!result)
+			{
+				break;
+			}
+		}
+	}
+
+	public override void CanHeroBeReleased(Hero prisoner, ref bool result)
+	{
+		CampaignEventReceiver[] eventReceivers = _eventReceivers;
+		for (int i = 0; i < eventReceivers.Length; i++)
+		{
+			eventReceivers[i].CanHeroBeReleased(prisoner, ref result);
 			if (!result)
 			{
 				break;

@@ -21,7 +21,7 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 
 	private Widget _widget_0;
 
-	private BoolStateChangerWidget _widget_0_0;
+	private BoolStateChangerBrushWidget _widget_0_0;
 
 	private ListPanel _widget_0_1;
 
@@ -75,7 +75,7 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 
 	private BrushWidget _widget_0_2_2_2;
 
-	private BoolStateChangerWidget _widget_0_2_2_3;
+	private BoolStateChangerBrushWidget _widget_0_2_2_3;
 
 	private AgentHealthWidget _widget_0_3;
 
@@ -109,7 +109,7 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 
 	private BrushWidget _widget_0_4_2;
 
-	private BoolStateChangerWidget _widget_0_4_3;
+	private BoolStateChangerBrushWidget _widget_0_4_3;
 
 	private MissionAgentDamageFeedWidget _widget_0_5;
 
@@ -281,7 +281,7 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 		_widget = this;
 		_widget_0 = new Widget(base.Context);
 		_widget.AddChild(_widget_0);
-		_widget_0_0 = new BoolStateChangerWidget(base.Context);
+		_widget_0_0 = new BoolStateChangerBrushWidget(base.Context);
 		_widget_0.AddChild(_widget_0_0);
 		_widget_0_1 = new ListPanel(base.Context);
 		_widget_0.AddChild(_widget_0_1);
@@ -335,7 +335,7 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 		_widget_0_2_2.AddChild(_widget_0_2_2_1);
 		_widget_0_2_2_2 = new BrushWidget(base.Context);
 		_widget_0_2_2.AddChild(_widget_0_2_2_2);
-		_widget_0_2_2_3 = new BoolStateChangerWidget(base.Context);
+		_widget_0_2_2_3 = new BoolStateChangerBrushWidget(base.Context);
 		_widget_0_2_2.AddChild(_widget_0_2_2_3);
 		_widget_0_3 = new AgentHealthWidget(base.Context);
 		_widget_0.AddChild(_widget_0_3);
@@ -369,7 +369,7 @@ public class MainAgentHUD__TaleWorlds_MountAndBlade_ViewModelCollection_MissionA
 		_widget_0_4.AddChild(_widget_0_4_1);
 		_widget_0_4_2 = new BrushWidget(base.Context);
 		_widget_0_4.AddChild(_widget_0_4_2);
-		_widget_0_4_3 = new BoolStateChangerWidget(base.Context);
+		_widget_0_4_3 = new BoolStateChangerBrushWidget(base.Context);
 		_widget_0_4.AddChild(_widget_0_4_3);
 		_widget_0_5 = new MissionAgentDamageFeedWidget(base.Context);
 		_widget_0.AddChild(_widget_0_5);

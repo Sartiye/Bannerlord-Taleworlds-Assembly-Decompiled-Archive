@@ -82,27 +82,23 @@ public class DefaultSettlementTaxModel : SettlementTaxModel
 		CalculatePolicyGoldCut(town, rawTax, ref result);
 		if (PerkHelper.GetPerkValueForTown(DefaultPerks.Bow.QuickDraw, town))
 		{
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Bow.QuickDraw, town, ref result);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Bow.QuickDraw, town, isPrimaryBonus: false, ref result);
 		}
 		if (town.Governor != null)
 		{
 			if (town.Governor.GetPerkValue(DefaultPerks.Steward.Logistician))
 			{
-				PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.Logistician, town, ref result);
+				PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.Logistician, town, isPrimaryBonus: false, ref result);
 			}
-			if (town.Governor.GetPerkValue(DefaultPerks.Steward.PriceOfLoyalty))
-			{
-				int num = town.Governor.GetSkillValue(DefaultSkills.Steward) - Campaign.Current.Models.CharacterDevelopmentModel.MinSkillRequiredForEpicPerkBonus;
-				result.AddFactor(DefaultPerks.Steward.PriceOfLoyalty.SecondaryBonus * (float)num, DefaultPerks.Steward.PriceOfLoyalty.Name);
-			}
+			PerkHelper.AddEpicPerkBonusForCharacter(DefaultPerks.Steward.PriceOfLoyalty, BattleEnvironment.Any, town.Governor.CharacterObject, DefaultSkills.Steward, isPrimaryBonus: false, ref result, Campaign.Current.Models.CharacterDevelopmentModel.MinSkillRequiredForEpicPerkBonus);
 			if (PerkHelper.GetPerkValueForTown(DefaultPerks.Scouting.DesertBorn, town))
 			{
-				PerkHelper.AddPerkBonusForTown(DefaultPerks.Scouting.DesertBorn, town, ref result);
+				PerkHelper.AddPerkBonusForTown(DefaultPerks.Scouting.DesertBorn, town, isPrimaryBonus: false, ref result);
 			}
 		}
-		if (town.IsTown && town.OwnerClan.Culture.HasFeat(DefaultCulturalFeats.KhuzaitDecreasedTaxFeat))
+		if (town.IsTown)
 		{
-			result.AddFactor(DefaultCulturalFeats.KhuzaitDecreasedTaxFeat.EffectBonus, GameTexts.FindText("str_culture"));
+			FeatHelper.ApplyCultureFeat(town.OwnerClan.Culture, DefaultCulturalFeats.KhuzaitDecreasedTaxFeat, ref result);
 		}
 		GetSettlementTaxChangeDueToIssues(town, ref result);
 		CalculateSettlementTaxDueToSecurity(town, ref result);

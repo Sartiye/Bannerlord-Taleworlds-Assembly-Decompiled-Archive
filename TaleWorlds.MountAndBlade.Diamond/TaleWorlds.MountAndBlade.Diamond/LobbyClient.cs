@@ -18,7 +18,7 @@ using TaleWorlds.PlayerServices;
 
 namespace TaleWorlds.MountAndBlade.Diamond;
 
-public class LobbyClient : Client<LobbyClient>
+public class LobbyClient : Client
 {
 	public enum State
 	{
@@ -146,7 +146,7 @@ public class LobbyClient : Client<LobbyClient>
 		}
 	}
 
-	public override long AliveCheckTimeInMiliSeconds
+	public override int AliveCheckTimeInMilliSeconds
 	{
 		get
 		{
@@ -154,13 +154,13 @@ public class LobbyClient : Client<LobbyClient>
 			{
 			case State.AtBattle:
 			case State.InCustomGame:
-				return 60000L;
+				return 60000;
 			case State.Idle:
 			case State.Working:
 			case State.Connected:
 			case State.SessionRequested:
 			case State.AtLobby:
-				return 6000L;
+				return 6000;
 			case State.SearchingToRejoinBattle:
 			case State.RequestingToSearchBattle:
 			case State.RequestingToCancelSearchBattle:
@@ -169,9 +169,9 @@ public class LobbyClient : Client<LobbyClient>
 			case State.WaitingToRegisterCustomGame:
 			case State.HostingCustomGame:
 			case State.WaitingToJoinCustomGame:
-				return 3500L;
+				return 3500;
 			default:
-				return 1000L;
+				return 1000;
 			}
 		}
 	}
@@ -382,7 +382,7 @@ public class LobbyClient : Client<LobbyClient>
 		_logOutReason = logOutReason;
 	}
 
-	public LobbyClient(DiamondClientApplication diamondClientApplication, IClientSessionProvider<LobbyClient> sessionProvider)
+	public LobbyClient(DiamondClientApplication diamondClientApplication, IClientSessionFactory sessionProvider)
 		: base(diamondClientApplication, sessionProvider, autoReconnect: false)
 	{
 		_serverStatusTimer = new Stopwatch();
@@ -471,19 +471,25 @@ public class LobbyClient : Client<LobbyClient>
 			return;
 		}
 		_loadedUnofficialModules = new List<ModuleInfoModel>();
-		foreach (ModuleInfo sortedModule in ModuleHelper.GetSortedModules(moduleIDs))
+		try
 		{
-			if (ModuleInfoModel.TryCreateForSession(sortedModule, out var moduleInfoModel))
+			foreach (ModuleInfo sortedModule in ModuleHelper.GetSortedModules(moduleIDs))
 			{
-				_loadedUnofficialModules.Add(moduleInfoModel);
+				if (ModuleInfoModel.TryCreateForSession(sortedModule, out var moduleInfoModel))
+				{
+					_loadedUnofficialModules.Add(moduleInfoModel);
+				}
 			}
+		}
+		catch
+		{
 		}
 	}
 
 	public async Task<AvailableCustomGames> GetCustomGameServerList()
 	{
 		AssertCanPerformLobbyActions();
-		CustomGameServerListResponse customGameServerListResponse = await CallFunction<CustomGameServerListResponse>(new RequestCustomGameServerListMessage());
+		CustomGameServerListResponse customGameServerListResponse = (await CallFunction<CustomGameServerListResponse>(new RequestCustomGameServerListMessage())).Result as CustomGameServerListResponse;
 		TaleWorlds.Library.Debug.Print("Custom game server list received");
 		if (customGameServerListResponse != null)
 		{
@@ -511,12 +517,12 @@ public class LobbyClient : Client<LobbyClient>
 		}
 	}
 
-	public async Task<bool> RequestJoinCustomGame(CustomBattleId serverId, string password, bool isJoinAsAdmin = false)
+	public async Task<bool> RequestJoinCustomGame(CustomBattleId serverId, CustomGameJoinType joinType, string password)
 	{
 		CurrentState = State.WaitingToJoinCustomGame;
 		CustomBattleId = serverId;
 		string password2 = ((!string.IsNullOrEmpty(password)) ? Common.CalculateMD5Hash(password) : null);
-		SendMessage(new RequestJoinCustomGameMessage(serverId, password2, isJoinAsAdmin));
+		SendMessage(new RequestJoinCustomGameMessage(serverId, joinType, password2));
 		while (CurrentState == State.WaitingToJoinCustomGame)
 		{
 			await Task.Yield();
@@ -531,7 +537,11 @@ public class LobbyClient : Client<LobbyClient>
 	public async Task<bool> RequestJoinPlayerParty(PlayerId targetPlayer, bool inviteRequest)
 	{
 		AssertCanPerformLobbyActions();
-		return (await CallFunction<RequestJoinPlayerPartyMessageResult>(new RequestJoinPlayerPartyMessage(targetPlayer, inviteRequest)))?.Success ?? false;
+		if ((await CallFunction<RequestJoinPlayerPartyMessageResult>(new RequestJoinPlayerPartyMessage(targetPlayer, inviteRequest))).Result is RequestJoinPlayerPartyMessageResult requestJoinPlayerPartyMessageResult)
+		{
+			return requestJoinPlayerPartyMessageResult.Success;
+		}
+		return false;
 	}
 
 	public void CancelFindGame()
@@ -551,8 +561,7 @@ public class LobbyClient : Client<LobbyClient>
 		CurrentState = State.WaitingToJoinCustomGame;
 		for (int i = 0; i < CheckForCustomGamesCount; i++)
 		{
-			CustomGameServerListResponse customGameServerListResponse = await CallFunction<CustomGameServerListResponse>(new RequestCustomGameServerListMessage());
-			if (customGameServerListResponse == null || customGameServerListResponse.AvailableCustomGames.CustomGameServerInfos.Count <= 0)
+			if (!((await CallFunction<CustomGameServerListResponse>(new RequestCustomGameServerListMessage())).Result is CustomGameServerListResponse customGameServerListResponse) || customGameServerListResponse.AvailableCustomGames.CustomGameServerInfos.Count <= 0)
 			{
 				continue;
 			}
@@ -564,7 +573,7 @@ public class LobbyClient : Client<LobbyClient>
 				{
 					if (item.IsOfficial && item.GameType == text && item.Region == region && !item.PasswordProtected && item.MaxPlayerCount >= item.PlayerCount + PlayersInParty.Count)
 					{
-						SendMessage(new RequestJoinCustomGameMessage(item.Id));
+						SendMessage(new RequestJoinCustomGameMessage(item.Id, CustomGameJoinType.Player, null));
 						while (CurrentState == State.WaitingToJoinCustomGame)
 						{
 							await Task.Yield();
@@ -671,19 +680,35 @@ public class LobbyClient : Client<LobbyClient>
 		throw new NotImplementedException();
 	}
 
-	public void ChangeRegion(string region)
+	public async Task<bool> ChangeRegion(string region)
 	{
-		if (PlayerData == null || PlayerData.LastRegion != region)
+		if (PlayerData != null && PlayerData.LastRegion == region)
 		{
-			CheckAndSendMessage(new ChangeRegionMessage(region));
+			return true;
 		}
-		if (CurrentState == State.AtLobby)
+		string previousRegion = PlayerData?.LastRegion;
+		if (CurrentState == State.AtLobby && PlayerData != null)
 		{
 			PlayerData.LastRegion = region;
 		}
+		CallResult callResult = await CallFunction<FunctionResult>(new ChangeRegionMessage(region));
+		if (!callResult.Success)
+		{
+			if (PlayerData != null && previousRegion != null)
+			{
+				PlayerData.LastRegion = previousRegion;
+			}
+			string localizedFailureMessage = GetLocalizedFailureMessage(callResult.SuccessfulReason);
+			if (localizedFailureMessage != null)
+			{
+				_handler?.OnSystemMessageReceived(localizedFailureMessage);
+			}
+			return false;
+		}
+		return true;
 	}
 
-	public void ChangeGameTypes(string[] gameTypes)
+	public async Task<bool> ChangeGameTypes(string[] gameTypes)
 	{
 		bool flag = PlayerData == null || PlayerData.LastGameTypes.Length != gameTypes.Length;
 		if (!flag)
@@ -697,14 +722,30 @@ public class LobbyClient : Client<LobbyClient>
 				}
 			}
 		}
-		if (flag)
+		if (!flag)
 		{
-			CheckAndSendMessage(new ChangeGameTypesMessage(gameTypes));
+			return true;
 		}
-		if (CurrentState == State.AtLobby)
+		string[] previousGameTypes = PlayerData?.LastGameTypes;
+		if (CurrentState == State.AtLobby && PlayerData != null)
 		{
 			PlayerData.LastGameTypes = gameTypes;
 		}
+		CallResult callResult = await CallFunction<FunctionResult>(new ChangeGameTypesMessage(gameTypes));
+		if (!callResult.Success)
+		{
+			if (PlayerData != null && previousGameTypes != null)
+			{
+				PlayerData.LastGameTypes = previousGameTypes;
+			}
+			string localizedFailureMessage = GetLocalizedFailureMessage(callResult.SuccessfulReason);
+			if (localizedFailureMessage != null)
+			{
+				_handler?.OnSystemMessageReceived(localizedFailureMessage);
+			}
+			return false;
+		}
+		return true;
 	}
 
 	private void CheckAndSendMessage(Message message)
@@ -898,7 +939,7 @@ public class LobbyClient : Client<LobbyClient>
 			text = text + "Match Id: " + CurrentMatchId + "\n";
 			text = text + "Is Official: " + message.JoinGameData.GameServerProperties.IsOfficial + "\n";
 			TaleWorlds.Library.Debug.Print(text);
-			_handler?.OnJoinCustomGameResponse(message.Success, message.JoinGameData, message.Response, message.IsAdmin);
+			_handler?.OnJoinCustomGameResponse(message.Success, message.JoinGameData, message.Response, message.JoinType);
 		}
 		else
 		{
@@ -1269,9 +1310,18 @@ public class LobbyClient : Client<LobbyClient>
 		_handler?.OnMatchmakerGameOver(message.OldExperience, message.NewExperience, new List<string>(), message.GoldGain, null, null, BattleCancelReason.None);
 	}
 
-	public void AcceptClanInvitation()
+	public async Task<bool> AcceptClanInvitation()
 	{
-		CheckAndSendMessage(new AcceptClanInvitationMessage());
+		CallResult callResult = await CallFunction<FunctionResult>(new AcceptClanInvitationMessage());
+		if (!callResult.Success)
+		{
+			string localizedFailureMessage = GetLocalizedFailureMessage(callResult.SuccessfulReason);
+			if (localizedFailureMessage != null)
+			{
+				_handler?.OnSystemMessageReceived(localizedFailureMessage);
+			}
+		}
+		return callResult.Success;
 	}
 
 	public void DeclineClanInvitation()
@@ -1322,9 +1372,18 @@ public class LobbyClient : Client<LobbyClient>
 		CheckAndSendMessage(new DeclineClanCreationRequestMessage());
 	}
 
-	public void PromoteToClanLeader(PlayerId playerId, bool dontUseNameForUnknownPlayer)
+	public async Task<bool> PromoteToClanLeader(PlayerId playerId, bool dontUseNameForUnknownPlayer)
 	{
-		CheckAndSendMessage(new PromoteToClanLeaderMessage(playerId, dontUseNameForUnknownPlayer));
+		CallResult callResult = await CallFunction<FunctionResult>(new PromoteToClanLeaderMessage(playerId, dontUseNameForUnknownPlayer));
+		if (!callResult.Success)
+		{
+			string localizedFailureMessage = GetLocalizedFailureMessage(callResult.SuccessfulReason);
+			if (localizedFailureMessage != null)
+			{
+				_handler?.OnSystemMessageReceived(localizedFailureMessage);
+			}
+		}
+		return callResult.Success;
 	}
 
 	private void OnLobbyNotificationsMessage(LobbyNotificationsMessage message)
@@ -1339,18 +1398,17 @@ public class LobbyClient : Client<LobbyClient>
 
 	public async Task<CheckClanParameterValidResult> ClanNameExists(string clanName)
 	{
-		return await CallFunction<CheckClanParameterValidResult>(new CheckClanNameValidMessage(clanName));
+		return (await CallFunction<CheckClanParameterValidResult>(new CheckClanNameValidMessage(clanName))).Result as CheckClanParameterValidResult;
 	}
 
 	public async Task<CheckClanParameterValidResult> ClanTagExists(string clanTag)
 	{
-		return await CallFunction<CheckClanParameterValidResult>(new CheckClanTagValidMessage(clanTag));
+		return (await CallFunction<CheckClanParameterValidResult>(new CheckClanTagValidMessage(clanTag))).Result as CheckClanParameterValidResult;
 	}
 
 	public async Task<ClanHomeInfo> GetClanHomeInfo()
 	{
-		GetClanHomeInfoResult getClanHomeInfoResult = await CallFunction<GetClanHomeInfoResult>(new GetClanHomeInfoMessage());
-		if (getClanHomeInfoResult != null)
+		if ((await CallFunction<GetClanHomeInfoResult>(new GetClanHomeInfoMessage())).Result is GetClanHomeInfoResult getClanHomeInfoResult)
 		{
 			UpdateClanInfo(getClanHomeInfoResult.ClanHomeInfo);
 			return getClanHomeInfoResult.ClanHomeInfo;
@@ -1399,12 +1457,16 @@ public class LobbyClient : Client<LobbyClient>
 
 	public async Task<ClanLeaderboardInfo> GetClanLeaderboardInfo()
 	{
-		return (await CallFunction<GetClanLeaderboardResult>(new GetClanLeaderboardMessage()))?.ClanLeaderboardInfo;
+		if ((await CallFunction<GetClanLeaderboardResult>(new GetClanLeaderboardMessage())).Result is GetClanLeaderboardResult getClanLeaderboardResult)
+		{
+			return getClanLeaderboardResult.ClanLeaderboardInfo;
+		}
+		return null;
 	}
 
 	public async Task<ClanInfo> GetPlayerClanInfo(PlayerId playerId)
 	{
-		GetPlayerClanInfoResult getPlayerClanInfoResult = await CallFunction<GetPlayerClanInfoResult>(new GetPlayerClanInfo(playerId));
+		GetPlayerClanInfoResult getPlayerClanInfoResult = (await CallFunction<GetPlayerClanInfoResult>(new GetPlayerClanInfo(playerId))).Result as GetPlayerClanInfoResult;
 		if (getPlayerClanInfoResult?.ClanInfo != null)
 		{
 			return getPlayerClanInfoResult.ClanInfo;
@@ -1418,8 +1480,7 @@ public class LobbyClient : Client<LobbyClient>
 
 	public async Task<PremadeGameList> GetPremadeGameList()
 	{
-		GetPremadeGameListResult getPremadeGameListResult = await CallFunction<GetPremadeGameListResult>(new GetPremadeGameListMessage());
-		if (getPremadeGameListResult != null)
+		if ((await CallFunction<GetPremadeGameListResult>(new GetPremadeGameListMessage())).Result is GetPremadeGameListResult getPremadeGameListResult)
 		{
 			AvailablePremadeGames = getPremadeGameListResult.GameList;
 			_handler?.OnPremadeGameListReceived();
@@ -1430,22 +1491,48 @@ public class LobbyClient : Client<LobbyClient>
 
 	public async Task<AvailableScenes> GetAvailableScenes()
 	{
-		return (await CallFunction<GetAvailableScenesResult>(new GetAvailableScenesMessage()))?.AvailableScenes;
+		if ((await CallFunction<GetAvailableScenesResult>(new GetAvailableScenesMessage())).Result is GetAvailableScenesResult getAvailableScenesResult)
+		{
+			return getAvailableScenesResult.AvailableScenes;
+		}
+		return null;
 	}
 
 	public async Task<PublishedLobbyNewsArticle[]> GetLobbyNews()
 	{
-		return (await CallFunction<GetPublishedLobbyNewsMessageResult>(new GetPublishedLobbyNewsMessage()))?.Content;
+		if ((await CallFunction<GetPublishedLobbyNewsMessageResult>(new GetPublishedLobbyNewsMessage())).Result is GetPublishedLobbyNewsMessageResult getPublishedLobbyNewsMessageResult)
+		{
+			return getPublishedLobbyNewsMessageResult.Content;
+		}
+		return null;
 	}
 
-	public void SetClanInformationText(string informationText)
+	public async Task<bool> SetClanInformationText(string informationText)
 	{
-		CheckAndSendMessage(new SetClanInformationMessage(informationText));
+		CallResult callResult = await CallFunction<FunctionResult>(new SetClanInformationMessage(informationText));
+		if (!callResult.Success)
+		{
+			string localizedFailureMessage = GetLocalizedFailureMessage(callResult.SuccessfulReason);
+			if (localizedFailureMessage != null)
+			{
+				_handler?.OnSystemMessageReceived(localizedFailureMessage);
+			}
+		}
+		return callResult.Success;
 	}
 
-	public void AddClanAnnouncement(string announcement)
+	public async Task<bool> AddClanAnnouncement(string announcement)
 	{
-		CheckAndSendMessage(new AddClanAnnouncementMessage(announcement));
+		CallResult callResult = await CallFunction<FunctionResult>(new AddClanAnnouncementMessage(announcement));
+		if (!callResult.Success)
+		{
+			string localizedFailureMessage = GetLocalizedFailureMessage(callResult.SuccessfulReason);
+			if (localizedFailureMessage != null)
+			{
+				_handler?.OnSystemMessageReceived(localizedFailureMessage);
+			}
+		}
+		return callResult.Success;
 	}
 
 	public void EditClanAnnouncement(int announcementId, string text)
@@ -1458,14 +1545,32 @@ public class LobbyClient : Client<LobbyClient>
 		CheckAndSendMessage(new RemoveClanAnnouncementMessage(announcementId));
 	}
 
-	public void ChangeClanFaction(string faction)
+	public async Task<bool> ChangeClanFaction(string faction)
 	{
-		CheckAndSendMessage(new ChangeClanFactionMessage(faction));
+		CallResult callResult = await CallFunction<FunctionResult>(new ChangeClanFactionMessage(faction));
+		if (!callResult.Success)
+		{
+			string localizedFailureMessage = GetLocalizedFailureMessage(callResult.SuccessfulReason);
+			if (localizedFailureMessage != null)
+			{
+				_handler?.OnSystemMessageReceived(localizedFailureMessage);
+			}
+		}
+		return callResult.Success;
 	}
 
-	public void ChangeClanSigil(string sigil)
+	public async Task<bool> ChangeClanSigil(string sigil)
 	{
-		CheckAndSendMessage(new ChangeClanSigilMessage(sigil));
+		CallResult callResult = await CallFunction<FunctionResult>(new ChangeClanSigilMessage(sigil));
+		if (!callResult.Success)
+		{
+			string localizedFailureMessage = GetLocalizedFailureMessage(callResult.SuccessfulReason);
+			if (localizedFailureMessage != null)
+			{
+				_handler?.OnSystemMessageReceived(localizedFailureMessage);
+			}
+		}
+		return callResult.Success;
 	}
 
 	public void DestroyClan()
@@ -1478,12 +1583,14 @@ public class LobbyClient : Client<LobbyClient>
 		CheckAndSendMessage(new InviteToClanMessage(invitedPlayerId, dontUseNameForUnknownPlayer));
 	}
 
-	public async void CreatePremadeGame(string name, string gameType, string mapName, string factionA, string factionB, string password, PremadeGameType premadeGameType)
+	public async void CreatePremadeGame(string name, string gameType, string mapName, string factionA, string factionB, string password, PremadeGameType premadeGameType, string spectatorPassword, int maxSpectatorCount)
 	{
 		CurrentState = State.WaitingToCreatePremadeGame;
 		string password2 = ((!string.IsNullOrEmpty(password)) ? Common.CalculateMD5Hash(password) : null);
-		CreatePremadeGameMessageResult createPremadeGameMessageResult = await CallFunction<CreatePremadeGameMessageResult>(new CreatePremadeGameMessage(name, gameType, mapName, factionA, factionB, password2, premadeGameType));
-		if (createPremadeGameMessageResult == null || !createPremadeGameMessageResult.Successful)
+		string spectatorPassword2 = ((!string.IsNullOrEmpty(spectatorPassword)) ? Common.CalculateMD5Hash(spectatorPassword) : null);
+		CallResult obj = await CallFunction<CreatePremadeGameMessageResult>(new CreatePremadeGameMessage(name, gameType, mapName, factionA, factionB, password2, premadeGameType, spectatorPassword2, maxSpectatorCount));
+		CreatePremadeGameMessageResult createPremadeGameMessageResult = obj.Result as CreatePremadeGameMessageResult;
+		if (!obj.Success || createPremadeGameMessageResult == null || !createPremadeGameMessageResult.Successful)
 		{
 			CurrentState = State.AtLobby;
 		}
@@ -1496,7 +1603,7 @@ public class LobbyClient : Client<LobbyClient>
 
 	public void RequestToJoinPremadeGame(Guid gameId, string password)
 	{
-		string password2 = Common.CalculateMD5Hash(password);
+		string password2 = ((!string.IsNullOrEmpty(password)) ? Common.CalculateMD5Hash(password) : null);
 		CheckAndSendMessage(new RequestToJoinPremadeGameMessage(gameId, password2));
 	}
 
@@ -1540,9 +1647,18 @@ public class LobbyClient : Client<LobbyClient>
 		CheckAndSendMessage(new PromotePlayerToPartyLeaderMessage(playerId));
 	}
 
-	public void ChangeSigil(string sigilId)
+	public async Task<bool> ChangeSigil(string sigilId)
 	{
-		CheckAndSendMessage(new ChangePlayerSigilMessage(sigilId));
+		CallResult callResult = await CallFunction<FunctionResult>(new ChangePlayerSigilMessage(sigilId));
+		if (!callResult.Success)
+		{
+			string localizedFailureMessage = GetLocalizedFailureMessage(callResult.SuccessfulReason);
+			if (localizedFailureMessage != null)
+			{
+				_handler?.OnSystemMessageReceived(localizedFailureMessage);
+			}
+		}
+		return callResult.Success;
 	}
 
 	public async Task<bool> InviteToPlatformSession(PlayerId playerId)
@@ -1557,19 +1673,19 @@ public class LobbyClient : Client<LobbyClient>
 
 	public async void EndCustomGame()
 	{
-		await CallFunction<EndHostingCustomGameResult>(new EndHostingCustomGameMessage());
+		_ = (await CallFunction<EndHostingCustomGameResult>(new EndHostingCustomGameMessage())).Result;
 		_handler?.OnCustomGameEnd();
 		CurrentState = State.AtLobby;
 	}
 
-	public async void RegisterCustomGame(string gameModule, string gameType, string serverName, int maxPlayerCount, string map, string uniqueMapId, string gamePassword, string adminPassword, int port)
+	public async void RegisterCustomGame(string gameModule, string gameType, string serverName, int maxPlayerCount, string map, string uniqueMapId, string gamePassword, string adminPassword, string spectatorPassword, int port, int maxSpectatorCount, bool enableSpectators = false)
 	{
 		CustomGameType = gameType;
 		CustomGameScene = map;
 		CurrentState = State.WaitingToRegisterCustomGame;
-		RegisterCustomGameResult obj = await CallFunction<RegisterCustomGameResult>(new RegisterCustomGameMessage(gameModule, gameType, serverName, maxPlayerCount, map, uniqueMapId, gamePassword, adminPassword, port));
+		RegisterCustomGameResult obj = (await CallFunction<RegisterCustomGameResult>(new RegisterCustomGameMessage(gameModule, gameType, serverName, maxPlayerCount, map, uniqueMapId, gamePassword, adminPassword, spectatorPassword, port, maxSpectatorCount, enableSpectators))).Result as RegisterCustomGameResult;
 		TaleWorlds.Library.Debug.Print("Register custom game server response received");
-		if (obj.Success)
+		if (obj?.Success ?? false)
 		{
 			CurrentState = State.HostingCustomGame;
 			_handler?.OnRegisterCustomGameServerResponse();
@@ -1614,21 +1730,38 @@ public class LobbyClient : Client<LobbyClient>
 		CheckAndSendMessage(new DeclinePartyJoinRequestMessage(playerId, reason));
 	}
 
-	public void UpdateCharacter(BodyProperties bodyProperties, bool isFemale)
+	public async Task<bool> UpdateCharacter(BodyProperties bodyProperties, bool isFemale)
 	{
 		AssertCanPerformLobbyActions();
-		SendMessage(new UpdateCharacterMessage(bodyProperties, isFemale));
-		if (CanPerformLobbyActions)
+		BodyProperties? previousBodyProperties = PlayerData?.BodyProperties;
+		bool? previousIsFemale = PlayerData?.IsFemale;
+		if (CanPerformLobbyActions && PlayerData != null)
 		{
 			PlayerData.BodyProperties = bodyProperties;
 			PlayerData.IsFemale = isFemale;
 		}
+		CallResult callResult = await CallFunction<FunctionResult>(new UpdateCharacterMessage(bodyProperties, isFemale));
+		if (!callResult.Success)
+		{
+			if (PlayerData != null && previousBodyProperties.HasValue)
+			{
+				PlayerData.BodyProperties = previousBodyProperties.Value;
+				PlayerData.IsFemale = previousIsFemale ?? false;
+			}
+			string localizedFailureMessage = GetLocalizedFailureMessage(callResult.SuccessfulReason);
+			if (localizedFailureMessage != null)
+			{
+				_handler?.OnSystemMessageReceived(localizedFailureMessage);
+			}
+			return false;
+		}
+		return true;
 	}
 
 	public async Task<bool> UpdateShownBadgeId(string shownBadgeId)
 	{
 		AssertCanPerformLobbyActions();
-		UpdateShownBadgeIdMessageResult obj = await CallFunction<UpdateShownBadgeIdMessageResult>(new UpdateShownBadgeIdMessage(shownBadgeId));
+		UpdateShownBadgeIdMessageResult obj = (await CallFunction<UpdateShownBadgeIdMessageResult>(new UpdateShownBadgeIdMessage(shownBadgeId))).Result as UpdateShownBadgeIdMessageResult;
 		if (obj?.Successful ?? false)
 		{
 			PlayerData.ShownBadgeId = shownBadgeId;
@@ -1639,8 +1772,7 @@ public class LobbyClient : Client<LobbyClient>
 	public async Task<AnotherPlayerData> GetAnotherPlayerState(PlayerId playerId)
 	{
 		AssertCanPerformLobbyActions();
-		GetAnotherPlayerStateMessageResult getAnotherPlayerStateMessageResult = await CallFunction<GetAnotherPlayerStateMessageResult>(new GetAnotherPlayerStateMessage(playerId));
-		if (getAnotherPlayerStateMessageResult != null)
+		if ((await CallFunction<GetAnotherPlayerStateMessageResult>(new GetAnotherPlayerStateMessage(playerId))).Result is GetAnotherPlayerStateMessageResult getAnotherPlayerStateMessageResult)
 		{
 			return getAnotherPlayerStateMessageResult.AnotherPlayerData;
 		}
@@ -1655,7 +1787,7 @@ public class LobbyClient : Client<LobbyClient>
 		{
 			return value;
 		}
-		GetAnotherPlayerDataMessageResult getAnotherPlayerDataMessageResult = await CreatePendingRequest(PendingRequest.PlayerData, playerID, CallFunction<GetAnotherPlayerDataMessageResult>(new GetAnotherPlayerDataMessage(playerID)));
+		GetAnotherPlayerDataMessageResult getAnotherPlayerDataMessageResult = await CreatePendingRequest<GetAnotherPlayerDataMessageResult>(PendingRequest.PlayerData, playerID, CallFunction<GetAnotherPlayerDataMessageResult>(new GetAnotherPlayerDataMessage(playerID)));
 		if (getAnotherPlayerDataMessageResult?.AnotherPlayerData != null)
 		{
 			_cachedPlayerDatas[playerID] = getAnotherPlayerDataMessageResult.AnotherPlayerData;
@@ -1665,8 +1797,7 @@ public class LobbyClient : Client<LobbyClient>
 
 	public async Task<MatchmakingQueueStats> GetPlayerCountInQueue()
 	{
-		GetPlayerCountInQueueResult getPlayerCountInQueueResult = await CallFunction<GetPlayerCountInQueueResult>(new GetPlayerCountInQueue());
-		if (getPlayerCountInQueueResult != null)
+		if ((await CallFunction<GetPlayerCountInQueueResult>(new GetPlayerCountInQueue())).Result is GetPlayerCountInQueueResult getPlayerCountInQueueResult)
 		{
 			return getPlayerCountInQueueResult.MatchmakingQueueStats;
 		}
@@ -1676,13 +1807,12 @@ public class LobbyClient : Client<LobbyClient>
 	public async Task<List<(PlayerId, AnotherPlayerData)>> GetOtherPlayersState(List<PlayerId> players)
 	{
 		AssertCanPerformLobbyActions();
-		return (await CallFunction<GetOtherPlayersStateMessageResult>(new GetOtherPlayersStateMessage(players)))?.States;
+		return ((await CallFunction<GetOtherPlayersStateMessageResult>(new GetOtherPlayersStateMessage(players))).Result as GetOtherPlayersStateMessageResult)?.States;
 	}
 
 	public async Task<MatchmakingWaitTimeStats> GetMatchmakingWaitTimes()
 	{
-		GetAverageMatchmakingWaitTimesResult getAverageMatchmakingWaitTimesResult = await CallFunction<GetAverageMatchmakingWaitTimesResult>(new GetAverageMatchmakingWaitTimesMessage());
-		if (getAverageMatchmakingWaitTimesResult != null)
+		if ((await CallFunction<GetAverageMatchmakingWaitTimesResult>(new GetAverageMatchmakingWaitTimesMessage())).Result is GetAverageMatchmakingWaitTimesResult getAverageMatchmakingWaitTimesResult)
 		{
 			return getAverageMatchmakingWaitTimesResult.MatchmakingWaitTimeStats;
 		}
@@ -1691,7 +1821,7 @@ public class LobbyClient : Client<LobbyClient>
 
 	public async Task<Badge[]> GetPlayerBadges()
 	{
-		GetPlayerBadgesMessageResult getPlayerBadgesMessageResult = await CallFunction<GetPlayerBadgesMessageResult>(new GetPlayerBadgesMessage());
+		GetPlayerBadgesMessageResult getPlayerBadgesMessageResult = (await CallFunction<GetPlayerBadgesMessageResult>(new GetPlayerBadgesMessage())).Result as GetPlayerBadgesMessageResult;
 		List<Badge> list = new List<Badge>();
 		if (getPlayerBadgesMessageResult != null)
 		{
@@ -1714,7 +1844,7 @@ public class LobbyClient : Client<LobbyClient>
 		{
 			return value;
 		}
-		GetPlayerStatsMessageResult getPlayerStatsMessageResult = await CallFunction<GetPlayerStatsMessageResult>(new GetPlayerStatsMessage(playerID));
+		GetPlayerStatsMessageResult getPlayerStatsMessageResult = (await CallFunction<GetPlayerStatsMessageResult>(new GetPlayerStatsMessage(playerID))).Result as GetPlayerStatsMessageResult;
 		if (getPlayerStatsMessageResult?.PlayerStats != null)
 		{
 			_cachedPlayerStats[playerID] = getPlayerStatsMessageResult.PlayerStats;
@@ -1729,7 +1859,7 @@ public class LobbyClient : Client<LobbyClient>
 		{
 			return value;
 		}
-		GetPlayerGameTypeRankInfoMessageResult getPlayerGameTypeRankInfoMessageResult = await CreatePendingRequest(PendingRequest.RankInfo, playerID, CallFunction<GetPlayerGameTypeRankInfoMessageResult>(new GetPlayerGameTypeRankInfoMessage(playerID)));
+		GetPlayerGameTypeRankInfoMessageResult getPlayerGameTypeRankInfoMessageResult = await CreatePendingRequest<GetPlayerGameTypeRankInfoMessageResult>(PendingRequest.RankInfo, playerID, CallFunction<GetPlayerGameTypeRankInfoMessageResult>(new GetPlayerGameTypeRankInfoMessage(playerID)));
 		if (getPlayerGameTypeRankInfoMessageResult?.GameTypeRankInfo != null)
 		{
 			_cachedRankInfos[playerID] = getPlayerGameTypeRankInfoMessageResult.GameTypeRankInfo;
@@ -1739,12 +1869,12 @@ public class LobbyClient : Client<LobbyClient>
 
 	public async Task<int> GetRankedLeaderboardCount(string gameType)
 	{
-		return (await CallFunction<GetRankedLeaderboardCountMessageResult>(new GetRankedLeaderboardCountMessage(gameType)))?.Count ?? 0;
+		return ((await CallFunction<GetRankedLeaderboardCountMessageResult>(new GetRankedLeaderboardCountMessage(gameType))).Result as GetRankedLeaderboardCountMessageResult)?.Count ?? 0;
 	}
 
 	public async Task<PlayerLeaderboardData[]> GetRankedLeaderboard(string gameType, int startIndex, int count)
 	{
-		return (await CallFunction<GetRankedLeaderboardMessageResult>(new GetRankedLeaderboardMessage(gameType, startIndex, count)))?.LeaderboardPlayers;
+		return ((await CallFunction<GetRankedLeaderboardMessageResult>(new GetRankedLeaderboardMessage(gameType, startIndex, count))).Result as GetRankedLeaderboardMessageResult)?.LeaderboardPlayers;
 	}
 
 	public void SendCreateClanMessage(string clanName, string clanTag, string clanFaction, string clanSigil)
@@ -1785,12 +1915,22 @@ public class LobbyClient : Client<LobbyClient>
 		}
 	}
 
-	public void ChangeUsername(string username)
+	public async Task<bool> ChangeUsername(string username)
 	{
 		if ((PlayerData == null || PlayerData.Username != username) && username != null && username.Length >= Parameters.UsernameMinLength && username.Length <= Parameters.UsernameMaxLength && Common.IsAllLetters(username))
 		{
-			CheckAndSendMessage(new ChangeUsernameMessage(username));
+			CallResult callResult = await CallFunction<FunctionResult>(new ChangeUsernameMessage(username));
+			if (!callResult.Success)
+			{
+				string localizedFailureMessage = GetLocalizedFailureMessage(callResult.SuccessfulReason);
+				if (localizedFailureMessage != null)
+				{
+					_handler?.OnSystemMessageReceived(localizedFailureMessage);
+				}
+			}
+			return callResult.Success;
 		}
+		return true;
 	}
 
 	public void AddFriendByUsernameAndId(string username, int userId, bool dontUseNameForUnknownPlayer)
@@ -1805,7 +1945,7 @@ public class LobbyClient : Client<LobbyClient>
 	{
 		if (username != null && username.Length >= Parameters.UsernameMinLength && username.Length <= Parameters.UsernameMaxLength && Common.IsAllLetters(username) && userId >= 0 && userId <= Parameters.UserIdMax)
 		{
-			return (await CallFunction<GetPlayerByUsernameAndIdMessageResult>(new GetPlayerByUsernameAndIdMessage(username, userId)))?.PlayerId.IsValid ?? false;
+			return ((await CallFunction<GetPlayerByUsernameAndIdMessageResult>(new GetPlayerByUsernameAndIdMessage(username, userId))).Result as GetPlayerByUsernameAndIdMessageResult)?.PlayerId.IsValid ?? false;
 		}
 		return false;
 	}
@@ -1841,7 +1981,7 @@ public class LobbyClient : Client<LobbyClient>
 				list.Add(item);
 			}
 		}
-		UpdateUsedCosmeticItemsMessageResult updateUsedCosmeticItemsMessageResult = await CallFunction<UpdateUsedCosmeticItemsMessageResult>(new UpdateUsedCosmeticItemsMessage(list));
+		UpdateUsedCosmeticItemsMessageResult updateUsedCosmeticItemsMessageResult = (await CallFunction<UpdateUsedCosmeticItemsMessageResult>(new UpdateUsedCosmeticItemsMessage(list))).Result as UpdateUsedCosmeticItemsMessageResult;
 		if (updateUsedCosmeticItemsMessageResult != null && updateUsedCosmeticItemsMessageResult.Successful)
 		{
 			foreach (KeyValuePair<string, List<(string, bool)>> usedCosmetic in usedCosmetics)
@@ -1874,7 +2014,7 @@ public class LobbyClient : Client<LobbyClient>
 
 	public async Task<(bool isSuccessful, int finalGold)> BuyCosmetic(string cosmeticId)
 	{
-		BuyCosmeticMessageResult buyCosmeticMessageResult = await CallFunction<BuyCosmeticMessageResult>(new BuyCosmeticMessage(cosmeticId));
+		BuyCosmeticMessageResult buyCosmeticMessageResult = (await CallFunction<BuyCosmeticMessageResult>(new BuyCosmeticMessage(cosmeticId))).Result as BuyCosmeticMessageResult;
 		if (buyCosmeticMessageResult != null && buyCosmeticMessageResult.Successful)
 		{
 			_ownedCosmetics.Add(cosmeticId);
@@ -1884,7 +2024,7 @@ public class LobbyClient : Client<LobbyClient>
 
 	public async Task<(bool isSuccessful, List<string> ownedCosmetics, Dictionary<string, List<string>> usedCosmetics)> GetCosmeticsInfo()
 	{
-		GetUserCosmeticsInfoMessageResult getUserCosmeticsInfoMessageResult = await CallFunction<GetUserCosmeticsInfoMessageResult>(new GetUserCosmeticsInfoMessage());
+		GetUserCosmeticsInfoMessageResult getUserCosmeticsInfoMessageResult = (await CallFunction<GetUserCosmeticsInfoMessageResult>(new GetUserCosmeticsInfoMessage())).Result as GetUserCosmeticsInfoMessageResult;
 		if (getUserCosmeticsInfoMessageResult != null)
 		{
 			_usedCosmetics = getUserCosmeticsInfoMessageResult.UsedCosmetics ?? new Dictionary<string, List<string>>();
@@ -1895,12 +2035,12 @@ public class LobbyClient : Client<LobbyClient>
 
 	public async Task<string> GetDedicatedCustomServerAuthToken()
 	{
-		return (await CallFunction<GetDedicatedCustomServerAuthTokenMessageResult>(new GetDedicatedCustomServerAuthTokenMessage()))?.AuthToken;
+		return ((await CallFunction<GetDedicatedCustomServerAuthTokenMessageResult>(new GetDedicatedCustomServerAuthTokenMessage())).Result as GetDedicatedCustomServerAuthTokenMessageResult)?.AuthToken;
 	}
 
 	public async Task<string> GetOfficialServerProviderName()
 	{
-		return (await CallFunction<GetOfficialServerProviderNameResult>(new GetOfficialServerProviderNameMessage()))?.Name ?? string.Empty;
+		return ((await CallFunction<GetOfficialServerProviderNameResult>(new GetOfficialServerProviderNameMessage())).Result as GetOfficialServerProviderNameResult)?.Name ?? string.Empty;
 	}
 
 	public async Task<string> GetPlayerBannerlordID(PlayerId playerId)
@@ -1910,7 +2050,7 @@ public class LobbyClient : Client<LobbyClient>
 		{
 			return value;
 		}
-		GetBannerlordIDMessageResult getBannerlordIDMessageResult = await CreatePendingRequest(PendingRequest.BannerlordID, playerId, CallFunction<GetBannerlordIDMessageResult>(new GetBannerlordIDMessage(playerId)));
+		GetBannerlordIDMessageResult getBannerlordIDMessageResult = await CreatePendingRequest<GetBannerlordIDMessageResult>(PendingRequest.BannerlordID, playerId, CallFunction<GetBannerlordIDMessageResult>(new GetBannerlordIDMessage(playerId)));
 		if (getBannerlordIDMessageResult != null && getBannerlordIDMessageResult.BannerlordID != null)
 		{
 			_cachedPlayerBannerlordIDs[playerId] = getBannerlordIDMessageResult.BannerlordID;
@@ -1948,13 +2088,13 @@ public class LobbyClient : Client<LobbyClient>
 	public async Task<bool> SendPSPlayerJoinedToPlayerSessionMessage(ulong inviterPlayerId)
 	{
 		PSPlayerJoinedToPlayerSessionMessage message = new PSPlayerJoinedToPlayerSessionMessage(inviterPlayerId);
-		return (await CallFunction<PSPlayerJoinedToPlayerSessionMessageResult>(message)).Successful;
+		return ((await CallFunction<PSPlayerJoinedToPlayerSessionMessageResult>(message)).Result as PSPlayerJoinedToPlayerSessionMessageResult)?.Successful ?? false;
 	}
 
 	public async Task<bool> SendPlatformPlayerJoinedToPlayerSessionMessage(PlayerId inviterPlayerId)
 	{
 		PlatformPlayerJoinedToPlayerSessionMessage message = new PlatformPlayerJoinedToPlayerSessionMessage(inviterPlayerId);
-		return (await CallFunction<PSPlayerJoinedToPlayerSessionMessageResult>(message)).Successful;
+		return ((await CallFunction<PSPlayerJoinedToPlayerSessionMessageResult>(message)).Result as PSPlayerJoinedToPlayerSessionMessageResult)?.Successful ?? false;
 	}
 
 	private Task WaitForPendingRequestCompletion(PendingRequest requestType, PlayerId playerId)
@@ -1966,13 +2106,26 @@ public class LobbyClient : Client<LobbyClient>
 		return Task.CompletedTask;
 	}
 
-	private async Task<T> CreatePendingRequest<T>(PendingRequest requestType, PlayerId playerId, Task<T> requestTask)
+	private static string GetLocalizedFailureMessage(string successfulReason)
+	{
+		if (string.IsNullOrEmpty(successfulReason))
+		{
+			return null;
+		}
+		if (Enum.TryParse<ServerInfoMessage>(successfulReason, out var result))
+		{
+			return new SystemMessage(result).GetDescription().ToString();
+		}
+		return null;
+	}
+
+	private async Task<T> CreatePendingRequest<T>(PendingRequest requestType, PlayerId playerId, Task<CallResult> requestTask) where T : FunctionResult
 	{
 		(PendingRequest requestType, PlayerId playerId) key = (requestType: requestType, playerId: playerId);
 		try
 		{
 			_pendingPlayerRequests[key] = requestTask;
-			return await requestTask;
+			return (await requestTask).Result as T;
 		}
 		finally
 		{

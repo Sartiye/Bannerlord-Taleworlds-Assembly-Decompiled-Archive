@@ -19,6 +19,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
+using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.MountAndBlade.Missions.MissionLogics;
@@ -140,7 +141,7 @@ public class FloatingFortressSetPieceBattleMissionController : MissionLogic
 				_current = MBRandom.RandomInt(0, _lines.Count);
 				break;
 			default:
-				Debug.FailedAssert("Unknown variation type!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Storyline\\MissionControllers\\FloatingFortressSetPieceBattleMissionController.cs", "Play", 137);
+				Debug.FailedAssert("Unknown variation type!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Storyline\\MissionControllers\\FloatingFortressSetPieceBattleMissionController.cs", "Play", 138);
 				throw new ArgumentOutOfRangeException();
 			}
 			_active = _lines[_current];
@@ -350,13 +351,17 @@ public class FloatingFortressSetPieceBattleMissionController : MissionLogic
 
 	private const float PlayerRemainingAmmoThresholdRatio = 3f;
 
-	private const float AllyShipAnchorFrameConnectionDistanceSquared = 900f;
+	private const float AllyShipAnchorFrameConnectionDistanceSquared = 1600f;
 
 	private const string PlayerStartingShipHull = "naval_storyline_quest_4_player_medit_ship";
 
 	private const float AllyShipDistanceToSelfAnchor = 200f;
 
 	private const int PlayerBallistaStartingAmmo = 30;
+
+	private const float AllyShipForceConnectDelay = 5f;
+
+	private const float AllyShipForceConnectMaxDistanceSquared = 2500f;
 
 	private static readonly List<(string, string)[]> AllyShipUpgrades = new List<(string, string)[]>
 	{
@@ -571,6 +576,8 @@ public class FloatingFortressSetPieceBattleMissionController : MissionLogic
 
 	private readonly MBList<(MissionShip, bool)> _playerAllyShipAnchorState = new MBList<(MissionShip, bool)>();
 
+	private readonly Dictionary<MissionShip, float> _allyShipStuckDurations = new Dictionary<MissionShip, float>();
+
 	private readonly MBList<DestructableComponent> _enemySiegeWeaponDestructables = new MBList<DestructableComponent>();
 
 	private readonly Dictionary<DestructableComponent, DestructableComponent> _enemySiegeWeaponByCover = new Dictionary<DestructableComponent, DestructableComponent>();
@@ -621,8 +628,8 @@ public class FloatingFortressSetPieceBattleMissionController : MissionLogic
 		}, VariantConversationLine.VariationType.Ordered, 10f);
 		_playerShipHitLine = new VariantConversationLine(new ConversationLine[2]
 		{
-			new SimpleConversationLine(NavalStorylineData.Bjolgur.CharacterObject, "{=qA4pYH6z}That hit us! We’re still afloat, but the next time we might not be so lucky", 0f, MBInformationManager.NotificationPriority.High),
-			new SimpleConversationLine(NavalStorylineData.Bjolgur.CharacterObject, "{=Yv3BQ7cT}Stamp out those sparks, lads! Let’s not get hit again.", 0f, MBInformationManager.NotificationPriority.High)
+			new SimpleConversationLine(NavalStorylineData.Bjolgur.CharacterObject, "{=qA4pYH6z}That hit us! We're still afloat, but the next time we might not be so lucky", 0f, MBInformationManager.NotificationPriority.High),
+			new SimpleConversationLine(NavalStorylineData.Bjolgur.CharacterObject, "{=Yv3BQ7cT}Stamp out those sparks, lads! Let's not get hit again.", 0f, MBInformationManager.NotificationPriority.High)
 		}, VariantConversationLine.VariationType.Ordered, 15f);
 		_playerTookMangonelDownLine = new VariantConversationLine(new ConversationLine[2]
 		{
@@ -631,10 +638,10 @@ public class FloatingFortressSetPieceBattleMissionController : MissionLogic
 		}, VariantConversationLine.VariationType.Ordered, 0f, canShowEachLineOnce: true);
 		_playerTookAllMangonelsDownLine = new SequencedConversationLine(new ConversationLine[2]
 		{
-			new SimpleConversationLine(NavalStorylineData.Bjolgur.CharacterObject, "{=75khXDaR}You silenced those mangonels! Now let’s all move in and board them!", 0f, MBInformationManager.NotificationPriority.Medium),
-			new SimpleConversationLine(NavalStorylineData.Gunnar.CharacterObject, "{=4r2IhSCi}We’re right behind you! Row, lads, row!", 0f, MBInformationManager.NotificationPriority.Medium)
+			new SimpleConversationLine(NavalStorylineData.Bjolgur.CharacterObject, "{=75khXDaR}You silenced those mangonels! Now let's all move in and board them!", 0f, MBInformationManager.NotificationPriority.Medium),
+			new SimpleConversationLine(NavalStorylineData.Gunnar.CharacterObject, "{=4r2IhSCi}We're right behind you! Row, lads, row!", 0f, MBInformationManager.NotificationPriority.Medium)
 		}, 10000f);
-		_playerShipTooCloseLine = new SimpleConversationLine(NavalStorylineData.Bjolgur.CharacterObject, "{=tl473Yje}Let’s keep our distance! Their decks are packed with bowmen!", 15f, MBInformationManager.NotificationPriority.Medium);
+		_playerShipTooCloseLine = new SimpleConversationLine(NavalStorylineData.Bjolgur.CharacterObject, "{=tl473Yje}Let's keep our distance! Their decks are packed with bowmen!", 15f, MBInformationManager.NotificationPriority.Medium);
 		_playerShipLowHpLine = new SimpleConversationLine(NavalStorylineData.Bjolgur.CharacterObject, "{=eAabzGkE}Our timbers are groaning like a sick man.", 10000f, MBInformationManager.NotificationPriority.Medium);
 		_playerShipSailDestroyedLine = new SimpleConversationLine(NavalStorylineData.Bjolgur.CharacterObject, "{=gzvtND1s}Our sail is down!", 10000f, MBInformationManager.NotificationPriority.High);
 		_playerShipRemainingAmmoLine = new SimpleConversationLine(NavalStorylineData.Bjolgur.CharacterObject, "{=O4oqNTAl}Choose your targets! Take out the mangonels before we run out of bolts!", 10000f, MBInformationManager.NotificationPriority.High);
@@ -722,8 +729,7 @@ public class FloatingFortressSetPieceBattleMissionController : MissionLogic
 			Agent.Main.StopUsingGameObject();
 		}
 		_navalShipsLogic.SetDeploymentMode(value: false);
-		Mission.Current.OnDeploymentFinished();
-		Mission.Current.OnAfterDeploymentFinished();
+		base.Mission.OnInitialSpawnCompleted();
 		foreach (MissionShip item2 in _enemyMissionShipsOrdered)
 		{
 			item2.SetAnchor(isAnchored: true, anchorInPlace: true);
@@ -876,9 +882,17 @@ public class FloatingFortressSetPieceBattleMissionController : MissionLogic
 			Vec3 globalPosition = valueTuple.Item1.GameEntity.GlobalPosition;
 			if (valueTuple.Item2)
 			{
-				if (valueTuple.Item1.GetIsConnectedToEnemy() && valueTuple.Item1.Physics.IsAnchored)
+				if (valueTuple.Item1.GetIsConnectedToEnemy())
 				{
-					valueTuple.Item1.SetAnchor(isAnchored: false);
+					_allyShipStuckDurations.Remove(valueTuple.Item1);
+					if (valueTuple.Item1.Physics.IsAnchored)
+					{
+						valueTuple.Item1.SetAnchor(isAnchored: false);
+					}
+				}
+				else
+				{
+					TickAllyShipForceConnect(valueTuple.Item1, dt);
 				}
 				continue;
 			}
@@ -899,7 +913,7 @@ public class FloatingFortressSetPieceBattleMissionController : MissionLogic
 				valueTuple.Item1.ShipOrder.SetBoardingTargetShip(missionShip);
 			}
 			Vec3 globalPosition2 = valueTuple.Item1.ShipOrder.TargetShip.GameEntity.GlobalPosition;
-			if (globalPosition.DistanceSquared(globalPosition2) < 900f)
+			if (globalPosition.DistanceSquared(globalPosition2) < 1600f)
 			{
 				Vec3 vec = (globalPosition2 - globalPosition).NormalizedCopy();
 				valueTuple.Item1.SetAnchor(isAnchored: true);
@@ -911,15 +925,110 @@ public class FloatingFortressSetPieceBattleMissionController : MissionLogic
 		}
 	}
 
+	private void TickAllyShipForceConnect(MissionShip allyShip, float dt)
+	{
+		if (allyShip.IsSinking)
+		{
+			_allyShipStuckDurations.Remove(allyShip);
+			return;
+		}
+		_allyShipStuckDurations.TryGetValue(allyShip, out var value);
+		value += dt;
+		_allyShipStuckDurations[allyShip] = value;
+		if (value < 5f)
+		{
+			return;
+		}
+		MissionShip missionShip = allyShip.ShipOrder.TargetShip;
+		if (missionShip != null && !missionShip.IsSinking)
+		{
+			Team team = missionShip.Team;
+			if (team != null && team.IsEnemyOf(allyShip.Team))
+			{
+				goto IL_00e9;
+			}
+		}
+		missionShip = null;
+		float num = float.MaxValue;
+		foreach (MissionShip item in _enemyMissionShipsOrdered)
+		{
+			if (!item.IsSinking)
+			{
+				float num2 = item.GameEntity.GlobalPosition.DistanceSquared(allyShip.GameEntity.GlobalPosition);
+				if (num2 < num)
+				{
+					num = num2;
+					missionShip = item;
+				}
+			}
+		}
+		goto IL_00e9;
+		IL_00e9:
+		if (missionShip != null && !(missionShip.GameEntity.GlobalPosition.DistanceSquared(allyShip.GameEntity.GlobalPosition) > 2500f) && TryForceConnectShips(allyShip, missionShip))
+		{
+			_allyShipStuckDurations.Remove(allyShip);
+		}
+	}
+
+	private static bool TryForceConnectShips(MissionShip ship, MissionShip otherShip)
+	{
+		foreach (ShipAttachmentMachine attachmentMachine in ship.AttachmentMachines)
+		{
+			if (attachmentMachine.CurrentAttachment == null && attachmentMachine.LinkedAttachmentPointMachine.CurrentAttachment == null)
+			{
+				attachmentMachine.SetPreferredTargetShip(otherShip);
+				ShipAttachmentPointMachine bestEnemyAttachment = attachmentMachine.GetBestEnemyAttachment(checkAttachmentAlreadyExists: true, checkInteractionDistance: false);
+				if (bestEnemyAttachment != null)
+				{
+					attachmentMachine.ConnectWithAttachmentPointMachine(bestEnemyAttachment, forceBridge: true);
+					return true;
+				}
+			}
+		}
+		ShipAttachmentMachine shipAttachmentMachine = null;
+		ShipAttachmentPointMachine attachmentPointMachine = null;
+		float num = 2500f;
+		foreach (ShipAttachmentMachine attachmentMachine2 in ship.AttachmentMachines)
+		{
+			if (attachmentMachine2.CurrentAttachment != null || attachmentMachine2.LinkedAttachmentPointMachine.CurrentAttachment != null)
+			{
+				continue;
+			}
+			foreach (ShipAttachmentPointMachine attachmentPointMachine2 in otherShip.AttachmentPointMachines)
+			{
+				if (attachmentPointMachine2.CurrentAttachment == null && attachmentPointMachine2.LinkedAttachmentMachine?.CurrentAttachment == null)
+				{
+					float num2 = attachmentMachine2.GameEntity.GlobalPosition.DistanceSquared(attachmentPointMachine2.GameEntity.GlobalPosition);
+					if (num2 < num)
+					{
+						num = num2;
+						shipAttachmentMachine = attachmentMachine2;
+						attachmentPointMachine = attachmentPointMachine2;
+					}
+				}
+			}
+		}
+		if (shipAttachmentMachine != null)
+		{
+			shipAttachmentMachine.SetPreferredTargetShip(otherShip);
+			shipAttachmentMachine.ConnectWithAttachmentPointMachine(attachmentPointMachine, forceBridge: true);
+			return true;
+		}
+		return false;
+	}
+
 	private void SpawnPlayerShip()
 	{
 		Formation formation = Mission.GetTeam(TeamSideEnum.PlayerTeam).GetFormation(FormationClass.Infantry);
-		Ship ship = new Ship(Campaign.Current.ObjectManager.GetObject<ShipHull>("naval_storyline_quest_4_player_medit_ship"))
+		ShipHull playerShipHull = Campaign.Current.ObjectManager.GetObject<ShipHull>("naval_storyline_quest_4_player_medit_ship");
+		Ship ship = PartyBase.MainParty.Ships.FirstOrDefault((Ship x) => x.ShipHull == playerShipHull) ?? new Ship(playerShipHull)
 		{
 			IsTradeable = false,
 			IsUsedByQuest = true,
-			Owner = PartyBase.MainParty
+			Owner = PartyBase.MainParty,
+			CanHaveUnlockedPieces = true
 		};
+		ship.HitPoints = ship.MaxHitPoints;
 		foreach (KeyValuePair<string, string> playerShipUpgradePiece in _playerShipUpgradePieces)
 		{
 			ship.EquipUpgradePiece(playerShipUpgradePiece.Key, Campaign.Current.ObjectManager.GetObject<ShipUpgradePiece>(playerShipUpgradePiece.Value));
@@ -1005,12 +1114,18 @@ public class FloatingFortressSetPieceBattleMissionController : MissionLogic
 		for (int i = 0; i < _allyShipHulls.Count; i++)
 		{
 			ShipHull hull = Campaign.Current.ObjectManager.GetObject<ShipHull>(_allyShipHulls[i]);
-			Ship ship = PartyBase.MainParty.Ships.FirstOrDefault((Ship x) => x.ShipHull == hull) ?? new Ship(hull)
+			Ship ship = PartyBase.MainParty.Ships.FirstOrDefault((Ship x) => x.ShipHull == hull);
+			if (ship == null || PartyBase.MainParty.Ships.CountQ((Ship x) => x.ShipHull == hull) < _allyShipHulls.CountQ((string x) => x == hull.StringId))
 			{
-				IsTradeable = false,
-				IsUsedByQuest = true,
-				Owner = PartyBase.MainParty
-			};
+				ship = new Ship(hull)
+				{
+					IsTradeable = false,
+					IsUsedByQuest = true,
+					Owner = PartyBase.MainParty,
+					CanHaveUnlockedPieces = true
+				};
+			}
+			ship.HitPoints = ship.MaxHitPoints;
 			(string, string)[] array = AllyShipUpgrades[i];
 			for (int j = 0; j < array.Length; j++)
 			{
@@ -1030,7 +1145,7 @@ public class FloatingFortressSetPieceBattleMissionController : MissionLogic
 		}
 		foreach (MissionShip playerAllyMissionShip in _playerAllyMissionShips)
 		{
-			playerAllyMissionShip.OnDeploymentFinished();
+			playerAllyMissionShip.FinalizeDeployment(initializeMachines: true);
 		}
 	}
 

@@ -41,7 +41,7 @@ public abstract class ArchivedMap
 
 	public static CachedArchivedMap FromCurrent()
 	{
-		string strValue = MultiplayerOptions.OptionType.Map.GetStrValue();
+		string strValue = MultiplayerOptions.OptionType.PremadeGameType.GetStrValue();
 		return new CachedArchivedMap(ZipMap(strValue), strValue);
 	}
 

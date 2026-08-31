@@ -811,19 +811,26 @@ public class MissionScoreboardComponent : MissionNetwork
 			num = (int)(damagedHp * 0.35f);
 			affectedAgent = affectedAgent.RiderAgent;
 		}
-		if (affectedAgent != null && affectorAgent != affectedAgent)
+		if (affectedAgent == null || affectorAgent == affectedAgent)
 		{
-			if (!affectorAgent.IsFriendOf(affectedAgent))
-			{
-				missionPeer.Score += num;
-			}
-			else
-			{
-				missionPeer.Score -= (int)((float)num * 1.5f);
-			}
-			GameNetwork.BeginBroadcastModuleEvent();
-			GameNetwork.WriteMessage(new KillDeathCountChange(missionPeer.GetNetworkPeer(), null, missionPeer.KillCount, missionPeer.AssistCount, missionPeer.DeathCount, missionPeer.Score));
-			GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.None);
+			return;
 		}
+		if (!affectorAgent.IsFriendOf(affectedAgent))
+		{
+			missionPeer.Score += num;
+			if (attackerWeapon != null && missionPeer.RegisterWeaponUsage(attackerWeapon.WeaponClass, num))
+			{
+				GameNetwork.BeginBroadcastModuleEvent();
+				GameNetwork.WriteMessage(new PeerMostUsedWeaponChange(missionPeer.GetNetworkPeer(), missionPeer.MostUsedWeaponClass));
+				GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.None);
+			}
+		}
+		else
+		{
+			missionPeer.Score -= (int)((float)num * 1.5f);
+		}
+		GameNetwork.BeginBroadcastModuleEvent();
+		GameNetwork.WriteMessage(new KillDeathCountChange(missionPeer.GetNetworkPeer(), null, missionPeer.KillCount, missionPeer.AssistCount, missionPeer.DeathCount, missionPeer.Score));
+		GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.None);
 	}
 }

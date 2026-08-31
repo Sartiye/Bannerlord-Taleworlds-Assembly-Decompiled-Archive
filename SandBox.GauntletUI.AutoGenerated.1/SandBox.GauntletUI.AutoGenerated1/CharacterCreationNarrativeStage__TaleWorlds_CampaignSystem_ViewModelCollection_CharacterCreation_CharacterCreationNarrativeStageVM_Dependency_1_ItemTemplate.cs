@@ -18,7 +18,7 @@ public class CharacterCreationNarrativeStage__TaleWorlds_CampaignSystem_ViewMode
 
 	private EncyclopediaTraitItemVM _datasource_Root;
 
-	private HintViewModel _datasource_Root_Hint;
+	private BasicTooltipViewModel _datasource_Root_Hint;
 
 	public CharacterCreationNarrativeStage__TaleWorlds_CampaignSystem_ViewModelCollection_CharacterCreation_CharacterCreationNarrativeStageVM_Dependency_1_ItemTemplate(UIContext context)
 		: base(context)
@@ -348,7 +348,7 @@ public class CharacterCreationNarrativeStage__TaleWorlds_CampaignSystem_ViewMode
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_Hint(HintViewModel newDataSource)
+	private void RefreshDataSource_datasource_Root_Hint(BasicTooltipViewModel newDataSource)
 	{
 		if (_datasource_Root_Hint != null)
 		{

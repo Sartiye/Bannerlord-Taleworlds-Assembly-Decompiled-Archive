@@ -1,4 +1,5 @@
 using System;
+using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Conversation.Persuasion;
@@ -76,18 +77,15 @@ public class DefaultPersuasionModel : PersuasionModel
 
 	private float GetBonusSuccessChance(PersuasionOptionArgs optionArgs)
 	{
-		ExplainedNumber explainedNumber = new ExplainedNumber(1f);
-		explainedNumber.AddFactor(TaleWorlds.Library.MathF.Clamp((float)(Hero.MainHero.GetSkillValue(optionArgs.SkillUsed) / Campaign.Current.Models.CharacterDevelopmentModel.MaxSkillRequiredForEpicPerkBonus) * 0.2f, 0f, 0.2f), optionArgs.SkillUsed.Name);
-		if (Hero.MainHero.GetPerkValue(DefaultPerks.Athletics.ImposingStature))
-		{
-			explainedNumber.AddFactor(DefaultPerks.Athletics.ImposingStature.PrimaryBonus, DefaultPerks.Athletics.ImposingStature.Name);
-		}
+		ExplainedNumber bonuses = new ExplainedNumber(1f);
+		bonuses.AddFactor(TaleWorlds.Library.MathF.Clamp((float)(Hero.MainHero.GetSkillValue(optionArgs.SkillUsed) / Campaign.Current.Models.CharacterDevelopmentModel.MaxSkillRequiredForEpicPerkBonus) * 0.2f, 0f, 0.2f), optionArgs.SkillUsed.Name);
+		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Athletics.ImposingStature, BattleEnvironment.Any, Hero.MainHero.CharacterObject, isPrimaryBonus: true, ref bonuses);
 		float persuasionBonusChance = Campaign.Current.Models.DifficultyModel.GetPersuasionBonusChance();
 		if (persuasionBonusChance > 0f)
 		{
-			explainedNumber.AddFactor(persuasionBonusChance, GameTexts.FindText("str_game_difficulty"));
+			bonuses.AddFactor(persuasionBonusChance, GameTexts.FindText("str_game_difficulty"));
 		}
-		return explainedNumber.ResultNumber;
+		return bonuses.ResultNumber;
 	}
 
 	public override void GetEffectChances(PersuasionOptionArgs option, out float moveToNextStageChance, out float blockRandomOptionChance, float difficultyMultiplier)
@@ -142,20 +140,20 @@ public class DefaultPersuasionModel : PersuasionModel
 
 	public override float CalculatePersuasionGoalValue(CharacterObject oneToOneConversationCharacter, float successValue)
 	{
-		ExplainedNumber explainedNumber = new ExplainedNumber(successValue);
+		ExplainedNumber bonuses = new ExplainedNumber(successValue);
 		if (CharacterObject.OneToOneConversationCharacter != null && CharacterObject.OneToOneConversationCharacter.IsHero)
 		{
-			if (CharacterObject.OneToOneConversationCharacter.HeroObject.Culture == Hero.MainHero.Culture && Hero.MainHero.GetPerkValue(DefaultPerks.Charm.MoralLeader))
+			if (CharacterObject.OneToOneConversationCharacter.HeroObject.Culture == Hero.MainHero.Culture)
 			{
-				explainedNumber.Add(DefaultPerks.Charm.MoralLeader.PrimaryBonus, DefaultPerks.Charm.MoralLeader.Name);
+				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Charm.MoralLeader, BattleEnvironment.Any, Hero.MainHero.CharacterObject, isPrimaryBonus: true, ref bonuses);
 			}
-			else if (CharacterObject.OneToOneConversationCharacter.HeroObject.Culture != Hero.MainHero.Culture && Hero.MainHero.GetPerkValue(DefaultPerks.Charm.NaturalLeader))
+			else if (CharacterObject.OneToOneConversationCharacter.HeroObject.Culture != Hero.MainHero.Culture)
 			{
-				explainedNumber.Add(DefaultPerks.Charm.NaturalLeader.PrimaryBonus, DefaultPerks.Charm.NaturalLeader.Name);
+				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Charm.NaturalLeader, BattleEnvironment.Any, Hero.MainHero.CharacterObject, isPrimaryBonus: true, ref bonuses);
 			}
 		}
-		explainedNumber.LimitMin(1f);
-		return explainedNumber.ResultNumber;
+		bonuses.LimitMin(1f);
+		return bonuses.ResultNumber;
 	}
 
 	public override float GetDifficulty(PersuasionDifficulty difficulty)

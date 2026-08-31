@@ -18,16 +18,16 @@ public class VillageHealCampaignBehavior : CampaignBehaviorBase
 		if ((settlement.IsVillage || settlement.IsTown) && settlement.SettlementHitPoints < 1f && settlement.Party.MapEvent == null && settlement.Party.SiegeEvent == null)
 		{
 			float num = (7000f - MathF.Min(7000f, MathF.Max(1000f, settlement.MapFaction.CurrentTotalStrength))) / 100000f;
-			ExplainedNumber explainedNumber = new ExplainedNumber(0.06f + num);
-			if (settlement.IsVillage && settlement.Village.TradeBound != null && PerkHelper.GetPerkValueForTown(DefaultPerks.Medicine.CleanInfrastructure, settlement.Village.TradeBound.Town))
+			ExplainedNumber bonuses = new ExplainedNumber(0.06f + num);
+			if (settlement.IsVillage && settlement.Village.TradeBound != null)
 			{
-				explainedNumber.AddFactor(DefaultPerks.Medicine.CleanInfrastructure.SecondaryBonus, DefaultPerks.Medicine.CleanInfrastructure.Name);
+				PerkHelper.AddPerkBonusForTown(DefaultPerks.Medicine.CleanInfrastructure, settlement.Village.TradeBound.Town, isPrimaryBonus: false, ref bonuses);
 			}
 			if (settlement.OwnerClan.Leader.GetPerkValue(DefaultPerks.Roguery.InBestLight))
 			{
-				explainedNumber.AddFactor(DefaultPerks.Roguery.InBestLight.SecondaryBonus, DefaultPerks.Roguery.InBestLight.Name);
+				bonuses.AddFactor(DefaultPerks.Roguery.InBestLight.SecondaryBonus, DefaultPerks.Roguery.InBestLight.Name);
 			}
-			IncreaseSettlementHealthAction.Apply(settlement, explainedNumber.ResultNumber);
+			IncreaseSettlementHealthAction.Apply(settlement, bonuses.ResultNumber);
 		}
 	}
 

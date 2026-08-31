@@ -30,6 +30,8 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 
 	private ListPanel _widget_0_3;
 
+	private Widget _widget_0_4;
+
 	private Widget _widget_1;
 
 	private TextWidget _widget_2;
@@ -78,6 +80,8 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_0.AddChild(_widget_0_2);
 		_widget_0_3 = new ListPanel(base.Context);
 		_widget_0.AddChild(_widget_0_3);
+		_widget_0_4 = new Widget(base.Context);
+		_widget_0.AddChild(_widget_0_4);
 		_widget_1 = new Widget(base.Context);
 		_widget.AddChild(_widget_1);
 		_widget_2 = new TextWidget(base.Context);
@@ -157,6 +161,16 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget_0_3.VerticalAlignment = VerticalAlignment.Bottom;
 		_widget_0_3.IsEnabled = false;
 		_widget_0_3.DoNotAcceptEvents = true;
+		_widget_0_4.DoNotAcceptEvents = true;
+		_widget_0_4.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_0_4.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_0_4.SuggestedWidth = 15f;
+		_widget_0_4.SuggestedHeight = 22f;
+		_widget_0_4.HorizontalAlignment = HorizontalAlignment.Left;
+		_widget_0_4.VerticalAlignment = VerticalAlignment.Bottom;
+		_widget_0_4.MarginLeft = 3f;
+		_widget_0_4.MarginBottom = 3f;
+		_widget_0_4.Sprite = base.Context.SpriteData.GetSprite("SPGeneral\\blood_feud_icon");
 		_widget_1.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1.SuggestedWidth = 38f;
@@ -268,6 +282,15 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget.intPropertyChanged -= intPropertyChangedListenerOf_widget;
 		_widget.uintPropertyChanged -= uintPropertyChangedListenerOf_widget;
 		_widget.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget;
+		_widget_0_4.PropertyChanged -= PropertyChangedListenerOf_widget_0_4;
+		_widget_0_4.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_4;
+		_widget_0_4.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_4;
+		_widget_0_4.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_4;
+		_widget_0_4.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_4;
+		_widget_0_4.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_4;
+		_widget_0_4.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_4;
+		_widget_0_4.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_4;
+		_widget_0_4.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_4;
 		_widget_1.PropertyChanged -= PropertyChangedListenerOf_widget_1;
 		_widget_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1;
 		_widget_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1;
@@ -502,6 +525,59 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		case "HoveredCursorState":
 			_datasource_Root.EncyclopediaCursorEffect = _widget.HoveredCursorState;
 			break;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_4(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_4(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_4(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_4(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_4(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_4(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_4(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_4(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_0_4(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_0_4(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_0_4(string propertyName)
+	{
+		if (propertyName == "IsVisible")
+		{
+			_datasource_Root.HasBloodFeud = _widget_0_4.IsVisible;
 		}
 	}
 
@@ -1203,6 +1279,9 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		case "EncyclopediaCursorEffect":
 			_widget.HoveredCursorState = _datasource_Root.EncyclopediaCursorEffect;
 			break;
+		case "HasBloodFeud":
+			_widget_0_4.IsVisible = _datasource_Root.HasBloodFeud;
+			break;
 		case "IsCharacterInPrison":
 			_widget_1.IsVisible = _datasource_Root.IsCharacterInPrison;
 			break;
@@ -1432,6 +1511,15 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 			_widget.intPropertyChanged -= intPropertyChangedListenerOf_widget;
 			_widget.uintPropertyChanged -= uintPropertyChangedListenerOf_widget;
 			_widget.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget;
+			_widget_0_4.PropertyChanged -= PropertyChangedListenerOf_widget_0_4;
+			_widget_0_4.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_0_4;
+			_widget_0_4.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_0_4;
+			_widget_0_4.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_0_4;
+			_widget_0_4.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_0_4;
+			_widget_0_4.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_0_4;
+			_widget_0_4.intPropertyChanged -= intPropertyChangedListenerOf_widget_0_4;
+			_widget_0_4.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_0_4;
+			_widget_0_4.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_0_4;
 			_widget_1.PropertyChanged -= PropertyChangedListenerOf_widget_1;
 			_widget_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_1;
 			_widget_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_1;
@@ -1603,6 +1691,16 @@ public class SettlementOverlay__TaleWorlds_CampaignSystem_ViewModelCollection_Ga
 		_widget.intPropertyChanged += intPropertyChangedListenerOf_widget;
 		_widget.uintPropertyChanged += uintPropertyChangedListenerOf_widget;
 		_widget.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget;
+		_widget_0_4.IsVisible = _datasource_Root.HasBloodFeud;
+		_widget_0_4.PropertyChanged += PropertyChangedListenerOf_widget_0_4;
+		_widget_0_4.boolPropertyChanged += boolPropertyChangedListenerOf_widget_0_4;
+		_widget_0_4.floatPropertyChanged += floatPropertyChangedListenerOf_widget_0_4;
+		_widget_0_4.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_0_4;
+		_widget_0_4.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_0_4;
+		_widget_0_4.doublePropertyChanged += doublePropertyChangedListenerOf_widget_0_4;
+		_widget_0_4.intPropertyChanged += intPropertyChangedListenerOf_widget_0_4;
+		_widget_0_4.uintPropertyChanged += uintPropertyChangedListenerOf_widget_0_4;
+		_widget_0_4.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_0_4;
 		_widget_1.IsVisible = _datasource_Root.IsCharacterInPrison;
 		_widget_1.PropertyChanged += PropertyChangedListenerOf_widget_1;
 		_widget_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1;

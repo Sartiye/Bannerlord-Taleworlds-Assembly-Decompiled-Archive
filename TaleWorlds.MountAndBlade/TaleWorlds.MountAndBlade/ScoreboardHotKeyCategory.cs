@@ -17,6 +17,8 @@ public sealed class ScoreboardHotKeyCategory : GameKeyContext
 
 	public const string MenuShowContextMenu = "MenuShowContextMenu";
 
+	public const string ToggleHud = "ToggleHud";
+
 	public ScoreboardHotKeyCategory()
 		: base("ScoreboardHotKeyCategory", 116)
 	{
@@ -46,6 +48,12 @@ public sealed class ScoreboardHotKeyCategory : GameKeyContext
 			new Key(InputKey.ControllerRRight)
 		};
 		RegisterHotKey(new HotKey("HoldShow", "ScoreboardHotKeyCategory", keys3));
+		List<Key> keys4 = new List<Key>
+		{
+			new Key(InputKey.H),
+			new Key(InputKey.ControllerRLeft)
+		};
+		RegisterHotKey(new HotKey("ToggleHud", "ScoreboardHotKeyCategory", keys4));
 	}
 
 	private void RegisterGameKeys()

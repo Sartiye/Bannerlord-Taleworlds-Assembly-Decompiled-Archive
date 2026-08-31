@@ -34,9 +34,11 @@ public class KingdomManagementVM : ViewModel
 
 	private (bool, TextObject)? _mostRecentLeaveKingdomPermission;
 
-	private int _currentCategory;
+	private readonly IViewDataTracker _viewDataTracker;
 
 	private bool _isPlayerTheRuler;
+
+	private int _currentCategory;
 
 	private KingdomArmyVM _army;
 
@@ -563,7 +565,14 @@ public class KingdomManagementVM : ViewModel
 		Decision = new KingdomDecisionsVM(OnRefresh);
 		_categoryCount = 5;
 		_leaveKingdomPermissionEvent = new LeaveKingdomPermissionEvent(OnLeaveKingdomRequest);
-		SetSelectedCategory(1);
+		_viewDataTracker = Campaign.Current.GetCampaignBehavior<IViewDataTracker>();
+		int num = _viewDataTracker.GetLastOpenedKingdomTabIndex();
+		if (_categoryCount <= num)
+		{
+			Debug.FailedAssert("Tab index is out of bounds", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\KingdomManagement\\KingdomManagementVM.cs", ".ctor", 58);
+			num = 0;
+		}
+		SetSelectedCategory(num);
 		ChangeKingdomNameHint = new HintViewModel();
 		RefreshValues();
 	}
@@ -776,11 +785,11 @@ public class KingdomManagementVM : ViewModel
 			{
 				TextObject textObject = new TextObject("{=b7muQ9mt}Are you sure you want to end your mercenary contract with the {KINGDOM_INFORMALNAME}?");
 				textObject.SetTextVariable("KINGDOM_INFORMALNAME", Kingdom.InformalName);
-				InformationManager.ShowInquiry(new InquiryData(new TextObject("{=3sxtCWPe}Leaving Kingdom").ToString(), textObject.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, new TextObject("{=5Unqsx3N}Confirm").ToString(), GameTexts.FindText("str_cancel").ToString(), OnConfirmLeaveKingdom, null));
+				InformationManager.ShowInquiry(new InquiryData(new TextObject("{=3sxtCWPe}Leaving Kingdom").ToString(), textObject.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_confirm").ToString(), GameTexts.FindText("str_cancel").ToString(), OnConfirmLeaveKingdom, null));
 			}
 			else
 			{
-				InformationManager.ShowInquiry(new InquiryData(new TextObject("{=3sxtCWPe}Leaving Kingdom").ToString(), new TextObject("{=BgqZWbga}The nobles of the realm will dislike you for abandoning your fealty. Are you sure you want to leave the Kingdom?").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, new TextObject("{=5Unqsx3N}Confirm").ToString(), GameTexts.FindText("str_cancel").ToString(), OnConfirmLeaveKingdom, null));
+				InformationManager.ShowInquiry(new InquiryData(new TextObject("{=3sxtCWPe}Leaving Kingdom").ToString(), new TextObject("{=BgqZWbga}The nobles of the realm will dislike you for abandoning your fealty. Are you sure you want to leave the Kingdom?").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_confirm").ToString(), GameTexts.FindText("str_cancel").ToString(), OnConfirmLeaveKingdom, null));
 			}
 		}
 		else
@@ -790,7 +799,7 @@ public class KingdomManagementVM : ViewModel
 				new InquiryElement("keep", new TextObject("{=z8h0BRAb}Keep all holdings").ToString(), null, isEnabled: true, new TextObject("{=lkJfq1ap}Owned settlements remain under your control but nobles will dislike this dishonorable act and the kingdom will declare war on you.").ToString()),
 				new InquiryElement("dontkeep", new TextObject("{=JIr3Jc7b}Relinquish all holdings").ToString(), null, isEnabled: true, new TextObject("{=ZjaSde0X}Owned settlements are returned to the kingdom. This will avert a war and nobles will dislike you less for abandoning your fealty.").ToString())
 			};
-			MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData(new TextObject("{=3sxtCWPe}Leaving Kingdom").ToString(), new TextObject("{=xtlIFKaa}Are you sure you want to leave the Kingdom?{newline}If so, choose how you want to leave the kingdom.").ToString(), inquiryElements, isExitShown: true, 1, 1, new TextObject("{=5Unqsx3N}Confirm").ToString(), string.Empty, OnConfirmLeaveKingdomWithOption, null));
+			MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData(new TextObject("{=3sxtCWPe}Leaving Kingdom").ToString(), new TextObject("{=xtlIFKaa}Are you sure you want to leave the Kingdom?{newline}If so, choose how you want to leave the kingdom.").ToString(), inquiryElements, isExitShown: true, 1, 1, GameTexts.FindText("str_confirm").ToString(), string.Empty, OnConfirmLeaveKingdomWithOption, null));
 		}
 	}
 
@@ -856,7 +865,7 @@ public class KingdomManagementVM : ViewModel
 		TextObject textObject2 = GameTexts.FindText("str_generic_kingdom_short_name");
 		textObject.SetTextVariable("KINGDOM_NAME", variable);
 		textObject2.SetTextVariable("KINGDOM_SHORT_NAME", variable);
-		Kingdom.ChangeKingdomName(textObject, textObject2);
+		Kingdom.ChangeKingdomName(textObject, textObject2, textObject);
 		OnRefresh();
 		RefreshValues();
 	}
@@ -935,6 +944,7 @@ public class KingdomManagementVM : ViewModel
 	public override void OnFinalize()
 	{
 		base.OnFinalize();
+		_viewDataTracker.SetLastOpenedKingdomTabIndex(_currentCategory);
 		DoneInputKey.OnFinalize();
 		PreviousTabInputKey.OnFinalize();
 		NextTabInputKey.OnFinalize();

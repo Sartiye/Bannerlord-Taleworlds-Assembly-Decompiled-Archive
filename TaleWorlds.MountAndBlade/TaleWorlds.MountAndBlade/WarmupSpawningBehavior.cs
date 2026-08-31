@@ -35,7 +35,7 @@ public class WarmupSpawningBehavior : SpawningBehaviorBase
 				continue;
 			}
 			MissionPeer component = networkPeer.GetComponent<MissionPeer>();
-			if (component == null || component.ControlledAgent != null || component.HasSpawnedAgentVisuals || component.Team == null || component.Team == base.Mission.SpectatorTeam || !component.TeamInitialPerkInfoReady || !component.SpawnTimer.Check(base.Mission.CurrentTime))
+			if (component == null || component.ControlledAgent != null || component.HasSpawnedAgentVisuals || component.Team == null || networkPeer.IsSpectator || component.Team == base.Mission.SpectatorTeam || !component.TeamInitialPerkInfoReady || !component.SpawnTimer.Check(base.Mission.CurrentTime))
 			{
 				continue;
 			}

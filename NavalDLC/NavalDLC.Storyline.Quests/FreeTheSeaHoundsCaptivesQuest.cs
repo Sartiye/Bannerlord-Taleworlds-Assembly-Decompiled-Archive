@@ -130,7 +130,7 @@ public class FreeTheSeaHoundsCaptivesQuest : NavalStorylineQuestBase
 		: base(questId, NavalStorylineData.Gunnar, CampaignTime.Never, 0)
 	{
 		_strengthModifier = strengthModifier;
-		_skatriaIslandsMarker = Campaign.Current.MapMarkerManager.CreateMapMarker(NavalStorylineData.CorsairBanner, new TextObject("{=GSksjBCZ}Angranfjord"), _seaHoundsSpawnPosition.AsVec3(), isVisibleOnMap: true, base.StringId);
+		_skatriaIslandsMarker = Campaign.Current.MapTrackerManager.CreateMapMarker(NavalStorylineData.CorsairBanner, new TextObject("{=GSksjBCZ}Angranfjord"), _seaHoundsSpawnPosition.AsVec3(), isVisibleOnMap: true, base.StringId);
 		_currentState = FreeTheSeaHoundsCaptivesQuestState.GoToSeaHoundPartyPosition;
 		SetDialogs();
 		AddGameMenus();
@@ -185,9 +185,9 @@ public class FreeTheSeaHoundsCaptivesQuest : NavalStorylineQuestBase
 
 	protected override void SetDialogs()
 	{
-		DialogFlow dialogFlow = DialogFlow.CreateDialogFlow("start", 1200).NpcLine(new TextObject("{=qn00ppJR}There they are. With your sister as their hostage, a straight-out attack is out of the question. Throughout this voyage, I have been thinking on what we might do to ensure her safety, and I recommend that we try an old corsair's trick."), IsGunnar, IsPlayer).Condition(GunnarInitialMeetingDialogCondition)
-			.NpcLine(new TextObject("{=axgouPEG}Do you see that big cluster of ships back there? That's got to be where they're holding the prisoners. That smaller vessel out front, though - that's got to be a picket, and it will stop us before we get too close. Let's approach it, pretending to be a buyer, while Bjolgur and Lahar stay out of sight. Crusas can banter with them a bit as a distraction. One of our men shall stand at his side with a dagger, lest he betray us."), IsGunnar, IsPlayer)
-			.NpcLine(new TextObject("{=HzlWiTns}You and I, meanwhile, shall dive off the side of our ship, swim round to the stern of the prisoner ship, and climb up the side. Then together we can try to find your sister on board. Once we succeed, well, we'll just have to figure it out from there."), IsGunnar, IsPlayer)
+		DialogFlow dialogFlow = DialogFlow.CreateDialogFlow("start", 1200).NpcLine(new TextObject("{=qn00ppJR}[if:convo_stern]There they are. With your sister as their hostage, a straight-out attack is out of the question. Throughout this voyage, I have been thinking on what we might do to ensure her safety, and I recommend that we try an old corsair's trick."), IsGunnar, IsPlayer).Condition(GunnarInitialMeetingDialogCondition)
+			.NpcLine(new TextObject("{=axgouPEG}[ib:hip2]Do you see that big cluster of ships back there? That's got to be where they're holding the prisoners. That smaller vessel out front, though - that's got to be a picket, and it will stop us before we get too close. Let's approach it, pretending to be a buyer, while Bjolgur and Lahar stay out of sight. Crusas can banter with them a bit as a distraction. One of our men shall stand at his side with a dagger, lest he betray us."), IsGunnar, IsPlayer)
+			.NpcLine(new TextObject("{=HzlWiTns}[ib:confident][if:convo_calm_friendly]You and I, meanwhile, shall dive off the side of our ship, swim round to the stern of the prisoner ship, and climb up the side. Then together we can try to find your sister on board. Once we succeed, well, we'll just have to figure it out from there."), IsGunnar, IsPlayer)
 			.PlayerLine(new TextObject("{=kJaiDDRi}Let's proceed, then."), IsGunnar)
 			.Consequence(GunnarInitialMeetingDialogConsequence)
 			.CloseDialog();
@@ -206,28 +206,28 @@ public class FreeTheSeaHoundsCaptivesQuest : NavalStorylineQuestBase
 				StringHelpers.SetCharacterProperties("SISTER", StoryModeHeroes.LittleSister.CharacterObject);
 				return true;
 			})
-			.NpcLine("{=IC9Fvl54}{?PLAYER.GENDER}Sister{?}Brother{\\?}! Heaven's mercy! What are you doing here?[rf:convo_relaxed_happy]", IsSister, IsPlayer)
+			.NpcLine("{=IC9Fvl54}[ib:warrior][if:convo_astonished]{?PLAYER.GENDER}Sister{?}Brother{\\?}! Heaven's mercy! What are you doing here?", IsSister, IsPlayer)
 			.BeginPlayerOptions()
 			.PlayerOption("{=HKx2nxGt}It is. We're here to rescue you! Just... Keep your voice low.", IsSister)
 			.GotoDialogState("sister_answer_1")
 			.PlayerOption("{=gvOJ43Na}{SISTER.NAME}, I just need you to be patient and strong a little longer.", IsSister)
 			.GotoDialogState("sister_answer_1")
 			.EndPlayerOptions()
-			.NpcLine("{=OLTofDbM}I'll be silent. What's going on?[ib:wounded]", IsSister, IsPlayer, "sister_answer_1")
+			.NpcLine("{=OLTofDbM}[ib:weary][if:convo_grave]I'll be silent. What's going on?", IsSister, IsPlayer, "sister_answer_1")
 			.BeginPlayerOptions()
 			.PlayerOption("{=jrloQtMP}I'm going to take this ship, and get you to safety.", IsSister)
 			.GotoDialogState("sister_answer_2")
 			.PlayerOption("{=aLaA3jZ2}I'm going to free you, and kill every last one of those slavers!", IsSister)
 			.GotoDialogState("sister_answer_2")
 			.EndPlayerOptions()
-			.NpcLine("{=w83SHIYa}Can you get me out of here?", IsSister, IsPlayer, "sister_answer_2")
+			.NpcLine("{=w83SHIYa}[ib:normal][if:convo_normal]Can you get me out of here?", IsSister, IsPlayer, "sister_answer_2")
 			.BeginPlayerOptions()
 			.PlayerOption("{=21BSwRCQ}Those timbers on your cell look thick. I don't have time now to chop through them.", IsSister)
 			.GotoDialogState("sister_answer_3")
 			.PlayerOption("{=kfHpv0Jg}I'll finish off the slavers and sail this ship out of here, then we can break you out.", IsSister)
 			.GotoDialogState("sister_answer_3")
 			.EndPlayerOptions()
-			.NpcLine("{=jjjS4TLY}I understand. Heaven protect you, {?PLAYER.GENDER}Sister{?}Brother{\\?}![rf:convo_grave]", IsSister, IsPlayer, "sister_answer_3")
+			.NpcLine("{=jjjS4TLY}[if:convo_calm_friendly]I understand. Heaven protect you, {?PLAYER.GENDER}Sister{?}Brother{\\?}!", IsSister, IsPlayer, "sister_answer_3")
 			.Consequence(delegate
 			{
 				Campaign.Current.ConversationManager.ConversationEndOneShot += delegate
@@ -236,7 +236,7 @@ public class FreeTheSeaHoundsCaptivesQuest : NavalStorylineQuestBase
 				};
 			})
 			.CloseDialog();
-		DialogFlow dialogFlow3 = DialogFlow.CreateDialogFlow("start", 5200).NpcLine("{=Ja5bHsro}You... You and {QUEST_5_COMPANION.NAME} have been slaughtering my allies all up and down this coast, and now it comes to this.", IsPurig, IsPlayer).Condition(delegate
+		DialogFlow dialogFlow3 = DialogFlow.CreateDialogFlow("start", 5200).NpcLine("{=Ja5bHsro}[ib:warrior][if:convo_furious]You... You and {QUEST_5_COMPANION.NAME} have been slaughtering my allies all up and down this coast, and now it comes to this.", IsPurig, IsPlayer).Condition(delegate
 		{
 			if (Mission.Current == null)
 			{
@@ -246,9 +246,9 @@ public class FreeTheSeaHoundsCaptivesQuest : NavalStorylineQuestBase
 			Quest5SetPieceBattleMissionController missionBehavior = Mission.Current.GetMissionBehavior<Quest5SetPieceBattleMissionController>();
 			return missionBehavior != null && Hero.OneToOneConversationHero == NavalStorylineData.Purig && missionBehavior.State == Quest5SetPieceBattleMissionController.Quest5SetPieceBattleMissionState.BossFightConversationInProgress;
 		})
-			.NpcLine("{=naMWdTPV}I was going to forge the Sea Hounds into a weapon of vengeance against the house of Volbjorn.", IsPurig, IsPlayer)
-			.NpcLine("{=MR1tc1Ao}I would have drowned them in their own blood. But to the free warriors of the north, to the men who stood against the tyrant - I would have showered them with gold. I would have given them the fame that they deserved. We would have ruled the northern seas.", IsPurig, IsPlayer)
-			.NpcLine("{=7rCvGfgb}But that is all for nothing. Instead, the kings of Nordvyg, the men that {QUEST_5_COMPANION.NAME} and I fought, will have the last laugh. So, do you like what you've wrought?", IsPurig, IsPlayer)
+			.NpcLine("{=naMWdTPV}[ib:normal]I was going to forge the Sea Hounds into a weapon of vengeance against the house of Volbjorn.", IsPurig, IsPlayer)
+			.NpcLine("{=MR1tc1Ao}[if:convo_evil_smile]I would have drowned them in their own blood. But to the free warriors of the north, to the men who stood against the tyrant - I would have showered them with gold. I would have given them the fame that they deserved. We would have ruled the northern seas.", IsPurig, IsPlayer)
+			.NpcLine("{=7rCvGfgb}[if:convo_stern]But that is all for nothing. Instead, the kings of Nordvyg, the men that {QUEST_5_COMPANION.NAME} and I fought, will have the last laugh. So, do you like what you've wrought?", IsPurig, IsPlayer)
 			.BeginPlayerOptions()
 			.PlayerOption("{=fiSglIaN}You'd have been twice the tyrant that Volbjorn was.", IsPurig)
 			.GotoDialogState("purig_answer")
@@ -257,7 +257,7 @@ public class FreeTheSeaHoundsCaptivesQuest : NavalStorylineQuestBase
 			.PlayerOption("{=Mkxm5l1N}You are outnumbered. Stop bandying words.", IsPurig)
 			.GotoDialogState("purig_answer")
 			.EndPlayerOptions()
-			.NpcLine("{=U9CfaZTF}Not much honor in having your men just cut me down, is there? Fight me one-to-one. If I win, I go free, and we need never see each other again. If you win, people will remember you as the one who slew the terror of the north.", IsPurig, IsPlayer, "purig_answer")
+			.NpcLine("{=U9CfaZTF}[ib:confident][if:convo_bemused]Not much honor in having your men just cut me down, is there? Fight me one-to-one. If I win, I go free, and we need never see each other again. If you win, people will remember you as the one who slew the terror of the north.", IsPurig, IsPlayer, "purig_answer")
 			.BeginPlayerOptions()
 			.PlayerOption("{=16CMD4HL}I am willing to duel.", IsPurig)
 			.Consequence(delegate
@@ -275,10 +275,10 @@ public class FreeTheSeaHoundsCaptivesQuest : NavalStorylineQuestBase
 			.CloseDialog()
 			.EndPlayerOptions()
 			.CloseDialog();
-		DialogFlow dialogFlow4 = DialogFlow.CreateDialogFlow("start", 1200).NpcLine("{=bMaepOl8}Had enough, have you? Well, are you going to honor your word and put us ashore?", IsPurig, IsPlayer).Condition(() => Hero.OneToOneConversationHero == NavalStorylineData.Purig && BossFightOutCome == Quest5SetPieceBattleMissionController.BossFightOutComeEnum.PlayerDefeatedWaitingForConversation)
+		DialogFlow dialogFlow4 = DialogFlow.CreateDialogFlow("start", 1200).NpcLine("{=bMaepOl8}[ib:warrior][if:convo_mocking_revenge]Had enough, have you? Well, are you going to honor your word and put us ashore?", IsPurig, IsPlayer).Condition(() => Hero.OneToOneConversationHero == NavalStorylineData.Purig && BossFightOutCome == Quest5SetPieceBattleMissionController.BossFightOutComeEnum.PlayerDefeatedWaitingForConversation)
 			.BeginPlayerOptions()
 			.PlayerOption("{=da9N56ba}You won fairly, Purig. You and your men shall be put ashore.", IsPurig)
-			.NpcLine("{=mnBuBKhI}Good. Perhaps {QUEST_5_COMPANION.NAME} and I will find each other some day and settle things our own way, but you will never see me again.", IsPurig, IsPlayer)
+			.NpcLine("{=mnBuBKhI}[ib:demure2][if:convo_bemused]Good. Perhaps {QUEST_5_COMPANION.NAME} and I will find each other some day and settle things our own way, but you will never see me again.", IsPurig, IsPlayer)
 			.Consequence(delegate
 			{
 				_isPurigKilledViaConversation = false;
@@ -297,11 +297,11 @@ public class FreeTheSeaHoundsCaptivesQuest : NavalStorylineQuestBase
 			.CloseDialog()
 			.EndPlayerOptions()
 			.CloseDialog();
-		TextObject textObject = new TextObject("{=FW5OE4fE}{PLAYER.NAME}... {?PLAYER.GENDER}Sister{?}Brother{\\?}... Heaven's mercy, I had given up hope. I thought I'd die in that dark place, in the power of those cruel men.");
+		TextObject textObject = new TextObject("{=FW5OE4fE}[ib:warrior][if:convo_delighted]{PLAYER.NAME}... {?PLAYER.GENDER}Sister{?}Brother{\\?}... Heaven's mercy, I had given up hope. I thought I'd die in that dark place, in the power of those cruel men.");
 		textObject.SetCharacterProperties("PLAYER", CharacterObject.PlayerCharacter);
-		TextObject textObject2 = new TextObject("{=6Bx9b4JH}Heaven bless you, {?PLAYER.GENDER}sister{?}brother{\\?}! I am ready to do my part, for our family and our future! But I can see your men calling you. Get us to safety, and we will speak again.");
+		TextObject textObject2 = new TextObject("{=6Bx9b4JH}[ib:demure]Heaven bless you, {?PLAYER.GENDER}sister{?}brother{\\?}! I am ready to do my part, for our family and our future! But I can see your men calling you. Get us to safety, and we will speak again.");
 		textObject2.SetCharacterProperties("PLAYER", CharacterObject.PlayerCharacter);
-		new TextObject("{=V52pdTgC}{PLAYER.NAME}... I hate to interrupt, but we need to move fast. We've got men badly hurt, and our water stocks are low. My lads won't be leaving any loot behind, though, not after they bled for it. We shall see you in Ostican!").SetCharacterProperties("PLAYER", CharacterObject.PlayerCharacter);
+		new TextObject("{=V52pdTgC}[ib:warrior]{PLAYER.NAME}... I hate to interrupt, but we need to move fast. We've got men badly hurt, and our water stocks are low. My lads won't be leaving any loot behind, though, not after they bled for it. We shall see you in Ostican!").SetCharacterProperties("PLAYER", CharacterObject.PlayerCharacter);
 		string token;
 		string token2;
 		DialogFlow dialogFlow5 = DialogFlow.CreateDialogFlow("start", 1200).GenerateToken(out token).GenerateToken(out token2)
@@ -316,10 +316,10 @@ public class FreeTheSeaHoundsCaptivesQuest : NavalStorylineQuestBase
 			.PlayerOption("{=iP0fWuZA}My sister... What you must have gone through...", outputToken: token, listenerDelegate: IsSister)
 			.PlayerOption("{=0vwGcEoV}You're safe now. Rest. We can speak later.", outputToken: token, listenerDelegate: IsSister)
 			.EndPlayerOptions()
-			.NpcLine("{=CZ6yprOg}That awful night... I awoke to cries and screaming and smoke. Father and mother... I won't speak of it. Some of those villains grabbed me and threw me over a horse. In the camp I saw our little brother, and my heart sank, but I did not see you, and that gave me hope.", IsSister, IsPlayer, token)
+			.NpcLine("{=CZ6yprOg}[if:convo_grave][ib:demure]That awful night... I awoke to cries and screaming and smoke. Father and mother... I won't speak of it. Some of those villains grabbed me and threw me over a horse. In the camp I saw our little brother, and my heart sank, but I did not see you, and that gave me hope.", IsSister, IsPlayer, token)
 			.NpcLine("{=O5xn66z4}They separated us and took the younger stronger ones to be marched to the coast. They mocked us, telling us that we would be worked until our deaths on some hot island mine or on a frozen shoreline. I told them that you would come after me with an army of warriors and see them all hanged. I did not believe it, though... I just could not bear to have no answer to their taunts.", IsSister, IsPlayer)
 			.NpcLine("{=ugyC5nt9}We arrived in Ostican. We were smuggled in by night, as the slave trade was banned by the Vlandian king, though many there clearly profited from it. Eventually Purig came to buy us. He questioned all of us closely, about our families. At first I thought he was trying to find out whether he could get a ransom for us, but no, he was trying to find someone related to you! He feared you, and was keeping me to protect himself from you! That made me proud, despite my misery.", IsSister, IsPlayer)
-			.NpcLine("{=rTlhgDi8}They threw me in that cell, where you found me, and we sailed from port to port. Sometimes I could press my ear to the door and I could hear Purig discussing his plans to topple the Nord king and build a pirate empire. And I heard your name again and again, as their schemes were foiled and the noose around his neck grew tighter. And then, just a short while ago, I heard your voice at the door of my cell, and I knew Heaven had answered my prayers!", IsSister, IsPlayer)
+			.NpcLine("{=rTlhgDi8}[if:convo_calm_friendly][ib:normal]They threw me in that cell, where you found me, and we sailed from port to port. Sometimes I could press my ear to the door and I could hear Purig discussing his plans to topple the Nord king and build a pirate empire. And I heard your name again and again, as their schemes were foiled and the noose around his neck grew tighter. And then, just a short while ago, I heard your voice at the door of my cell, and I knew Heaven had answered my prayers!", IsSister, IsPlayer)
 			.BeginPlayerOptions()
 			.PlayerOption("{=JUwcYtEY}I would never have given up trying to rescue you, or our little brother or any of us!", outputToken: token2, listenerDelegate: IsSister)
 			.PlayerOption("{=5J3vrPII}Our fortunes have changed. This morning you were a captive, but now you are a lady of rank.", outputToken: token2, listenerDelegate: IsSister)
@@ -677,6 +677,7 @@ public class FreeTheSeaHoundsCaptivesQuest : NavalStorylineQuestBase
 				}
 			}
 		}
+		_seaHoundsParty.InitializePartyTrade(QuestHelper.CalculateInitialGoldForBanditQuestParty(_seaHoundsParty));
 	}
 
 	private void DestroySeaHoundParty()

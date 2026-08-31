@@ -29,4 +29,9 @@ public class IndoorMissionController : MissionLogic
 		SandBoxHelpers.MissionHelper.SpawnPlayer(base.Mission.DoesMissionRequireCivilianEquipment, noHorses: true);
 		_missionAgentHandler.SpawnLocationCharacters();
 	}
+
+	public override void OnAfterMissionLoadingFinished()
+	{
+		base.Mission.OnInitialSpawnCompleted();
+	}
 }

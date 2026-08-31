@@ -61,6 +61,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 
 	public void SetAttributes()
 	{
+		base.DoNotPassEventsToChildren = true;
 		base.WidthSizePolicy = SizePolicy.Fixed;
 		base.HeightSizePolicy = SizePolicy.Fixed;
 		base.SuggestedWidth = 44f;

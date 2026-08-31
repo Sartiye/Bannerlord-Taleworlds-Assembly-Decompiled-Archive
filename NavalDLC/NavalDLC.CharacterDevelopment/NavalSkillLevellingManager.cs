@@ -1,4 +1,3 @@
-using System;
 using Helpers;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
@@ -10,6 +9,8 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Library;
+using TaleWorlds.LinQuick;
 using TaleWorlds.MountAndBlade;
 
 namespace NavalDLC.CharacterDevelopment;
@@ -151,14 +152,14 @@ public class NavalSkillLevellingManager : ISkillLevelingManager
 		_defaultSkillLevelingManager.OnTrackDetected(track);
 	}
 
-	public void OnTravelOnFoot(Hero hero, float speed)
+	public void OnTravelOnFoot(Hero hero)
 	{
-		_defaultSkillLevelingManager.OnTravelOnFoot(hero, speed);
+		_defaultSkillLevelingManager.OnTravelOnFoot(hero);
 	}
 
-	public void OnTravelOnHorse(Hero hero, float speed)
+	public void OnTravelOnHorse(Hero hero)
 	{
-		_defaultSkillLevelingManager.OnTravelOnHorse(hero, speed);
+		_defaultSkillLevelingManager.OnTravelOnHorse(hero);
 	}
 
 	public void OnHeroHealedWhileWaiting(Hero hero, int healingAmount)
@@ -253,22 +254,27 @@ public class NavalSkillLevellingManager : ISkillLevelingManager
 
 	public void OnShipDamaged(Ship ship, float rawDamage, float finalDamage)
 	{
-		if (ship.Owner != null && ship.Owner.IsMobile)
-		{
-			float num = Math.Max(rawDamage - finalDamage, 0f);
-			OnPartySkillExercised(ship.Owner.MobileParty, NavalSkills.Boatswain, num * 0.1f, PartyRole.FirstMate);
-		}
 		_defaultSkillLevelingManager.OnShipDamaged(ship, rawDamage, finalDamage);
 	}
 
 	public void OnShipRepaired(Ship ship, float repairedHitPoints)
 	{
-		float num = repairedHitPoints * 0.05f;
+		float num = repairedHitPoints * 0.2f;
 		if (ship.Owner != null && ship.Owner.IsMobile && num > 0f)
 		{
 			OnPartySkillExercised(ship.Owner.MobileParty, NavalSkills.Boatswain, num, PartyRole.FirstMate);
 		}
 		_defaultSkillLevelingManager.OnShipRepaired(ship, repairedHitPoints);
+	}
+
+	public void OnHighMorale(MobileParty mobileParty)
+	{
+		if (mobileParty.IsCurrentlyAtSea && !mobileParty.IsInNavalAutoTravel)
+		{
+			float skillXp = (mobileParty.Morale - Campaign.Current.Models.PartyMoraleModel.HighMoraleValue + 1f) * (float)mobileParty.MemberRoster.TotalManCount * 0.01f;
+			OnPartySkillExercised(mobileParty, NavalSkills.Boatswain, skillXp, PartyRole.FirstMate);
+		}
+		_defaultSkillLevelingManager.OnHighMorale(mobileParty);
 	}
 
 	public void OnHideoutMissionEnd(bool isSucceeded)
@@ -281,10 +287,21 @@ public class NavalSkillLevellingManager : ISkillLevelingManager
 		_defaultSkillLevelingManager.OnHideoutClearedAsGhost();
 	}
 
-	public void OnTravelOnWater(MobileParty party, float speed)
+	public void OnTravelOnWater(MobileParty party)
 	{
-		OnPartySkillExercised(party, NavalSkills.Shipmaster, MBRandom.RoundRandomized(1.4f * speed), PartyRole.Navigator);
-		_defaultSkillLevelingManager.OnTravelOnWater(party, speed);
+		float speed = party.Speed;
+		int count = party.Ships.Count;
+		float num = 0f;
+		int num2 = 0;
+		if (party.Army != null)
+		{
+			num = ((party.Army.LeaderParty == party) ? 3f : 1.5f);
+			num2 = party.Army.LeaderParty.AttachedParties.SumQ((MobileParty x) => x.Ships.Count) + party.Army.LeaderParty.Ships.Count - count;
+		}
+		float num3 = 1f + (1.5f * MathF.Sqrt(count - 1) + num * MathF.Sqrt(num2));
+		int num4 = MBRandom.RoundRandomized(6f * speed * num3);
+		OnPartySkillExercised(party, NavalSkills.Shipmaster, num4, PartyRole.Navigator);
+		_defaultSkillLevelingManager.OnTravelOnWater(party);
 	}
 
 	private static void OnPartySkillExercised(MobileParty party, SkillObject skill, float skillXp, PartyRole partyRole = PartyRole.PartyLeader)

@@ -48,6 +48,10 @@ public class HeirSelectionCampaignBehavior : CampaignBehaviorBase
 			{
 				_equipmentsThatWillBeInherited.AddToCounts(oldPlayer.CivilianEquipment[i], 1);
 			}
+			if (!oldPlayer.StealthEquipment[i].IsEmpty)
+			{
+				_equipmentsThatWillBeInherited.AddToCounts(oldPlayer.StealthEquipment[i], 1);
+			}
 		}
 	}
 

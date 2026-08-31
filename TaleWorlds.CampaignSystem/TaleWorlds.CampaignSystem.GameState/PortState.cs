@@ -25,7 +25,7 @@ public class PortState : TaleWorlds.Core.GameState
 
 	public PortState()
 	{
-		Debug.FailedAssert("do not use parameterless constructor.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameState\\PortState.cs", ".ctor", 39);
+		Debug.FailedAssert("do not use parameterless constructor.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameState\\PortState.cs", ".ctor", 38);
 	}
 
 	public PortState(PartyBase leftOwner, PartyBase rightOwner, PortScreenModes portScreenMode)

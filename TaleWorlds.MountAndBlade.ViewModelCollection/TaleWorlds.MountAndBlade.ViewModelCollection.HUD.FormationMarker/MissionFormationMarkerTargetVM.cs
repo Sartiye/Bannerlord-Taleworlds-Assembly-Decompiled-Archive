@@ -36,6 +36,20 @@ public class MissionFormationMarkerTargetVM : ViewModel
 
 	private string _formationType;
 
+	private float _farAlphaTarget = 0.7f;
+
+	private float _farDistanceCutoff = 500f;
+
+	private float _closeDistanceCutoff = 10f;
+
+	private float _closestFadeoutRange = 5f;
+
+	private float _visibilityRatio = 1f;
+
+	private float _alwaysOnDistance = 25f;
+
+	private int _visibilityState = -1;
+
 	public Formation Formation { get; private set; }
 
 	[DataSourceProperty]
@@ -238,6 +252,125 @@ public class MissionFormationMarkerTargetVM : ViewModel
 			{
 				_wSign = value;
 				OnPropertyChangedWithValue(value, "WSign");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float FarAlphaTarget
+	{
+		get
+		{
+			return _farAlphaTarget;
+		}
+		set
+		{
+			if (_farAlphaTarget != value)
+			{
+				_farAlphaTarget = value;
+				OnPropertyChangedWithValue(value, "FarAlphaTarget");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float FarDistanceCutoff
+	{
+		get
+		{
+			return _farDistanceCutoff;
+		}
+		set
+		{
+			if (_farDistanceCutoff != value)
+			{
+				_farDistanceCutoff = value;
+				OnPropertyChangedWithValue(value, "FarDistanceCutoff");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float CloseDistanceCutoff
+	{
+		get
+		{
+			return _closeDistanceCutoff;
+		}
+		set
+		{
+			if (_closeDistanceCutoff != value)
+			{
+				_closeDistanceCutoff = value;
+				OnPropertyChangedWithValue(value, "CloseDistanceCutoff");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float ClosestFadeoutRange
+	{
+		get
+		{
+			return _closestFadeoutRange;
+		}
+		set
+		{
+			if (_closestFadeoutRange != value)
+			{
+				_closestFadeoutRange = value;
+				OnPropertyChangedWithValue(value, "ClosestFadeoutRange");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float VisibilityRatio
+	{
+		get
+		{
+			return _visibilityRatio;
+		}
+		set
+		{
+			if (!_visibilityRatio.ApproximatelyEqualsTo(value))
+			{
+				_visibilityRatio = value;
+				OnPropertyChangedWithValue(value, "VisibilityRatio");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float AlwaysOnDistance
+	{
+		get
+		{
+			return _alwaysOnDistance;
+		}
+		set
+		{
+			if (!_alwaysOnDistance.ApproximatelyEqualsTo(value))
+			{
+				_alwaysOnDistance = value;
+				OnPropertyChangedWithValue(value, "AlwaysOnDistance");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public int VisibilityState
+	{
+		get
+		{
+			return _visibilityState;
+		}
+		set
+		{
+			if (value != _visibilityState)
+			{
+				_visibilityState = value;
+				OnPropertyChangedWithValue(value, "VisibilityState");
 			}
 		}
 	}

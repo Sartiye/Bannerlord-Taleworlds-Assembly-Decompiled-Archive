@@ -58,13 +58,13 @@ public class DefaultPartySpeedCalculatingModel : PartySpeedModel
 
 	private readonly TextObject _culture = GameTexts.FindText("str_culture");
 
-	private const float MovingAtForestEffect = -0.3f;
+	private const float MovingAtForestEffect = -0.2f;
 
 	private const float MovingAtWaterEffect = -0.3f;
 
 	private const float MovingAtNightEffect = -0.25f;
 
-	private const float MovingOnSnowEffect = -0.1f;
+	private const float MovingOnSnowEffect = -0.125f;
 
 	private const float MovingInDesertEffect = -0.1f;
 
@@ -90,7 +90,7 @@ public class DefaultPartySpeedCalculatingModel : PartySpeedModel
 
 	private const float DisorganizedEffect = -0.4f;
 
-	public override float BaseSpeed => 4f;
+	public override float BaseSpeed => 4.6f;
 
 	public override float MinimumSpeed => 1f;
 
@@ -143,7 +143,8 @@ public class DefaultPartySpeedCalculatingModel : PartySpeedModel
 		}
 		if (mountedFootmenRatioModifier > 0f && mobileParty.LeaderHero != null && mobileParty.LeaderHero.GetPerkValue(DefaultPerks.Riding.NomadicTraditions))
 		{
-			result.AddFactor(mountedFootmenRatioModifier * DefaultPerks.Riding.NomadicTraditions.PrimaryBonus, DefaultPerks.Riding.NomadicTraditions.Name);
+			float value = mountedFootmenRatioModifier * DefaultPerks.Riding.NomadicTraditions.PrimaryBonus;
+			result.AddFactor(value, DefaultPerks.Riding.NomadicTraditions.Name);
 		}
 		float num13 = MathF.Min(num2, (float)num3);
 		if (num13 > 0f)
@@ -156,10 +157,7 @@ public class DefaultPartySpeedCalculatingModel : PartySpeedModel
 			ExplainedNumber overburdenedEffect = GetOverburdenedEffect(mobileParty, totalWeightCarried - (float)num3, num3, includeDescriptions);
 			result.AddFromExplainedNumber(overburdenedEffect, _textOverburdened);
 		}
-		if (mobileParty.HasPerk(DefaultPerks.Riding.SweepingWind, checkSecondaryRole: true))
-		{
-			result.AddFactor(DefaultPerks.Riding.SweepingWind.SecondaryBonus, DefaultPerks.Riding.SweepingWind.Name);
-		}
+		PerkHelper.AddPerkBonusForParty(DefaultPerks.Riding.SweepingWind, mobileParty, isPrimaryBonus: false, ref result);
 		if (num > num8)
 		{
 			float overPartySizeEffect = GetOverPartySizeEffect(num, num8);
@@ -177,9 +175,11 @@ public class DefaultPartySpeedCalculatingModel : PartySpeedModel
 		{
 			float herdingModifier = GetHerdingModifier(num, herdSize);
 			result.AddFactor(herdingModifier, _textHerd);
-			if (mobileParty.HasPerk(DefaultPerks.Riding.Shepherd))
+			Hero perkOwnerHero = null;
+			if (mobileParty.HasPerk(DefaultPerks.Riding.Shepherd, out perkOwnerHero))
 			{
-				result.AddFactor(herdingModifier * DefaultPerks.Riding.Shepherd.PrimaryBonus, DefaultPerks.Riding.Shepherd.Name);
+				float value2 = herdingModifier * DefaultPerks.Riding.Shepherd.PrimaryBonus;
+				result.AddFactor(value2, DefaultPerks.Riding.Shepherd.Name);
 			}
 		}
 		float woundedModifier = GetWoundedModifier(num, num6, mobileParty);
@@ -245,11 +245,8 @@ public class DefaultPartySpeedCalculatingModel : PartySpeedModel
 	private ExplainedNumber GetOverburdenedEffect(MobileParty party, float totalWeightCarried, int partyCapacity, bool includeDescriptions)
 	{
 		ExplainedNumber stat = new ExplainedNumber(-0.4f * (totalWeightCarried / (float)partyCapacity), includeDescriptions);
-		if (!party.IsCurrentlyAtSea)
-		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Athletics.Energetic, party, isPrimaryBonus: true, ref stat);
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.Unburdened, party, isPrimaryBonus: true, ref stat);
-		}
+		PerkHelper.AddPerkBonusForParty(DefaultPerks.Athletics.Energetic, party, isPrimaryBonus: true, ref stat);
+		PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.Unburdened, party, isPrimaryBonus: true, ref stat);
 		return stat;
 	}
 
@@ -264,7 +261,8 @@ public class DefaultPartySpeedCalculatingModel : PartySpeedModel
 		if (faceTerrainType == TerrainType.Forest)
 		{
 			float num = 0f;
-			if (effectiveScout != null && effectiveScout.GetPerkValue(DefaultPerks.Scouting.ForestKin))
+			bool flag = effectiveScout?.GetPerkValue(DefaultPerks.Scouting.ForestKin) ?? false;
+			if (flag)
 			{
 				for (int i = 0; i < mobileParty.MemberRoster.Count; i++)
 				{
@@ -274,11 +272,11 @@ public class DefaultPartySpeedCalculatingModel : PartySpeedModel
 					}
 				}
 			}
-			float value = ((num / (float)mobileParty.MemberRoster.TotalManCount >= 0.75f) ? (-0.3f * (0f - DefaultPerks.Scouting.ForestKin.PrimaryBonus)) : (-0.3f));
+			float value = ((flag && num / (float)mobileParty.MemberRoster.TotalManCount >= 0.75f) ? (-0.2f * (0f - DefaultPerks.Scouting.ForestKin.PrimaryBonus)) : (-0.2f));
 			finalSpeed.AddFactor(value, _movingInForest);
 			if (PartyBaseHelper.HasFeat(mobileParty.Party, DefaultCulturalFeats.BattanianForestSpeedFeat))
 			{
-				float value2 = DefaultCulturalFeats.BattanianForestSpeedFeat.EffectBonus * 0.3f;
+				float value2 = DefaultCulturalFeats.BattanianForestSpeedFeat.EffectBonus * 0.2f;
 				finalSpeed.AddFactor(value2, _culture);
 			}
 		}
@@ -296,17 +294,11 @@ public class DefaultPartySpeedCalculatingModel : PartySpeedModel
 				{
 					finalSpeed.AddFactor(-0.1f, _desert);
 				}
-				if (effectiveScout != null && effectiveScout.GetPerkValue(DefaultPerks.Scouting.DesertBorn))
-				{
-					finalSpeed.AddFactor(DefaultPerks.Scouting.DesertBorn.PrimaryBonus, DefaultPerks.Scouting.DesertBorn.Name);
-				}
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.DesertBorn, mobileParty, isPrimaryBonus: true, ref finalSpeed);
 				break;
 			case TerrainType.Plain:
 			case TerrainType.Steppe:
-				if (effectiveScout != null && effectiveScout.GetPerkValue(DefaultPerks.Scouting.Pathfinder))
-				{
-					finalSpeed.AddFactor(DefaultPerks.Scouting.Pathfinder.PrimaryBonus, DefaultPerks.Scouting.Pathfinder.Name);
-				}
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.Pathfinder, mobileParty, isPrimaryBonus: true, ref finalSpeed);
 				break;
 			}
 		}
@@ -314,45 +306,46 @@ public class DefaultPartySpeedCalculatingModel : PartySpeedModel
 		if (weatherEventInPosition == MapWeatherModel.WeatherEvent.Snowy || weatherEventInPosition == MapWeatherModel.WeatherEvent.Blizzard)
 		{
 			faceTerrainType = TerrainType.Snow;
-			finalSpeed.AddFactor(-0.1f, _snow);
+			finalSpeed.AddFactor(-0.125f, _snow);
 		}
 		if (!mobileParty.IsCurrentlyAtSea)
 		{
 			if (Campaign.Current.IsNight)
 			{
 				finalSpeed.AddFactor(-0.25f, _night);
-				if (effectiveScout != null && effectiveScout.GetPerkValue(DefaultPerks.Scouting.NightRunner))
-				{
-					finalSpeed.AddFactor(DefaultPerks.Scouting.NightRunner.PrimaryBonus, DefaultPerks.Scouting.NightRunner.Name);
-				}
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.NightRunner, mobileParty, isPrimaryBonus: true, ref finalSpeed);
 			}
-			else if (effectiveScout != null && effectiveScout.GetPerkValue(DefaultPerks.Scouting.DayTraveler))
+			else
 			{
-				finalSpeed.AddFactor(DefaultPerks.Scouting.DayTraveler.PrimaryBonus, DefaultPerks.Scouting.DayTraveler.Name);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.DayTraveler, mobileParty, isPrimaryBonus: true, ref finalSpeed);
 			}
 		}
 		if (effectiveScout != null)
 		{
 			if (!mobileParty.IsCurrentlyAtSea)
 			{
-				PerkHelper.AddEpicPerkBonusForCharacter(DefaultPerks.Scouting.UncannyInsight, effectiveScout.CharacterObject, DefaultSkills.Scouting, applyPrimaryBonus: true, ref finalSpeed, Campaign.Current.Models.CharacterDevelopmentModel.MinSkillRequiredForEpicPerkBonus);
-				if (effectiveScout.GetPerkValue(DefaultPerks.Scouting.ForcedMarch) && mobileParty.Morale > 75f)
+				PerkHelper.AddEpicPerkBonusForCharacter(DefaultPerks.Scouting.UncannyInsight, mobileParty.CurrentBattleEnvironment, effectiveScout.CharacterObject, DefaultSkills.Scouting, isPrimaryBonus: true, ref finalSpeed, Campaign.Current.Models.CharacterDevelopmentModel.MinSkillRequiredForEpicPerkBonus);
+				if (mobileParty.Morale > 75f)
 				{
-					finalSpeed.AddFactor(DefaultPerks.Scouting.ForcedMarch.PrimaryBonus, DefaultPerks.Scouting.ForcedMarch.Name);
+					PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.ForcedMarch, mobileParty, isPrimaryBonus: true, ref finalSpeed);
 				}
 			}
 			if (mobileParty.DefaultBehavior == AiBehavior.EngageParty)
 			{
 				MobileParty targetParty = mobileParty.TargetParty;
-				if (targetParty != null && !targetParty.IsCurrentlyAtSea && targetParty.MapFaction.IsAtWarWith(mobileParty.MapFaction) && effectiveScout.GetPerkValue(DefaultPerks.Scouting.Tracker))
+				if (targetParty != null && !targetParty.IsCurrentlyAtSea && targetParty.MapFaction.IsAtWarWith(mobileParty.MapFaction))
 				{
-					finalSpeed.AddFactor(DefaultPerks.Scouting.Tracker.SecondaryBonus, DefaultPerks.Scouting.Tracker.Name);
+					PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.Tracker, mobileParty, isPrimaryBonus: false, ref finalSpeed);
 				}
 			}
 		}
-		if (mobileParty.Army?.LeaderParty != null && mobileParty.Army.LeaderParty != mobileParty && mobileParty.AttachedTo != mobileParty.Army.LeaderParty && !mobileParty.IsCurrentlyAtSea && mobileParty.Army.LeaderParty.HasPerk(DefaultPerks.Tactics.CallToArms))
+		if (mobileParty.Army?.LeaderParty != null && mobileParty.Army.LeaderParty != mobileParty && mobileParty.AttachedTo != mobileParty.Army.LeaderParty)
 		{
-			finalSpeed.AddFactor(DefaultPerks.Tactics.CallToArms.PrimaryBonus, DefaultPerks.Tactics.CallToArms.Name);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.CallToArms, mobileParty.Army.LeaderParty, isPrimaryBonus: true, ref finalSpeed);
+		}
+		if (Campaign.Current.Options.IsIncreasedGlobalMovementSpeedEnabled)
+		{
+			finalSpeed.AddFactor(0.25f);
 		}
 		finalSpeed.LimitMin(MinimumSpeed);
 		return finalSpeed;
@@ -431,9 +424,11 @@ public class DefaultPartySpeedCalculatingModel : PartySpeedModel
 		if (totalMenCount != 0)
 		{
 			float num = (float)totalFootmenCount / (float)totalMenCount;
-			if (party.HasPerk(DefaultPerks.Athletics.Strong, checkSecondaryRole: true) && !num.ApproximatelyEqualsTo(0f))
+			Hero perkOwnerHero = null;
+			if (!num.ApproximatelyEqualsTo(0f) && party.HasPerk(DefaultPerks.Athletics.Strong, out perkOwnerHero, checkSecondaryRole: true))
 			{
-				result.AddFactor(num * DefaultPerks.Athletics.Strong.SecondaryBonus, DefaultPerks.Athletics.Strong.Name);
+				float value = num * DefaultPerks.Athletics.Strong.SecondaryBonus;
+				result.AddFactor(value, DefaultPerks.Athletics.Strong.Name);
 			}
 		}
 	}

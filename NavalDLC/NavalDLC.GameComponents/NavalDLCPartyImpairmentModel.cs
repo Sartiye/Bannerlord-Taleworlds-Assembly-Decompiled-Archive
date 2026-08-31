@@ -11,10 +11,7 @@ public class NavalDLCPartyImpairmentModel : PartyImpairmentModel
 	public override ExplainedNumber GetDisorganizedStateDuration(MobileParty party)
 	{
 		ExplainedNumber stat = base.BaseModel.GetDisorganizedStateDuration(party);
-		if (party.IsCurrentlyAtSea)
-		{
-			PerkHelper.AddPerkBonusForParty(NavalPerks.Shipmaster.Windborne, party, isPrimaryBonus: false, ref stat);
-		}
+		PerkHelper.AddPerkBonusForParty(NavalPerks.Shipmaster.Windborne, party, isPrimaryBonus: false, ref stat);
 		return stat;
 	}
 

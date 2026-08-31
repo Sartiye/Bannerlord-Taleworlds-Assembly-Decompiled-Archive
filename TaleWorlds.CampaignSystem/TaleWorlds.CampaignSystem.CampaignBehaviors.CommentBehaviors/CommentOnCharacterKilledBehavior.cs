@@ -22,7 +22,7 @@ public class CommentOnCharacterKilledBehavior : CampaignBehaviorBase
 		{
 			CharacterKilledLogEntry characterKilledLogEntry = new CharacterKilledLogEntry(victim, killer, detail);
 			LogEntry.AddLogEntry(characterKilledLogEntry);
-			if (IsRelatedToPlayer(victim) && ((detail != KillCharacterAction.KillCharacterActionDetail.Executed && detail != KillCharacterAction.KillCharacterActionDetail.ExecutionAfterMapEvent) || killer != Hero.MainHero))
+			if (IsRelatedToPlayer(victim) && (detail != KillCharacterAction.KillCharacterActionDetail.Executed || killer != Hero.MainHero) && (detail != KillCharacterAction.KillCharacterActionDetail.Executed || !killer.Clan.HasBloodFeudWithPlayer))
 			{
 				Campaign.Current.CampaignInformationManager.NewMapNoticeAdded(new DeathMapNotification(victim, killer, characterKilledLogEntry.GetEncyclopediaText(), detail, CampaignTime.Now));
 			}

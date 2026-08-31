@@ -28,13 +28,19 @@ public class CreatePremadeGameMessage : Message
 	public string Password { get; private set; }
 
 	[JsonProperty]
+	public string SpectatorPassword { get; private set; }
+
+	[JsonProperty]
+	public int MaxSpectatorCount { get; private set; }
+
+	[JsonProperty]
 	public PremadeGameType PremadeGameType { get; private set; }
 
 	public CreatePremadeGameMessage()
 	{
 	}
 
-	public CreatePremadeGameMessage(string premadeGameName, string gameType, string mapName, string factionA, string factionB, string password, PremadeGameType premadeGameType)
+	public CreatePremadeGameMessage(string premadeGameName, string gameType, string mapName, string factionA, string factionB, string password, PremadeGameType premadeGameType, string spectatorPassword, int maxSpectatorCount)
 	{
 		PremadeGameName = premadeGameName;
 		GameType = gameType;
@@ -43,5 +49,7 @@ public class CreatePremadeGameMessage : Message
 		FactionB = factionB;
 		Password = password;
 		PremadeGameType = premadeGameType;
+		SpectatorPassword = spectatorPassword;
+		MaxSpectatorCount = maxSpectatorCount;
 	}
 }

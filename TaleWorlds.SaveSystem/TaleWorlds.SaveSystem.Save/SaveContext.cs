@@ -92,6 +92,12 @@ public class SaveContext : ISaveContext
 
 	private object _locker;
 
+	private const int MaxIntegrityDriftReports = 4;
+
+	private readonly object _driftLocker = new object();
+
+	private List<string> _integrityDriftReports;
+
 	private static Dictionary<string, (int, int, int, long)> _typeStatistics;
 
 	private static Dictionary<string, (int, int, int, int, long)> _containerStatistics;
@@ -105,6 +111,19 @@ public class SaveContext : ISaveContext
 	public DefinitionContext DefinitionContext { get; private set; }
 
 	public static bool EnableSaveStatistics => false;
+
+	public void ReportSaveIntegrityDrift(string message)
+	{
+		Debug.Print(message);
+		lock (_driftLocker)
+		{
+			if (_integrityDriftReports.Count < 4)
+			{
+				_integrityDriftReports.Add(message);
+			}
+		}
+		Debug.FailedAssert(message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\SaveContext.cs", "ReportSaveIntegrityDrift", 71);
+	}
 
 	public static SaveStatistics GetStatistics()
 	{
@@ -206,9 +225,9 @@ public class SaveContext : ISaveContext
 		ContainerDefinition containerDefinition = DefinitionContext.GetContainerDefinition(type);
 		if (containerDefinition == null)
 		{
-			string message = "Cant find definition for " + type.FullName;
+			string message = "[SaveSystem] Cant find definition for " + type.FullName;
 			Debug.Print(message, 0, Debug.DebugColor.Red);
-			Debug.FailedAssert(message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\SaveContext.cs", "CollectContainerObjects", 222);
+			Debug.FailedAssert(message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\SaveContext.cs", "CollectContainerObjects", 242);
 		}
 		ContainerSaveData.GetChildObjects(this, containerDefinition, containerType, parent, _temporaryCollectedObjects);
 		for (int i = 0; i < _temporaryCollectedObjects.Count; i++)
@@ -281,8 +300,8 @@ public class SaveContext : ISaveContext
 	{
 		if (!_idsOfChildObjects.TryGetValue(target, out var value))
 		{
-			Debug.Print($"SAVE ERROR. Cant find {target} with type {target.GetType()}");
-			Debug.FailedAssert("SAVE ERROR. Cant find target object on save", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\SaveContext.cs", "GetObjectId", 310);
+			Debug.Print($"[SaveSystem] SAVE ERROR. Cant find {target} with type {target.GetType()}");
+			Debug.FailedAssert("[SaveSystem] SAVE ERROR. Cant find target object on save", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\SaveContext.cs", "GetObjectId", 330);
 		}
 		return value;
 	}
@@ -311,6 +330,13 @@ public class SaveContext : ISaveContext
 		stringWriter.Write3ByteInt(id);
 		stringWriter.WriteByte(10);
 		int stringSizeInBytes = GetStringSizeInBytes(text);
+		if (stringSizeInBytes > 32767)
+		{
+			string arg = ((text.Length > 32) ? (text.Substring(0, 32) + "...") : text);
+			string message = $"[SaveSystem] SaveStringTo: encoded string length {stringSizeInBytes} exceeds short.MaxValue and will wrap. Text starts with: '{arg}'";
+			Debug.Print(message);
+			Debug.FailedAssert(message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\SaveContext.cs", "SaveStringTo", 375);
+		}
 		stringWriter.WriteShort((short)stringSizeInBytes);
 		stringWriter.WriteString(text);
 	}
@@ -343,14 +369,19 @@ public class SaveContext : ISaveContext
 				_objectSaveDataList = new ObjectSaveData[_childObjects.Count];
 				_containerSaveDataList = new ContainerSaveData[_childContainers.Count];
 				SizeRecord = default(SaveDataSizeRecord);
+				_integrityDriftReports = new List<string>();
 				CollectSaveDatas();
 				byte[][] objectData = WriteObjects();
 				byte[][] containerData = WriteContainers();
-				new List<int>();
 				byte[] header = WriteHeaders(_objectSaveDataList, _containerSaveDataList, SizeRecord.HeaderSize, _strings.Count);
 				byte[] strings = WriteAllStrings(_strings, SizeRecord.StringSize);
 				SaveData = new GameData(header, strings, objectData, containerData);
 				Debug.Print(SizeRecord.ToString());
+				metaData["SavePredictedSizes"] = $"h={SizeRecord.HeaderSize} obj={SizeRecord.ObjectSize} ctr={SizeRecord.ContainerSize} str={SizeRecord.StringSize}";
+				if (_integrityDriftReports != null && _integrityDriftReports.Count > 0)
+				{
+					metaData["SaveIntegrityDrift"] = string.Join(" | ", _integrityDriftReports);
+				}
 			}
 			return true;
 		}
@@ -436,7 +467,7 @@ public class SaveContext : ISaveContext
 			containers[l].SaveHeaderDataTo(binaryWriter, objects.Length + l);
 		}
 		WriteConfigEntry(binaryWriter, objects.Length, stringCount, containers.Length);
-		return binaryWriter.Data;
+		return binaryWriter.GetFinalData();
 	}
 
 	private static byte[] WriteAllStrings(List<string> strings, int stringSize)
@@ -448,7 +479,7 @@ public class SaveContext : ISaveContext
 			string text = strings[i];
 			SaveStringTo(binaryWriter, i, text);
 		}
-		return binaryWriter.Data;
+		return binaryWriter.GetFinalData();
 	}
 
 	private static void WriteConfigEntry(BinaryWriter headerWriter, int objects, int strings, int containers)
@@ -522,7 +553,11 @@ public class SaveContext : ISaveContext
 		binaryWriter.WriteInt(entryCount);
 		folderId = 0;
 		objectSaveData.SaveTo(binaryWriter, ref folderId);
-		objectData[id] = binaryWriter.Data;
+		if (binaryWriter.Length != dataSize)
+		{
+			ReportSaveIntegrityDrift($"[SaveSystem] Obj[{id}] {objectSaveData.Type?.FullName} drift predicted={dataSize} written={binaryWriter.Length}");
+		}
+		objectData[id] = binaryWriter.GetFinalData();
 		if (EnableSaveStatistics)
 		{
 			string name = objectSaveData.Type.Name;
@@ -541,6 +576,12 @@ public class SaveContext : ISaveContext
 	{
 		_ = _childContainers[id];
 		ContainerSaveData containerSaveData = _containerSaveDataList[id];
+		int capturedElementCount = containerSaveData.CapturedElementCount;
+		int elementCount = containerSaveData.GetElementCount();
+		if (capturedElementCount != elementCount)
+		{
+			ReportSaveIntegrityDrift($"[SaveSystem] Ctr[{id}] {containerSaveData.Type?.FullName} elem count drift captured={capturedElementCount} live={elementCount}");
+		}
 		int dataSize = containerSaveData.GetDataSize();
 		BinaryWriter binaryWriter = new BinaryWriter(dataSize);
 		binaryWriter.WriteInt(containerSaveData.GetFolderCount());
@@ -550,7 +591,11 @@ public class SaveContext : ISaveContext
 		binaryWriter.WriteInt(entryCount);
 		folderId = 0;
 		containerSaveData.SaveTo(binaryWriter, ref folderId);
-		containerData[id] = binaryWriter.Data;
+		if (binaryWriter.Length != dataSize)
+		{
+			ReportSaveIntegrityDrift($"[SaveSystem] Ctr[{id}] {containerSaveData.Type?.FullName} drift predicted={dataSize} written={binaryWriter.Length}");
+		}
+		containerData[id] = binaryWriter.GetFinalData();
 		if (EnableSaveStatistics)
 		{
 			string containerName = GetContainerName(containerSaveData.Type);

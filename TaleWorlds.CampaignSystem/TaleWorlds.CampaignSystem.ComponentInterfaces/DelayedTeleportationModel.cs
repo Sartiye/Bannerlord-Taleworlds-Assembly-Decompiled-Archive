@@ -6,6 +6,8 @@ namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
 public abstract class DelayedTeleportationModel : MBGameModel<DelayedTeleportationModel>
 {
+	public abstract float MaximumDistanceForDelayAsDays { get; }
+
 	public abstract float DefaultTeleportationSpeed { get; }
 
 	public abstract ExplainedNumber GetTeleportationDelayAsHours(Hero teleportingHero, PartyBase target);

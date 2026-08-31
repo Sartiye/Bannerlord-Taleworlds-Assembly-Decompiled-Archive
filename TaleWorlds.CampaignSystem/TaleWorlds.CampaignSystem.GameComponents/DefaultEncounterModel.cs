@@ -265,22 +265,22 @@ public class DefaultEncounterModel : EncounterModel
 			result = RaidEventComponent.CreateRaidEvent(attackerParty, defenderParty);
 			break;
 		case MapEvent.BattleTypes.Siege:
-			Campaign.Current.MapEventManager.StartSiegeMapEvent(attackerParty, defenderParty);
+			result = SiegeAssaultEventComponent.CreateSiegeAssaultMapEvent(attackerParty, defenderParty);
 			break;
 		case MapEvent.BattleTypes.Hideout:
 			result = HideoutEventComponent.CreateHideoutEvent(attackerParty, defenderParty, isSendTroops: false);
 			break;
 		case MapEvent.BattleTypes.SallyOut:
-			Campaign.Current.MapEventManager.StartSallyOutMapEvent(attackerParty, defenderParty);
+			result = SiegeSallyOutEventComponent.CreateSiegeSallyOutEvent(attackerParty, defenderParty);
 			break;
 		case MapEvent.BattleTypes.SiegeOutside:
-			Campaign.Current.MapEventManager.StartSiegeOutsideMapEvent(attackerParty, defenderParty);
+			result = SiegeOutsideEventComponent.CreateSiegeOutsideMapEvent(attackerParty, defenderParty);
 			break;
 		case MapEvent.BattleTypes.BlockadeBattle:
-			result = BlockadeBattleMapEvent.CreateBlockadeBattleMapEvent(attackerParty, defenderParty, isSallyOut: false);
+			result = BlockadeBattleEventComponent.CreateBlockadeBattleMapEvent(attackerParty, defenderParty, isSallyOut: false);
 			break;
 		case MapEvent.BattleTypes.BlockadeSallyOutBattle:
-			result = BlockadeBattleMapEvent.CreateBlockadeBattleMapEvent(attackerParty, defenderParty, isSallyOut: true);
+			result = BlockadeBattleEventComponent.CreateBlockadeBattleMapEvent(attackerParty, defenderParty, isSallyOut: true);
 			break;
 		}
 		return result;
@@ -321,7 +321,7 @@ public class DefaultEncounterModel : EncounterModel
 		}
 		else
 		{
-			Debug.FailedAssert("Unable to calculate threshold and exponentialScalingFactor!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultEncounterModel.cs", "GetSurrenderChance", 351);
+			Debug.FailedAssert("Unable to calculate threshold and exponentialScalingFactor!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultEncounterModel.cs", "GetSurrenderChance", 350);
 		}
 		float num5 = num / num2;
 		float num6 = num4 * (num5 - num3);
@@ -368,13 +368,13 @@ public class DefaultEncounterModel : EncounterModel
 		}
 		else
 		{
-			Debug.FailedAssert("Unable to calculate threshold and exponentialScalingFactor!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultEncounterModel.cs", "GetBribeChance", 406);
+			Debug.FailedAssert("Unable to calculate threshold and exponentialScalingFactor!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultEncounterModel.cs", "GetBribeChance", 405);
 		}
 		float num5 = num / num2;
 		float num6 = num4 * (num5 - num3);
 		ExplainedNumber bonuses = new ExplainedNumber(1f - 1f / (1f + (float)Math.Exp(num6)));
 		bonuses.LimitMax(1f);
-		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Roguery.Scarface, Hero.MainHero.CharacterObject, isPrimaryBonus: true, ref bonuses);
+		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Roguery.Scarface, BattleEnvironment.Any, Hero.MainHero.CharacterObject, isPrimaryBonus: true, ref bonuses);
 		return bonuses;
 	}
 

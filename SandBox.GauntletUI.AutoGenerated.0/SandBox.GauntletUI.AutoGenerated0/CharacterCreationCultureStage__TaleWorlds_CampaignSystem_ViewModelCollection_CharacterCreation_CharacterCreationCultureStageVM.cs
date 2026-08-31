@@ -219,7 +219,7 @@ public class CharacterCreationCultureStage__TaleWorlds_CampaignSystem_ViewModelC
 		_widget_3_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_3_0.SuggestedWidth = 1300f;
 		_widget_3_0.SuggestedHeight = 700f;
-		_widget_3_0.HorizontalAlignment = HorizontalAlignment.Left;
+		_widget_3_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_3_0.Layer1Widget = _widget_3_0_3;
 		_widget_3_0.Layer2Widget = _widget_3_0_2;
 		_widget_3_0.Layer3Widget = _widget_3_0_1;

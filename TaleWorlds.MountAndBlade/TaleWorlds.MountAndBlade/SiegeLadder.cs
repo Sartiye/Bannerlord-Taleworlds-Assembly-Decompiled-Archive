@@ -260,7 +260,7 @@ public class SiegeLadder : SiegeWeapon, IPrimarySiegeWeapon, IOrderableWithInter
 	protected internal override void OnInit()
 	{
 		base.OnInit();
-		_tickOccasionallyTimer = new Timer(Mission.Current.CurrentTime, 0.2f + MBRandom.RandomFloat * 0.05f);
+		_tickOccasionallyTimer = new Timer(0f, 0.2f + MBRandom.RandomFloat * 0.05f);
 		_aiBarriers = base.Scene.FindEntitiesWithTag(BarrierTagToRemove).ToList();
 		if (IndestructibleMerlonsTag != string.Empty)
 		{

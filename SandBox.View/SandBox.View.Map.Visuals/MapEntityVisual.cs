@@ -55,6 +55,11 @@ public abstract class MapEntityVisual
 	{
 		return false;
 	}
+
+	public virtual bool IsInteractable()
+	{
+		return true;
+	}
 }
 public abstract class MapEntityVisual<T> : MapEntityVisual
 {

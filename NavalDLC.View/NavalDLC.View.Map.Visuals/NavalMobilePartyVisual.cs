@@ -6,6 +6,7 @@ using Helpers;
 using NavalDLC.Missions.Objects;
 using NavalDLC.View.Map.Managers;
 using SandBox;
+using SandBox.View;
 using SandBox.View.Map;
 using SandBox.View.Map.Visuals;
 using TaleWorlds.CampaignSystem;
@@ -146,6 +147,10 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 	private float _nextDecalSpawnMetersSq = 0.09f;
 
 	private int _nextDecalToUse;
+
+	private ShipHull _ferryShipHull;
+
+	private (string, GameEntity) _cachedBannerEntity;
 
 	private Scene MapScene
 	{
@@ -403,7 +408,8 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 			ApplyWindEffect(windForPosition, entityFrame.rotation.f.AsVec2, realDt, dt);
 			TickSailingSound(num);
 			TickOars(dt, realDt);
-			TickIdleShipAnimation(base.MapEntity.FlagShip, ref _rockingPhase, ref entityFrame);
+			ShipHull shipHull = (base.MapEntity.MobileParty.IsInFerryState ? GetFerryShipHull() : base.MapEntity.FlagShip.ShipHull);
+			TickIdleShipAnimation(shipHull, ref _rockingPhase, ref entityFrame);
 			TickSwayingAnimation(ref entityFrame);
 			float speedUpMultiplier = Campaign.Current.SpeedUpMultiplier;
 			float num6 = realDt;
@@ -423,7 +429,7 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 			{
 				BlockadeShipVisual value = item.Value;
 				MatrixFrame entityFrame2 = value.ShipEntity.GetLocalFrame();
-				TickIdleShipAnimation(item.Key, ref value.RockingPhase, ref entityFrame2, isBlockadeShip: true);
+				TickIdleShipAnimation(item.Key.ShipHull, ref value.RockingPhase, ref entityFrame2, isBlockadeShip: true);
 				value.ShipEntity.SetLocalFrame(ref entityFrame2, isTeleportation: true);
 				_shipToBlockadeShipVisualCache[item.Key] = value;
 			}
@@ -585,6 +591,7 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 			return;
 		}
 		base.MapEntity.MobileParty.OnNavalVisualsUpdated();
+		bool clearBannerEntityCache = true;
 		if (_raidAgentVisuals != null)
 		{
 			_raidAgentVisuals.Reset();
@@ -628,81 +635,58 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 					ResetPartyIcon();
 					AddRaftVisual();
 				}
+				else if (base.MapEntity.MobileParty.IsInFerryState)
+				{
+					ResetPartyIcon();
+					Ship flagship = new Ship(GetFerryShipHull());
+					AddShipVisual(flagship);
+				}
 				else if (base.MapEntity.Ships.Count > 0)
 				{
-					AddShipVisual();
+					Ship flagShip = base.MapEntity.FlagShip;
+					AddShipVisual(flagShip);
 				}
 				InitializePartyCollider(base.MapEntity);
 				if (base.MapEntity.MobileParty.MapEvent != null)
 				{
 					Settlement mapEventSettlement = base.MapEntity.MobileParty.MapEvent.MapEventSettlement;
-					if (mapEventSettlement != null && mapEventSettlement.IsVillage)
+					if (mapEventSettlement != null && mapEventSettlement.IsVillage && _raidAgentVisuals == null)
 					{
-						if (_raidAgentVisuals == null)
-						{
-							AddRaidPartyVisual(base.MapEntity.MobileParty.Party);
-						}
-						MatrixFrame frame = MatrixFrame.Identity;
-						frame.origin = base.MapEntity.MobileParty.MapEvent.MapEventSettlement.Position.AsVec3();
-						frame.rotation.ApplyScaleLocal(_raidAgentVisuals.GetScale());
-						_raidAgentVisuals.GetWeakEntity().SetFrame(ref frame);
+						AddRaidPartyVisual(base.MapEntity.MobileParty.Party, ref clearBannerEntityCache);
 					}
 				}
 			}
 		}
+		if (clearBannerEntityCache)
+		{
+			_cachedBannerEntity = (null, null);
+		}
 		StrategicEntity.CheckResources(addToQueue: true, checkFaceResources: false);
 	}
 
-	private void AddRaidPartyVisual(PartyBase party)
+	private void AddRaidPartyVisual(PartyBase party, ref bool clearBannerEntityCache)
 	{
-		CharacterObject visualPartyLeader = PartyBaseHelper.GetVisualPartyLeader(party);
-		Equipment equipment = visualPartyLeader.Equipment.Clone();
-		GetMeleeWeaponToWield(party, out var wieldedItemIndex);
-		Monster baseMonsterFromRace = TaleWorlds.Core.FaceGen.GetBaseMonsterFromRace(visualPartyLeader.Race);
-		MBActionSet actionSetWithSuffix = MBGlobals.GetActionSetWithSuffix(baseMonsterFromRace, visualPartyLeader.IsFemale, "_map_with_banner");
-		AgentVisualsData data = new AgentVisualsData().UseMorphAnims(useMorphAnims: true).Equipment(equipment).BodyProperties(visualPartyLeader.GetBodyProperties(visualPartyLeader.Equipment))
-			.SkeletonType(visualPartyLeader.IsFemale ? SkeletonType.Female : SkeletonType.Male)
-			.Scale(0.3f)
-			.Frame(StrategicEntity.GetFrame())
-			.ActionSet(actionSetWithSuffix)
-			.Scene(MapScene)
-			.Monster(baseMonsterFromRace)
-			.PrepareImmediately(prepareImmediately: false)
-			.RightWieldedItemIndex(wieldedItemIndex)
-			.HasClippingPlane(hasClippingPlane: true)
-			.UseScaledWeapons(useScaledWeapons: true)
-			.ClothColor1((uint)(((int?)party.MapFaction?.Color) ?? (-3357781)))
-			.ClothColor2((uint)(((int?)party.MapFaction?.Color2) ?? (-3357781)))
-			.CharacterObjectStringId(visualPartyLeader.StringId)
-			.Race(visualPartyLeader.Race);
-		_raidAgentVisuals = AgentVisuals.Create(data, "PartyIcon " + visualPartyLeader.Name, isRandomProgress: false, needBatchedVersionForWeaponMeshes: false, forceUseFaceCache: false);
+		uint contourColor = (FactionManager.IsAtWarAgainstFaction(party.MapFaction, Hero.MainHero.MapFaction) ? 4294905856u : 4278206719u);
+		MatrixFrame identity = MatrixFrame.Identity;
+		identity.origin = base.MapEntity.MobileParty.MapEvent.MapEventSettlement.Position.AsVec3();
+		if (base.MapEntity.MapEventSide.OtherSide.LeaderParty != null)
+		{
+			Vec2 vec = ((base.MapEntity.MapEventSide.OtherSide.LeaderParty.IsMobile ? base.MapEntity.MapEventSide.OtherSide.LeaderParty.MobileParty.VisualPosition2DWithoutError : base.MapEntity.MapEventSide.OtherSide.LeaderParty.Position.ToVec2()) - base.MapEntity.MobileParty.VisualPosition2DWithoutError).Normalized();
+			if (base.MapEntity.MapEventSide.OtherSide.LeaderParty.IsMobile)
+			{
+				identity.origin -= vec.ToVec3() * 0.5f;
+			}
+			identity.rotation.RotateAboutUp(vec.RotationInRadians);
+		}
+		_raidAgentVisuals = SandBoxViewHelpers.MobilePartyVisualHelper.GetHumanAgentPartyVisual(MapScene, identity, party, contourColor, ActionIndexCache.act_map_raid, ref clearBannerEntityCache, ref _cachedBannerEntity, out var animationDuration);
 		if (_raidAgentVisuals != null)
 		{
-			_raidAgentVisuals.GetVisuals().GetSkeleton().SetAgentActionChannel(0, in ActionIndexCache.act_map_raid, MBRandom.NondeterministicRandomFloat * 0.7f);
+			float num = MBRandom.NondeterministicRandomFloat * 0.7f;
+			_raidAgentVisuals.GetVisuals().GetSkeleton().SetAgentActionChannel(0, in ActionIndexCache.act_map_raid, (animationDuration < 1f) ? num : (num / animationDuration));
 			WeakGameEntity weakEntity = _raidAgentVisuals.GetWeakEntity();
-			uint value = (FactionManager.IsAtWarAgainstFaction(party.MapFaction, Hero.MainHero.MapFaction) ? 4294905856u : 4278206719u);
-			weakEntity.SetContourColor(value, alwaysVisible: false);
 			float speed = TaleWorlds.Library.MathF.Min(0.25f, 20f);
 			_raidAgentVisuals.Tick(null, 0.0001f, isEntityMoving: false, speed);
 			weakEntity.Skeleton.ForceUpdateBoneFrames();
-		}
-	}
-
-	private void GetMeleeWeaponToWield(PartyBase party, out int wieldedItemIndex)
-	{
-		wieldedItemIndex = -1;
-		CharacterObject visualPartyLeader = PartyBaseHelper.GetVisualPartyLeader(party);
-		if (visualPartyLeader == null)
-		{
-			return;
-		}
-		for (int i = 0; i < 5; i++)
-		{
-			if (visualPartyLeader.Equipment[i].Item != null && visualPartyLeader.Equipment[i].Item.PrimaryWeapon.IsMeleeWeapon)
-			{
-				wieldedItemIndex = i;
-				break;
-			}
 		}
 	}
 
@@ -816,12 +800,12 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 
 	private float GetMapEventVisualRotation()
 	{
-		if (base.MapEntity.MapEventSide.OtherSide.LeaderParty != null && base.MapEntity.MapEventSide.OtherSide.LeaderParty.IsMobile && base.MapEntity.MapEventSide.OtherSide.LeaderParty.IsMobile)
+		if (base.MapEntity.MapEventSide.OtherSide.LeaderParty != null && base.MapEntity.MapEventSide.OtherSide.LeaderParty.IsMobile)
 		{
 			Vec2 vec = (base.MapEntity.MapEventSide.OtherSide.LeaderParty.MobileParty.VisualPosition2DWithoutError - base.MapEntity.MobileParty.VisualPosition2DWithoutError).Normalized();
 			if (base.MapEntity.MapEvent.IsNavalMapEvent)
 			{
-				vec.RotateCCW(0.6f);
+				vec.RotateCCW(System.MathF.PI / 2f);
 			}
 			return vec.RotationInRadians;
 		}
@@ -910,17 +894,16 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 		}
 	}
 
-	private void AddShipVisual()
+	private void AddShipVisual(Ship flagship)
 	{
 		if (!base.MapEntity.IsActive)
 		{
 			return;
 		}
 		_isSailFolded = true;
-		Ship flagShip = base.MapEntity.FlagShip;
-		if (_flagShipId == flagShip.ShipHull.StringId && _shipEntity != null && _isVisualInRaftState == base.MapEntity.MobileParty.IsInRaftState)
+		if (_flagShipId == flagship.ShipHull.StringId && _shipEntity != null && _isVisualInRaftState == base.MapEntity.MobileParty.IsInRaftState)
 		{
-			NavalDLCViewHelpers.ShipVisualHelper.RefreshShipVisuals(_shipEntity.WeakEntity, flagShip, _sailVisualCache);
+			NavalDLCViewHelpers.ShipVisualHelper.RefreshShipVisuals(_shipEntity.WeakEntity, flagship, _sailVisualCache);
 		}
 		else
 		{
@@ -943,7 +926,7 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 				_sailingSoundEvent = SoundEvent.CreateEventFromString("event:/map/army/sail", NavalMobilePartyVisualManager.Current.MapScene);
 				_sailingSoundEvent.SetPosition(GetVisualPosition());
 			}
-			_shipEntity = NavalDLCViewHelpers.ShipVisualHelper.GetShipEntityForCampaign(flagShip, StrategicEntity.Scene, flagShip.GetShipVisualSlotInfos());
+			_shipEntity = NavalDLCViewHelpers.ShipVisualHelper.GetShipEntityForCampaign(flagship, StrategicEntity.Scene, flagship.GetShipVisualSlotInfos());
 			NavalDLCViewHelpers.ShipVisualHelper.CollectSailVisuals(_shipEntity.WeakEntity, _sailVisualCache);
 			CollectOars();
 			float num = 50f;
@@ -960,7 +943,7 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 			_bodyMeshEntity = _shipEntity.WeakEntity.GetFirstChildEntityWithTagRecursive("body_mesh");
 			StrategicEntity.AddChild(_shipEntity);
 			_shipEntity.SetVisibilityExcludeParents(visible: true);
-			_flagShipId = flagShip.ShipHull.StringId;
+			_flagShipId = flagship.ShipHull.StringId;
 			_ownerSceneCached = _shipEntity.Scene;
 			_shipMovementParticleEntity = GameEntity.CreateEmpty(_ownerSceneCached, isModifiableFromEditor: false, createPhysics: false, callScriptCallbacks: false);
 			_shipMovementParticleEntity.Name = "movement_particle";
@@ -1016,17 +999,17 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 		return result;
 	}
 
-	private void TickIdleShipAnimation(Ship ship, ref float rockingPhase, ref MatrixFrame entityFrame, bool isBlockadeShip = false)
+	private void TickIdleShipAnimation(ShipHull shipHull, ref float rockingPhase, ref MatrixFrame entityFrame, bool isBlockadeShip = false)
 	{
 		if (MBMath.WrapAngle(base.MapEntity.MobileParty.Bearing.RotationInRadians - _bearingRotation).ApproximatelyEqualsTo(0f, 0.003f))
 		{
 			float num = 1f;
 			float num2 = System.MathF.PI / 40f;
-			if (ship.ShipHull.Type == ShipHull.ShipType.Light)
+			if (shipHull.Type == ShipHull.ShipType.Light)
 			{
 				num = 2f;
 			}
-			else if (ship.ShipHull.Type == ShipHull.ShipType.Medium)
+			else if (shipHull.Type == ShipHull.ShipType.Medium)
 			{
 				num = 1.5f;
 			}
@@ -1261,14 +1244,17 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 				item3?.SailClothComponent?.SetForcedWind(vec * num, isLocal: false);
 			}
 		}
-		if (!_sailVisualCache.Any())
+		if (_sailVisualCache.Any())
 		{
-			return;
+			float num2 = TaleWorlds.Library.MathF.Clamp(length * 3f, 0.3f, 2.5f);
+			foreach (SailVisual item4 in _sailVisualCache)
+			{
+				item4?.SailTopBannerClothComponent?.SetForcedWind(vec * num2, isLocal: false);
+			}
 		}
-		float num2 = TaleWorlds.Library.MathF.Clamp(length * 3f, 0.3f, 2.5f);
-		foreach (SailVisual item4 in _sailVisualCache)
+		if (_raidAgentVisuals != null && !_raidAgentVisuals.GetEquipment()[EquipmentIndex.ExtraWeaponSlot].IsEmpty)
 		{
-			item4?.SailTopBannerClothComponent?.SetForcedWind(vec * num2, isLocal: false);
+			_raidAgentVisuals.SetClothWindToWeaponAtIndex(-StrategicEntity.GetGlobalFrame().rotation.f, isLocal: false, EquipmentIndex.ExtraWeaponSlot);
 		}
 	}
 
@@ -1301,7 +1287,7 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 
 	private bool HasNavalVisual()
 	{
-		if ((base.MapEntity.MobileParty.Ships.Count <= 0 && !base.MapEntity.MobileParty.IsInRaftState) || !base.MapEntity.MobileParty.IsCurrentlyAtSea || (base.MapEntity.MobileParty.CurrentSettlement != null && !base.MapEntity.MobileParty.IsTargetingPort))
+		if ((base.MapEntity.MobileParty.Ships.Count <= 0 && !base.MapEntity.MobileParty.IsInNavalAutoTravel) || !base.MapEntity.MobileParty.IsCurrentlyAtSea || (base.MapEntity.MobileParty.CurrentSettlement != null && !base.MapEntity.MobileParty.IsTargetingPort))
 		{
 			if (base.MapEntity.MobileParty.Ships.Count > 0 && base.MapEntity.MobileParty.SiegeEvent?.BesiegedSettlement != null)
 			{
@@ -1327,5 +1313,14 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 		{
 			MapScreen.VisualsOfEntities.Remove(child.Pointer);
 		}
+	}
+
+	private ShipHull GetFerryShipHull()
+	{
+		if (_ferryShipHull == null)
+		{
+			_ferryShipHull = NavalDLCViewHelpers.ShipVisualHelper.GetFerryShipHullForSettlement(Campaign.Current.PlayerDataForNavalAutoTravel.DeparturedVillageWithFerry);
+		}
+		return _ferryShipHull;
 	}
 }

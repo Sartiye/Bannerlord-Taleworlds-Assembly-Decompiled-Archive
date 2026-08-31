@@ -11,5 +11,6 @@ public enum SpectatorCameraTypes
 	LockToTeamMembers,
 	LockToTeamMembersView,
 	LockToPosition,
+	OrbitAroundTarget,
 	Count
 }

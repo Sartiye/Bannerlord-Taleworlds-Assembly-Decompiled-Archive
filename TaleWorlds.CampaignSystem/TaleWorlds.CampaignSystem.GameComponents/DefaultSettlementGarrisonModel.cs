@@ -13,33 +13,15 @@ namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultSettlementGarrisonModel : SettlementGarrisonModel
 {
-	private static readonly TextObject TownWallsText = new TextObject("{=SlmhqqH8}Town Walls");
-
-	private static readonly TextObject MoraleText = new TextObject("{=UjL7jVYF}Morale");
-
-	private static readonly TextObject FoodShortageText = new TextObject("{=qTFKvGSg}Food Shortage");
-
-	private readonly TextObject SurplusFoodText = GameTexts.FindText("str_surplus_food");
-
-	private readonly TextObject VillageBeingRaided = GameTexts.FindText("str_village_being_raided");
-
-	private readonly TextObject VillageLooted = GameTexts.FindText("str_village_looted");
-
-	private readonly TextObject TownIsUnderSiege = GameTexts.FindText("str_villages_under_siege");
-
-	private readonly TextObject RetiredText = GameTexts.FindText("str_retired");
-
-	private readonly TextObject PaymentIsLessText = GameTexts.FindText("str_payment_is_less");
-
-	private readonly TextObject UnpaidWagesText = GameTexts.FindText("str_unpaid_wages");
-
 	private readonly TextObject RebellionText = GameTexts.FindText("str_rebel_settlement");
 
 	private const int MaximumDailyAutoRecruitmentCount = 1;
 
-	public override int GetMaximumDailyAutoRecruitmentCount(Town town)
+	public override ExplainedNumber GetMaximumDailyAutoRecruitmentCount(Town town, bool includeDescriptions = false)
 	{
-		return 1;
+		ExplainedNumber result = new ExplainedNumber(1f, includeDescriptions);
+		town.AddEffectOfBuildings(BuildingEffectEnum.GarrisonAutoRecruitment, ref result);
+		return result;
 	}
 
 	public override ExplainedNumber CalculateBaseGarrisonChange(Settlement settlement, bool includeDescriptions = false)
@@ -56,93 +38,42 @@ public class DefaultSettlementGarrisonModel : SettlementGarrisonModel
 	public override int FindNumberOfTroopsToTakeFromGarrison(MobileParty mobileParty, Settlement settlement, float defaultIdealGarrisonStrengthPerWalledCenter = 0f)
 	{
 		MobileParty garrisonParty = settlement.Town.GarrisonParty;
-		float num = 0f;
-		if (garrisonParty != null)
+		if (garrisonParty == null)
 		{
-			num = garrisonParty.Party.CalculateCurrentStrength();
-			float num2 = 100f;
-			if (garrisonParty.HasLimitedWage())
-			{
-				num2 = (float)garrisonParty.PaymentLimit / Campaign.Current.AverageWage;
-				num2 /= 1.5f;
-			}
-			else
-			{
-				num2 = ((defaultIdealGarrisonStrengthPerWalledCenter > 0.1f) ? defaultIdealGarrisonStrengthPerWalledCenter : FactionHelper.FindIdealGarrisonStrengthPerWalledCenter(mobileParty.MapFaction as Kingdom, settlement.OwnerClan));
-				float num3 = FactionHelper.OwnerClanEconomyEffectOnGarrisonSizeConstant(settlement.OwnerClan);
-				num2 *= num3;
-				num2 *= (settlement.IsTown ? 2f : 1f);
-			}
-			int partySizeLimit = mobileParty.Party.PartySizeLimit;
-			int numberOfAllMembers = mobileParty.Party.NumberOfAllMembers;
-			float num4 = (float)partySizeLimit / (float)numberOfAllMembers;
-			float num5 = MathF.Min(11f, num4 * MathF.Sqrt(num4)) - 1f;
-			float num6 = MathF.Pow(num / num2, 1.5f);
-			float num7 = ((mobileParty.LeaderHero.Clan.Leader == mobileParty.LeaderHero) ? 2f : 1f);
-			int num8 = 0;
-			if (num5 * num6 * num7 > 1f)
-			{
-				num8 = MBRandom.RoundRandomized(num5 * num6 * num7);
-			}
-			int num9 = 25;
-			num9 *= ((!settlement.IsTown) ? 1 : 2);
-			if (num8 > garrisonParty.Party.MemberRoster.TotalRegulars - num9)
-			{
-				num8 = garrisonParty.Party.MemberRoster.TotalRegulars - num9;
-			}
-			return num8;
+			return 0;
 		}
-		return 0;
-	}
-
-	public override int FindNumberOfTroopsToLeaveToGarrison(MobileParty mobileParty, Settlement settlement)
-	{
-		MobileParty garrisonParty = settlement.Town.GarrisonParty;
-		float num = 0f;
-		if (garrisonParty != null)
-		{
-			num = garrisonParty.Party.CalculateCurrentStrength();
-		}
-		float num2 = 100f;
-		if (garrisonParty != null && garrisonParty.HasLimitedWage())
+		float num = garrisonParty.Party.CalculateCurrentStrength();
+		float num2;
+		if (garrisonParty.HasLimitedWage())
 		{
 			num2 = (float)garrisonParty.PaymentLimit / Campaign.Current.AverageWage;
+			num2 /= 1.5f;
 		}
 		else
 		{
-			num2 = FactionHelper.FindIdealGarrisonStrengthPerWalledCenter(mobileParty.MapFaction as Kingdom, settlement.OwnerClan);
+			num2 = ((defaultIdealGarrisonStrengthPerWalledCenter > 0.1f) ? defaultIdealGarrisonStrengthPerWalledCenter : FactionHelper.FindIdealGarrisonStrengthPerWalledCenter(mobileParty.MapFaction as Kingdom, settlement.OwnerClan));
 			float num3 = FactionHelper.OwnerClanEconomyEffectOnGarrisonSizeConstant(settlement.OwnerClan);
-			float num4 = FactionHelper.SettlementProsperityEffectOnGarrisonSizeConstant(settlement.Town);
-			float num5 = FactionHelper.SettlementFoodPotentialEffectOnGarrisonSizeConstant(settlement);
 			num2 *= num3;
-			num2 *= num4;
-			num2 *= num5;
+			num2 *= (settlement.IsTown ? 2f : 1f);
 		}
-		if (num < num2)
+		int partySizeLimit = mobileParty.Party.PartySizeLimit;
+		int numberOfAllMembers = mobileParty.Party.NumberOfAllMembers;
+		float num4 = (float)partySizeLimit / (float)numberOfAllMembers;
+		float num5 = MathF.Min(11f, num4 * MathF.Sqrt(num4)) - 1f;
+		float num6 = MathF.Pow(num / num2, 1.5f);
+		float num7 = ((mobileParty.LeaderHero.Clan.Leader == mobileParty.LeaderHero) ? 2f : 1f);
+		int num8 = 0;
+		if (num5 * num6 * num7 > 1f)
 		{
-			int numberOfRegularMembers = mobileParty.Party.NumberOfRegularMembers;
-			float num6 = 1f + (float)mobileParty.Party.MemberRoster.TotalWoundedRegulars / (float)mobileParty.Party.NumberOfRegularMembers;
-			int partySizeLimit = mobileParty.Party.PartySizeLimit;
-			float num7 = MathF.Pow(MathF.Min(2f, (float)numberOfRegularMembers / (float)partySizeLimit), 1.2f) * 0.75f;
-			float num8 = (1f - num / num2) * (1f - num / num2);
-			float num9 = 1f;
-			if (mobileParty.Army != null)
-			{
-				num8 = MathF.Min(num8, 0.7f);
-				num9 = 0.3f + mobileParty.Army.CalculateCurrentStrength() / mobileParty.Party.CalculateCurrentStrength() * 0.025f;
-			}
-			float num10 = (settlement.Town.IsOwnerUnassigned ? 0.75f : 0.5f);
-			if (settlement.OwnerClan == mobileParty.LeaderHero.Clan || settlement.OwnerClan == mobileParty.Party.Owner.MapFaction.Leader.Clan)
-			{
-				num10 = 1f;
-			}
-			float num11 = MathF.Min(0.7f, num7 * num8 * num10 * num6 * num9);
-			if ((float)numberOfRegularMembers * num11 > 1f)
-			{
-				return MBRandom.RoundRandomized((float)numberOfRegularMembers * num11);
-			}
+			num8 = MBRandom.RoundRandomized(num5 * num6 * num7);
 		}
-		return 0;
+		int num9 = 25;
+		num9 *= ((!settlement.IsTown) ? 1 : 2);
+		if (num8 > garrisonParty.Party.MemberRoster.TotalRegulars - num9)
+		{
+			num8 = garrisonParty.Party.MemberRoster.TotalRegulars - num9;
+		}
+		return num8;
 	}
 
 	public override float GetMaximumDailyRepairAmount(Settlement settlement)

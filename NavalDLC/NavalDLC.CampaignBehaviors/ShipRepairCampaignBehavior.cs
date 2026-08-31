@@ -13,7 +13,7 @@ namespace NavalDLC.CampaignBehaviors;
 
 public class ShipRepairCampaignBehavior : CampaignBehaviorBase
 {
-	private List<IFaction> _factionsThatDoNotHavePort;
+	private List<IFaction> _factionsThatDoNotHavePort = new List<IFaction>();
 
 	public override void RegisterEvents()
 	{
@@ -27,7 +27,8 @@ public class ShipRepairCampaignBehavior : CampaignBehaviorBase
 
 	private void OnShipDestroyed(PartyBase party, Ship ship, DestroyShipAction.ShipDestroyDetail detail)
 	{
-		if (detail != DestroyShipAction.ShipDestroyDetail.ApplyByDiscard || !party.IsMobile || !party.MobileParty.HasPerk(NavalPerks.Boatswain.ShipwrightsHand))
+		Hero perkOwnerHero = null;
+		if (detail != DestroyShipAction.ShipDestroyDetail.ApplyByDiscard || !party.IsMobile || !party.MobileParty.HasPerk(NavalPerks.Boatswain.ShipwrightsHand, out perkOwnerHero))
 		{
 			return;
 		}
@@ -47,7 +48,6 @@ public class ShipRepairCampaignBehavior : CampaignBehaviorBase
 
 	private void AfterSessionLaunched(CampaignGameStarter campaignGameStarter)
 	{
-		_factionsThatDoNotHavePort = new List<IFaction>();
 		foreach (Clan item in Clan.All)
 		{
 			if (item.IsBanditFaction || _factionsThatDoNotHavePort.Contains(item.MapFaction))

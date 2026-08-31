@@ -1,6 +1,9 @@
 using System;
+using System.IO;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace TaleWorlds.Library.Http;
 
@@ -14,6 +17,8 @@ public class HttpPostRequest : IHttpRequestTask
 
 	private Version _versionToUse;
 
+	private CancellationToken _cancellationToken;
+
 	public HttpRequestTaskState State { get; private set; }
 
 	public bool Successful { get; private set; }
@@ -22,12 +27,12 @@ public class HttpPostRequest : IHttpRequestTask
 
 	public Exception Exception { get; private set; }
 
-	public HttpPostRequest(HttpClient httpClient, string address, string postData)
-		: this(httpClient, address, postData, new Version("1.1"))
+	public HttpPostRequest(HttpClient httpClient, string address, string postData, CancellationToken cancellationToken)
+		: this(httpClient, address, postData, new Version("1.1"), cancellationToken)
 	{
 	}
 
-	public HttpPostRequest(HttpClient httpClient, string address, string postData, Version version)
+	public HttpPostRequest(HttpClient httpClient, string address, string postData, Version version, CancellationToken cancellationToken)
 	{
 		_httpClient = httpClient;
 		_postData = postData;
@@ -35,6 +40,7 @@ public class HttpPostRequest : IHttpRequestTask
 		State = HttpRequestTaskState.NotStarted;
 		ResponseData = "";
 		_versionToUse = version;
+		_cancellationToken = cancellationToken;
 	}
 
 	private void SetFinishedAsSuccessful(string responseData)
@@ -56,6 +62,15 @@ public class HttpPostRequest : IHttpRequestTask
 		DoTask();
 	}
 
+	private static Exception GetRootCause(Exception e)
+	{
+		while (e.InnerException != null)
+		{
+			e = e.InnerException;
+		}
+		return e;
+	}
+
 	private async void DoTask()
 	{
 		State = HttpRequestTaskState.Working;
@@ -67,16 +82,23 @@ public class HttpPostRequest : IHttpRequestTask
 			requestMessage.Headers.Add("Accept", "application/json");
 			requestMessage.Headers.Add("UserAgent", "TaleWorlds Client");
 			requestMessage.Content = new StringContent(_postData, Encoding.Unicode, "application/json");
-			using HttpResponseMessage response = await _httpClient.SendAsync(requestMessage);
+			using HttpResponseMessage response = await _httpClient.SendAsync(requestMessage, _cancellationToken);
 			_ = response.IsSuccessStatusCode;
 			response.EnsureSuccessStatusCode();
 			Debug.Print("Protocol version used for post request to " + _address + " is: " + response.Version);
 			using HttpContent content = response.Content;
 			SetFinishedAsSuccessful(await content.ReadAsStringAsync());
 		}
-		catch (Exception finishedAsUnsuccessful)
+		catch (Exception ex)
 		{
-			SetFinishedAsUnsuccessful(finishedAsUnsuccessful);
+			bool num = ex is OperationCanceledException || _cancellationToken.IsCancellationRequested;
+			Exception rootCause = GetRootCause(ex);
+			bool flag = ex is HttpRequestException && (rootCause is SocketException || rootCause is IOException);
+			if (num || flag)
+			{
+				Debug.Print("Http post request to " + _address + " aborted (shutdown or target unavailable): " + ex.Message + " [" + rootCause.GetType().Name + "]");
+			}
+			SetFinishedAsUnsuccessful(ex);
 		}
 	}
 }

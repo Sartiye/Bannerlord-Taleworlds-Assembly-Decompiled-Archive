@@ -8,19 +8,19 @@ public static class ChangeCrimeRatingAction
 {
 	private static void ApplyInternal(IFaction faction, float deltaCrimeRating, bool showNotification)
 	{
-		float num = MBMath.ClampFloat(faction.MainHeroCrimeRating + deltaCrimeRating, 0f, Campaign.Current.Models.CrimeModel.GetMaxCrimeRating());
-		deltaCrimeRating = num - faction.MainHeroCrimeRating;
+		float resultNumber = Campaign.Current.Models.CrimeModel.GetEffectiveCrimeChange(faction, deltaCrimeRating).ResultNumber;
+		deltaCrimeRating = resultNumber - faction.MainHeroCrimeRating;
 		if (showNotification && !deltaCrimeRating.ApproximatelyEqualsTo(0f))
 		{
 			TextObject textObject = new TextObject("{=hwq0RMRN}Your criminal rating with {FACTION_NAME} has {?IS_INCREASED}increased{?}decreased{\\?} by {CHANGE} to {NEW_RATING}");
 			textObject.SetTextVariable("CHANGE", MathF.Round(MathF.Abs(deltaCrimeRating)));
 			textObject.SetTextVariable("IS_INCREASED", (deltaCrimeRating > 0f) ? 1 : 0);
 			textObject.SetTextVariable("FACTION_NAME", faction.Name);
-			textObject.SetTextVariable("NEW_RATING", MathF.Round(num));
+			textObject.SetTextVariable("NEW_RATING", MathF.Round(resultNumber));
 			MBInformationManager.AddQuickInformation(textObject);
 		}
-		faction.MainHeroCrimeRating = num;
-		if (num > Campaign.Current.Models.CrimeModel.DeclareWarCrimeRatingThreshold && Hero.MainHero.MapFaction.Leader == Hero.MainHero && !faction.IsAtWarWith(Hero.MainHero.MapFaction) && Hero.MainHero.MapFaction != faction)
+		faction.MainHeroCrimeRating = resultNumber;
+		if (resultNumber >= Campaign.Current.Models.CrimeModel.DeclareWarCrimeRatingThreshold && Hero.MainHero.MapFaction.Leader == Hero.MainHero && !faction.IsAtWarWith(Hero.MainHero.MapFaction) && Hero.MainHero.MapFaction != faction)
 		{
 			ChangeRelationAction.ApplyPlayerRelation(faction.Leader, -10);
 			DeclareWarAction.ApplyByCrimeRatingChange(faction, Hero.MainHero.MapFaction);

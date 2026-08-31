@@ -36,37 +36,37 @@ public class DefaultVillageProductionCalculatorModel : VillageProductionCalculat
 					bonuses.Add(num * num2);
 					if (item.ItemCategory == DefaultItemCategories.Grain || item.ItemCategory == DefaultItemCategories.Olives || item.ItemCategory == DefaultItemCategories.Fish || item.ItemCategory == DefaultItemCategories.DateFruit)
 					{
-						PerkHelper.AddPerkBonusForTown(DefaultPerks.Trade.GranaryAccountant, village.TradeBound.Town, ref bonuses);
+						PerkHelper.AddPerkBonusForTown(DefaultPerks.Trade.GranaryAccountant, village.TradeBound.Town, isPrimaryBonus: false, ref bonuses);
 					}
 					else if (item.ItemCategory == DefaultItemCategories.Clay || item.ItemCategory == DefaultItemCategories.Iron || item.ItemCategory == DefaultItemCategories.Cotton || item.ItemCategory == DefaultItemCategories.Silver)
 					{
-						PerkHelper.AddPerkBonusForTown(DefaultPerks.Trade.TradeyardForeman, village.TradeBound.Town, ref bonuses);
+						PerkHelper.AddPerkBonusForTown(DefaultPerks.Trade.TradeyardForeman, village.TradeBound.Town, isPrimaryBonus: false, ref bonuses);
 					}
 					if (item.IsTradeGood)
 					{
-						PerkHelper.AddPerkBonusForTown(DefaultPerks.Athletics.Steady, village.TradeBound.Town, ref bonuses);
+						PerkHelper.AddPerkBonusForTown(DefaultPerks.Athletics.Steady, village.TradeBound.Town, isPrimaryBonus: false, ref bonuses);
 					}
 					if (item.IsAnimal)
 					{
-						PerkHelper.AddPerkBonusForTown(DefaultPerks.Medicine.PerfectHealth, village.TradeBound.Town, ref bonuses);
+						PerkHelper.AddPerkBonusForTown(DefaultPerks.Medicine.PerfectHealth, village.TradeBound.Town, isPrimaryBonus: false, ref bonuses);
 					}
-					PerkHelper.AddPerkBonusForTown(DefaultPerks.Riding.Breeder, village.TradeBound.Town, ref bonuses);
+					PerkHelper.AddPerkBonusForTown(DefaultPerks.Riding.Breeder, village.TradeBound.Town, isPrimaryBonus: false, ref bonuses);
 				}
-				if ((item.ItemCategory == DefaultItemCategories.Sheep || item.ItemCategory == DefaultItemCategories.Cow || item.ItemCategory == DefaultItemCategories.WarHorse || item.ItemCategory == DefaultItemCategories.Horse || item.ItemCategory == DefaultItemCategories.PackAnimal) && village.Settlement.OwnerClan.Culture.HasFeat(DefaultCulturalFeats.KhuzaitAnimalProductionFeat))
+				if (item.ItemCategory == DefaultItemCategories.Sheep || item.ItemCategory == DefaultItemCategories.Cow || item.ItemCategory == DefaultItemCategories.WarHorse || item.ItemCategory == DefaultItemCategories.Horse || item.ItemCategory == DefaultItemCategories.PackAnimal)
 				{
-					bonuses.AddFactor(DefaultCulturalFeats.KhuzaitAnimalProductionFeat.EffectBonus, _cultureEffect);
+					FeatHelper.ApplyCultureFeat(village.Settlement.OwnerClan.Culture, DefaultCulturalFeats.KhuzaitAnimalProductionFeat, ref bonuses);
 				}
-				if (item.ItemCategory == DefaultItemCategories.Grain && village.Settlement.OwnerClan.Culture.HasFeat(DefaultCulturalFeats.SturgianGrainProductionFeat))
+				if (item.ItemCategory == DefaultItemCategories.Grain)
 				{
-					bonuses.AddFactor(DefaultCulturalFeats.SturgianGrainProductionFeat.EffectBonus, _cultureEffect);
+					FeatHelper.ApplyCultureFeat(village.Settlement.OwnerClan.Culture, DefaultCulturalFeats.SturgianGrainProductionFeat, ref bonuses);
 				}
 				if (village.Bound.IsFortification)
 				{
 					village.Bound.Town.AddEffectOfBuildings(BuildingEffectEnum.VillageProduction, ref bonuses);
 				}
-				if (village.Bound.IsCastle && village.Settlement.OwnerClan.Culture.HasFeat(DefaultCulturalFeats.VlandianCastleVillageProductionFeat))
+				if (village.Bound.IsCastle)
 				{
-					bonuses.AddFactor(DefaultCulturalFeats.VlandianCastleVillageProductionFeat.EffectBonus, _cultureEffect);
+					FeatHelper.ApplyCultureFeat(village.Settlement.OwnerClan.Culture, DefaultCulturalFeats.VlandianCastleVillageProductionFeat, ref bonuses);
 				}
 			}
 		}

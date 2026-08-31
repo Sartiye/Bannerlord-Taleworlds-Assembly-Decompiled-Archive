@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using TaleWorlds.Library;
 using TaleWorlds.Library.Http;
@@ -52,7 +53,13 @@ internal class ClientRestSessionTask
 
 	public IHttpRequestTask Request { get; private set; }
 
+	public CancellationToken CancellationToken { get; private set; }
+
 	public RestResponse RestResponse { get; private set; }
+
+	public int RetryCount { get; private set; }
+
+	public int TotalHttpAttempts => _currentIterationCount + 1;
 
 	public bool IsCompletelyFinished
 	{
@@ -70,8 +77,13 @@ internal class ClientRestSessionTask
 		}
 	}
 
-	public ClientRestSessionTask(RestRequestMessage restRequestMessage)
+	public ClientRestSessionTask(RestRequestMessage restRequestMessage, CancellationToken cancellationToken, bool retry = true)
 	{
+		if (!retry)
+		{
+			_maxIterationCount = 0;
+		}
+		CancellationToken = cancellationToken;
 		RestRequestMessage = restRequestMessage;
 		_taskCompletionSource = new TaskCompletionSource<bool>();
 		_sw = new Stopwatch();
@@ -92,7 +104,7 @@ internal class ClientRestSessionTask
 		if (_sw.ElapsedMilliseconds >= RequestRetryTimeout)
 		{
 			_willTryAgain = false;
-			TaleWorlds.Library.Debug.Print("Retrying http post request, iteration count: " + _currentIterationCount);
+			TaleWorlds.Library.Debug.Print($"[Resilience][Transport] {_messageName} — issuing transport retry {_currentIterationCount}/{_maxIterationCount}.");
 			CreateAndSetRequest();
 		}
 	}
@@ -110,44 +122,35 @@ internal class ClientRestSessionTask
 	{
 		if (!Request.Successful)
 		{
-			bool flag = false;
+			string text = Request.Exception?.GetType().Name ?? "null";
 			if (Request.Exception != null && RetryableExceptions.Any((Type e) => e == Request.Exception.GetType()))
-			{
-				TaleWorlds.Library.Debug.Print(string.Concat("Http Post Request with message(", RestRequestMessage, ")  failed. Retrying: (", Request.Exception?.GetType(), ") ", Request.Exception));
-				flag = true;
-			}
-			else
-			{
-				TaleWorlds.Library.Debug.Print(string.Concat("Http Post Request with message(", RestRequestMessage, ")  failed. Exception: (", Request.Exception?.GetType(), ") ", Request.Exception));
-			}
-			if (Request != null && Request.Exception != null)
-			{
-				PrintExceptions(Request.Exception);
-			}
-			if (flag)
 			{
 				if (_currentIterationCount < _maxIterationCount)
 				{
 					_sw.Restart();
 					_willTryAgain = true;
 					_currentIterationCount++;
-					TaleWorlds.Library.Debug.Print(string.Concat("Http post request(", RestRequestMessage, ")  will try again, iteration count: ", _currentIterationCount));
+					TaleWorlds.Library.Debug.Print($"[Resilience][Transport] {_messageName} failed ({text}) — retryable, transport retry {_currentIterationCount}/{_maxIterationCount} in {RequestRetryTimeout}ms.");
 				}
 				else
 				{
 					_willTryAgain = false;
-					TaleWorlds.Library.Debug.Print(string.Concat("Passed max retry count for http post request(", RestRequestMessage, ") "));
+					TaleWorlds.Library.Debug.Print($"[Resilience][Transport] {_messageName} — transport retries exhausted ({_maxIterationCount}/{_maxIterationCount}), surfacing to Layer 2.");
 				}
 			}
 			else
 			{
-				TaleWorlds.Library.Debug.Print(string.Concat("Http post request(", RestRequestMessage, ")  will not try again due to exception type!"));
 				_willTryAgain = false;
+				TaleWorlds.Library.Debug.Print("[Resilience][Transport] " + _messageName + " failed (" + text + ") — non-retryable exception type, surfacing to Layer 2.");
+			}
+			if (Request.Exception != null)
+			{
+				PrintExceptions(Request.Exception);
 			}
 		}
 		else if (_currentIterationCount > 0)
 		{
-			TaleWorlds.Library.Debug.Print(string.Concat("Http post request(", RestRequestMessage, ") is successful with iteration count: ", _currentIterationCount));
+			TaleWorlds.Library.Debug.Print($"[Resilience][Transport] {_messageName} — succeeded after {_currentIterationCount} transport retries.");
 		}
 		_resultExamined = true;
 	}
@@ -191,6 +194,13 @@ internal class ClientRestSessionTask
 		TaleWorlds.Library.Debug.Print("ClientRestSessionTask::SetFinishedAsSuccessful::" + _messageName + " done");
 	}
 
+	public void ResetForRetry()
+	{
+		RetryCount++;
+		_resultExamined = false;
+		CreateAndSetRequest();
+	}
+
 	public void SetFinishedAsFailed()
 	{
 		SetFinishedAsFailed(null);
@@ -210,7 +220,7 @@ internal class ClientRestSessionTask
 	{
 		bool flag = RestRequestMessage is RestObjectRequestMessage restObjectRequestMessage && restObjectRequestMessage.MessageType == MessageType.Login;
 		string address = _requestAddress + (flag ? "/Data/Login" : "/Data/ProcessMessage");
-		Request = _networkClient.CreateHttpPostRequestTask(address, _postData, withUserToken: true);
+		Request = _networkClient.CreateHttpPostRequestTask(address, _postData, withUserToken: true, CancellationToken);
 		_resultExamined = false;
 	}
 

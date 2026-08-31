@@ -12,7 +12,7 @@ public abstract class HeroCreationModel : MBGameModel<HeroCreationModel>
 
 	public abstract Settlement GetBornSettlement(Hero character);
 
-	public abstract StaticBodyProperties GetStaticBodyProperties(Hero character, bool isOffspring, float variationAmount = 0.35f);
+	public abstract StaticBodyProperties GetStaticBodyProperties(Hero character, bool isOffspring, float variationAmount = 0.2f);
 
 	public abstract FormationClass GetPreferredUpgradeFormation(Hero character);
 

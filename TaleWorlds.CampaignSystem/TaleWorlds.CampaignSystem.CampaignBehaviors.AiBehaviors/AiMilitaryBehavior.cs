@@ -118,7 +118,7 @@ public class AiMilitaryBehavior : CampaignBehaviorBase
 	{
 		MobileParty mobilePartyOf = p.MobilePartyOf;
 		IFaction mapFaction = mobilePartyOf.MapFaction;
-		if ((mobilePartyOf.Army != null && mobilePartyOf.Army.LeaderParty != mobilePartyOf) || (mobilePartyOf.Objective == MobileParty.PartyObjective.Defensive && (missionType == Army.ArmyTypes.Besieger || missionType == Army.ArmyTypes.Raider)) || (mobilePartyOf.Objective == MobileParty.PartyObjective.Aggressive && missionType == Army.ArmyTypes.Defender))
+		if (mobilePartyOf.Army != null && mobilePartyOf.Army.LeaderParty != mobilePartyOf)
 		{
 			return;
 		}
@@ -256,6 +256,10 @@ public class AiMilitaryBehavior : CampaignBehaviorBase
 	private bool CheckIfSettlementIsSuitableForMilitaryAction(Settlement settlement, MobileParty mobileParty, Army.ArmyTypes missionType, bool isCalculatingForNewArmyCreation)
 	{
 		if (MobileParty.MainParty.ShouldBeIgnored && !mobileParty.IsMainParty && !mobileParty.AttachedParties.Contains(MobileParty.MainParty) && ((settlement.Party.MapEvent != null && settlement.Party.MapEvent == MapEvent.PlayerMapEvent) || (settlement.SiegeEvent != null && settlement.SiegeEvent.IsPlayerSiegeEvent)))
+		{
+			return false;
+		}
+		if (settlement.LastAttackerParty == MobileParty.MainParty && !mobileParty.Ai.DoNotAttackMainPartyUntil.IsPast)
 		{
 			return false;
 		}
@@ -458,25 +462,17 @@ public class AiMilitaryBehavior : CampaignBehaviorBase
 		}
 		float targetScoreForFaction = Campaign.Current.Models.TargetScoreCalculatingModel.GetTargetScoreForFaction(settlement, missionType, mobilePartyOf, ourStrength);
 		targetScoreForFaction *= bestDistanceScore * cohesionScore * partySizeScore * foodScore;
-		if (mobilePartyOf.Objective == MobileParty.PartyObjective.Defensive)
-		{
-			targetScoreForFaction = ((aiBehavior != AiBehavior.DefendSettlement) ? (targetScoreForFaction * 0.8f) : (targetScoreForFaction * 1.2f));
-		}
-		else if (mobilePartyOf.Objective == MobileParty.PartyObjective.Aggressive)
-		{
-			targetScoreForFaction = ((aiBehavior != AiBehavior.BesiegeSettlement && aiBehavior != AiBehavior.RaidSettlement) ? (targetScoreForFaction * 0.8f) : (targetScoreForFaction * 1.2f));
-		}
 		if (!mobilePartyOf.IsDisbanding)
 		{
 			IDisbandPartyCampaignBehavior disbandPartyCampaignBehavior = _disbandPartyCampaignBehavior;
 			if (disbandPartyCampaignBehavior == null || !disbandPartyCampaignBehavior.IsPartyWaitingForDisband(mobilePartyOf))
 			{
-				goto IL_02d1;
+				goto IL_0284;
 			}
 		}
 		targetScoreForFaction *= 0.25f;
-		goto IL_02d1;
-		IL_02d1:
+		goto IL_0284;
+		IL_0284:
 		if (bestNavigationType != 0)
 		{
 			AIBehaviorData item = new AIBehaviorData(settlement, aiBehavior, bestNavigationType, p.WillGatherAnArmy, isFromPort, isTargetingPort);
@@ -512,7 +508,7 @@ public class AiMilitaryBehavior : CampaignBehaviorBase
 				return;
 			}
 		}
-		else if (mobileParty.DefaultBehavior == AiBehavior.DefendSettlement || mobileParty.Objective == MobileParty.PartyObjective.Defensive)
+		else if (mobileParty.DefaultBehavior == AiBehavior.DefendSettlement)
 		{
 			mobileParty.Ai.SetInitiative(0.33f, 1f, 2f);
 		}
@@ -532,6 +528,14 @@ public class AiMilitaryBehavior : CampaignBehaviorBase
 		for (int i = 0; i < 4; i++)
 		{
 			Army.ArmyTypes armyTypes = (Army.ArmyTypes)i;
+			if (armyTypes == Army.ArmyTypes.Raider)
+			{
+				Hero leaderHero = mobileParty.LeaderHero;
+				if (leaderHero != null && !leaderHero.CanRaid)
+				{
+					continue;
+				}
+			}
 			if (flag && armyTypes == Army.ArmyTypes.Besieger)
 			{
 				p.WillGatherAnArmy = true;

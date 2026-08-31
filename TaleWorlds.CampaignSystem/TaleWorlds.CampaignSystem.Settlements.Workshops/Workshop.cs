@@ -138,6 +138,7 @@ public class Workshop : SettlementArea
 		_owner = newOwner;
 		_owner.AddOwnedWorkshop(this);
 		Capital = capital;
+		LastRunCampaignTime = CampaignTime.Now;
 		if (type != WorkshopType)
 		{
 			ChangeWorkshopProduction(type);

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.BattleWreckages;
 using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
@@ -376,6 +377,10 @@ public class CampaignTickCacheDataStore
 		for (Settlement settlement = Settlement.FindNextLocatable(ref data2); settlement != null; settlement = Settlement.FindNextLocatable(ref data2))
 		{
 			settlement.Party.UpdateVisibilityAndInspected(point, mainPartyVisibilityRange);
+		}
+		foreach (BattleWreckage wreckage in Campaign.Current.Wreckages)
+		{
+			wreckage.UpdateVisibility();
 		}
 	}
 }

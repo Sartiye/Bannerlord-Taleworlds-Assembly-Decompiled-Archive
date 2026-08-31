@@ -24,11 +24,12 @@ public class NavalDLCMapVisibilityModel : MapVisibilityModel
 		float num = base.BaseModel.GetPartySeeingRangeBase(party);
 		if (party.IsCurrentlyAtSea)
 		{
-			if (party.IsInRaftState)
+			if (party.IsInNavalAutoTravel)
 			{
 				num *= 0.5f;
 			}
-			if (Campaign.Current.IsNight && party.HasPerk(NavalPerks.Shipmaster.NightRaider))
+			Hero perkOwnerHero = null;
+			if (Campaign.Current.IsNight && party.HasPerk(NavalPerks.Shipmaster.NightRaider, out perkOwnerHero))
 			{
 				num += 3f;
 			}

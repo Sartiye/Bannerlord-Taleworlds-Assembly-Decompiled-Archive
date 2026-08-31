@@ -4,7 +4,6 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
-using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -94,7 +93,7 @@ public class ClanFleetManagementCampaignBehavior : CampaignBehaviorBase, IFleetM
 
 	private void AddDialogs(CampaignGameStarter starter)
 	{
-		starter.AddPlayerLine("clan_party_manage_fleet", "hero_main_options", "clan_party_manage_fleet_screen", "{=7DdiFD9W}Let me inspect your ships.", conversation_clan_member_manage_fleet_on_condition, null, 90);
+		starter.AddPlayerLine("clan_party_manage_fleet", "hero_main_options", "clan_party_manage_fleet_screen", "{=7DdiFD9W}Let me inspect your ships.", conversation_clan_member_manage_fleet_on_condition, null, 90, conversation_clan_member_manage_fleet_clickable_condition);
 		starter.AddDialogLine("clan_party_manage_fleet_screen", "clan_party_manage_fleet_screen", "lord_pretalk", "{=!}fleet screen goes here.", null, conversation_clan_member_manage_fleet_on_consequence);
 	}
 
@@ -121,6 +120,19 @@ public class ClanFleetManagementCampaignBehavior : CampaignBehaviorBase, IFleetM
 		return false;
 	}
 
+	private bool conversation_clan_member_manage_fleet_clickable_condition(out TextObject explanation)
+	{
+		Hero oneToOneConversationHero = Hero.OneToOneConversationHero;
+		if (oneToOneConversationHero != null && oneToOneConversationHero.PartyBelongedTo != null && !oneToOneConversationHero.CanHaveFleet && oneToOneConversationHero.PartyBelongedTo.Ships.Count == 0)
+		{
+			explanation = new TextObject("{=U4WWJ0bi}{PARTY_NAME} is not allowed to have ships.");
+			explanation.SetTextVariable("PARTY_NAME", oneToOneConversationHero.PartyBelongedTo.Name);
+			return false;
+		}
+		explanation = TextObject.GetEmpty();
+		return true;
+	}
+
 	private void conversation_clan_member_manage_fleet_on_consequence()
 	{
 		PortStateHelper.OpenAsManageOtherFleet(Hero.OneToOneConversationHero.PartyBelongedTo.Party, OnManageOtherFleetDone);
@@ -140,32 +152,11 @@ public class ClanFleetManagementCampaignBehavior : CampaignBehaviorBase, IFleetM
 
 	public void SendShipToClan(Ship ship, Clan clan)
 	{
-		float num = float.MinValue;
-		MobileParty mobileParty = null;
-		MBList<Ship> mBList = new MBList<Ship>();
-		foreach (WarPartyComponent warPartyComponent in clan.WarPartyComponents)
+		bool doesPartyNeedShips;
+		MobileParty clanPartyToGetAvailableShip = ShipHelper.GetClanPartyToGetAvailableShip(ship, clan, out doesPartyNeedShips);
+		if (clanPartyToGetAvailableShip != null)
 		{
-			if (NavalDLCManager.Instance.GameModels.ShipDistributionModel.CanSendShipToParty(ship, warPartyComponent.MobileParty) && (mobileParty == null || mobileParty.Ships.Count >= warPartyComponent.Party.Ships.Count))
-			{
-				mBList.Clear();
-				mBList.AddRange(warPartyComponent.Party.Ships);
-				float scoreForPartyShipComposition = NavalDLCManager.Instance.GameModels.ShipDistributionModel.GetScoreForPartyShipComposition(warPartyComponent.MobileParty, mBList);
-				mBList.Add(ship);
-				float num2 = NavalDLCManager.Instance.GameModels.ShipDistributionModel.GetScoreForPartyShipComposition(warPartyComponent.MobileParty, mBList) - scoreForPartyShipComposition;
-				if (num2 > num)
-				{
-					mobileParty = warPartyComponent.MobileParty;
-					num = num2;
-				}
-			}
-		}
-		if (mobileParty != null)
-		{
-			SendShipToParty(ship, mobileParty);
-		}
-		else
-		{
-			DestroyShipAction.Apply(ship);
+			SendShipToParty(ship, clanPartyToGetAvailableShip);
 		}
 	}
 }

@@ -13,7 +13,6 @@ using TaleWorlds.Library;
 using TaleWorlds.LinQuick;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.MountAndBlade.View;
-using TaleWorlds.MountAndBlade.View.Tableaus.Thumbnails;
 
 namespace SandBox.View.Map.Visuals;
 
@@ -596,10 +595,10 @@ public class MobilePartyVisual : MapEntityVisual<PartyBase>
 						}
 						else
 						{
-							MetaMesh bannerOfCharacter = GetBannerOfCharacter(new Banner(bannerCode), text);
-							bannerOfCharacter.Frame = identity;
+							MetaMesh banner = SandBoxViewHelpers.BannerVisualHelper.GetBanner(new Banner(bannerCode), text);
+							banner.Frame = identity;
 							int componentCount = StrategicEntity.GetComponentCount(GameEntity.ComponentType.ClothSimulator);
-							StrategicEntity.AddMultiMesh(bannerOfCharacter);
+							StrategicEntity.AddMultiMesh(banner);
 							if (StrategicEntity.GetComponentCount(GameEntity.ComponentType.ClothSimulator) > componentCount)
 							{
 								_cachedBannerComponent.Item1 = bannerCode + text;
@@ -675,22 +674,15 @@ public class MobilePartyVisual : MapEntityVisual<PartyBase>
 			{
 				return;
 			}
-			string bannerKey = null;
-			if (party.LeaderHero?.ClanBanner != null)
-			{
-				bannerKey = party.LeaderHero.ClanBanner.BannerCode;
-			}
 			ActionIndexCache leaderAction = ActionIndexCache.act_none;
 			ActionIndexCache mountAction = ActionIndexCache.act_none;
 			MapEvent mapEvent = ((party.MobileParty.Army != null && party.MobileParty.Army.DoesLeaderPartyAndAttachedPartiesContain(party.MobileParty)) ? party.MobileParty.Army.LeaderParty.MapEvent : party.MapEvent);
-			GetMeleeWeaponToWield(party, out var wieldedItemIndex);
+			SandBoxViewHelpers.MobilePartyVisualHelper.GetMeleeWeaponToWield(party, out var wieldedItemIndex);
 			if (mapEvent != null && (mapEvent.EventType == MapEvent.BattleTypes.FieldBattle || mapEvent.EventType == MapEvent.BattleTypes.Raid || mapEvent.EventType == MapEvent.BattleTypes.SiegeOutside || mapEvent.EventType == MapEvent.BattleTypes.SallyOut))
 			{
 				GetPartyBattleAnimation(party, wieldedItemIndex, out leaderAction, out mountAction);
 			}
-			uint teamColor = (uint)(((int?)party.MapFaction?.Color) ?? (-3357781));
-			uint teamColor2 = (uint)(((int?)party.MapFaction?.Color2) ?? (-3357781));
-			AddCharacterToPartyIcon(party, PartyBaseHelper.GetVisualPartyLeader(party), contourColor, bannerKey, wieldedItemIndex, teamColor, teamColor2, in leaderAction, in mountAction, MBRandom.NondeterministicRandomFloat * 0.7f, ref clearBannerEntityCache);
+			AddCharacterToPartyIcon(party, PartyBaseHelper.GetVisualPartyLeader(party), contourColor, in leaderAction, in mountAction, MBRandom.NondeterministicRandomFloat * 0.7f, ref clearBannerEntityCache);
 			if (party.IsMobile)
 			{
 				GetMountAndHarnessVisualIdsForPartyIcon(out var mountStringId, out var harnessStringId);
@@ -733,69 +725,20 @@ public class MobilePartyVisual : MapEntityVisual<PartyBase>
 		CaravanMountAgentVisuals.GetEntity().Skeleton.ForceUpdateBoneFrames();
 	}
 
-	private void AddCharacterToPartyIcon(PartyBase party, CharacterObject characterObject, uint contourColor, string bannerKey, int wieldedItemIndex, uint teamColor1, uint teamColor2, in ActionIndexCache leaderAction, in ActionIndexCache mountAction, float animationStartDuration, ref bool clearBannerEntityCache)
+	private void AddCharacterToPartyIcon(PartyBase party, CharacterObject characterObject, uint contourColor, in ActionIndexCache leaderAction, in ActionIndexCache mountAction, float animationStartDuration, ref bool clearBannerEntityCache)
 	{
-		Equipment equipment = characterObject.Equipment.Clone();
-		bool flag = !string.IsNullOrEmpty(bannerKey) && (((characterObject.IsPlayerCharacter || characterObject.HeroObject.Clan == Clan.PlayerClan) && Clan.PlayerClan.Tier >= Campaign.Current.Models.ClanTierModel.BannerEligibleTier) || (!characterObject.IsPlayerCharacter && (!characterObject.IsHero || (characterObject.IsHero && characterObject.HeroObject.Clan != Clan.PlayerClan))));
-		int leftWieldedItemIndex = 4;
-		if (flag)
-		{
-			ItemObject @object = Game.Current.ObjectManager.GetObject<ItemObject>("campaign_banner_small");
-			equipment[EquipmentIndex.ExtraWeaponSlot] = new EquipmentElement(@object);
-		}
-		Monster baseMonsterFromRace = TaleWorlds.Core.FaceGen.GetBaseMonsterFromRace(characterObject.Race);
-		MBActionSet actionSetWithSuffix = MBGlobals.GetActionSetWithSuffix(baseMonsterFromRace, characterObject.IsFemale, flag ? "_map_with_banner" : "_map");
-		AgentVisualsData agentVisualsData = new AgentVisualsData().UseMorphAnims(useMorphAnims: true).Equipment(equipment).BodyProperties(characterObject.GetBodyProperties(characterObject.Equipment))
-			.SkeletonType(characterObject.IsFemale ? SkeletonType.Female : SkeletonType.Male)
-			.Scale(0.3f)
-			.Frame(StrategicEntity.GetFrame())
-			.ActionSet(actionSetWithSuffix)
-			.Scene(MapScene)
-			.Monster(baseMonsterFromRace)
-			.PrepareImmediately(prepareImmediately: false)
-			.RightWieldedItemIndex(wieldedItemIndex)
-			.HasClippingPlane(hasClippingPlane: true)
-			.UseScaledWeapons(useScaledWeapons: true)
-			.ClothColor1(teamColor1)
-			.ClothColor2(teamColor2)
-			.CharacterObjectStringId(characterObject.StringId)
-			.AddColorRandomness(!characterObject.IsHero)
-			.Race(characterObject.Race);
-		if (flag)
-		{
-			Banner banner = new Banner(bannerKey);
-			agentVisualsData.Banner(banner).LeftWieldedItemIndex(leftWieldedItemIndex);
-			if (_cachedBannerEntity.Item1 == bannerKey + "campaign_banner_small")
-			{
-				agentVisualsData.CachedWeaponEntity(EquipmentIndex.ExtraWeaponSlot, _cachedBannerEntity.Item2);
-			}
-		}
 		if (!party.MobileParty.IsCurrentlyAtSea || party.MobileParty.IsTransitionInProgress)
 		{
-			HumanAgentVisuals = AgentVisuals.Create(agentVisualsData, "PartyIcon " + characterObject.Name, isRandomProgress: false, needBatchedVersionForWeaponMeshes: false, forceUseFaceCache: false);
-		}
-		if (HumanAgentVisuals != null)
-		{
-			if (flag)
+			HumanAgentVisuals = SandBoxViewHelpers.MobilePartyVisualHelper.GetHumanAgentPartyVisual(MapScene, StrategicEntity.GetFrame(), party, contourColor, leaderAction, ref clearBannerEntityCache, ref _cachedBannerEntity, out var animationDuration);
+			if (HumanAgentVisuals != null && leaderAction != ActionIndexCache.act_none)
 			{
-				GameEntity entity = HumanAgentVisuals.GetEntity();
-				GameEntity child = entity.GetChild(entity.ChildCount - 1);
-				if (child.GetComponentCount(GameEntity.ComponentType.ClothSimulator) > 0)
-				{
-					clearBannerEntityCache = false;
-					_cachedBannerEntity = (bannerKey + "campaign_banner_small", child);
-				}
-			}
-			if (leaderAction != ActionIndexCache.act_none)
-			{
-				float actionAnimationDuration = MBActionSet.GetActionAnimationDuration(actionSetWithSuffix, in leaderAction);
-				if (actionAnimationDuration < 1f)
+				if (animationDuration < 1f)
 				{
 					HumanAgentVisuals.GetVisuals().GetSkeleton().SetAgentActionChannel(0, in leaderAction, animationStartDuration);
 				}
 				else
 				{
-					HumanAgentVisuals.GetVisuals().GetSkeleton().SetAgentActionChannel(0, in leaderAction, animationStartDuration / actionAnimationDuration);
+					HumanAgentVisuals.GetVisuals().GetSkeleton().SetAgentActionChannel(0, in leaderAction, animationStartDuration / animationDuration);
 				}
 			}
 		}
@@ -803,7 +746,7 @@ public class MobilePartyVisual : MapEntityVisual<PartyBase>
 		{
 			Monster monster = characterObject.Equipment[EquipmentIndex.ArmorItemEndSlot].Item.HorseComponent.Monster;
 			MBActionSet actionSet = MBGlobals.GetActionSet(monster.ActionSetCode + "_map");
-			AgentVisualsData agentVisualsData2 = new AgentVisualsData().Equipment(characterObject.Equipment).Scale(characterObject.Equipment[EquipmentIndex.ArmorItemEndSlot].Item.ScaleFactor * 0.3f).Frame(MatrixFrame.Identity)
+			AgentVisualsData agentVisualsData = new AgentVisualsData().Equipment(characterObject.Equipment).Scale(characterObject.Equipment[EquipmentIndex.ArmorItemEndSlot].Item.ScaleFactor * 0.3f).Frame(MatrixFrame.Identity)
 				.ActionSet(actionSet)
 				.Scene(MapScene)
 				.Monster(monster)
@@ -811,22 +754,22 @@ public class MobilePartyVisual : MapEntityVisual<PartyBase>
 				.UseScaledWeapons(useScaledWeapons: true)
 				.HasClippingPlane(hasClippingPlane: true)
 				.MountCreationKey(MountCreationKey.GetRandomMountKeyString(characterObject.Equipment[EquipmentIndex.ArmorItemEndSlot].Item, characterObject.GetMountKeySeed()));
-			MountAgentVisuals = AgentVisuals.Create(agentVisualsData2, string.Concat("PartyIcon ", characterObject.Name, " mount"), isRandomProgress: false, needBatchedVersionForWeaponMeshes: false, forceUseFaceCache: false);
+			MountAgentVisuals = AgentVisuals.Create(agentVisualsData, string.Concat("PartyIcon ", characterObject.Name, " mount"), isRandomProgress: false, needBatchedVersionForWeaponMeshes: false, forceUseFaceCache: false);
 			if (mountAction != ActionIndexCache.act_none)
 			{
-				float actionAnimationDuration2 = MBActionSet.GetActionAnimationDuration(actionSet, in mountAction);
-				if (actionAnimationDuration2 < 1f)
+				float actionAnimationDuration = MBActionSet.GetActionAnimationDuration(actionSet, in mountAction);
+				if (actionAnimationDuration < 1f)
 				{
 					MountAgentVisuals.GetWeakEntity().Skeleton.SetAgentActionChannel(0, in mountAction, animationStartDuration);
 				}
 				else
 				{
-					MountAgentVisuals.GetWeakEntity().Skeleton.SetAgentActionChannel(0, in mountAction, animationStartDuration / actionAnimationDuration2);
+					MountAgentVisuals.GetWeakEntity().Skeleton.SetAgentActionChannel(0, in mountAction, animationStartDuration / actionAnimationDuration);
 				}
 			}
 			MountAgentVisuals.GetWeakEntity().SetContourColor(contourColor, alwaysVisible: false);
 			MatrixFrame frame = StrategicEntity.GetFrame();
-			frame.rotation.ApplyScaleLocal(agentVisualsData2.ScaleData);
+			frame.rotation.ApplyScaleLocal(agentVisualsData.ScaleData);
 			MountAgentVisuals.GetWeakEntity().SetFrame(ref frame);
 		}
 		float num = ((MountAgentVisuals != null) ? 1.3f : 1f);
@@ -841,7 +784,7 @@ public class MobilePartyVisual : MapEntityVisual<PartyBase>
 			WeakGameEntity weakEntity = HumanAgentVisuals.GetWeakEntity();
 			weakEntity.SetContourColor(contourColor, alwaysVisible: false);
 			MatrixFrame frame2 = StrategicEntity.GetFrame();
-			frame2.rotation.ApplyScaleLocal(agentVisualsData.ScaleData);
+			frame2.rotation.ApplyScaleLocal(0.3f);
 			weakEntity.SetFrame(ref frame2);
 			HumanAgentVisuals.Tick(MountAgentVisuals, 0.0001f, IsEntityMovingVisually(), speed);
 			weakEntity.Skeleton.ForceUpdateBoneFrames();
@@ -881,42 +824,6 @@ public class MobilePartyVisual : MapEntityVisual<PartyBase>
 		return _isEntityMovingCache;
 	}
 
-	public static MetaMesh GetBannerOfCharacter(Banner banner, string bannerMeshName)
-	{
-		MetaMesh copy = MetaMesh.GetCopy(bannerMeshName);
-		for (int i = 0; i < copy.MeshCount; i++)
-		{
-			Mesh meshAtIndex = copy.GetMeshAtIndex(i);
-			if (meshAtIndex.HasTag("dont_use_tableau"))
-			{
-				continue;
-			}
-			Material material = meshAtIndex.GetMaterial();
-			Material tableauMaterial = null;
-			Tuple<Material, Banner> key = new Tuple<Material, Banner>(material, banner);
-			if (MapScreen.Instance.CharacterBannerMaterialCache.ContainsKey(key))
-			{
-				tableauMaterial = MapScreen.Instance.CharacterBannerMaterialCache[key];
-			}
-			else
-			{
-				tableauMaterial = material.CreateCopy();
-				Action<Texture> setAction = delegate(Texture tex)
-				{
-					tableauMaterial.SetTexture(Material.MBTextureType.DiffuseMap2, tex);
-					uint num = (uint)tableauMaterial.GetShader().GetMaterialShaderFlagMask("use_tableau_blending");
-					ulong shaderFlags = tableauMaterial.GetShaderFlags();
-					tableauMaterial.SetShaderFlags(shaderFlags | num);
-				};
-				BannerDebugInfo debugInfo = BannerDebugInfo.CreateManual("MobilePartyVisual");
-				banner.GetTableauTextureLarge(in debugInfo, setAction);
-				MapScreen.Instance.CharacterBannerMaterialCache[key] = tableauMaterial;
-			}
-			meshAtIndex.SetMaterial(tableauMaterial);
-		}
-		return copy;
-	}
-
 	public void AddTentEntityForParty(GameEntity strategicEntity, PartyBase party, ref bool clearBannerComponentCache)
 	{
 		GameEntity gameEntity = GameEntity.CreateEmpty(strategicEntity.Scene);
@@ -945,10 +852,10 @@ public class MobilePartyVisual : MapEntityVisual<PartyBase>
 			}
 			else
 			{
-				MetaMesh bannerOfCharacter = GetBannerOfCharacter(new Banner(text), text2);
-				bannerOfCharacter.Frame = identity;
+				MetaMesh banner = SandBoxViewHelpers.BannerVisualHelper.GetBanner(new Banner(text), text2);
+				banner.Frame = identity;
 				int componentCount = gameEntity.GetComponentCount(GameEntity.ComponentType.ClothSimulator);
-				gameEntity.AddMultiMesh(bannerOfCharacter);
+				gameEntity.AddMultiMesh(banner);
 				if (gameEntity.GetComponentCount(GameEntity.ComponentType.ClothSimulator) > componentCount)
 				{
 					_cachedBannerComponent.Item1 = text + text2;
@@ -965,24 +872,7 @@ public class MobilePartyVisual : MapEntityVisual<PartyBase>
 		ResetPartyIcon();
 		base.MapEntity.SetVisualAsDirty();
 		_cachedBannerEntity = (null, null);
-	}
-
-	private void GetMeleeWeaponToWield(PartyBase party, out int wieldedItemIndex)
-	{
-		wieldedItemIndex = -1;
-		CharacterObject visualPartyLeader = PartyBaseHelper.GetVisualPartyLeader(party);
-		if (visualPartyLeader == null)
-		{
-			return;
-		}
-		for (int i = 0; i < 5; i++)
-		{
-			if (visualPartyLeader.Equipment[i].Item != null && visualPartyLeader.Equipment[i].Item.PrimaryWeapon.IsMeleeWeapon)
-			{
-				wieldedItemIndex = i;
-				break;
-			}
-		}
+		_cachedBannerComponent = (null, null);
 	}
 
 	private static void GetPartyBattleAnimation(PartyBase party, int wieldedItemIndex, out ActionIndexCache leaderAction, out ActionIndexCache mountAction)

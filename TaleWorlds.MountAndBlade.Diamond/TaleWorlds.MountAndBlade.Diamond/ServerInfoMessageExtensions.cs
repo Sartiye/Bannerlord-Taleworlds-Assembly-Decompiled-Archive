@@ -269,6 +269,10 @@ public static class ServerInfoMessageExtensions
 			return new TextObject("{=MowSn4ch}Game not found.");
 		case ServerInfoMessage.PremadeGameJoinPartyNotEligible:
 			return new TextObject("{=uqqqWl6f}Party not eligible for clan game.");
+		case ServerInfoMessage.PremadeGameJoinIncorrectStateForSpectator:
+			return new TextObject("{=MzopwdFT}You shouldn't be in a party to join as a spectator.");
+		case ServerInfoMessage.PremadeGameJoinSpectatorCapacityIsFull:
+			return new TextObject("{=K4vBc692}All spectator slots for this game are full.");
 		case ServerInfoMessage.GetPremadeGameListNotEligible:
 			return new TextObject("{=0XY1VKVB}Your party is not eligible for clan games.");
 		case ServerInfoMessage.ReportPlayerGameNotFound:

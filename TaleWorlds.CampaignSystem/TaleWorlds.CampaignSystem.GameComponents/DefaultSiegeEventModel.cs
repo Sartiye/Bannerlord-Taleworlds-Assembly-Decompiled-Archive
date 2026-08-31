@@ -232,11 +232,13 @@ public class DefaultSiegeEventModel : SiegeEventModel
 	public override float GetCasualtyChance(MobileParty siegeParty, SiegeEvent siegeEvent, BattleSideEnum side)
 	{
 		float num = 1f;
-		if (siegeParty != null && siegeParty.HasPerk(DefaultPerks.Engineering.CampBuilding, checkSecondaryRole: true))
+		Hero perkOwnerHero = null;
+		if (siegeParty != null && siegeParty.HasPerk(DefaultPerks.Engineering.CampBuilding, out perkOwnerHero, checkSecondaryRole: true))
 		{
 			num += DefaultPerks.Engineering.CampBuilding.SecondaryBonus;
 		}
-		if (siegeParty != null && siegeParty.HasPerk(DefaultPerks.Medicine.SiegeMedic, checkSecondaryRole: true))
+		Hero perkOwnerHero2 = null;
+		if (siegeParty != null && siegeParty.HasPerk(DefaultPerks.Medicine.SiegeMedic, out perkOwnerHero2, checkSecondaryRole: true))
 		{
 			num -= DefaultPerks.Medicine.SiegeMedic.SecondaryBonus;
 		}
@@ -255,7 +257,8 @@ public class DefaultSiegeEventModel : SiegeEventModel
 	public override int GetColleteralDamageCasualties(SiegeEngineType siegeEngineType, MobileParty party)
 	{
 		int num = 1;
-		if (party != null && !party.IsCurrentlyAtSea && party.HasPerk(DefaultPerks.Crossbow.Terror) && MBRandom.RandomFloat < DefaultPerks.Crossbow.Terror.PrimaryBonus)
+		Hero perkOwnerHero = null;
+		if (party != null && party.HasPerk(DefaultPerks.Crossbow.Terror, out perkOwnerHero) && MBRandom.RandomFloat < DefaultPerks.Crossbow.Terror.PrimaryBonus)
 		{
 			num++;
 		}
@@ -303,7 +306,7 @@ public class DefaultSiegeEventModel : SiegeEventModel
 			}
 			if (siegeEngineType == DefaultSiegeEngineTypes.Ballista)
 			{
-				PerkHelper.AddPerkBonusForTown(DefaultPerks.Crossbow.Pavise, town, ref bonuses);
+				PerkHelper.AddPerkBonusForTown(DefaultPerks.Crossbow.Pavise, town, isPrimaryBonus: false, ref bonuses);
 			}
 		}
 		SiegeEvent siegeEvent = town.Settlement.SiegeEvent;
@@ -311,18 +314,18 @@ public class DefaultSiegeEventModel : SiegeEventModel
 		MobileParty effectiveSiegePartyForSide2 = GetEffectiveSiegePartyForSide(siegeEvent, battleSide.GetOppositeSide());
 		if (effectiveSiegePartyForSide != null)
 		{
-			if ((siegeEngineType == DefaultSiegeEngineTypes.Trebuchet || siegeEngineType == DefaultSiegeEngineTypes.Onager || siegeEngineType == DefaultSiegeEngineTypes.FireOnager) && effectiveSiegePartyForSide.HasPerk(DefaultPerks.Engineering.Foreman))
+			if (siegeEngineType == DefaultSiegeEngineTypes.Trebuchet || siegeEngineType == DefaultSiegeEngineTypes.Onager || siegeEngineType == DefaultSiegeEngineTypes.FireOnager)
 			{
-				bonuses.AddFactor(DefaultPerks.Engineering.Foreman.PrimaryBonus, DefaultPerks.Engineering.Foreman.Name);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Engineering.Foreman, effectiveSiegePartyForSide, isPrimaryBonus: true, ref bonuses);
 			}
-			if ((siegeEngineType == DefaultSiegeEngineTypes.Ballista || siegeEngineType == DefaultSiegeEngineTypes.FireBallista) && effectiveSiegePartyForSide.HasPerk(DefaultPerks.Engineering.Salvager))
+			if (siegeEngineType == DefaultSiegeEngineTypes.Ballista || siegeEngineType == DefaultSiegeEngineTypes.FireBallista)
 			{
-				bonuses.AddFactor(DefaultPerks.Engineering.Salvager.PrimaryBonus, DefaultPerks.Engineering.Salvager.Name);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Engineering.Salvager, effectiveSiegePartyForSide, isPrimaryBonus: true, ref bonuses);
 			}
 		}
-		if (battleSide == BattleSideEnum.Defender && effectiveSiegePartyForSide2 != null && target == SiegeBombardTargets.RangedEngines && effectiveSiegePartyForSide2.HasPerk(DefaultPerks.Engineering.DungeonArchitect))
+		if (battleSide == BattleSideEnum.Defender && effectiveSiegePartyForSide2 != null && target == SiegeBombardTargets.RangedEngines)
 		{
-			bonuses.AddFactor(DefaultPerks.Engineering.DungeonArchitect.PrimaryBonus, DefaultPerks.Engineering.DungeonArchitect.Name);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Engineering.DungeonArchitect, effectiveSiegePartyForSide2, isPrimaryBonus: true, ref bonuses);
 		}
 		if (bonuses.ResultNumber < 0f)
 		{
@@ -368,24 +371,20 @@ public class DefaultSiegeEventModel : SiegeEventModel
 				SkillHelper.AddSkillBonusForTown(DefaultSkillEffects.SiegeEngineProductionBonus, siegeEvent.BesiegedSettlement.Town, ref explainedNumber);
 			}
 		}
-		if (siegeEvent?.BesiegerCamp.LeaderParty != null && siegeEvent.BesiegerCamp.LeaderParty.HasPerk(DefaultPerks.Steward.Sweatshops, checkSecondaryRole: true))
+		if (siegeEvent?.BesiegerCamp.LeaderParty != null)
 		{
-			explainedNumber.AddFactor(DefaultPerks.Steward.Sweatshops.SecondaryBonus);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.Sweatshops, siegeEvent.BesiegerCamp.LeaderParty, isPrimaryBonus: false, ref explainedNumber);
 		}
 		if (effectiveSiegePartyForSide != null)
 		{
 			SiegeEvent.SiegeEngineConstructionProgress siegePreparations = side.SiegeEngines.SiegePreparations;
-			if (siegePreparations != null && !siegePreparations.IsConstructed && effectiveSiegePartyForSide.HasPerk(DefaultPerks.Engineering.ImprovedTools))
+			if (siegePreparations != null && !siegePreparations.IsConstructed)
 			{
-				explainedNumber.AddFactor(DefaultPerks.Engineering.ImprovedTools.PrimaryBonus, DefaultPerks.Engineering.ImprovedTools.Name);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Engineering.ImprovedTools, effectiveSiegePartyForSide, isPrimaryBonus: true, ref explainedNumber);
 			}
 			else
 			{
-				PerkObject perkObject = (type.IsRanged ? DefaultPerks.Engineering.TorsionEngines : DefaultPerks.Engineering.Scaffolds);
-				if (effectiveSiegePartyForSide.HasPerk(perkObject))
-				{
-					explainedNumber.AddFactor(perkObject.PrimaryBonus, perkObject.Name);
-				}
+				PerkHelper.AddPerkBonusForParty(type.IsRanged ? DefaultPerks.Engineering.TorsionEngines : DefaultPerks.Engineering.Scaffolds, effectiveSiegePartyForSide, isPrimaryBonus: true, ref explainedNumber);
 			}
 		}
 		if (side.BattleSide == BattleSideEnum.Defender)
@@ -395,6 +394,19 @@ public class DefaultSiegeEventModel : SiegeEventModel
 			if (PerkHelper.GetPerkValueForTown(salvager, besiegedSettlement.Town))
 			{
 				explainedNumber.AddFactor(salvager.SecondaryBonus * besiegedSettlement.Militia, salvager.Name);
+			}
+		}
+		if (side.BattleSide == BattleSideEnum.Attacker)
+		{
+			MobileParty mobileParty = siegeEvent.BesiegerCamp?.LeaderParty;
+			Hero hero = mobileParty?.Army?.LeaderParty?.LeaderHero ?? mobileParty?.LeaderHero;
+			if (hero != null)
+			{
+				TraitEffectHelper.ApplyTraitEffect(hero, DefaultPersonalityTraitEffects.CalculatingSiegePrepEffect, ref explainedNumber);
+				if (type == DefaultSiegeEngineTypes.Preparations)
+				{
+					TraitEffectHelper.ApplyTraitEffect(hero, DefaultPersonalityTraitEffects.ValorSiegePrepEffect, ref explainedNumber);
+				}
 			}
 		}
 		return explainedNumber.ResultNumber;
@@ -442,7 +454,8 @@ public class DefaultSiegeEventModel : SiegeEventModel
 	public override IEnumerable<SiegeEngineType> GetPrebuiltSiegeEnginesOfSiegeCamp(BesiegerCamp besiegerCamp)
 	{
 		List<SiegeEngineType> list = new List<SiegeEngineType>();
-		if (besiegerCamp.LeaderParty.HasPerk(DefaultPerks.Engineering.Battlements))
+		Hero perkOwnerHero = null;
+		if (besiegerCamp.LeaderParty.HasPerk(DefaultPerks.Engineering.Battlements, out perkOwnerHero))
 		{
 			list.Add(DefaultSiegeEngineTypes.Ballista);
 		}
@@ -451,86 +464,81 @@ public class DefaultSiegeEventModel : SiegeEventModel
 
 	public override float GetSiegeEngineHitPoints(SiegeEvent siegeEvent, SiegeEngineType siegeEngine, BattleSideEnum battleSide)
 	{
-		ExplainedNumber explainedNumber = new ExplainedNumber(siegeEngine.BaseHitPoints);
+		ExplainedNumber stat = new ExplainedNumber(siegeEngine.BaseHitPoints);
 		Settlement besiegedSettlement = siegeEvent.BesiegedSettlement;
 		MobileParty effectiveSiegePartyForSide = GetEffectiveSiegePartyForSide(siegeEvent, battleSide);
 		if (battleSide == BattleSideEnum.Defender && besiegedSettlement.Town.Governor != null && besiegedSettlement.Town.Governor.GetPerkValue(DefaultPerks.Engineering.SiegeEngineer))
 		{
-			explainedNumber.AddFactor(DefaultPerks.Engineering.SiegeEngineer.PrimaryBonus, DefaultPerks.Engineering.SiegeEngineer.Name);
+			stat.AddFactor(DefaultPerks.Engineering.SiegeEngineer.PrimaryBonus, DefaultPerks.Engineering.SiegeEngineer.Name);
 		}
 		if (siegeEngine.IsRanged)
 		{
-			if (effectiveSiegePartyForSide != null && effectiveSiegePartyForSide.HasPerk(DefaultPerks.Engineering.SiegeWorks))
+			if (effectiveSiegePartyForSide != null)
 			{
-				explainedNumber.AddFactor(DefaultPerks.Engineering.SiegeWorks.PrimaryBonus, DefaultPerks.Engineering.SiegeWorks.Name);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Engineering.SiegeWorks, effectiveSiegePartyForSide, isPrimaryBonus: true, ref stat);
 			}
 		}
-		else if (battleSide == BattleSideEnum.Attacker && effectiveSiegePartyForSide != null && effectiveSiegePartyForSide.HasPerk(DefaultPerks.Engineering.Carpenters))
+		else if (battleSide == BattleSideEnum.Attacker && effectiveSiegePartyForSide != null)
 		{
-			explainedNumber.AddFactor(DefaultPerks.Engineering.Carpenters.PrimaryBonus, DefaultPerks.Engineering.Carpenters.Name);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Engineering.Carpenters, effectiveSiegePartyForSide, isPrimaryBonus: true, ref stat);
 		}
-		return explainedNumber.ResultNumber;
+		return stat.ResultNumber;
 	}
 
 	public override float GetSiegeEngineDamage(SiegeEvent siegeEvent, BattleSideEnum battleSide, SiegeEngineType siegeEngine, SiegeBombardTargets target)
 	{
-		ExplainedNumber explainedNumber = new ExplainedNumber(siegeEngine.Damage);
+		ExplainedNumber stat = new ExplainedNumber(siegeEngine.Damage);
 		MobileParty effectiveSiegePartyForSide = GetEffectiveSiegePartyForSide(siegeEvent, battleSide);
 		if (effectiveSiegePartyForSide != null)
 		{
 			if (battleSide == BattleSideEnum.Attacker)
 			{
-				if (target == SiegeBombardTargets.Wall && effectiveSiegePartyForSide.HasPerk(DefaultPerks.Engineering.WallBreaker))
+				if (target == SiegeBombardTargets.Wall)
 				{
-					explainedNumber.AddFactor(DefaultPerks.Engineering.WallBreaker.PrimaryBonus, DefaultPerks.Engineering.WallBreaker.Name);
+					PerkHelper.AddPerkBonusForParty(DefaultPerks.Engineering.WallBreaker, effectiveSiegePartyForSide, isPrimaryBonus: true, ref stat);
 				}
-				if (target == SiegeBombardTargets.RangedEngines && effectiveSiegePartyForSide.HasPerk(DefaultPerks.Tactics.MakeThemPay))
+				if (target == SiegeBombardTargets.RangedEngines)
 				{
-					explainedNumber.AddFactor(DefaultPerks.Tactics.MakeThemPay.PrimaryBonus, DefaultPerks.Tactics.MakeThemPay.Name);
+					PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.MakeThemPay, effectiveSiegePartyForSide, isPrimaryBonus: true, ref stat);
 				}
 			}
-			if ((target == SiegeBombardTargets.RangedEngines || target == SiegeBombardTargets.Wall) && effectiveSiegePartyForSide.HasPerk(DefaultPerks.Engineering.Masterwork))
+			if ((target == SiegeBombardTargets.RangedEngines || target == SiegeBombardTargets.Wall) && effectiveSiegePartyForSide.LeaderHero != null)
 			{
-				int num = effectiveSiegePartyForSide.LeaderHero.GetSkillValue(DefaultSkills.Engineering) - Campaign.Current.Models.CharacterDevelopmentModel.MaxSkillRequiredForEpicPerkBonus;
-				if (num > 0)
-				{
-					float value = (float)num * DefaultPerks.Engineering.Masterwork.PrimaryBonus;
-					explainedNumber.AddFactor(value, DefaultPerks.Engineering.Masterwork.Name);
-				}
+				PerkHelper.AddEpicPerkBonusForCharacter(DefaultPerks.Engineering.Masterwork, BattleEnvironment.Any, effectiveSiegePartyForSide.LeaderHero.CharacterObject, DefaultSkills.Engineering, isPrimaryBonus: true, ref stat, Campaign.Current.Models.CharacterDevelopmentModel.MaxSkillRequiredForEpicPerkBonus);
 			}
 		}
 		if (battleSide == BattleSideEnum.Defender && target == SiegeBombardTargets.RangedEngines)
 		{
-			Hero governor = siegeEvent.BesiegedSettlement.Town.Governor;
-			if (governor != null && governor.GetPerkValue(DefaultPerks.Tactics.MakeThemPay))
-			{
-				explainedNumber.AddFactor(DefaultPerks.Tactics.MakeThemPay.SecondaryBonus, DefaultPerks.Tactics.MakeThemPay.Name);
-			}
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Tactics.MakeThemPay, siegeEvent.BesiegedSettlement.Town, isPrimaryBonus: false, ref stat);
 		}
-		return explainedNumber.ResultNumber;
+		return stat.ResultNumber;
 	}
 
 	public override int GetRangedSiegeEngineReloadTime(SiegeEvent siegeEvent, BattleSideEnum side, SiegeEngineType siegeEngine)
 	{
-		ExplainedNumber explainedNumber = new ExplainedNumber(siegeEngine.CampaignRateOfFirePerDay);
+		ExplainedNumber stat = new ExplainedNumber(siegeEngine.CampaignRateOfFirePerDay);
 		MobileParty effectiveSiegePartyForSide = GetEffectiveSiegePartyForSide(siegeEvent, side);
 		if (effectiveSiegePartyForSide != null)
 		{
-			if ((siegeEngine == DefaultSiegeEngineTypes.Ballista || siegeEngine == DefaultSiegeEngineTypes.FireBallista) && effectiveSiegePartyForSide.HasPerk(DefaultPerks.Engineering.Clockwork))
+			if (siegeEngine == DefaultSiegeEngineTypes.Ballista || siegeEngine == DefaultSiegeEngineTypes.FireBallista)
 			{
-				explainedNumber.AddFactor(DefaultPerks.Engineering.Clockwork.PrimaryBonus, DefaultPerks.Engineering.Clockwork.Name);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Engineering.Clockwork, effectiveSiegePartyForSide, isPrimaryBonus: true, ref stat);
 			}
-			else if ((siegeEngine == DefaultSiegeEngineTypes.Onager || siegeEngine == DefaultSiegeEngineTypes.Trebuchet || siegeEngine == DefaultSiegeEngineTypes.FireOnager) && effectiveSiegePartyForSide.HasPerk(DefaultPerks.Engineering.ArchitecturalCommisions))
+			else if (siegeEngine == DefaultSiegeEngineTypes.Onager || siegeEngine == DefaultSiegeEngineTypes.Trebuchet || siegeEngine == DefaultSiegeEngineTypes.FireOnager)
 			{
-				explainedNumber.AddFactor(DefaultPerks.Engineering.ArchitecturalCommisions.PrimaryBonus, DefaultPerks.Engineering.ArchitecturalCommisions.Name);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Engineering.ArchitecturalCommisions, effectiveSiegePartyForSide, isPrimaryBonus: true, ref stat);
 			}
 		}
-		return TaleWorlds.Library.MathF.Round((float)(CampaignTime.MinutesInHour * CampaignTime.HoursInDay) / explainedNumber.ResultNumber);
+		return TaleWorlds.Library.MathF.Round((float)(CampaignTime.MinutesInHour * CampaignTime.HoursInDay) / stat.ResultNumber);
 	}
 
 	public override IEnumerable<SiegeEngineType> GetAvailableAttackerRangedSiegeEngines(PartyBase party)
 	{
-		bool hasFirePerks = party.MobileParty.HasPerk(DefaultPerks.Engineering.Stonecutters, checkSecondaryRole: true) || party.MobileParty.HasPerk(DefaultPerks.Engineering.SiegeEngineer, checkSecondaryRole: true);
+		Hero perkOwnerHero = null;
+		bool flag = party.MobileParty.HasPerk(DefaultPerks.Engineering.Stonecutters, out perkOwnerHero, checkSecondaryRole: true);
+		Hero perkOwnerHero2 = null;
+		bool flag2 = party.MobileParty.HasPerk(DefaultPerks.Engineering.SiegeEngineer, out perkOwnerHero2, checkSecondaryRole: true);
+		bool hasFirePerks = flag || flag2;
 		yield return DefaultSiegeEngineTypes.Ballista;
 		if (hasFirePerks)
 		{
@@ -546,7 +554,11 @@ public class DefaultSiegeEventModel : SiegeEventModel
 
 	public override IEnumerable<SiegeEngineType> GetAvailableDefenderSiegeEngines(PartyBase party)
 	{
-		bool hasFirePerks = party.MobileParty.HasPerk(DefaultPerks.Engineering.Stonecutters, checkSecondaryRole: true) || party.MobileParty.HasPerk(DefaultPerks.Engineering.SiegeEngineer, checkSecondaryRole: true);
+		Hero perkOwnerHero = null;
+		bool flag = party.MobileParty.HasPerk(DefaultPerks.Engineering.Stonecutters, out perkOwnerHero, checkSecondaryRole: true);
+		Hero perkOwnerHero2 = null;
+		bool flag2 = party.MobileParty.HasPerk(DefaultPerks.Engineering.SiegeEngineer, out perkOwnerHero2, checkSecondaryRole: true);
+		bool hasFirePerks = flag || flag2;
 		yield return DefaultSiegeEngineTypes.Ballista;
 		if (hasFirePerks)
 		{

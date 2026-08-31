@@ -1,3 +1,4 @@
+using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.Core;
@@ -142,9 +143,9 @@ public class DefaultClanTierModel : ClanTierModel
 
 	private void AddPartyLimitPerkEffects(Clan clan, ref ExplainedNumber result)
 	{
-		if (clan.Leader != null && clan.Leader.GetPerkValue(DefaultPerks.Leadership.TalentMagnet))
+		if (clan.Leader != null)
 		{
-			result.Add(DefaultPerks.Leadership.TalentMagnet.SecondaryBonus, DefaultPerks.Leadership.TalentMagnet.Name);
+			PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Leadership.TalentMagnet, BattleEnvironment.Any, clan.Leader.CharacterObject, isPrimaryBonus: false, ref result);
 		}
 	}
 

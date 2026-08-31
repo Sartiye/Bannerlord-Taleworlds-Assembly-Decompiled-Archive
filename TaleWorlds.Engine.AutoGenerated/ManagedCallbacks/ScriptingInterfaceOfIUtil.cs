@@ -162,6 +162,11 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void DumpRenderBufferMemoryDelegate(byte[] filePath);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void EnableGlobalEditDataCacherDelegate();
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -444,6 +449,16 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate int GetSystemLanguageDelegate();
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate int GetUniqueAssertCountDelegate();
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate int GetUniqueWarningCountDelegate();
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -749,6 +764,11 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void TakeScreenshotAsPngDelegate(byte[] path);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate void TakeScreenshotFromPlatformPathDelegate(PlatformFilePath path);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -825,6 +845,8 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	public static DoLightOnlyBakeSingleLevelAutomatedDelegate call_DoLightOnlyBakeSingleLevelAutomatedDelegate;
 
 	public static DumpGPUMemoryStatisticsDelegate call_DumpGPUMemoryStatisticsDelegate;
+
+	public static DumpRenderBufferMemoryDelegate call_DumpRenderBufferMemoryDelegate;
 
 	public static EnableGlobalEditDataCacherDelegate call_EnableGlobalEditDataCacherDelegate;
 
@@ -939,6 +961,10 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	public static GetSteamAppIdDelegate call_GetSteamAppIdDelegate;
 
 	public static GetSystemLanguageDelegate call_GetSystemLanguageDelegate;
+
+	public static GetUniqueAssertCountDelegate call_GetUniqueAssertCountDelegate;
+
+	public static GetUniqueWarningCountDelegate call_GetUniqueWarningCountDelegate;
 
 	public static GetVertexBufferChunkSystemMemoryUsageDelegate call_GetVertexBufferChunkSystemMemoryUsageDelegate;
 
@@ -1057,6 +1083,8 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 	public static StartLoadingStuckCheckStateDelegate call_StartLoadingStuckCheckStateDelegate;
 
 	public static StartScenePerformanceReportDelegate call_StartScenePerformanceReportDelegate;
+
+	public static TakeScreenshotAsPngDelegate call_TakeScreenshotAsPngDelegate;
 
 	public static TakeScreenshotFromPlatformPathDelegate call_TakeScreenshotFromPlatformPathDelegate;
 
@@ -1399,6 +1427,19 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 			array[byteCount] = 0;
 		}
 		call_DumpGPUMemoryStatisticsDelegate(array);
+	}
+
+	public void DumpRenderBufferMemory(string filePath)
+	{
+		byte[] array = null;
+		if (filePath != null)
+		{
+			int byteCount = _utf8.GetByteCount(filePath);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(filePath, 0, filePath.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		call_DumpRenderBufferMemoryDelegate(array);
 	}
 
 	public void EnableGlobalEditDataCacher()
@@ -1888,6 +1929,16 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 		return Managed.ReturnValueFromEngine;
 	}
 
+	public int GetUniqueAssertCount()
+	{
+		return call_GetUniqueAssertCountDelegate();
+	}
+
+	public int GetUniqueWarningCount()
+	{
+		return call_GetUniqueWarningCountDelegate();
+	}
+
 	public int GetVertexBufferChunkSystemMemoryUsage()
 	{
 		return call_GetVertexBufferChunkSystemMemoryUsageDelegate();
@@ -2360,6 +2411,19 @@ internal class ScriptingInterfaceOfIUtil : IUtil
 			array[byteCount] = 0;
 		}
 		call_StartScenePerformanceReportDelegate(array);
+	}
+
+	public void TakeScreenshotAsPng(string path)
+	{
+		byte[] array = null;
+		if (path != null)
+		{
+			int byteCount = _utf8.GetByteCount(path);
+			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
+			_utf8.GetBytes(path, 0, path.Length, array, 0);
+			array[byteCount] = 0;
+		}
+		call_TakeScreenshotAsPngDelegate(array);
 	}
 
 	public void TakeScreenshotFromPlatformPath(PlatformFilePath path)

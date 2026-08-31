@@ -35,7 +35,9 @@ public class MultiplayerMissionViews
 			ViewCreator.CreateMissionBoundaryCrossingView(),
 			new MissionBoundaryWallView(),
 			new MissionItemContourControllerView(),
-			new MissionAgentContourControllerView()
+			new MissionAgentContourControllerView(),
+			new SpectatorCameraView(),
+			new MultiplayerSpectatorSilhouetteView()
 		}.ToArray();
 	}
 
@@ -63,7 +65,9 @@ public class MultiplayerMissionViews
 			ViewCreator.CreateMissionBoundaryCrossingView(),
 			new MissionBoundaryWallView(),
 			new MissionItemContourControllerView(),
-			new MissionAgentContourControllerView()
+			new MissionAgentContourControllerView(),
+			new SpectatorCameraView(),
+			new MultiplayerSpectatorSilhouetteView()
 		}.ToArray();
 	}
 
@@ -95,7 +99,9 @@ public class MultiplayerMissionViews
 			ViewCreator.CreateMissionMainAgentEquipDropView(mission),
 			MultiplayerViewCreator.CreateMultiplayerAdminPanelUIHandler(),
 			ViewCreator.CreateMissionBoundaryCrossingView(),
-			new MissionBoundaryWallView()
+			new MissionBoundaryWallView(),
+			new SpectatorCameraView(),
+			new MultiplayerSpectatorSilhouetteView()
 		}.ToArray();
 	}
 
@@ -130,7 +136,8 @@ public class MultiplayerMissionViews
 			MultiplayerViewCreator.CreateMultiplayerAdminPanelUIHandler(),
 			ViewCreator.CreateMissionBoundaryCrossingView(),
 			new MissionBoundaryWallView(),
-			new SpectatorCameraView()
+			new SpectatorCameraView(),
+			new MultiplayerSpectatorSilhouetteView()
 		}.ToArray();
 	}
 
@@ -151,6 +158,8 @@ public class MultiplayerMissionViews
 			MultiplayerViewCreator.CreateMultiplayerMissionOrderUIHandler(mission),
 			ViewCreator.CreateMissionAgentLabelUIHandler(mission),
 			ViewCreator.CreateOrderTroopPlacerView(null),
+			new MissionFormationTargetSelectionHandler(),
+			ViewCreator.CreateMissionFormationMarkerUIHandler(mission),
 			MultiplayerViewCreator.CreateMultiplayerTeamSelectUIHandler(),
 			MultiplayerViewCreator.CreateMissionScoreBoardUIHandler(mission, isSingleTeam: false),
 			MultiplayerViewCreator.CreateMultiplayerEndOfRoundUIHandler(),
@@ -166,7 +175,8 @@ public class MultiplayerMissionViews
 			MultiplayerViewCreator.CreateMultiplayerAdminPanelUIHandler(),
 			ViewCreator.CreateMissionBoundaryCrossingView(),
 			new MissionBoundaryWallView(),
-			new SpectatorCameraView()
+			new SpectatorCameraView(),
+			new MultiplayerSpectatorSilhouetteView()
 		}.ToArray();
 	}
 
@@ -203,7 +213,8 @@ public class MultiplayerMissionViews
 			MultiplayerViewCreator.CreateMultiplayerAdminPanelUIHandler(),
 			ViewCreator.CreateMissionBoundaryCrossingView(),
 			new MissionBoundaryWallView(),
-			new SpectatorCameraView()
+			new SpectatorCameraView(),
+			new MultiplayerSpectatorSilhouetteView()
 		}.ToArray();
 	}
 }

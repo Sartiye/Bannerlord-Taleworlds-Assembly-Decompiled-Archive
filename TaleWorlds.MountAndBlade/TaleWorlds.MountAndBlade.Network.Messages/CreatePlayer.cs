@@ -13,13 +13,19 @@ public sealed class CreatePlayer : GameNetworkMessage
 
 	public bool IsReceiverPeer { get; private set; }
 
-	public CreatePlayer(int playerIndex, string playerName, int disconnectedPeerIndex, bool isNonExistingDisconnectedPeer = false, bool isReceiverPeer = false)
+	public bool IsSpectator { get; private set; }
+
+	public bool IsAdmin { get; private set; }
+
+	public CreatePlayer(int playerIndex, string playerName, int disconnectedPeerIndex, bool isNonExistingDisconnectedPeer = false, bool isReceiverPeer = false, bool isSpectator = false, bool isAdmin = false)
 	{
 		PlayerIndex = playerIndex;
 		PlayerName = playerName;
 		DisconnectedPeerIndex = disconnectedPeerIndex;
 		IsNonExistingDisconnectedPeer = isNonExistingDisconnectedPeer;
 		IsReceiverPeer = isReceiverPeer;
+		IsSpectator = isSpectator;
+		IsAdmin = isAdmin;
 	}
 
 	public CreatePlayer()
@@ -33,6 +39,8 @@ public sealed class CreatePlayer : GameNetworkMessage
 		GameNetworkMessage.WriteIntToPacket(DisconnectedPeerIndex, CompressionBasic.PlayerCompressionInfo);
 		GameNetworkMessage.WriteBoolToPacket(IsNonExistingDisconnectedPeer);
 		GameNetworkMessage.WriteBoolToPacket(IsReceiverPeer);
+		GameNetworkMessage.WriteBoolToPacket(IsSpectator);
+		GameNetworkMessage.WriteBoolToPacket(IsAdmin);
 	}
 
 	protected override bool OnRead()
@@ -43,6 +51,8 @@ public sealed class CreatePlayer : GameNetworkMessage
 		DisconnectedPeerIndex = GameNetworkMessage.ReadIntFromPacket(CompressionBasic.PlayerCompressionInfo, ref bufferReadValid);
 		IsNonExistingDisconnectedPeer = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
 		IsReceiverPeer = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
+		IsSpectator = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
+		IsAdmin = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
 		return bufferReadValid;
 	}
 
@@ -53,6 +63,6 @@ public sealed class CreatePlayer : GameNetworkMessage
 
 	protected override string OnGetLogFormat()
 	{
-		return "Create a new player with name: " + PlayerName + " and index: " + PlayerIndex + " and dcedIndex: " + DisconnectedPeerIndex + " which is " + ((!IsNonExistingDisconnectedPeer) ? "not" : "") + " a NonExistingDisconnectedPeer";
+		return "Create a new player with name: " + PlayerName + " and index: " + PlayerIndex + " and dcedIndex: " + DisconnectedPeerIndex + " which is " + ((!IsNonExistingDisconnectedPeer) ? "not" : "") + " a NonExistingDisconnectedPeer, isSpectator: " + IsSpectator.ToString() + ", isAdmin: " + IsAdmin.ToString();
 	}
 }

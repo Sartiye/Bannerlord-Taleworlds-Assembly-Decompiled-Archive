@@ -215,7 +215,7 @@ public class AgentNavalComponent : AgentComponent
 				SteppedShip = ((_steppedEntityCache != null) ? (root.GetFirstScriptWithNameHash(MissionShip.MissionShipScriptNameHash) as MissionShip) : null);
 				_navalAgentsLogic.OnAgentSteppedShipChanged(Agent, SteppedShip);
 				_steppedNavalPhysicsCached = root.GetFirstScriptOfType<NavalDLC.Missions.NavalPhysics.NavalPhysics>();
-				_steppedPlankBridgeSteppedAgentManagerCached = root.GetFirstScriptOfType<PlankBridgeSteppedAgentManager>();
+				_steppedPlankBridgeSteppedAgentManagerCached = root.GetFirstScriptOfTypeRecursive<PlankBridgeSteppedAgentManager>();
 			}
 		}
 		_lastMovementMode = agentMovementMode;

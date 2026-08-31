@@ -9,20 +9,20 @@ public class BinaryWriter : IWriter
 
 	private int _availableIndex;
 
-	public byte[] Data => _data;
+	private readonly int _ownerThreadId;
 
 	public int Length => _availableIndex;
 
 	public BinaryWriter()
+		: this(4096)
 	{
-		_data = new byte[4096];
-		_availableIndex = 0;
 	}
 
 	public BinaryWriter(int capacity)
 	{
 		_data = new byte[capacity];
 		_availableIndex = 0;
+		_ownerThreadId = Environment.CurrentManagedThreadId;
 	}
 
 	public void Clear()
@@ -33,6 +33,7 @@ public class BinaryWriter : IWriter
 
 	public void EnsureLength(int added)
 	{
+		VerifyThreadSafety();
 		int num = _availableIndex + added;
 		if (num > _data.Length)
 		{
@@ -44,6 +45,15 @@ public class BinaryWriter : IWriter
 			byte[] array = new byte[num2];
 			Buffer.BlockCopy(_data, 0, array, 0, _availableIndex);
 			_data = array;
+		}
+	}
+
+	private void VerifyThreadSafety()
+	{
+		if (Environment.CurrentManagedThreadId != _ownerThreadId)
+		{
+			Debug.Print("Binary writer used by another thread.");
+			Debug.FailedAssert("Binary writer used by another thread.", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\BinaryWriter.cs", "VerifyThreadSafety", 64);
 		}
 	}
 
@@ -68,6 +78,11 @@ public class BinaryWriter : IWriter
 
 	public void Write3ByteInt(int value)
 	{
+		if (value < -1 || value > 16777215)
+		{
+			Debug.Print("Overflowed while writing 3byte int ({value})");
+			Debug.FailedAssert("Overflowed while writing 3byte int ({value})", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\BinaryWriter.cs", "Write3ByteInt", 92);
+		}
 		EnsureLength(3);
 		_data[_availableIndex++] = (byte)value;
 		_data[_availableIndex++] = (byte)(value >> 8);
@@ -102,22 +117,6 @@ public class BinaryWriter : IWriter
 		{
 			WriteInt(0);
 		}
-	}
-
-	public void WriteFloats(float[] value, int count)
-	{
-		int num = count * 4;
-		EnsureLength(num);
-		Buffer.BlockCopy(value, 0, _data, _availableIndex, num);
-		_availableIndex += num;
-	}
-
-	public void WriteShorts(short[] value, int count)
-	{
-		int num = count * 2;
-		EnsureLength(num);
-		Buffer.BlockCopy(value, 0, _data, _availableIndex, num);
-		_availableIndex += num;
 	}
 
 	public void WriteColor(Color value)

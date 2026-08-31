@@ -887,14 +887,23 @@ public class MPLobbyFriendsVM : ViewModel
 
 	private void ActivateFriendPlayerActions(MPLobbyFriendItemVM player)
 	{
+		if (player.CanSpectate)
+		{
+			PlayerActions.Add(new StringPairItemWithActionVM(ExecuteSpectateMatch, new TextObject("{=V0zs1LfD}Watch Game").ToString(), "SpectateMatch", player));
+		}
 		MultiplayerPlayerContextMenuHelper.AddLobbyViewProfileOptions(player, PlayerActions);
+	}
+
+	private void ExecuteSpectateMatch(object playerObj)
+	{
+		(playerObj as MPLobbyPlayerBaseVM)?.ExecuteSpectateMatch();
 	}
 
 	private void ExecuteSwitchToNextService()
 	{
 		if (FriendServices.Count == 0)
 		{
-			Debug.FailedAssert("Friend service list is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "ExecuteSwitchToNextService", 557);
+			Debug.FailedAssert("Friend service list is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "ExecuteSwitchToNextService", 568);
 			return;
 		}
 		_activeServiceIndex++;
@@ -909,7 +918,7 @@ public class MPLobbyFriendsVM : ViewModel
 	{
 		if (FriendServices.Count == 0)
 		{
-			Debug.FailedAssert("Friend service list is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "ExecuteSwitchToPreviousService", 574);
+			Debug.FailedAssert("Friend service list is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "ExecuteSwitchToPreviousService", 585);
 			return;
 		}
 		_activeServiceIndex--;
@@ -924,13 +933,13 @@ public class MPLobbyFriendsVM : ViewModel
 	{
 		if (_activeServiceIndex < 0 || _activeServiceIndex >= FriendServices.Count)
 		{
-			Debug.FailedAssert($"Multiplayer service index is invalid: {_activeServiceIndex}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "UpdateActiveService", 591);
+			Debug.FailedAssert($"Multiplayer service index is invalid: {_activeServiceIndex}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "UpdateActiveService", 602);
 			if (FriendServices.Count <= 0)
 			{
-				Debug.FailedAssert("Cancelling service update request.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "UpdateActiveService", 599);
+				Debug.FailedAssert("Cancelling service update request.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "UpdateActiveService", 610);
 				return;
 			}
-			Debug.FailedAssert("Defaulting to first available service: " + FriendServices[0].ServiceName, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "UpdateActiveService", 594);
+			Debug.FailedAssert("Defaulting to first available service: " + FriendServices[0].ServiceName, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "UpdateActiveService", 605);
 			_activeServiceIndex = 0;
 		}
 		ActiveService = FriendServices[_activeServiceIndex];

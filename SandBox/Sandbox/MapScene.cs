@@ -364,6 +364,15 @@ public class MapScene : IMapScene
 		return _scene.GetPathBetweenAIFaces(startingFace.FaceIndex, endingFace.FaceIndex, startingPosition, endingPosition, agentRadius, path, excludedFaceIds, extraCostMultiplier, regionSwitchCostFromLandToSea, regionSwitchCostFromSeaToLand);
 	}
 
+	public bool GetPathBetweenAIFaces(PathFaceRecord startingFace, PathFaceRecord endingFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, NavigationPath path, int[] excludedFaceIds, float extraCostMultiplier, int regionSwitchCostFromLandToSea, int regionSwitchCostFromSeaToLand, int excludedFaceIndex)
+	{
+		if (regionSwitchCostFromLandToSea == 0 && regionSwitchCostFromSeaToLand == 0)
+		{
+			return _scene.GetPathBetweenAIFaces(startingFace.FaceIndex, endingFace.FaceIndex, startingPosition, endingPosition, agentRadius, path, excludedFaceIds, extraCostMultiplier, excludedFaceIndex);
+		}
+		return _scene.GetPathBetweenAIFaces(startingFace.FaceIndex, endingFace.FaceIndex, startingPosition, endingPosition, agentRadius, path, excludedFaceIds, extraCostMultiplier, regionSwitchCostFromLandToSea, regionSwitchCostFromSeaToLand, excludedFaceIndex);
+	}
+
 	public bool GetPathDistanceBetweenAIFaces(PathFaceRecord startingAiFace, PathFaceRecord endingAiFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, float distanceLimit, out float distance, int[] excludedFaceIds, int regionSwitchCostFromLandToSea, int regionSwitchCostFromSeaToLand)
 	{
 		return _scene.GetPathDistanceBetweenAIFaces(startingAiFace.FaceIndex, endingAiFace.FaceIndex, startingPosition, endingPosition, agentRadius, distanceLimit, out distance, excludedFaceIds, regionSwitchCostFromLandToSea, regionSwitchCostFromSeaToLand);

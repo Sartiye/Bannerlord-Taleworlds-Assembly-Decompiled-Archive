@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using Helpers;
+using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.MapEvents;
@@ -181,6 +183,20 @@ public class HeroKnownInformationCampaignBehavior : CampaignBehaviorBase
 	private void OnPlayerMetHero(Hero hero)
 	{
 		hero.IsKnownToPlayer = true;
+		if (!hero.IsNotable)
+		{
+			return;
+		}
+		Settlement currentSettlement = hero.CurrentSettlement;
+		if (currentSettlement != null && currentSettlement.IsTown)
+		{
+			TraitEffectObject calculatingNotableRelationEffect = DefaultPersonalityTraitEffects.CalculatingNotableRelationEffect;
+			float traitEffectBonus = TraitEffectHelper.GetTraitEffectBonus(Hero.MainHero, calculatingNotableRelationEffect);
+			if (traitEffectBonus != 0f)
+			{
+				ChangeRelationAction.ApplyPlayerRelation(hero, (int)traitEffectBonus, affectRelatives: false, showQuickNotification: false);
+			}
+		}
 	}
 
 	private void OnDailyTickHero(Hero hero)
@@ -222,8 +238,12 @@ public class HeroKnownInformationCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private void OnCharacterCreationIsOver()
+	private void OnCharacterCreationIsOver(int index)
 	{
+		if (index != 1)
+		{
+			return;
+		}
 		foreach (Hero allAliveHero in Hero.AllAliveHeroes)
 		{
 			UpdateHeroLocation(allAliveHero);

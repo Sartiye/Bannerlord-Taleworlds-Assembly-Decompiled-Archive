@@ -4,6 +4,7 @@ using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
+using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
@@ -578,7 +579,7 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 
 		private void OnHideoutCleared(Settlement hideout)
 		{
-			if (_targetHideout == hideout)
+			if (_targetHideout == hideout && (PlayerEncounter.Current == null || PlayerEncounter.Current.EncounterSettlementAux != _targetHideout))
 			{
 				CompleteQuestWithCancel();
 			}

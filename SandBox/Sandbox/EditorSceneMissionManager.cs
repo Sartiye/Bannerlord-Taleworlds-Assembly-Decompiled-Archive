@@ -1,4 +1,5 @@
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.AdvancedStartOptions;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.MountAndBlade;
@@ -52,7 +53,7 @@ public class EditorSceneMissionManager : MBGameManager
 			}
 			else
 			{
-				Campaign campaign = new Campaign(CampaignGameMode.Tutorial);
+				Campaign campaign = new Campaign(CampaignGameMode.Tutorial, new AdvancedStartOptionsData());
 				game = Game.CreateGame(campaign, this);
 				campaign.SetLoadingParameters(Campaign.GameLoadingType.Tutorial);
 			}

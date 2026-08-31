@@ -16,7 +16,8 @@ public class BattleCampaignBehavior : CampaignBehaviorBase
 
 	private static void OnCollectLootItems(PartyBase winnerParty, ItemRoster gainedLoots)
 	{
-		if (!winnerParty.IsMobile || !winnerParty.MobileParty.HasPerk(DefaultPerks.Engineering.Metallurgy))
+		Hero perkOwnerHero = null;
+		if (!winnerParty.IsMobile || !winnerParty.MobileParty.HasPerk(DefaultPerks.Engineering.Metallurgy, out perkOwnerHero))
 		{
 			return;
 		}
@@ -54,7 +55,8 @@ public class BattleCampaignBehavior : CampaignBehaviorBase
 			TroopRosterElement elementCopyAtIndex = party.MemberRoster.GetElementCopyAtIndex(i);
 			if (!elementCopyAtIndex.Character.IsHero && elementCopyAtIndex.Character.IsInfantry)
 			{
-				party.MemberRoster.AddXpToTroopAtIndex(i, (int)DefaultPerks.TwoHanded.BaptisedInBlood.PrimaryBonus * elementCopyAtIndex.Number);
+				int xpAmount = (int)DefaultPerks.TwoHanded.BaptisedInBlood.PrimaryBonus * elementCopyAtIndex.Number;
+				party.MemberRoster.AddXpToTroopAtIndex(i, xpAmount);
 			}
 		}
 	}

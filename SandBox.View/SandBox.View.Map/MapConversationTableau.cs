@@ -307,8 +307,8 @@ public class MapConversationTableau
 		uint num2 = uint.MaxValue;
 		num2 &= 0xFFFFFBFFu;
 		View?.SetPostfxConfigParams((int)num2);
-		_tableauScene.FindEntityWithTag(RainingEntityTag).SetVisibilityExcludeParents(_data.IsRaining);
-		_tableauScene.FindEntityWithTag(SnowingEntityTag).SetVisibilityExcludeParents(_data.IsSnowing);
+		_tableauScene.FindEntityWithTag(RainingEntityTag).SetVisibilityExcludeParents(_data.IsRaining && !_tableauScene.IsAtmosphereIndoor);
+		_tableauScene.FindEntityWithTag(SnowingEntityTag).SetVisibilityExcludeParents(_data.IsSnowing && !_tableauScene.IsAtmosphereIndoor);
 		_tableauScene.Tick(3f);
 		View?.SetEnable(value: true);
 		_initialized = true;

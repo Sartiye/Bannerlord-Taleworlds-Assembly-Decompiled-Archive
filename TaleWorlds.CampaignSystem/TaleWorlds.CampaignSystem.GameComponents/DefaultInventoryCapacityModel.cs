@@ -1,3 +1,4 @@
+using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Party;
@@ -49,7 +50,7 @@ public class DefaultInventoryCapacityModel : InventoryCapacityModel
 
 	public override ExplainedNumber CalculateInventoryCapacity(MobileParty mobileParty, bool isCurrentlyAtSea, bool includeDescriptions = false, int additionalTroops = 0, int additionalSpareMounts = 0, int additionalPackAnimals = 0, bool includeFollowers = false)
 	{
-		ExplainedNumber result = new ExplainedNumber(0f, includeDescriptions);
+		ExplainedNumber stat = new ExplainedNumber(0f, includeDescriptions);
 		PartyBase party = mobileParty.Party;
 		int num = party.NumberOfMounts;
 		int num2 = party.NumberOfHealthyMembers;
@@ -63,40 +64,32 @@ public class DefaultInventoryCapacityModel : InventoryCapacityModel
 				num3 += attachedParty.Party.NumberOfPackAnimals;
 			}
 		}
-		if (mobileParty.HasPerk(DefaultPerks.Steward.ArenicosHorses) && !isCurrentlyAtSea)
+		Hero perkOwnerHero = null;
+		if (mobileParty.HasPerk(DefaultPerks.Steward.ArenicosHorses, out perkOwnerHero))
 		{
-			num2 += MathF.Round((float)num2 * DefaultPerks.Steward.ArenicosHorses.PrimaryBonus);
+			int num4 = MathF.Round((float)num2 * DefaultPerks.Steward.ArenicosHorses.PrimaryBonus);
+			num2 += num4;
 		}
-		if (!mobileParty.IsCurrentlyAtSea && mobileParty.HasPerk(DefaultPerks.Steward.ForcedLabor))
+		Hero perkOwnerHero2 = null;
+		if (mobileParty.HasPerk(DefaultPerks.Steward.ForcedLabor, out perkOwnerHero2))
 		{
-			num2 += party.PrisonRoster.TotalHealthyCount;
+			int totalHealthyCount = party.PrisonRoster.TotalHealthyCount;
+			num2 += totalHealthyCount;
 		}
-		result.Add(10f, _textBase);
-		result.Add((float)num2 * 2f * 10f, _textTroops);
+		stat.Add(10f, _textBase);
+		stat.Add((float)num2 * 2f * 10f, _textTroops);
 		if (!isCurrentlyAtSea)
 		{
-			result.Add((float)num * 2f * 10f, _textSpareMounts);
-			ExplainedNumber explainedNumber = new ExplainedNumber((float)num3 * 10f * 10f);
-			if (mobileParty.HasPerk(DefaultPerks.Scouting.BeastWhisperer, checkSecondaryRole: true))
-			{
-				explainedNumber.AddFactor(DefaultPerks.Scouting.BeastWhisperer.SecondaryBonus, DefaultPerks.Scouting.BeastWhisperer.Name);
-			}
-			if (mobileParty.HasPerk(DefaultPerks.Riding.DeeperSacks))
-			{
-				explainedNumber.AddFactor(DefaultPerks.Riding.DeeperSacks.PrimaryBonus, DefaultPerks.Riding.DeeperSacks.Name);
-			}
-			if (mobileParty.HasPerk(DefaultPerks.Steward.ArenicosMules))
-			{
-				explainedNumber.AddFactor(DefaultPerks.Steward.ArenicosMules.PrimaryBonus, DefaultPerks.Steward.ArenicosMules.Name);
-			}
-			result.Add(explainedNumber.ResultNumber, _textPackAnimals);
-			if (mobileParty.HasPerk(DefaultPerks.Trade.CaravanMaster))
-			{
-				result.AddFactor(DefaultPerks.Trade.CaravanMaster.PrimaryBonus, DefaultPerks.Trade.CaravanMaster.Name);
-			}
+			stat.Add((float)num * 2f * 10f, _textSpareMounts);
+			ExplainedNumber stat2 = new ExplainedNumber((float)num3 * 10f * 10f);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.BeastWhisperer, mobileParty, isPrimaryBonus: false, ref stat2);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Riding.DeeperSacks, mobileParty, isPrimaryBonus: true, ref stat2);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.ArenicosMules, mobileParty, isPrimaryBonus: true, ref stat2);
+			stat.Add(stat2.ResultNumber, _textPackAnimals);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Trade.CaravanMaster, mobileParty, isPrimaryBonus: true, ref stat);
 		}
-		result.LimitMin(10f);
-		return result;
+		stat.LimitMin(10f);
+		return stat;
 	}
 
 	public override ExplainedNumber CalculateTotalWeightCarried(MobileParty mobileParty, bool isCurrentlyAtSea, bool includeDescriptions = false)

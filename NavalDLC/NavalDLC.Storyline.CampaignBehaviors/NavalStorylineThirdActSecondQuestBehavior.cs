@@ -57,21 +57,21 @@ public class NavalStorylineThirdActSecondQuestBehavior : CampaignBehaviorBase
 
 	private void AddDialogs(CampaignGameStarter starter)
 	{
-		TextObject textObject = new TextObject("{=TlgUi5Sh}{PLAYER.NAME}... Word spreads fast among sailors. We seem to have made a bit of a name for ourselves with that victory off of Hvalvik. I have someone for you to meet.");
+		TextObject textObject = new TextObject("{=TlgUi5Sh}[if:convo_merry][ib:confident2]{PLAYER.NAME}... Word spreads fast among sailors. We seem to have made a bit of a name for ourselves with that victory off of Hvalvik. I have someone for you to meet.");
 		textObject.SetCharacterProperties("PLAYER", CharacterObject.PlayerCharacter);
-		TextObject npcText = new TextObject("{=AGY68GQE}So… You are the captain who thrashed those so-called Sea Hounds up north. I have a proposal that I hope would be of interest.");
-		TextObject textObject2 = new TextObject("{=pUZTxrEy}I am Lahar, of Quyaz, on the Jade Sea. I am here because one of the great families of our city has been having some troubles. The head of one branch, the lady Fahda, has quarreled over her inheritance with her uncles. The elders of the town backed the uncles, so she took to the sea with her retainers and vowed to ravage their shipping.");
+		TextObject npcText = new TextObject("{=AGY68GQE}[ib:confident][if:convo_approving]So… You are the captain who thrashed those so-called Sea Hounds up north. I have a proposal that I hope would be of interest.");
+		TextObject textObject2 = new TextObject("{=pUZTxrEy}[ib:closed]I am Lahar, of Quyaz, on the Jade Sea. I am here because one of the great families of our city has been having some troubles. The head of one branch, the lady Fahda, has quarreled over her inheritance with her uncles. The elders of the town backed the uncles, so she took to the sea with her retainers and vowed to ravage their shipping.");
 		textObject2.SetTextVariable("SETTLEMENT_LINK", NavalStorylineData.Act3Quest2TargetSettlement.EncyclopediaLinkWithName);
 		TextObject text = new TextObject("{=MM0mXw6o}How formidable a foe is this Fahda?");
-		TextObject textObject3 = new TextObject("{=x3EgmkF8}The lady is good at her craft. Fahda has been sailing since she was a child. She always wears a sailor’s cap, and underneath she is as bald as an egg. She persuaded her late father to take her to sea, so the story goes, by cutting off all of her long shining hair lest it catch in the rigging. She has taken several Quyazi ships, and I would be reluctant to fight her alone.");
+		TextObject textObject3 = new TextObject("{=x3EgmkF8}[if:convo_pondering]The lady is good at her craft. Fahda has been sailing since she was a child. She always wears a sailor’s cap, and underneath she is as bald as an egg. She persuaded her late father to take her to sea, so the story goes, by cutting off all of her long shining hair lest it catch in the rigging. She has taken several Quyazi ships, and I would be reluctant to fight her alone.");
 		textObject3.SetTextVariable("SETTLEMENT_LINK", NavalStorylineData.Act3Quest2TargetSettlement.EncyclopediaLinkWithName);
 		TextObject text2 = new TextObject("{=s7CSGwZ5}What does this have to do with our quarrel with the Sea Hounds?");
-		TextObject npcText2 = new TextObject("{=JBOE2x1a}The lady Fahda has reportedly joined up with these Sea Hounds, as pirates often band together. She has been prowling about the Gulf of Charas, taking Quyazi vessels. You wish to continue hunting Sea Hounds, do you not? Those would be good waters in which to hunt, and if you are going there, I would like to come with you and lend my assistance.");
-		TextObject npcText3 = new TextObject("{=pUZPt8Po}Fahda also traffics in captives with the Sea Hounds. She may have bought or held your sister at some point, or if not, at least she may be able to tell us more about the Sea Hounds' trade in slaves.");
+		TextObject npcText2 = new TextObject("{=JBOE2x1a}[ib:demure][if:convo_evil_smile]The lady Fahda has reportedly joined up with these Sea Hounds, as pirates often band together. She has been prowling about the Gulf of Charas, taking Quyazi vessels. You wish to continue hunting Sea Hounds, do you not? Those would be good waters in which to hunt, and if you are going there, I would like to come with you and lend my assistance.");
+		TextObject npcText3 = new TextObject("{=pUZPt8Po}[ib:closed][if:convo_thinking]Fahda also traffics in captives with the Sea Hounds. She may have bought or held your sister at some point, or if not, at least she may be able to tell us more about the Sea Hounds' trade in slaves.");
 		TextObject text3 = new TextObject("{=TUmPKK8P}Lahar - what will we gain by helping you catch her?");
 		TextObject npcText4 = new TextObject("{=fbKlKR0v}If you wish to weaken these Sea Hounds, you may want to strike at their allies first. And of course the elders of Quyaz will be most happy to pay a handsome reward, of which you and Gunnar would receive your fair share.");
 		TextObject text4 = new TextObject("{=jo3s90PF}What will you bring on our hunt?");
-		TextObject npcText5 = new TextObject("{=w9ar5Ldc}I have my loyal crew and a swift liburna, outfitted with a ram, which I think you might put to good purpose. It would be especially useful if we encounter any slow but powerful ships that would be costly to take by boarding.");
+		TextObject npcText5 = new TextObject("{=w9ar5Ldc}[ib:hip][if:convo_approving]I have my loyal crew and a swift liburna, outfitted with a ram, which I think you might put to good purpose. It would be especially useful if we encounter any slow but powerful ships that would be costly to take by boarding.");
 		TextObject text5 = new TextObject("{=jSaUTBbW}I am ready to set out.");
 		TextObject text6 = new TextObject("{=ZUAvYPpg}That sounds promising, but I am not yet ready to depart.");
 		TextObject npcText6 = new TextObject("{=8T2uf1ay}Can I tell Lahar that we are ready to sail? The tide and winds are with us, and it would be a pity if someone else were to hunt down Fahda and claim the bounty.");
@@ -138,7 +138,10 @@ public class NavalStorylineThirdActSecondQuestBehavior : CampaignBehaviorBase
 			.PlayerOption(text5, IsGunnar)
 			.Consequence(delegate
 			{
-				Campaign.Current.ConversationManager.ConversationEndOneShot += OnPlayerAcceptsQuestThroughMission;
+				Campaign.Current.ConversationManager.ConversationEndOneShot += delegate
+				{
+					NavalStorylineData.OnPlayerAcceptsQuest(QuestAccepted, NavalStorylineData.OnPlayerPostponedQuestStart);
+				};
 			})
 			.CloseDialog()
 			.PlayerOption(text6, IsGunnar)
@@ -155,7 +158,10 @@ public class NavalStorylineThirdActSecondQuestBehavior : CampaignBehaviorBase
 			.PlayerOption(text7, IsGunnar)
 			.Consequence(delegate
 			{
-				Campaign.Current.ConversationManager.ConversationEndOneShot += OnPlayerAcceptsQuestThroughMission;
+				Campaign.Current.ConversationManager.ConversationEndOneShot += delegate
+				{
+					NavalStorylineData.OnPlayerAcceptsQuest(QuestAccepted, NavalStorylineData.OnPlayerPostponedQuestStart);
+				};
 			})
 			.CloseDialog()
 			.PlayerOption(text8, IsGunnar)
@@ -263,7 +269,7 @@ public class NavalStorylineThirdActSecondQuestBehavior : CampaignBehaviorBase
 		return Mission.Current.SpawnAgent(agentBuildData);
 	}
 
-	private void OnPlayerAcceptsQuestThroughMission()
+	private void QuestAccepted()
 	{
 		_isQuestAcceptedThroughMission = true;
 		GameMenu.ActivateGameMenu("naval_storyline_act_3_quest_2_conversation_menu");

@@ -62,40 +62,53 @@ public class DiamondClientApplication
 	private void CreateClient(string clientConfiguration, SessionProviderType sessionProviderType)
 	{
 		Type type = FindType(clientConfiguration);
-		object obj = CreateClientSessionProvider(clientConfiguration, type, sessionProviderType, _parameters);
+		object obj = CreateClientSessionProvider(clientConfiguration, sessionProviderType, _parameters);
 		IClient value = (IClient)Activator.CreateInstance(type, this, obj);
 		_clientObjects.Add(clientConfiguration, value);
 	}
 
-	public object CreateClientSessionProvider(string clientName, Type clientType, SessionProviderType sessionProviderType, ParameterContainer parameters)
+	public string ResolveClientAddress(string clientName, ParameterContainer parameters)
 	{
-		object obj = null;
-		if (sessionProviderType == SessionProviderType.ThreadedRest)
+		parameters.TryGetParameter(clientName + ".Address", out var outValue);
+		if (ServiceAddress.IsServiceAddress(outValue))
 		{
-			Type type = ((sessionProviderType == SessionProviderType.Rest) ? typeof(GenericRestSessionProvider<>) : typeof(GenericThreadedRestSessionProvider<>)).MakeGenericType(clientType);
-			parameters.TryGetParameter(clientName + ".Address", out var outValue);
-			if (ServiceAddress.IsServiceAddress(outValue))
+			parameters.TryGetParameter(clientName + ".ServiceDiscovery.Address", out var outValue2);
+			ServiceAddressManager.ResolveAddress(outValue2, ref outValue);
+		}
+		string text = clientName + ".Proxy.";
+		Dictionary<string, string> dictionary = new Dictionary<string, string>();
+		foreach (KeyValuePair<string, string> item in parameters.Iterator)
+		{
+			if (item.Key.StartsWith(text) && item.Key.Length > text.Length)
 			{
-				parameters.TryGetParameter(clientName + ".ServiceDiscovery.Address", out var outValue2);
-				ServiceAddressManager.ResolveAddress(outValue2, ref outValue);
+				dictionary[item.Key.Substring(text.Length)] = item.Value;
 			}
-			string text = clientName + ".Proxy.";
-			Dictionary<string, string> dictionary = new Dictionary<string, string>();
-			foreach (KeyValuePair<string, string> item in parameters.Iterator)
-			{
-				if (item.Key.StartsWith(text) && item.Key.Length > text.Length)
-				{
-					dictionary[item.Key.Substring(text.Length)] = item.Value;
-				}
-			}
-			ProxyAddressMap = dictionary;
-			if (dictionary.TryGetValue(outValue, out var value))
-			{
-				outValue = value;
-			}
+		}
+		ProxyAddressMap = dictionary;
+		if (dictionary.TryGetValue(outValue, out var value))
+		{
+			return value;
+		}
+		return outValue;
+	}
+
+	public void ReplaceParameters(ParameterContainer parameters)
+	{
+		_parameters = parameters;
+	}
+
+	public object CreateClientSessionProvider(string clientName, SessionProviderType sessionProviderType, ParameterContainer parameters)
+	{
+		if (sessionProviderType == SessionProviderType.Rest || sessionProviderType == SessionProviderType.ThreadedRest)
+		{
+			string address = ResolveClientAddress(clientName, parameters);
 			IHttpDriver httpDriver = null;
-			httpDriver = ((!parameters.TryGetParameter(clientName + ".HttpDriver", out var outValue3)) ? HttpDriverManager.GetDefaultHttpDriver() : HttpDriverManager.GetHttpDriver(outValue3));
-			return Activator.CreateInstance(type, outValue, httpDriver);
+			httpDriver = ((!parameters.TryGetParameter(clientName + ".HttpDriver", out var outValue)) ? HttpDriverManager.GetDefaultHttpDriver() : HttpDriverManager.GetHttpDriver(outValue));
+			if (sessionProviderType == SessionProviderType.Rest)
+			{
+				return new GenericRestSessionProvider(address, httpDriver);
+			}
+			return new ThreadedRestSessionFactory(address, httpDriver, parameters);
 		}
 		throw new NotImplementedException("Other session provider types are not supported yet.");
 	}

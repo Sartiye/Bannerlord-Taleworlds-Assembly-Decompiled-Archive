@@ -104,7 +104,7 @@ public class RecruitPrisonersCampaignBehavior : CampaignBehaviorBase
 
 	private void ApplyPrisonerRecruitmentEffects(MobileParty mobileParty, CharacterObject troop, int num)
 	{
-		int prisonerRecruitmentMoraleEffect = Campaign.Current.Models.PrisonerRecruitmentCalculationModel.GetPrisonerRecruitmentMoraleEffect(mobileParty.Party, troop, num);
+		float prisonerRecruitmentMoraleEffect = Campaign.Current.Models.PrisonerRecruitmentCalculationModel.GetPrisonerRecruitmentMoraleEffect(mobileParty.Party, troop, num);
 		mobileParty.RecentEventsMorale += prisonerRecruitmentMoraleEffect;
 	}
 

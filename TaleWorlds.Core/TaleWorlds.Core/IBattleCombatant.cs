@@ -17,6 +17,8 @@ public interface IBattleCombatant
 
 	Banner Banner { get; }
 
+	BattleEnvironment CurrentBattleEnvironment { get; }
+
 	int GetTacticsSkillAmount();
 
 	int GetNumberOfMissionReadyTroops();

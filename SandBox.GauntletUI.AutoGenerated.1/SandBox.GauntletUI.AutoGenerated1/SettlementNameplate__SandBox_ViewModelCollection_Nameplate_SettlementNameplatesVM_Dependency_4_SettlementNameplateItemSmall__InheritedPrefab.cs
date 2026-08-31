@@ -33,6 +33,8 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 
 	private Widget _widget_2_0_0_0;
 
+	private Widget _widget_2_0_0_0_0;
+
 	private Widget _widget_2_0_0_1;
 
 	private TextWidget _widget_2_0_1;
@@ -95,6 +97,8 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 		_widget_2_0.AddChild(_widget_2_0_0);
 		_widget_2_0_0_0 = new Widget(base.Context);
 		_widget_2_0_0.AddChild(_widget_2_0_0_0);
+		_widget_2_0_0_0_0 = new Widget(base.Context);
+		_widget_2_0_0_0.AddChild(_widget_2_0_0_0_0);
 		_widget_2_0_0_1 = new Widget(base.Context);
 		_widget_2_0_0.AddChild(_widget_2_0_0_1);
 		_widget_2_0_1 = new TextWidget(base.Context);
@@ -177,18 +181,28 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 		_widget_2_0_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0.StackLayout.LayoutMethod = LayoutMethod.HorizontalRightToLeft;
+		_widget_2_0_0.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_2_0_0.VerticalAlignment = VerticalAlignment.Center;
-		_widget_2_0_0.PositionXOffset = -70f;
+		_widget_2_0_0.PositionXOffset = -170f;
 		_widget_2_0_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_0_0_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_2_0_0_0.SuggestedWidth = 30f;
 		_widget_2_0_0_0.SuggestedHeight = 30f;
+		_widget_2_0_0_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_2_0_0_0.Sprite = base.Context.SpriteData.GetSprite("Map\\anchor_village");
 		_widget_2_0_0_0.IsVisible = false;
+		_widget_2_0_0_0_0.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_2_0_0_0_0.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_2_0_0_0_0.SuggestedWidth = 30f;
+		_widget_2_0_0_0_0.SuggestedHeight = 15f;
+		_widget_2_0_0_0_0.VerticalAlignment = VerticalAlignment.Top;
+		_widget_2_0_0_0_0.PositionYOffset = -9f;
+		_widget_2_0_0_0_0.Sprite = base.Context.SpriteData.GetSprite("Map\\ferry_village");
 		_widget_2_0_0_1.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_0_0_1.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_2_0_0_1.SuggestedWidth = 33f;
 		_widget_2_0_0_1.SuggestedHeight = 33f;
+		_widget_2_0_0_1.VerticalAlignment = VerticalAlignment.Center;
 		_widget_2_0_0_1.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\parley_icon");
 		_widget_2_0_0_1.AlphaFactor = 0f;
 		_widget_2_0_1.WidthSizePolicy = SizePolicy.CoverChildren;
@@ -300,6 +314,15 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 		_widget.uintPropertyChanged -= uintPropertyChangedListenerOf_widget;
 		_widget.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget;
 		_widget_2_0.EventFire -= EventListenerOf_widget_2_0;
+		_widget_2_0_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_2_0_0_0_0;
+		_widget_2_0_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_2_0_0_0_0;
+		_widget_2_0_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_2_0_0_0_0;
+		_widget_2_0_0_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_2_0_0_0_0;
+		_widget_2_0_0_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_2_0_0_0_0;
+		_widget_2_0_0_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_2_0_0_0_0;
+		_widget_2_0_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_2_0_0_0_0;
+		_widget_2_0_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2_0_0_0_0;
+		_widget_2_0_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2_0_0_0_0;
 		_widget_2_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_2_0_1;
 		_widget_2_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_2_0_1;
 		_widget_2_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_2_0_1;
@@ -561,6 +584,59 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 		case "DistanceToCamera":
 			_datasource_Root.DistanceToCamera = _widget.DistanceToCamera;
 			break;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_2_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2_0_0_0_0(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_2_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2_0_0_0_0(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_2_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2_0_0_0_0(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_2_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2_0_0_0_0(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_2_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2_0_0_0_0(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_2_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2_0_0_0_0(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_2_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2_0_0_0_0(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_2_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2_0_0_0_0(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_2_0_0_0_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2_0_0_0_0(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_2_0_0_0_0(string propertyName)
+	{
+		if (propertyName == "IsVisible")
+		{
+			_datasource_Root.HasFerry = _widget_2_0_0_0_0.IsVisible;
 		}
 	}
 
@@ -982,6 +1058,9 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 			break;
 		case "DistanceToCamera":
 			_widget.DistanceToCamera = _datasource_Root.DistanceToCamera;
+			break;
+		case "HasFerry":
+			_widget_2_0_0_0_0.IsVisible = _datasource_Root.HasFerry;
 			break;
 		case "Name":
 			_widget_2_0_1.Text = _datasource_Root.Name;
@@ -1465,6 +1544,15 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 			_widget.uintPropertyChanged -= uintPropertyChangedListenerOf_widget;
 			_widget.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget;
 			_widget_2_0.EventFire -= EventListenerOf_widget_2_0;
+			_widget_2_0_0_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_2_0_0_0_0;
+			_widget_2_0_0_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_2_0_0_0_0;
+			_widget_2_0_0_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_2_0_0_0_0;
+			_widget_2_0_0_0_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_2_0_0_0_0;
+			_widget_2_0_0_0_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_2_0_0_0_0;
+			_widget_2_0_0_0_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_2_0_0_0_0;
+			_widget_2_0_0_0_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_2_0_0_0_0;
+			_widget_2_0_0_0_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2_0_0_0_0;
+			_widget_2_0_0_0_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2_0_0_0_0;
 			_widget_2_0_1.PropertyChanged -= PropertyChangedListenerOf_widget_2_0_1;
 			_widget_2_0_1.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_2_0_1;
 			_widget_2_0_1.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_2_0_1;
@@ -1661,6 +1749,16 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 		_widget.uintPropertyChanged += uintPropertyChangedListenerOf_widget;
 		_widget.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget;
 		_widget_2_0.EventFire += EventListenerOf_widget_2_0;
+		_widget_2_0_0_0_0.IsVisible = _datasource_Root.HasFerry;
+		_widget_2_0_0_0_0.PropertyChanged += PropertyChangedListenerOf_widget_2_0_0_0_0;
+		_widget_2_0_0_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_2_0_0_0_0;
+		_widget_2_0_0_0_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_2_0_0_0_0;
+		_widget_2_0_0_0_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_2_0_0_0_0;
+		_widget_2_0_0_0_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_2_0_0_0_0;
+		_widget_2_0_0_0_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_2_0_0_0_0;
+		_widget_2_0_0_0_0.intPropertyChanged += intPropertyChangedListenerOf_widget_2_0_0_0_0;
+		_widget_2_0_0_0_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_2_0_0_0_0;
+		_widget_2_0_0_0_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_2_0_0_0_0;
 		_widget_2_0_1.Text = _datasource_Root.Name;
 		_widget_2_0_1.PropertyChanged += PropertyChangedListenerOf_widget_2_0_1;
 		_widget_2_0_1.boolPropertyChanged += boolPropertyChangedListenerOf_widget_2_0_1;

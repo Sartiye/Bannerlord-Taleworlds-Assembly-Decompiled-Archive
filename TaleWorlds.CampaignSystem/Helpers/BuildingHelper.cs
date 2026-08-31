@@ -52,7 +52,7 @@ public static class BuildingHelper
 			}
 			else
 			{
-				Debug.FailedAssert("DefaultProject in building queue", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "ChangeCurrentBuildingQueue", 7278);
+				Debug.FailedAssert("DefaultProject in building queue", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "ChangeCurrentBuildingQueue", 7822);
 			}
 		}
 	}
@@ -66,7 +66,7 @@ public static class BuildingHelper
 				return building.BuildingProgress / (float)building.GetConstructionCost();
 			}
 		}
-		Debug.FailedAssert(string.Concat(building.Name, "is not a project of", town.Name), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetProgressOfBuilding", 7293);
+		Debug.FailedAssert(string.Concat(building.Name, "is not a project of", town.Name), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetProgressOfBuilding", 7837);
 		return 0f;
 	}
 
@@ -84,22 +84,22 @@ public static class BuildingHelper
 			if (num2 != 0)
 			{
 				int num3 = (int)(num / (float)num2);
-				int num4 = (town.IsCastle ? buildingConstructionModel.CastleBoostCost : buildingConstructionModel.TownBoostCost);
-				if (town.BoostBuildingProcess >= num4)
+				int boostCost = buildingConstructionModel.GetBoostCost(town);
+				if (town.BoostBuildingProcess >= boostCost)
 				{
-					int num5 = town.BoostBuildingProcess / num4;
-					if (num3 > num5)
+					int num4 = town.BoostBuildingProcess / boostCost;
+					if (num3 > num4)
 					{
-						int num6 = num5 * num2;
-						int num7 = Campaign.Current.Models.BuildingConstructionModel.CalculateDailyConstructionPowerWithoutBoost(town);
-						return num5 + MathF.Max((int)((num - (float)num6) / (float)num7), 1);
+						int num5 = num4 * num2;
+						int num6 = Campaign.Current.Models.BuildingConstructionModel.CalculateDailyConstructionPowerWithoutBoost(town);
+						return num4 + MathF.Max((int)((num - (float)num5) / (float)num6), 1);
 					}
 				}
 				return MathF.Max(num3, 1);
 			}
 			return -1;
 		}
-		Debug.FailedAssert(string.Concat(building.Name, "is not a project of", town.Name), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetDaysToComplete", 7335);
+		Debug.FailedAssert(string.Concat(building.Name, "is not a project of", town.Name), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetDaysToComplete", 7879);
 		return 0;
 	}
 
@@ -112,7 +112,7 @@ public static class BuildingHelper
 				return building.CurrentLevel;
 			}
 		}
-		Debug.FailedAssert(string.Concat(buildingType.Name, "is not a project of", town.Name), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetTierOfBuilding", 7349);
+		Debug.FailedAssert(string.Concat(buildingType.Name, "is not a project of", town.Name), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetTierOfBuilding", 7893);
 		return 0;
 	}
 

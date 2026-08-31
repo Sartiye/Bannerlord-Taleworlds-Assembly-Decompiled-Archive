@@ -15,7 +15,7 @@ public class AiLandBanditPatrollingBehavior : CampaignBehaviorBase
 	{
 	}
 
-	public void AiHourlyTick(MobileParty mobileParty, PartyThinkParams p)
+	private void AiHourlyTick(MobileParty mobileParty, PartyThinkParams p)
 	{
 		if (!mobileParty.IsBandit || mobileParty.IsBanditBossParty || (mobileParty.CurrentSettlement != null && mobileParty.CurrentSettlement.IsHideout && mobileParty.CurrentSettlement.Parties.CountQ((MobileParty x) => x.IsBandit && !x.IsBanditBossParty) <= Campaign.Current.Models.BanditDensityModel.NumberOfMinimumBanditPartiesInAHideoutToInfestIt + 1))
 		{

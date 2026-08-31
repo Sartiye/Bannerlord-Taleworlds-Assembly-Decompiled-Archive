@@ -8,13 +8,19 @@ namespace TaleWorlds.MountAndBlade.Source.Missions;
 
 public class CaravanBattleMissionHandler : MissionLogic
 {
-	private GameEntity _entity;
+	private const float CaravanDeploymentOffset = 2f;
 
-	private int _unitCount;
+	private GameEntity _entity;
 
 	private bool _isCamelCulture;
 
 	private bool _isCaravan;
+
+	private Team _caravanTeam;
+
+	private BattleSideEnum _playerSide;
+
+	private IBattleCombatant _caravanCombatant;
 
 	private readonly string[] _camelLoadHarnesses = new string[2] { "camel_saddle_a", "camel_saddle_b" };
 
@@ -28,32 +34,48 @@ public class CaravanBattleMissionHandler : MissionLogic
 
 	private const string VillagerGoodsPrefabName = "villager_scattered_goods_prop";
 
-	public CaravanBattleMissionHandler(int unitCount, bool isCamelCulture, bool isCaravan)
+	public CaravanBattleMissionHandler(IBattleCombatant caravanCombatant, bool isCamelCulture, bool isCaravan, BattleSideEnum playerSide)
 	{
-		_unitCount = unitCount;
-		_isCamelCulture = isCamelCulture;
 		_isCaravan = isCaravan;
+		_isCamelCulture = isCamelCulture;
+		_caravanCombatant = caravanCombatant;
+		_playerSide = playerSide;
 	}
 
-	public override void AfterStart()
+	public override void OnBattleSideSpawned(BattleSideEnum side)
 	{
-		base.AfterStart();
-		float pathOffset = Mission.ComputeSpawnPathDeploymentOffset((int)((float)_unitCount * 1.5f), base.Mission.GetInitialSpawnPath());
-		WorldFrame spawnPathFrame = base.Mission.GetSpawnPathFrame(base.Mission.DefenderTeam.Side, pathOffset);
-		Scene scene = Mission.Current.Scene;
-		string prefabName = (_isCaravan ? "caravan_scattered_goods_prop" : "villager_scattered_goods_prop");
-		ref Mat3 rotation = ref spawnPathFrame.Rotation;
-		Vec3 o = spawnPathFrame.Origin.GetGroundVec3();
-		_entity = GameEntity.Instantiate(scene, prefabName, new MatrixFrame(in rotation, in o));
+		if (side != _caravanCombatant.Side)
+		{
+			return;
+		}
+		IMissionDeploymentPlan deploymentPlan = base.Mission.DeploymentPlan;
+		MatrixFrame formationsCenterFrameAndExtents;
+		Vec2 halfExtents;
+		if (side != _playerSide)
+		{
+			_caravanTeam = Mission.GetTeam(TeamSideEnum.EnemyTeam);
+			formationsCenterFrameAndExtents = deploymentPlan.GetFormationsCenterFrameAndExtents(_caravanTeam, out halfExtents, ignoreDimensionlessFormations: false);
+		}
+		else
+		{
+			base.Mission.GetMissionBehavior<MissionCombatantsLogic>().SupportsAllyTeamOnPlayerSide(out var allyCombatant);
+			bool flag = allyCombatant != null && allyCombatant == _caravanCombatant;
+			_caravanTeam = Mission.GetTeam(flag ? TeamSideEnum.PlayerAllyTeam : TeamSideEnum.PlayerTeam);
+			formationsCenterFrameAndExtents = deploymentPlan.GetFormationsCenterFrameAndExtents(_caravanTeam, out halfExtents, ignoreDimensionlessFormations: false);
+		}
+		MatrixFrame frame = formationsCenterFrameAndExtents;
+		frame.Advance(0f - (halfExtents.y + 2f));
+		frame.origin.z = base.Mission.Scene.GetTerrainHeight(frame.origin.AsVec2);
+		_entity = GameEntity.Instantiate(Mission.Current.Scene, _isCaravan ? "caravan_scattered_goods_prop" : "villager_scattered_goods_prop", frame);
 		_entity.SetMobility(GameEntity.Mobility.Dynamic);
 		foreach (GameEntity child in _entity.GetChildren())
 		{
-			Mission.Current.Scene.GetTerrainHeightAndNormal(child.GlobalPosition.AsVec2, out var height, out var normal);
-			MatrixFrame frame = child.GetGlobalFrame();
-			frame.origin.z = height;
-			frame.rotation.u = normal;
-			frame.rotation.Orthonormalize();
-			child.SetGlobalFrame(in frame);
+			base.Mission.Scene.GetTerrainHeightAndNormal(child.GlobalPosition.AsVec2, out var height, out var normal);
+			MatrixFrame frame2 = child.GetGlobalFrame();
+			frame2.origin.z = height;
+			frame2.rotation.u = normal;
+			frame2.rotation.Orthonormalize();
+			child.SetGlobalFrame(in frame2);
 		}
 		IEnumerable<GameEntity> enumerable = from c in _entity.GetChildren()
 			where c.HasTag("caravan_animal_spawn")
@@ -93,7 +115,13 @@ public class CaravanBattleMissionHandler : MissionLogic
 			Vec2 initialDirection = globalFrame.rotation.f.AsVec2.Normalized();
 			Agent agent = current2.SpawnMonster(rosterElement, harnessRosterElement, in origin, in initialDirection);
 			agent.SetAgentFlags(agent.GetAgentFlags() & ~AgentFlag.CanWander);
+			_entity.GetFirstScriptInFamilyDescending<TacticalPosition>().UpdateLinkedTacticalPositions();
 		}
+	}
+
+	public override void OnDeploymentFinished()
+	{
+		base.OnDeploymentFinished();
 		TacticalPosition firstScriptInFamilyDescending = _entity.GetFirstScriptInFamilyDescending<TacticalPosition>();
 		if (firstScriptInFamilyDescending == null)
 		{
@@ -102,6 +130,10 @@ public class CaravanBattleMissionHandler : MissionLogic
 		foreach (Team team in Mission.Current.Teams)
 		{
 			team.TeamAI.TacticalPositions.Add(firstScriptInFamilyDescending);
+			if (team == _caravanTeam && (!team.IsPlayerTeam || !team.IsPlayerGeneral))
+			{
+				team.TeamAI.ResetTactic(keepCurrentTactic: false);
+			}
 		}
 	}
 }

@@ -401,7 +401,7 @@ public abstract class QuestBase : MBObjectBase
 
 	private void RemoveAllMapMarkers()
 	{
-		Campaign.Current.MapMarkerManager.RemoveAllMapMarkersByQuestId(base.StringId);
+		Campaign.Current.MapTrackerManager.RemoveAllMapMarkersByQuestId(base.StringId);
 	}
 
 	public void AddTrackedObject(ITrackableCampaignObject trackedObject)

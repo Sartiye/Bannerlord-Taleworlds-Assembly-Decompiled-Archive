@@ -55,6 +55,8 @@ public class MissionScoreboardVM : ViewModel
 
 	private string _spectators;
 
+	private bool _showSpectatorCount;
+
 	private string _missionName;
 
 	private string _gameModeText;
@@ -105,7 +107,7 @@ public class MissionScoreboardVM : ViewModel
 			case BattleSideEnum.Defender:
 				return BattleSideEnum.Attacker;
 			default:
-				Debug.FailedAssert("Ally side must be either Attacker or Defender", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Scoreboard\\MissionScoreboardVM.cs", "EnemySide", 559);
+				Debug.FailedAssert("Ally side must be either Attacker or Defender", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Scoreboard\\MissionScoreboardVM.cs", "EnemySide", 556);
 				return BattleSideEnum.None;
 			}
 		}
@@ -257,6 +259,23 @@ public class MissionScoreboardVM : ViewModel
 			{
 				_spectators = value;
 				OnPropertyChangedWithValue(value, "Spectators");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool ShowSpectatorCount
+	{
+		get
+		{
+			return _showSpectatorCount;
+		}
+		set
+		{
+			if (value != _showSpectatorCount)
+			{
+				_showSpectatorCount = value;
+				OnPropertyChangedWithValue(value, "ShowSpectatorCount");
 			}
 		}
 	}
@@ -451,6 +470,7 @@ public class MissionScoreboardVM : ViewModel
 		_missionScoreboardComponent.OnRoundPropertiesChanged += OnRoundPropertiesChanged;
 		_missionScoreboardComponent.OnScoreboardInitialized += OnScoreboardInitialized;
 		_missionScoreboardComponent.OnMVPSelected += OnMVPSelected;
+		MissionPeer.OnTeamChanged += OnPeerTeamChanged;
 	}
 
 	private void UnregisterEvents()
@@ -462,6 +482,7 @@ public class MissionScoreboardVM : ViewModel
 		_missionScoreboardComponent.OnScoreboardInitialized -= OnScoreboardInitialized;
 		_missionScoreboardComponent.OnMVPSelected -= OnMVPSelected;
 		_chatBox.OnPlayerMuteChanged -= OnPlayerMuteChanged;
+		MissionPeer.OnTeamChanged -= OnPeerTeamChanged;
 		if (_voiceChatHandler != null)
 		{
 			_voiceChatHandler.OnPeerMuteStatusUpdated -= OnPeerMuteStatusUpdated;
@@ -522,6 +543,7 @@ public class MissionScoreboardVM : ViewModel
 			MapName = missionBehavior.Mission.SceneName;
 		}
 		ServerName = MultiplayerOptions.OptionType.ServerName.GetStrValue();
+		RefreshSpectatorCount();
 		ShowMouseKey?.RefreshValues();
 	}
 
@@ -660,6 +682,7 @@ public class MissionScoreboardVM : ViewModel
 		{
 			UpdateSideAllPlayersAttributes(BattleSideEnum.Attacker);
 			UpdateSideAllPlayersAttributes(BattleSideEnum.Defender);
+			RefreshSpectatorCount();
 			_attributeRefreshTimeElapsed = 0f;
 		}
 	}
@@ -791,12 +814,39 @@ public class MissionScoreboardVM : ViewModel
 		}
 	}
 
-	public void DecreaseSpectatorCount(MissionPeer spectatedPeer)
+	private void OnPeerTeamChanged(NetworkCommunicator peer, Team previousTeam, Team newTeam)
 	{
+		Team spectatorTeam = _mission.SpectatorTeam;
+		if (previousTeam == spectatorTeam || newTeam == spectatorTeam)
+		{
+			RefreshSpectatorCount();
+		}
 	}
 
-	public void IncreaseSpectatorCount(MissionPeer spectatedPeer)
+	public void RefreshSpectatorCount()
 	{
+		Team spectatorTeam = _mission.SpectatorTeam;
+		if (spectatorTeam == null)
+		{
+			ShowSpectatorCount = false;
+			return;
+		}
+		int num = 0;
+		foreach (NetworkCommunicator networkPeer in GameNetwork.NetworkPeers)
+		{
+			if (networkPeer != null && !networkPeer.IsServerPeer && networkPeer.GetComponent<MissionPeer>()?.Team == spectatorTeam)
+			{
+				num++;
+			}
+		}
+		ShowSpectatorCount = num > 0;
+		if (ShowSpectatorCount)
+		{
+			TextObject textObject = new TextObject("{=GLkNGEPu}{?COUNT_PLURAL}{COUNT} spectators are{?}{COUNT} spectator is{\\?} watching this game.");
+			textObject.SetTextVariable("COUNT", num);
+			textObject.SetTextVariable("COUNT_PLURAL", (num != 1) ? 1 : 0);
+			Spectators = textObject.ToString();
+		}
 	}
 
 	public void ExecuteToggleMute()

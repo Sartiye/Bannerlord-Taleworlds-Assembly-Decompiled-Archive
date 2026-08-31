@@ -22,7 +22,7 @@ public class NavalCustomBattleMissionShipParametersModel : MissionShipParameters
 		{
 			int skillValue = characterObject.GetSkillValue(NavalSkills.Shipmaster);
 			SkillHelper.AddSkillBonusForSkillLevel(NavalSkillEffects.WindBonus, ref explainedNumber, skillValue);
-			PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Shipmaster.Windborne, characterObject, ref explainedNumber);
+			PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Shipmaster.Windborne, captain.CurrentBattleEnvironment, characterObject, ref explainedNumber);
 		}
 		return explainedNumber.ResultNumber;
 	}
@@ -34,7 +34,7 @@ public class NavalCustomBattleMissionShipParametersModel : MissionShipParameters
 		Agent agent = pilotAgent?.Formation?.Captain;
 		if (agent != null && agent.Character is CharacterObject captainCharacter)
 		{
-			PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Shipmaster.ChainToOars, captainCharacter, ref bonuses);
+			PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Shipmaster.ChainToOars, agent.CurrentBattleEnvironment, captainCharacter, ref bonuses);
 		}
 		return bonuses.ResultNumber;
 	}

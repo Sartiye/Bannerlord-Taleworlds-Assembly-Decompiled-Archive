@@ -63,7 +63,7 @@ public sealed class AdminUpdateMultiplayerOptions : GameNetworkMessage
 	protected override bool OnRead()
 	{
 		bool bufferReadValid = true;
-		OptionCount = GameNetworkMessage.ReadIntFromPacket(new CompressionInfo.Integer(0, 43, maximumValueGiven: true), ref bufferReadValid);
+		OptionCount = GameNetworkMessage.ReadIntFromPacket(new CompressionInfo.Integer(0, 53, maximumValueGiven: true), ref bufferReadValid);
 		for (int i = 0; i < OptionCount; i++)
 		{
 			AdminMultiplayerOptionInfo item = ReadOptionInfoFromPacket(ref bufferReadValid);
@@ -74,7 +74,7 @@ public sealed class AdminUpdateMultiplayerOptions : GameNetworkMessage
 
 	protected override void OnWrite()
 	{
-		GameNetworkMessage.WriteIntToPacket(Options.Count, new CompressionInfo.Integer(0, 43, maximumValueGiven: true));
+		GameNetworkMessage.WriteIntToPacket(Options.Count, new CompressionInfo.Integer(0, 53, maximumValueGiven: true));
 		for (int i = 0; i < Options.Count; i++)
 		{
 			WriteOptionInfoToPacket(Options[i]);
@@ -104,7 +104,7 @@ public sealed class AdminUpdateMultiplayerOptions : GameNetworkMessage
 
 	private AdminMultiplayerOptionInfo ReadOptionInfoFromPacket(ref bool bufferReadValid)
 	{
-		int optionType = GameNetworkMessage.ReadIntFromPacket(new CompressionInfo.Integer(0, 43, maximumValueGiven: true), ref bufferReadValid);
+		int optionType = GameNetworkMessage.ReadIntFromPacket(new CompressionInfo.Integer(0, 53, maximumValueGiven: true), ref bufferReadValid);
 		MultiplayerOptions.MultiplayerOptionsAccessMode accessMode = (MultiplayerOptions.MultiplayerOptionsAccessMode)GameNetworkMessage.ReadIntFromPacket(new CompressionInfo.Integer(0, 3, maximumValueGiven: true), ref bufferReadValid);
 		AdminMultiplayerOptionInfo adminMultiplayerOptionInfo = new AdminMultiplayerOptionInfo((MultiplayerOptions.OptionType)optionType, accessMode);
 		MultiplayerOptionsProperty optionProperty = ((MultiplayerOptions.OptionType)optionType).GetOptionProperty();
@@ -135,7 +135,7 @@ public sealed class AdminUpdateMultiplayerOptions : GameNetworkMessage
 
 	private void WriteOptionInfoToPacket(AdminMultiplayerOptionInfo optionInfo)
 	{
-		GameNetworkMessage.WriteIntToPacket((int)optionInfo.OptionType, new CompressionInfo.Integer(0, 43, maximumValueGiven: true));
+		GameNetworkMessage.WriteIntToPacket((int)optionInfo.OptionType, new CompressionInfo.Integer(0, 53, maximumValueGiven: true));
 		GameNetworkMessage.WriteIntToPacket((int)optionInfo.AccessMode, new CompressionInfo.Integer(0, 3, maximumValueGiven: true));
 		MultiplayerOptionsProperty optionProperty = optionInfo.OptionType.GetOptionProperty();
 		switch (optionProperty.OptionValueType)

@@ -54,9 +54,9 @@ public class DefaultSettlementProsperityModel : SettlementProsperityModel
 		}
 		if (village.Bound != null && village.VillageState == Village.VillageStates.Normal)
 		{
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Medicine.BushDoctor, village.Bound.Town, ref result);
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Athletics.Energetic, village.Bound.Town, ref result);
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.AidCorps, village.Bound.Town, ref result);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Medicine.BushDoctor, village.Bound.Town, isPrimaryBonus: true, ref result);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Athletics.Energetic, village.Bound.Town, isPrimaryBonus: false, ref result);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.AidCorps, village.Bound.Town, isPrimaryBonus: false, ref result);
 			if (village.Bound.IsFortification)
 			{
 				village.Bound.Town.AddEffectOfBuildings(BuildingEffectEnum.VillageHeartsPerDay, ref result);
@@ -65,6 +65,11 @@ public class DefaultSettlementProsperityModel : SettlementProsperityModel
 		if (village.Settlement.OwnerClan.Culture.HasFeat(DefaultCulturalFeats.EmpireVillageHearthFeat) && result.ResultNumber >= 0f)
 		{
 			result.AddFactor(DefaultCulturalFeats.EmpireVillageHearthFeat.EffectBonus, GameTexts.FindText("str_culture"));
+		}
+		Hero hero = village.Bound?.Town?.Governor;
+		if (hero != null && hero.CurrentSettlement?.Town == village.Bound?.Town && result.ResultNumber >= 0f)
+		{
+			TraitEffectHelper.ApplyTraitEffect(hero, DefaultPersonalityTraitEffects.MercyHearthGrowthEffect, ref result);
 		}
 		Campaign.Current.Models.IssueModel.GetIssueEffectsOfSettlement(DefaultIssueEffects.VillageHearth, village.Settlement, ref result);
 	}
@@ -75,7 +80,7 @@ public class DefaultSettlementProsperityModel : SettlementProsperityModel
 		if (fortification.Owner.IsStarving)
 		{
 			ExplainedNumber bonuses = new ExplainedNumber((foodChange < 0f) ? ((int)foodChange) : 0);
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Medicine.HelpingHands, fortification, ref bonuses);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Medicine.HelpingHands, fortification, isPrimaryBonus: false, ref bonuses);
 			explainedNumber.Add(bonuses.ResultNumber * 0.5f, FoodShortageText);
 		}
 		if (fortification.IsTown)
@@ -143,7 +148,7 @@ public class DefaultSettlementProsperityModel : SettlementProsperityModel
 				explainedNumber.Add((float)num3 * 0.1f, ProsperityFromMarketText);
 			}
 		}
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.Medicine.PristineStreets, fortification, ref explainedNumber);
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Medicine.PristineStreets, fortification, isPrimaryBonus: true, ref explainedNumber);
 		if (PerkHelper.GetPerkValueForTown(DefaultPerks.Engineering.Apprenticeship, fortification))
 		{
 			float num4 = 0f;
@@ -162,7 +167,7 @@ public class DefaultSettlementProsperityModel : SettlementProsperityModel
 		{
 			if (building.CurrentLevel > 0 && !building.BuildingType.IsMilitaryProject && !building.BuildingType.IsDailyProject)
 			{
-				PerkHelper.AddPerkBonusForTown(DefaultPerks.Medicine.CleanInfrastructure, fortification, ref explainedNumber);
+				PerkHelper.AddPerkBonusForTown(DefaultPerks.Medicine.CleanInfrastructure, fortification, isPrimaryBonus: true, ref explainedNumber);
 			}
 		}
 		if (fortification.Loyalty > (float)Campaign.Current.Models.SettlementLoyaltyModel.ThresholdForProsperityBoost && foodChange > 0f)

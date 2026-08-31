@@ -34,6 +34,10 @@ public abstract class MissionBehavior : IMissionBehavior
 	{
 	}
 
+	public virtual void OnAfterMissionLoadingFinished()
+	{
+	}
+
 	public virtual void OnMissileHit(Agent attacker, Agent victim, bool isCanceled, AttackCollisionData collisionData)
 	{
 	}
@@ -205,11 +209,7 @@ public abstract class MissionBehavior : IMissionBehavior
 	{
 	}
 
-	public virtual void OnTeamDeployed(Team team)
-	{
-	}
-
-	public virtual void OnBattleSideDeployed(BattleSideEnum side)
+	public virtual void OnBattleSideSpawned(BattleSideEnum side)
 	{
 	}
 

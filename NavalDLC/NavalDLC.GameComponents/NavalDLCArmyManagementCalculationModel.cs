@@ -4,7 +4,6 @@ using NavalDLC.Storyline;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Party;
-using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -31,9 +30,9 @@ public class NavalDLCArmyManagementCalculationModel : ArmyManagementCalculationM
 	public override ExplainedNumber CalculateDailyCohesionChange(Army army, bool includeDescriptions = false)
 	{
 		ExplainedNumber result = base.BaseModel.CalculateDailyCohesionChange(army, includeDescriptions);
-		if (army.LeaderParty != null && !army.LeaderParty.IsCurrentlyAtSea && PartyBaseHelper.HasFeat(army.LeaderParty.Party, NavalCulturalFeats.NordArmyCohesionFeat))
+		if (army.LeaderParty != null && !army.LeaderParty.IsCurrentlyAtSea)
 		{
-			result.AddFactor(NavalCulturalFeats.NordArmyCohesionFeat.EffectBonus, GameTexts.FindText("str_culture"));
+			FeatHelper.ApplyCultureFeat(army.LeaderParty.Party, NavalCulturalFeats.NordArmyCohesionFeat, ref result);
 		}
 		return result;
 	}

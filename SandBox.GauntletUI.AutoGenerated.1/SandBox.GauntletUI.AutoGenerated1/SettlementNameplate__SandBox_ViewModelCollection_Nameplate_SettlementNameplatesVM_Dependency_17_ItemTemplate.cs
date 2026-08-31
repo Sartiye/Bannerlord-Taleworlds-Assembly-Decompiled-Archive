@@ -26,6 +26,8 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 
 	private MaskedTextureWidget _widget_2_0;
 
+	private Widget _widget_3;
+
 	private SettlementNameplatePartyMarkerItemVM _datasource_Root;
 
 	private BannerImageIdentifierVM _datasource_Root_Visual;
@@ -52,6 +54,8 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 		_widget.AddChild(_widget_2);
 		_widget_2_0 = new MaskedTextureWidget(base.Context);
 		_widget_2.AddChild(_widget_2_0);
+		_widget_3 = new Widget(base.Context);
+		_widget.AddChild(_widget_3);
 	}
 
 	public void SetIds()
@@ -68,7 +72,6 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 		base.Sprite = base.Context.SpriteData.GetSprite("StdAssets\\rectangle_card");
 		_widget_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0.IsHidden = true;
 		_widget_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_0_0.SuggestedWidth = 21.6f;
@@ -85,7 +88,6 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 		_widget_0_1.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\hideout_militia");
 		_widget_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_1.IsHidden = true;
 		_widget_1_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_1_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_1_0.SuggestedWidth = 21.6f;
@@ -95,7 +97,6 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 		_widget_1_0.Sprite = base.Context.SpriteData.GetSprite("General\\Icons\\Coin@2x");
 		_widget_2.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_2.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_2.IsHidden = true;
 		_widget_2_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2_0.HeightSizePolicy = SizePolicy.Fixed;
 		_widget_2_0.SuggestedWidth = 21f;
@@ -103,6 +104,13 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 		_widget_2_0.HorizontalAlignment = HorizontalAlignment.Center;
 		_widget_2_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_2_0.Brush = base.Context.GetBrush("Settlement.Party.Banner");
+		_widget_3.WidthSizePolicy = SizePolicy.Fixed;
+		_widget_3.HeightSizePolicy = SizePolicy.Fixed;
+		_widget_3.SuggestedWidth = 8f;
+		_widget_3.SuggestedHeight = 12f;
+		_widget_3.HorizontalAlignment = HorizontalAlignment.Right;
+		_widget_3.VerticalAlignment = VerticalAlignment.Bottom;
+		_widget_3.Sprite = base.Context.SpriteData.GetSprite("SPGeneral\\blood_feud_icon");
 	}
 
 	public void DestroyDataSource()
@@ -163,6 +171,15 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 			_widget_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_2;
 			_widget_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2;
 			_widget_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2;
+			_widget_3.PropertyChanged -= PropertyChangedListenerOf_widget_3;
+			_widget_3.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3;
+			_widget_3.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3;
+			_widget_3.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3;
+			_widget_3.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3;
+			_widget_3.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3;
+			_widget_3.intPropertyChanged -= intPropertyChangedListenerOf_widget_3;
+			_widget_3.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3;
+			_widget_3.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3;
 			if (_datasource_Root_Visual != null)
 			{
 				_datasource_Root_Visual.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Visual;
@@ -459,6 +476,59 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 		}
 	}
 
+	private void PropertyChangedListenerOf_widget_3(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_3(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_3(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_3(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_3(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_3(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_3(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_3(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_3(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_3(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_3(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_3(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_3(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_3(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_3(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_3(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_3(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_3(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_3(string propertyName)
+	{
+		if (propertyName == "IsVisible")
+		{
+			_datasource_Root.HasBloodFeud = _widget_3.IsVisible;
+		}
+	}
+
 	private void PropertyChangedListenerOf_widget_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
 	{
 		HandleWidgetPropertyChangeOf_widget_2_0(propertyName);
@@ -585,6 +655,9 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 		case "IsLord":
 			_widget_2.IsVisible = _datasource_Root.IsLord;
 			break;
+		case "HasBloodFeud":
+			_widget_3.IsVisible = _datasource_Root.HasBloodFeud;
+			break;
 		}
 	}
 
@@ -707,6 +780,15 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 			_widget_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_2;
 			_widget_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2;
 			_widget_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2;
+			_widget_3.PropertyChanged -= PropertyChangedListenerOf_widget_3;
+			_widget_3.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_3;
+			_widget_3.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_3;
+			_widget_3.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_3;
+			_widget_3.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_3;
+			_widget_3.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_3;
+			_widget_3.intPropertyChanged -= intPropertyChangedListenerOf_widget_3;
+			_widget_3.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_3;
+			_widget_3.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_3;
 			if (_datasource_Root_Visual != null)
 			{
 				_datasource_Root_Visual.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root_Visual;
@@ -793,6 +875,16 @@ public class SettlementNameplate__SandBox_ViewModelCollection_Nameplate_Settleme
 			_widget_2.intPropertyChanged += intPropertyChangedListenerOf_widget_2;
 			_widget_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_2;
 			_widget_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_2;
+			_widget_3.IsVisible = _datasource_Root.HasBloodFeud;
+			_widget_3.PropertyChanged += PropertyChangedListenerOf_widget_3;
+			_widget_3.boolPropertyChanged += boolPropertyChangedListenerOf_widget_3;
+			_widget_3.floatPropertyChanged += floatPropertyChangedListenerOf_widget_3;
+			_widget_3.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_3;
+			_widget_3.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_3;
+			_widget_3.doublePropertyChanged += doublePropertyChangedListenerOf_widget_3;
+			_widget_3.intPropertyChanged += intPropertyChangedListenerOf_widget_3;
+			_widget_3.uintPropertyChanged += uintPropertyChangedListenerOf_widget_3;
+			_widget_3.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_3;
 			_datasource_Root_Visual = _datasource_Root.Visual;
 			if (_datasource_Root_Visual != null)
 			{

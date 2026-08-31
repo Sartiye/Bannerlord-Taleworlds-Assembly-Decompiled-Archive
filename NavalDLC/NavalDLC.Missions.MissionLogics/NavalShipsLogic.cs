@@ -185,10 +185,6 @@ public class NavalShipsLogic : MissionLogic, IVehicleHandler, IMissionBehavior
 
 	public override void OnDeploymentFinished()
 	{
-		foreach (MissionShip allShip in _allShips)
-		{
-			allShip.OnDeploymentFinished();
-		}
 	}
 
 	public override void OnBehaviorInitialize()
@@ -726,7 +722,7 @@ public class NavalShipsLogic : MissionLogic, IVehicleHandler, IMissionBehavior
 		bool flag = deploymentPlan.IsPlanMade(formation.Team);
 		if (shipFrame.IsZero && flag)
 		{
-			shipFrame = deploymentPlan.GetDeploymentFrame(formation.Team);
+			shipFrame = deploymentPlan.GetFormationsCenterFrameAndExtents(formation.Team, out var _);
 		}
 		if (shipFrame.IsZero)
 		{
@@ -734,8 +730,8 @@ public class NavalShipsLogic : MissionLogic, IVehicleHandler, IMissionBehavior
 		}
 		if (checkForFreeArea)
 		{
-			Vec2 shipDimensions = shipAssignment.MissionShipObject.DeploymentArea;
-			if (GetCollisionFreeShipFrame(in shipFrame, in shipDimensions, out var collisionFreeFrame, checkBoundaries: true, flag ? NavalBoundaryCheckType.DeploymentBoundary : NavalBoundaryCheckType.HardBoundary, formation.Team, 1f, 400))
+			Vec2 halfExtents = shipAssignment.MissionShipObject.DeploymentArea;
+			if (GetCollisionFreeShipFrame(in shipFrame, in halfExtents, out var collisionFreeFrame, checkBoundaries: true, flag ? NavalBoundaryCheckType.DeploymentBoundary : NavalBoundaryCheckType.HardBoundary, formation.Team, 1f, 400))
 			{
 				shipFrame = collisionFreeFrame;
 			}
@@ -756,7 +752,12 @@ public class NavalShipsLogic : MissionLogic, IVehicleHandler, IMissionBehavior
 		}
 		else
 		{
-			MissionShipFactory.CreateMissionShip(_shipIndexGenerator, shipAssignment, this, in shipFrame);
+			(uint, uint)? defaultSailColors = null;
+			if (formation.Team != null)
+			{
+				defaultSailColors = (formation.Team.Color, formation.Team.Color2);
+			}
+			MissionShipFactory.CreateMissionShip(_shipIndexGenerator, shipAssignment, this, in shipFrame, defaultSailColors);
 			_shipIndexGenerator++;
 			missionShip = shipAssignment.MissionShip;
 		}
@@ -973,9 +974,16 @@ public class NavalShipsLogic : MissionLogic, IVehicleHandler, IMissionBehavior
 		}
 		foreach (MissionShip allShip in AllShips)
 		{
-			if (allShip != shipToRemove && allShip.HasController && allShip.Controller.IsAIControlled && allShip.AIController.TargetShip == shipToRemove)
+			if (allShip != shipToRemove)
 			{
-				allShip.AIController.ClearTarget();
+				if (allShip.HasController && allShip.Controller.IsAIControlled && allShip.AIController.TargetShip == shipToRemove)
+				{
+					allShip.AIController.ClearTarget();
+				}
+				if (allShip.ShipSiegeWeapon != null && allShip.ShipSiegeWeapon.Ai != null)
+				{
+					(allShip.ShipSiegeWeapon.Ai as RangedSiegeWeaponAi).ResetThreatSeeker();
+				}
 			}
 		}
 	}

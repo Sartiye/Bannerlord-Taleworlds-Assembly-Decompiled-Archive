@@ -350,9 +350,9 @@ public class BlockedEstuaryMissionController : MissionLogic
 
 	private static readonly int BurningSoundEventId = SoundManager.GetEventGlobalIndex("event:/mission/ambient/detail/fire/fire_dynamic");
 
-	private const float FirePatchFireDamage = 600f;
+	private const float FirePatchFireDamage = 100f;
 
-	private const float DefaultSpreadRate = 0.5f;
+	private const float DefaultSpreadRate = 0.15f;
 
 	private const float EscapePhaseNotificationCooldown = 15f;
 
@@ -635,7 +635,7 @@ public class BlockedEstuaryMissionController : MissionLogic
 			OnLastExitZoneReachedEvent?.Invoke();
 			if (!IsShipBurning)
 			{
-				ActivateAllBurningSystems(0.5f);
+				ActivateAllBurningSystems(0.15f);
 			}
 		}
 		if (!CollisionImminent)
@@ -646,6 +646,7 @@ public class BlockedEstuaryMissionController : MissionLogic
 		{
 			_initializeGunnarBurningShip = true;
 		}
+		MakeEnemiesStand(TargetShip);
 	}
 
 	private void TickShipHealth(float dt)
@@ -681,6 +682,18 @@ public class BlockedEstuaryMissionController : MissionLogic
 	private void EnableRamp(MissionShip targetShip)
 	{
 		targetShip.GameEntity.GetFirstChildEntityWithTagRecursive("ramp_holder").SetVisibilityExcludeParents(visible: true);
+	}
+
+	private void MakeEnemiesStand(MissionShip targetShip)
+	{
+		foreach (ShipOarMachine leftSideShipOarMachine in targetShip.LeftSideShipOarMachines)
+		{
+			leftSideShipOarMachine.SetDisabledAndMakeInvisible();
+		}
+		foreach (ShipOarMachine rightSideShipOarMachine in targetShip.RightSideShipOarMachines)
+		{
+			rightSideShipOarMachine.SetDisabledAndMakeInvisible();
+		}
 	}
 
 	private void MakeEnemiesPanic(MissionShip targetShip)
@@ -786,11 +799,11 @@ public class BlockedEstuaryMissionController : MissionLogic
 			}
 			else if (flag3)
 			{
-				ActivateAllBurningSystems(0.5f);
+				ActivateAllBurningSystems(0.15f);
 			}
 			else if (flag2)
 			{
-				BurningShip.DealFireDamage(600f * dt);
+				BurningShip.DealFireDamage(100f * dt);
 			}
 		}
 		if (IsShipBurning)
@@ -1015,7 +1028,7 @@ public class BlockedEstuaryMissionController : MissionLogic
 
 	public void OnBurningMachineUsed(BurnShipObject burnShipObject)
 	{
-		ActivateBurningSystem(burnShipObject, 0.5f);
+		ActivateBurningSystem(burnShipObject, 0.15f);
 	}
 
 	private void MakeGunnarEscapeShip()
@@ -1331,12 +1344,12 @@ public class BlockedEstuaryMissionController : MissionLogic
 			{
 				if (volumeBox == null)
 				{
-					Debug.FailedAssert("There is no volume box for spawn point: sp_enemy_trigger_" + num, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Storyline\\MissionControllers\\BlockedEstuaryMissionController.cs", "InitializeShipTriggers", 1414);
+					Debug.FailedAssert("There is no volume box for spawn point: sp_enemy_trigger_" + num, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Storyline\\MissionControllers\\BlockedEstuaryMissionController.cs", "InitializeShipTriggers", 1429);
 					break;
 				}
 				if (num - 1 > _enemyShipOrigins.Count)
 				{
-					Debug.FailedAssert("There are not enough ships in party", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Storyline\\MissionControllers\\BlockedEstuaryMissionController.cs", "InitializeShipTriggers", 1420);
+					Debug.FailedAssert("There are not enough ships in party", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Storyline\\MissionControllers\\BlockedEstuaryMissionController.cs", "InitializeShipTriggers", 1435);
 					break;
 				}
 				if (gameEntity != null)
@@ -1650,7 +1663,7 @@ public class BlockedEstuaryMissionController : MissionLogic
 		}
 		gameEntity.SetVisibilityExcludeParents(visible: true);
 		List<GameEntity> list = gameEntity.GetChildren().ToList();
-		BurningSystem burningSystem = new BurningSystem(gameEntity, 0.5f);
+		BurningSystem burningSystem = new BurningSystem(gameEntity, 0.15f);
 		foreach (GameEntity item in list)
 		{
 			CreateBurningNode(burningSystem, item);
@@ -1766,8 +1779,7 @@ public class BlockedEstuaryMissionController : MissionLogic
 		{
 			SetWindStrengthAndDirection(direction, 4f);
 		}
-		base.Mission.OnDeploymentFinished();
-		base.Mission.OnAfterDeploymentFinished();
+		base.Mission.OnInitialSpawnCompleted();
 		MBMusicManager.Current.StartThemeWithConstantIntensity(MusicTheme.VikingSeaBattle1);
 		MBMusicManager.Current.ChangeCurrentThemeIntensity(0.5f);
 		if (!_startFromCheckPoint)
@@ -1827,7 +1839,7 @@ public class BlockedEstuaryMissionController : MissionLogic
 		_playerShip = CreateShip(_playerShipOrigin, base.Mission.PlayerTeam, formation, spawnEntity);
 		if (!_startFromCheckPoint)
 		{
-			_playerShip.OnDeploymentFinished();
+			_playerShip.FinalizeDeployment(initializeMachines: true);
 		}
 		_playerShip.SetAnchor(isAnchored: true, anchorInPlace: true);
 		SpawnPlayerTeamAgents();
@@ -1875,7 +1887,7 @@ public class BlockedEstuaryMissionController : MissionLogic
 		}
 		else
 		{
-			Debug.FailedAssert("Cant find entity.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Storyline\\MissionControllers\\BlockedEstuaryMissionController.cs", "SpawnGunnar", 2092);
+			Debug.FailedAssert("Cant find entity.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Storyline\\MissionControllers\\BlockedEstuaryMissionController.cs", "SpawnGunnar", 2106);
 		}
 	}
 

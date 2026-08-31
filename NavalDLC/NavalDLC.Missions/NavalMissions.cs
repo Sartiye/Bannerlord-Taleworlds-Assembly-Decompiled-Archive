@@ -68,7 +68,7 @@ public static class NavalMissions
 			NavalShipDeploymentLimit teamShipDeploymentLimit = NavalDLCManager.Instance.GameModels.ShipDeploymentModel.GetTeamShipDeploymentLimit(teamMapEventParties);
 			MBList<IShipOrigin> mBList3 = new MBList<IShipOrigin>();
 			NavalDLCManager.Instance.GameModels.ShipDeploymentModel.FillShipsOfTeamParties(teamMapEventParties, teamShipDeploymentLimit, mBList3);
-			int deployablePlayerShipCount = MathF.Min(mBList.Count, playerTeamDeploymentLimit.NetDeploymentLimit);
+			int deployablePlayerShipCount = MathF.Min(mBList.Count, playerTeamDeploymentLimit.NetDeploymentLimitWithoutSkeletal);
 			int maximumDeployableTroopCountForTeam = NavalDLCManager.Instance.GameModels.ShipDeploymentModel.GetMaximumDeployableTroopCountForTeam(mBList, isPlayerTeam: true);
 			int maximumDeployableTroopCountForTeam2 = NavalDLCManager.Instance.GameModels.ShipDeploymentModel.GetMaximumDeployableTroopCountForTeam(mBList2);
 			int maximumDeployableTroopCountForTeam3 = NavalDLCManager.Instance.GameModels.ShipDeploymentModel.GetMaximumDeployableTroopCountForTeam(mBList3);
@@ -204,7 +204,7 @@ public static class NavalMissions
 			NavalShipDeploymentLimit playerTeamShipDeploymentLimit = NavalShipDeploymentLimit.Max();
 			NavalShipDeploymentLimit playerAllyTeamShipDeploymentLimit = NavalShipDeploymentLimit.Max();
 			NavalShipDeploymentLimit enemyTeamShipDeploymentLimit = NavalShipDeploymentLimit.Max();
-			int deployablePlayerShipCount = MathF.Min(playerShips.Count, NavalShipDeploymentLimit.Max().NetDeploymentLimit);
+			int deployablePlayerShipCount = MathF.Min(playerShips.Count, 8);
 			int maximumDeployableTroopCountForTeam = NavalDLCManager.Instance.GameModels.ShipDeploymentModel.GetMaximumDeployableTroopCountForTeam(playerShips, isPlayerTeam: true);
 			int maximumDeployableTroopCountForTeam2 = NavalDLCManager.Instance.GameModels.ShipDeploymentModel.GetMaximumDeployableTroopCountForTeam(playerAllyShips);
 			int maximumDeployableTroopCountForTeam3 = NavalDLCManager.Instance.GameModels.ShipDeploymentModel.GetMaximumDeployableTroopCountForTeam(enemyShips);

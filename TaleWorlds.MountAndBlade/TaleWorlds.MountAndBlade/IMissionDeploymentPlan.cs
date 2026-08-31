@@ -44,9 +44,11 @@ public interface IMissionDeploymentPlan
 
 	bool GetPathDeploymentBoundaryIntersection(Team team, in WorldPosition startPosition, in WorldPosition endPosition, out WorldPosition intersection);
 
-	MatrixFrame GetDeploymentFrame(Team team);
+	MatrixFrame GetDeploymentZoneFrame(Team team);
 
 	IFormationDeploymentPlan GetFormationPlan(Team team, FormationClass fClass, bool isReinforcement = false);
+
+	MatrixFrame GetFormationsCenterFrameAndExtents(Team team, out Vec2 halfExtents, bool ignoreDimensionlessFormations = true);
 
 	float GetSpawnPathOffset(Team team);
 

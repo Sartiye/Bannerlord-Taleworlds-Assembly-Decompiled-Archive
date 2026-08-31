@@ -87,7 +87,10 @@ public class NavalStorylineThirdActThirdQuestBehavior : CampaignBehaviorBase
 				}
 				else
 				{
-					Campaign.Current.ConversationManager.ConversationEndOneShot += OnPlayerAcceptsQuestThroughMission;
+					Campaign.Current.ConversationManager.ConversationEndOneShot += delegate
+					{
+						NavalStorylineData.OnPlayerAcceptsQuest(QuestAccepted, NavalStorylineData.OnPlayerPostponedQuestStart);
+					};
 				}
 			})
 			.CloseDialog()
@@ -115,7 +118,10 @@ public class NavalStorylineThirdActThirdQuestBehavior : CampaignBehaviorBase
 				}
 				else
 				{
-					Campaign.Current.ConversationManager.ConversationEndOneShot += OnPlayerAcceptsQuestThroughMission;
+					Campaign.Current.ConversationManager.ConversationEndOneShot += delegate
+					{
+						NavalStorylineData.OnPlayerAcceptsQuest(QuestAccepted, NavalStorylineData.OnPlayerPostponedQuestStart);
+					};
 				}
 			})
 			.CloseDialog()
@@ -130,7 +136,7 @@ public class NavalStorylineThirdActThirdQuestBehavior : CampaignBehaviorBase
 			.EndPlayerOptions());
 	}
 
-	private void OnPlayerAcceptsQuestThroughMission()
+	private void QuestAccepted()
 	{
 		_isQuestAcceptedThroughMission = true;
 		OpenQuestMenu();

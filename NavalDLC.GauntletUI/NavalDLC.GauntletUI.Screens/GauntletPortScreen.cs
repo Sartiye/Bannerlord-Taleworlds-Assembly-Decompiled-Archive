@@ -287,11 +287,11 @@ public class GauntletPortScreen : ScreenBase, IGameStateListener, IChangeableScr
 			portScreenHandler = new PortScreenManageOtherFleetModeHandler(_portState.LeftOwner);
 			break;
 		default:
-			Debug.FailedAssert("Trying to initialize Port Screen with invalid PortScreenMode. Falling back to manage mode", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.GauntletUI\\Screens\\GauntletPortScreen.cs", "InitializeView", 212);
+			Debug.FailedAssert("Trying to initialize Port Screen with invalid PortScreenMode. Falling back to manage mode", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.GauntletUI\\Screens\\GauntletPortScreen.cs", "InitializeView", 214);
 			portScreenHandler = new PortScreenManageFleetModeHandler(GameTexts.FindText("str_port_discard_ship"), _portState.RightOwner, _portState.LeftShips, _portState.RightShips);
 			break;
 		}
-		_dataSource = new PortVM(portScreenHandler, _portState.PortScreenMode, OnShipSelected, OnRostersRefreshed, RefreshShipVisual, OnUpgradeSlotSelected);
+		_dataSource = new PortVM(portScreenHandler, _portState.PortScreenMode, OnShipSelected, OnRostersRefreshed, RefreshShipVisual, OnUpgradeSlotSelected, _isInSettlementPort, Settlement.CurrentSettlement);
 		InitializeShipVisuals();
 		_dataSource.SelectFirstAvailableRosterAndShip();
 		_dataSource.IsNight = _scene.TimeOfDay <= 4f || _scene.TimeOfDay >= 20f;
@@ -454,6 +454,7 @@ public class GauntletPortScreen : ScreenBase, IGameStateListener, IChangeableScr
 	{
 		List<ShipVisualSlotInfo> shipVisualSlotInfos = ship.GetShipVisualSlotInfos();
 		GameEntity shipEntity = NavalDLCViewHelpers.ShipVisualHelper.GetShipEntity(ship, _scene, shipVisualSlotInfos, createPhysics: true);
+		RemoveAttachmentMachineEntities(shipEntity);
 		MatrixFrame frame = _shipSpawnPositionEntity.GetFrame();
 		frame.origin = position;
 		frame.origin.z = _scene.GetWaterLevelAtPosition(frame.origin.AsVec2, useWaterRenderer: true, checkWaterBodyEntities: false) - shipEntity.GetFirstScriptOfType<NavalPhysics>().StabilitySubmergedHeightOfShip;
@@ -468,6 +469,25 @@ public class GauntletPortScreen : ScreenBase, IGameStateListener, IChangeableScr
 			shipEntity.GetFirstScriptOfTypeRecursive<ShipWaterEffects>()?.EnableWakeAndParticles();
 		}
 		_shipVisualInfos.Add(ship, new PortShipVisualInfo(shipEntity, frame.origin, frame.origin + GetVisualCenterOffsetForShip(shipEntity)));
+	}
+
+	private void RemoveAttachmentMachineEntities(GameEntity shipEntity)
+	{
+		List<GameEntity> list = new List<GameEntity>();
+		foreach (GameEntity child in shipEntity.GetChildren())
+		{
+			if (child.Name.Equals("attachment_machine_holder"))
+			{
+				list.Add(child);
+			}
+		}
+		foreach (GameEntity item in list)
+		{
+			if (item.Parent != null)
+			{
+				item.Parent.RemoveChild(item, keepPhysics: false, keepScenePointer: false, callScriptCallbacks: false, 32);
+			}
+		}
 	}
 
 	private void RotateOars(GameEntity visualShip)
@@ -588,6 +608,10 @@ public class GauntletPortScreen : ScreenBase, IGameStateListener, IChangeableScr
 
 	private void RecalculateShipPosition(Ship ship, Vec3 position, float rotation)
 	{
+		if (!_shipVisualInfos.ContainsKey(ship))
+		{
+			return;
+		}
 		PortShipVisualInfo portShipVisualInfo = _shipVisualInfos[ship];
 		if (portShipVisualInfo.InitialPosition.AsVec2 != position.AsVec2)
 		{
@@ -618,6 +642,10 @@ public class GauntletPortScreen : ScreenBase, IGameStateListener, IChangeableScr
 	private void RefreshShipVisual(ShipItemVM shipItem)
 	{
 		Ship ship = shipItem.Ship;
+		if (!_shipVisualInfos.ContainsKey(ship))
+		{
+			return;
+		}
 		List<ShipVisualSlotInfo> list = new List<ShipVisualSlotInfo>();
 		foreach (ShipUpgradeSlotBaseVM upgradeSlot in shipItem.Upgrades.UpgradeSlots)
 		{
@@ -632,22 +660,22 @@ public class GauntletPortScreen : ScreenBase, IGameStateListener, IChangeableScr
 		}
 		uint item;
 		uint item2;
-		Banner shipBanner;
+		Banner shipBannerForParty;
 		if (_dataSource.LeftRoster.Ships.Contains(shipItem))
 		{
-			(uint sailColor1, uint sailColor2) sailColors = ShipHelper.GetSailColors(_dataSource.LeftRoster.Owner);
-			item = sailColors.sailColor1;
-			item2 = sailColors.sailColor2;
-			shipBanner = ShipHelper.GetShipBanner(_dataSource.LeftRoster.Owner);
+			(uint sailColor1, uint sailColor2) sailColorsForParty = ShipHelper.GetSailColorsForParty(_dataSource.LeftRoster.Owner);
+			item = sailColorsForParty.sailColor1;
+			item2 = sailColorsForParty.sailColor2;
+			shipBannerForParty = ShipHelper.GetShipBannerForParty(_dataSource.LeftRoster.Owner);
 		}
 		else
 		{
-			(uint sailColor1, uint sailColor2) sailColors2 = ShipHelper.GetSailColors(_dataSource.RightRoster.Owner);
-			item = sailColors2.sailColor1;
-			item2 = sailColors2.sailColor2;
-			shipBanner = ShipHelper.GetShipBanner(_dataSource.RightRoster.Owner);
+			(uint sailColor1, uint sailColor2) sailColorsForParty2 = ShipHelper.GetSailColorsForParty(_dataSource.RightRoster.Owner);
+			item = sailColorsForParty2.sailColor1;
+			item2 = sailColorsForParty2.sailColor2;
+			shipBannerForParty = ShipHelper.GetShipBannerForParty(_dataSource.RightRoster.Owner);
 		}
-		NavalDLCViewHelpers.ShipVisualHelper.RefreshShipVisuals(_shipVisualInfos[ship].VisualEntity, list, item, item2, shipBanner, shipItem.CurrentHp / shipItem.MaxHp);
+		NavalDLCViewHelpers.ShipVisualHelper.RefreshShipVisuals(_shipVisualInfos[ship].VisualEntity, list, item, item2, shipBannerForParty, shipItem.CurrentHp / shipItem.MaxHp);
 	}
 
 	private void OnShipSelected(Ship shipItem)
@@ -673,19 +701,29 @@ public class GauntletPortScreen : ScreenBase, IGameStateListener, IChangeableScr
 		}
 		else
 		{
-			Debug.FailedAssert("Selected ship item's visual has not been spawned!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.GauntletUI\\Screens\\GauntletPortScreen.cs", "OnShipSelected", 668);
+			Debug.FailedAssert("Selected ship item's visual has not been spawned!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.GauntletUI\\Screens\\GauntletPortScreen.cs", "OnShipSelected", 702);
 		}
 		_targetCameraValues.Deviation = _initialCameraValues.Deviation;
 	}
 
 	private void OnRostersRefreshed()
 	{
-		if (_dataSource != null)
+		if (_dataSource == null)
 		{
-			RecalculateShipVisibilities();
-			RecalculateShipPositions();
-			RefreshShipVisuals();
+			return;
 		}
+		Vec3 origin = _shipSpawnPositionEntity.GetFrame().origin;
+		for (int i = 0; i < _dataSource.RightRoster.Ships.Count; i++)
+		{
+			Ship ship = _dataSource.RightRoster.Ships[i].Ship;
+			if (!_shipVisualInfos.ContainsKey(ship))
+			{
+				SpawnShipVisual(ship, origin + GetPositionOffsetForIndex(i, isOppositeSide: false), GetExtraRotationInRadiansForIndex(i, isOppositeSide: false));
+			}
+		}
+		RecalculateShipVisibilities();
+		RecalculateShipPositions();
+		RefreshShipVisuals();
 	}
 
 	private void OnUpgradeSlotSelected()
@@ -701,7 +739,7 @@ public class GauntletPortScreen : ScreenBase, IGameStateListener, IChangeableScr
 			_currentSelectedSlotCameraEntity = _currentShipVisualInfo.VisualEntity.GetFirstChildEntityWithTagRecursive(shipSlotTag + "_point");
 			if (_currentSelectedSlotCameraEntity == null)
 			{
-				Debug.FailedAssert("Slot camera point entity not found!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.GauntletUI\\Screens\\GauntletPortScreen.cs", "OnUpgradeSlotSelected", 703);
+				Debug.FailedAssert("Slot camera point entity not found!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.GauntletUI\\Screens\\GauntletPortScreen.cs", "OnUpgradeSlotSelected", 749);
 				return;
 			}
 			_targetCameraValues.Azimuth = GetCameraAzimuthForSlot();
@@ -754,7 +792,24 @@ public class GauntletPortScreen : ScreenBase, IGameStateListener, IChangeableScr
 
 	private void TickDataSourceInput()
 	{
-		if (IsHotKeyReleasedInAnyLayer("Confirm"))
+		PortVM dataSource = _dataSource;
+		if (dataSource != null && dataSource.ShipSelectionPopup?.IsOpen == true)
+		{
+			if (IsHotKeyReleasedInAnyLayer("Confirm"))
+			{
+				if (_dataSource.ShipSelectionPopup.CanTakeToParty)
+				{
+					UISoundsHelper.PlayUISound("event:/ui/port/confirm_ship");
+					_dataSource.ShipSelectionPopup.ExecuteTakeToParty();
+				}
+			}
+			else if (IsHotKeyReleasedInAnyLayer("Exit"))
+			{
+				UISoundsHelper.PlayUISound("event:/ui/default");
+				_dataSource.ShipSelectionPopup.ExecuteCancel();
+			}
+		}
+		else if (IsHotKeyReleasedInAnyLayer("Confirm"))
 		{
 			if (!_dataSource.IsConfirmDisabled)
 			{
@@ -857,7 +912,17 @@ public class GauntletPortScreen : ScreenBase, IGameStateListener, IChangeableScr
 			_gauntletLayer.IsFocusLayer = true;
 			ScreenManager.TrySetFocus(_gauntletLayer);
 		}
-		bool flag = _sceneLayer.IsHitThisFrame || _gauntletLayer.IsHitThisFrame;
+		int num;
+		if (_sceneLayer.IsHitThisFrame || _gauntletLayer.IsHitThisFrame)
+		{
+			PortVM dataSource = _dataSource;
+			num = ((dataSource != null && dataSource.ShipSelectionPopup?.IsOpen == false) ? 1 : 0);
+		}
+		else
+		{
+			num = 0;
+		}
+		bool flag = (byte)num != 0;
 		if (Input.IsGamepadActive)
 		{
 			if (flag && IsHotKeyPressedInAnyLayer("ToggleCameraMovement"))
@@ -874,6 +939,7 @@ public class GauntletPortScreen : ScreenBase, IGameStateListener, IChangeableScr
 			_isControllingCamera = false;
 		}
 		_dataSource.IsControllingCamera = _isControllingCamera;
+		_dataSource.ShowPortScreenGamepadInputs = flag;
 		_dataSource.CanToggleCamera = flag;
 		_dataSource.IsMapBarExtended = _viewDataTracker?.GetMapBarExtendedState() ?? false;
 		_dataSource.CanUseGamepadInputs = Input.IsGamepadActive;
@@ -892,7 +958,7 @@ public class GauntletPortScreen : ScreenBase, IGameStateListener, IChangeableScr
 			ResetCamera(isInstant: false);
 		}
 		Vec2 vec = new Vec2(_sceneLayer.Input.GetNormalizedMouseMoveX() * 1920f, _sceneLayer.Input.GetNormalizedMouseMoveY() * 1080f);
-		float num = 0f;
+		float num2 = 0f;
 		if (Input.IsGamepadActive)
 		{
 			if (_isControllingCamera)
@@ -908,73 +974,73 @@ public class GauntletPortScreen : ScreenBase, IGameStateListener, IChangeableScr
 					inputValue -= 1f;
 				}
 				inputValue = TaleWorlds.Library.MathF.Clamp(inputValue, -1f, 1f);
-				num = inputValue * _staticCameraValues.ZoomSensitivity * _staticCameraValues.SensitivityMappingMultiplier * dt;
+				num2 = inputValue * _staticCameraValues.ZoomSensitivity * _staticCameraValues.SensitivityMappingMultiplier * dt;
 			}
 		}
 		else
 		{
-			float num2 = _sceneLayer.Input.GetDeltaMouseScroll() * -1f;
-			float num3 = _sceneLayer.Input.GetGameKeyAxis("MovementAxisY") * -1f;
-			num = num2 * _staticCameraValues.ZoomSensitivity + num3 * _staticCameraValues.ZoomSensitivity * _staticCameraValues.SensitivityMappingMultiplier * dt;
+			float num3 = _sceneLayer.Input.GetDeltaMouseScroll() * -1f;
+			float num4 = _sceneLayer.Input.GetGameKeyAxis("MovementAxisY") * -1f;
+			num2 = num3 * _staticCameraValues.ZoomSensitivity + num4 * _staticCameraValues.ZoomSensitivity * _staticCameraValues.SensitivityMappingMultiplier * dt;
 		}
-		_targetCameraValues.Distance = TaleWorlds.Library.MathF.Clamp(_targetCameraValues.Distance + num, GetTargetMinDistance(), _staticCameraValues.MaxCameraDistance);
-		float num4;
+		_targetCameraValues.Distance = TaleWorlds.Library.MathF.Clamp(_targetCameraValues.Distance + num2, GetTargetMinDistance(), _staticCameraValues.MaxCameraDistance);
+		float num5;
 		if (Input.IsGamepadActive)
 		{
 			float inputValue2 = (_isControllingCamera ? (_sceneLayer.Input.GetGameKeyAxis("CameraAxisX") * -1f) : 0f);
 			NormalizeControllerInputForDeadZone(ref inputValue2, 0.1f);
-			num4 = inputValue2 * _staticCameraValues.HorizontalRotationSensitivity * _sceneLayer.Input.GetMouseSensitivity() * _staticCameraValues.SensitivityMappingMultiplier * dt;
+			num5 = inputValue2 * _staticCameraValues.HorizontalRotationSensitivity * _sceneLayer.Input.GetMouseSensitivity() * _staticCameraValues.SensitivityMappingMultiplier * dt;
 		}
 		else
 		{
-			num4 = (_isControllingCamera ? (vec.x * -1f) : 0f) * _staticCameraValues.HorizontalRotationSensitivity * _sceneLayer.Input.GetMouseSensitivity();
+			num5 = (_isControllingCamera ? (vec.x * -1f) : 0f) * _staticCameraValues.HorizontalRotationSensitivity * _sceneLayer.Input.GetMouseSensitivity();
 		}
-		_targetCameraValues.Azimuth = MBMath.WrapAngle(_targetCameraValues.Azimuth + num4 * (System.MathF.PI / 180f));
-		float num5;
+		_targetCameraValues.Azimuth = MBMath.WrapAngle(_targetCameraValues.Azimuth + num5 * (System.MathF.PI / 180f));
+		float num6;
 		if (Input.IsGamepadActive)
 		{
 			float inputValue3 = (_isControllingCamera ? _sceneLayer.Input.GetGameKeyAxis("CameraAxisY") : 0f);
 			NormalizeControllerInputForDeadZone(ref inputValue3, 0.1f);
-			num5 = inputValue3 * _staticCameraValues.VerticalRotationSensitivity * _sceneLayer.Input.GetMouseSensitivity() * _staticCameraValues.SensitivityMappingMultiplier * dt;
+			num6 = inputValue3 * _staticCameraValues.VerticalRotationSensitivity * _sceneLayer.Input.GetMouseSensitivity() * _staticCameraValues.SensitivityMappingMultiplier * dt;
 		}
 		else
 		{
-			num5 = (_isControllingCamera ? (vec.y * -1f) : 0f) * _staticCameraValues.VerticalRotationSensitivity * _sceneLayer.Input.GetMouseSensitivity();
+			num6 = (_isControllingCamera ? (vec.y * -1f) : 0f) * _staticCameraValues.VerticalRotationSensitivity * _sceneLayer.Input.GetMouseSensitivity();
 		}
 		if (NativeConfig.InvertMouse)
 		{
-			num5 *= -1f;
+			num6 *= -1f;
 		}
 		float amount = (_targetCameraValues.Distance - GetTargetMinDistance()) / (_staticCameraValues.MaxCameraDistance - GetTargetMinDistance());
 		float maxValue = TaleWorlds.Library.MathF.Lerp(_staticCameraValues.MaxCameraInclinationAtMinDistance, _staticCameraValues.MaxCameraInclinationAtMaxDistance, amount);
-		_targetCameraValues.Inclination = TaleWorlds.Library.MathF.Clamp(_targetCameraValues.Inclination + num5 * (System.MathF.PI / 180f), _staticCameraValues.MinCameraInclination, maxValue);
-		float num6 = 0f;
+		_targetCameraValues.Inclination = TaleWorlds.Library.MathF.Clamp(_targetCameraValues.Inclination + num6 * (System.MathF.PI / 180f), _staticCameraValues.MinCameraInclination, maxValue);
+		float num7 = 0f;
 		if (Input.IsGamepadActive)
 		{
 			if (_isControllingCamera)
 			{
-				num6 = _sceneLayer.Input.GetGameKeyAxis("MovementAxisX");
-				NormalizeControllerInputForDeadZone(ref num6, 0.1f);
+				num7 = _sceneLayer.Input.GetGameKeyAxis("MovementAxisX");
+				NormalizeControllerInputForDeadZone(ref num7, 0.1f);
 				if (_sceneLayer.Input.IsHotKeyDown("ControllerDeviateRight"))
 				{
-					num6 += 1f;
+					num7 += 1f;
 				}
 				if (_sceneLayer.Input.IsHotKeyDown("ControllerDeviateLeft"))
 				{
-					num6 -= 1f;
+					num7 -= 1f;
 				}
-				num6 = TaleWorlds.Library.MathF.Clamp(num6, -1f, 1f);
+				num7 = TaleWorlds.Library.MathF.Clamp(num7, -1f, 1f);
 			}
 		}
 		else
 		{
-			num6 = _sceneLayer.Input.GetGameKeyAxis("MovementAxisX");
+			num7 = _sceneLayer.Input.GetGameKeyAxis("MovementAxisX");
 		}
-		float num7 = TaleWorlds.Library.MathF.Lerp(_staticCameraValues.DeviationSensitivityAtMinDistance, _staticCameraValues.DeviationSensitivityAtMaxDistance, amount);
-		float num8 = TaleWorlds.Library.MathF.Clamp(TaleWorlds.Library.MathF.Pow(TaleWorlds.Library.MathF.Cos(_currentCameraValues.Azimuth - Vec3.AngleBetweenTwoVectors(Vec3.Forward, _shipForwardDirection)), 3f) * 2f, -1f, 1f);
-		float num9 = num6 * num7 * dt * num8;
-		_targetCameraValues.Deviation = TaleWorlds.Library.MathF.Clamp(_targetCameraValues.Deviation + num9, 0f - _staticCameraValues.CameraDeviationLimit, _staticCameraValues.CameraDeviationLimit);
-		if (num9 != 0f)
+		float num8 = TaleWorlds.Library.MathF.Lerp(_staticCameraValues.DeviationSensitivityAtMinDistance, _staticCameraValues.DeviationSensitivityAtMaxDistance, amount);
+		float num9 = TaleWorlds.Library.MathF.Clamp(TaleWorlds.Library.MathF.Pow(TaleWorlds.Library.MathF.Cos(_currentCameraValues.Azimuth - Vec3.AngleBetweenTwoVectors(Vec3.Forward, _shipForwardDirection)), 3f) * 2f, -1f, 1f);
+		float num10 = num7 * num8 * dt * num9;
+		_targetCameraValues.Deviation = TaleWorlds.Library.MathF.Clamp(_targetCameraValues.Deviation + num10, 0f - _staticCameraValues.CameraDeviationLimit, _staticCameraValues.CameraDeviationLimit);
+		if (num10 != 0f)
 		{
 			FreeCameraFromUpgradeSlot();
 		}

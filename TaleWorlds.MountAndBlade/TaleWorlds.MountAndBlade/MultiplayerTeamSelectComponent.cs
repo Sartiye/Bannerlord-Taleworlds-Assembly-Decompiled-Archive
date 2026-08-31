@@ -5,6 +5,7 @@ using NetworkMessages.FromClient;
 using NetworkMessages.FromServer;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
+using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.Network.Messages;
 using TaleWorlds.ObjectSystem;
 using TaleWorlds.PlatformService;
@@ -60,9 +61,30 @@ public class MultiplayerTeamSelectComponent : MissionNetwork
 	private void OnMyClientSynchronized()
 	{
 		base.Mission.GetMissionBehavior<MissionNetworkComponent>().OnMyClientSynchronized -= OnMyClientSynchronized;
-		if (Mission.Current.GetMissionBehavior<MissionLobbyComponent>().CurrentMultiplayerState != MissionLobbyComponent.MultiplayerGameState.Ending && GameNetwork.MyPeer.GetComponent<MissionPeer>().Team == null)
+		if (Mission.Current.GetMissionBehavior<MissionLobbyComponent>().CurrentMultiplayerState != MissionLobbyComponent.MultiplayerGameState.Ending && GameNetwork.MyPeer.GetComponent<MissionPeer>().Team == null && !GameNetwork.MyPeer.IsSpectator)
 		{
 			SelectTeam();
+		}
+	}
+
+	private void SendClanInfoOnClientSynchronized()
+	{
+		MissionNetworkComponent missionBehavior = base.Mission.GetMissionBehavior<MissionNetworkComponent>();
+		if (missionBehavior != null)
+		{
+			missionBehavior.OnMyClientSynchronized -= SendClanInfoOnClientSynchronized;
+		}
+		SendClanInfoToServer();
+	}
+
+	private void SendClanInfoToServer()
+	{
+		if (GameNetwork.IsClient)
+		{
+			string clanName = NetworkMain.GameClient?.ClanInfo?.Name ?? string.Empty;
+			GameNetwork.BeginModuleEventAsClient();
+			GameNetwork.WriteMessage(new SendClanInfo(clanName));
+			GameNetwork.EndModuleEventAsClient();
 		}
 	}
 
@@ -78,6 +100,7 @@ public class MultiplayerTeamSelectComponent : MissionNetwork
 		if (GameNetwork.IsClient)
 		{
 			MissionNetworkComponent missionBehavior = base.Mission.GetMissionBehavior<MissionNetworkComponent>();
+			missionBehavior.OnMyClientSynchronized += SendClanInfoOnClientSynchronized;
 			if (TeamSelectionEnabled)
 			{
 				missionBehavior.OnMyClientSynchronized += OnMyClientSynchronized;
@@ -92,9 +115,36 @@ public class MultiplayerTeamSelectComponent : MissionNetwork
 		base.OnRemoveBehavior();
 	}
 
+	protected override void HandleLateNewClientAfterSynchronized(NetworkCommunicator networkPeer)
+	{
+		base.HandleLateNewClientAfterSynchronized(networkPeer);
+		if (!GameNetwork.IsServer || !networkPeer.IsSpectator)
+		{
+			return;
+		}
+		if (base.Mission.SpectatorTeam == null)
+		{
+			Debug.FailedAssert("Spectator peer connected but Mission.SpectatorTeam is null; the peer will stay teamless.", "MultiplayerTeamSelectComponent.cs", "HandleLateNewClientAfterSynchronized", 147);
+			return;
+		}
+		MissionPeer component = networkPeer.GetComponent<MissionPeer>();
+		if (component == null)
+		{
+			Debug.FailedAssert("Spectator peer connected without a MissionPeer component; the peer will stay teamless.", "MultiplayerTeamSelectComponent.cs", "HandleLateNewClientAfterSynchronized", 155);
+		}
+		else if (component.Team != base.Mission.SpectatorTeam)
+		{
+			ChangeTeamServer(networkPeer, base.Mission.SpectatorTeam);
+		}
+	}
+
 	private bool HandleClientEventTeamChange(NetworkCommunicator peer, GameNetworkMessage baseMessage)
 	{
 		TeamChange teamChange = (TeamChange)baseMessage;
+		if (peer.IsSpectator)
+		{
+			return true;
+		}
 		if (TeamSelectionEnabled)
 		{
 			if (teamChange.AutoAssign)
@@ -173,6 +223,10 @@ public class MultiplayerTeamSelectComponent : MissionNetwork
 
 	public void ChangeTeamServer(NetworkCommunicator networkPeer, Team team)
 	{
+		if (GameNetwork.IsServer && networkPeer.IsSpectator && team != base.Mission.SpectatorTeam)
+		{
+			return;
+		}
 		MissionPeer component = networkPeer.GetComponent<MissionPeer>();
 		Team team2 = component.Team;
 		if (team2 != null && team2 != base.Mission.SpectatorTeam && team2 != team && component.ControlledAgent != null)
@@ -185,8 +239,11 @@ public class MultiplayerTeamSelectComponent : MissionNetwork
 			component.ControlledAgent.Die(b, Agent.KillInfo.TeamSwitch);
 		}
 		component.Team = team;
-		BasicCultureObject culture = (component.Team.IsAttacker ? MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam1.GetStrValue()) : MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue()));
-		component.Culture = culture;
+		if (team != base.Mission.SpectatorTeam && team.Side != BattleSideEnum.None)
+		{
+			BasicCultureObject culture = (component.Team.IsAttacker ? MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam1.GetStrValue()) : MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue()));
+			component.Culture = culture;
+		}
 		if (team != team2)
 		{
 			if (component.HasSpawnedAgentVisuals)

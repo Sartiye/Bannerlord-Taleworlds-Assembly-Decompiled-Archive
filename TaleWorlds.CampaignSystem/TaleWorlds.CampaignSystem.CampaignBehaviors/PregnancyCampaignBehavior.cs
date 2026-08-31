@@ -127,11 +127,7 @@ public class PregnancyCampaignBehavior : CampaignBehaviorBase
 	{
 		GetLocation(hero, out var heroSettlement, out var heroParty);
 		GetLocation(spouse, out var heroSettlement2, out var heroParty2);
-		if ((heroSettlement != null && heroSettlement == heroSettlement2) || (heroParty != null && heroParty == heroParty2))
-		{
-			return true;
-		}
-		if (hero.Clan != Hero.MainHero.Clan && MBRandom.RandomFloat < 0.2f)
+		if ((heroSettlement != null && heroSettlement == heroSettlement2) || (heroParty != null && heroParty == heroParty2) || (hero.Clan != Hero.MainHero.Clan && MBRandom.RandomFloat < 0.2f))
 		{
 			return true;
 		}

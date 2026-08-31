@@ -24,6 +24,9 @@ internal interface IMBPeer
 	[EngineMethod("get_is_synchronized", false, null, false)]
 	bool GetIsSynchronized(int index);
 
+	[EngineMethod("debug_refresh_disconnect_timeout", false, null, false)]
+	void DebugRefreshDisconnectTimeout(int index);
+
 	[EngineMethod("send_existing_objects", false, null, false)]
 	void SendExistingObjects(int index, UIntPtr missionPointer);
 

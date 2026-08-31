@@ -19,7 +19,7 @@ public class CommentOnDeclareWarBehavior : CampaignBehaviorBase
 	{
 		DeclareWarLogEntry declareWarLogEntry = new DeclareWarLogEntry(faction1, faction2);
 		LogEntry.AddLogEntry(declareWarLogEntry);
-		if (faction2 == Hero.MainHero.MapFaction || (faction1 == Hero.MainHero.MapFaction && detail != DeclareWarAction.DeclareWarDetail.CausedByKingdomDecision))
+		if (detail != DeclareWarAction.DeclareWarDetail.CausedByQuest && (faction2 == Hero.MainHero.MapFaction || (faction1 == Hero.MainHero.MapFaction && detail != DeclareWarAction.DeclareWarDetail.CausedByKingdomDecision)))
 		{
 			Campaign.Current.CampaignInformationManager.NewMapNoticeAdded(new WarMapNotification(faction1, faction2, declareWarLogEntry.GetEncyclopediaText()));
 		}

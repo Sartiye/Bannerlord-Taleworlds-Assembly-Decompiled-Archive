@@ -116,7 +116,6 @@ public class CraftingPieceListVM : ViewModel
 	public void ExecuteSelect()
 	{
 		_onSelect?.Invoke(PieceType, arg2: true);
-		HasNewlyUnlockedPieces = false;
 	}
 
 	public void Refresh()

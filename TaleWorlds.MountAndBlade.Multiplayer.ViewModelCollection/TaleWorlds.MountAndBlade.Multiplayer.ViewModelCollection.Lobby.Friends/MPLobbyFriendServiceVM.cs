@@ -13,6 +13,26 @@ namespace TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.Lobby.Friends
 
 public class MPLobbyFriendServiceVM : ViewModel
 {
+	private readonly struct FriendServiceEvent
+	{
+		public enum EventTypes
+		{
+			FriendListChanged,
+			UserStatusChanged,
+			FriendRemoved
+		}
+
+		public readonly EventTypes Type;
+
+		public readonly PlayerId ProvidedID;
+
+		public FriendServiceEvent(EventTypes type, PlayerId providedId = default(PlayerId))
+		{
+			Type = type;
+			ProvidedID = providedId;
+		}
+	}
+
 	private class PlayerStateComparer : IComparer<MPLobbyPlayerBaseVM>
 	{
 		public int Compare(MPLobbyPlayerBaseVM x, MPLobbyPlayerBaseVM y)
@@ -67,6 +87,8 @@ public class MPLobbyFriendServiceVM : ViewModel
 	private static Dictionary<PlayerId, long> _friendRequestsInProcess = new Dictionary<PlayerId, long>();
 
 	private const int BlockedFriendRequestTimeout = 10000;
+
+	private readonly List<FriendServiceEvent> _friendServiceEventQueue = new List<FriendServiceEvent>();
 
 	private bool _isInGameStatusActive;
 
@@ -390,6 +412,7 @@ public class MPLobbyFriendServiceVM : ViewModel
 
 	public void OnTick(float dt)
 	{
+		HandleFriendServiceEvents();
 		UpdateFriendStates(dt);
 		_lastUpdateTimePassed += dt;
 		if (_lastUpdateTimePassed >= 2f)
@@ -562,46 +585,105 @@ public class MPLobbyFriendServiceVM : ViewModel
 		UpdateCanInviteOtherPlayersToParty();
 	}
 
+	private void HandleFriendServiceEvents()
+	{
+		bool friendListChanged = false;
+		lock (_friendServiceEventQueue)
+		{
+			for (int i = 0; i < _friendServiceEventQueue.Count; i++)
+			{
+				HandleFriendServiceEventAux(_friendServiceEventQueue[i], ref friendListChanged);
+			}
+			_friendServiceEventQueue.Clear();
+		}
+		if (friendListChanged)
+		{
+			if (_populatingFriends)
+			{
+				EnqueueFriendServiceEvent(new FriendServiceEvent(FriendServiceEvent.EventTypes.FriendListChanged));
+			}
+			else
+			{
+				GetFriends();
+			}
+		}
+	}
+
+	private void EnqueueFriendServiceEvent(FriendServiceEvent serviceEvent)
+	{
+		lock (_friendServiceEventQueue)
+		{
+			_friendServiceEventQueue.Add(serviceEvent);
+		}
+	}
+
+	private void HandleFriendServiceEventAux(FriendServiceEvent serviceEvent, ref bool friendListChanged)
+	{
+		switch (serviceEvent.Type)
+		{
+		case FriendServiceEvent.EventTypes.FriendListChanged:
+			friendListChanged = true;
+			break;
+		case FriendServiceEvent.EventTypes.UserStatusChanged:
+			if (!friendListChanged)
+			{
+				UpdateFriendInList(serviceEvent.ProvidedID);
+			}
+			break;
+		case FriendServiceEvent.EventTypes.FriendRemoved:
+			if (!friendListChanged)
+			{
+				RemoveFriend(serviceEvent.ProvidedID);
+			}
+			break;
+		}
+	}
+
 	private void BlockedUserListChanged()
 	{
-		GetFriends();
+		EnqueueFriendServiceEvent(new FriendServiceEvent(FriendServiceEvent.EventTypes.FriendListChanged));
 	}
 
 	private void FriendListChanged()
 	{
-		GetFriends();
+		EnqueueFriendServiceEvent(new FriendServiceEvent(FriendServiceEvent.EventTypes.FriendListChanged));
 	}
 
 	public void ForceRefresh()
 	{
-		GetFriends();
+		EnqueueFriendServiceEvent(new FriendServiceEvent(FriendServiceEvent.EventTypes.FriendListChanged));
 	}
 
-	private async void UserOnlineStatusChanged(PlayerId providedId)
+	private void UserOnlineStatusChanged(PlayerId providedId)
 	{
-		await CreateAndAddFriendToList(providedId);
+		EnqueueFriendServiceEvent(new FriendServiceEvent(FriendServiceEvent.EventTypes.UserStatusChanged, providedId));
 	}
 
 	private void FriendRemoved(PlayerId providedId)
 	{
-		RemoveFriend(providedId);
+		EnqueueFriendServiceEvent(new FriendServiceEvent(FriendServiceEvent.EventTypes.FriendRemoved, providedId));
+	}
+
+	private async void UpdateFriendInList(PlayerId providedId)
+	{
+		await CreateAndAddFriendToList(providedId);
 	}
 
 	private void RemoveFriend(PlayerId providedId)
 	{
-		MPLobbyFriendItemVM mPLobbyFriendItemVM = InGameFriends.FriendList.ToList().FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == providedId);
+		MPLobbyFriendItemVM mPLobbyFriendItemVM = InGameFriends.FriendList.FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == providedId);
 		if (mPLobbyFriendItemVM != null)
 		{
 			InGameFriends.RemoveFriend(mPLobbyFriendItemVM);
 			return;
 		}
-		mPLobbyFriendItemVM = OnlineFriends.FriendList.ToList().FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == providedId);
+		mPLobbyFriendItemVM = OnlineFriends.FriendList.FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == providedId);
 		if (mPLobbyFriendItemVM != null)
 		{
 			OnlineFriends.RemoveFriend(mPLobbyFriendItemVM);
 			return;
 		}
-		mPLobbyFriendItemVM = OfflineFriends.FriendList.ToList().FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == providedId);
+		mPLobbyFriendItemVM = OfflineFriends.FriendList.FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == providedId);
 		if (mPLobbyFriendItemVM != null)
 		{
 			OfflineFriends.RemoveFriend(mPLobbyFriendItemVM);
@@ -648,17 +730,17 @@ public class MPLobbyFriendServiceVM : ViewModel
 
 	private MPLobbyPlayerBaseVM GetFriendWithID(PlayerId playerId)
 	{
-		MPLobbyFriendItemVM mPLobbyFriendItemVM = _onlineFriends.FriendList.ToList().FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == playerId);
+		MPLobbyFriendItemVM mPLobbyFriendItemVM = _onlineFriends.FriendList.FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == playerId);
 		if (mPLobbyFriendItemVM != null)
 		{
 			return mPLobbyFriendItemVM;
 		}
-		MPLobbyFriendItemVM mPLobbyFriendItemVM2 = _inGameFriends.FriendList.ToList().FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == playerId);
+		MPLobbyFriendItemVM mPLobbyFriendItemVM2 = _inGameFriends.FriendList.FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == playerId);
 		if (mPLobbyFriendItemVM2 != null)
 		{
 			return mPLobbyFriendItemVM2;
 		}
-		MPLobbyFriendItemVM mPLobbyFriendItemVM3 = _offlineFriends.FriendList.ToList().FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == playerId);
+		MPLobbyFriendItemVM mPLobbyFriendItemVM3 = _offlineFriends.FriendList.FirstOrDefault((MPLobbyFriendItemVM p) => p.ProvidedID == playerId);
 		if (mPLobbyFriendItemVM3 != null)
 		{
 			return mPLobbyFriendItemVM3;

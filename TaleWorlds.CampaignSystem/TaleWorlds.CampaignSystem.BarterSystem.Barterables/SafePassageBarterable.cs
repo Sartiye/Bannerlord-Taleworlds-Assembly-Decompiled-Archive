@@ -118,7 +118,7 @@ public class SafePassageBarterable : Barterable
 			}
 			else
 			{
-				Debug.FailedAssert("Player side party null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\BarterSystem\\Barterables\\SafePassageBarterable.cs", "GetPlayerStrengthRatioInEncounter", 145);
+				Debug.FailedAssert("Player side party null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\BarterSystem\\Barterables\\SafePassageBarterable.cs", "GetPlayerStrengthRatioInEncounter", 156);
 			}
 		}
 		foreach (MobileParty item2 in list2)
@@ -129,7 +129,7 @@ public class SafePassageBarterable : Barterable
 			}
 			else
 			{
-				Debug.FailedAssert("Opponent side party null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\BarterSystem\\Barterables\\SafePassageBarterable.cs", "GetPlayerStrengthRatioInEncounter", 157);
+				Debug.FailedAssert("Opponent side party null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\BarterSystem\\Barterables\\SafePassageBarterable.cs", "GetPlayerStrengthRatioInEncounter", 168);
 			}
 		}
 		if (num2 <= 0f)
@@ -180,7 +180,7 @@ public class SafePassageBarterable : Barterable
 			{
 				item2.Ai.SetDoNotAttackMainParty(32);
 				item2.SetMoveModeHold();
-				item2.IgnoreForHours(32f);
+				item2.Ai.ForceDefaultBehaviorUpdate();
 				item2.Ai.SetInitiative(0f, 0.8f, 8f);
 			}
 			PlayerEncounter.LeaveEncounter = true;
@@ -199,7 +199,7 @@ public class SafePassageBarterable : Barterable
 		}
 		else
 		{
-			Debug.FailedAssert("Can not find player encounter for safe passage barterable", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\BarterSystem\\Barterables\\SafePassageBarterable.cs", "Apply", 243);
+			Debug.FailedAssert("Can not find player encounter for safe passage barterable", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\BarterSystem\\Barterables\\SafePassageBarterable.cs", "Apply", 256);
 		}
 	}
 

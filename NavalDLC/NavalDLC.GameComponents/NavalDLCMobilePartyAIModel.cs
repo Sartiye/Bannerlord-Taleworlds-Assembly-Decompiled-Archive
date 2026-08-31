@@ -1,6 +1,7 @@
 using NavalDLC.Map;
 using NavalDLC.Storyline;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
@@ -14,6 +15,8 @@ public class NavalDLCMobilePartyAIModel : MobilePartyAIModel
 {
 	private IPiratePatrolBehavior _piratePatrolBehavior;
 
+	private ITradeAgreementsCampaignBehavior _tradeAgreementBehavior;
+
 	private IPiratePatrolBehavior PiratePatrolBehavior
 	{
 		get
@@ -23,6 +26,18 @@ public class NavalDLCMobilePartyAIModel : MobilePartyAIModel
 				_piratePatrolBehavior = Campaign.Current.GetCampaignBehavior<IPiratePatrolBehavior>();
 			}
 			return _piratePatrolBehavior;
+		}
+	}
+
+	private ITradeAgreementsCampaignBehavior TradeAgreementBehavior
+	{
+		get
+		{
+			if (_tradeAgreementBehavior == null)
+			{
+				_tradeAgreementBehavior = Campaign.Current.GetCampaignBehavior<ITradeAgreementsCampaignBehavior>();
+			}
+			return _tradeAgreementBehavior;
 		}
 	}
 
@@ -104,27 +119,56 @@ public class NavalDLCMobilePartyAIModel : MobilePartyAIModel
 				}
 			}
 		}
-		if (storm == null || !mobileParty.IsCurrentlyAtSea)
+		if (storm != null && mobileParty.IsCurrentlyAtSea)
 		{
-			return;
+			float num3 = 1f - num2 / storm.EffectRadius;
+			float num4 = mobileParty.Ships.SumQ((Ship x) => x.HitPoints / x.MaxHitPoints) / (float)mobileParty.Ships.Count - num;
+			if (num3 - num4 > 0f)
+			{
+				bestInitiativeBehaviorScore = 5f;
+				bestInitiativeTargetParty = null;
+				if (NavalDLCManager.Instance.GameModels.MapStormModel.CanPartyGetDamagedByStorm(mobileParty))
+				{
+					_ = NavalDLCManager.Instance.StormManager.DebugVisualsEnabled;
+					averageEnemyVec = storm.CurrentPosition - mobileParty.Position.ToVec2();
+					bestInitiativeBehavior = AiBehavior.FleeToPoint;
+				}
+				else if (mobileParty.CurrentSettlement != null)
+				{
+					bestInitiativeBehavior = AiBehavior.Hold;
+				}
+			}
 		}
-		float num3 = 1f - num2 / storm.EffectRadius;
-		float num4 = mobileParty.Ships.SumQ((Ship x) => x.HitPoints / x.MaxHitPoints) / (float)mobileParty.Ships.Count - num;
-		if (num3 - num4 > 0f)
+		if (mobileParty.IsLordParty && bestInitiativeTargetParty != null && bestInitiativeBehavior == AiBehavior.EngageParty && bestInitiativeTargetParty.IsBandit && mobileParty.IsCurrentlyAtSea)
 		{
-			bestInitiativeBehaviorScore = 5f;
-			bestInitiativeTargetParty = null;
-			if (NavalDLCManager.Instance.GameModels.MapStormModel.CanPartyGetDamagedByStorm(mobileParty))
+			(Settlement, bool) closestEntranceToFace = Campaign.Current.Models.MapDistanceModel.GetClosestEntranceToFace(bestInitiativeTargetParty.Position.Face, MobileParty.NavigationType.Naval);
+			if (((mobileParty.DefaultBehavior == AiBehavior.PatrolAroundPoint && mobileParty.TargetSettlement != null && mobileParty.TargetSettlement.MapFaction.IsAtWarWith(mobileParty.MapFaction)) || mobileParty.MapFaction != closestEntranceToFace.Item1.MapFaction) && (bestInitiativeTargetParty.MapEvent == null || !bestInitiativeTargetParty.MapEvent.InvolvedParties.AnyQ((PartyBase x) => AreFactionsAllied(mobileParty.MapFaction, x.MapFaction))))
 			{
-				_ = NavalDLCManager.Instance.StormManager.DebugVisualsEnabled;
-				averageEnemyVec = storm.CurrentPosition - mobileParty.Position.ToVec2();
-				bestInitiativeBehavior = AiBehavior.FleeToPoint;
-			}
-			else if (mobileParty.CurrentSettlement != null)
-			{
-				bestInitiativeBehavior = AiBehavior.Hold;
+				bestInitiativeTargetParty = null;
+				bestInitiativeBehaviorScore = 0f;
+				bestInitiativeBehavior = AiBehavior.None;
 			}
 		}
+	}
+
+	private bool AreFactionsAllied(IFaction f1, IFaction f2)
+	{
+		Kingdom kingdom = f1.MapFaction as Kingdom;
+		Kingdom kingdom2 = f2.MapFaction as Kingdom;
+		if (f1.MapFaction != f2.MapFaction)
+		{
+			if (kingdom != null && kingdom2 != null)
+			{
+				TradeAgreementsCampaignBehavior.TradeAgreement tradeAgreement;
+				if (!kingdom.AlliedKingdoms.Contains(kingdom2))
+				{
+					return TradeAgreementBehavior?.HasTradeAgreement(kingdom, kingdom2, out tradeAgreement) ?? false;
+				}
+				return true;
+			}
+			return false;
+		}
+		return true;
 	}
 
 	public override bool ShouldConsiderAttacking(MobileParty party, MobileParty targetParty)

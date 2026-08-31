@@ -13,5 +13,5 @@ public abstract class RaidModel : MBGameModel<RaidModel>
 
 	public abstract ExplainedNumber CalculateHitDamage(MapEventSide attackerSide, float settlementHitPoints);
 
-	public abstract ExplainedNumber GetRaidLootMultiplier(PartyBase receivingParty);
+	public abstract float GetRaidLootMultiplier(PartyBase receivingParty);
 }

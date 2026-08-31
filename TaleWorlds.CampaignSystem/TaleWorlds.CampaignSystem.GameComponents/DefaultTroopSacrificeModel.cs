@@ -50,10 +50,7 @@ public class DefaultTroopSacrificeModel : TroopSacrificeModel
 		ExplainedNumber explainedNumber = new ExplainedNumber(baseNumber);
 		SkillHelper.AddSkillBonusForCharacter(DefaultSkillEffects.TacticsTroopSacrificeReduction, CharacterObject.PlayerCharacter, ref explainedNumber);
 		explainedNumber = new ExplainedNumber(MathF.Max(1, MathF.Round(explainedNumber.ResultNumber)));
-		if (!MobileParty.MainParty.IsCurrentlyAtSea)
-		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.SwiftRegroup, MobileParty.MainParty, isPrimaryBonus: false, ref explainedNumber);
-		}
+		PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.SwiftRegroup, MobileParty.MainParty, isPrimaryBonus: false, ref explainedNumber);
 		if (explainedNumber.ResultNumber <= (float)num3)
 		{
 			return MathF.Round(explainedNumber.ResultNumber);
@@ -93,7 +90,8 @@ public class DefaultTroopSacrificeModel : TroopSacrificeModel
 		ExplainedNumber explainedNumber = new ExplainedNumber(num5 * (float)num4);
 		SkillHelper.AddSkillBonusForCharacter(DefaultSkillEffects.TacticsTroopSacrificeReduction, CharacterObject.PlayerCharacter, ref explainedNumber);
 		explainedNumber = new ExplainedNumber(num + (int)explainedNumber.ResultNumber);
-		PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.Improviser, MobileParty.MainParty, isPrimaryBonus: false, ref explainedNumber, isFromPort);
+		BattleEnvironment battleEnvironment = (isFromPort ? BattleEnvironment.Naval : MobileParty.MainParty.CurrentBattleEnvironment);
+		PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.Improviser, battleEnvironment, MobileParty.MainParty, isPrimaryBonus: false, ref explainedNumber);
 		return explainedNumber;
 	}
 

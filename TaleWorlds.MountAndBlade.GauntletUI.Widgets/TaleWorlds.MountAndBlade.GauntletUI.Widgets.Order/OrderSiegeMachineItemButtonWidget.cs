@@ -100,8 +100,8 @@ public class OrderSiegeMachineItemButtonWidget : ButtonWidget
 		if (_isVisualsDirty)
 		{
 			MachineIconWidgetChanged();
-			UpdateRemainingCount();
 			UpdateMachineIcon();
+			UpdateRemainingCount();
 			_isVisualsDirty = false;
 		}
 	}

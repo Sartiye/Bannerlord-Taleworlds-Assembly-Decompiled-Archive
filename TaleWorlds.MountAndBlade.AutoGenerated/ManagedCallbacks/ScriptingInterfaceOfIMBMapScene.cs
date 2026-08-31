@@ -44,7 +44,7 @@ internal class ScriptingInterfaceOfIMBMapScene : IMBMapScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate Vec2 GetNearestFaceCenterPositionForPositionDelegate(UIntPtr scenePointer, Vec3 position, [MarshalAs(UnmanagedType.U1)] bool isRegionMap0, IntPtr excludedFaceIds, int excludedFaceIdCount);
+	public delegate Vec2 GetNearestFaceCenterPositionForPositionDelegate(UIntPtr scenePointer, Vec3 position, [MarshalAs(UnmanagedType.U1)] bool isRegionMap0, IntPtr excludedFaceIds, int excludedFaceIdCount, float heightLimit);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -210,11 +210,11 @@ internal class ScriptingInterfaceOfIMBMapScene : IMBMapScene
 		return result;
 	}
 
-	public Vec2 GetNearestFaceCenterPositionForPosition(UIntPtr scenePointer, Vec3 position, bool isRegionMap0, int[] excludedFaceIds, int excludedFaceIdCount)
+	public Vec2 GetNearestFaceCenterPositionForPosition(UIntPtr scenePointer, Vec3 position, bool isRegionMap0, int[] excludedFaceIds, int excludedFaceIdCount, float heightLimit)
 	{
 		PinnedArrayData<int> pinnedArrayData = new PinnedArrayData<int>(excludedFaceIds);
 		IntPtr pointer = pinnedArrayData.Pointer;
-		Vec2 result = call_GetNearestFaceCenterPositionForPositionDelegate(scenePointer, position, isRegionMap0, pointer, excludedFaceIdCount);
+		Vec2 result = call_GetNearestFaceCenterPositionForPositionDelegate(scenePointer, position, isRegionMap0, pointer, excludedFaceIdCount, heightLimit);
 		pinnedArrayData.Dispose();
 		return result;
 	}

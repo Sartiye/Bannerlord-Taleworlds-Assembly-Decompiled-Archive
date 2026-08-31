@@ -7,8 +7,6 @@ namespace TaleWorlds.CampaignSystem.GameComponents;
 
 public class DefaultBanditDensityModel : BanditDensityModel
 {
-	private const int MinimumTroopCountForHideoutMission = 25;
-
 	private Clan _deserterClan;
 
 	public override int NumberOfMinimumBanditPartiesInAHideoutToInfestIt => 2;
@@ -66,9 +64,11 @@ public class DefaultBanditDensityModel : BanditDensityModel
 	public override int GetMaximumTroopCountForHideoutMission(MobileParty party, bool isAssault)
 	{
 		int num = (isAssault ? 15 : 40);
-		if (party.HasPerk(DefaultPerks.Tactics.SmallUnitTactics))
+		Hero perkOwnerHero = null;
+		if (party.HasPerk(DefaultPerks.Tactics.SmallUnitTactics, out perkOwnerHero))
 		{
-			num += (int)DefaultPerks.Tactics.SmallUnitTactics.PrimaryBonus;
+			int num2 = (int)DefaultPerks.Tactics.SmallUnitTactics.PrimaryBonus;
+			num += num2;
 		}
 		return num;
 	}

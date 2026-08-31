@@ -5,6 +5,7 @@ using System.Reflection;
 using SandBox.View.Map;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.BattleWreckages;
 using TaleWorlds.CampaignSystem.Issues;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -242,6 +243,31 @@ public static class SandBoxViewCheats
 			return "Party is not found : " + text2 + "\n" + text;
 		}
 		return errorMessage + ": " + text2 + "\n" + text;
+	}
+
+	[CommandLineFunctionality.CommandLineArgumentFunction("focus_nearest_wreckage", "campaign")]
+	public static string FocusNearestWreckage(List<string> strings)
+	{
+		if (!CampaignCheats.CheckCheatUsage(ref CampaignCheats.ErrorType))
+		{
+			return CampaignCheats.ErrorType;
+		}
+		if (CampaignCheats.CheckHelp(strings))
+		{
+			return "Format is \"campaign.focus_nearest_wreckage [Small|Normal|Epic]\".";
+		}
+		if (strings == null || strings.Count == 0 || !Enum.TryParse<BattleWreckage.WreckageType>(strings[0], ignoreCase: true, out var wreckageType) || wreckageType == BattleWreckage.WreckageType.Invalid)
+		{
+			return "Format is \"campaign.focus_nearest_wreckage [Small|Normal|Epic]\".";
+		}
+		IEnumerable<BattleWreckage> source = Campaign.Current.Wreckages.Where((BattleWreckage x) => x.WreckageTypeCategory == wreckageType && !x.IsInvestigated);
+		if (source.IsEmpty())
+		{
+			return string.Concat("There is no ", wreckageType, " wreckage on the map right now.");
+		}
+		BattleWreckage battleWreckage = source.OrderBy((BattleWreckage x) => x.Position.Distance(MobileParty.MainParty.Position)).First();
+		MapScreen.Instance.FastMoveCameraToPosition(battleWreckage.Position);
+		return "Success";
 	}
 
 	[CommandLineFunctionality.CommandLineArgumentFunction("focus_infested_hideout", "campaign")]

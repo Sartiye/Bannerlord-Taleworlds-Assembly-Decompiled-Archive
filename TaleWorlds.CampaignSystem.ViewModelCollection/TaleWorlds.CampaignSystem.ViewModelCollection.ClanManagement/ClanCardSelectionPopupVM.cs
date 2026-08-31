@@ -266,12 +266,12 @@ public class ClanCardSelectionPopupVM : ViewModel
 		_maximumSelection = info.MaximumSelection;
 		_titleText = info.Title;
 		_onClosed = info.OnClosedAction;
+		_selectedItemCount = 0;
 		foreach (ClanCardSelectionItemInfo item in info.Items)
 		{
 			ClanCardSelectionItemInfo info2 = item;
 			Items.Add(new ClanCardSelectionPopupItemVM(in info2, OnItemSelected));
 		}
-		_selectedItemCount = 0;
 		RefreshValues();
 		IsVisible = true;
 		UpdateIsDoneEnabled();

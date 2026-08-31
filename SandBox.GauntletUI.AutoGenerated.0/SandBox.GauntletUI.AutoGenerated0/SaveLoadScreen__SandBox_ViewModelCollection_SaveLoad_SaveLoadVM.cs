@@ -594,7 +594,7 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM : W
 		_widget_1_1_2_0_0.MarginLeft = 6f;
 		_widget_1_1_2_0_0.MarginRight = 6f;
 		_widget_1_1_2_0_0.Brush = base.Context.GetBrush("SaveLoad.Title.Text");
-		_widget_1_1_2_0_0.ScrollPerTick = 60f;
+		_widget_1_1_2_0_0.ScrollPerSecond = 60f;
 		_widget_1_1_2_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_2_0_1.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_1_1_2_0_1.HorizontalAlignment = HorizontalAlignment.Center;
@@ -1760,9 +1760,17 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM : W
 
 	private void HandleWidgetPropertyChangeOf_widget_1_1_0(string propertyName)
 	{
-		if (propertyName == "IsVisualDisabledForMemoryPurposes")
+		switch (propertyName)
 		{
+		case "IsVisualDisabledForMemoryPurposes":
 			_datasource_Root.IsVisualDisabled = _widget_1_1_0.IsVisualDisabledForMemoryPurposes;
+			break;
+		case "IsLoadingSaves":
+			_datasource_Root.IsLoadingSaves = _widget_1_1_0.IsLoadingSaves;
+			break;
+		case "IsRefreshingSaves":
+			_datasource_Root.IsRefreshingSaves = _widget_1_1_0.IsRefreshingSaves;
+			break;
 		}
 	}
 
@@ -2684,14 +2692,18 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM : W
 		case "IsVisualDisabled":
 			_widget_1_1_0.IsVisualDisabledForMemoryPurposes = _datasource_Root.IsVisualDisabled;
 			break;
+		case "IsLoadingSaves":
+			_widget_1_1_0.IsLoadingSaves = _datasource_Root.IsLoadingSaves;
+			_widget_2_0.IsVisible = _datasource_Root.IsLoadingSaves;
+			break;
+		case "IsRefreshingSaves":
+			_widget_1_1_0.IsRefreshingSaves = _datasource_Root.IsRefreshingSaves;
+			break;
 		case "VisualDisabledText":
 			_widget_1_1_1.Text = _datasource_Root.VisualDisabledText;
 			break;
 		case "IsBusyWithAnAction":
 			_widget_2.IsEnabled = _datasource_Root.IsBusyWithAnAction;
-			break;
-		case "IsLoadingSaves":
-			_widget_2_0.IsVisible = _datasource_Root.IsLoadingSaves;
 			break;
 		}
 	}
@@ -3717,6 +3729,8 @@ public class SaveLoadScreen__SandBox_ViewModelCollection_SaveLoad_SaveLoadVM : W
 		_widget_1_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1_1;
 		_widget_1_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1_1;
 		_widget_1_1_0.IsVisualDisabledForMemoryPurposes = _datasource_Root.IsVisualDisabled;
+		_widget_1_1_0.IsLoadingSaves = _datasource_Root.IsLoadingSaves;
+		_widget_1_1_0.IsRefreshingSaves = _datasource_Root.IsRefreshingSaves;
 		_widget_1_1_0.PropertyChanged += PropertyChangedListenerOf_widget_1_1_0;
 		_widget_1_1_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_1_1_0;
 		_widget_1_1_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_1_1_0;

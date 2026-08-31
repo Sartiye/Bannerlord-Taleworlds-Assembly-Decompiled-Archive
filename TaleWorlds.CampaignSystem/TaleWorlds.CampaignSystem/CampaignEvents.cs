@@ -40,7 +40,9 @@ public class CampaignEvents : CampaignEventReceiver
 
 	private readonly MbEvent<Hero, SkillObject, int, bool> _heroGainedSkill = new MbEvent<Hero, SkillObject, int, bool>();
 
-	private readonly MbEvent _onCharacterCreationIsOverEvent = new MbEvent();
+	private const int OnCharacterCreationIsOverEventIndexMax = 10;
+
+	private readonly MbEvent<int> _onCharacterCreationIsOverEvent = new MbEvent<int>();
 
 	private readonly MbEvent<Hero, bool> _onHeroCreated = new MbEvent<Hero, bool>();
 
@@ -530,6 +532,8 @@ public class CampaignEvents : CampaignEventReceiver
 
 	private readonly MbEvent<Ship, PartyBase, ChangeShipOwnerAction.ShipOwnerChangeDetail> _onShipOwnerChangedEvent = new MbEvent<Ship, PartyBase, ChangeShipOwnerAction.ShipOwnerChangeDetail>();
 
+	private readonly ReferenceMBEvent<Ship, ChangeShipOwnerAction.ShipOwnerChangeDetail, bool> _canHaveUnlockedUpgradePieceEvent = new ReferenceMBEvent<Ship, ChangeShipOwnerAction.ShipOwnerChangeDetail, bool>();
+
 	private readonly MbEvent<Ship, Settlement> _onShipRepairedEvent = new MbEvent<Ship, Settlement>();
 
 	private readonly MbEvent<Ship, Settlement> _onShipCreatedEvent = new MbEvent<Ship, Settlement>();
@@ -552,10 +556,6 @@ public class CampaignEvents : CampaignEventReceiver
 
 	private readonly MbEvent<SiegeEvent> _onBlockadeDeactivatedEvent = new MbEvent<SiegeEvent>();
 
-	private readonly MbEvent<MapMarker> _onMapMarkerCreatedEvent = new MbEvent<MapMarker>();
-
-	private readonly MbEvent<MapMarker> _onMapMarkerRemovedEvent = new MbEvent<MapMarker>();
-
 	private readonly MbEvent<Kingdom, Kingdom> _onAllianceStartedEvent = new MbEvent<Kingdom, Kingdom>();
 
 	private readonly MbEvent<Kingdom, Kingdom> _onAllianceEndedEvent = new MbEvent<Kingdom, Kingdom>();
@@ -563,6 +563,12 @@ public class CampaignEvents : CampaignEventReceiver
 	private readonly MbEvent<Kingdom, Kingdom, Kingdom> _onCallToWarAgreementStartedEvent = new MbEvent<Kingdom, Kingdom, Kingdom>();
 
 	private readonly MbEvent<Kingdom, Kingdom, Kingdom> _onCallToWarAgreementEndedEvent = new MbEvent<Kingdom, Kingdom, Kingdom>();
+
+	private readonly MbEvent<Clan, Hero, ChangeBloodFeudStateAction.ChangeBloodFeudActionDetail> _onBloodFeudStateChangedEvent = new MbEvent<Clan, Hero, ChangeBloodFeudStateAction.ChangeBloodFeudActionDetail>();
+
+	private readonly MbEvent<Hero, Hero> _onDeathMarkAddedEvent = new MbEvent<Hero, Hero>();
+
+	private readonly MbEvent<PartyBase, PartyBase> _onPartyEncounterEvent = new MbEvent<PartyBase, PartyBase>();
 
 	private readonly ReferenceMBEvent<Hero, bool> _canHeroLeadPartyEvent = new ReferenceMBEvent<Hero, bool>();
 
@@ -573,6 +579,8 @@ public class CampaignEvents : CampaignEventReceiver
 	private readonly ReferenceMBEvent<Hero, bool> _canBeGovernorOrHavePartyRoleEvent = new ReferenceMBEvent<Hero, bool>();
 
 	private readonly ReferenceMBEvent<Hero, KillCharacterAction.KillCharacterActionDetail, bool> _canHeroDieEvent = new ReferenceMBEvent<Hero, KillCharacterAction.KillCharacterActionDetail, bool>();
+
+	private readonly ReferenceMBEvent<Hero, bool> _canHeroBeReleasedEvent = new ReferenceMBEvent<Hero, bool>();
 
 	private readonly ReferenceMBEvent<Hero, bool> _canPlayerMeetWithHeroAfterConversationEvent = new ReferenceMBEvent<Hero, bool>();
 
@@ -598,7 +606,7 @@ public class CampaignEvents : CampaignEventReceiver
 
 	public static IMbEvent<Hero, SkillObject, int, bool> HeroGainedSkill => Instance._heroGainedSkill;
 
-	public static IMbEvent OnCharacterCreationIsOverEvent => Instance._onCharacterCreationIsOverEvent;
+	public static IMbEvent<int> OnCharacterCreationIsOverEvent => Instance._onCharacterCreationIsOverEvent;
 
 	public static IMbEvent<Hero, bool> HeroCreated => Instance._onHeroCreated;
 
@@ -1084,6 +1092,8 @@ public class CampaignEvents : CampaignEventReceiver
 
 	public static IMbEvent<Ship, PartyBase, ChangeShipOwnerAction.ShipOwnerChangeDetail> OnShipOwnerChangedEvent => Instance._onShipOwnerChangedEvent;
 
+	public static ReferenceIMBEvent<Ship, ChangeShipOwnerAction.ShipOwnerChangeDetail, bool> CanHaveUnlockedUpgradePieceEvent => Instance._canHaveUnlockedUpgradePieceEvent;
+
 	public static IMbEvent<Ship, Settlement> OnShipRepairedEvent => Instance._onShipRepairedEvent;
 
 	public static IMbEvent<Ship, Settlement> OnShipCreatedEvent => Instance._onShipCreatedEvent;
@@ -1106,10 +1116,6 @@ public class CampaignEvents : CampaignEventReceiver
 
 	public static IMbEvent<SiegeEvent> OnBlockadeDeactivatedEvent => Instance._onBlockadeDeactivatedEvent;
 
-	public static IMbEvent<MapMarker> OnMapMarkerCreatedEvent => Instance._onMapMarkerCreatedEvent;
-
-	public static IMbEvent<MapMarker> OnMapMarkerRemovedEvent => Instance._onMapMarkerRemovedEvent;
-
 	public static IMbEvent<Kingdom, Kingdom> OnAllianceStartedEvent => Instance._onAllianceStartedEvent;
 
 	public static IMbEvent<Kingdom, Kingdom> OnAllianceEndedEvent => Instance._onAllianceEndedEvent;
@@ -1117,6 +1123,12 @@ public class CampaignEvents : CampaignEventReceiver
 	public static IMbEvent<Kingdom, Kingdom, Kingdom> OnCallToWarAgreementStartedEvent => Instance._onCallToWarAgreementStartedEvent;
 
 	public static IMbEvent<Kingdom, Kingdom, Kingdom> OnCallToWarAgreementEndedEvent => Instance._onCallToWarAgreementEndedEvent;
+
+	public static IMbEvent<Clan, Hero, ChangeBloodFeudStateAction.ChangeBloodFeudActionDetail> OnBloodFeudStateChangedEvent => Instance._onBloodFeudStateChangedEvent;
+
+	public static IMbEvent<Hero, Hero> OnDeathMarkAddedEvent => Instance._onDeathMarkAddedEvent;
+
+	public static IMbEvent<PartyBase, PartyBase> OnPartyEncounterEvent => Instance._onPartyEncounterEvent;
 
 	public static ReferenceIMBEvent<Hero, bool> CanHeroLeadPartyEvent => Instance._canHeroLeadPartyEvent;
 
@@ -1127,6 +1139,8 @@ public class CampaignEvents : CampaignEventReceiver
 	public static ReferenceIMBEvent<Hero, bool> CanBeGovernorOrHavePartyRoleEvent => Instance._canBeGovernorOrHavePartyRoleEvent;
 
 	public static ReferenceIMBEvent<Hero, KillCharacterAction.KillCharacterActionDetail, bool> CanHeroDieEvent => Instance._canHeroDieEvent;
+
+	public static ReferenceIMBEvent<Hero, bool> CanHeroBeReleasedEvent => Instance._canHeroBeReleasedEvent;
 
 	public static ReferenceIMBEvent<Hero, bool> CanPlayerMeetWithHeroAfterConversationEvent => Instance._canPlayerMeetWithHeroAfterConversationEvent;
 
@@ -1403,6 +1417,7 @@ public class CampaignEvents : CampaignEventReceiver
 		_onIncidentResolvedEvent.ClearListeners(obj);
 		_onFigureheadUnlockedEvent.ClearListeners(obj);
 		_onShipOwnerChangedEvent.ClearListeners(obj);
+		_canHaveUnlockedUpgradePieceEvent.ClearListeners(obj);
 		_onMobilePartyNavigationStateChangedEvent.ClearListeners(obj);
 		_onMobilePartyJoinedToSiegeEventEvent.ClearListeners(obj);
 		_onMobilePartyLeftSiegeEventEvent.ClearListeners(obj);
@@ -1411,13 +1426,15 @@ public class CampaignEvents : CampaignEventReceiver
 		_onMercenaryServiceStartedEvent.ClearListeners(obj);
 		_onMercenaryServiceEndedEvent.ClearListeners(obj);
 		_canPlayerMeetWithHeroAfterConversationEvent.ClearListeners(obj);
-		_onMapMarkerCreatedEvent.ClearListeners(obj);
-		_onMapMarkerRemovedEvent.ClearListeners(obj);
 		_onAllianceStartedEvent.ClearListeners(obj);
 		_onAllianceEndedEvent.ClearListeners(obj);
 		_onCallToWarAgreementStartedEvent.ClearListeners(obj);
 		_onCallToWarAgreementEndedEvent.ClearListeners(obj);
 		_onHeroActivatedEvent.ClearListeners(obj);
+		_onPartyEncounterEvent.ClearListeners(obj);
+		_onBloodFeudStateChangedEvent.ClearListeners(obj);
+		_onDeathMarkAddedEvent.ClearListeners(obj);
+		_canHeroBeReleasedEvent.ClearListeners(obj);
 	}
 
 	public override void OnPlayerBodyPropertiesChanged()
@@ -1447,7 +1464,10 @@ public class CampaignEvents : CampaignEventReceiver
 
 	public override void OnCharacterCreationIsOver()
 	{
-		Instance._onCharacterCreationIsOverEvent.Invoke();
+		for (int i = 0; i < 10; i++)
+		{
+			Instance._onCharacterCreationIsOverEvent.Invoke(i);
+		}
 	}
 
 	public override void OnHeroCreated(Hero hero, bool isBornNaturally = false)
@@ -2673,6 +2693,11 @@ public class CampaignEvents : CampaignEventReceiver
 		Instance._onShipOwnerChangedEvent.Invoke(ship, oldOwner, changeDetail);
 	}
 
+	public override void CanHaveUnlockedUpgradePiece(Ship ship, ChangeShipOwnerAction.ShipOwnerChangeDetail detail, ref bool canHaveUpgradePiece)
+	{
+		Instance._canHaveUnlockedUpgradePieceEvent.Invoke(ship, detail, ref canHaveUpgradePiece);
+	}
+
 	public override void OnShipRepaired(Ship ship, Settlement repairPort)
 	{
 		Instance._onShipRepairedEvent.Invoke(ship, repairPort);
@@ -2728,16 +2753,6 @@ public class CampaignEvents : CampaignEventReceiver
 		Instance._onBlockadeDeactivatedEvent.Invoke(siegeEvent);
 	}
 
-	public override void OnMapMarkerCreated(MapMarker mapMarker)
-	{
-		Instance._onMapMarkerCreatedEvent.Invoke(mapMarker);
-	}
-
-	public override void OnMapMarkerRemoved(MapMarker mapMarker)
-	{
-		Instance._onMapMarkerRemovedEvent.Invoke(mapMarker);
-	}
-
 	public override void OnAllianceStarted(Kingdom kingdom1, Kingdom kingdom2)
 	{
 		Instance._onAllianceStartedEvent.Invoke(kingdom1, kingdom2);
@@ -2756,6 +2771,21 @@ public class CampaignEvents : CampaignEventReceiver
 	public override void OnCallToWarAgreementEnded(Kingdom callingKingdom, Kingdom calledKingdom, Kingdom kingdomToCallToWarAgainst)
 	{
 		Instance._onCallToWarAgreementEndedEvent.Invoke(callingKingdom, calledKingdom, kingdomToCallToWarAgainst);
+	}
+
+	public override void OnBloodFeudStateChanged(Clan clan, Hero executedHero, ChangeBloodFeudStateAction.ChangeBloodFeudActionDetail detail)
+	{
+		Instance._onBloodFeudStateChangedEvent.Invoke(clan, executedHero, detail);
+	}
+
+	public override void OnDeathMarkAdded(Hero hero, Hero killerHero)
+	{
+		Instance._onDeathMarkAddedEvent.Invoke(hero, killerHero);
+	}
+
+	public override void OnPartyEncounter(PartyBase attacker, PartyBase defender)
+	{
+		Instance._onPartyEncounterEvent.Invoke(attacker, defender);
 	}
 
 	public override void CanHeroLeadParty(Hero hero, ref bool result)
@@ -2781,6 +2811,11 @@ public class CampaignEvents : CampaignEventReceiver
 	public override void CanHeroDie(Hero hero, KillCharacterAction.KillCharacterActionDetail causeOfDeath, ref bool result)
 	{
 		Instance._canHeroDieEvent.Invoke(hero, causeOfDeath, ref result);
+	}
+
+	public override void CanHeroBeReleased(Hero prisoner, ref bool result)
+	{
+		Instance._canHeroBeReleasedEvent.Invoke(prisoner, ref result);
 	}
 
 	public override void CanPlayerMeetWithHeroAfterConversation(Hero hero, ref bool result)

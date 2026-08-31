@@ -92,4 +92,9 @@ public static class SkillHelper
 		}
 		return party.LeaderHero.CharacterObject;
 	}
+
+	public static int GetHeroRelevantSkillValueForPartyRole(Hero hero, PartyRole role)
+	{
+		return hero.GetSkillValue(Campaign.Current.Models.ClanMemberPartyRoleModel.GetRelevantSkillForPartyRole(role));
+	}
 }

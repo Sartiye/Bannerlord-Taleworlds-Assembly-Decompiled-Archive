@@ -16,6 +16,8 @@ public class SettlementNameplatePartyMarkerItemVM : ViewModel
 
 	private bool _isBandit;
 
+	private bool _hasBloodFeud;
+
 	public MobileParty Party { get; private set; }
 
 	public int SortIndex { get; private set; }
@@ -100,10 +102,27 @@ public class SettlementNameplatePartyMarkerItemVM : ViewModel
 		}
 	}
 
+	public bool HasBloodFeud
+	{
+		get
+		{
+			return _hasBloodFeud;
+		}
+		set
+		{
+			if (value != _hasBloodFeud)
+			{
+				_hasBloodFeud = value;
+				OnPropertyChangedWithValue(value, "HasBloodFeud");
+			}
+		}
+	}
+
 	public SettlementNameplatePartyMarkerItemVM(MobileParty mobileParty)
 	{
 		Party = mobileParty;
 		IsBandit = mobileParty.IsBandit;
+		HasBloodFeud = mobileParty.ActualClan?.HasBloodFeudWithPlayer ?? false;
 		if (mobileParty.IsCaravan)
 		{
 			IsCaravan = true;

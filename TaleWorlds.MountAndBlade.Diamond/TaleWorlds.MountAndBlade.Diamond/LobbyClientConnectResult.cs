@@ -23,7 +23,7 @@ public class LobbyClientConnectResult
 		TextObject textObject = GameTexts.FindText("str_login_error", errorCode);
 		if (textObject == null)
 		{
-			Debug.FailedAssert("Error text is not handled: " + errorCode, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\LobbyClient.cs", "FromServerConnectResult", 2216);
+			Debug.FailedAssert("Error text is not handled: " + errorCode, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\LobbyClient.cs", "FromServerConnectResult", 2345);
 			textObject = new TextObject("{=tzQxtv27}Unknown error.");
 		}
 		else if (parameters != null)

@@ -214,7 +214,7 @@ public class MultiplayerAgentApplyDamageModel : AgentApplyDamageModel
 		return 1f;
 	}
 
-	public override float CalculatePassiveAttackDamage(BasicCharacterObject attackerCharacter, in AttackCollisionData collisionData, float baseDamage)
+	public override float CalculatePassiveAttackDamage(in AttackInformation attackInformation, in AttackCollisionData collisionData, float baseDamage)
 	{
 		return baseDamage;
 	}

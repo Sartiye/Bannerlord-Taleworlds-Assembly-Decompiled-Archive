@@ -33,5 +33,7 @@ public abstract class CrimeModel : MBGameModel<CrimeModel>
 
 	public abstract float GetCost(IFaction faction, PaymentMethod paymentMethod, float minimumCrimeRating);
 
+	public abstract ExplainedNumber GetEffectiveCrimeChange(IFaction faction, float deltaCrimeRating);
+
 	public abstract ExplainedNumber GetDailyCrimeRatingChange(IFaction faction, bool includeDescriptions = false);
 }

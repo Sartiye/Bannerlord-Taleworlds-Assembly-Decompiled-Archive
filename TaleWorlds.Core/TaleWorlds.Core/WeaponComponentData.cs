@@ -457,7 +457,8 @@ public class WeaponComponentData
 			}
 			foreach (WeaponFlags value in Enum.GetValues(typeof(WeaponFlags)))
 			{
-				if (childNode.Attributes[value.ToString()] != null)
+				XmlAttribute xmlAttribute4 = childNode.Attributes[value.ToString()];
+				if (xmlAttribute4 != null && xmlAttribute4.Value.ToLowerInvariant() != "false")
 				{
 					WeaponFlags |= value;
 				}

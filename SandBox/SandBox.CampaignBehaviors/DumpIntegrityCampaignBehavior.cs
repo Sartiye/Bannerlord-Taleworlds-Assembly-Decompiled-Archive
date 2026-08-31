@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.AdvancedStartOptions;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
@@ -17,6 +18,8 @@ public class DumpIntegrityCampaignBehavior : CampaignBehaviorBase
 	private readonly List<KeyValuePair<string, string>> _usedModulesDumpInfo = new List<KeyValuePair<string, string>>();
 
 	private readonly List<KeyValuePair<string, string>> _usedVersionsDumpInfo = new List<KeyValuePair<string, string>>();
+
+	private readonly List<KeyValuePair<string, string>> _usedAdvancedStartOptionsDumpInfo = new List<KeyValuePair<string, string>>();
 
 	public override void SyncData(IDataStore dataStore)
 	{
@@ -47,11 +50,13 @@ public class DumpIntegrityCampaignBehavior : CampaignBehaviorBase
 		_saveIntegrityDumpInfo.Clear();
 		_usedModulesDumpInfo.Clear();
 		_usedVersionsDumpInfo.Clear();
+		_usedAdvancedStartOptionsDumpInfo.Clear();
 		if (Campaign.Current.NewGameVersion != null)
 		{
 			_saveIntegrityDumpInfo.Add(new KeyValuePair<string, string>("New Game Version", Campaign.Current.NewGameVersion));
 		}
 		_saveIntegrityDumpInfo.Add(new KeyValuePair<string, string>("Has Used Cheats", (!CheckCheatUsage()).ToString()));
+		_saveIntegrityDumpInfo.Add(new KeyValuePair<string, string>("Is Advanced Start Options Used", IsAdvancedStartOptionsUsed(_usedAdvancedStartOptionsDumpInfo).ToString()));
 		if (Campaign.Current?.PreviouslyUsedModules != null && Campaign.Current.UsedGameVersions != null)
 		{
 			if (CheckIfModulesAreDefault(out var unofficialModulesCode))
@@ -112,6 +117,10 @@ public class DumpIntegrityCampaignBehavior : CampaignBehaviorBase
 		{
 			Utilities.SetWatchdogValue("crash_tags.txt", "Used Versions", item3.Key, item3.Value);
 		}
+		foreach (KeyValuePair<string, string> item4 in _usedAdvancedStartOptionsDumpInfo)
+		{
+			Utilities.SetWatchdogValue("crash_tags.txt", "Used Advanced Start Options", item4.Key, item4.Value);
+		}
 	}
 
 	public static bool IsGameIntegrityAchieved(out TextObject reason)
@@ -133,9 +142,32 @@ public class DumpIntegrityCampaignBehavior : CampaignBehaviorBase
 			reason = new TextObject("{=dt00CQCM}Achievements are disabled due to version downgrade.");
 			result = false;
 		}
+		else if (IsAdvancedStartOptionsUsed(new List<KeyValuePair<string, string>>()))
+		{
+			reason = new TextObject("{=*}Achievements are disabled due to advanced startup options.");
+			result = false;
+		}
 		else
 		{
 			reason = null;
+		}
+		return result;
+	}
+
+	private static bool IsAdvancedStartOptionsUsed(List<KeyValuePair<string, string>> usedOptions)
+	{
+		AdvancedStartOptionsData advancedStartData = Campaign.Current.AdvancedStartData;
+		bool result = false;
+		if (advancedStartData != null)
+		{
+			foreach (AdvancedStartData option in advancedStartData.GetOptions())
+			{
+				if (option.StringId != "Seed")
+				{
+					result = true;
+				}
+				usedOptions.Add(new KeyValuePair<string, string>(option.StringId, option.GetData().ToString()));
+			}
 		}
 		return result;
 	}

@@ -203,13 +203,15 @@ public class MPLobbyClanChangeSigilPopupVM : ViewModel
 		IsSelected = false;
 	}
 
-	public void ExecuteChangeSigil()
+	public async void ExecuteChangeSigil()
 	{
 		BasicCultureObject @object = Game.Current.ObjectManager.GetObject<BasicCultureObject>(NetworkMain.GameClient.ClanInfo.Faction);
 		Banner banner = new Banner(@object.Banner, @object.BackgroundColor1, @object.ForegroundColor1);
 		banner.SetIconMeshId(_selectedSigilIcon.IconID);
-		NetworkMain.GameClient.ChangeClanSigil(banner.Serialize());
-		ExecuteClosePopup();
+		if (await NetworkMain.GameClient.ChangeClanSigil(banner.Serialize()))
+		{
+			ExecuteClosePopup();
+		}
 	}
 
 	public override void OnFinalize()

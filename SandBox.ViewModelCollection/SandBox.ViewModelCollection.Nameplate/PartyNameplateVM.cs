@@ -84,6 +84,8 @@ public class PartyNameplateVM : NameplateVM
 
 	protected bool _isCurrentlyAtSeaBind;
 
+	protected bool _hasBloodFeudBind;
+
 	protected string _factionColorBind;
 
 	protected string _countBind;
@@ -127,6 +129,8 @@ public class PartyNameplateVM : NameplateVM
 	private bool _isDisorganized;
 
 	private bool _isCurrentlyAtSea;
+
+	private bool _hasBloodFeud;
 
 	private BannerImageIdentifierVM _partyBanner;
 
@@ -322,6 +326,22 @@ public class PartyNameplateVM : NameplateVM
 			{
 				_isCurrentlyAtSea = value;
 				OnPropertyChangedWithValue(value, "IsCurrentlyAtSea");
+			}
+		}
+	}
+
+	public bool HasBloodFeud
+	{
+		get
+		{
+			return _hasBloodFeud;
+		}
+		set
+		{
+			if (value != _hasBloodFeud)
+			{
+				_hasBloodFeud = value;
+				OnPropertyChangedWithValue(value, "HasBloodFeud");
 			}
 		}
 	}
@@ -600,7 +620,7 @@ public class PartyNameplateVM : NameplateVM
 			PartyBanner = new BannerImageIdentifierVM(Party.Banner, nineGrid: true);
 			_isPartyBannerDirty = false;
 		}
-		if (_isVisibleOnMapBind && (_isInArmyBind || _isInSettlementBind || (!Party.IsMainParty && Party.IsInRaftState)))
+		if (_isVisibleOnMapBind && (_isInArmyBind || _isInSettlementBind || (!Party.IsMainParty && Party.IsInNavalAutoTravel)))
 		{
 			_isVisibleOnMapBind = false;
 		}
@@ -618,6 +638,23 @@ public class PartyNameplateVM : NameplateVM
 			_movementSpeedTextBind = _cachedSpeed.ToString("F1");
 		}
 		_isCurrentlyAtSeaBind = Party.IsCurrentlyAtSea;
+		if (_isArmyBind)
+		{
+			_hasBloodFeudBind = false;
+			for (int k = 0; k < Party.Army.Parties.Count; k++)
+			{
+				Clan actualClan = Party.Army.Parties[k].ActualClan;
+				if (actualClan != null && actualClan.HasBloodFeudWithPlayer)
+				{
+					_hasBloodFeudBind = true;
+					break;
+				}
+			}
+		}
+		else
+		{
+			_hasBloodFeudBind = !Party.IsMainParty && (Party.ActualClan?.HasBloodFeudWithPlayer ?? false);
+		}
 	}
 
 	public override void RefreshPosition()
@@ -646,7 +683,7 @@ public class PartyNameplateVM : NameplateVM
 		base.RefreshTutorialStatus(newTutorialHighlightElementID);
 		if (Party?.Party?.Id == null)
 		{
-			Debug.FailedAssert("Mobile party id is null when refreshing tutorial status", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Nameplate\\PartyNameplateVM.cs", "RefreshTutorialStatus", 357);
+			Debug.FailedAssert("Mobile party id is null when refreshing tutorial status", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Nameplate\\PartyNameplateVM.cs", "RefreshTutorialStatus", 378);
 		}
 		else
 		{
@@ -688,6 +725,7 @@ public class PartyNameplateVM : NameplateVM
 		IsDisorganized = _isDisorganizedBind;
 		MovementSpeedText = _movementSpeedTextBind;
 		IsCurrentlyAtSea = _isCurrentlyAtSeaBind;
+		HasBloodFeud = _hasBloodFeudBind;
 		if (_previousQuestsBind == _questsBind)
 		{
 			return;

@@ -161,6 +161,14 @@ public sealed class Formation : IFormation
 
 	private int _desiredFileCount;
 
+	private MBList<Agent> _tempAgentList;
+
+	private Agent _lastMedianAgent;
+
+	private MBList<TaskForceDetachment> _temporaryTaskForceDetachmentList;
+
+	private Dictionary<Agent, TaskForceDetachment> _taskForces;
+
 	private Formation _targetFormation;
 
 	private Timer _cachedFormationIntegrityDataUpdateTimer;
@@ -175,6 +183,8 @@ public sealed class Formation : IFormation
 
 	private Timer _cachedClosestEnemyFormationUpdateTimer;
 
+	private Timer _checkTaskForceDetachmentsTimer;
+
 	public RetreatPositionCacheSystem RetreatPositionCache { get; private set; } = new RetreatPositionCacheSystem(2);
 
 
@@ -188,7 +198,7 @@ public sealed class Formation : IFormation
 
 	public int UnitSpacing { get; private set; }
 
-	public object OrderPositionLock { get; private set; } = new object();
+	public object MovementOrderPositionLock { get; private set; } = new object();
 
 
 	public object SimulationFormationLock { get; private set; } = new object();
@@ -211,6 +221,8 @@ public sealed class Formation : IFormation
 	public Vec2 OrderPosition => _orderPosition.AsVec2;
 
 	public Vec3 OrderGroundPosition => _orderPosition.GetGroundVec3();
+
+	public Vec3 OrderGroundPositionMT => _orderPosition.GetGroundVec3MT();
 
 	public bool OrderPositionIsValid => _orderPosition.IsValid;
 
@@ -682,10 +694,6 @@ public sealed class Formation : IFormation
 
 	public WorldPosition CreateNewOrderWorldPosition(WorldPosition.WorldPositionEnforcedCache worldPositionEnforcedCache)
 	{
-		if (!OrderPositionIsValid)
-		{
-			TaleWorlds.Library.Debug.Print("Formation order position is not valid. Team: " + Team.TeamIndex + ", Formation: " + (int)FormationIndex, 0, TaleWorlds.Library.Debug.DebugColor.Yellow);
-		}
 		switch (worldPositionEnforcedCache)
 		{
 		case WorldPosition.WorldPositionEnforcedCache.NavMeshVec3:
@@ -693,6 +701,20 @@ public sealed class Formation : IFormation
 			break;
 		case WorldPosition.WorldPositionEnforcedCache.GroundVec3:
 			_orderPosition.GetGroundVec3();
+			break;
+		}
+		return _orderPosition;
+	}
+
+	public WorldPosition CreateNewOrderWorldPositionMT(WorldPosition.WorldPositionEnforcedCache worldPositionEnforcedCache)
+	{
+		switch (worldPositionEnforcedCache)
+		{
+		case WorldPosition.WorldPositionEnforcedCache.NavMeshVec3:
+			_orderPosition.GetNavMeshVec3MT();
+			break;
+		case WorldPosition.WorldPositionEnforcedCache.GroundVec3:
+			_orderPosition.GetGroundVec3MT();
 			break;
 		}
 		return _orderPosition;
@@ -1082,15 +1104,19 @@ public sealed class Formation : IFormation
 		excludeDetachedUnits = excludeDetachedUnits && CountOfUnitsWithoutDetachedOnes > 0;
 		excludePlayer = excludePlayer && (CountOfUndetachableNonPlayerUnits > 0 || CountOfDetachableNonPlayerUnits > 0);
 		float num = float.MaxValue;
-		Agent result = null;
+		Agent agent = null;
 		foreach (Agent allUnit in Arrangement.GetAllUnits())
 		{
 			if (!excludePlayer || !allUnit.IsMainAgent)
 			{
 				float num2 = allUnit.Position.AsVec2.DistanceSquared(averagePosition);
+				if (allUnit == _lastMedianAgent)
+				{
+					num2 *= 0.8f;
+				}
 				if (num2 <= num)
 				{
-					result = allUnit;
+					agent = allUnit;
 					num = num2;
 				}
 			}
@@ -1100,9 +1126,13 @@ public sealed class Formation : IFormation
 			foreach (Agent looseDetachedUnit in _looseDetachedUnits)
 			{
 				float num3 = looseDetachedUnit.Position.AsVec2.DistanceSquared(averagePosition);
+				if (looseDetachedUnit == _lastMedianAgent)
+				{
+					num3 *= 0.8f;
+				}
 				if (num3 <= num)
 				{
-					result = looseDetachedUnit;
+					agent = looseDetachedUnit;
 					num = num3;
 				}
 			}
@@ -1112,49 +1142,146 @@ public sealed class Formation : IFormation
 			foreach (Agent detachedUnit in _detachedUnits)
 			{
 				float num4 = detachedUnit.Position.AsVec2.DistanceSquared(averagePosition);
+				if (detachedUnit == _lastMedianAgent)
+				{
+					num4 *= 0.8f;
+				}
 				if (num4 <= num)
 				{
-					result = detachedUnit;
+					agent = detachedUnit;
 					num = num4;
 				}
 			}
 		}
-		return result;
+		_lastMedianAgent = agent;
+		return agent;
 	}
 
-	public Agent.UnderAttackType GetUnderAttackTypeOfUnits(float timeLimit = 3f)
+	public bool HasUnitWithLastRecievedAttackType(Agent.LastRecievedAttackType type, float timeLimit = 3f)
 	{
-		float num = float.MinValue;
-		float num2 = float.MinValue;
-		timeLimit = MBCommon.GetTotalMissionTime() - timeLimit;
-		foreach (IFormationUnit allUnit in Arrangement.GetAllUnits())
+		float currentTime = Mission.Current.CurrentTime;
+		switch (type)
 		{
-			num = TaleWorlds.Library.MathF.Max(num, ((Agent)allUnit).LastMeleeHitTime);
-			num2 = TaleWorlds.Library.MathF.Max(num2, ((Agent)allUnit).LastRangedHitTime);
-			if (num2 >= 0f && num2 > timeLimit)
+		case Agent.LastRecievedAttackType.MeleeContact:
+			foreach (Agent allUnit in Arrangement.GetAllUnits())
 			{
-				return Agent.UnderAttackType.UnderRangedAttack;
+				if (allUnit.LastRecievedMeleeContactTime > currentTime - timeLimit)
+				{
+					return true;
+				}
+			}
+			break;
+		case Agent.LastRecievedAttackType.RangedContact:
+			foreach (Agent allUnit2 in Arrangement.GetAllUnits())
+			{
+				if (allUnit2.LastRecievedRangedContactTime > currentTime - timeLimit)
+				{
+					return true;
+				}
+			}
+			break;
+		case Agent.LastRecievedAttackType.MeleeHit:
+			foreach (Agent allUnit3 in Arrangement.GetAllUnits())
+			{
+				if (allUnit3.LastRecievedMeleeHitTime > currentTime - timeLimit)
+				{
+					return true;
+				}
+			}
+			break;
+		case Agent.LastRecievedAttackType.RangedHit:
+			foreach (Agent allUnit4 in Arrangement.GetAllUnits())
+			{
+				if (allUnit4.LastRecievedRangedHitTime > currentTime - timeLimit)
+				{
+					return true;
+				}
+			}
+			break;
+		case Agent.LastRecievedAttackType.None:
+			foreach (Agent allUnit5 in Arrangement.GetAllUnits())
+			{
+				if (allUnit5.LastRecievedMeleeContactTime < currentTime - timeLimit && allUnit5.LastRecievedRangedContactTime < currentTime - timeLimit && allUnit5.LastRecievedMeleeHitTime < currentTime - timeLimit && allUnit5.LastRecievedRangedHitTime < currentTime - timeLimit)
+				{
+					return true;
+				}
+			}
+			break;
+		}
+		return false;
+	}
+
+	public Agent.LastRecievedAttackType GetLastRecievedHitTypeOfUnits(float timeLimit = 3f)
+	{
+		float currentTime = Mission.Current.CurrentTime;
+		int num = 0;
+		int num2 = 0;
+		foreach (Agent allUnit in Arrangement.GetAllUnits())
+		{
+			if (allUnit.LastRecievedMeleeHitTime > currentTime - timeLimit)
+			{
+				num++;
+			}
+			if (allUnit.LastRecievedRangedHitTime > currentTime - timeLimit)
+			{
+				num2++;
 			}
 		}
-		for (int i = 0; i < _detachedUnits.Count; i++)
+		foreach (Agent detachedUnit in DetachedUnits)
 		{
-			num = TaleWorlds.Library.MathF.Max(num, _detachedUnits[i].LastMeleeHitTime);
-			num2 = TaleWorlds.Library.MathF.Max(num2, _detachedUnits[i].LastRangedHitTime);
-			if (num2 >= 0f && num2 > timeLimit)
+			if (detachedUnit.LastRecievedMeleeHitTime > currentTime - timeLimit)
 			{
-				return Agent.UnderAttackType.UnderRangedAttack;
+				num++;
+			}
+			if (detachedUnit.LastRecievedRangedHitTime > currentTime - timeLimit)
+			{
+				num2++;
 			}
 		}
-		if (num >= 0f && num > timeLimit)
+		if (num >= num2)
 		{
-			return Agent.UnderAttackType.UnderMeleeAttack;
+			return Agent.LastRecievedAttackType.MeleeHit;
 		}
-		return Agent.UnderAttackType.NotUnderAttack;
+		return Agent.LastRecievedAttackType.RangedHit;
+	}
+
+	public Agent.LastRecievedAttackType GetLastRecievedContactTypeOfUnits(float timeLimit = 3f)
+	{
+		float currentTime = Mission.Current.CurrentTime;
+		int num = 0;
+		int num2 = 0;
+		foreach (Agent allUnit in Arrangement.GetAllUnits())
+		{
+			if (allUnit.LastRecievedMeleeContactTime > currentTime - timeLimit)
+			{
+				num++;
+			}
+			if (allUnit.LastRecievedRangedContactTime > currentTime - timeLimit)
+			{
+				num2++;
+			}
+		}
+		foreach (Agent detachedUnit in DetachedUnits)
+		{
+			if (detachedUnit.LastRecievedMeleeContactTime > currentTime - timeLimit)
+			{
+				num++;
+			}
+			if (detachedUnit.LastRecievedRangedContactTime > currentTime - timeLimit)
+			{
+				num2++;
+			}
+		}
+		if (num >= num2)
+		{
+			return Agent.LastRecievedAttackType.MeleeContact;
+		}
+		return Agent.LastRecievedAttackType.RangedContact;
 	}
 
 	public Agent.MovementBehaviorType GetMovementTypeOfUnits()
 	{
-		float curMissionTime = MBCommon.GetTotalMissionTime();
+		float curMissionTime = Mission.Current.CurrentTime;
 		int retreatingCount = 0;
 		int attackingCount = 0;
 		ApplyActionOnEachUnit(delegate(Agent agent)
@@ -1163,7 +1290,7 @@ public sealed class Formation : IFormation
 			{
 				retreatingCount++;
 			}
-			if (curMissionTime - agent.LastMeleeAttackTime < 3f)
+			if (curMissionTime - agent.LastMeleeHitTime < 3f)
 			{
 				attackingCount++;
 			}
@@ -1231,7 +1358,23 @@ public sealed class Formation : IFormation
 			WorldPosition worldPosition = unit.GetWorldPosition();
 			TaleWorlds.Library.Debug.Print(string.Concat("Formation order position is not valid. Team: ", Team.TeamIndex, ", Formation: ", (int)FormationIndex, "Unit Pos: ", worldPosition.GetGroundVec3(), "Mission Mode: ", Mission.Current.Mode), 0, TaleWorlds.Library.Debug.DebugColor.Yellow);
 		}
+		Mission mission = unit.Mission;
 		WorldPosition unitPosition = _movementOrder.CreateNewOrderWorldPositionMT(this, WorldPosition.WorldPositionEnforcedCache.NavMeshVec3);
+		if (mission.IsTeleportingAgents)
+		{
+			float num = TaleWorlds.Library.MathF.Sqrt(Arrangement.GetUnpositionedUnits().Count);
+			Vec2 xy = new Vec2((MBRandom.RandomFloat - 0.5f) * num, (MBRandom.RandomFloat - 0.5f) * num);
+			WorldPosition unitPosition2 = new WorldPosition(Mission.Current.Scene, unitPosition.GetVec3WithoutValidity() + new Vec3(xy));
+			if (mission.IsFormationUnitPositionAvailable(ref unitPosition2, Team))
+			{
+				return unitPosition2;
+			}
+			if (mission.IsFormationUnitPositionAvailable(ref unitPosition, Team))
+			{
+				return unitPosition;
+			}
+			return unit.GetWorldPosition();
+		}
 		if (unit.Mission.IsFormationUnitPositionAvailable(ref unitPosition, Team))
 		{
 			return unitPosition;
@@ -1278,7 +1421,7 @@ public sealed class Formation : IFormation
 		case MovementOrder.MovementStateEnum.StandGround:
 			return unit.GetWorldPosition();
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Formation.cs", "GetOrderPositionOfUnit", 1607);
+			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Formation.cs", "GetOrderPositionOfUnit", 1813);
 			return WorldPosition.Invalid;
 		}
 	}
@@ -1932,6 +2075,38 @@ public sealed class Formation : IFormation
 		_movementOrder.ResetPositionCache();
 	}
 
+	public void TestTaskForce(Agent victimAgent, Agent attackerAgent)
+	{
+		if ((_movementOrder.MovementState != MovementOrder.MovementStateEnum.Hold && _movementOrder.MovementState != MovementOrder.MovementStateEnum.StandGround) || victimAgent.IsDetachedFromFormation || !victimAgent.IsDetachableFromFormation || !victimAgent.IsAIAtMoveDestination() || !Mission.Current.Scene.DoesPathExistBetweenPositions(attackerAgent.GetWorldPosition(), victimAgent.GetWorldPosition()))
+		{
+			return;
+		}
+		_taskForces.TryGetValue(attackerAgent, out var value);
+		if (value == null)
+		{
+			if (!(QuerySystem.LocalEnemyPower <= attackerAgent.CharacterPowerCached))
+			{
+				return;
+			}
+			float num = attackerAgent.Position.DistanceSquared(victimAgent.Position);
+			if (num <= 400f || (attackerAgent.Formation != null && (attackerAgent.Formation.CountOfUnits == 1 || num <= attackerAgent.Position.AsVec2.DistanceSquared(attackerAgent.Formation.CachedAveragePosition) * 0.25f)) || num <= attackerAgent.Position.AsVec2.DistanceSquared(attackerAgent.Team.QuerySystem.AveragePosition) * 0.25f)
+			{
+				_tempAgentList.Clear();
+				Mission.Current.GetNearbyEnemyAgents(attackerAgent.Position.AsVec2, 10f, Team, _tempAgentList);
+				if (_tempAgentList.Count <= 1)
+				{
+					TaskForceDetachment taskForceDetachment = new TaskForceDetachment(victimAgent, attackerAgent);
+					JoinDetachment(taskForceDetachment);
+					_taskForces.Add(attackerAgent, taskForceDetachment);
+				}
+			}
+		}
+		else if (value.IsUsedByFormation(victimAgent.Formation))
+		{
+			value.AddReinforcementAgent(victimAgent);
+		}
+	}
+
 	public void Reset()
 	{
 		Arrangement = new LineFormation(this);
@@ -1941,6 +2116,7 @@ public sealed class Formation : IFormation
 		_cachedPositionAndVelocityUpdateTimer = new Timer(Mission.Current.CurrentTime, 0.075f + MBRandom.RandomFloat * 0.05f);
 		_cachedMovementSpeedUpdateTimer = new Timer(Mission.Current.CurrentTime, 1.9f + MBRandom.RandomFloat * 0.2f);
 		_cachedClosestEnemyFormationUpdateTimer = new Timer(Mission.Current.CurrentTime, 1.4f + MBRandom.RandomFloat * 0.2f);
+		_checkTaskForceDetachmentsTimer = new Timer(Mission.Current.CurrentTime, 0.9f + MBRandom.RandomFloat * 0.2f);
 		ResetAux();
 		FacingOrder = FacingOrder.FacingOrderLookAtEnemy;
 		_enforceNotSplittableByAI = false;
@@ -2330,6 +2506,10 @@ public sealed class Formation : IFormation
 			SetPositioning(value, direction);
 		}
 		TickDetachments(dt);
+		if (_checkTaskForceDetachmentsTimer.Check(currentTime))
+		{
+			CheckTaskForceDetachments();
+		}
 		this.OnTick?.Invoke(this);
 		if (_hasPendingUnitPositions)
 		{
@@ -2398,7 +2578,7 @@ public sealed class Formation : IFormation
 
 	public void TickForColumnArrangementInitialPositioning(Formation formation)
 	{
-		if (!IsDeployment && (CachedFormationIntegrityData.MaxDeviationOfPositionExcludeFarAgents < Interval * 0.75f || OrderPosition.DistanceSquared(CurrentPosition) > Arrangement.RankDepth * Arrangement.RankDepth))
+		if (!IsDeployment && (CachedFormationIntegrityData.MaxDeviationOfPositionExcludeFarAgents < TaleWorlds.Library.MathF.Max(Distance, Interval) || (CachedFormationIntegrityData.DeviationOfPositionsExcludeFarAgents < TaleWorlds.Library.MathF.Max(Distance, Interval) && OrderPosition.DistanceSquared(CurrentPosition) > Arrangement.RankDepth * Arrangement.RankDepth)))
 		{
 			ArrangementOrder.RearrangeAux(this, isDirectly: true);
 		}
@@ -2580,6 +2760,33 @@ public sealed class Formation : IFormation
 		}
 	}
 
+	private void CheckTaskForceDetachments()
+	{
+		_temporaryTaskForceDetachmentList.Clear();
+		if (_movementOrder.MovementState != MovementOrder.MovementStateEnum.Hold && _movementOrder.MovementState != MovementOrder.MovementStateEnum.StandGround)
+		{
+			foreach (KeyValuePair<Agent, TaskForceDetachment> taskForce in _taskForces)
+			{
+				_temporaryTaskForceDetachmentList.Add(taskForce.Value);
+			}
+		}
+		else
+		{
+			foreach (KeyValuePair<Agent, TaskForceDetachment> taskForce2 in _taskForces)
+			{
+				if (taskForce2.Value.CalculateShouldBeDisbanded())
+				{
+					_temporaryTaskForceDetachmentList.Add(taskForce2.Value);
+				}
+			}
+		}
+		foreach (TaskForceDetachment temporaryTaskForceDetachment in _temporaryTaskForceDetachmentList)
+		{
+			LeaveDetachment(temporaryTaskForceDetachment);
+			_taskForces.Remove(temporaryTaskForceDetachment.TargetAgent);
+		}
+	}
+
 	[Conditional("DEBUG")]
 	private void TickOrderDebug()
 	{
@@ -2665,9 +2872,22 @@ public sealed class Formation : IFormation
 		{
 			_detachments = new MBList<IDetachment>();
 		}
+		if (_taskForces != null)
+		{
+			_taskForces.Clear();
+		}
+		else
+		{
+			_taskForces = new Dictionary<Agent, TaskForceDetachment>();
+		}
+		if (_temporaryTaskForceDetachmentList == null)
+		{
+			_temporaryTaskForceDetachmentList = new MBList<TaskForceDetachment>();
+		}
 		_detachedUnits = new MBList<Agent>();
 		_looseDetachedUnits = new MBList<Agent>();
 		AttackEntityOrderSecondaryDetachment = null;
+		_tempAgentList = new MBList<Agent>();
 		AI = new FormationAI(this);
 		QuerySystem = new FormationQuerySystem(this);
 		SetPositioning(null, Vec2.Forward, 1);
@@ -2906,9 +3126,9 @@ public sealed class Formation : IFormation
 		{
 			if (simulationFormation.UnitSpacing == unitSpacing && (!(TaleWorlds.Library.MathF.Abs(simulationFormation.Width - width + 1E-05f) >= simulationFormation.Interval + simulationFormation.UnitDiameter - 1E-05f) || (width < simulationFormation.MinimumWidth && TaleWorlds.Library.MathF.Abs(simulationFormation.Width - simulationFormation.MinimumWidth) < 1E-05f)) && simulationFormation.OrderPositionIsValid)
 			{
-				Vec3 orderGroundPosition = simulationFormation.OrderGroundPosition;
-				Vec3 v = formationPosition.GetGroundVec3();
-				if (orderGroundPosition.NearlyEquals(in v, 0.1f) && simulationFormation.Direction.NearlyEquals(formationDirection, 0.1f) && !(simulationFormation.Arrangement.GetType() != arrangement.GetType()))
+				Vec3 orderGroundPositionMT = simulationFormation.OrderGroundPositionMT;
+				Vec3 v = formationPosition.GetGroundVec3MT();
+				if (orderGroundPositionMT.NearlyEquals(in v, 0.1f) && simulationFormation.Direction.NearlyEquals(formationDirection, 0.1f) && !(simulationFormation.Arrangement.GetType() != arrangement.GetType()))
 				{
 					goto IL_0273;
 				}
@@ -2969,9 +3189,9 @@ public sealed class Formation : IFormation
 		{
 			if (simulationFormation.UnitSpacing == unitSpacing && !(TaleWorlds.Library.MathF.Abs(simulationFormation.Width - width) >= simulationFormation.Interval + simulationFormation.UnitDiameter) && simulationFormation.OrderPositionIsValid)
 			{
-				Vec3 orderGroundPosition = simulationFormation.OrderGroundPosition;
-				Vec3 v = position.GetGroundVec3();
-				if (orderGroundPosition.NearlyEquals(in v, 0.1f) && simulationFormation.Direction.NearlyEquals(direction, 0.1f) && !(simulationFormation.Arrangement.GetType() != arrangement.GetType()))
+				Vec3 orderGroundPositionMT = simulationFormation.OrderGroundPositionMT;
+				Vec3 v = position.GetGroundVec3MT();
+				if (orderGroundPositionMT.NearlyEquals(in v, 0.1f) && simulationFormation.Direction.NearlyEquals(direction, 0.1f) && !(simulationFormation.Arrangement.GetType() != arrangement.GetType()))
 				{
 					goto IL_0233;
 				}

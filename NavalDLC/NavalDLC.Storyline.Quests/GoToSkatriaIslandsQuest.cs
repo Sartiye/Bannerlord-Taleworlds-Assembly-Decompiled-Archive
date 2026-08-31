@@ -54,7 +54,7 @@ public class GoToSkatriaIslandsQuest : NavalStorylineQuestBase
 	{
 		_corsairSpawnPosition = corsairSpawnPosition;
 		_willProgressStoryline = true;
-		_skatriaIslandMarker = Campaign.Current.MapMarkerManager.CreateMapMarker(NavalStorylineData.CorsairBanner, new TextObject("{=9EIh8xRM}Skatria Islands"), _corsairSpawnPosition.AsVec3(), isVisibleOnMap: true, base.StringId);
+		_skatriaIslandMarker = Campaign.Current.MapTrackerManager.CreateMapMarker(NavalStorylineData.CorsairBanner, new TextObject("{=9EIh8xRM}Skatria Islands"), _corsairSpawnPosition.AsVec3(), isVisibleOnMap: true, base.StringId);
 	}
 
 	protected override void RegisterEventsInternal()

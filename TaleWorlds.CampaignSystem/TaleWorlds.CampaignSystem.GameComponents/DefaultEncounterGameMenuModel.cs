@@ -104,6 +104,10 @@ public class DefaultEncounterGameMenuModel : EncounterGameMenuModel
 				}
 				if (settlement.IsCastle)
 				{
+					if (MobileParty.MainParty.IsCurrentlyAtSea)
+					{
+						return "naval_castle_outside";
+					}
 					return "castle_outside";
 				}
 				if (MobileParty.MainParty.IsCurrentlyAtSea)
@@ -210,7 +214,7 @@ public class DefaultEncounterGameMenuModel : EncounterGameMenuModel
 	public override string GetGenericStateMenu()
 	{
 		MobileParty mainParty = MobileParty.MainParty;
-		if (PlayerEncounter.Current != null && PlayerEncounter.CurrentBattleSimulation != null)
+		if (PlayerEncounter.Current != null && PlayerEncounter.CurrentBattleSimulation != null && !PlayerEncounter.CurrentBattleSimulation.IsPlayerRetreated)
 		{
 			return null;
 		}

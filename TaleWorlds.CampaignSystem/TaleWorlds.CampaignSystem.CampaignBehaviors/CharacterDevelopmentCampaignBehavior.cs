@@ -21,9 +21,9 @@ public class CharacterDevelopmentCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private void OnCharacterCreationIsOver()
+	private void OnCharacterCreationIsOver(int index)
 	{
-		if (!CampaignOptions.AutoAllocateClanMemberPerks)
+		if (index != 1 || !CampaignOptions.AutoAllocateClanMemberPerks)
 		{
 			return;
 		}

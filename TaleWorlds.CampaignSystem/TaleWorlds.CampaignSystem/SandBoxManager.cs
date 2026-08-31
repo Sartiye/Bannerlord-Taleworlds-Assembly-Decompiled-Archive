@@ -70,9 +70,11 @@ public class SandBoxManager : GameHandler
 		gameStarter.AddBehavior(new TournamentCampaignBehavior());
 		gameStarter.AddBehavior(new CraftingCampaignBehavior());
 		gameStarter.AddBehavior(new MapTracksCampaignBehavior());
+		gameStarter.AddBehavior(new MapTrackerCampaignBehavior());
 		gameStarter.AddBehavior(new HeroAgentSpawnCampaignBehavior());
 		gameStarter.AddBehavior(new NotableHelperCharacterCampaignBehavior());
 		gameStarter.AddBehavior(new CharacterDevelopmentCampaignBehavior());
+		gameStarter.AddBehavior(new HeroDailyXpCampaignBehavior());
 		gameStarter.AddBehavior(new TradeSkillCampaignBehavior());
 		gameStarter.AddBehavior(new RecruitmentCampaignBehavior());
 		gameStarter.AddBehavior(new VillageHostileActionCampaignBehavior());
@@ -94,6 +96,8 @@ public class SandBoxManager : GameHandler
 		gameStarter.AddBehavior(new VassalAndMercenaryOfferCampaignBehavior());
 		gameStarter.AddBehavior(new AllianceCampaignBehavior());
 		gameStarter.AddBehavior(new TributesCampaignBehaviour());
+		gameStarter.AddBehavior(new EmptyClanPartiesCampaignBehavior());
+		gameStarter.AddBehavior(new PartyConfigurationCampaignBehavior());
 		gameStarter.AddBehavior(new CommentOnLeaveFactionBehavior());
 		gameStarter.AddBehavior(new CommentOnChangeRomanticStateBehavior());
 		gameStarter.AddBehavior(new CommentOnChangeSettlementOwnerBehavior());
@@ -208,6 +212,10 @@ public class SandBoxManager : GameHandler
 		gameStarter.AddBehavior(new IncidentsCampaignBehaviour());
 		gameStarter.AddBehavior(new PatrolPartiesCampaignBehavior());
 		gameStarter.AddBehavior(new NotableSupportersCampaignBehavior());
+		gameStarter.AddBehavior(new ExecutionCampaignBehavior());
+		gameStarter.AddBehavior(new CampaignAdvancedStartingPlayerOptionsCampaignBehavior());
+		gameStarter.AddBehavior(new AdvancedStartWorldOptionsCampaignBehavior());
+		gameStarter.AddBehavior(new BattleWreckageCampaignBehavior());
 		gameStarter.AddModel(new DefaultCharacterDevelopmentModel());
 		gameStarter.AddModel(new DefaultValuationModel());
 		gameStarter.AddModel(new DefaultItemDiscardModel());
@@ -316,7 +324,6 @@ public class SandBoxManager : GameHandler
 		gameStarter.AddModel(new DefaultPrisonerDonationModel());
 		gameStarter.AddModel(new DefaultPrisonBreakModel());
 		gameStarter.AddModel(new DefaultBattleCaptainModel());
-		gameStarter.AddModel(new DefaultExecutionRelationModel());
 		gameStarter.AddModel(new DefaultBannerItemModel());
 		gameStarter.AddModel(new DefaultDelayedTeleportationModel());
 		gameStarter.AddModel(new DefaultTroopSupplierProbabilityModel());
@@ -335,6 +342,8 @@ public class SandBoxManager : GameHandler
 		gameStarter.AddModel(new DefaultBodyPropertiesModel());
 		gameStarter.AddModel(new DefaultSettlementPatrolModel());
 		gameStarter.AddModel(new DefaultAllianceModel());
+		gameStarter.AddModel(new DefaultBattleWreckageModel());
+		gameStarter.AddModel(new DefaultFerryModel());
 	}
 
 	public void OnCampaignStart(CampaignGameStarter gameInitializer, GameManagerBase gameManager, bool isSavedCampaign)
@@ -411,7 +420,7 @@ public class SandBoxManager : GameHandler
 					objectType.InitializeHeroCharacterOnAfterLoad();
 					continue;
 				}
-				Debug.FailedAssert("saved a characterobject but not its heroobject", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\SandBoxManager.cs", "InitializeCharactersAfterLoad", 485);
+				Debug.FailedAssert("saved a characterobject but not its heroobject", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\SandBoxManager.cs", "InitializeCharactersAfterLoad", 495);
 				list.Add(objectType);
 			}
 		}

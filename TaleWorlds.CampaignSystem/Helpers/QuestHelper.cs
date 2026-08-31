@@ -149,4 +149,10 @@ public static class QuestHelper
 			}
 		}
 	}
+
+	public static int CalculateInitialGoldForBanditQuestParty(MobileParty banditParty)
+	{
+		float num = banditParty.Party.CalculateCurrentStrength();
+		return (int)(1f * MBRandom.RandomFloat * 20f * num + 50f);
+	}
 }

@@ -25,15 +25,7 @@ public class DefaultSettlementLoyaltyModel : SettlementLoyaltyModel
 
 	private static readonly TextObject CultureText = new TextObject("{=YjoXyFDX}Owner Culture");
 
-	private static readonly TextObject GovernorCultureText = new TextObject("{=5Vo8dJub}Governor's Culture");
-
-	private static readonly TextObject NoGovernorText = new TextObject("{=NH5N3kP5}No governor");
-
 	private readonly TextObject NotableText = GameTexts.FindText("str_notable_relations");
-
-	private readonly TextObject CrimeText = GameTexts.FindText("str_governor_criminal");
-
-	private readonly TextObject GovernorText = GameTexts.FindText("str_notable_governor");
 
 	private readonly TextObject SecurityText = GameTexts.FindText("str_security");
 
@@ -42,6 +34,8 @@ public class DefaultSettlementLoyaltyModel : SettlementLoyaltyModel
 	private readonly TextObject LoyaltyDriftText = GameTexts.FindText("str_loyalty_drift");
 
 	private readonly TextObject CorruptionText = GameTexts.FindText("str_corruption");
+
+	private readonly TextObject GovernorText = GameTexts.FindText("str_notable_governor");
 
 	public override float HighLoyaltyProsperityEffect => 0.5f;
 
@@ -61,9 +55,29 @@ public class DefaultSettlementLoyaltyModel : SettlementLoyaltyModel
 
 	public override int AdditionalStarvationLoyaltyEffect => -1;
 
-	public override int RebellionStartLoyaltyThreshold => 15;
+	public override int RebellionStartLoyaltyThreshold
+	{
+		get
+		{
+			if (!Campaign.Current.Options.IsHighRebellionEnabled)
+			{
+				return 15;
+			}
+			return 50;
+		}
+	}
 
-	public override int RebelliousStateStartLoyaltyThreshold => 25;
+	public override int RebelliousStateStartLoyaltyThreshold
+	{
+		get
+		{
+			if (!Campaign.Current.Options.IsHighRebellionEnabled)
+			{
+				return 25;
+			}
+			return 60;
+		}
+	}
 
 	public override int LoyaltyBoostAfterRebellionStartValue => 5;
 
@@ -82,10 +96,6 @@ public class DefaultSettlementLoyaltyModel : SettlementLoyaltyModel
 	public override float HighSecurityLoyaltyEffect => 1f;
 
 	public override float LowSecurityLoyaltyEffect => -2f;
-
-	public override float GovernorSameCultureLoyaltyEffect => 1f;
-
-	public override float GovernorDifferentCultureLoyaltyEffect => -1f;
 
 	public override float SettlementOwnerDifferentCultureLoyaltyEffect => -3f;
 
@@ -110,7 +120,6 @@ public class DefaultSettlementLoyaltyModel : SettlementLoyaltyModel
 	{
 		ExplainedNumber explainedNumber = new ExplainedNumber(0f, includeDescriptions);
 		GetSettlementLoyaltyChangeDueToFoodStocks(town, ref explainedNumber);
-		GetSettlementLoyaltyChangeDueToGovernorCulture(town, ref explainedNumber);
 		GetSettlementLoyaltyChangeDueToOwnerCulture(town, ref explainedNumber);
 		GetSettlementLoyaltyChangeDueToPolicies(town, ref explainedNumber);
 		GetSettlementLoyaltyChangeDueToProjects(town, ref explainedNumber);
@@ -119,16 +128,20 @@ public class DefaultSettlementLoyaltyModel : SettlementLoyaltyModel
 		GetSettlementLoyaltyChangeDueToNotableRelations(town, ref explainedNumber);
 		GetSettlementLoyaltyChangeDueToGovernorPerks(town, ref explainedNumber);
 		GetSettlementLoyaltyChangeDueToLoyaltyDrift(town, ref explainedNumber);
+		if (town.Governor != null && town.Governor.CurrentSettlement?.Town == town && explainedNumber.ResultNumber > 0f)
+		{
+			TraitEffectHelper.ApplyTraitEffect(town.Governor, DefaultPersonalityTraitEffects.HonorLoyaltyGainEffect, ref explainedNumber);
+		}
 		return explainedNumber;
 	}
 
 	private void GetSettlementLoyaltyChangeDueToGovernorPerks(Town town, ref ExplainedNumber explainedNumber)
 	{
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.Leadership.HeroicLeader, town, ref explainedNumber);
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.Medicine.PhysicianOfPeople, town, ref explainedNumber);
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.Athletics.Durable, town, ref explainedNumber);
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.Bow.Discipline, town, ref explainedNumber);
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.Riding.WellStraped, town, ref explainedNumber);
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Leadership.HeroicLeader, town, isPrimaryBonus: true, ref explainedNumber);
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Medicine.PhysicianOfPeople, town, isPrimaryBonus: true, ref explainedNumber);
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Athletics.Durable, town, isPrimaryBonus: false, ref explainedNumber);
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Bow.Discipline, town, isPrimaryBonus: false, ref explainedNumber);
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Riding.WellStraped, town, isPrimaryBonus: false, ref explainedNumber);
 		float num = 0f;
 		for (int i = 0; i < town.Settlement.Parties.Count; i++)
 		{
@@ -249,14 +262,6 @@ public class DefaultSettlementLoyaltyModel : SettlementLoyaltyModel
 		if (kingdom.ActivePolicies.Contains(DefaultPolicies.DebasementOfTheCurrency))
 		{
 			explainedNumber.Add(-1f, DefaultPolicies.DebasementOfTheCurrency.Name);
-		}
-	}
-
-	private void GetSettlementLoyaltyChangeDueToGovernorCulture(Town town, ref ExplainedNumber explainedNumber)
-	{
-		if (town.Governor != null)
-		{
-			explainedNumber.Add((town.Governor.Culture == town.Culture) ? GovernorSameCultureLoyaltyEffect : GovernorDifferentCultureLoyaltyEffect, GovernorCultureText);
 		}
 	}
 

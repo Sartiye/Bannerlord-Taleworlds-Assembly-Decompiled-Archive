@@ -29,7 +29,7 @@ public class DetachmentData
 
 	public DetachmentData()
 	{
-		firstTime = MBCommon.GetTotalMissionTime();
+		firstTime = Mission.Current.CurrentTime;
 	}
 
 	public void RemoveScoreOfAgent(Agent agent)

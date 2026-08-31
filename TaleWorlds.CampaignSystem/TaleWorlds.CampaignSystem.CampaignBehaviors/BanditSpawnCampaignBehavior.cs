@@ -6,6 +6,7 @@ using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
+using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -26,7 +27,14 @@ public class BanditSpawnCampaignBehavior : CampaignBehaviorBase
 
 	private float BanditSpawnRadiusAsDays => 0.5f * Campaign.Current.EstimatedAverageBanditPartySpeed * (float)CampaignTime.HoursInDay;
 
-	private float _radiusAroundPlayerPartySquared => MobileParty.MainParty.SeeingRange * MobileParty.MainParty.SeeingRange;
+	private float _radiusAroundPlayerPartySquared
+	{
+		get
+		{
+			float seeingRange = MobileParty.MainParty.SeeingRange;
+			return seeingRange * seeingRange;
+		}
+	}
 
 	private float _numberOfMinimumBanditPartiesInAHideoutToInfestIt => Campaign.Current.Models.BanditDensityModel.NumberOfMinimumBanditPartiesInAHideoutToInfestIt;
 
@@ -54,7 +62,7 @@ public class BanditSpawnCampaignBehavior : CampaignBehaviorBase
 
 	private void MobilePartyDestroyed(MobileParty party, PartyBase destroyerParty)
 	{
-		if (party.IsBandit && party.ActualClan != null && (IsBanditFaction(party.ActualClan) || IsLooterFaction(party.ActualClan)))
+		if (party.IsBandit && party.ActualClan != null && (IsBanditFaction(party.ActualClan) || FactionHelper.IsLooterFaction(party.ActualClan)))
 		{
 			int value = 0;
 			_banditCountsPerHideout.TryGetValue(party.HomeSettlement, out value);
@@ -64,7 +72,7 @@ public class BanditSpawnCampaignBehavior : CampaignBehaviorBase
 
 	private void MobilePartyCreated(MobileParty party)
 	{
-		if (party.IsBandit && party.ActualClan != null && (IsBanditFaction(party.ActualClan) || IsLooterFaction(party.ActualClan)))
+		if (party.IsBandit && party.ActualClan != null && (IsBanditFaction(party.ActualClan) || FactionHelper.IsLooterFaction(party.ActualClan)))
 		{
 			int value = 0;
 			_banditCountsPerHideout.TryGetValue(party.HomeSettlement, out value);
@@ -118,7 +126,7 @@ public class BanditSpawnCampaignBehavior : CampaignBehaviorBase
 		_banditCountsPerHideout = new Dictionary<Settlement, int>();
 		foreach (MobileParty allBanditParty in MobileParty.AllBanditParties)
 		{
-			if (IsBanditFaction(allBanditParty.ActualClan) || IsLooterFaction(allBanditParty.ActualClan))
+			if (IsBanditFaction(allBanditParty.ActualClan) || FactionHelper.IsLooterFaction(allBanditParty.ActualClan))
 			{
 				int value = 0;
 				_banditCountsPerHideout.TryGetValue(allBanditParty.HomeSettlement, out value);
@@ -226,7 +234,7 @@ public class BanditSpawnCampaignBehavior : CampaignBehaviorBase
 			{
 				if (item.IsFood)
 				{
-					int num = (IsLooterFaction(allBanditParty.MapFaction) ? 8 : 16);
+					int num = (FactionHelper.IsLooterFaction(allBanditParty.MapFaction) ? 8 : 16);
 					int num2 = MBRandom.RoundRandomized((float)allBanditParty.MemberRoster.TotalManCount * (1f / (float)item.Value) * (float)num * MBRandom.RandomFloat * MBRandom.RandomFloat * MBRandom.RandomFloat * MBRandom.RandomFloat);
 					if (num2 > 0)
 					{
@@ -241,7 +249,7 @@ public class BanditSpawnCampaignBehavior : CampaignBehaviorBase
 	{
 		if (Campaign.Current.IsNight && clan.IsBanditFaction)
 		{
-			if (IsLooterFaction(clan))
+			if (FactionHelper.IsLooterFaction(clan))
 			{
 				SpawnLooters(clan, 0.07f, uniformDistribution: false);
 			}
@@ -316,7 +324,7 @@ public class BanditSpawnCampaignBehavior : CampaignBehaviorBase
 			Clan clan = null;
 			foreach (Clan banditFaction in Clan.BanditFactions)
 			{
-				if (hideoutComponent.Owner.Settlement.Culture == banditFaction.Culture && (IsBanditFaction(banditFaction) || IsLooterFaction(banditFaction)))
+				if (hideoutComponent.Owner.Settlement.Culture == banditFaction.Culture && (IsBanditFaction(banditFaction) || FactionHelper.IsLooterFaction(banditFaction)))
 				{
 					clan = banditFaction;
 				}
@@ -448,7 +456,7 @@ public class BanditSpawnCampaignBehavior : CampaignBehaviorBase
 	{
 		foreach (Clan banditFaction in Clan.BanditFactions)
 		{
-			if (IsLooterFaction(banditFaction))
+			if (FactionHelper.IsLooterFaction(banditFaction))
 			{
 				SpawnLooters(banditFaction, MBRandom.RandomFloatRanged(0.5f, 0.75f), uniformDistribution: true);
 			}
@@ -460,6 +468,10 @@ public class BanditSpawnCampaignBehavior : CampaignBehaviorBase
 		Settlement settlement = SelectARandomSettlementForLooterParty(uniformDistribution);
 		CampaignVec2 spawnPositionAroundSettlement = GetSpawnPositionAroundSettlement(selectedFaction, settlement);
 		MobileParty mobileParty = BanditPartyComponent.CreateLooterParty(selectedFaction.StringId + "_1", selectedFaction, settlement, isBossParty: false, selectedFaction.DefaultPartyTemplate, spawnPositionAroundSettlement);
+		if (Campaign.Current.Options.IsRisenBanditsEnabled)
+		{
+			TryApplyRisenBanditsRosterBoostToBanditParty(mobileParty);
+		}
 		InitializeBanditParty(mobileParty, selectedFaction);
 		mobileParty.SetMovePatrolAroundPoint(mobileParty.Position, MobileParty.NavigationType.Default);
 	}
@@ -469,22 +481,17 @@ public class BanditSpawnCampaignBehavior : CampaignBehaviorBase
 		Hideout hideout = SelectBanditHideout(selectedFaction);
 		CampaignVec2 spawnPositionAroundSettlement = GetSpawnPositionAroundSettlement(selectedFaction, hideout.Settlement);
 		MobileParty mobileParty = BanditPartyComponent.CreateBanditParty(selectedFaction.StringId + "_1", selectedFaction, hideout, isBossParty: false, selectedFaction.DefaultPartyTemplate, spawnPositionAroundSettlement);
+		if (Campaign.Current.Options.IsRisenBanditsEnabled)
+		{
+			TryApplyRisenBanditsRosterBoostToBanditParty(mobileParty);
+		}
 		InitializeBanditParty(mobileParty, selectedFaction);
 		mobileParty.SetMovePatrolAroundPoint(mobileParty.Position, mobileParty.NavigationCapability);
 	}
 
-	private static bool IsLooterFaction(IFaction faction)
-	{
-		if (!faction.Culture.CanHaveSettlement && !faction.HasNavalNavigationCapability)
-		{
-			return faction.StringId != "deserters";
-		}
-		return false;
-	}
-
 	private float GetSpawnRadiusForClan(Clan selectedFaction)
 	{
-		return BanditSpawnRadiusAsDays * (IsLooterFaction(selectedFaction) ? 1.5f : 1f);
+		return BanditSpawnRadiusAsDays * (FactionHelper.IsLooterFaction(selectedFaction) ? 1.5f : 1f);
 	}
 
 	private int GetInfestedHideoutCount(Clan banditFaction)
@@ -520,7 +527,7 @@ public class BanditSpawnCampaignBehavior : CampaignBehaviorBase
 
 	private void GiveFoodToBanditParty(MobileParty banditParty)
 	{
-		int num = (IsLooterFaction(banditParty.MapFaction) ? 8 : 16);
+		int num = (FactionHelper.IsLooterFaction(banditParty.MapFaction) ? 8 : 16);
 		foreach (ItemObject item in Items.All)
 		{
 			if (item.IsFood)
@@ -579,5 +586,42 @@ public class BanditSpawnCampaignBehavior : CampaignBehaviorBase
 	{
 		int initialGold = (int)(10f * (float)banditParty.Party.MemberRoster.TotalManCount * (0.5f + 1f * MBRandom.RandomFloat));
 		banditParty.InitializePartyTrade(initialGold);
+	}
+
+	public static void TryApplyRisenBanditsRosterBoostToBanditParty(MobileParty mobileParty)
+	{
+		float minVal = 2.5f;
+		float maxVal = 5f;
+		float num = 9f;
+		if (mobileParty.MemberRoster.Count == 0)
+		{
+			return;
+		}
+		float randomFloat = MBRandom.RandomFloat;
+		float num2;
+		if (randomFloat >= 0.9f)
+		{
+			num2 = num;
+		}
+		else
+		{
+			if (!(randomFloat >= 0.35f))
+			{
+				return;
+			}
+			num2 = MBRandom.RandomFloatRanged(minVal, maxVal);
+		}
+		foreach (TroopRosterElement item in mobileParty.MemberRoster.GetTroopRoster().ToList())
+		{
+			CharacterObject character = item.Character;
+			if (character != null && !character.IsHero)
+			{
+				int num3 = MBRandom.RoundRandomized((float)item.Number * num2);
+				if (num3 > 0)
+				{
+					mobileParty.MemberRoster.AddToCounts(character, num3);
+				}
+			}
+		}
 	}
 }

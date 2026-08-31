@@ -125,9 +125,13 @@ public class SiegeEventCampaignBehavior : CampaignBehaviorBase
 		ISiegeEventSide siegeEventSide = siegeEvent.GetSiegeEventSide(lostSide);
 		int num = siegeEventModel.GetSiegeEngineDestructionCasualties(siegeEvent, siegeEventSide.BattleSide, siegeEngine);
 		BattleSideEnum oppositeSide = siegeEventSide.BattleSide.GetOppositeSide();
-		if (effectiveSiegePartyForSide2 != null && oppositeSide == BattleSideEnum.Attacker && effectiveSiegePartyForSide2.HasPerk(DefaultPerks.Tactics.PickThemOfTheWalls) && MBRandom.RandomFloat < DefaultPerks.Tactics.PickThemOfTheWalls.PrimaryBonus)
+		if (effectiveSiegePartyForSide2 != null)
 		{
-			num *= 2;
+			Hero perkOwnerHero = null;
+			if (oppositeSide == BattleSideEnum.Attacker && effectiveSiegePartyForSide2.HasPerk(DefaultPerks.Tactics.PickThemOfTheWalls, out perkOwnerHero) && MBRandom.RandomFloat < DefaultPerks.Tactics.PickThemOfTheWalls.PrimaryBonus)
+			{
+				num *= 2;
+			}
 		}
 		if (oppositeSide == BattleSideEnum.Defender)
 		{
@@ -137,6 +141,7 @@ public class SiegeEventCampaignBehavior : CampaignBehaviorBase
 				num *= 2;
 			}
 		}
+		num = ApplyValorCasualtyReduction(num, effectiveSiegePartyForSide);
 		KillRandomTroopsOfEnemy(siegeEventSide, num);
 	}
 
@@ -148,7 +153,8 @@ public class SiegeEventCampaignBehavior : CampaignBehaviorBase
 			return;
 		}
 		SkillLevelingManager.OnSiegeEngineBuilt(effectiveSiegePartyForSide, siegeEngineType);
-		if (!effectiveSiegePartyForSide.HasPerk(DefaultPerks.Engineering.Apprenticeship))
+		Hero perkOwnerHero = null;
+		if (!effectiveSiegePartyForSide.HasPerk(DefaultPerks.Engineering.Apprenticeship, out perkOwnerHero))
 		{
 			return;
 		}
@@ -157,8 +163,8 @@ public class SiegeEventCampaignBehavior : CampaignBehaviorBase
 			CharacterObject characterAtIndex = effectiveSiegePartyForSide.MemberRoster.GetCharacterAtIndex(i);
 			if (!characterAtIndex.IsHero)
 			{
-				int elementNumber = effectiveSiegePartyForSide.MemberRoster.GetElementNumber(i);
-				effectiveSiegePartyForSide.MemberRoster.AddXpToTroop(characterAtIndex, elementNumber * (int)DefaultPerks.Engineering.Apprenticeship.PrimaryBonus);
+				int xpAmount = effectiveSiegePartyForSide.MemberRoster.GetElementNumber(i) * (int)DefaultPerks.Engineering.Apprenticeship.PrimaryBonus;
+				effectiveSiegePartyForSide.MemberRoster.AddXpToTroop(characterAtIndex, xpAmount);
 			}
 		}
 	}
@@ -205,6 +211,20 @@ public class SiegeEventCampaignBehavior : CampaignBehaviorBase
 		return num2;
 	}
 
+	private int ApplyValorCasualtyReduction(int casualties, MobileParty leaderParty)
+	{
+		Hero hero = leaderParty?.Army?.LeaderParty?.LeaderHero ?? leaderParty?.LeaderHero;
+		if (hero != null)
+		{
+			float traitEffectBonus = TraitEffectHelper.GetTraitEffectBonus(hero, DefaultPersonalityTraitEffects.ValorSiegeCasualtyEffect);
+			if (traitEffectBonus != 0f)
+			{
+				casualties = MBRandom.RoundRandomized((float)casualties * (1f + traitEffectBonus));
+			}
+		}
+		return casualties;
+	}
+
 	private void BombardHitEngineCasualties(ISiegeEventSide siegeEventSide, SiegeEngineType attackerEngineType)
 	{
 		SiegeEvent siegeEvent = siegeEventSide.SiegeEvent;
@@ -216,6 +236,8 @@ public class SiegeEventCampaignBehavior : CampaignBehaviorBase
 		if (MBRandom.RandomFloat < siegeEngineHitChance)
 		{
 			int colleteralDamageCasualties = Campaign.Current.Models.SiegeEventModel.GetColleteralDamageCasualties(attackerEngineType, effectiveSiegePartyForSide);
+			MobileParty effectiveSiegePartyForSide2 = Campaign.Current.Models.SiegeEventModel.GetEffectiveSiegePartyForSide(siegeEvent, siegeEventSide2.BattleSide);
+			colleteralDamageCasualties = ApplyValorCasualtyReduction(colleteralDamageCasualties, effectiveSiegePartyForSide2);
 			if (KillRandomTroopsOfEnemy(siegeEventSide2, colleteralDamageCasualties) > 0)
 			{
 				CampaignEventDispatcher.Instance.OnSiegeBombardmentHit(besiegerCamp.LeaderParty, besiegedSettlement, siegeEventSide.BattleSide, attackerEngineType, SiegeBombardTargets.People);

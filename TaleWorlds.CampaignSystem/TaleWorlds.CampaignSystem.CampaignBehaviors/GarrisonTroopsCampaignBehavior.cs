@@ -188,6 +188,7 @@ public class GarrisonTroopsCampaignBehavior : CampaignBehaviorBase
 
 	public override void SyncData(IDataStore dataStore)
 	{
+		dataStore.SyncData("_newlyConqueredFortification", ref _newlyConqueredFortification);
 	}
 
 	private void OnNewGameCreatedPartialFollowUpEvent(CampaignGameStarter starter, int i)
@@ -238,7 +239,7 @@ public class GarrisonTroopsCampaignBehavior : CampaignBehaviorBase
 
 	private void OnSettlementOwnerChanged(Settlement settlement, bool openToClaim, Hero newOwner, Hero oldOwner, Hero capturerHero, ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail detail)
 	{
-		if (openToClaim && detail == ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail.BySiege && settlement != null)
+		if (detail == ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail.BySiege && settlement != null)
 		{
 			_newlyConqueredFortification = settlement;
 		}
@@ -274,7 +275,10 @@ public class GarrisonTroopsCampaignBehavior : CampaignBehaviorBase
 		{
 			TryToTakeTroopsFromGarrisonForArmy(in armyGarrionTransferDataArgs);
 		}
-		_newlyConqueredFortification = null;
+		if (_newlyConqueredFortification == settlement)
+		{
+			_newlyConqueredFortification = null;
+		}
 	}
 
 	private void CollectArmyGarrisonTransferDataArgs(MobileParty armyLeaderParty, Settlement settlement, out ArmyGarrisonTransferDataArgs armyGarrionTransferDataArgs)
@@ -350,7 +354,10 @@ public class GarrisonTroopsCampaignBehavior : CampaignBehaviorBase
 		{
 			TryToTakeTroopsFromGarrisonForParty(in partyGarrisonTransferDataArgs);
 		}
-		_newlyConqueredFortification = null;
+		if (_newlyConqueredFortification == settlement)
+		{
+			_newlyConqueredFortification = null;
+		}
 	}
 
 	private void CollectPartyGarrisonTransferData(MobileParty mobileParty, Settlement settlement, out PartyGarrisonTransferDataArgs partyGarrisonTransferDataArgs)
@@ -378,7 +385,7 @@ public class GarrisonTroopsCampaignBehavior : CampaignBehaviorBase
 		partyGarrisonTransferDataArgs.TotalMenCount = num5;
 		partyGarrisonTransferDataArgs.SettlementFinalMenCount = val;
 		partyGarrisonTransferDataArgs.IsLeavingTroopsToGarrison = val > num4;
-		if ((settlement.Town.GarrisonParty != null && settlement.Town.GarrisonParty.IsWageLimitExceeded()) || (mobileParty.LeaderHero.Clan == Clan.PlayerClan && _newlyConqueredFortification == null))
+		if ((settlement.Town.GarrisonParty != null && settlement.Town.GarrisonParty.IsWageLimitExceeded()) || (mobileParty.LeaderHero.Clan == Clan.PlayerClan && _newlyConqueredFortification == null) || !mobileParty.LeaderHero.CanDonateTroopsToGarrison)
 		{
 			partyGarrisonTransferDataArgs.IsLeavingTroopsToGarrison = false;
 		}
@@ -406,13 +413,13 @@ public class GarrisonTroopsCampaignBehavior : CampaignBehaviorBase
 	{
 		List<(MobileParty, int)> list = new List<(MobileParty, int)>();
 		List<MobileParty> list2 = new List<MobileParty>();
-		if (armyLeaderParty != MobileParty.MainParty && (armyLeaderParty.LeaderHero.Clan != Clan.PlayerClan || _newlyConqueredFortification != null))
+		if (armyLeaderParty != MobileParty.MainParty && armyLeaderParty.LeaderHero.CanDonateTroopsToGarrison && (armyLeaderParty.LeaderHero.Clan != Clan.PlayerClan || _newlyConqueredFortification != null))
 		{
 			list2.Add(armyLeaderParty);
 		}
 		foreach (MobileParty attachedParty in armyLeaderParty.AttachedParties)
 		{
-			if (attachedParty != MobileParty.MainParty && attachedParty.LeaderHero != null && (attachedParty.LeaderHero.Clan != Clan.PlayerClan || _newlyConqueredFortification != null))
+			if (attachedParty != MobileParty.MainParty && attachedParty.LeaderHero != null && attachedParty.LeaderHero.CanDonateTroopsToGarrison && (attachedParty.LeaderHero.Clan != Clan.PlayerClan || _newlyConqueredFortification != null))
 			{
 				list2.Add(attachedParty);
 			}

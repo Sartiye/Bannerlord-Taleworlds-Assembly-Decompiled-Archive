@@ -31,13 +31,16 @@ public class PremadeGameEntry
 	public bool IsPasswordProtected { get; private set; }
 
 	[JsonProperty]
+	public bool IsSpectatorPasswordProtected { get; private set; }
+
+	[JsonProperty]
 	public PremadeGameType PremadeGameType { get; private set; }
 
 	public PremadeGameEntry()
 	{
 	}
 
-	public PremadeGameEntry(Guid id, string name, string region, string gameType, string mapName, string factionA, string factionB, bool isPasswordProtected, PremadeGameType premadeGameType)
+	public PremadeGameEntry(Guid id, string name, string region, string gameType, string mapName, string factionA, string factionB, bool isPasswordProtected, PremadeGameType premadeGameType, bool isSpectatorPasswordProtected = false)
 	{
 		Id = id;
 		Name = name;
@@ -48,5 +51,6 @@ public class PremadeGameEntry
 		FactionB = factionB;
 		IsPasswordProtected = isPasswordProtected;
 		PremadeGameType = premadeGameType;
+		IsSpectatorPasswordProtected = isSpectatorPasswordProtected;
 	}
 }

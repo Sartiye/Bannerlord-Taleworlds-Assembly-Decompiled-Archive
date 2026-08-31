@@ -6,7 +6,7 @@ namespace TaleWorlds.TwoDimension.Standalone;
 
 public class TwoDimensionPlatform : ITwoDimensionPlatform, ITwoDimensionResourceContext
 {
-	private GraphicsContext _graphicsContext;
+	private DirectXGraphicsContext _graphicsContext;
 
 	private GraphicsForm _form;
 
@@ -58,14 +58,14 @@ public class TwoDimensionPlatform : ITwoDimensionPlatform, ITwoDimensionResource
 
 	Texture ITwoDimensionResourceContext.LoadTexture(ResourceDepot resourceDepot, string name)
 	{
-		OpenGLTexture openGLTexture = new OpenGLTexture();
 		string name2 = name;
 		if (!_isAssetsUnderDefaultFolders)
 		{
 			name2 = name.Split(new char[1] { '\\' })[^1];
 		}
-		openGLTexture.LoadFromFile(resourceDepot, name2);
-		return new Texture(openGLTexture);
+		DirectXTexture directXTexture = new DirectXTexture();
+		_graphicsContext.LoadTextureUsing(directXTexture, resourceDepot, name2);
+		return new Texture(directXTexture);
 	}
 
 	void ITwoDimensionPlatform.PlaySound(string soundName)

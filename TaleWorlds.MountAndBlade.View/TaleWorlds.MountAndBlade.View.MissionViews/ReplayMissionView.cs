@@ -21,7 +21,6 @@ public class ReplayMissionView : MissionView
 	{
 		base.OnPreMissionTick(dt);
 		base.Mission.Recorder.ProcessRecordUntilTime(base.Mission.CurrentTime - _resetTime);
-		_ = _isInputOverridden;
 		if (base.Mission.CurrentState == Mission.State.Continuing && base.Mission.Recorder.IsEndOfRecord())
 		{
 			if (MBEditor._isEditorMissionOn)

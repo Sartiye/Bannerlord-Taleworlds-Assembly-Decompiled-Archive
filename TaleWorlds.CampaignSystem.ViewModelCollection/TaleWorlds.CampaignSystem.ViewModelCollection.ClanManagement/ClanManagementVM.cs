@@ -28,6 +28,8 @@ public class ClanManagementVM : ViewModel
 
 	private readonly Clan _clan;
 
+	private readonly IViewDataTracker _viewDataTracker;
+
 	private readonly int _categoryCount;
 
 	private int _currentCategory;
@@ -1127,7 +1129,14 @@ public class ClanManagementVM : ViewModel
 		ClanParties = new ClanPartiesVM(OnAnyExpenseChange, _openPartyAsManage, RefreshCategoryValues, CardSelectionPopup.Open);
 		ClanIncome = new ClanIncomeVM(RefreshCategoryValues, CardSelectionPopup.Open);
 		_categoryCount = 4;
-		SetSelectedCategory(0);
+		_viewDataTracker = Campaign.Current.GetCampaignBehavior<IViewDataTracker>();
+		int num = _viewDataTracker.GetLastOpenedClanTabIndex();
+		if (_categoryCount <= num)
+		{
+			Debug.FailedAssert("Tab index is out of bounds", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\ClanManagement\\ClanManagementVM.cs", ".ctor", 54);
+			num = 0;
+		}
+		SetSelectedCategory(num);
 		Leader = new HeroVM(_clan.Leader);
 		CurrentRenown = (int)Clan.PlayerClan.Renown;
 		CurrentTier = Clan.PlayerClan.Tier;
@@ -1394,6 +1403,7 @@ public class ClanManagementVM : ViewModel
 	public override void OnFinalize()
 	{
 		base.OnFinalize();
+		_viewDataTracker.SetLastOpenedClanTabIndex(_currentCategory);
 		ClanFiefs.OnFinalize();
 		DoneInputKey.OnFinalize();
 		PreviousTabInputKey.OnFinalize();

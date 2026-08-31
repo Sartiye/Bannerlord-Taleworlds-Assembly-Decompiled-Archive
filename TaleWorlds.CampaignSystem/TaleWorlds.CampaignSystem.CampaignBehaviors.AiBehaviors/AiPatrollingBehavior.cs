@@ -116,6 +116,10 @@ public class AiPatrollingBehavior : CampaignBehaviorBase
 		}
 		foreach (IFaction item in mobileParty.MapFaction.FactionsAtWarWith)
 		{
+			if (!item.IsMapFaction)
+			{
+				continue;
+			}
 			foreach (Settlement settlement in item.Settlements)
 			{
 				if (settlement.HasPort)

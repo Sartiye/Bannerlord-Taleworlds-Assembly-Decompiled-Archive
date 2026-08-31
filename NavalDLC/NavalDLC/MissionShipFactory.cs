@@ -14,7 +14,7 @@ public class MissionShipFactory
 {
 	private static uint _shipUniqueBitwiseIDNext = 1u;
 
-	public static MissionObject CreateMissionShip(int shipIndex, ShipAssignment shipAssignment, NavalShipsLogic shipsLogic, in MatrixFrame initialFrame)
+	public static MissionObject CreateMissionShip(int shipIndex, ShipAssignment shipAssignment, NavalShipsLogic shipsLogic, in MatrixFrame initialFrame, (uint sailColor1, uint sailColor2)? defaultSailColors = null)
 	{
 		Debug.Print("MissionShipFactory.CreateMissionShip: " + shipAssignment.MissionShipObject.Prefab);
 		MissionObject missionObject = shipsLogic.Mission.CreateMissionObjectFromPrefab(shipAssignment.MissionShipObject.Prefab, initialFrame, hasCustomRestOffset: true, -0.1f, delegate(GameEntity entity)
@@ -22,9 +22,11 @@ public class MissionShipFactory
 			CleanNonExistingUpgrades(entity.WeakEntity, shipAssignment.ShipOrigin.GetShipVisualSlotInfos());
 			entity.CreateAndAddScriptComponent(typeof(ShipVisual).Name, callScriptCallbacks: false);
 			ShipVisual firstScriptOfType2 = entity.GetFirstScriptOfType<ShipVisual>();
-			firstScriptOfType2.SailColors = ShipHelper.GetSailColors(shipAssignment.ShipOrigin);
-			firstScriptOfType2.Initialize(shipAssignment.ShipOrigin.RandomValue, shipAssignment.ShipOrigin.CustomSailPatternId);
-			firstScriptOfType2.Health = shipAssignment.ShipOrigin.HitPoints / shipAssignment.ShipOrigin.MaxHitPoints;
+			if (!ShipHelper.TryGetSailColors(shipAssignment.ShipOrigin, out (uint, uint) sailColors) && defaultSailColors.HasValue)
+			{
+				sailColors = defaultSailColors.Value;
+			}
+			firstScriptOfType2.Initialize(health: shipAssignment.ShipOrigin.HitPoints / shipAssignment.ShipOrigin.MaxHitPoints, seed: shipAssignment.ShipOrigin.RandomValue, customSailPatternId: shipAssignment.ShipOrigin.CustomSailPatternId, sailColors: sailColors);
 		});
 		MissionShip firstScriptOfType = missionObject.GameEntity.GetFirstScriptOfType<MissionShip>();
 		firstScriptOfType.InitForMission(shipIndex, _shipUniqueBitwiseIDNext, shipAssignment, shipsLogic);

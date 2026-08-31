@@ -26,7 +26,9 @@ public class ScrollingTextWidget : TextWidget
 
 	private bool _isAutoScrolling = true;
 
-	private float _scrollPerTick = 30f;
+	private float _scrollPerSecond = 30f;
+
+	private float _scrollRatioPerSecond;
 
 	private float _inbetweenScrollDuration = 1f;
 
@@ -70,18 +72,35 @@ public class ScrollingTextWidget : TextWidget
 	}
 
 	[Editor(false)]
-	public float ScrollPerTick
+	public float ScrollPerSecond
 	{
 		get
 		{
-			return _scrollPerTick;
+			return _scrollPerSecond;
 		}
 		set
 		{
-			if (value != _scrollPerTick)
+			if (value != _scrollPerSecond)
 			{
-				_scrollPerTick = value;
-				OnPropertyChanged(value, "ScrollPerTick");
+				_scrollPerSecond = value;
+				OnPropertyChanged(value, "ScrollPerSecond");
+			}
+		}
+	}
+
+	[Editor(false)]
+	public float ScrollRatioPerSecond
+	{
+		get
+		{
+			return _scrollRatioPerSecond;
+		}
+		set
+		{
+			if (value != _scrollRatioPerSecond)
+			{
+				_scrollRatioPerSecond = value;
+				OnPropertyChanged(value, "ScrollRatioPerSecond");
 			}
 		}
 	}
@@ -159,7 +178,8 @@ public class ScrollingTextWidget : TextWidget
 			}
 			else if (_scrollTimeElapsed >= InbetweenScrollDuration && _currentScrollAmount < _totalScrollAmount)
 			{
-				_currentScrollAmount += dt * ScrollPerTick;
+				_currentScrollAmount += dt * ScrollPerSecond;
+				_currentScrollAmount += dt * ScrollRatioPerSecond * _totalScrollAmount;
 			}
 			else if (_currentScrollAmount >= _totalScrollAmount)
 			{

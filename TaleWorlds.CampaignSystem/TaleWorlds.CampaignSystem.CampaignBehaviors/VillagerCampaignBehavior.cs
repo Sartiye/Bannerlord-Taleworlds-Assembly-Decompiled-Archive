@@ -337,7 +337,8 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 			}
 			if (settlement.IsTown && settlement.Town.Governor != null && settlement.Town.Governor.GetPerkValue(DefaultPerks.Trade.TravelingRumors))
 			{
-				settlement.Town.TradeTaxAccumulated += MathF.Round(DefaultPerks.Trade.TravelingRumors.SecondaryBonus);
+				int num2 = MathF.Round(DefaultPerks.Trade.TravelingRumors.SecondaryBonus);
+				settlement.Town.TradeTaxAccumulated += num2;
 			}
 		}
 	}
@@ -602,7 +603,8 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 				{
 					int num2 = encounteredParty.MobileParty.HomeSettlement.Village.GetItemPrice(elementCopyAtIndex.EquipmentElement, MobileParty.MainParty, isSelling: true);
 					int num3 = encounteredParty.MobileParty.HomeSettlement.Village.GetItemPrice(elementCopyAtIndex.EquipmentElement, MobileParty.MainParty, isSelling: true);
-					if (MobileParty.MainParty.HasPerk(DefaultPerks.Trade.SilverTongue, checkSecondaryRole: true))
+					Hero perkOwnerHero = null;
+					if (MobileParty.MainParty.HasPerk(DefaultPerks.Trade.SilverTongue, out perkOwnerHero, checkSecondaryRole: true))
 					{
 						num2 = MathF.Ceiling((float)num2 * (1f - DefaultPerks.Trade.SilverTongue.SecondaryBonus));
 						num3 = MathF.Ceiling((float)num3 * (1f - DefaultPerks.Trade.SilverTongue.SecondaryBonus));
@@ -897,7 +899,8 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 		}
 		num += MobileParty.ConversationParty.PartyTradeGold;
 		int num2 = MathF.Min((int)((float)num * 0.2f), 2000);
-		if (MobileParty.MainParty.HasPerk(DefaultPerks.Roguery.SaltTheEarth))
+		Hero perkOwnerHero = null;
+		if (MobileParty.MainParty.HasPerk(DefaultPerks.Roguery.SaltTheEarth, out perkOwnerHero))
 		{
 			num2 = MathF.Round((float)num2 * (1f + DefaultPerks.Roguery.SaltTheEarth.PrimaryBonus));
 		}

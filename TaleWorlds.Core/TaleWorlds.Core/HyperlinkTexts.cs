@@ -54,6 +54,8 @@ public static class HyperlinkTexts
 
 	public const string FocusIcon = "{=!}<img src=\"CharacterDeveloper\\cp_icon\">";
 
+	public const string BloodFeudIcon = "{=!}<img src=\"SPGeneral\\blood_feud_icon\" extend=\"3\">";
+
 	public static Func<bool> IsPlayStationGamepadActive;
 
 	public static TextObject GetSettlementHyperlinkText(string link, TextObject settlementName)

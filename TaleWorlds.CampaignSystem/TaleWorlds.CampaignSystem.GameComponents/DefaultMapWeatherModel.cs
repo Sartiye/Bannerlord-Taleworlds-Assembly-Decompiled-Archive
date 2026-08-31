@@ -325,6 +325,10 @@ public class DefaultMapWeatherModel : MapWeatherModel
 			isRaining = true;
 			rainValue = 0.85f + MBRandom.RandomFloatRanged(0f, 0.14999998f);
 			snowFallDensity = ((selectedSeason != CampaignTime.Seasons.Winter) ? 0f : snowFallDensity);
+			if (selectedSeason == CampaignTime.Seasons.Winter)
+			{
+				selectedSeason = ((CampaignTime.Now.GetDayOfSeason <= CampaignTime.DaysInSeason / 2) ? CampaignTime.Seasons.Autumn : CampaignTime.Seasons.Spring);
+			}
 			break;
 		}
 		if (weatherEffectOnTerrainForPosition == WeatherEventEffectOnTerrain.Wet)

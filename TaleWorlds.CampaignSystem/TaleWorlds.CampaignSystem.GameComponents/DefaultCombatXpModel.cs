@@ -50,9 +50,10 @@ public class DefaultCombatXpModel : CombatXpModel
 			GetBattleXpBonusFromPerks(attackerParty, ref xpToGain, attackerTroop);
 		}
 		bool flag = attackerParty == null || !attackerParty.IsMobile || attackerParty.MobileParty.IsCurrentlyAtSea;
-		if (captain != null && captain.IsHero && !flag && captain.GetPerkValue(DefaultPerks.Leadership.InspiringLeader))
+		if (captain != null && captain.IsHero && !flag)
 		{
-			xpToGain.AddFactor(DefaultPerks.Leadership.InspiringLeader.SecondaryBonus, DefaultPerks.Leadership.InspiringLeader.Name);
+			BattleEnvironment battleEnvironment = ((attackerParty != null && attackerParty.MobileParty != null) ? attackerParty.MobileParty.CurrentBattleEnvironment : BattleEnvironment.Any);
+			PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Leadership.InspiringLeader, battleEnvironment, captain, ref xpToGain);
 		}
 		return xpToGain;
 	}
@@ -85,37 +86,34 @@ public class DefaultCombatXpModel : CombatXpModel
 		{
 			if (!troop.IsRanged)
 			{
-				if (!party.MobileParty.IsCurrentlyAtSea && party.MobileParty.HasPerk(DefaultPerks.OneHanded.Trainer, checkSecondaryRole: true))
-				{
-					xpToGain.AddFactor(DefaultPerks.OneHanded.Trainer.SecondaryBonus, DefaultPerks.OneHanded.Trainer.Name);
-				}
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.TwoHanded.BaptisedInBlood, party.MobileParty, isPrimaryBonus: false, ref xpToGain, party.MobileParty.IsCurrentlyAtSea);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.OneHanded.Trainer, party.MobileParty, isPrimaryBonus: false, ref xpToGain);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.TwoHanded.BaptisedInBlood, party.MobileParty, isPrimaryBonus: false, ref xpToGain);
 			}
-			if (troop.HasThrowingWeapon() && party.MobileParty.HasPerk(DefaultPerks.Throwing.Resourceful, checkSecondaryRole: true))
+			if (troop.HasThrowingWeapon())
 			{
-				xpToGain.AddFactor(DefaultPerks.Throwing.Resourceful.SecondaryBonus, DefaultPerks.Throwing.Resourceful.Name);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Throwing.Resourceful, party.MobileParty, isPrimaryBonus: false, ref xpToGain);
 			}
 			if (troop.IsInfantry)
 			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.OneHanded.CorpsACorps, party.MobileParty, isPrimaryBonus: true, ref xpToGain, party.MobileParty.IsCurrentlyAtSea);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.OneHanded.CorpsACorps, party.MobileParty, isPrimaryBonus: true, ref xpToGain);
 			}
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.OneHanded.LeadByExample, party.MobileParty, isPrimaryBonus: true, ref xpToGain, party.MobileParty.IsCurrentlyAtSea);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.OneHanded.LeadByExample, party.MobileParty, isPrimaryBonus: true, ref xpToGain);
 			if (troop.IsRanged)
 			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Crossbow.MountedCrossbowman, party.MobileParty, isPrimaryBonus: false, ref xpToGain, party.MobileParty.IsCurrentlyAtSea);
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Bow.BullsEye, party.MobileParty, isPrimaryBonus: true, ref xpToGain, party.MobileParty.IsCurrentlyAtSea);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Crossbow.MountedCrossbowman, party.MobileParty, isPrimaryBonus: false, ref xpToGain);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Bow.BullsEye, party.MobileParty, isPrimaryBonus: true, ref xpToGain);
 			}
-			if (troop.Culture.IsBandit && party.MobileParty.HasPerk(DefaultPerks.Roguery.NoRestForTheWicked))
+			if (troop.Culture.IsBandit)
 			{
-				xpToGain.AddFactor(DefaultPerks.Roguery.NoRestForTheWicked.PrimaryBonus, DefaultPerks.Roguery.NoRestForTheWicked.Name);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Roguery.NoRestForTheWicked, party.MobileParty, isPrimaryBonus: true, ref xpToGain);
 			}
 		}
 		if (party.IsMobile && party.MobileParty.IsGarrison && party.MobileParty.CurrentSettlement?.Town.Governor != null)
 		{
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.TwoHanded.ProjectileDeflection, party.MobileParty.CurrentSettlement.Town, ref xpToGain);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.TwoHanded.ProjectileDeflection, party.MobileParty.CurrentSettlement.Town, isPrimaryBonus: false, ref xpToGain);
 			if (troop.IsMounted)
 			{
-				PerkHelper.AddPerkBonusForTown(DefaultPerks.Polearm.Guards, party.MobileParty.CurrentSettlement.Town, ref xpToGain);
+				PerkHelper.AddPerkBonusForTown(DefaultPerks.Polearm.Guards, party.MobileParty.CurrentSettlement.Town, isPrimaryBonus: false, ref xpToGain);
 			}
 		}
 	}

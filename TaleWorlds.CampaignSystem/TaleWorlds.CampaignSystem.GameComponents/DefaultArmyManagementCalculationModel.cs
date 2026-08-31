@@ -128,7 +128,7 @@ public class DefaultArmyManagementCalculationModel : ArmyManagementCalculationMo
 			{
 				MobileParty mobileParty2 = warPartyComponent.MobileParty;
 				Hero leaderHero = mobileParty2.LeaderHero;
-				if (!mobileParty2.IsLordParty || mobileParty2.Army != null || mobileParty2 == mobileParty || leaderHero == null || mobileParty2.IsMainParty || leaderHero == leaderHero.MapFaction.Leader || mobileParty2.Ai.DoNotMakeNewDecisions || mobileParty2.CurrentSettlement?.SiegeEvent != null || mobileParty2.IsDisbanding || !((float)mobileParty2.GetNumDaysForFoodToLast() > Campaign.Current.Models.ArmyManagementCalculationModel.MinimumNeededFoodInDaysToCallToArmy) || !(mobileParty2.PartySizeRatio > Campaign.Current.Models.ArmyManagementCalculationModel.AIMobilePartySizeRatioToCallToArmy) || !leaderHero.CanLeadParty() || mobileParty2.IsInRaftState || mobileParty2.MapEvent != null || mobileParty2.BesiegedSettlement != null)
+				if (!mobileParty2.IsLordParty || mobileParty2.Army != null || mobileParty2 == mobileParty || leaderHero == null || mobileParty2.IsMainParty || leaderHero == leaderHero.MapFaction.Leader || !mobileParty2.LeaderHero.CanJoinArmy || mobileParty2.Ai.DoNotMakeNewDecisions || mobileParty2.CurrentSettlement?.SiegeEvent != null || mobileParty2.IsDisbanding || !((float)mobileParty2.GetNumDaysForFoodToLast() > Campaign.Current.Models.ArmyManagementCalculationModel.MinimumNeededFoodInDaysToCallToArmy) || !(mobileParty2.PartySizeRatio > Campaign.Current.Models.ArmyManagementCalculationModel.AIMobilePartySizeRatioToCallToArmy) || !leaderHero.CanLeadParty() || mobileParty2.IsInRaftState || mobileParty2.MapEvent != null || mobileParty2.BesiegedSettlement != null)
 				{
 					continue;
 				}
@@ -211,16 +211,13 @@ public class DefaultArmyManagementCalculationModel : ArmyManagementCalculationMo
 		{
 			num += CalculatePartyInfluenceCost(army.LeaderParty, item);
 		}
-		ExplainedNumber explainedNumber = new ExplainedNumber(num);
+		ExplainedNumber stat = new ExplainedNumber(num);
 		if (army.LeaderParty.MapFaction.IsKingdomFaction && ((Kingdom)army.LeaderParty.MapFaction).ActivePolicies.Contains(DefaultPolicies.RoyalCommissions))
 		{
-			explainedNumber.AddFactor(-0.3f, DefaultPolicies.RoyalCommissions.Name);
+			stat.AddFactor(-0.3f, DefaultPolicies.RoyalCommissions.Name);
 		}
-		if (army.LeaderParty.LeaderHero.GetPerkValue(DefaultPerks.Tactics.Encirclement))
-		{
-			explainedNumber.AddFactor(DefaultPerks.Tactics.Encirclement.SecondaryBonus);
-		}
-		return MathF.Ceiling(explainedNumber.ResultNumber * percentage / 100f);
+		PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.Encirclement, army.LeaderParty, isPrimaryBonus: false, ref stat);
+		return MathF.Ceiling(stat.ResultNumber * percentage / 100f);
 	}
 
 	public override float GetPartySizeScore(MobileParty party)
@@ -232,11 +229,11 @@ public class DefaultArmyManagementCalculationModel : ArmyManagementCalculationMo
 	{
 		ExplainedNumber cohesionChange = new ExplainedNumber(-2f, includeDescriptions);
 		CalculateCohesionChangeInternal(army, ref cohesionChange);
-		PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.HordeLeader, army.LeaderParty, isPrimaryBonus: false, ref cohesionChange, army.LeaderParty.IsCurrentlyAtSea);
+		PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.HordeLeader, army.LeaderParty, isPrimaryBonus: false, ref cohesionChange);
 		SiegeEvent siegeEvent = army.LeaderParty.SiegeEvent;
-		if (siegeEvent != null && siegeEvent.BesiegerCamp.IsBesiegerSideParty(army.LeaderParty) && army.LeaderParty.HasPerk(DefaultPerks.Engineering.CampBuilding))
+		if (siegeEvent != null && siegeEvent.BesiegerCamp.IsBesiegerSideParty(army.LeaderParty))
 		{
-			cohesionChange.AddFactor(DefaultPerks.Engineering.CampBuilding.PrimaryBonus, DefaultPerks.Engineering.CampBuilding.Name);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Engineering.CampBuilding, army.LeaderParty, isPrimaryBonus: true, ref cohesionChange);
 		}
 		return cohesionChange;
 	}
@@ -353,6 +350,11 @@ public class DefaultArmyManagementCalculationModel : ArmyManagementCalculationMo
 		if (MobileParty.MainParty.IsInRaftState)
 		{
 			disabledReason = GameTexts.FindText("str_action_disabled_reason_raft_state");
+			return false;
+		}
+		if (MobileParty.MainParty.IsInFerryState)
+		{
+			disabledReason = GameTexts.FindText("str_action_disabled_reason_ferry_state");
 			return false;
 		}
 		if (CampaignMission.Current != null)

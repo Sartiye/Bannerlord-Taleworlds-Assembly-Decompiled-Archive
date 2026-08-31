@@ -35,11 +35,20 @@ public class RegisterCustomGameMessage : Message
 	[JsonProperty]
 	public string AdminPassword { get; private set; }
 
+	[JsonProperty]
+	public string SpectatorPassword { get; private set; }
+
+	[JsonProperty]
+	public int MaxSpectatorCount { get; private set; }
+
+	[JsonProperty]
+	public bool EnableSpectators { get; private set; }
+
 	public RegisterCustomGameMessage()
 	{
 	}
 
-	public RegisterCustomGameMessage(string gameModule, string gameType, string serverName, int maxPlayerCount, string map, string uniqueMapId, string gamePassword, string adminPassword, int port)
+	public RegisterCustomGameMessage(string gameModule, string gameType, string serverName, int maxPlayerCount, string map, string uniqueMapId, string gamePassword, string adminPassword, string spectatorPassword, int port, int maxSpectatorCount, bool enableSpectators)
 	{
 		GameModule = gameModule;
 		GameType = gameType;
@@ -49,6 +58,9 @@ public class RegisterCustomGameMessage : Message
 		UniqueMapId = uniqueMapId;
 		GamePassword = gamePassword;
 		AdminPassword = adminPassword;
+		SpectatorPassword = spectatorPassword;
 		Port = port;
+		MaxSpectatorCount = maxSpectatorCount;
+		EnableSpectators = enableSpectators;
 	}
 }

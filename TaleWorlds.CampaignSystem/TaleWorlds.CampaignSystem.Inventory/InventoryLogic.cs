@@ -92,7 +92,7 @@ public class InventoryLogic
 					}
 					else
 					{
-						Debug.FailedAssert("Equipment type cannot be found!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Inventory\\InventoryLogic.cs", "ResetEquipment", 1182);
+						Debug.FailedAssert("Equipment type cannot be found!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Inventory\\InventoryLogic.cs", "ResetEquipment", 1206);
 					}
 				}
 			}
@@ -163,7 +163,7 @@ public class InventoryLogic
 			}
 			else
 			{
-				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Inventory\\InventoryLogic.cs", "RemoveLastTransaction", 1262);
+				Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Inventory\\InventoryLogic.cs", "RemoveLastTransaction", 1286);
 			}
 		}
 
@@ -570,7 +570,8 @@ public class InventoryLogic
 					{
 						if (currentSettlementComponent.Settlement.Notables[i].IsMerchant)
 						{
-							ChangeRelationAction.ApplyRelationChangeBetweenHeroes(currentSettlementComponent.Settlement.Notables[i], OwnerCharacter.HeroObject, TaleWorlds.Library.MathF.Floor(DefaultPerks.Trade.TrickleDown.PrimaryBonus));
+							int relationChange = TaleWorlds.Library.MathF.Floor(DefaultPerks.Trade.TrickleDown.PrimaryBonus);
+							ChangeRelationAction.ApplyRelationChangeBetweenHeroes(currentSettlementComponent.Settlement.Notables[i], OwnerCharacter.HeroObject, relationChange);
 						}
 					}
 				}

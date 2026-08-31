@@ -194,7 +194,7 @@ public class HuntDownTheEmiraAlFahdaAndTheCorsairsQuest : NavalStorylineQuestBas
 		_corsairParties = new List<MobileParty>();
 		_bossCorsairParty = null;
 		_corsairSpawnPosition = corsairSpawnPosition;
-		_corsairHuntingGroundMarker = Campaign.Current.MapMarkerManager.CreateMapMarker(NavalStorylineData.CorsairBanner, new TextObject("{=QLrwlirp}Corsair Hunting Grounds"), _corsairSpawnPosition.AsVec3(), isVisibleOnMap: false, base.StringId);
+		_corsairHuntingGroundMarker = Campaign.Current.MapTrackerManager.CreateMapMarker(NavalStorylineData.CorsairBanner, new TextObject("{=QLrwlirp}Corsair Hunting Grounds"), _corsairSpawnPosition.AsVec3(), isVisibleOnMap: false, base.StringId);
 		AddLog(DescriptionLogText);
 	}
 
@@ -487,16 +487,16 @@ public class HuntDownTheEmiraAlFahdaAndTheCorsairsQuest : NavalStorylineQuestBas
 
 	private void AddDialogsForFinalFight()
 	{
-		Campaign.Current.ConversationManager.AddDialogFlow(DialogFlow.CreateDialogFlow("start", 1200).NpcLine(new TextObject("{=unOIbuqz}What have you done? Do you know who I am? I have allies who'll unthread your entrails from your guts and hang you with them from your own yardarm. I am queen of these waters, you fools, and those who practice piracy here without my permission end up chum to attract the sharks."), IsEmiraAlFahda, IsLahar).Condition(MultiAgentConversationCondition)
+		Campaign.Current.ConversationManager.AddDialogFlow(DialogFlow.CreateDialogFlow("start", 1200).NpcLine(new TextObject("{=unOIbuqz}[ib:warrior][if:convo_shocked]What have you done? Do you know who I am? I have allies who'll unthread your entrails from your guts and hang you with them from your own yardarm. I am queen of these waters, you fools, and those who practice piracy here without my permission end up chum to attract the sharks."), IsEmiraAlFahda, IsLahar).Condition(MultiAgentConversationCondition)
 			.GenerateToken(out var token)
 			.GenerateToken(out var token2)
 			.GenerateToken(out var token3)
 			.GenerateToken(out var token4)
 			.GenerateToken(out var token5)
-			.NpcLine(new TextObject("{=xQunuNT9}My lady, we are not pirates. Rather, I am a man who has done many services for families such as your own in Quyaz. At present I am working for your uncles. I do not know what they intend to do with you, although I do not expect that a town that lives on trade will deal leniently with piracy."), IsLahar, IsEmiraAlFahda)
-			.NpcLine(new TextObject("{=nyOUdUQI}Before we sail, however, I would like you to have a chat with my friend here."), IsLahar, IsEmiraAlFahda)
-			.NpcLine(new TextObject("{=LFLn7SJc}So you are on contract to deliver me alive to Quyaz, are you? I can tell you this, then - my lineage goes back to the founding of that city, and if you spill so much as a drop of my blood, your own shall be drained from your body like that of a horse-fish. As for the Sea Hounds, they are my allies and servants, and I shall not betray them to you."), IsEmiraAlFahda, IsLahar)
-			.NpcLine(new TextObject("{=C88poDCA}How much are my uncles paying you, anyway? I have a chest of silver set aside for occasions such as this, and I suspect I could pay you more than they will. They are stingy men."), IsEmiraAlFahda, IsLahar)
+			.NpcLine(new TextObject("{=xQunuNT9}[ib:closed][if:convo_huge_smile]My lady, we are not pirates. Rather, I am a man who has done many services for families such as your own in Quyaz. At present I am working for your uncles. I do not know what they intend to do with you, although I do not expect that a town that lives on trade will deal leniently with piracy."), IsLahar, IsEmiraAlFahda)
+			.NpcLine(new TextObject("{=nyOUdUQI}[ib:hip][if:convo_merry]Before we sail, however, I would like you to have a chat with my friend here."), IsLahar, IsEmiraAlFahda)
+			.NpcLine(new TextObject("{=LFLn7SJc}[ib:weary]So you are on contract to deliver me alive to Quyaz, are you? I can tell you this, then - my lineage goes back to the founding of that city, and if you spill so much as a drop of my blood, your own shall be drained from your body like that of a horse-fish. As for the Sea Hounds, they are my allies and servants, and I shall not betray them to you."), IsEmiraAlFahda, IsLahar)
+			.NpcLine(new TextObject("{=C88poDCA}[ib:normal][if:convo_pondering]How much are my uncles paying you, anyway? I have a chest of silver set aside for occasions such as this, and I suspect I could pay you more than they will. They are stingy men."), IsEmiraAlFahda, IsLahar)
 			.NpcLine(new TextObject("{=v2664Qeo}..."), IsEmiraAlFahda, IsLahar)
 			.GotoDialogState(token)
 			.BeginPlayerOptions(token, optionUsedOnce: true)
@@ -505,18 +505,18 @@ public class HuntDownTheEmiraAlFahdaAndTheCorsairsQuest : NavalStorylineQuestBas
 			.PlayerOption(new TextObject("{=XfIbjoH8}You tell me all you know about the Sea Hounds and their dealings in slaves."), IsEmiraAlFahda)
 			.GotoDialogState(token2)
 			.EndPlayerOptions()
-			.NpcLine(new TextObject("{=06AGZvSg}Are you threatening me? You won't get a single coin from my uncles if you harm me."), IsEmiraAlFahda, IsMainHero, token2)
-			.NpcLine(new TextObject("{=T0a3QpjV}Unlike Lahar, here, we have not shed our blood today merely for a part-share of a ransom, or to boost our standing with the merchants of Quyaz. You are an ally of the Sea Hounds, and it serves us well to make an example of you. Your life is forfeit unless you tell us something we can use."), IsGunnar, IsEmiraAlFahda)
-			.NpcLine(new TextObject("{=IPq1hnUG}How do I know that telling you about the Sea Hounds will save my life?"), IsEmiraAlFahda, IsMainHero, null, token3)
+			.NpcLine(new TextObject("{=06AGZvSg}[ib:nervous]Are you threatening me? You won't get a single coin from my uncles if you harm me."), IsEmiraAlFahda, IsMainHero, token2)
+			.NpcLine(new TextObject("{=T0a3QpjV}[if:convo_grave]Unlike Lahar, here, we have not shed our blood today merely for a part-share of a ransom, or to boost our standing with the merchants of Quyaz. You are an ally of the Sea Hounds, and it serves us well to make an example of you. Your life is forfeit unless you tell us something we can use."), IsGunnar, IsEmiraAlFahda)
+			.NpcLine(new TextObject("{=IPq1hnUG}[ib:nervous2][if:convo_nervous]How do I know that telling you about the Sea Hounds will save my life?"), IsEmiraAlFahda, IsMainHero, null, token3)
 			.BeginPlayerOptions(token3)
 			.PlayerOption(new TextObject("{=Su0h3ZMC}If you speak truthfully, you will live."), IsEmiraAlFahda)
 			.GotoDialogState(token4)
 			.PlayerOption(new TextObject("{=9tmYkhb1}You'll just have to try and see."), IsEmiraAlFahda)
 			.GotoDialogState(token4)
 			.EndPlayerOptions()
-			.NpcLine(new TextObject("{=tlXQV9mO}I can tell you this – I don’t have your sister. I used to buy captives from the Sea Hounds. But now they have this new leader named Purig, who keeps them all for his own purposes. Apparently he has some anchorage up in the north, where he intends to use slaves to build larger and stronger ships."), IsEmiraAlFahda, IsMainHero, token4)
-			.NpcLine(new TextObject("{=w5GbjHDG}Purig, a leader among the Sea Hounds! I'll speak straight here - it gnaws at my gut to hear that he is prospering from his treachery."), IsGunnar, IsMainHero)
-			.NpcLine(new TextObject("{=C2OtgWn0}He acts as though the Sea Hounds have already crowned him their king. He demanded that I hunt for captives here in the south and sell them to him, promising to pay me with a huge store of silver that some new partners of his, a vile-looking gang of Vlandian pirates, hoped to steal from the merchants of Omor."), IsEmiraAlFahda, IsMainHero)
+			.NpcLine(new TextObject("{=tlXQV9mO}[ib:normal]I can tell you this – I don’t have your sister. I used to buy captives from the Sea Hounds. But now they have this new leader named Purig, who keeps them all for his own purposes. Apparently he has some anchorage up in the north, where he intends to use slaves to build larger and stronger ships."), IsEmiraAlFahda, IsMainHero, token4)
+			.NpcLine(new TextObject("{=w5GbjHDG}[ib:closed]Purig, a leader among the Sea Hounds! I'll speak straight here - it gnaws at my gut to hear that he is prospering from his treachery."), IsGunnar, IsMainHero)
+			.NpcLine(new TextObject("{=C2OtgWn0}[ib:demure]He acts as though the Sea Hounds have already crowned him their king. He demanded that I hunt for captives here in the south and sell them to him, promising to pay me with a huge store of silver that some new partners of his, a vile-looking gang of Vlandian pirates, hoped to steal from the merchants of Omor."), IsEmiraAlFahda, IsMainHero)
 			.NpcLine(new TextObject("{=Ex5CzHBt}We should get more information on this Omor silver. If we can stop these Vlandians it would deal a great blow to Purig, and we could possibly find out more about this northern anchorage, his captives, and maybe your sister."), IsGunnar, IsMainHero)
 			.NpcLine(new TextObject("{=2bzElv6k}So that information is worth something to you, is it not? If we add in that ransom I mentioned, is it enough to buy my life and my freedom?"), IsEmiraAlFahda, IsMainHero)
 			.NpcLine(new TextObject("{=M24S1pEI}You know my preference, {PLAYER.NAME}. If I bring her back to Quyaz, I will ensure that you get some of the credit, but perhaps you prefer good cold silver to goodwill."), IsLahar, IsMainHero, null, token5)

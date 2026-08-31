@@ -153,7 +153,7 @@ public class Quest5NavalMissionDeploymentPlanningLogic : NavalMissionDeploymentP
 		return false;
 	}
 
-	public override MatrixFrame GetDeploymentFrame(Team team)
+	public override MatrixFrame GetDeploymentZoneFrame(Team team)
 	{
 		return MatrixFrame.Identity;
 	}

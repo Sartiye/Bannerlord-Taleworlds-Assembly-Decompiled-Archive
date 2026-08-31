@@ -275,7 +275,6 @@ public class PlayerArmyWaitBehavior : CampaignBehaviorBase
 		if (MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty != MobileParty.MainParty && (MobileParty.MainParty.CurrentSettlement == null || PlayerEncounter.Current == null))
 		{
 			EncounterManager.StartSettlementEncounter(MobileParty.MainParty, MobileParty.MainParty.Army.LeaderParty.LastVisitedSettlement);
-			return;
 		}
 		Settlement currentSettlement = MobileParty.MainParty.CurrentSettlement;
 		if (currentSettlement.IsTown)

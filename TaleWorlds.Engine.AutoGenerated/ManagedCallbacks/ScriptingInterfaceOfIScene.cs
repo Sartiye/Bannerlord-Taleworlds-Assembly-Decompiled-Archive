@@ -309,6 +309,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate int GetEntitiesAsWeakDelegate(UIntPtr scenePointer, IntPtr entityIds, int maxCount);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	public delegate int GetEntityCountDelegate(UIntPtr scenePointer);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -992,6 +997,12 @@ internal class ScriptingInterfaceOfIScene : IScene
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
 	public delegate int SetAbilityOfFacesWithIdDelegate(UIntPtr scenePointer, int faceGroupId, [MarshalAs(UnmanagedType.U1)] bool isEnabled);
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	[return: MarshalAs(UnmanagedType.U1)]
+	public delegate bool SetAbilityOfFaceWithIndexDelegate(UIntPtr scenePointer, int faceIndex, [MarshalAs(UnmanagedType.U1)] bool isEnabled, [MarshalAs(UnmanagedType.U1)] bool updateIslandIndices);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -1695,6 +1706,8 @@ internal class ScriptingInterfaceOfIScene : IScene
 
 	public static GetEntitiesDelegate call_GetEntitiesDelegate;
 
+	public static GetEntitiesAsWeakDelegate call_GetEntitiesAsWeakDelegate;
+
 	public static GetEntityCountDelegate call_GetEntityCountDelegate;
 
 	public static GetEntityWithGuidDelegate call_GetEntityWithGuidDelegate;
@@ -1958,6 +1971,8 @@ internal class ScriptingInterfaceOfIScene : IScene
 	public static SetAberrationSmoothDelegate call_SetAberrationSmoothDelegate;
 
 	public static SetAbilityOfFacesWithIdDelegate call_SetAbilityOfFacesWithIdDelegate;
+
+	public static SetAbilityOfFaceWithIndexDelegate call_SetAbilityOfFaceWithIndexDelegate;
 
 	public static SetActiveVisibilityLevelsDelegate call_SetActiveVisibilityLevelsDelegate;
 
@@ -2635,6 +2650,15 @@ internal class ScriptingInterfaceOfIScene : IScene
 	public void GetEntities(UIntPtr scenePointer, UIntPtr entityObjectsArrayPointer)
 	{
 		call_GetEntitiesDelegate(scenePointer, entityObjectsArrayPointer);
+	}
+
+	public int GetEntitiesAsWeak(UIntPtr scenePointer, UIntPtr[] entityIds, int maxCount)
+	{
+		PinnedArrayData<UIntPtr> pinnedArrayData = new PinnedArrayData<UIntPtr>(entityIds);
+		IntPtr pointer = pinnedArrayData.Pointer;
+		int result = call_GetEntitiesAsWeakDelegate(scenePointer, pointer, maxCount);
+		pinnedArrayData.Dispose();
+		return result;
 	}
 
 	public int GetEntityCount(UIntPtr scenePointer)
@@ -3567,6 +3591,11 @@ internal class ScriptingInterfaceOfIScene : IScene
 	public int SetAbilityOfFacesWithId(UIntPtr scenePointer, int faceGroupId, bool isEnabled)
 	{
 		return call_SetAbilityOfFacesWithIdDelegate(scenePointer, faceGroupId, isEnabled);
+	}
+
+	public bool SetAbilityOfFaceWithIndex(UIntPtr scenePointer, int faceIndex, bool isEnabled, bool updateIslandIndices)
+	{
+		return call_SetAbilityOfFaceWithIndexDelegate(scenePointer, faceIndex, isEnabled, updateIslandIndices);
 	}
 
 	public void SetActiveVisibilityLevels(UIntPtr scenePointer, string levelsAppended)

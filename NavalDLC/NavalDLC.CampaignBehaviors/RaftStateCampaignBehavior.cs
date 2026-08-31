@@ -14,10 +14,6 @@ namespace NavalDLC.CampaignBehaviors;
 
 public class RaftStateCampaignBehavior : CampaignBehaviorBase
 {
-	private Dictionary<Ship, List<ShipUpgradePiece>> _playerCachedShips = new Dictionary<Ship, List<ShipUpgradePiece>>();
-
-	private AnchorPoint _cachedAnchorPoint;
-
 	public override void RegisterEvents()
 	{
 		CampaignEvents.OnMobilePartyRaftStateChangedEvent.AddNonSerializedListener(this, OnMobilePartyRaftStateChanged);
@@ -30,12 +26,52 @@ public class RaftStateCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.SettlementEntered.AddNonSerializedListener(this, OnSettlementEntered);
 		CampaignEvents.CanHaveCampaignIssuesEvent.AddNonSerializedListener(this, CanHaveCampaignIssues);
 		CampaignEvents.OnPlayerCharacterChangedEvent.AddNonSerializedListener(this, OnPlayerCharacterChanged);
+		CampaignEvents.OnGameLoadFinishedEvent.AddNonSerializedListener(this, OnGameLoadFinished);
 	}
 
 	public override void SyncData(IDataStore dataStore)
 	{
-		dataStore.SyncData("_playerCachedShips", ref _playerCachedShips);
-		dataStore.SyncData("_cachedAnchorPoint", ref _cachedAnchorPoint);
+		if (!dataStore.IsLoading || !MBSaveLoad.IsUpdatingGameVersion || !(MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.5.0.117599")))
+		{
+			return;
+		}
+		Dictionary<Ship, List<ShipUpgradePiece>> data = new Dictionary<Ship, List<ShipUpgradePiece>>();
+		AnchorPoint data2 = null;
+		dataStore.SyncData("_playerCachedShips", ref data);
+		dataStore.SyncData("_cachedAnchorPoint", ref data2);
+		MBList<Ship> mBList = new MBList<Ship>();
+		foreach (KeyValuePair<Ship, List<ShipUpgradePiece>> item in data)
+		{
+			Ship key = item.Key;
+			List<ShipUpgradePiece> value = item.Value;
+			key.CanHaveUnlockedPieces = true;
+			foreach (ShipUpgradePiece item2 in value)
+			{
+				bool flag = false;
+				foreach (KeyValuePair<string, ShipSlot> availableSlot in key.ShipHull.AvailableSlots)
+				{
+					if (item2.DoesPieceMatchSlot(availableSlot.Value) && key.GetPieceAtSlot(availableSlot.Key) != item2)
+					{
+						flag = true;
+						break;
+					}
+				}
+				if (flag)
+				{
+					key.AddToUnlockedPieces(item2);
+				}
+			}
+			mBList.Add(key);
+		}
+		if (mBList.Count > 0 && data2 != null)
+		{
+			Campaign.Current.PlayerDataForNavalAutoTravel = new PlayerDataForNavalAutoTravel(mBList, data2);
+		}
+	}
+
+	private void OnGameLoadFinished()
+	{
+		Campaign.Current.PlayerDataForNavalAutoTravel?.ReservedAnchorPoint?.InitializeOnLoad(MobileParty.MainParty);
 	}
 
 	private void OnSessionLaunched(CampaignGameStarter gameStarter)
@@ -72,12 +108,13 @@ public class RaftStateCampaignBehavior : CampaignBehaviorBase
 	private void player_raft_state_end_continue_on_consequence(MenuCallbackArgs args)
 	{
 		GameMenu.ExitToLast();
-		if (_playerCachedShips.Count > 0)
+		MBReadOnlyList<Ship> mBReadOnlyList = Campaign.Current.PlayerDataForNavalAutoTravel?.ReservedShips;
+		AnchorPoint anchorPoint = Campaign.Current.PlayerDataForNavalAutoTravel?.ReservedAnchorPoint;
+		if (mBReadOnlyList != null && mBReadOnlyList.Count > 0 && anchorPoint != null)
 		{
-			GiveCachedShipsToMainParty();
-			MobileParty.MainParty.Anchor.SetPosition(_cachedAnchorPoint.Position);
-			MobileParty.MainParty.Anchor.SetLastUsedDisembarkPosition(_cachedAnchorPoint.GetLastUsedDisembarkPosition());
-			_cachedAnchorPoint = null;
+			GiveCachedShipsToMainParty(mBReadOnlyList);
+			MobileParty.MainParty.SetAnchor(anchorPoint);
+			Campaign.Current.PlayerDataForNavalAutoTravel = null;
 		}
 	}
 
@@ -97,13 +134,15 @@ public class RaftStateCampaignBehavior : CampaignBehaviorBase
 		{
 			if (MobileParty.MainParty.Ships.Count > 0)
 			{
-				_cachedAnchorPoint = new AnchorPoint(MobileParty.MainParty.Anchor);
+				AnchorPoint anchorPoint = new AnchorPoint(MobileParty.MainParty.Anchor);
+				MBList<Ship> mBList = new MBList<Ship>();
 				for (int num = MobileParty.MainParty.Ships.Count - 1; num >= 0; num--)
 				{
 					Ship ship = MobileParty.MainParty.Ships[num];
-					_playerCachedShips.Add(ship, ship.UnlockedUpgradePieces.ToList());
-					ship.Owner = null;
+					mBList.Add(ship);
+					ChangeShipOwnerAction.ApplyByTemporarilyRemovingShipsFromPlayer(ship);
 				}
+				Campaign.Current.PlayerDataForNavalAutoTravel = new PlayerDataForNavalAutoTravel(mBList, anchorPoint);
 			}
 			HandleRaftStateActivate(MobileParty.MainParty, null);
 		}
@@ -225,7 +264,7 @@ public class RaftStateCampaignBehavior : CampaignBehaviorBase
 	{
 		if (mobileParty != null && mobileParty.IsInRaftState)
 		{
-			Debug.FailedAssert("this should not be possible natively.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\CampaignBehaviors\\RaftStateCampaignBehavior.cs", "OnSettlementEntered", 274);
+			Debug.FailedAssert("this should not be possible natively.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\CampaignBehaviors\\RaftStateCampaignBehavior.cs", "OnSettlementEntered", 325);
 			RaftStateChangeAction.DeactivateRaftStateForParty(MobileParty.MainParty);
 		}
 	}
@@ -248,10 +287,14 @@ public class RaftStateCampaignBehavior : CampaignBehaviorBase
 		{
 			RaftStateChangeAction.ActivateRaftStateForParty(newMainParty);
 		}
-		else if (_playerCachedShips.Count > 0)
+		else
 		{
-			_cachedAnchorPoint = null;
-			GiveCachedShipsToMainParty();
+			PlayerDataForNavalAutoTravel playerDataForNavalAutoTravel = Campaign.Current.PlayerDataForNavalAutoTravel;
+			if (playerDataForNavalAutoTravel != null && playerDataForNavalAutoTravel.ReservedShips?.Count > 0)
+			{
+				GiveCachedShipsToMainParty(Campaign.Current.PlayerDataForNavalAutoTravel.ReservedShips);
+				Campaign.Current.PlayerDataForNavalAutoTravel = null;
+			}
 		}
 		Army army = newMainParty.Army;
 		if (army != null && army.LeaderParty.IsCurrentlyAtSea && !army.LeaderParty.HasNavalNavigationCapability)
@@ -268,35 +311,12 @@ public class RaftStateCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private void GiveCachedShipsToMainParty()
+	private void GiveCachedShipsToMainParty(MBReadOnlyList<Ship> playerShips)
 	{
-		foreach (KeyValuePair<Ship, List<ShipUpgradePiece>> playerCachedShip in _playerCachedShips)
+		foreach (Ship playerShip in playerShips)
 		{
-			Ship key = playerCachedShip.Key;
-			List<ShipUpgradePiece> value = playerCachedShip.Value;
-			ChangeShipOwnerAction.ApplyByTransferring(PartyBase.MainParty, key);
-			if (value.Count <= 0)
-			{
-				continue;
-			}
-			foreach (KeyValuePair<string, ShipSlot> availableSlot in key.ShipHull.AvailableSlots)
-			{
-				string key2 = availableSlot.Key;
-				ShipUpgradePiece pieceAtSlot = key.GetPieceAtSlot(key2);
-				foreach (ShipUpgradePiece item in value)
-				{
-					if (item.DoesPieceMatchSlot(availableSlot.Value))
-					{
-						key.EquipUpgradePiece(key2, item);
-					}
-				}
-				if (pieceAtSlot != null)
-				{
-					key.EquipUpgradePiece(key2, pieceAtSlot);
-				}
-			}
+			ChangeShipOwnerAction.ApplyByGivingBackShipsToPlayer(playerShip);
 		}
-		_playerCachedShips.Clear();
 	}
 
 	private void CanHaveCampaignIssues(Hero hero, ref bool canHaveCampaignIssues)

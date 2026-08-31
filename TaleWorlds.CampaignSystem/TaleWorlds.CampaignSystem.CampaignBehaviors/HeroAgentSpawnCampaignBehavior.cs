@@ -124,6 +124,7 @@ public class HeroAgentSpawnCampaignBehavior : CampaignBehaviorBase
 		{
 		case HeroAgentLocationModel.HeroLocationDetail.SettlementKingQueen:
 			text = "sp_throne";
+			forceSpawnOnSpecialTargetTag = true;
 			break;
 		case HeroAgentLocationModel.HeroLocationDetail.Prisoner:
 			text = "sp_prisoner";
@@ -154,8 +155,9 @@ public class HeroAgentSpawnCampaignBehavior : CampaignBehaviorBase
 		case HeroAgentLocationModel.HeroLocationDetail.PartylessHeroInsideVillage:
 			text = "sp_notable_rural_notable";
 			break;
+		case HeroAgentLocationModel.HeroLocationDetail.MainPartyCompanion:
 		case HeroAgentLocationModel.HeroLocationDetail.Wanderer:
-			text = "npc_common";
+			text = "npc_common_limited";
 			break;
 		default:
 			text = "sp_notable";
@@ -197,7 +199,7 @@ public class HeroAgentSpawnCampaignBehavior : CampaignBehaviorBase
 			actionSetCode = null;
 			break;
 		default:
-			Debug.FailedAssert("action Set Code is not set properly with a location reason!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\HeroAgentSpawnCampaignBehavior.cs", "CreateLocationCharacterForHero", 280);
+			Debug.FailedAssert("action Set Code is not set properly with a location reason!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\HeroAgentSpawnCampaignBehavior.cs", "CreateLocationCharacterForHero", 282);
 			break;
 		}
 		bool useCivilianEquipment = true;

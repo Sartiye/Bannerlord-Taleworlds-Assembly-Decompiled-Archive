@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Helpers;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
@@ -274,7 +275,11 @@ public class PartyHealCampaignBehavior : CampaignBehaviorBase
 			Hero heroObject = memberRoster.GetCharacterAtIndex(i).HeroObject;
 			if (heroObject != null && !heroObject.IsHealthFull())
 			{
-				heroObject.Heal(num, addXp: true);
+				ExplainedNumber bonuses = new ExplainedNumber(num);
+				BattleEnvironment battleEnvironment = (((heroObject.PartyBelongedTo == null || !heroObject.PartyBelongedTo.IsCurrentlyAtSea) && (heroObject.PartyBelongedToAsPrisoner == null || !heroObject.PartyBelongedToAsPrisoner.IsMobile || !heroObject.PartyBelongedToAsPrisoner.MobileParty.IsCurrentlyAtSea)) ? BattleEnvironment.Land : BattleEnvironment.Naval);
+				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Medicine.SelfMedication, battleEnvironment, heroObject.CharacterObject, isPrimaryBonus: true, ref bonuses);
+				TraitEffectHelper.ApplyTraitEffect(heroObject, DefaultPersonalityTraitEffects.ValorInjuryRecoveryEffect, ref bonuses);
+				heroObject.Heal(MBRandom.RoundRandomized(bonuses.ResultNumber), addXp: true);
 			}
 		}
 	}

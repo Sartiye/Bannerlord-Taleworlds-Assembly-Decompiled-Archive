@@ -155,8 +155,8 @@ public class ScrollbarWidget : ImageWidget
 
 	protected override void OnLateUpdate(float dt)
 	{
-		base.OnUpdate(dt);
-		if (Handle.IsPressed)
+		base.OnLateUpdate(dt);
+		if (Handle != null && Handle.IsPressed)
 		{
 			if (!_handleClicked)
 			{
@@ -287,7 +287,7 @@ public class ScrollbarWidget : ImageWidget
 
 	private void UpdateHandleLength()
 	{
-		if (!DoNotUpdateHandleSize && IsDiscrete && Handle.WidthSizePolicy == SizePolicy.Fixed)
+		if (Handle != null && !DoNotUpdateHandleSize && IsDiscrete && Handle.WidthSizePolicy == SizePolicy.Fixed)
 		{
 			if (AlignmentAxis == AlignmentAxis.Horizontal)
 			{

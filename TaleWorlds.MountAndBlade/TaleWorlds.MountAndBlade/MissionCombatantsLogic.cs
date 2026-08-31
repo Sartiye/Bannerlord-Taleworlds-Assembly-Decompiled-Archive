@@ -48,6 +48,18 @@ public class MissionCombatantsLogic : MissionLogic
 		IsPlayerSergeant = isPlayerSergeant;
 	}
 
+	public bool SupportsAllyTeamOnPlayerSide(out IBattleCombatant allyCombatant)
+	{
+		allyCombatant = null;
+		BattleSideEnum playerSide = PlayerBattleCombatant.Side;
+		bool isNavalLandHybridMission = TeamAIType == Mission.MissionTeamAITypeEnum.NavalRaid;
+		if (SupportsAllyTeamOnPlayerSide(BattleCombatants.Where((IBattleCombatant cmbt) => cmbt.Side == playerSide), PlayerBattleCombatant, IsPlayerSergeant, isNavalLandHybridMission, out allyCombatant))
+		{
+			return true;
+		}
+		return false;
+	}
+
 	public Banner GetBannerForSide(BattleSideEnum side)
 	{
 		if (side != 0)
@@ -55,6 +67,11 @@ public class MissionCombatantsLogic : MissionLogic
 			return AttackerLeaderBattleCombatant.Banner;
 		}
 		return DefenderLeaderBattleCombatant.Banner;
+	}
+
+	public BasicCultureObject GetCultureForPlayerSide()
+	{
+		return PlayerBattleCombatant.BasicCulture;
 	}
 
 	public override void OnBehaviorInitialize()

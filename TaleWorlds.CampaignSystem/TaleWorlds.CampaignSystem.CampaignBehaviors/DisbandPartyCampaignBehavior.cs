@@ -7,6 +7,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -70,6 +71,32 @@ public class DisbandPartyCampaignBehavior : CampaignBehaviorBase, IDisbandPartyC
 				}
 			}
 		}
+		if (!MBSaveLoad.IsUpdatingGameVersion || !(MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.5.0.120143")))
+		{
+			return;
+		}
+		foreach (MobileParty item2 in MobileParty.All)
+		{
+			if (!item2.IsCaravan || item2.Ships.Count <= 0 || item2.TargetSettlement == null || item2.TargetSettlement.HasPort)
+			{
+				continue;
+			}
+			item2.IsDisbanding = true;
+			if (_partiesThatWaitingToDisband.ContainsKey(item2))
+			{
+				_partiesThatWaitingToDisband.Remove(item2);
+			}
+			CampaignVec2 campaignVec = item2.Position;
+			if (item2.Position.IsOnLand || item2.IsTransitionInProgress)
+			{
+				campaignVec = NavigationHelper.FindPointAroundPosition(item2.Position, item2.NavigationCapability, 250f, 0f, requirePath: false);
+				if (item2.MapEvent != null)
+				{
+					item2.Position = campaignVec;
+				}
+			}
+			item2.SetMoveGoToPoint(campaignVec, item2.NavigationCapability);
+		}
 	}
 
 	private void OnSessionLaunched(CampaignGameStarter campaignGameStarter)
@@ -113,7 +140,7 @@ public class DisbandPartyCampaignBehavior : CampaignBehaviorBase, IDisbandPartyC
 		{
 			_ = party.LeaderHero;
 			party.RemovePartyLeader();
-			Debug.FailedAssert("Player Clan's party should not have a leader hero after party disband started!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\DisbandPartyCampaignBehavior.cs", "OnPartyDisbandStarted", 137);
+			Debug.FailedAssert("Player Clan's party should not have a leader hero after party disband started!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\DisbandPartyCampaignBehavior.cs", "OnPartyDisbandStarted", 171);
 		}
 		CampaignTime value = (party.IsCurrentlyAtSea ? CampaignTime.Never : CampaignTime.DaysFromNow(1f));
 		_partiesThatWaitingToDisband.Add(party, value);
@@ -218,21 +245,21 @@ public class DisbandPartyCampaignBehavior : CampaignBehaviorBase, IDisbandPartyC
 		targetSettlement = null;
 		bestNavigationType = MobileParty.NavigationType.None;
 		isTargetingPort = false;
-		foreach (Settlement settlement2 in mobileParty.MapFaction.Settlements)
+		foreach (Settlement settlement3 in mobileParty.MapFaction.Settlements)
 		{
-			if (settlement2.IsFortification)
+			if (settlement3.IsFortification && (mobileParty.HasLandNavigationCapability || settlement3.HasPort))
 			{
-				if (settlement2 == mobileParty.CurrentSettlement)
+				if (settlement3 == mobileParty.CurrentSettlement)
 				{
 					bestNavigationType = mobileParty.NavigationCapability;
 					isTargetingPort = !mobileParty.HasLandNavigationCapability;
-					targetSettlement = settlement2;
+					targetSettlement = settlement3;
 					break;
 				}
-				CalculateTargetSettlementScore(mobileParty, settlement2, out var bestNavigationType2, out var bestScore, out var isTargetingPort2);
+				CalculateTargetSettlementScore(mobileParty, settlement3, out var bestNavigationType2, out var bestScore, out var isTargetingPort2);
 				if (bestScore > num)
 				{
-					targetSettlement = settlement2;
+					targetSettlement = settlement3;
 					num = bestScore;
 					bestNavigationType = bestNavigationType2;
 					isTargetingPort = isTargetingPort2;
@@ -245,7 +272,7 @@ public class DisbandPartyCampaignBehavior : CampaignBehaviorBase, IDisbandPartyC
 			int num2 = -1;
 			do
 			{
-				num2 = SettlementHelper.FindNextSettlementAroundMobileParty(mobileParty, mobileParty.NavigationCapability, maxDistance, num2, (Settlement s) => s.OwnerClan != null && !s.OwnerClan.IsAtWarWith(mobileParty.MapFaction) && s.IsFortification);
+				num2 = SettlementHelper.FindNextSettlementAroundMobileParty(mobileParty, mobileParty.NavigationCapability, maxDistance, num2, (Settlement s) => s.OwnerClan != null && !s.OwnerClan.IsAtWarWith(mobileParty.MapFaction) && s.IsFortification && (mobileParty.HasLandNavigationCapability || s.HasPort));
 				if (num2 >= 0)
 				{
 					Settlement settlement = Settlement.All[num2];
@@ -261,16 +288,32 @@ public class DisbandPartyCampaignBehavior : CampaignBehaviorBase, IDisbandPartyC
 			}
 			while (num2 >= 0);
 		}
-		if (targetSettlement == null)
+		if (targetSettlement != null)
 		{
-			targetSettlement = SettlementHelper.FindNearestFortificationToMobileParty(mobileParty, mobileParty.NavigationCapability, (Settlement x) => x.OwnerClan != null && !x.OwnerClan.IsAtWarWith(mobileParty.MapFaction));
+			return;
+		}
+		Settlement settlement2 = SettlementHelper.FindNearestFortificationToMobileParty(mobileParty, mobileParty.NavigationCapability, (Settlement x) => x.OwnerClan != null && !x.OwnerClan.IsAtWarWith(mobileParty.MapFaction));
+		if (settlement2 != null)
+		{
+			CalculateTargetSettlementScore(mobileParty, settlement2, out bestNavigationType, out var _, out isTargetingPort);
+			if (bestNavigationType != 0)
+			{
+				targetSettlement = settlement2;
+			}
 		}
 	}
 
 	private void CalculateTargetSettlementScore(MobileParty disbandParty, Settlement settlement, out MobileParty.NavigationType bestNavigationType, out float bestScore, out bool isTargetingPort)
 	{
+		float bestNavigationDistance = float.MaxValue;
+		bool isFromPort = false;
+		bestNavigationType = MobileParty.NavigationType.None;
 		isTargetingPort = false;
-		AiHelper.GetBestNavigationTypeAndAdjustedDistanceOfSettlementForMobileParty(disbandParty, settlement, isTargetingPort: false, out bestNavigationType, out var bestNavigationDistance, out var isFromPort);
+		if (disbandParty.HasLandNavigationCapability)
+		{
+			isTargetingPort = false;
+			AiHelper.GetBestNavigationTypeAndAdjustedDistanceOfSettlementForMobileParty(disbandParty, settlement, isTargetingPort: false, out bestNavigationType, out bestNavigationDistance, out isFromPort);
+		}
 		if (settlement.HasPort && disbandParty.HasNavalNavigationCapability)
 		{
 			AiHelper.GetBestNavigationTypeAndAdjustedDistanceOfSettlementForMobileParty(disbandParty, settlement, isTargetingPort: true, out var bestNavigationType2, out var bestNavigationDistance2, out isFromPort);
@@ -280,6 +323,11 @@ public class DisbandPartyCampaignBehavior : CampaignBehaviorBase, IDisbandPartyC
 				bestNavigationType = bestNavigationType2;
 				isTargetingPort = true;
 			}
+		}
+		if (bestNavigationType == MobileParty.NavigationType.None)
+		{
+			bestScore = float.MinValue;
+			return;
 		}
 		float num = MathF.Pow(1f - 0.95f * (MathF.Min(Campaign.MapDiagonal, bestNavigationDistance) / Campaign.MapDiagonal), 3f);
 		float num2 = ((disbandParty.Party.Owner?.Clan == settlement.OwnerClan) ? 1f : ((disbandParty.Party.Owner?.MapFaction == settlement.MapFaction) ? 0.1f : 0.01f));
@@ -515,7 +563,7 @@ public class DisbandPartyCampaignBehavior : CampaignBehaviorBase, IDisbandPartyC
 	{
 		if (MobileParty.ConversationParty != null && MobileParty.ConversationParty.MapFaction != Clan.PlayerClan.MapFaction && !FactionManager.IsAtWarAgainstFaction(Hero.MainHero.MapFaction, MobileParty.ConversationParty.MapFaction))
 		{
-			return !MobileParty.MainParty.IsInRaftState;
+			return !MobileParty.MainParty.IsInNavalAutoTravel;
 		}
 		return false;
 	}
@@ -524,7 +572,7 @@ public class DisbandPartyCampaignBehavior : CampaignBehaviorBase, IDisbandPartyC
 	{
 		if (MobileParty.ConversationParty != null && MobileParty.ConversationParty.MapFaction != Clan.PlayerClan.MapFaction && FactionManager.IsAtWarAgainstFaction(Hero.MainHero.MapFaction, MobileParty.ConversationParty.MapFaction))
 		{
-			return !MobileParty.MainParty.IsInRaftState;
+			return !MobileParty.MainParty.IsInNavalAutoTravel;
 		}
 		return false;
 	}

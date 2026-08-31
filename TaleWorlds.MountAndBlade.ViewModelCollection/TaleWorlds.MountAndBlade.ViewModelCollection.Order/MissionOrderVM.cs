@@ -22,12 +22,6 @@ public class MissionOrderVM : ViewModel
 		Form
 	}
 
-	public enum OrderTargets
-	{
-		Troops,
-		SiegeMachines
-	}
-
 	public struct ClassConfiguration
 	{
 		public int FormationIndex;
@@ -64,8 +58,6 @@ public class MissionOrderVM : ViewModel
 
 	private bool _isMultiplayer;
 
-	private MBReadOnlyList<Formation> _focusedFormationsCache;
-
 	private int _delayValueForAIFormationModifications;
 
 	private readonly List<Formation> _modifiedAIFormations = new List<Formation>();
@@ -91,8 +83,6 @@ public class MissionOrderVM : ViewModel
 	private MissionOrderDeploymentControllerVM _deploymentController;
 
 	private bool _isDeployment;
-
-	private int _activeTargetState;
 
 	private bool _hasAnyCascadingOrders;
 
@@ -211,25 +201,6 @@ public class MissionOrderVM : ViewModel
 			{
 				_deploymentController = value;
 				OnPropertyChangedWithValue(value, "DeploymentController");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public int ActiveTargetState
-	{
-		get
-		{
-			return _activeTargetState;
-		}
-		set
-		{
-			if (value != _activeTargetState)
-			{
-				_activeTargetState = value;
-				OnPropertyChangedWithValue(value, "ActiveTargetState");
-				IsTroopPlacingActive = value == 0;
-				_callbacks.RefreshVisuals();
 			}
 		}
 	}
@@ -405,15 +376,9 @@ public class MissionOrderVM : ViewModel
 		return new MissionOrderTroopControllerVM(this, IsDeployment, OnTransferFinished);
 	}
 
-	public void SetDeploymentParemeters(Camera deploymentCamera, List<DeploymentPoint> deploymentPoints)
-	{
-		DeploymentController.SetMissionParameters(deploymentCamera, deploymentPoints);
-	}
-
 	public void SetCallbacks(MissionOrderCallbacks callbacks)
 	{
 		_callbacks = callbacks;
-		DeploymentController.SetCallbacks(callbacks);
 	}
 
 	public override void RefreshValues()
@@ -424,7 +389,6 @@ public class MissionOrderVM : ViewModel
 		{
 			o.RefreshValues();
 		});
-		DeploymentController.RefreshValues();
 		TroopController.RefreshValues();
 	}
 
@@ -515,18 +479,7 @@ public class MissionOrderVM : ViewModel
 			});
 		}
 		List<TextObject> list = new List<TextObject>();
-		if (ActiveTargetState == 1 && orderItem.Order.StringId != "order_toggle_facing")
-		{
-			for (int i = 0; i < DeploymentController.SiegeMachineList.Count; i++)
-			{
-				OrderSiegeMachineVM orderSiegeMachineVM = DeploymentController.SiegeMachineList[i];
-				if (orderSiegeMachineVM.IsSelected)
-				{
-					list.Add(GameTexts.FindText("str_siege_engine", orderSiegeMachineVM.MachineClass));
-				}
-			}
-		}
-		else if (!(orderItem.Order is ReturnVisualOrder))
+		if (!(orderItem.Order is ReturnVisualOrder))
 		{
 			foreach (OrderTroopItemVM item in TroopController.TroopList.Where((OrderTroopItemVM item) => item.IsSelected))
 			{
@@ -770,7 +723,6 @@ public class MissionOrderVM : ViewModel
 		IsToggleOrderShown = true;
 		TroopController.UpdateTroops();
 		TroopController.IsTransferActive = false;
-		DeploymentController.ProcessSiegeMachines();
 		if (OrderController.SelectedFormations.IsEmpty())
 		{
 			TroopController.SelectAllFormations();
@@ -849,23 +801,11 @@ public class MissionOrderVM : ViewModel
 
 	public void SetActiveOrders()
 	{
-		if (ActiveTargetState == 1)
-		{
-			DeploymentController.SetCurrentActiveOrders();
-		}
-		else
-		{
-			TroopController.SetCurrentActiveOrders();
-		}
+		TroopController.SetCurrentActiveOrders();
 		OrderSets.ApplyActionOnAllItems(delegate(OrderSetVM os)
 		{
 			os.RefreshOrderStates();
 		});
-	}
-
-	public void SetFocusedFormations(MBReadOnlyList<Formation> focusedFormationsCache)
-	{
-		_focusedFormationsCache = focusedFormationsCache;
 	}
 
 	public void AfterInitialize()
@@ -875,7 +815,6 @@ public class MissionOrderVM : ViewModel
 		{
 			TroopController.SelectAllFormations(uiFeedback: false);
 		}
-		DeploymentController.SetCurrentActiveOrders();
 	}
 
 	public void Update()
@@ -907,7 +846,6 @@ public class MissionOrderVM : ViewModel
 			_slowMotionSoundEvent.Release();
 			_slowMotionSoundEvent = null;
 		}
-		DeploymentController.Update();
 		DisplayFormationAIFeedback();
 	}
 
@@ -971,14 +909,7 @@ public class MissionOrderVM : ViewModel
 	{
 		if (CheckCanBeOpened(displayMessage: true))
 		{
-			if (ActiveTargetState == 0)
-			{
-				TroopController.OnSelectFormationWithIndex(formationTroopIndex);
-			}
-			else if (ActiveTargetState == 1)
-			{
-				DeploymentController.OnSelectFormationWithIndex(formationTroopIndex);
-			}
+			TroopController.OnSelectFormationWithIndex(formationTroopIndex);
 			TryCloseToggleOrder();
 			OpenToggleOrder(fromHold: false);
 		}
@@ -1021,7 +952,7 @@ public class MissionOrderVM : ViewModel
 			}
 		}
 		_updateTroopsTimer = (IsToggleOrderShown ? new Timer(MBCommon.GetApplicationTime() - 2f, 2f) : null);
-		IsTroopPlacingActive = IsToggleOrderShown && ActiveTargetState == 0;
+		IsTroopPlacingActive = IsToggleOrderShown;
 		if (!IsDeployment && TroopController.TroopList.Count > 0 && TaleWorlds.InputSystem.Input.IsGamepadActive && TroopController.TroopList.FirstOrDefault((OrderTroopItemVM t) => t.FormationIndex == _lastHighlightedFormationIndex) == null)
 		{
 			TroopController.TroopList.ForEach(delegate(OrderTroopItemVM t)
@@ -1030,7 +961,6 @@ public class MissionOrderVM : ViewModel
 			});
 			TroopController.TroopList[0].IsSelectionHighlightActive = true;
 		}
-		_callbacks.RefreshVisuals();
 	}
 
 	public void OnTroopHighlightSelection(bool isDirectionLeft)
@@ -1149,7 +1079,6 @@ public class MissionOrderVM : ViewModel
 	public void OnDeploymentFinished()
 	{
 		TroopController.OnDeploymentFinished();
-		DeploymentController.FinalizeDeployment();
 		IsDeployment = false;
 	}
 

@@ -1,6 +1,6 @@
 using SandBox.GauntletUI.Tutorial;
 using SandBox.ViewModelCollection.Tutorial;
-using TaleWorlds.CampaignSystem.ViewModelCollection.ClanManagement;
+using TaleWorlds.CampaignSystem.ViewModelCollection.ClanManagement.Categories;
 using TaleWorlds.Core;
 
 namespace StoryMode.GauntletUI.Tutorial;

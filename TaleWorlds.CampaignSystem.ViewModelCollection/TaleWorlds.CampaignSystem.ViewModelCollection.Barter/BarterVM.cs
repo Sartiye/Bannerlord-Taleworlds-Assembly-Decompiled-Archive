@@ -874,7 +874,6 @@ public class BarterVM : ViewModel
 		}
 		_barterData.GetBarterables().Find((Barterable t) => t.Group.GetType() == typeof(GoldBarterGroup) && t.OriginalOwner == Hero.MainHero);
 		_barterData.GetBarterables().Find((Barterable t) => (t.Group.GetType() == typeof(GoldBarterGroup) && _barterData.OffererHero == Hero.MainHero && t.OriginalOwner == _barterData.OtherHero) || (_barterData.OtherHero == Hero.MainHero && t.OriginalOwner == _barterData.OffererHero));
-		RefreshOfferLabel();
 	}
 
 	private void ChangeBarterableIsOffered(Barterable barterable, bool newState)
@@ -1123,7 +1122,6 @@ public class BarterVM : ViewModel
 			item.CurrentOfferedAmount = item.TotalItemCount;
 		}
 		SendOffer();
-		RefreshOfferLabel();
 		RefreshCompatibility(item, item.IsOffered);
 	}
 
@@ -1132,7 +1130,6 @@ public class BarterVM : ViewModel
 		ChangeBarterableIsOffered(barterItemVM.Barterable, newState: true);
 		barterItemVM.CurrentOfferedAmount = (int)TaleWorlds.Library.MathF.Clamp(barterItemVM.CurrentOfferedAmount + count, 0f, barterItemVM.TotalItemCount);
 		SendOffer();
-		RefreshOfferLabel();
 		RefreshCompatibility(barterItemVM, barterItemVM.IsOffered);
 	}
 
@@ -1147,7 +1144,6 @@ public class BarterVM : ViewModel
 			barterItemVM.CurrentOfferedAmount = (int)TaleWorlds.Library.MathF.Clamp(barterItemVM.CurrentOfferedAmount - count, 0f, barterItemVM.TotalItemCount);
 		}
 		SendOffer();
-		RefreshOfferLabel();
 		RefreshCompatibility(barterItemVM, barterItemVM.IsOffered);
 	}
 
@@ -1192,18 +1188,6 @@ public class BarterVM : ViewModel
 		SendOffer();
 	}
 
-	private void RefreshOfferLabel()
-	{
-		if (LeftOfferList.Any((BarterItemVM x) => x.Barterable.GetValueForFaction(OtherFaction) < 0) || RightOfferList.Any((BarterItemVM x) => x.Barterable.GetValueForFaction(OtherFaction) < 0))
-		{
-			OfferLbl = GameTexts.FindText("str_offer").ToString();
-		}
-		else
-		{
-			OfferLbl = GameTexts.FindText("str_gift").ToString();
-		}
-	}
-
 	private void RefreshCompatibility(BarterItemVM lastTransferredItem, bool gotOffered)
 	{
 		foreach (MBBindingList<BarterItemVM> value in _leftList.Values)
@@ -1244,6 +1228,7 @@ public class BarterVM : ViewModel
 		ItemLbl = GameTexts.FindText("str_item_tag_name").ToString();
 		OtherLbl = GameTexts.FindText("str_other").ToString();
 		CancelLbl = GameTexts.FindText("str_cancel").ToString();
+		OfferLbl = GameTexts.FindText("str_confirm").ToString();
 		ResetLbl = GameTexts.FindText("str_reset").ToString();
 		DiplomaticLbl = GameTexts.FindText("str_diplomatic_group").ToString();
 		AutoBalanceHint.HintText = new TextObject("{=Ve5jkJqf}Auto Offer");

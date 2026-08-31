@@ -20,7 +20,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_1_I
 
 	private Widget _widget_0_0_0;
 
-	private PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_20_PortUpgradePieceVisuals__DependendPrefab _widget_0_0_0_0;
+	private PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_23_PortUpgradePieceVisuals__DependendPrefab _widget_0_0_0_0;
 
 	private Widget _widget_0_0_1;
 
@@ -95,6 +95,20 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_1_I
 		return visualDefinition;
 	}
 
+	private VisualDefinition CreateVisualDefinitionBottomMenu()
+	{
+		VisualDefinition visualDefinition = new VisualDefinition("BottomMenu", 0.45f, 0f, AnimationInterpolation.Type.EaseOut, AnimationInterpolation.Function.Quint);
+		visualDefinition.AddVisualState(new VisualState("Default")
+		{
+			PositionYOffset = 6f
+		});
+		visualDefinition.AddVisualState(new VisualState("Opened")
+		{
+			PositionYOffset = 100f
+		});
+		return visualDefinition;
+	}
+
 	public void CreateWidgets()
 	{
 		_widget = this;
@@ -104,7 +118,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_1_I
 		_widget_0.AddChild(_widget_0_0);
 		_widget_0_0_0 = new Widget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_0);
-		_widget_0_0_0_0 = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_20_PortUpgradePieceVisuals__DependendPrefab(base.Context);
+		_widget_0_0_0_0 = new PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_23_PortUpgradePieceVisuals__DependendPrefab(base.Context);
 		_widget_0_0_0.AddChild(_widget_0_0_0_0);
 		_widget_0_0_0_0.CreateWidgets();
 		_widget_0_0_1 = new Widget(base.Context);

@@ -357,6 +357,7 @@ public class LordsHallFightMissionController : MissionLogic, IMissionAgentSpawnL
 		_defenderTeams[1] = Mission.Current.DefenderAllyTeam;
 		int spawnCount = TaleWorlds.Library.MathF.Max(1, TaleWorlds.Library.MathF.Min(_attackerSideTroopCountMax, TaleWorlds.Library.MathF.Round((float)numberOfActiveTroops * _attackerDefenderTroopCountRatio)));
 		_missionSides[1].SpawnTroops(spawnCount, isReinforcement: false);
+		base.Mission.OnInitialSpawnCompleted();
 		bool flag = Mission.Current.AttackerTeam == Mission.Current.PlayerTeam || (Mission.Current.AttackerAllyTeam != null && Mission.Current.AttackerAllyTeam == Mission.Current.PlayerTeam);
 		_attackerTeams = new Team[2];
 		_attackerTeams[0] = Mission.Current.AttackerTeam;
