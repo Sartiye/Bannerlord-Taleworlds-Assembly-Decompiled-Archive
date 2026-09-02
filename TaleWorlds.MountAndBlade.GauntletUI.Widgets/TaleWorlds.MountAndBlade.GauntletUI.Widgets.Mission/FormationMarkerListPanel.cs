@@ -9,7 +9,7 @@ namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets.Mission;
 
 public class FormationMarkerListPanel : ListPanel
 {
-	public const int VisibilityStateUngated = -1;
+	public const int VisibilityStateNeutral = -1;
 
 	public const int VisibilityStateHidden = 0;
 

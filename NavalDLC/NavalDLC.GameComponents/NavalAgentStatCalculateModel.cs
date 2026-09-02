@@ -17,6 +17,11 @@ public class NavalAgentStatCalculateModel : AgentStatCalculateModel
 {
 	private Dictionary<Agent, Figurehead> _agentFigureHeadSpawnMap = new Dictionary<Agent, Figurehead>();
 
+	public void ClearMissionState()
+	{
+		_agentFigureHeadSpawnMap.Clear();
+	}
+
 	public override float GetDifficultyModifier()
 	{
 		return base.BaseModel.GetDifficultyModifier();

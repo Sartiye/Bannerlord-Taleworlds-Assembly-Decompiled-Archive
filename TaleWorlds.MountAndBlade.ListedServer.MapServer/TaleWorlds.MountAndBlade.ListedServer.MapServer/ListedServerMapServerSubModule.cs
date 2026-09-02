@@ -36,7 +36,7 @@ public class ListedServerMapServerSubModule : MBSubModuleBase
 					}
 				}
 			}
-			string strValue = MultiplayerOptions.OptionType.PremadeGameType.GetStrValue();
+			string strValue = MultiplayerOptions.OptionType.Map.GetStrValue();
 			if (!list2.Contains(strValue))
 			{
 				list2.Insert(0, strValue);
@@ -72,7 +72,7 @@ public class ListedServerMapServerSubModule : MBSubModuleBase
 	public override void OnMissionBehaviorInitialize(Mission mission)
 	{
 		base.OnMissionBehaviorInitialize(mission);
-		ModLogger.Log("Initialized mission with map '" + MultiplayerOptions.OptionType.PremadeGameType.GetStrValue() + "'");
+		ModLogger.Log("Initialized mission with map '" + MultiplayerOptions.OptionType.Map.GetStrValue() + "'");
 		try
 		{
 			if (CurrentMapArchive != null)

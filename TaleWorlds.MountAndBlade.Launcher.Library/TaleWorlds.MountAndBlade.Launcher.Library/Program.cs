@@ -65,9 +65,9 @@ public class Program
 				{
 					new Watchdog(use_coreclr: true, text);
 				}
-				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Source", "120933");
+				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Source", "121216");
 				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Target", "Public");
-				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Version", "v1.5.2.120933");
+				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Version", "v1.5.2.121216");
 				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Product Name", "Mount and Blade II Bannerlord");
 				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Build Name", name);
 				Watchdog.LogProperty("crash_tags.txt", "Runtime", "Launcher", "true");

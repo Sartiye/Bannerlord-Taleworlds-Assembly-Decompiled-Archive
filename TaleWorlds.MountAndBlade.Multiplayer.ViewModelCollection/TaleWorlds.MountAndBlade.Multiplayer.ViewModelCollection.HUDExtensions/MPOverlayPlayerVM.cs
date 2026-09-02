@@ -8,7 +8,7 @@ public class MPOverlayPlayerVM : MPPlayerVM
 {
 	private readonly Action<MPOverlayPlayerVM> _onSelected;
 
-	private static readonly HashSet<string> ExcludedHeaderIds = new HashSet<string> { "avatar", "badge", "name", "ping" };
+	private static readonly HashSet<string> ExcludedHeaderIds = new HashSet<string> { "avatar", "badge", "name", "score", "ping" };
 
 	private readonly List<string> _statIds = new List<string>();
 

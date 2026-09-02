@@ -92,7 +92,7 @@ internal sealed class Views_Shared__Layout : RazorPage<dynamic>
 	public override async Task ExecuteAsync()
 	{
 		WriteLiteral("<!DOCTYPE html>\r\n<html>\r\n");
-		__tagHelperExecutionContext = __tagHelperScopeManager.Begin("head", TagMode.StartTagAndEndTag, "ade0d29dd947485dc7e4496db188a6e5feee0506b2553e122e42b017aa8714797407", async delegate
+		__tagHelperExecutionContext = __tagHelperScopeManager.Begin("head", TagMode.StartTagAndEndTag, "ade0d29dd947485dc7e4496db188a6e5feee0506b2553e122e42b017aa8714797455", async delegate
 		{
 			WriteLiteral("\r\n    <base");
 			BeginWriteAttribute("href", " href=\"", 42, "\"", 67, 1);
@@ -101,7 +101,7 @@ internal sealed class Views_Shared__Layout : RazorPage<dynamic>
 			WriteLiteral(" />\r\n    <meta charset=\"utf-8\" />\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\r\n    <title>");
 			Write(base.ViewData["Title"]);
 			WriteLiteral(" - Bannerlord Custom Server Dashboard</title>\r\n\r\n    ");
-			__tagHelperExecutionContext = __tagHelperScopeManager.Begin("link", TagMode.SelfClosing, "ade0d29dd947485dc7e4496db188a6e5feee0506b2553e122e42b017aa8714798489", async delegate
+			__tagHelperExecutionContext = __tagHelperScopeManager.Begin("link", TagMode.SelfClosing, "ade0d29dd947485dc7e4496db188a6e5feee0506b2553e122e42b017aa8714798632", async delegate
 			{
 			});
 			__Microsoft_AspNetCore_Mvc_Razor_TagHelpers_UrlResolutionTagHelper = CreateTagHelper<UrlResolutionTagHelper>();
@@ -121,7 +121,7 @@ internal sealed class Views_Shared__Layout : RazorPage<dynamic>
 			Write(__tagHelperExecutionContext.Output);
 			__tagHelperExecutionContext = __tagHelperScopeManager.End();
 			WriteLiteral("\r\n    ");
-			__tagHelperExecutionContext = __tagHelperScopeManager.Begin("link", TagMode.SelfClosing, "ade0d29dd947485dc7e4496db188a6e5feee0506b2553e122e42b017aa87147910537", async delegate
+			__tagHelperExecutionContext = __tagHelperScopeManager.Begin("link", TagMode.SelfClosing, "ade0d29dd947485dc7e4496db188a6e5feee0506b2553e122e42b017aa87147910788", async delegate
 			{
 			});
 			__Microsoft_AspNetCore_Mvc_Razor_TagHelpers_UrlResolutionTagHelper = CreateTagHelper<UrlResolutionTagHelper>();
@@ -152,10 +152,10 @@ internal sealed class Views_Shared__Layout : RazorPage<dynamic>
 		Write(__tagHelperExecutionContext.Output);
 		__tagHelperExecutionContext = __tagHelperScopeManager.End();
 		WriteLiteral("\r\n");
-		__tagHelperExecutionContext = __tagHelperScopeManager.Begin("body", TagMode.StartTagAndEndTag, "ade0d29dd947485dc7e4496db188a6e5feee0506b2553e122e42b017aa87147913291", async delegate
+		__tagHelperExecutionContext = __tagHelperScopeManager.Begin("body", TagMode.StartTagAndEndTag, "ade0d29dd947485dc7e4496db188a6e5feee0506b2553e122e42b017aa87147913647", async delegate
 		{
 			WriteLiteral("\r\n    <div class=\"container-fluid\">\r\n        <nav class=\"navbar navbar-expand-sm fixed-top navbar-light bg-light\">\r\n            <div class=\"container\">\r\n                <div class=\"navbar-header\">\r\n                    <button class=\"navbar-toggler\" type=\"button\" data-toggle=\"collapse\" data-target=\"#top-bar\" aria-controls=\"top-bar\" aria-expanded=\"false\" aria-label=\"Toggle navigation\">\r\n                        <span class=\"navbar-toggler-icon\"></span>\r\n                    </button>\r\n                    ");
-			__tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", TagMode.StartTagAndEndTag, "ade0d29dd947485dc7e4496db188a6e5feee0506b2553e122e42b017aa87147914101", async delegate
+			__tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", TagMode.StartTagAndEndTag, "ade0d29dd947485dc7e4496db188a6e5feee0506b2553e122e42b017aa87147914457", async delegate
 			{
 				WriteLiteral("Bannerlord Custom Server Dashboard");
 			});
@@ -179,7 +179,7 @@ internal sealed class Views_Shared__Layout : RazorPage<dynamic>
 			Write(RenderBody());
 			WriteLiteral("\r\n\r\n            <hr />\r\n            <footer>\r\n                <p>&copy; 2022 - TaleWorlds - Bannerlord Custom Server Dashboard</p>\r\n            </footer>\r\n\r\n        </div>\r\n");
 			WriteLiteral("    </div>\r\n\r\n    ");
-			__tagHelperExecutionContext = __tagHelperScopeManager.Begin("script", TagMode.StartTagAndEndTag, "ade0d29dd947485dc7e4496db188a6e5feee0506b2553e122e42b017aa87147916759", async delegate
+			__tagHelperExecutionContext = __tagHelperScopeManager.Begin("script", TagMode.StartTagAndEndTag, "ade0d29dd947485dc7e4496db188a6e5feee0506b2553e122e42b017aa87147917157", async delegate
 			{
 			});
 			__Microsoft_AspNetCore_Mvc_Razor_TagHelpers_UrlResolutionTagHelper = CreateTagHelper<UrlResolutionTagHelper>();
@@ -198,7 +198,7 @@ internal sealed class Views_Shared__Layout : RazorPage<dynamic>
 			Write(__tagHelperExecutionContext.Output);
 			__tagHelperExecutionContext = __tagHelperScopeManager.End();
 			WriteLiteral("\r\n    ");
-			__tagHelperExecutionContext = __tagHelperScopeManager.Begin("script", TagMode.StartTagAndEndTag, "ade0d29dd947485dc7e4496db188a6e5feee0506b2553e122e42b017aa87147918741", async delegate
+			__tagHelperExecutionContext = __tagHelperScopeManager.Begin("script", TagMode.StartTagAndEndTag, "ade0d29dd947485dc7e4496db188a6e5feee0506b2553e122e42b017aa87147919230", async delegate
 			{
 			});
 			__Microsoft_AspNetCore_Mvc_Razor_TagHelpers_UrlResolutionTagHelper = CreateTagHelper<UrlResolutionTagHelper>();
@@ -217,7 +217,7 @@ internal sealed class Views_Shared__Layout : RazorPage<dynamic>
 			Write(__tagHelperExecutionContext.Output);
 			__tagHelperExecutionContext = __tagHelperScopeManager.End();
 			WriteLiteral("\r\n    ");
-			__tagHelperExecutionContext = __tagHelperScopeManager.Begin("environment", TagMode.StartTagAndEndTag, "ade0d29dd947485dc7e4496db188a6e5feee0506b2553e122e42b017aa87147920723", async delegate
+			__tagHelperExecutionContext = __tagHelperScopeManager.Begin("environment", TagMode.StartTagAndEndTag, "ade0d29dd947485dc7e4496db188a6e5feee0506b2553e122e42b017aa87147921301", async delegate
 			{
 				WriteLiteral("\r\n");
 				WriteLiteral("    ");
@@ -234,7 +234,7 @@ internal sealed class Views_Shared__Layout : RazorPage<dynamic>
 			Write(__tagHelperExecutionContext.Output);
 			__tagHelperExecutionContext = __tagHelperScopeManager.End();
 			WriteLiteral("\r\n    ");
-			__tagHelperExecutionContext = __tagHelperScopeManager.Begin("environment", TagMode.StartTagAndEndTag, "ade0d29dd947485dc7e4496db188a6e5feee0506b2553e122e42b017aa87147922043", async delegate
+			__tagHelperExecutionContext = __tagHelperScopeManager.Begin("environment", TagMode.StartTagAndEndTag, "ade0d29dd947485dc7e4496db188a6e5feee0506b2553e122e42b017aa87147922621", async delegate
 			{
 				WriteLiteral("\r\n");
 				WriteLiteral("    ");

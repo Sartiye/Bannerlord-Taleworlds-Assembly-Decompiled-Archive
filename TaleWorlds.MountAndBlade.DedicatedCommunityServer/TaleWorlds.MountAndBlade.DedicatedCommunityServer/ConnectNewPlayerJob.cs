@@ -36,7 +36,8 @@ public class ConnectNewPlayerJob : Job
 		int num = 1;
 		bool isAdmin = false;
 		bool authorized = true;
-		bool isFull = MultiplayerOptions.OptionType.CultureTeam2.GetIntValue() < GameNetwork.NetworkPeerCount + num;
+		bool isFull = MultiplayerOptions.OptionType.MaxNumberOfPlayers.GetIntValue() < GameNetwork.NetworkPeerCount + num;
+		bool spectatorRequestUnsupported = PlayerJoinData.JoinType == CustomGameJoinType.Spectator;
 		bool peerTriedToJoinDuringLoading = false;
 		while (Mission.Current != null && Mission.Current.CurrentState != Mission.State.Continuing)
 		{
@@ -48,11 +49,7 @@ public class ConnectNewPlayerJob : Job
 			Debug.Print("Peers tried to join the custom game during loading...");
 		}
 		CustomGameJoinResponse customGameJoinResponse;
-		if (!authorized || isFull)
-		{
-			customGameJoinResponse = ((!authorized) ? CustomGameJoinResponse.IncorrectPassword : ((!isFull) ? CustomGameJoinResponse.UnspecifiedError : CustomGameJoinResponse.ServerCapacityIsFull));
-		}
-		else
+		if (authorized && !isFull && !spectatorRequestUnsupported)
 		{
 			PlayerConnectionInfo playerConnectionInfo = new PlayerConnectionInfo(PlayerJoinData.PlayerId);
 			Dictionary<int, List<int>> usedIndicesFromIds = CosmeticsManagerHelper.GetUsedIndicesFromIds(PlayerJoinData.UsedCosmetics);
@@ -68,7 +65,7 @@ public class ConnectNewPlayerJob : Job
 					PlayerId = PlayerJoinData.PlayerId,
 					PeerIndex = addPlayersResult.NetworkPeers[0].Index,
 					SessionKey = addPlayersResult.NetworkPeers[0].SessionKey,
-					IsAdmin = isAdmin
+					JoinType = PlayerJoinData.JoinType
 				};
 				customGameJoinResponse = CustomGameJoinResponse.Success;
 			}
@@ -77,6 +74,23 @@ public class ConnectNewPlayerJob : Job
 				customGameJoinResponse = CustomGameJoinResponse.ErrorOnGameServer;
 			}
 		}
+		else if (!authorized)
+		{
+			customGameJoinResponse = CustomGameJoinResponse.IncorrectPassword;
+		}
+		else if (isFull)
+		{
+			customGameJoinResponse = CustomGameJoinResponse.ServerCapacityIsFull;
+		}
+		else if (spectatorRequestUnsupported)
+		{
+			Debug.Print("Rejected a spectator join request: community servers do not support spectators.");
+			customGameJoinResponse = CustomGameJoinResponse.UnspecifiedError;
+		}
+		else
+		{
+			customGameJoinResponse = CustomGameJoinResponse.UnspecifiedError;
+		}
 		if (customGameJoinResponse != 0)
 		{
 			Response = new PlayerJoinGameResponseDataFromHost
@@ -84,7 +98,7 @@ public class ConnectNewPlayerJob : Job
 				PlayerId = PlayerJoinData.PlayerId,
 				PeerIndex = -1,
 				SessionKey = -1,
-				IsAdmin = false
+				JoinType = PlayerJoinData.JoinType
 			};
 		}
 		Response.CustomGameJoinResponse = customGameJoinResponse;

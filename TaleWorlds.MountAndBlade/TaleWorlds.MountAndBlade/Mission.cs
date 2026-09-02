@@ -2255,7 +2255,14 @@ public sealed class Mission : DotNetObject, IMission
 		if (forceClearGPUResources)
 		{
 			MBAPI.IMBMission.ClearResources(Pointer);
+			MBAPI.IMBMission.DefragRenderBuffers();
 		}
+	}
+
+	public static void DefragRenderBuffers()
+	{
+		Common.MemoryCleanupGC();
+		MBAPI.IMBMission.DefragRenderBuffers();
 	}
 
 	internal void OnEntityHit(WeakGameEntity entity, Agent attackerAgent, AttackCollisionData collisionData, int inflictedDamage, DamageTypes damageType, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, int affectorWeaponSlotOrMissileIndex, ref CombatLogData combatLog)

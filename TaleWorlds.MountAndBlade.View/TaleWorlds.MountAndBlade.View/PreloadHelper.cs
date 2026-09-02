@@ -190,6 +190,11 @@ public class PreloadHelper
 
 	public void Clear()
 	{
+		MBDebug.Print($"PreloadHelper.Clear: releasing {_uniqueMetaMeshes.Count} meta meshes, {_uniqueMetaMeshNames.Count} mesh names, {_uniqueDynamicPhysicsShapeName.Count} physics shapes, {_loadedItems.Count} items");
+		foreach (var uniqueMetaMesh in _uniqueMetaMeshes)
+		{
+			uniqueMetaMesh.Item1.ManualInvalidate();
+		}
 		_uniqueMetaMeshNames.Clear();
 		_uniqueDynamicPhysicsShapeName.Clear();
 		_uniqueMetaMeshes.Clear();

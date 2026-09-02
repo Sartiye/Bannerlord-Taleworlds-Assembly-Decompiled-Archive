@@ -358,6 +358,8 @@ public class GauntletPortScreen : ScreenBase, IGameStateListener, IChangeableScr
 		if (_sceneLayer != null && _scene != null)
 		{
 			DestroyScene();
+			Utilities.ClearOldResourcesAndObjects();
+			Mission.DefragRenderBuffers();
 		}
 	}
 
@@ -701,7 +703,7 @@ public class GauntletPortScreen : ScreenBase, IGameStateListener, IChangeableScr
 		}
 		else
 		{
-			Debug.FailedAssert("Selected ship item's visual has not been spawned!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.GauntletUI\\Screens\\GauntletPortScreen.cs", "OnShipSelected", 702);
+			Debug.FailedAssert("Selected ship item's visual has not been spawned!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.GauntletUI\\Screens\\GauntletPortScreen.cs", "OnShipSelected", 712);
 		}
 		_targetCameraValues.Deviation = _initialCameraValues.Deviation;
 	}
@@ -739,7 +741,7 @@ public class GauntletPortScreen : ScreenBase, IGameStateListener, IChangeableScr
 			_currentSelectedSlotCameraEntity = _currentShipVisualInfo.VisualEntity.GetFirstChildEntityWithTagRecursive(shipSlotTag + "_point");
 			if (_currentSelectedSlotCameraEntity == null)
 			{
-				Debug.FailedAssert("Slot camera point entity not found!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.GauntletUI\\Screens\\GauntletPortScreen.cs", "OnUpgradeSlotSelected", 749);
+				Debug.FailedAssert("Slot camera point entity not found!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.GauntletUI\\Screens\\GauntletPortScreen.cs", "OnUpgradeSlotSelected", 759);
 				return;
 			}
 			_targetCameraValues.Azimuth = GetCameraAzimuthForSlot();

@@ -46,7 +46,44 @@ public class DedicatedCustomGameServerHandler : ICustomBattleServerSessionHandle
 
 	async Task<PlayerJoinGameResponseDataFromHost[]> ICustomBattleServerSessionHandler.OnClientWantsToConnectCustomGame(PlayerJoinGameData[] playerJoinData)
 	{
-		bool isFull = MultiplayerOptions.OptionType.CultureTeam2.GetIntValue() < GameNetwork.NetworkPeerCount + playerJoinData.Length;
+		int num = 0;
+		foreach (NetworkCommunicator networkPeer in GameNetwork.NetworkPeers)
+		{
+			if (!networkPeer.IsSpectator)
+			{
+				num++;
+			}
+		}
+		int num2 = 0;
+		foreach (NetworkCommunicator networkPeer2 in GameNetwork.NetworkPeers)
+		{
+			if (networkPeer2.IsSpectator)
+			{
+				num2++;
+			}
+		}
+		int num3 = 0;
+		int num4 = 0;
+		PlayerJoinGameData[] array = playerJoinData;
+		for (int i = 0; i < array.Length; i++)
+		{
+			if (array[i].JoinType != CustomGameJoinType.Spectator)
+			{
+				num3++;
+			}
+			else
+			{
+				num4++;
+			}
+		}
+		bool isFull = MultiplayerOptions.OptionType.MaxNumberOfPlayers.GetIntValue() < num + num3;
+		bool spectatorsNotAllowed = num4 > 0 && !MultiplayerOptions.OptionType.EnableSpectators.GetBoolValue();
+		bool isSpectatorCapacityFull = false;
+		int intValue = MultiplayerOptions.OptionType.MaxSpectatorCount.GetIntValue();
+		if (intValue > 0 && num4 > 0)
+		{
+			isSpectatorCapacityFull = intValue < num2 + num4;
+		}
 		List<PlayerJoinGameResponseDataFromHost> playerJoinResponses = new List<PlayerJoinGameResponseDataFromHost>();
 		bool peerTriedToJoinDuringLoading = false;
 		while (Mission.Current != null && Mission.Current.CurrentState != Mission.State.Continuing)
@@ -59,7 +96,7 @@ public class DedicatedCustomGameServerHandler : ICustomBattleServerSessionHandle
 			Debug.Print("Peers tried to join the custom game during loading...");
 		}
 		bool flag = false;
-		PlayerJoinGameData[] array = playerJoinData;
+		array = playerJoinData;
 		for (int i = 0; i < array.Length; i++)
 		{
 			if (CustomGameBannedPlayerManager.IsUserBanned(array[i].PlayerId))
@@ -69,9 +106,9 @@ public class DedicatedCustomGameServerHandler : ICustomBattleServerSessionHandle
 			}
 		}
 		CustomGameJoinResponse customGameJoinResponse;
-		if (isFull || flag)
+		if (isFull || isSpectatorCapacityFull || spectatorsNotAllowed || flag)
 		{
-			customGameJoinResponse = (isFull ? CustomGameJoinResponse.ServerCapacityIsFull : ((!flag) ? CustomGameJoinResponse.UnspecifiedError : CustomGameJoinResponse.PlayerBanned));
+			customGameJoinResponse = (isFull ? CustomGameJoinResponse.ServerCapacityIsFull : (spectatorsNotAllowed ? CustomGameJoinResponse.SpectatorsNotAllowed : (isSpectatorCapacityFull ? CustomGameJoinResponse.SpectatorCapacityIsFull : ((!flag) ? CustomGameJoinResponse.UnspecifiedError : CustomGameJoinResponse.PlayerBanned))));
 		}
 		else
 		{
@@ -84,7 +121,7 @@ public class DedicatedCustomGameServerHandler : ICustomBattleServerSessionHandle
 				playerConnectionInfo.AddParameter("PlayerData", playerJoinGameData.PlayerData);
 				playerConnectionInfo.AddParameter("UsedCosmetics", usedIndicesFromIds);
 				playerConnectionInfo.AddParameter("PlayerId", playerJoinGameData.PlayerId);
-				playerConnectionInfo.AddParameter("IsAdmin", playerJoinGameData.IsAdmin);
+				playerConnectionInfo.AddParameter("JoinType", playerJoinGameData.JoinType.ToString());
 				playerConnectionInfo.AddParameter("IpAddress", playerJoinGameData.IpAddress);
 				playerConnectionInfo.Name = playerJoinGameData.Name;
 				list.Add(playerConnectionInfo);
@@ -99,7 +136,7 @@ public class DedicatedCustomGameServerHandler : ICustomBattleServerSessionHandle
 						PlayerId = playerJoinData[j].PlayerId,
 						PeerIndex = addPlayersResult.NetworkPeers[j].Index,
 						SessionKey = addPlayersResult.NetworkPeers[j].SessionKey,
-						IsAdmin = addPlayersResult.NetworkPeers[j].IsAdmin
+						JoinType = playerJoinData[j].JoinType
 					};
 					playerJoinResponses.Add(item);
 				}
@@ -120,7 +157,7 @@ public class DedicatedCustomGameServerHandler : ICustomBattleServerSessionHandle
 					PlayerId = playerJoinGameData2.PlayerId,
 					PeerIndex = -1,
 					SessionKey = -1,
-					IsAdmin = false
+					JoinType = playerJoinGameData2.JoinType
 				};
 				playerJoinResponses.Add(item2);
 			}

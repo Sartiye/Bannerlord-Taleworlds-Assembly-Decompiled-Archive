@@ -81,7 +81,7 @@ internal sealed class Views_Auth_Index : RazorPage<dynamic>
 			WriteLiteral("</div>\r\n");
 		}
 		WriteLiteral("\r\n");
-		__tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", TagMode.StartTagAndEndTag, "81f75cb379d054bfa551b42283c0e2d49ba5702e62038a2bad1da8387f5329b16253", async delegate
+		__tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", TagMode.StartTagAndEndTag, "81f75cb379d054bfa551b42283c0e2d49ba5702e62038a2bad1da8387f5329b16408", async delegate
 		{
 			WriteLiteral("\r\n    <label class=\"sr-only\" for=\"login-password-input\">Admin Password</label>\r\n    <input type=\"password\" name=\"password\" class=\"form-control mb-2 mr-sm-2\" id=\"login-password-input\" placeholder=\"Admin Password\">\r\n\r\n    <button type=\"submit\" class=\"btn btn-primary mb-2\">Login</button>\r\n");
 		});

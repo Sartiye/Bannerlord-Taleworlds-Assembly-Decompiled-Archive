@@ -148,6 +148,12 @@ public abstract class GauntletOrderUIHandler : MissionView
 		TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged = (Action)Delegate.Remove(TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged, new Action(OnGamepadActiveStateChanged));
 	}
 
+	public override void OnMissionScreenFinalize()
+	{
+		base.OnMissionScreenFinalize();
+		TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged = (Action)Delegate.Remove(TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged, new Action(OnGamepadActiveStateChanged));
+	}
+
 	private void OnGamepadActiveStateChanged()
 	{
 		if (_dataSource != null)
@@ -345,7 +351,7 @@ public abstract class GauntletOrderUIHandler : MissionView
 							}
 							else
 							{
-								Debug.FailedAssert("No selected formations when issuing order", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOrderUIBase.cs", "TickInput", 369);
+								Debug.FailedAssert("No selected formations when issuing order", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOrderUIBase.cs", "TickInput", 375);
 							}
 						}
 						break;
@@ -357,7 +363,7 @@ public abstract class GauntletOrderUIHandler : MissionView
 						_dataSource.OrderController.SetOrderWithPosition(OrderType.FormCustom, new WorldPosition(TaleWorlds.MountAndBlade.Mission.Current.Scene, UIntPtr.Zero, base.MissionScreen.GetOrderFlagPosition(), hasValidZ: false));
 						break;
 					default:
-						Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOrderUIBase.cs", "TickInput", 384);
+						Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOrderUIBase.cs", "TickInput", 390);
 						break;
 					}
 				}

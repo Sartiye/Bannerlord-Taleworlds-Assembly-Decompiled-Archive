@@ -244,7 +244,7 @@ public class TaskForceDetachment : IDetachment
 				num++;
 			}
 		}
-		if (num <= 0 || _attackedAgent == null)
+		if (num <= 0 || _attackedAgent?.Team == null || TargetAgent?.Formation?.Team == null || _tempAgentList == null)
 		{
 			return true;
 		}

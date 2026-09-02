@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NavalDLC.GameComponents;
 using NavalDLC.Missions.AI.Behaviors;
 using NavalDLC.Missions.AI.TeamAI;
 using NavalDLC.Missions.NavalPhysics;
@@ -236,6 +237,10 @@ public class NavalShipsLogic : MissionLogic, IVehicleHandler, IMissionBehavior
 		}
 		SetDeploymentMode(value: false);
 		Mission.Current.OnMissileRemovedEvent -= OnMissileRemoved;
+		if (MissionGameModels.Current?.AgentStatCalculateModel is NavalAgentStatCalculateModel navalAgentStatCalculateModel)
+		{
+			navalAgentStatCalculateModel.ClearMissionState();
+		}
 	}
 
 	public void OnShipControllerChanged(MissionShip ship)
