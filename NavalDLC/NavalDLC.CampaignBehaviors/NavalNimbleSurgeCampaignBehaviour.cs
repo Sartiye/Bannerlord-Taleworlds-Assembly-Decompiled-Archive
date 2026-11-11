@@ -42,7 +42,8 @@ public class NavalNimbleSurgeCampaignBehaviour : CampaignBehaviorBase
 				_lastTimeEntered[mobileParty] = new Dictionary<Settlement, CampaignTime>();
 			}
 			_lastTimeEntered[mobileParty][settlement] = CampaignTime.Now;
-			town.CurrentBuilding.BuildingProgress += 1f;
+			float secondaryBonus = NavalPerks.Shipmaster.FavorableTide.SecondaryBonus;
+			town.CurrentBuilding.BuildingProgress += secondaryBonus;
 			BuildingHelper.CheckIfBuildingIsComplete(town.CurrentBuilding);
 		}
 	}

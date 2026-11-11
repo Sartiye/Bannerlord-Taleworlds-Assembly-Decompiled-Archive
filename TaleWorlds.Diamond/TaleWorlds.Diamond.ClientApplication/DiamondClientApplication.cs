@@ -62,17 +62,15 @@ public class DiamondClientApplication
 	private void CreateClient(string clientConfiguration, SessionProviderType sessionProviderType)
 	{
 		Type type = FindType(clientConfiguration);
-		object obj = CreateClientSessionProvider(clientConfiguration, type, sessionProviderType, _parameters);
+		object obj = CreateClientSessionProvider(clientConfiguration, sessionProviderType, _parameters);
 		IClient value = (IClient)Activator.CreateInstance(type, this, obj);
 		_clientObjects.Add(clientConfiguration, value);
 	}
 
-	public object CreateClientSessionProvider(string clientName, Type clientType, SessionProviderType sessionProviderType, ParameterContainer parameters)
+	public object CreateClientSessionProvider(string clientName, SessionProviderType sessionProviderType, ParameterContainer parameters)
 	{
-		object obj = null;
-		if (sessionProviderType == SessionProviderType.ThreadedRest)
+		if (sessionProviderType == SessionProviderType.Rest || sessionProviderType == SessionProviderType.ThreadedRest)
 		{
-			Type type = ((sessionProviderType == SessionProviderType.Rest) ? typeof(GenericRestSessionProvider<>) : typeof(GenericThreadedRestSessionProvider<>)).MakeGenericType(clientType);
 			parameters.TryGetParameter(clientName + ".Address", out var outValue);
 			if (ServiceAddress.IsServiceAddress(outValue))
 			{
@@ -95,7 +93,11 @@ public class DiamondClientApplication
 			}
 			IHttpDriver httpDriver = null;
 			httpDriver = ((!parameters.TryGetParameter(clientName + ".HttpDriver", out var outValue3)) ? HttpDriverManager.GetDefaultHttpDriver() : HttpDriverManager.GetHttpDriver(outValue3));
-			return Activator.CreateInstance(type, outValue, httpDriver);
+			if (sessionProviderType == SessionProviderType.Rest)
+			{
+				return new GenericRestSessionProvider(outValue, httpDriver);
+			}
+			return new ThreadedRestSessionFactory(outValue, httpDriver, parameters);
 		}
 		throw new NotImplementedException("Other session provider types are not supported yet.");
 	}
@@ -109,10 +111,10 @@ public class DiamondClientApplication
 		Assembly[] array = assemblies;
 		foreach (Assembly assembly2 in array)
 		{
-			AssemblyName[] referencedAssemblies = assembly2.GetReferencedAssemblies();
-			for (int j = 0; j < referencedAssemblies.Length; j++)
+			AssemblyName[] referencedAssembliesSafe = assembly2.GetReferencedAssembliesSafe();
+			for (int j = 0; j < referencedAssembliesSafe.Length; j++)
 			{
-				if (referencedAssemblies[j].ToString() == assembly.GetName().ToString())
+				if (referencedAssembliesSafe[j].ToString() == assembly.GetName().ToString())
 				{
 					list.Add(assembly2);
 					break;

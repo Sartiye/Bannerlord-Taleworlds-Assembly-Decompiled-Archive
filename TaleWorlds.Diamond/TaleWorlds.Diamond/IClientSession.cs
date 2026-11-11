@@ -4,6 +4,18 @@ namespace TaleWorlds.Diamond;
 
 public interface IClientSession
 {
+	int AliveCheckInterval { set; }
+
+	int MaxConsecutiveFailuresBeforeDisconnect { set; }
+
+	event MessageHandledDelegate MessageReceived;
+
+	event ConnectedDelegate Connected;
+
+	event DisconnectedDelegate Disconnected;
+
+	event OnCantConnectDelegate ConnectionFailed;
+
 	void Connect();
 
 	void Disconnect();
@@ -14,7 +26,7 @@ public interface IClientSession
 
 	void SendMessage(Message message);
 
-	Task<T> CallFunction<T>(Message message) where T : FunctionResult;
+	Task<CallResult> CallFunction<T>(Message message) where T : FunctionResult;
 
 	Task<bool> CheckConnection();
 }

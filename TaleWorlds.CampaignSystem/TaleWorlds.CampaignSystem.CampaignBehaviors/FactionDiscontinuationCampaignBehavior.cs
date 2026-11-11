@@ -52,7 +52,7 @@ public class FactionDiscontinuationCampaignBehavior : CampaignBehaviorBase
 		{
 			_independentClans.Remove(clan);
 		}
-		if (clan == Clan.PlayerClan && oldKingdom != null && CanKingdomBeDiscontinued(oldKingdom))
+		if (detail != ChangeKingdomAction.ChangeKingdomActionDetail.LeaveByKingdomDestruction && oldKingdom != null && CanKingdomBeDiscontinued(oldKingdom))
 		{
 			DiscontinueKingdom(oldKingdom);
 		}
@@ -146,7 +146,7 @@ public class FactionDiscontinuationCampaignBehavior : CampaignBehaviorBase
 
 	private void OnGameLoadFinished()
 	{
-		if (!(MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.2")))
+		if (!MBSaveLoad.IsUpdatingGameVersion || !MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.5.0")))
 		{
 			return;
 		}

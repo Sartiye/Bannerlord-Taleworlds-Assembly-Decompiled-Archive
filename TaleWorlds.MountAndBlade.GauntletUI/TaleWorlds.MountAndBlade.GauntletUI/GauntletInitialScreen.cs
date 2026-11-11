@@ -7,6 +7,7 @@ using TaleWorlds.MountAndBlade.View;
 using TaleWorlds.MountAndBlade.View.Screens;
 using TaleWorlds.MountAndBlade.ViewModelCollection.GameOptions;
 using TaleWorlds.MountAndBlade.ViewModelCollection.InitialMenu;
+using TaleWorlds.SaveSystem;
 using TaleWorlds.ScreenSystem;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI;
@@ -30,6 +31,8 @@ public class GauntletInitialScreen : MBInitialScreenBase, IChatLogHandlerScreen
 
 	private GauntletMovieIdentifier _exposureOptionMovie;
 
+	private SaveDirectoryWatcher _saveDirectoryWatcher;
+
 	public GauntletInitialScreen(InitialState initialState)
 		: base(initialState)
 	{
@@ -52,6 +55,8 @@ public class GauntletInitialScreen : MBInitialScreenBase, IChatLogHandlerScreen
 			{
 				Visible = true
 			};
+			_brightnessOptionDataSource.SetConfirmInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Confirm"));
+			_brightnessOptionDataSource.SetCancelInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Exit"));
 			_gauntletBrightnessLayer = new GauntletLayer("MainMenuBrightness", 2);
 			_gauntletBrightnessLayer.InputRestrictions.SetInputRestrictions(isMouseVisible: true, InputUsageMask.Mouse);
 			_brightnessOptionMovie = _gauntletBrightnessLayer.LoadMovie("BrightnessOption", _brightnessOptionDataSource);
@@ -62,7 +67,14 @@ public class GauntletInitialScreen : MBInitialScreenBase, IChatLogHandlerScreen
 		GauntletChatLogView.Current?.LoadMovie(forMultiplayer: false);
 		InformationManager.ClearAllMessages();
 		base._state.OnGameContentUpdated += OnGameContentUpdated;
+		ScreenManager.FocusGained += OnFocusGained;
+		_saveDirectoryWatcher = new SaveDirectoryWatcher();
 		SetGainNavigationAfterFrames(3);
+	}
+
+	private void OnFocusGained()
+	{
+		_dataSource?.RequestMenuOptionsRefresh();
 	}
 
 	protected override void OnInitialScreenTick(float dt)
@@ -73,6 +85,11 @@ public class GauntletInitialScreen : MBInitialScreenBase, IChatLogHandlerScreen
 			MouseManager.ShowCursor(show: false);
 			MouseManager.ShowCursor(show: true);
 		}
+		if (_saveDirectoryWatcher.HasAnyChanges())
+		{
+			_dataSource?.RequestMenuOptionsRefresh();
+		}
+		_dataSource?.OnFrameTick();
 		_dataSource?.Tick();
 		if (_gauntletLayer.Input.IsHotKeyReleased("Exit"))
 		{
@@ -146,6 +163,7 @@ public class GauntletInitialScreen : MBInitialScreenBase, IChatLogHandlerScreen
 	{
 		_gauntletBrightnessLayer.ReleaseMovie(_brightnessOptionMovie);
 		RemoveLayer(_gauntletBrightnessLayer);
+		_brightnessOptionDataSource?.OnFinalize();
 		_brightnessOptionDataSource = null;
 		_gauntletBrightnessLayer = null;
 		NativeOptions.SaveConfig();
@@ -158,6 +176,8 @@ public class GauntletInitialScreen : MBInitialScreenBase, IChatLogHandlerScreen
 		{
 			Visible = true
 		};
+		_exposureOptionDataSource.SetConfirmInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Confirm"));
+		_exposureOptionDataSource.SetCancelInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Exit"));
 		_gauntletExposureLayer = new GauntletLayer("MainMenuExposure", 2);
 		_gauntletExposureLayer.InputRestrictions.SetInputRestrictions(isMouseVisible: true, InputUsageMask.Mouse);
 		_exposureOptionMovie = _gauntletExposureLayer.LoadMovie("ExposureOption", _exposureOptionDataSource);
@@ -168,6 +188,7 @@ public class GauntletInitialScreen : MBInitialScreenBase, IChatLogHandlerScreen
 	{
 		_gauntletExposureLayer.ReleaseMovie(_exposureOptionMovie);
 		RemoveLayer(_gauntletExposureLayer);
+		_exposureOptionDataSource?.OnFinalize();
 		_exposureOptionDataSource = null;
 		_gauntletExposureLayer = null;
 		NativeOptions.SaveConfig();
@@ -176,6 +197,9 @@ public class GauntletInitialScreen : MBInitialScreenBase, IChatLogHandlerScreen
 	protected override void OnFinalize()
 	{
 		base.OnFinalize();
+		ScreenManager.FocusGained -= OnFocusGained;
+		_saveDirectoryWatcher.Dispose();
+		_saveDirectoryWatcher = null;
 		if (base._state != null)
 		{
 			base._state.OnGameContentUpdated -= OnGameContentUpdated;

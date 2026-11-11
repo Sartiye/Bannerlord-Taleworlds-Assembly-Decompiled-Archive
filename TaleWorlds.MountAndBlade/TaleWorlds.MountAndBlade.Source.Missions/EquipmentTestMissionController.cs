@@ -12,4 +12,9 @@ public class EquipmentTestMissionController : MissionLogic
 		base.Mission.SpawnAgent(new AgentBuildData(Game.Current.PlayerTroop).Team(base.Mission.AttackerTeam).InitialFrameFromSpawnPointEntity(entity).CivilianEquipment(civilianEquipment: false)
 			.Controller(AgentControllerType.Player));
 	}
+
+	public override void OnAfterMissionLoadingFinished()
+	{
+		base.Mission.OnInitialSpawnCompleted();
+	}
 }

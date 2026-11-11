@@ -1510,6 +1510,20 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 			{
 				CheckAndPlayPurigCutsceneNotifications();
 			}
+			foreach (MissionShip allShip2 in _navalShipsLogic.AllShips)
+			{
+				if (allShip2.Team.IsFriendOf(_playerShip.Team))
+				{
+					if (allShip2.GetIsConnected() && !allShip2.GetIsConnectedToShip(Phase4PurigShip))
+					{
+						allShip2.ShipOrder.SetCutLoose(enable: true);
+					}
+					else
+					{
+						allShip2.ShipOrder.SetShipEngageOrder(Phase4PurigShip);
+					}
+				}
+			}
 			if (_purigShipAgents.Count == 0)
 			{
 				State = Quest5SetPieceBattleMissionState.Phase4ToBossFightFadeOut;
@@ -1951,19 +1965,19 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 		{
 		case GunnarMovementState.GoToInitialJumpingPosition:
 		{
-			Agent gunnarAgent6 = _gunnarAgent;
-			if (gunnarAgent6 != null && gunnarAgent6.IsUsingGameObject)
+			Agent gunnarAgent5 = _gunnarAgent;
+			if (gunnarAgent5 != null && gunnarAgent5.IsUsingGameObject)
 			{
 				_gunnarAgent.StopUsingGameObjectMT();
 			}
 			EnableRamp();
 			_gunnarAgent.ClearTargetFrame();
 			new WorldPosition(base.Mission.Scene, JumpOffInitialPosition.GlobalPosition);
-			Vec3 targetDirection5 = JumpOffInitialPosition.GlobalPosition - _gunnarAgent.Position;
-			Agent gunnarAgent7 = _gunnarAgent;
+			Vec3 targetDirection4 = JumpOffInitialPosition.GlobalPosition - _gunnarAgent.Position;
+			Agent gunnarAgent6 = _gunnarAgent;
 			Vec2 targetPosition = JumpOffInitialPosition.GlobalPosition.AsVec2;
-			gunnarAgent7.SetTargetPositionAndDirection(in targetPosition, in targetDirection5);
-			_gunnarAgent.LookDirection = targetDirection5.NormalizedCopy();
+			gunnarAgent6.SetTargetPositionAndDirection(in targetPosition, in targetDirection4);
+			_gunnarAgent.LookDirection = targetDirection4.NormalizedCopy();
 			_gunnarMovementState = GunnarMovementState.WaitForReachingInitialJumpingPosition;
 			break;
 		}
@@ -1976,21 +1990,21 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 				_gunnarMovementState = GunnarMovementState.GoToJumpingTargetPosition;
 				break;
 			}
-			Vec3 targetDirection3 = JumpOffInitialPosition.GlobalPosition - _gunnarAgent.Position;
-			Agent gunnarAgent4 = _gunnarAgent;
+			Vec3 targetDirection5 = JumpOffInitialPosition.GlobalPosition - _gunnarAgent.Position;
+			Agent gunnarAgent7 = _gunnarAgent;
 			Vec2 targetPosition = JumpOffInitialPosition.GlobalPosition.AsVec2;
-			gunnarAgent4.SetTargetPositionAndDirection(in targetPosition, in targetDirection3);
+			gunnarAgent7.SetTargetPositionAndDirection(in targetPosition, in targetDirection5);
 			break;
 		}
 		case GunnarMovementState.GoToJumpingTargetPosition:
 		{
 			_gunnarAgent.ClearTargetFrame();
 			new WorldPosition(base.Mission.Scene, JumpOffTargetPosition.GlobalPosition);
-			Vec3 targetDirection4 = JumpOffTargetPosition.GlobalPosition - _gunnarAgent.Position;
-			Agent gunnarAgent5 = _gunnarAgent;
+			Vec3 targetDirection3 = JumpOffTargetPosition.GlobalPosition - _gunnarAgent.Position;
+			Agent gunnarAgent4 = _gunnarAgent;
 			Vec2 targetPosition = JumpOffTargetPosition.GlobalPosition.AsVec2;
-			gunnarAgent5.SetTargetPositionAndDirection(in targetPosition, in targetDirection4);
-			_gunnarAgent.LookDirection = targetDirection4.NormalizedCopy();
+			gunnarAgent4.SetTargetPositionAndDirection(in targetPosition, in targetDirection3);
+			_gunnarAgent.LookDirection = targetDirection3.NormalizedCopy();
 			_gunnarMovementState = GunnarMovementState.WaitForReachingJumpingTargetPosition;
 			break;
 		}
@@ -2000,7 +2014,8 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 			Vec3 targetDirection = JumpOffTargetPosition.GlobalPosition;
 			if (position.NearlyEquals(in targetDirection, 3f))
 			{
-				if (Agent.Main.IsInWater())
+				Agent main = Agent.Main;
+				if (main != null && main.IsActive() && Agent.Main.IsInWater())
 				{
 					_gunnarMovementState = GunnarMovementState.SwimToTheHidingSpot;
 				}
@@ -2338,7 +2353,7 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 		_navalAgentsLogic.AssignAndTeleportCrewToShipMachines(_phase1EnemyShip1);
 		_navalAgentsLogic.SetDeploymentMode(value: false);
 		_navalShipsLogic.SetDeploymentMode(value: false);
-		Mission.Current.OnDeploymentFinished();
+		base.Mission.OnInitialSpawnCompleted();
 		Mission.Current.Scene.FindEntityWithTag("phase_2_barricade").SetVisibilityExcludeParents(visible: false);
 		RemoveShipControlPointDescriptionOfAllEnemyShips();
 	}
@@ -2585,7 +2600,7 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 					standingPoint3.IsDisabledForPlayers = true;
 				}
 			}
-			Mission.Current.OnDeploymentFinished();
+			base.Mission.OnInitialSpawnCompleted();
 			SpawnPhase1AllyTroops();
 			SpawnPhase1EnemyTroops();
 			base.Mission.PlayerTeam.SetPlayerRole(isPlayerGeneral: true, isPlayerSergeant: true);
@@ -3164,6 +3179,21 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 		_dialogNotificationHandleCache.Clear();
 	}
 
+	private void MoveAgentToEscapeShip(Agent agent)
+	{
+		if (_navalAgentsLogic.IsAgentOnAnyShip(agent, out var onShip, EscapeShip.Team.TeamSide))
+		{
+			if (onShip != EscapeShip)
+			{
+				_navalAgentsLogic.TransferAgentToShip(agent, EscapeShip);
+			}
+		}
+		else
+		{
+			_navalAgentsLogic.AddAgentToShip(agent, EscapeShip);
+		}
+	}
+
 	private void InitializePhase2Part2()
 	{
 		_phase2AllyShip1 = CreateShip("aserai_heavy_ship", "phase_2_ally_ship_1_sp", GetAvailableAllyFormation(), spawnAnchored: false, _phase2AllyShip1UpgradePieceList);
@@ -3204,8 +3234,8 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 		{
 			Formation availableAllyFormation = GetAvailableAllyFormation();
 			_navalShipsLogic.TransferShipToTeam(EscapeShip, base.Mission.PlayerTeam, availableAllyFormation);
-			_navalAgentsLogic.AddAgentToShip(_gunnarAgent, EscapeShip);
-			_navalAgentsLogic.TransferAgentToShip(Agent.Main, EscapeShip);
+			MoveAgentToEscapeShip(_gunnarAgent);
+			MoveAgentToEscapeShip(Agent.Main);
 			RemoveShipInternal(_playerShip);
 			AddAvailableAllyFormation(availableAllyFormation);
 			_navalShipsLogic.TransferShipToFormation(EscapeShip, _playerFormation);
@@ -3287,21 +3317,21 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 		SpawnPhase2EnemyTroops();
 		if (_isCheckpointInitialize)
 		{
-			Mission.Current.OnDeploymentFinished();
+			base.Mission.OnInitialSpawnCompleted();
 		}
 		else
 		{
-			_phase2EnemyShip1.OnDeploymentFinished();
-			_phase2EnemyShip2.OnDeploymentFinished();
-			_phase2EnemyShip3.OnDeploymentFinished();
-			_phase2EnemyShip4.OnDeploymentFinished();
-			_phase2EnemyShip5.OnDeploymentFinished();
-			_phase2EnemyShipStationary1.OnDeploymentFinished();
-			_phase2AllyShip1.OnDeploymentFinished();
-			_phase2AllyShip2.OnDeploymentFinished();
-			_phase2AllyShip3.OnDeploymentFinished();
-			_phase2AllyShip4.OnDeploymentFinished();
-			_phase2AllyShip5.OnDeploymentFinished();
+			_phase2EnemyShip1.FinalizeDeployment(initializeMachines: true);
+			_phase2EnemyShip2.FinalizeDeployment(initializeMachines: true);
+			_phase2EnemyShip3.FinalizeDeployment(initializeMachines: true);
+			_phase2EnemyShip4.FinalizeDeployment(initializeMachines: true);
+			_phase2EnemyShip5.FinalizeDeployment(initializeMachines: true);
+			_phase2EnemyShipStationary1.FinalizeDeployment(initializeMachines: true);
+			_phase2AllyShip1.FinalizeDeployment(initializeMachines: true);
+			_phase2AllyShip2.FinalizeDeployment(initializeMachines: true);
+			_phase2AllyShip3.FinalizeDeployment(initializeMachines: true);
+			_phase2AllyShip4.FinalizeDeployment(initializeMachines: true);
+			_phase2AllyShip5.FinalizeDeployment(initializeMachines: true);
 			_navalTrajectoryPlanningLogic.ForceReinitialize();
 		}
 		_lightScriptedFiresMissionController.TriggerFiring();
@@ -3331,7 +3361,7 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 		{
 			_gunnarAgent.Controller = AgentControllerType.AI;
 			_navalAgentsLogic.AssignCaptainToShip(_gunnarAgent, EscapeShip);
-			_navalAgentsLogic.TransferAgentToShip(Agent.Main, EscapeShip);
+			MoveAgentToEscapeShip(Agent.Main);
 			EscapeShip.ShipOrder.ManageShipDetachments();
 			_navalAgentsLogic.SetDeploymentMode(value: true);
 			_navalShipsLogic.SetDeploymentMode(value: true);
@@ -3618,9 +3648,7 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 			_isPirateShipTriggered[pirateShip] = false;
 			_isPirateShipMovingToTheEscapeShip[pirateShip] = false;
 			pirateShip.SetAnchor(isAnchored: true);
-			pirateShip.ShipOrder.SetShipStopOrder();
-			pirateShip.Formation.SetMovementOrder(MovementOrder.MovementOrderStop);
-			pirateShip.Formation.SetTargetFormation(null);
+			TargetMainAgentFormation(pirateShip);
 			foreach (ShipAttachmentMachine attachmentMachine4 in pirateShip.AttachmentMachines)
 			{
 				attachmentMachine4.SetDisabled(isParentObject: true);
@@ -3678,6 +3706,12 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 			pirateShip.ShipOrder.SetShipStopOrder();
 			pirateShip.SetShipOrderActive(isOrderActive: false);
 		}
+	}
+
+	private void TargetMainAgentFormation(MissionShip ship)
+	{
+		ship.Formation.SetTargetFormation(Agent.Main.Formation);
+		ship.Formation.SetMovementOrder(MovementOrder.MovementOrderCharge);
 	}
 
 	private void HandlePirateShipSailModeAccordingToTheGlobalWindVelocity(MissionShip ship)
@@ -3762,6 +3796,7 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 			_isPirateShipMovingToTheEscapeShip[ship] = false;
 			_isPirateShipTriggered[ship] = false;
 			_isPirateShipMovementDisabled[ship] = true;
+			TargetMainAgentFormation(ship);
 			foreach (ShipAttachmentMachine attachmentMachine in ship.AttachmentMachines)
 			{
 				if (attachmentMachine.CurrentAttachment != null)
@@ -3812,6 +3847,7 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 		}
 		_isPirateShipMovingToTheEscapeShip[ownerShip] = false;
 		_isPirateShipLostItsCrew[ownerShip] = true;
+		TargetMainAgentFormation(ownerShip);
 		foreach (ShipAttachmentMachine attachmentMachine2 in ownerShip.AttachmentMachines)
 		{
 			_ = attachmentMachine2;
@@ -3867,7 +3903,7 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 			_isPirateShipLostItsCrew[pirateShip] = true;
 			_isPirateShipTriggered[pirateShip] = false;
 			pirateShip.SetAnchor(isAnchored: true);
-			pirateShip.Formation.SetMovementOrder(MovementOrder.MovementOrderCharge);
+			TargetMainAgentFormation(pirateShip);
 			foreach (ShipAttachmentMachine attachmentMachine in pirateShip.AttachmentMachines)
 			{
 				if (attachmentMachine.CurrentAttachment != null)
@@ -4272,16 +4308,16 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 		_gunnarAgent.TeleportToPosition(_playerShip.GetCaptainSpawnGlobalFrame().origin);
 		if (_isCheckpointInitialize)
 		{
-			Mission.Current.OnDeploymentFinished();
+			base.Mission.OnInitialSpawnCompleted();
 		}
 		else
 		{
-			_phase3EnemyShip1.OnDeploymentFinished();
-			_phase3EnemyShip2.OnDeploymentFinished();
-			_phase3EnemyShip3.OnDeploymentFinished();
-			_phase3EnemyShip4.OnDeploymentFinished();
-			_phase3EnemyShip5.OnDeploymentFinished();
-			_playerShip.OnDeploymentFinished();
+			_phase3EnemyShip1.FinalizeDeployment(initializeMachines: true);
+			_phase3EnemyShip2.FinalizeDeployment(initializeMachines: true);
+			_phase3EnemyShip3.FinalizeDeployment(initializeMachines: true);
+			_phase3EnemyShip4.FinalizeDeployment(initializeMachines: true);
+			_phase3EnemyShip5.FinalizeDeployment(initializeMachines: true);
+			_playerShip.FinalizeDeployment(initializeMachines: true);
 			_navalTrajectoryPlanningLogic.ForceReinitialize();
 		}
 		TriggerShip(_phase3EnemyShip1);
@@ -4367,6 +4403,7 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 			SpawnGunnarOnShip(_playerShip);
 		}
 		_gunnarAgent.SetMortalityState(Agent.MortalityState.Immortal);
+		_bjolgurAgent.SetMortalityState(Agent.MortalityState.Immortal);
 		_navalAgentsLogic.SpawnNextBatch(TeamSideEnum.PlayerTeam);
 		_navalAgentsLogic.AssignAndTeleportCrewToShipMachines(_playerShip);
 		if (_isCheckpointInitialize)
@@ -4405,8 +4442,8 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 		_navalAgentsLogic.AssignAndTeleportCrewToShipMachines(_phase3EnemyReinforcementShip2);
 		_navalAgentsLogic.SetDeploymentMode(value: false);
 		_navalShipsLogic.SetDeploymentMode(value: false);
-		_phase3EnemyReinforcementShip1.OnDeploymentFinished();
-		_phase3EnemyReinforcementShip2.OnDeploymentFinished();
+		_phase3EnemyReinforcementShip1.FinalizeDeployment(initializeMachines: true);
+		_phase3EnemyReinforcementShip2.FinalizeDeployment(initializeMachines: true);
 		_navalTrajectoryPlanningLogic.ForceReinitialize();
 		base.Mission.PlayerEnemyTeam.MasterOrderController.SelectAllFormations();
 		base.Mission.PlayerEnemyTeam.MasterOrderController.SetOrder(OrderType.Charge);
@@ -4615,7 +4652,7 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 		Vec2 targetPosition = base.Mission.Scene.FindEntityWithTag("phase_3_enemy_ship_5_sp").GlobalPosition.AsVec2;
 		shipOrder.SetShipMovementOrder(in targetPosition);
 		SpawnPhase4EnemyTroops();
-		Phase4PurigShip.OnDeploymentFinished();
+		Phase4PurigShip.FinalizeDeployment(initializeMachines: true);
 		_navalTrajectoryPlanningLogic.ForceReinitialize();
 		if (_isCheckpointInitialize)
 		{
@@ -4720,6 +4757,7 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 		foreach (MissionShip allShip in _navalShipsLogic.AllShips)
 		{
 			allShip.SetController(ShipControllerType.None, autoUpdateController: false);
+			allShip.SetAnchor(isAnchored: true);
 		}
 		Agent.Main.TeleportToPosition(_playerSpawnPointEntity.GlobalPosition);
 		List<GameEntity> allyFrames = new List<GameEntity>();
@@ -4731,10 +4769,6 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 			_gunnarAgent.TeleportToPosition(gameEntity.GlobalPosition);
 			allyFrames.Remove(gameEntity);
 			_duelPhaseAllyAgents.Add(_gunnarAgent);
-		}
-		if (_bjolgurAgent == null || !_bjolgurAgent.IsActive())
-		{
-			SpawnBjolgurOnShip(_playerShip);
 		}
 		if (_bjolgurAgent != null && _bjolgurAgent.IsActive())
 		{
@@ -4954,6 +4988,7 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 	private void StartBossFightConversation()
 	{
 		_gunnarAgent.SetMortalityState(Agent.MortalityState.Mortal);
+		_bjolgurAgent.SetMortalityState(Agent.MortalityState.Mortal);
 		MissionConversationLogic missionBehavior = base.Mission.GetMissionBehavior<MissionConversationLogic>();
 		missionBehavior.DisableStartConversation(isDisabled: false);
 		missionBehavior.StartConversation(_purigAgent, setActionsInstantly: false);
@@ -5016,6 +5051,7 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 		else if (formation.Team == base.Mission.PlayerTeam)
 		{
 			ship.Owner = PartyBase.MainParty;
+			ship.CanHaveUnlockedPieces = true;
 		}
 		if (additionalUpgradePieces != null)
 		{
@@ -5139,7 +5175,7 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 		}
 		else
 		{
-			Debug.FailedAssert("Formation has been already added.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Storyline\\MissionControllers\\Quest5SetPieceBattleMissionController.cs", "AddAvailableAllyFormation", 6263);
+			Debug.FailedAssert("Formation has been already added.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Storyline\\MissionControllers\\Quest5SetPieceBattleMissionController.cs", "AddAvailableAllyFormation", 6302);
 		}
 	}
 
@@ -5207,7 +5243,7 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 		}
 		else
 		{
-			Debug.FailedAssert("Formation has been already added.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Storyline\\MissionControllers\\Quest5SetPieceBattleMissionController.cs", "AddAvailableEnemyFormation", 6349);
+			Debug.FailedAssert("Formation has been already added.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Storyline\\MissionControllers\\Quest5SetPieceBattleMissionController.cs", "AddAvailableEnemyFormation", 6388);
 		}
 	}
 
@@ -5365,7 +5401,7 @@ public class Quest5SetPieceBattleMissionController : MissionLogic, IMissionAgent
 		}
 		else
 		{
-			Debug.FailedAssert("Unexpected checkpoint set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Storyline\\MissionControllers\\Quest5SetPieceBattleMissionController.cs", "SetLastCheckpoint", 6537);
+			Debug.FailedAssert("Unexpected checkpoint set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Storyline\\MissionControllers\\Quest5SetPieceBattleMissionController.cs", "SetLastCheckpoint", 6576);
 		}
 	}
 

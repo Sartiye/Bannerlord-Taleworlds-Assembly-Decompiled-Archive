@@ -342,7 +342,8 @@ public class ArmyMenuOverlayVM : GameMenuOverlay
 		CampaignVec2 v = MobileParty.MainParty.MapEvent?.Position ?? MobileParty.MainParty.Position;
 		bool flag = troop.Party.MobileParty?.Position.DistanceSquared(v) < getEncounterJoiningRadius * getEncounterJoiningRadius;
 		bool flag2 = troop.Party.MobileParty.MapEvent == MobileParty.MainParty.MapEvent;
-		bool flag3 = PlayerEncounter.EncounteredParty != null && PlayerEncounter.EncounteredParty.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction);
+		PartyBase encounteredParty = PlayerEncounter.EncounteredParty;
+		bool flag3 = encounteredParty != null && encounteredParty.MapFaction?.IsAtWarWith(Hero.MainHero.MapFaction) == true;
 		if (_contextMenuItem.Party.LeaderHero != null && flag && flag2 && !flag3 && _contextMenuItem.Party != PartyBase.MainParty && PlayerEncounter.Current?.BattleSimulation == null)
 		{
 			base.ContextList.Add(new StringItemWithEnabledAndHintVM(base.ExecuteTroopAction, GameTexts.FindText("str_menu_overlay_context_list", MenuOverlayContextList.DonateTroops.ToString()).ToString(), enabled: true, MenuOverlayContextList.DonateTroops));
@@ -527,10 +528,6 @@ public class ArmyMenuOverlayVM : GameMenuOverlay
 
 	private static bool GetIsPlayerArmyLeader(Army army)
 	{
-		if (army.LeaderParty != MobileParty.MainParty)
-		{
-			return army.LeaderParty == MobileParty.MainParty.TargetParty;
-		}
-		return true;
+		return army.LeaderParty == MobileParty.MainParty;
 	}
 }

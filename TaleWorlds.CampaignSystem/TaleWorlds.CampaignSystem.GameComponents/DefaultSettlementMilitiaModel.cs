@@ -45,44 +45,32 @@ public class DefaultSettlementMilitiaModel : SettlementMilitiaModel
 
 	public override ExplainedNumber CalculateVeteranMilitiaSpawnChance(Settlement settlement)
 	{
-		ExplainedNumber result = default(ExplainedNumber);
-		Hero hero = null;
-		if (settlement.IsFortification && settlement.Town.Governor != null)
-		{
-			hero = settlement.Town.Governor;
-		}
-		else if (settlement.IsVillage && settlement.Village.TradeBound?.Town.Governor != null)
-		{
-			hero = settlement.Village.TradeBound.Town.Governor;
-		}
-		if (hero != null)
-		{
-			if (hero.GetPerkValue(DefaultPerks.Leadership.CitizenMilitia))
-			{
-				result.Add(DefaultPerks.Leadership.CitizenMilitia.PrimaryBonus);
-			}
-			if (hero.GetPerkValue(DefaultPerks.Polearm.Drills))
-			{
-				result.Add(DefaultPerks.Polearm.Drills.PrimaryBonus);
-			}
-			if (hero.GetPerkValue(DefaultPerks.Steward.SevenVeterans))
-			{
-				result.Add(DefaultPerks.Steward.SevenVeterans.PrimaryBonus);
-			}
-		}
-		if (settlement.OwnerClan.Culture.HasFeat(DefaultCulturalFeats.BattanianMilitiaFeat))
-		{
-			result.Add(DefaultCulturalFeats.BattanianMilitiaFeat.EffectBonus);
-		}
+		ExplainedNumber bonuses = default(ExplainedNumber);
+		Town town = null;
 		if (settlement.IsFortification)
 		{
-			settlement.Town.AddEffectOfBuildings(BuildingEffectEnum.MilitiaVeterancyChance, ref result);
+			town = settlement.Town;
+		}
+		else if (settlement.IsVillage && settlement.Village.TradeBound?.Town != null)
+		{
+			town = settlement.Village.TradeBound.Town;
+		}
+		if (town != null)
+		{
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Leadership.CitizenMilitia, town, isPrimaryBonus: true, ref bonuses);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Polearm.Drills, town, isPrimaryBonus: true, ref bonuses);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.SevenVeterans, town, isPrimaryBonus: false, ref bonuses);
+		}
+		FeatHelper.ApplyCultureFeat(settlement.OwnerClan.Culture, DefaultCulturalFeats.BattanianMilitiaFeat, ref bonuses);
+		if (settlement.IsFortification)
+		{
+			settlement.Town.AddEffectOfBuildings(BuildingEffectEnum.MilitiaVeterancyChance, ref bonuses);
 		}
 		if (settlement.OwnerClan.Kingdom != null && settlement.OwnerClan.Kingdom.ActivePolicies.Contains(DefaultPolicies.LandGrantsForVeteran))
 		{
-			result.AddFactor(0.1f);
+			bonuses.AddFactor(0.1f);
 		}
-		return result;
+		return bonuses;
 	}
 
 	public override void CalculateMilitiaSpawnRate(Settlement settlement, out float meleeTroopRate, out float rangedTroopRate)
@@ -143,10 +131,7 @@ public class DefaultSettlementMilitiaModel : SettlementMilitiaModel
 					result.Add(1f, DefaultPolicies.Cantons.Name);
 				}
 			}
-			if (settlement.OwnerClan.Culture.HasFeat(DefaultCulturalFeats.BattanianMilitiaFeat))
-			{
-				result.Add(DefaultCulturalFeats.BattanianMilitiaFeat.EffectBonus, CultureText);
-			}
+			FeatHelper.ApplyCultureFeat(settlement.OwnerClan.Culture, DefaultCulturalFeats.BattanianMilitiaFeat, ref result);
 		}
 		if (settlement.IsCastle || settlement.IsTown)
 		{
@@ -166,16 +151,16 @@ public class DefaultSettlementMilitiaModel : SettlementMilitiaModel
 	{
 		if (settlement.Town != null && settlement.Town.Governor != null)
 		{
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.OneHanded.SwiftStrike, settlement.Town, ref result);
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Polearm.KeepAtBay, settlement.Town, ref result);
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Bow.MerryMen, settlement.Town, ref result);
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Crossbow.LongShots, settlement.Town, ref result);
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Throwing.SlingingCompetitions, settlement.Town, ref result);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.OneHanded.SwiftStrike, settlement.Town, isPrimaryBonus: false, ref result);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Polearm.KeepAtBay, settlement.Town, isPrimaryBonus: false, ref result);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Bow.MerryMen, settlement.Town, isPrimaryBonus: false, ref result);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Crossbow.LongShots, settlement.Town, isPrimaryBonus: false, ref result);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Throwing.SlingingCompetitions, settlement.Town, isPrimaryBonus: false, ref result);
 			if (settlement.IsUnderSiege)
 			{
-				PerkHelper.AddPerkBonusForTown(DefaultPerks.Roguery.ArmsDealer, settlement.Town, ref result);
+				PerkHelper.AddPerkBonusForTown(DefaultPerks.Roguery.ArmsDealer, settlement.Town, isPrimaryBonus: false, ref result);
 			}
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.SevenVeterans, settlement.Town, ref result);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.SevenVeterans, settlement.Town, isPrimaryBonus: false, ref result);
 		}
 	}
 

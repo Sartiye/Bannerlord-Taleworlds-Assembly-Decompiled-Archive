@@ -60,7 +60,7 @@ public class MultiplayerTeamSelectComponent : MissionNetwork
 	private void OnMyClientSynchronized()
 	{
 		base.Mission.GetMissionBehavior<MissionNetworkComponent>().OnMyClientSynchronized -= OnMyClientSynchronized;
-		if (Mission.Current.GetMissionBehavior<MissionLobbyComponent>().CurrentMultiplayerState != MissionLobbyComponent.MultiplayerGameState.Ending && GameNetwork.MyPeer.GetComponent<MissionPeer>().Team == null)
+		if (Mission.Current.GetMissionBehavior<MissionLobbyComponent>().CurrentMultiplayerState != MissionLobbyComponent.MultiplayerGameState.Ending && GameNetwork.MyPeer.GetComponent<MissionPeer>().Team == null && !GameNetwork.MyPeer.IsStreamer && !GameNetwork.MyPeer.IsWatcher)
 		{
 			SelectTeam();
 		}
@@ -92,9 +92,22 @@ public class MultiplayerTeamSelectComponent : MissionNetwork
 		base.OnRemoveBehavior();
 	}
 
+	protected override void HandleLateNewClientAfterSynchronized(NetworkCommunicator networkPeer)
+	{
+		base.HandleLateNewClientAfterSynchronized(networkPeer);
+		if (GameNetwork.IsServer && (networkPeer.IsStreamer || networkPeer.IsWatcher) && networkPeer.GetComponent<MissionPeer>().Team != base.Mission.SpectatorTeam)
+		{
+			ChangeTeamServer(networkPeer, base.Mission.SpectatorTeam);
+		}
+	}
+
 	private bool HandleClientEventTeamChange(NetworkCommunicator peer, GameNetworkMessage baseMessage)
 	{
 		TeamChange teamChange = (TeamChange)baseMessage;
+		if (peer.IsStreamer)
+		{
+			return false;
+		}
 		if (TeamSelectionEnabled)
 		{
 			if (teamChange.AutoAssign)
@@ -185,8 +198,11 @@ public class MultiplayerTeamSelectComponent : MissionNetwork
 			component.ControlledAgent.Die(b, Agent.KillInfo.TeamSwitch);
 		}
 		component.Team = team;
-		BasicCultureObject culture = (component.Team.IsAttacker ? MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam1.GetStrValue()) : MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue()));
-		component.Culture = culture;
+		if (team.Side != BattleSideEnum.None)
+		{
+			BasicCultureObject culture = (component.Team.IsAttacker ? MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam1.GetStrValue()) : MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue()));
+			component.Culture = culture;
+		}
 		if (team != team2)
 		{
 			if (component.HasSpawnedAgentVisuals)
@@ -213,6 +229,10 @@ public class MultiplayerTeamSelectComponent : MissionNetwork
 			component.HasSpawnTimerExpired = false;
 		}
 		UpdateTeams(networkPeer, team2, team);
+		if (GameNetwork.IsServer && team != team2 && !networkPeer.IsServerPeer)
+		{
+			_missionNetworkComponent?.SendTroopSelectionInformation(networkPeer);
+		}
 	}
 
 	public void ChangeTeam(Team team)

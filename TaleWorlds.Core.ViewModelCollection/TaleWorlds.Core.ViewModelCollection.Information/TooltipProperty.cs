@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using TaleWorlds.Library;
 
 namespace TaleWorlds.Core.ViewModelCollection.Information;
@@ -22,7 +23,8 @@ public class TooltipProperty : ViewModel, ISerializableObject
 		DefaultSeperator = 0x400,
 		Cost = 0x800,
 		Title = 0x1000,
-		RundownResult = 0x2000
+		RundownResult = 0x2000,
+		TraitTitle = 0x4000
 	}
 
 	private Func<string> valueFunc;
@@ -38,6 +40,8 @@ public class TooltipProperty : ViewModel, ISerializableObject
 	private int _textHeight;
 
 	private int _propertyModifier;
+
+	private MBBindingList<TooltipTraitLevelVM> _traitLevels;
 
 	public bool OnlyShowWhenExtended { get; set; }
 
@@ -123,6 +127,23 @@ public class TooltipProperty : ViewModel, ISerializableObject
 		}
 	}
 
+	[DataSourceProperty]
+	public MBBindingList<TooltipTraitLevelVM> TraitLevels
+	{
+		get
+		{
+			return _traitLevels;
+		}
+		set
+		{
+			if (value != _traitLevels)
+			{
+				_traitLevels = value;
+				OnPropertyChangedWithValue(value, "TraitLevels");
+			}
+		}
+	}
+
 	public TooltipProperty()
 	{
 	}
@@ -147,13 +168,22 @@ public class TooltipProperty : ViewModel, ISerializableObject
 		}
 	}
 
-	public TooltipProperty(string definition, string value, int textHeight, bool onlyShowWhenExtended = false, TooltipPropertyFlags modifier = TooltipPropertyFlags.None)
+	public TooltipProperty(string definition, string value, int textHeight, bool onlyShowWhenExtended = false, TooltipPropertyFlags modifier = TooltipPropertyFlags.None, List<(string name, bool isSelected)> traitLevels = null)
 	{
 		TextHeight = textHeight;
 		DefinitionLabel = definition;
 		ValueLabel = value;
 		OnlyShowWhenExtended = onlyShowWhenExtended;
 		PropertyModifier = (int)modifier;
+		if (traitLevels != null)
+		{
+			TraitLevels = new MBBindingList<TooltipTraitLevelVM>();
+			for (int i = 0; i < traitLevels.Count; i++)
+			{
+				var (name, isSelected) = traitLevels[i];
+				TraitLevels.Add(new TooltipTraitLevelVM(name, isSelected, i == 0, i == traitLevels.Count - 1));
+			}
+		}
 	}
 
 	public TooltipProperty(string definition, Func<string> _valueFunc, int textHeight, bool onlyShowWhenExtended = false, TooltipPropertyFlags modifier = TooltipPropertyFlags.None)
@@ -229,6 +259,7 @@ public class TooltipProperty : ViewModel, ISerializableObject
 		ValueLabel = property.ValueLabel;
 		OnlyShowWhenExtended = property.OnlyShowWhenExtended;
 		PropertyModifier = property.PropertyModifier;
+		TraitLevels = property.TraitLevels;
 	}
 
 	public void DeserializeFrom(IReader reader)

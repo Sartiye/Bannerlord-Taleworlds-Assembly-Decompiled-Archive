@@ -38,7 +38,7 @@ public class HelpingAnAllySetPieceBattleMissionController : MissionLogic, IMissi
 
 	private const string AllyShipTroopType = "vlandian_fortune_seekers";
 
-	private const int AllyShipTroopCount = 12;
+	private const int AllyShipTroopCount = 14;
 
 	private const int PlayerShipTroopType1Count = 32;
 
@@ -246,7 +246,7 @@ public class HelpingAnAllySetPieceBattleMissionController : MissionLogic, IMissi
 			_agentsLogic.AssignAndTeleportCrewToShipMachines(TeamSideEnum.PlayerTeam);
 			_agentsLogic.AssignAndTeleportCrewToShipMachines(TeamSideEnum.PlayerAllyTeam);
 			_agentsLogic.AssignAndTeleportCrewToShipMachines(TeamSideEnum.EnemyTeam);
-			Mission.Current.OnDeploymentFinished();
+			base.Mission.OnInitialSpawnCompleted();
 			_agentsLogic.SetDeploymentMode(value: false);
 			missionBehavior.SetDeploymentMode(value: false);
 			Scene scene2 = Mission.Current.Scene;
@@ -469,7 +469,7 @@ public class HelpingAnAllySetPieceBattleMissionController : MissionLogic, IMissi
 		if (!_isAllyBoardedNotificationGiven && (_allyShip.GetIsThereActiveBridgeTo(_pursuerShip1) || _allyShip.GetIsThereActiveBridgeTo(_pursuerShip2)))
 		{
 			_isAllyBoardedNotificationGiven = true;
-			CampaignInformationManager.AddDialogLine(new TextObject("{=J83UkY9F}They’re boarding the Vlandians!"), NavalStorylineData.Gunnar.CharacterObject);
+			CampaignInformationManager.AddDialogLine(new TextObject("{=J83UkY9F}They're boarding the Vlandians!"), NavalStorylineData.Gunnar.CharacterObject);
 		}
 		if (!_hasPlayerEngagedEnemyNotificationGiven && (_playerShip.GetIsThereActiveBridgeTo(_pursuerShip1) || _playerShip.GetIsThereActiveBridgeTo(_pursuerShip2)))
 		{
@@ -566,10 +566,10 @@ public class HelpingAnAllySetPieceBattleMissionController : MissionLogic, IMissi
 	private void SpawnAllyShipAgents(MissionShip ship)
 	{
 		NavalAgentsLogic missionBehavior = base.Mission.GetMissionBehavior<NavalAgentsLogic>();
-		missionBehavior.SetDesiredTroopCountOfShip(ship, 12);
+		missionBehavior.SetDesiredTroopCountOfShip(ship, 14);
 		CharacterObject @object = Campaign.Current.ObjectManager.GetObject<CharacterObject>("vlandian_fortune_seekers");
 		int deckFrameCount = ship.DeckFrameCount;
-		for (int i = 0; i < deckFrameCount && i < 12; i++)
+		for (int i = 0; i < deckFrameCount && i < 14; i++)
 		{
 			MatrixFrame nextOuterInnerSpawnGlobalFrame = ship.GetNextOuterInnerSpawnGlobalFrame();
 			AgentBuildData agentBuildData = new AgentBuildData(@object).TroopOrigin(new PartyAgentOrigin(_merchantParty.Party, @object, -1, default(UniqueTroopDescriptor), alwaysWounded: false, isInvincible: true)).Team(base.Mission.PlayerAllyTeam).InitialPosition(in nextOuterInnerSpawnGlobalFrame.origin);
@@ -594,7 +594,7 @@ public class HelpingAnAllySetPieceBattleMissionController : MissionLogic, IMissi
 			if (!_hasPlayerClearedFirstEnemyNotificationGiven)
 			{
 				_hasPlayerClearedFirstEnemyNotificationGiven = true;
-				CampaignInformationManager.AddDialogLine(new TextObject("{=Xjm7x5vu}Hah! That's the end of them! Now, about the other one…"), NavalStorylineData.Gunnar.CharacterObject);
+				CampaignInformationManager.AddDialogLine(new TextObject("{=Xjm7x5vu}Hah! That's the end of them! Now, about the other one..."), NavalStorylineData.Gunnar.CharacterObject);
 			}
 		}
 		if (_isPursuer2ShipEngaged && _agentsLogic.GetActiveAgentCountOfShip(_pursuerShip2) == 0)
@@ -610,11 +610,11 @@ public class HelpingAnAllySetPieceBattleMissionController : MissionLogic, IMissi
 		MBReadOnlyList<Agent> activeAgents = base.Mission.PlayerAllyTeam.ActiveAgents;
 		if (activeAgents != null && !_isDefeatQueued && !_isVictoryQueued)
 		{
-			if ((float)activeAgents.Count <= 3.6000001f || base.Mission.PlayerTeam.ActiveAgents.IsEmpty())
+			if ((float)activeAgents.Count <= 2.8f || base.Mission.PlayerTeam.ActiveAgents.IsEmpty())
 			{
 				StartDefeatSequence();
 			}
-			else if (activeAgents.Count == 6)
+			else if (activeAgents.Count == 7)
 			{
 				CampaignInformationManager.AddDialogLine(new TextObject("{=zdQoMBZd}Most of the Vlandians are down! We haven't much time!"), NavalStorylineData.Gunnar.CharacterObject);
 			}

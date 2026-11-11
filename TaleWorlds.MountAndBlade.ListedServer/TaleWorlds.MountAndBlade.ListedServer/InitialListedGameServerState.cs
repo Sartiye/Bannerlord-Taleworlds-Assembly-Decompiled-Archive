@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.ModuleManager;
@@ -30,7 +31,7 @@ public class InitialListedGameServerState : GameState
 		if (customGameServerConfigFile != null)
 		{
 			Console.WriteLine("Executing commands from " + customGameServerConfigFile);
-			string[] array = File.ReadAllLines(ModuleHelper.GetModuleFullPath("Native") + customGameServerConfigFile);
+			string[] array = File.ReadAllLines(System.IO.Path.IsPathRooted(customGameServerConfigFile) ? customGameServerConfigFile : System.IO.Path.Combine(ModuleHelper.GetModuleFullPath("Native"), customGameServerConfigFile));
 			List<string> list = new List<string>();
 			List<string> list2 = new List<string>();
 			for (int i = 0; i < array.Length; i++)
@@ -43,11 +44,13 @@ public class InitialListedGameServerState : GameState
 				if (MultiplayerOptions.TryGetOptionTypeFromString(text, out var _, out var _))
 				{
 					list.Add(array[i]);
+					continue;
 				}
-				else
+				if (TryGetMiscasedOptionTypeName(text, out var optionTypeName))
 				{
-					list2.Add(array[i]);
+					Console.WriteLine("Config option '" + text + "' was ignored. Did you mean '" + optionTypeName + "'? Option names are case-sensitive.");
 				}
+				list2.Add(array[i]);
 			}
 			MultiplayerOptions.Instance.InitializeFromCommandList(list);
 			if (!string.IsNullOrEmpty(Module.CurrentModule.StartupInfo.CustomGameServerNameOverride))
@@ -68,6 +71,48 @@ public class InitialListedGameServerState : GameState
 		{
 			Console.WriteLine("Command file is null");
 		}
+	}
+
+	private static bool TryGetMiscasedOptionTypeName(string optionTypeString, out string optionTypeName)
+	{
+		string text = NormalizeOptionName(optionTypeString);
+		if (text.Length == 0)
+		{
+			optionTypeName = null;
+			return false;
+		}
+		for (MultiplayerOptions.OptionType optionType = MultiplayerOptions.OptionType.ServerName; optionType < MultiplayerOptions.OptionType.NumOfSlots; optionType++)
+		{
+			if (optionType.GetOptionProperty() != null)
+			{
+				string text2 = optionType.ToString();
+				if (text2.Equals(optionTypeString, StringComparison.Ordinal))
+				{
+					optionTypeName = null;
+					return false;
+				}
+				if (NormalizeOptionName(text2).Equals(text, StringComparison.Ordinal))
+				{
+					optionTypeName = text2;
+					return true;
+				}
+			}
+		}
+		optionTypeName = null;
+		return false;
+	}
+
+	private static string NormalizeOptionName(string value)
+	{
+		StringBuilder stringBuilder = new StringBuilder(value.Length);
+		foreach (char c in value)
+		{
+			if (c != '_' && c != '-')
+			{
+				stringBuilder.Append(char.ToLowerInvariant(c));
+			}
+		}
+		return stringBuilder.ToString();
 	}
 
 	protected override void OnActivate()

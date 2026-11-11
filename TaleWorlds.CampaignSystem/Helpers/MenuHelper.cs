@@ -248,7 +248,7 @@ public static class MenuHelper
 					else if (Math.Min(MobileParty.MainParty.MemberRoster.TotalHealthyCount, ShipHelper.GetOrderedNavalRaidShipsOfPlayerParty().SumQ((Ship x) => x.MainDeckCrewCapacity)) < minimumNumberOfMenForAttackingVillageViaScene)
 					{
 						args.IsEnabled = false;
-						args.Tooltip = new TextObject("{=*}Your shallow ship's crew capacity is too low for a hostile action. A minimum of {NUMBER} crew is required. Use a larger or additional vessel.");
+						args.Tooltip = new TextObject("{=aeUaoEYs}Your shallow ship's crew capacity is too low for a hostile action. A minimum of {NUMBER} crew is required. Use a larger or additional vessel.");
 						args.Tooltip.SetTextVariable("NUMBER", minimumNumberOfMenForAttackingVillageViaScene);
 					}
 				}
@@ -268,7 +268,10 @@ public static class MenuHelper
 	{
 		MapEvent battle = PlayerEncounter.Battle;
 		PartyBase leaderParty = battle.GetLeaderParty(PartyBase.MainParty.OpponentSide);
-		BeHostileAction.ApplyEncounterHostileAction(PartyBase.MainParty, leaderParty);
+		if (!leaderParty.IsMobile || (!leaderParty.MobileParty.IsVillager && !leaderParty.MobileParty.IsCaravan))
+		{
+			BeHostileAction.ApplyEncounterHostileAction(PartyBase.MainParty, leaderParty);
+		}
 		if (PlayerEncounter.Current == null)
 		{
 			return;
@@ -575,7 +578,10 @@ public static class MenuHelper
 		{
 			mobileParty.BesiegerCamp = leaderParty.SiegeEvent.BesiegerCamp;
 		}
-		BeHostileAction.ApplyEncounterHostileAction(PartyBase.MainParty, leaderParty);
+		if (!leaderParty.IsMobile || (!leaderParty.MobileParty.IsVillager && !leaderParty.MobileParty.IsCaravan))
+		{
+			BeHostileAction.ApplyEncounterHostileAction(PartyBase.MainParty, leaderParty);
+		}
 		if (PlayerEncounter.Current != null)
 		{
 			GameMenu.ExitToLast();
@@ -603,7 +609,7 @@ public static class MenuHelper
 		Settlement currentSettlement = MobileParty.MainParty.CurrentSettlement;
 		MapEvent mapEvent = ((PlayerEncounter.Battle != null) ? PlayerEncounter.Battle : PlayerEncounter.EncounteredBattle);
 		int numberOfInvolvedMen = mapEvent.GetNumberOfInvolvedMen(PartyBase.MainParty.Side);
-		PlayerEncounter.Finish(currentSettlement == null && (MobileParty.MainParty.CurrentSettlement?.SiegeEvent == null || MobileParty.MainParty.CurrentSettlement?.MapFaction != MobileParty.MainParty.MapFaction));
+		PlayerEncounter.Finish(MobileParty.MainParty.CurrentSettlement != null && !MobileParty.MainParty.CurrentSettlement.IsFortification);
 		if (MobileParty.MainParty.BesiegerCamp != null)
 		{
 			MobileParty.MainParty.BesiegerCamp = null;
@@ -623,7 +629,7 @@ public static class MenuHelper
 	{
 		if (string.IsNullOrEmpty(encounterCulture?.EncounterBackgroundMesh))
 		{
-			Debug.FailedAssert("Background mesh is invalid for current encounter", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetEncounterCultureBackgroundMesh", 829);
+			Debug.FailedAssert("Background mesh is invalid for current encounter", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetEncounterCultureBackgroundMesh", 842);
 			return string.Empty;
 		}
 		string text = encounterCulture.EncounterBackgroundMesh;

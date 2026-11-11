@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Helpers;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Information;
@@ -10,36 +13,15 @@ namespace TaleWorlds.CampaignSystem.ViewModelCollection.ClanManagement;
 
 public class ClanRoleItemVM : ViewModel
 {
-	private class ClanRoleMemberComparer : IComparer<ClanRoleMemberItemVM>
-	{
-		public int Compare(ClanRoleMemberItemVM x, ClanRoleMemberItemVM y)
-		{
-			int num = y.RelevantSkillValue.CompareTo(x.RelevantSkillValue);
-			if (num == 0)
-			{
-				return x.Member.HeroObject.Name.ToString().CompareTo(y.Member.HeroObject.Name.ToString());
-			}
-			return num;
-		}
-	}
-
 	private Action<ClanRoleItemVM> _onRoleSelectionToggled;
-
-	private Action _onRoleAssigned;
 
 	private MBBindingList<ClanPartyMemberItemVM> _heroMembers;
 
 	private MobileParty _party;
 
-	private ClanRoleMemberComparer _comparer;
-
 	private bool _isEnabled;
 
-	private ClanRoleMemberItemVM _clanLeader;
-
-	private MBBindingList<ClanRoleMemberItemVM> _members;
-
-	private ClanRoleMemberItemVM _effectiveOwner;
+	private ClanPartyMemberItemVM _effectiveOwner;
 
 	private HintViewModel _notAssignedHint;
 
@@ -77,41 +59,7 @@ public class ClanRoleItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public ClanRoleMemberItemVM ClanLeader
-	{
-		get
-		{
-			return _clanLeader;
-		}
-		set
-		{
-			if (value != _clanLeader)
-			{
-				_clanLeader = value;
-				OnPropertyChangedWithValue(value, "ClanLeader");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public MBBindingList<ClanRoleMemberItemVM> Members
-	{
-		get
-		{
-			return _members;
-		}
-		set
-		{
-			if (value != _members)
-			{
-				_members = value;
-				OnPropertyChangedWithValue(value, "Members");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public ClanRoleMemberItemVM EffectiveOwner
+	public ClanPartyMemberItemVM EffectiveOwner
 	{
 		get
 		{
@@ -179,23 +127,6 @@ public class ClanRoleItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public bool HasEffects
-	{
-		get
-		{
-			return _hasEffects;
-		}
-		set
-		{
-			if (value != _hasEffects)
-			{
-				_hasEffects = value;
-				OnPropertyChangedWithValue(value, "HasEffects");
-			}
-		}
-	}
-
-	[DataSourceProperty]
 	public string RoleId
 	{
 		get
@@ -208,6 +139,23 @@ public class ClanRoleItemVM : ViewModel
 			{
 				_roleId = value;
 				OnPropertyChangedWithValue(value, "RoleId");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool HasEffects
+	{
+		get
+		{
+			return _hasEffects;
+		}
+		set
+		{
+			if (value != _hasEffects)
+			{
+				_hasEffects = value;
+				OnPropertyChangedWithValue(value, "HasEffects");
 			}
 		}
 	}
@@ -263,15 +211,12 @@ public class ClanRoleItemVM : ViewModel
 		}
 	}
 
-	public ClanRoleItemVM(MobileParty party, PartyRole role, MBBindingList<ClanPartyMemberItemVM> heroMembers, Action<ClanRoleItemVM> onRoleSelectionToggled, Action onRoleAssigned)
+	public ClanRoleItemVM(MobileParty party, PartyRole role, MBBindingList<ClanPartyMemberItemVM> heroMembers, Action<ClanRoleItemVM> onRoleSelectionToggled)
 	{
 		Role = role;
-		_comparer = new ClanRoleMemberComparer();
 		_party = party;
 		_onRoleSelectionToggled = onRoleSelectionToggled;
-		_onRoleAssigned = onRoleAssigned;
 		_heroMembers = heroMembers;
-		Members = new MBBindingList<ClanRoleMemberItemVM>();
 		NotAssignedHint = new HintViewModel(new TextObject("{=S1iS3OYj}Party leader is default for unassigned roles"));
 		DisabledHint = new HintViewModel();
 		IsEnabled = true;
@@ -285,21 +230,8 @@ public class ClanRoleItemVM : ViewModel
 		base.RefreshValues();
 		Name = GameTexts.FindText("role", Role.ToString()).ToString();
 		NoEffectText = GameTexts.FindText("str_clan_role_no_effect").ToString();
-		AssignedMemberEffects = EffectiveOwner?.GetEffectsList(Role) ?? "";
+		AssignedMemberEffects = ((EffectiveOwner != null) ? GetEffectsList(EffectiveOwner.HeroObject, Role) : "");
 		HasEffects = !string.IsNullOrEmpty(AssignedMemberEffects);
-		Members.ApplyActionOnAllItems(delegate(ClanRoleMemberItemVM x)
-		{
-			x.RefreshValues();
-		});
-	}
-
-	public override void OnFinalize()
-	{
-		base.OnFinalize();
-		Members.ApplyActionOnAllItems(delegate(ClanRoleMemberItemVM x)
-		{
-			x.OnFinalize();
-		});
 	}
 
 	private static string GetRoleIdentifier(PartyRole role)
@@ -327,42 +259,18 @@ public class ClanRoleItemVM : ViewModel
 
 	public void Refresh()
 	{
-		Members.ApplyActionOnAllItems(delegate(ClanRoleMemberItemVM x)
+		if (_party == null)
 		{
-			x.OnFinalize();
-		});
-		Members.Clear();
-		foreach (ClanPartyMemberItemVM heroMember in _heroMembers)
-		{
-			if (heroMember.IsLeader)
-			{
-				ClanLeader = new ClanRoleMemberItemVM(_party, Role, heroMember, null);
-			}
-			else if (Campaign.Current.Models.ClanMemberPartyRoleModel.IsHeroAssignableForPartyRole(heroMember.HeroObject, Role, _party))
-			{
-				Members.Add(new ClanRoleMemberItemVM(_party, Role, heroMember, OnRoleAssigned));
-			}
-		}
-		Members.Add(new ClanRoleMemberItemVM(_party, Role, null, OnRoleAssigned));
-		Members.Sort(_comparer);
-		GetMemberAssignedToRole(_party, Role, out var roleOwner, out var effectiveRoleOwner);
-		if (effectiveRoleOwner == ClanLeader?.Member.HeroObject)
-		{
-			EffectiveOwner = ClanLeader;
+			EffectiveOwner = _heroMembers.FirstOrDefault();
+			IsNotAssigned = false;
 		}
 		else
 		{
-			for (int i = 0; i < Members.Count; i++)
-			{
-				ClanRoleMemberItemVM clanRoleMemberItemVM = Members[i];
-				if (clanRoleMemberItemVM.Member.HeroObject == effectiveRoleOwner)
-				{
-					EffectiveOwner = clanRoleMemberItemVM;
-					break;
-				}
-			}
+			GetMemberAssignedToRole(_party, Role, out var roleOwner, out var effectiveRoleOwner);
+			EffectiveOwner = _heroMembers.FirstOrDefault((ClanPartyMemberItemVM x) => x.HeroObject == effectiveRoleOwner);
+			IsNotAssigned = roleOwner == null;
 		}
-		IsNotAssigned = roleOwner == null;
+		RefreshValues();
 	}
 
 	public void ExecuteToggleRoleSelection()
@@ -396,18 +304,26 @@ public class ClanRoleItemVM : ViewModel
 		}
 		effectiveRoleOwner = party.LeaderHero;
 		roleOwner = party.LeaderHero;
-		Debug.FailedAssert("Given party role is not valid.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\ClanManagement\\ClanRoleItemVM.cs", "GetMemberAssignedToRole", 175);
-	}
-
-	private void OnRoleAssigned()
-	{
-		MBInformationManager.HideInformations();
-		_onRoleAssigned?.Invoke();
+		Debug.FailedAssert("Given party role is not valid.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\ClanManagement\\ClanRoleItemVM.cs", "GetMemberAssignedToRole", 138);
 	}
 
 	public void SetEnabled(bool enabled, TextObject disabledHint)
 	{
 		IsEnabled = enabled;
 		DisabledHint.HintText = disabledHint;
+	}
+
+	private string GetEffectsList(Hero hero, PartyRole role)
+	{
+		IEnumerable<SkillEffect> enumerable = SkillEffect.All.Where((SkillEffect x) => x.Role == role);
+		StringBuilder stringBuilder = new StringBuilder();
+		if (SkillHelper.GetHeroRelevantSkillValueForPartyRole(hero, role) > 0)
+		{
+			foreach (SkillEffect item in enumerable)
+			{
+				stringBuilder.AppendLine(SkillHelper.GetEffectDescriptionForSkillLevel(item, SkillHelper.GetHeroRelevantSkillValueForPartyRole(hero, role)).ToString());
+			}
+		}
+		return stringBuilder.ToString();
 	}
 }

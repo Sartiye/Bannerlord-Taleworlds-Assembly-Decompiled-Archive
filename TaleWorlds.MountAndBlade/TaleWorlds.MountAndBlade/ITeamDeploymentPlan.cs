@@ -21,7 +21,7 @@ public interface ITeamDeploymentPlan
 
 	float GetTargetOffset(bool isReinforcement = false);
 
-	MatrixFrame GetDeploymentFrame();
+	MatrixFrame GetDeploymentZoneFrame();
 
 	bool HasDeploymentBoundaries();
 

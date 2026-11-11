@@ -68,6 +68,10 @@ public class PartyNameplateVM : NameplateVM
 
 	protected Vec2 _headPositionBind;
 
+	protected Vec2 _shipBannerPositionBind;
+
+	protected bool _isShipBannerVisibleBind;
+
 	protected bool _isHighBind;
 
 	protected bool _isBehindBind;
@@ -83,6 +87,8 @@ public class PartyNameplateVM : NameplateVM
 	protected bool _isDisorganizedBind;
 
 	protected bool _isCurrentlyAtSeaBind;
+
+	protected bool _hasBloodFeudBind;
 
 	protected string _factionColorBind;
 
@@ -128,9 +134,15 @@ public class PartyNameplateVM : NameplateVM
 
 	private bool _isCurrentlyAtSea;
 
+	private bool _hasBloodFeud;
+
+	private bool _isShipBannerVisible;
+
 	private BannerImageIdentifierVM _partyBanner;
 
 	private Vec2 _headPosition;
+
+	private Vec2 _shipBannerPosition;
 
 	public MobileParty Party { get; private set; }
 
@@ -146,6 +158,38 @@ public class PartyNameplateVM : NameplateVM
 			{
 				_headPosition = value;
 				OnPropertyChangedWithValue(value, "HeadPosition");
+			}
+		}
+	}
+
+	public Vec2 ShipBannerPosition
+	{
+		get
+		{
+			return _shipBannerPosition;
+		}
+		set
+		{
+			if (value != _shipBannerPosition)
+			{
+				_shipBannerPosition = value;
+				OnPropertyChangedWithValue(value, "ShipBannerPosition");
+			}
+		}
+	}
+
+	public bool IsShipBannerVisible
+	{
+		get
+		{
+			return _isShipBannerVisible;
+		}
+		set
+		{
+			if (value != _isShipBannerVisible)
+			{
+				_isShipBannerVisible = value;
+				OnPropertyChangedWithValue(value, "IsShipBannerVisible");
 			}
 		}
 	}
@@ -322,6 +366,22 @@ public class PartyNameplateVM : NameplateVM
 			{
 				_isCurrentlyAtSea = value;
 				OnPropertyChangedWithValue(value, "IsCurrentlyAtSea");
+			}
+		}
+	}
+
+	public bool HasBloodFeud
+	{
+		get
+		{
+			return _hasBloodFeud;
+		}
+		set
+		{
+			if (value != _hasBloodFeud)
+			{
+				_hasBloodFeud = value;
+				OnPropertyChangedWithValue(value, "HasBloodFeud");
 			}
 		}
 	}
@@ -600,7 +660,7 @@ public class PartyNameplateVM : NameplateVM
 			PartyBanner = new BannerImageIdentifierVM(Party.Banner, nineGrid: true);
 			_isPartyBannerDirty = false;
 		}
-		if (_isVisibleOnMapBind && (_isInArmyBind || _isInSettlementBind || (!Party.IsMainParty && Party.IsInRaftState)))
+		if (_isVisibleOnMapBind && (_isInArmyBind || _isInSettlementBind || (!Party.IsMainParty && Party.IsInNavalAutoTravel)))
 		{
 			_isVisibleOnMapBind = false;
 		}
@@ -618,22 +678,46 @@ public class PartyNameplateVM : NameplateVM
 			_movementSpeedTextBind = _cachedSpeed.ToString("F1");
 		}
 		_isCurrentlyAtSeaBind = Party.IsCurrentlyAtSea;
+		if (_isArmyBind)
+		{
+			_hasBloodFeudBind = false;
+			for (int k = 0; k < Party.Army.Parties.Count; k++)
+			{
+				Clan actualClan = Party.Army.Parties[k].ActualClan;
+				if (actualClan != null && actualClan.HasBloodFeudWithPlayer)
+				{
+					_hasBloodFeudBind = true;
+					break;
+				}
+			}
+		}
+		else
+		{
+			_hasBloodFeudBind = !Party.IsMainParty && (Party.ActualClan?.HasBloodFeudWithPlayer ?? false);
+		}
 	}
 
 	public override void RefreshPosition()
 	{
 		base.RefreshPosition();
+		_latestX = 0f;
+		_latestY = 0f;
+		_latestW = 0f;
 		Vec3 vec = (Party.Position + Party.EventPositionAdder).AsVec3();
 		MapEvent mapEvent = Party.MapEvent;
 		if (mapEvent != null && mapEvent.MapEventSettlement?.IsVillage == true && Party.IsCurrentlyAtSea)
 		{
+			MBWindowManager.WorldToScreenInsideUsableArea(_mapCamera, vec, ref _latestX, ref _latestY, ref _latestW);
+			_shipBannerPositionBind = new Vec2(_latestX, _latestY);
+			_isShipBannerVisibleBind = _latestW > 0f && _latestW < 100f && _mapCamera.Position.z < 200f;
 			vec = Party.MapEvent.MapEventSettlement.GatePosition.AsVec3();
 			vec += new Vec3(Party.RandomFloatWithSeed((uint)Party.RandomValue, -0.3f, 0.3f), Party.RandomFloatWithSeed((uint)Party.RandomValue, -0.3f, 0.3f));
 		}
+		else
+		{
+			_isShipBannerVisibleBind = false;
+		}
 		Vec3 worldSpacePosition = vec + new Vec3(0f, 0f, 0.8f);
-		_latestX = 0f;
-		_latestY = 0f;
-		_latestW = 0f;
 		MBWindowManager.WorldToScreenInsideUsableArea(_mapCamera, vec, ref _latestX, ref _latestY, ref _latestW);
 		_partyPositionBind = new Vec2(_latestX, _latestY);
 		MBWindowManager.WorldToScreenInsideUsableArea(_mapCamera, worldSpacePosition, ref _latestX, ref _latestY, ref _latestW);
@@ -646,7 +730,7 @@ public class PartyNameplateVM : NameplateVM
 		base.RefreshTutorialStatus(newTutorialHighlightElementID);
 		if (Party?.Party?.Id == null)
 		{
-			Debug.FailedAssert("Mobile party id is null when refreshing tutorial status", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Nameplate\\PartyNameplateVM.cs", "RefreshTutorialStatus", 357);
+			Debug.FailedAssert("Mobile party id is null when refreshing tutorial status", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Nameplate\\PartyNameplateVM.cs", "RefreshTutorialStatus", 388);
 		}
 		else
 		{
@@ -672,6 +756,8 @@ public class PartyNameplateVM : NameplateVM
 	{
 		base.Position = _partyPositionBind;
 		HeadPosition = _headPositionBind;
+		ShipBannerPosition = _shipBannerPositionBind;
+		IsShipBannerVisible = _isShipBannerVisibleBind;
 		base.IsVisibleOnMap = _isVisibleOnMapBind;
 		IsInSettlement = _isInSettlementBind;
 		base.FactionColor = _factionColorBind;
@@ -688,6 +774,7 @@ public class PartyNameplateVM : NameplateVM
 		IsDisorganized = _isDisorganizedBind;
 		MovementSpeedText = _movementSpeedTextBind;
 		IsCurrentlyAtSea = _isCurrentlyAtSeaBind;
+		HasBloodFeud = _hasBloodFeudBind;
 		if (_previousQuestsBind == _questsBind)
 		{
 			return;

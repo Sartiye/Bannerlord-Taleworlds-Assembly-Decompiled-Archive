@@ -363,6 +363,7 @@ public class DisguiseMissionLogic : MissionLogic, IPlayerInputEffector, IMission
 		}
 		TurnGuardsToDisguiseAgents();
 		SpawnCustomGuards();
+		base.Mission.OnInitialSpawnCompleted();
 	}
 
 	private void TogglePassages(bool isActive)
@@ -728,7 +729,7 @@ public class DisguiseMissionLogic : MissionLogic, IPlayerInputEffector, IMission
 	{
 		return DialogFlow.CreateDialogFlow("start", 101).BeginNpcOptions("start").NpcOption(new TextObject("{=fT57TeqJ}You can go about your business now and we don't need to see each other ever again."), () => _contactSet && ConversationMission.OneToOneConversationAgent == _contactAgent)
 			.CloseDialog()
-			.NpcOption(new TextObject("{=mdJapWRd}Right… Something tells me that you're not just an ordinary beggar. Look, I can help you lie low and stay out of sight for a bit, if that's what you need."), () => !_contactSet && ConversationMission.OneToOneConversationAgent == _contactAgent)
+			.NpcOption(new TextObject("{=mdJapWRd}Right... Something tells me that you're not just an ordinary beggar. Look, I can help you lie low and stay out of sight for a bit, if that's what you need."), () => !_contactSet && ConversationMission.OneToOneConversationAgent == _contactAgent)
 			.BeginPlayerOptions()
 			.PlayerOption(new TextObject("{=toHJ01dX}What do you want in exchange?"))
 			.NpcLine(new TextObject("{=G3sImCKI}Nothing... I suspect your good favor is worth more than the few coppers I normally charge for my services."))

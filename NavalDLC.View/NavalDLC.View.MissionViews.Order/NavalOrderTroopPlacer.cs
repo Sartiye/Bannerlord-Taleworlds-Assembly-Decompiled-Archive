@@ -43,6 +43,15 @@ public class NavalOrderTroopPlacer : OrderTroopPlacer
 		return false;
 	}
 
+	protected override bool CanGiveMovementOrder()
+	{
+		if (base.Mission.IsNavalBattle && base.Mission.IsDeploymentFinished && !NavalDLCHelpers.IsNavalRaidMissionOpen() && !NavalDLCHelpers.IsShipOrdersAvailable())
+		{
+			return false;
+		}
+		return base.CanGiveMovementOrder();
+	}
+
 	protected override OrderFlag CreateOrderFlag()
 	{
 		return new NavalOrderFlag(base.Mission, base.MissionScreen);

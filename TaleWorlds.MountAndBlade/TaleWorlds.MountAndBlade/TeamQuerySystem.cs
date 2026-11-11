@@ -531,7 +531,7 @@ public class TeamQuerySystem
 			}
 			else
 			{
-				float currentTime = MBCommon.GetTotalMissionTime();
+				float currentTime = Mission.Current.CurrentTime;
 				int num2 = 0;
 				foreach (Team team16 in teamQuerySystem._mission.Teams)
 				{
@@ -542,7 +542,7 @@ public class TeamQuerySystem
 							Formation formation = team16.FormationsIncludingSpecialAndEmpty[i];
 							if (formation.CountOfUnits > 0)
 							{
-								num2 += formation.GetCountOfUnitsWithCondition((Agent agent) => currentTime - agent.LastRangedHitTime < 10f && !agent.Equipment.HasShield());
+								num2 += formation.GetCountOfUnitsWithCondition((Agent agent) => currentTime - agent.LastRecievedRangedHitTime < 10f && !agent.Equipment.HasShield());
 							}
 						}
 					}

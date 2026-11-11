@@ -35,7 +35,7 @@ public abstract class DiplomacyModel : MBGameModel<DiplomacyModel>
 
 	public abstract float GetStrengthThresholdForNonMutualWarsToBeIgnoredToJoinKingdom(Kingdom kingdomToJoin);
 
-	public abstract float GetRelationIncreaseFactor(Hero hero1, Hero hero2, float relationValue);
+	public abstract int GetEffectiveRelationChange(Hero originalHero, Hero originalGainedRelationWith, int relationChange);
 
 	public abstract int GetInfluenceAwardForSettlementCapturer(Settlement settlement);
 

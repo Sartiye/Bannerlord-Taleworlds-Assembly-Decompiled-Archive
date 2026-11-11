@@ -677,10 +677,13 @@ public class CommanderInfoVM : ViewModel
 			if (_allyTeam.Side == BattleSideEnum.None)
 			{
 				_allyTeam = Mission.Current.AttackerTeam;
-				return;
+				_enemyTeam = Mission.Current.DefenderTeam;
 			}
-			ResetCapturePointLists();
-			InitCapturePoints();
+			else
+			{
+				ResetCapturePointLists();
+				InitCapturePoints();
+			}
 		}
 	}
 

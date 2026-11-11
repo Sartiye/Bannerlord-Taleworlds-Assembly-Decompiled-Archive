@@ -50,6 +50,8 @@ public class MissionGauntletPhotoMode : MissionView
 
 	private bool _prevMouseEnabled;
 
+	private bool _isDragging;
+
 	private Scene _missionScene => base.MissionScreen.Mission.Scene;
 
 	private InputContext _input => base.MissionScreen.SceneLayer.Input;
@@ -158,7 +160,7 @@ public class MissionGauntletPhotoMode : MissionView
 				_gauntletLayer = new GauntletLayer("MissionPhotoMode", 100000);
 				_dataSource.RefreshValues();
 				_gauntletLayer.LoadMovie("PhotoMode", _dataSource);
-				_gauntletLayer.InputRestrictions.SetInputRestrictions(isMouseVisible: false, InputUsageMask.Mouse);
+				SetMouseVisible(isVisible: true);
 				base.MissionScreen.AddLayer(_gauntletLayer);
 				GauntletChatLogView.Current.SetCanFocusWhileInMission(canFocusInMission: false);
 			}
@@ -189,9 +191,9 @@ public class MissionGauntletPhotoMode : MissionView
 				_photoModeOrbitState = !_photoModeOrbitState;
 				_missionScene.SetPhotoModeOrbit(_photoModeOrbitState);
 			}
-			else if (_input.IsGameKeyPressed(98))
+			else if (_input.IsGameKeyPressed(98) && !_isDragging)
 			{
-				base.MissionScreen.SetPhotoModeRequiresMouse(!base.MissionScreen.PhotoModeRequiresMouse);
+				SetMouseVisible(!base.MissionScreen.PhotoModeRequiresMouse);
 			}
 			else if (_input.IsGameKeyPressed(99))
 			{
@@ -207,14 +209,16 @@ public class MissionGauntletPhotoMode : MissionView
 			{
 				ResetChanges();
 			}
-			else if (base.MissionScreen.SceneLayer.Input.IsKeyPressed(InputKey.RightMouseButton))
+			else if (_input.IsKeyPressed(InputKey.RightMouseButton))
 			{
 				_prevMouseEnabled = base.MissionScreen.PhotoModeRequiresMouse;
-				base.MissionScreen.SetPhotoModeRequiresMouse(isRequired: false);
+				SetMouseVisible(isVisible: false);
+				_isDragging = true;
 			}
-			else if (base.MissionScreen.SceneLayer.Input.IsKeyReleased(InputKey.RightMouseButton))
+			else if (_input.IsKeyReleased(InputKey.RightMouseButton))
 			{
-				base.MissionScreen.SetPhotoModeRequiresMouse(_prevMouseEnabled);
+				SetMouseVisible(_prevMouseEnabled);
+				_isDragging = false;
 			}
 			if (_input.IsGameKeyDown(93))
 			{
@@ -259,6 +263,19 @@ public class MissionGauntletPhotoMode : MissionView
 			return true;
 		}
 		return false;
+	}
+
+	private void SetMouseVisible(bool isVisible)
+	{
+		base.MissionScreen.SetPhotoModeRequiresMouse(isVisible);
+		if (isVisible)
+		{
+			_gauntletLayer.InputRestrictions.SetInputRestrictions(isMouseVisible: true, InputUsageMask.Mouse);
+		}
+		else
+		{
+			_gauntletLayer.InputRestrictions.ResetInputRestrictions();
+		}
 	}
 
 	private void ResetChanges()

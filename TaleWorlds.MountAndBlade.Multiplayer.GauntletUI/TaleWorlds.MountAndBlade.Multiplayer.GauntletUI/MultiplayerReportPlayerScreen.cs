@@ -12,9 +12,9 @@ public class MultiplayerReportPlayerScreen : GlobalLayer
 {
 	private MultiplayerReportPlayerVM _dataSource;
 
-	private GauntletMovieIdentifier _movie;
-
 	private bool _isActive;
+
+	private bool _isOpenedFromMission;
 
 	public static MultiplayerReportPlayerScreen Current { get; private set; }
 
@@ -24,7 +24,7 @@ public class MultiplayerReportPlayerScreen : GlobalLayer
 		_dataSource.SetCancelInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Exit"));
 		_dataSource.SetDoneInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Confirm"));
 		GauntletLayer gauntletLayer = new GauntletLayer("MultiplayerReportPlayer", 15350);
-		_movie = gauntletLayer.LoadMovie("MultiplayerReportPlayer", _dataSource);
+		gauntletLayer.LoadMovie("MultiplayerReportPlayer", _dataSource);
 		gauntletLayer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericPanelGameKeyCategory"));
 		base.Layer = gauntletLayer;
 	}
@@ -33,7 +33,11 @@ public class MultiplayerReportPlayerScreen : GlobalLayer
 	{
 		if (_isActive)
 		{
-			if (base.Layer.Input.IsHotKeyReleased("Confirm"))
+			if (_isOpenedFromMission && TaleWorlds.MountAndBlade.Mission.Current == null)
+			{
+				OnClose();
+			}
+			else if (base.Layer.Input.IsHotKeyReleased("Confirm"))
 			{
 				UISoundsHelper.PlayUISound("event:/ui/default");
 				_dataSource.ExecuteDone();
@@ -51,6 +55,7 @@ public class MultiplayerReportPlayerScreen : GlobalLayer
 		if (_isActive)
 		{
 			_isActive = false;
+			_isOpenedFromMission = false;
 			base.Layer.InputRestrictions.ResetInputRestrictions();
 			ScreenManager.SetSuspendLayer(base.Layer, isSuspended: true);
 			base.Layer.IsFocusLayer = false;
@@ -75,7 +80,6 @@ public class MultiplayerReportPlayerScreen : GlobalLayer
 		if (Current != null)
 		{
 			ScreenManager.RemoveGlobalLayer(Current);
-			(Current.Layer as GauntletLayer).ReleaseMovie(Current._movie);
 			MultiplayerReportPlayerManager.ReportHandlers -= Current.OnReportRequest;
 			Current._dataSource.OnFinalize();
 			Current._dataSource = null;
@@ -88,6 +92,7 @@ public class MultiplayerReportPlayerScreen : GlobalLayer
 		if (!_isActive)
 		{
 			_isActive = true;
+			_isOpenedFromMission = isRequestedFromMission;
 			ScreenManager.SetSuspendLayer(base.Layer, isSuspended: false);
 			base.Layer.IsFocusLayer = true;
 			ScreenManager.TrySetFocus(base.Layer);

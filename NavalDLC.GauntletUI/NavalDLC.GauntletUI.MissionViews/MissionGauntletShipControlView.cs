@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using NavalDLC.Missions.Objects;
+using NavalDLC.Missions.Objects.UsableMachines;
 using NavalDLC.Missions.ShipActuators;
 using NavalDLC.Missions.ShipInput;
 using NavalDLC.View.MissionViews;
@@ -225,10 +226,14 @@ public class MissionGauntletShipControlView : MissionShipControlView
 					DisplayCommandForSelectedFormations(textObject);
 				}
 			}
-			else if (GetCanCutLoose() && !GetIsCutLooseTemporarilyBlocked())
+			else if (GetCanCutLoose() && !GetIsCutLooseTemporarilyBlocked() && !GetIsCutLooseBlockedFromNearbyEnemies(_playerControlledShip.Team.Side))
 			{
 				_playerControlledShip.ShipOrder.SetCutLoose(enable: true);
 				DisplayCommandForSelectedFormations(new TextObject("{=siE18G0C}Cut loose!"));
+			}
+			else if (GetCanCutLoose() && GetIsCutLooseBlockedFromNearbyEnemies(_playerControlledShip.Team.Side))
+			{
+				MBInformationManager.AddQuickInformation(new TextObject("{=IsejbfZN}Cannot cut loose. Enemies nearby"));
 			}
 		}
 		if (inputContext.IsGameKeyReleased(110) && GetCanToggleSail())
@@ -507,7 +512,7 @@ public class MissionGauntletShipControlView : MissionShipControlView
 		{
 			_dataSource.ChangeCameraKey.IsVisible = GetCanChangeCamera();
 			_dataSource.CutLooseKey.IsVisible = GetCanCutLoose();
-			_dataSource.CutLooseKey.IsDisabled = GetIsCutLooseTemporarilyBlocked();
+			_dataSource.CutLooseKey.IsDisabled = GetIsCutLooseTemporarilyBlocked() || GetIsCutLooseBlockedFromNearbyEnemies(_playerControlledShip.Team.Side);
 			_dataSource.ToggleOarsmenKey.IsVisible = GetCanToggleOarsmen();
 			_dataSource.ToggleSailKey.IsVisible = GetCanToggleSail();
 			_dataSource.ToggleBallistaKey.IsVisible = GetCanToggleRangedWeaponOrderMode();
@@ -582,6 +587,28 @@ public class MissionGauntletShipControlView : MissionShipControlView
 			return _playerControlledShip.IsDisconnectionBlocked();
 		}
 		return true;
+	}
+
+	private bool GetIsCutLooseBlockedFromNearbyEnemies(BattleSideEnum battleSide)
+	{
+		bool result = _playerControlledShip.ShipOrder.IsEnemyOnShip;
+		foreach (ShipAttachmentPointMachine attachmentPointMachine in _playerControlledShip.AttachmentPointMachines)
+		{
+			if (attachmentPointMachine.CurrentAttachment != null && attachmentPointMachine.CurrentAttachment.EnemySideAgentsOnTheBridge(battleSide))
+			{
+				result = true;
+				break;
+			}
+		}
+		foreach (ShipAttachmentMachine attachmentMachine in _playerControlledShip.AttachmentMachines)
+		{
+			if (attachmentMachine.CurrentAttachment != null && attachmentMachine.CurrentAttachment.EnemySideAgentsOnTheBridge(battleSide))
+			{
+				result = true;
+				break;
+			}
+		}
+		return result;
 	}
 
 	private bool GetCanSelectShip()

@@ -530,7 +530,7 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 				{
 					if (CraftingOrders[settlement.Town].GetAvailableSlot() > -1)
 					{
-						CreateTownOrder(mBList.GetRandomElement(), i);
+						CreateTownOrder(allTown, mBList.GetRandomElement(), i);
 					}
 				}
 			}
@@ -561,7 +561,7 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 				{
 					break;
 				}
-				CreateTownOrder(item, availableSlot);
+				CreateTownOrder(settlement.Town, item, availableSlot);
 			}
 		}
 	}
@@ -940,18 +940,14 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 		_activeCraftingHero = hero;
 	}
 
-	public void CreateTownOrder(Hero orderOwner, int orderSlot)
+	public void CreateTownOrder(Town town, Hero orderOwner, int orderSlot)
 	{
-		if (orderOwner.CurrentSettlement == null || !orderOwner.CurrentSettlement.IsTown)
-		{
-			Debug.Print("Order owner: " + orderOwner.StringId + " Settlement" + ((orderOwner.CurrentSettlement == null) ? "null" : orderOwner.CurrentSettlement.StringId) + " Order owner party: " + ((orderOwner.PartyBelongedTo == null) ? "null" : orderOwner.PartyBelongedTo.StringId));
-		}
-		float townOrderDifficulty = GetTownOrderDifficulty(orderOwner.CurrentSettlement.Town, orderSlot);
+		float townOrderDifficulty = GetTownOrderDifficulty(town, orderSlot);
 		int pieceTier = (int)townOrderDifficulty / 50;
 		CraftingTemplate randomElement = CraftingTemplate.All.GetRandomElement();
 		string nextTownOrderId = GetNextTownOrderId();
 		WeaponDesign weaponDesignTemplate = new WeaponDesign(randomElement, TextObject.GetEmpty(), GetWeaponPieces(randomElement, pieceTier), nextTownOrderId);
-		_craftingOrders[orderOwner.CurrentSettlement.Town].AddTownOrder(new CraftingOrder(orderOwner, townOrderDifficulty, weaponDesignTemplate, randomElement, orderSlot, nextTownOrderId));
+		_craftingOrders[town].AddTownOrder(new CraftingOrder(orderOwner, townOrderDifficulty, weaponDesignTemplate, randomElement, orderSlot, nextTownOrderId));
 	}
 
 	private static float GetTownOrderDifficulty(Town town, int orderSlot)
@@ -981,12 +977,12 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 		return (float)num + town.Prosperity / 500f;
 	}
 
-	public CraftingOrder CreateCustomOrderForHero(Hero orderOwner, float orderDifficulty = -1f, WeaponDesign weaponDesign = null, CraftingTemplate craftingTemplate = null)
+	public CraftingOrder CreateCustomOrderForHero(Town town, Hero orderOwner, float orderDifficulty = -1f, WeaponDesign weaponDesign = null, CraftingTemplate craftingTemplate = null)
 	{
 		string nextTownOrderId = GetNextTownOrderId();
 		if (orderDifficulty < 0f)
 		{
-			orderDifficulty = GetRandomOrderDifficulty(orderOwner.CurrentSettlement.Town);
+			orderDifficulty = GetRandomOrderDifficulty(town);
 		}
 		if (craftingTemplate == null)
 		{
@@ -998,7 +994,7 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 			weaponDesign = new WeaponDesign(craftingTemplate, TextObject.GetEmpty(), GetWeaponPieces(craftingTemplate, pieceTier), nextTownOrderId);
 		}
 		CraftingOrder craftingOrder = new CraftingOrder(orderOwner, orderDifficulty, weaponDesign, craftingTemplate, -1, nextTownOrderId);
-		_craftingOrders[orderOwner.CurrentSettlement.Town].AddCustomOrder(craftingOrder);
+		_craftingOrders[town].AddCustomOrder(craftingOrder);
 		return craftingOrder;
 	}
 
@@ -1086,7 +1082,7 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 		_craftingOrders[town].RemoveTownOrder(order);
 		if (mBList.Count > 0)
 		{
-			CreateTownOrder(mBList.GetRandomElement(), difficultyLevel);
+			CreateTownOrder(town, mBList.GetRandomElement(), difficultyLevel);
 		}
 	}
 
@@ -1166,7 +1162,8 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 				}
 				if (isSucceed && completerHero.GetPerkValue(DefaultPerks.Crafting.SteelMaker3))
 				{
-					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(completerHero, craftingOrder.OrderOwner, (int)DefaultPerks.Crafting.SteelMaker3.SecondaryBonus);
+					int relationChange = (int)DefaultPerks.Crafting.SteelMaker3.SecondaryBonus;
+					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(completerHero, craftingOrder.OrderOwner, relationChange);
 				}
 			}
 			else
@@ -1174,7 +1171,8 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 				craftingOrder.OrderOwner.AddPower((float)(craftedItem.Tier + 1));
 				if (isSucceed && completerHero.GetPerkValue(DefaultPerks.Crafting.ExperiencedSmith))
 				{
-					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(completerHero, craftingOrder.OrderOwner, (int)DefaultPerks.Crafting.ExperiencedSmith.SecondaryBonus);
+					int relationChange2 = (int)DefaultPerks.Crafting.ExperiencedSmith.SecondaryBonus;
+					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(completerHero, craftingOrder.OrderOwner, relationChange2);
 				}
 			}
 			_craftingOrders[town].RemoveTownOrder(craftingOrder);
@@ -1214,7 +1212,7 @@ public class CraftingCampaignBehavior : CampaignBehaviorBase, ICraftingCampaignB
 		}
 		else
 		{
-			Debug.FailedAssert("Trying to cancel a custom order that doesn't exist.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\CraftingCampaignBehavior.cs", "CancelCustomOrder", 1406);
+			Debug.FailedAssert("Trying to cancel a custom order that doesn't exist.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\CraftingCampaignBehavior.cs", "CancelCustomOrder", 1399);
 		}
 	}
 

@@ -21,9 +21,9 @@ public interface IPlatformFileHelper
 
 	string GetFileContentString(PlatformFilePath path);
 
-	byte[] GetFileContent(PlatformFilePath filePath);
+	byte[] GetFileMetaDataContent(PlatformFilePath path);
 
-	byte[] GetMetaDataContent(PlatformFilePath filePath);
+	byte[] GetFileContent(PlatformFilePath filePath);
 
 	bool DeleteFile(PlatformFilePath path);
 

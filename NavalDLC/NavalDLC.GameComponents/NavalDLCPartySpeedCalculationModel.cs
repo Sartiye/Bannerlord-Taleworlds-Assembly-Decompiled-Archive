@@ -92,30 +92,24 @@ public class NavalDLCPartySpeedCalculationModel : PartySpeedModel
 		if (mobileParty.IsFishingParty())
 		{
 			Settlement bound = mobileParty.VillagerPartyComponent.Village.Bound;
-			PerkHelper.AddPerkBonusForTown(NavalPerks.Shipmaster.GhostShip, bound.Town, ref bonuses);
+			PerkHelper.AddPerkBonusForTown(NavalPerks.Shipmaster.GhostShip, bound.Town, isPrimaryBonus: false, ref bonuses);
 		}
 		ExplainedNumber stat = new ExplainedNumber(neededSkeletalCrew);
 		PerkHelper.AddPerkBonusForParty(NavalPerks.Shipmaster.FleetCommander, mobileParty, isPrimaryBonus: false, ref stat);
 		neededSkeletalCrew = stat.RoundedResultNumber;
-		if (mobileParty.HasPerk(NavalPerks.Shipmaster.ChainToOars, checkSecondaryRole: true))
-		{
-			num += mobileParty.PrisonRoster.TotalManCount;
-		}
+		int num4 = Campaign.Current.Models.PartySpeedCalculatingModel.GetSkeletalCrewCount(mobileParty);
 		foreach (MobileParty attachedParty2 in mobileParty.AttachedParties)
 		{
-			if (attachedParty2.HasPerk(NavalPerks.Shipmaster.ChainToOars, checkSecondaryRole: true))
-			{
-				num += attachedParty2.PrisonRoster.TotalManCount;
-			}
+			num4 += Campaign.Current.Models.PartySpeedCalculatingModel.GetSkeletalCrewCount(attachedParty2);
 		}
-		if (num < neededSkeletalCrew)
+		if (num4 < neededSkeletalCrew)
 		{
-			float underSkeletalCrewEffect = GetUnderSkeletalCrewEffect(num, neededSkeletalCrew);
+			float underSkeletalCrewEffect = GetUnderSkeletalCrewEffect(num4, neededSkeletalCrew);
 			TextObject textObject = null;
 			if (includeDescriptions)
 			{
 				textObject = new TextObject("{=4LlzFaUa}Undermanned ({AVAILABLE_CREW}/{NEEDED_CREW})");
-				textObject.SetTextVariable("AVAILABLE_CREW", num);
+				textObject.SetTextVariable("AVAILABLE_CREW", num4);
 				textObject.SetTextVariable("NEEDED_CREW", neededSkeletalCrew);
 			}
 			bonuses.AddFactor(underSkeletalCrewEffect, textObject);
@@ -132,26 +126,26 @@ public class NavalDLCPartySpeedCalculationModel : PartySpeedModel
 			}
 			bonuses.AddFactor(overCrewSizeEffect, textObject2);
 		}
-		int num4 = (int)Campaign.Current.Models.InventoryCapacityModel.CalculateInventoryCapacity(mobileParty, mobileParty.IsCurrentlyAtSea).ResultNumber;
-		if (num2 > (float)num4)
+		int num5 = (int)Campaign.Current.Models.InventoryCapacityModel.CalculateInventoryCapacity(mobileParty, mobileParty.IsCurrentlyAtSea).ResultNumber;
+		if (num2 > (float)num5)
 		{
-			ExplainedNumber overburdenedEffect = GetOverburdenedEffect(mobileParty, num2 - (float)num4, num4, includeDescriptions);
+			ExplainedNumber overburdenedEffect = GetOverburdenedEffect(mobileParty, num2 - (float)num5, num5, includeDescriptions);
 			bonuses.AddFromExplainedNumber(overburdenedEffect, _textOverburdened);
 		}
 		if (num3 > 3)
 		{
-			int num5 = num3 - 3;
-			float num6 = 0.5f;
-			float num7 = 0.2f / (1f + (float)Math.Exp((0f - num6) * ((float)num5 - 3f)));
+			int num6 = num3 - 3;
+			float num7 = 0.5f;
+			float num8 = 0.2f / (1f + (float)Math.Exp((0f - num7) * ((float)num6 - 3f)));
 			if (mobileParty.HasPerk(NavalPerks.Shipmaster.ShoreMaster, checkSecondaryRole: true))
 			{
-				num7 *= 1f + NavalPerks.Shipmaster.ShoreMaster.SecondaryBonus;
+				num8 *= 1f + NavalPerks.Shipmaster.ShoreMaster.SecondaryBonus;
 			}
 			if (mobileParty.HasPerk(NavalPerks.Shipmaster.FleetCommander))
 			{
-				num7 *= 1f + NavalPerks.Shipmaster.FleetCommander.PrimaryBonus;
+				num8 *= 1f + NavalPerks.Shipmaster.FleetCommander.PrimaryBonus;
 			}
-			bonuses.AddFactor(0f - num7, _textOverFleetSize);
+			bonuses.AddFactor(0f - num8, _textOverFleetSize);
 		}
 		if (mobileParty.IsDisorganized)
 		{
@@ -163,17 +157,17 @@ public class NavalDLCPartySpeedCalculationModel : PartySpeedModel
 
 	public override ExplainedNumber CalculateFinalSpeed(MobileParty mobileParty, ExplainedNumber finalSpeed)
 	{
-		ExplainedNumber explainedNumber = base.BaseModel.CalculateFinalSpeed(mobileParty, finalSpeed);
+		ExplainedNumber result = base.BaseModel.CalculateFinalSpeed(mobileParty, finalSpeed);
 		TerrainType faceTerrainType = Campaign.Current.MapSceneWrapper.GetFaceTerrainType(mobileParty.CurrentNavigationFace);
 		if (mobileParty.IsCurrentlyAtSea)
 		{
 			switch (faceTerrainType)
 			{
 			case TerrainType.OpenSea:
-				explainedNumber.AddFactor(0.448f, _openSeaEffect);
+				result.AddFactor(0.448f, _openSeaEffect);
 				break;
 			case TerrainType.River:
-				explainedNumber.AddFactor(0.5f, _riverEffect);
+				result.AddFactor(0.5f, _riverEffect);
 				break;
 			}
 			if (mobileParty.Ships.Count > 0)
@@ -186,28 +180,31 @@ public class NavalDLCPartySpeedCalculationModel : PartySpeedModel
 						num = ((faceTerrainType != TerrainType.CoastalSea && faceTerrainType != TerrainType.River && faceTerrainType != TerrainType.UnderBridge) ? (num - ship.GetCampaignSpeed() * 0.066f) : (num + ship.GetCampaignSpeed() * 0.066f));
 					}
 				}
-				explainedNumber.Add(num / (float)mobileParty.Ships.Count, _textShallowDraftPenalty);
+				result.Add(num / (float)mobileParty.Ships.Count, _textShallowDraftPenalty);
 			}
-			if ((faceTerrainType == TerrainType.River || faceTerrainType == TerrainType.CoastalSea || faceTerrainType == TerrainType.UnderBridge) && mobileParty.HasPerk(NavalPerks.Shipmaster.RiverRaider))
+			if (!mobileParty.IsInNavalAutoTravel)
 			{
-				explainedNumber.AddFactor(-0.448f * NavalPerks.Shipmaster.RiverRaider.PrimaryBonus, NavalPerks.Shipmaster.RiverRaider.Name);
+				if ((faceTerrainType == TerrainType.River || faceTerrainType == TerrainType.CoastalSea || faceTerrainType == TerrainType.UnderBridge) && mobileParty.HasPerk(NavalPerks.Shipmaster.RiverRaider))
+				{
+					result.AddFactor(-0.448f * NavalPerks.Shipmaster.RiverRaider.PrimaryBonus, NavalPerks.Shipmaster.RiverRaider.Name);
+				}
+				if (faceTerrainType == TerrainType.River || faceTerrainType == TerrainType.CoastalSea || faceTerrainType == TerrainType.UnderBridge)
+				{
+					FeatHelper.ApplyCultureFeat(mobileParty.Party, NavalCulturalFeats.NordShipMovementFeat, ref result);
+				}
+				SkillHelper.AddSkillBonusForParty(NavalSkillEffects.WindBonus, mobileParty, ref result);
+				PerkHelper.AddPerkBonusForParty(NavalPerks.Shipmaster.OldSaltsTouch, mobileParty, isPrimaryBonus: true, ref result);
+				PerkHelper.AddPerkBonusForParty(NavalPerks.Shipmaster.FavorableTide, mobileParty, isPrimaryBonus: true, ref result);
+				if (mobileParty.IsMainParty && NavalStorylineData.IsNavalStoryLineActive())
+				{
+					result.Add(1f, _gunnarEffect);
+				}
 			}
-			if ((faceTerrainType == TerrainType.River || faceTerrainType == TerrainType.CoastalSea || faceTerrainType == TerrainType.UnderBridge) && PartyBaseHelper.HasFeat(mobileParty.Party, NavalCulturalFeats.NordShipMovementFeat))
-			{
-				explainedNumber.AddFactor(NavalCulturalFeats.NordShipMovementFeat.EffectBonus, _cultureEffect);
-			}
-			SkillHelper.AddSkillBonusForParty(NavalSkillEffects.WindBonus, mobileParty, ref explainedNumber);
-			PerkHelper.AddPerkBonusForParty(NavalPerks.Shipmaster.OldSaltsTouch, mobileParty, isPrimaryBonus: true, ref explainedNumber);
-			PerkHelper.AddPerkBonusForParty(NavalPerks.Shipmaster.FavorableTide, mobileParty, isPrimaryBonus: true, ref explainedNumber);
 			float num2 = CalculateWindBoostForParty(mobileParty);
-			explainedNumber.AddFactor(num2 * (1f + explainedNumber.SumOfFactors), _windEffect);
-			if (mobileParty.IsMainParty && NavalStorylineData.IsNavalStoryLineActive())
-			{
-				explainedNumber.Add(1f, _gunnarEffect);
-			}
-			explainedNumber.LimitMax(10f);
+			result.AddFactor(num2 * (1f + result.SumOfFactors), _windEffect);
+			result.LimitMax(10f);
 		}
-		return explainedNumber;
+		return result;
 	}
 
 	private float CalculateWindBoostForParty(MobileParty mobileParty)
@@ -219,14 +216,14 @@ public class NavalDLCPartySpeedCalculationModel : PartySpeedModel
 			if (num < 120f)
 			{
 				float num2 = MBMath.ClampFloat(MBMath.Map(num, 0f, 120f, windForPosition.Length, 0f) * 1.5f, 0f, 1.5f);
-				if (mobileParty.HasPerk(NavalPerks.Shipmaster.FairWinds))
+				if (!mobileParty.IsInNavalAutoTravel && mobileParty.HasPerk(NavalPerks.Shipmaster.FairWinds))
 				{
 					num2 += NavalPerks.Shipmaster.FairWinds.PrimaryBonus;
 				}
 				return num2;
 			}
 			float result = 0f;
-			if (mobileParty.HasPerk(NavalPerks.Shipmaster.ShockAndAwe, checkSecondaryRole: true))
+			if (!mobileParty.IsInNavalAutoTravel && mobileParty.HasPerk(NavalPerks.Shipmaster.ShockAndAwe, checkSecondaryRole: true))
 			{
 				result = NavalPerks.Shipmaster.ShockAndAwe.SecondaryBonus;
 			}
@@ -240,6 +237,21 @@ public class NavalDLCPartySpeedCalculationModel : PartySpeedModel
 		ExplainedNumber stat = new ExplainedNumber(-1f * (extraWeightCarried / (float)partyCapacity), includeDescriptions);
 		PerkHelper.AddPerkBonusForParty(NavalPerks.Boatswain.VeteransWisdom, party, isPrimaryBonus: false, ref stat);
 		return stat;
+	}
+
+	public override int GetSkeletalCrewCount(MobileParty party)
+	{
+		if (party == null)
+		{
+			return 0;
+		}
+		int num = party.MemberRoster.TotalManCount;
+		if (party.HasPerk(NavalPerks.Shipmaster.ChainToOars, checkSecondaryRole: true))
+		{
+			int totalManCount = party.PrisonRoster.TotalManCount;
+			num += totalManCount;
+		}
+		return num;
 	}
 
 	private void GetMobilePartyShipSpeedData(MobileParty mobileParty, ref int neededSkeletalCrew, ref int maximumCrewLimit, ref float totalShipSpeed, ref float minimumShipSpeed)

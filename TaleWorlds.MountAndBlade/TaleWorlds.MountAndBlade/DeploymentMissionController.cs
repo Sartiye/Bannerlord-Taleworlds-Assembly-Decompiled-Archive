@@ -45,7 +45,7 @@ public abstract class DeploymentMissionController : MissionLogic
 		{
 			UnhideAgentsOfSide(BattleSideEnum.Defender);
 		}
-		Mission.Current.OnDeploymentFinished();
+		base.Mission.OnDeploymentFinished();
 		foreach (Team team in base.Mission.Teams)
 		{
 			foreach (Formation item in team.FormationsIncludingSpecialAndEmpty)
@@ -75,7 +75,7 @@ public abstract class DeploymentMissionController : MissionLogic
 		base.Mission.AllowAiTicking = true;
 		base.Mission.DisableDying = false;
 		base.Mission.SetFallAvoidSystemActive(fallAvoidActive: false);
-		Mission.Current.OnAfterDeploymentFinished();
+		base.Mission.OnAfterDeploymentFinished();
 		AfterDeploymentFinished();
 		base.Mission.RemoveMissionBehavior(this);
 	}

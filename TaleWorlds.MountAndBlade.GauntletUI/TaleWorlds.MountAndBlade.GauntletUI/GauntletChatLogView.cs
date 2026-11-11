@@ -194,7 +194,7 @@ public class GauntletChatLogView : GlobalLayer
 						_dataSource.StopTyping();
 						chatClosed = true;
 					}
-					if (base.Layer.Input.IsHotKeyReleased("CycleChatTypes"))
+					if (_dataSource.CanCycleChannels && base.Layer.Input.IsHotKeyReleased("CycleChatTypes"))
 					{
 						if (_dataSource.ActiveChannelType == ChatChannelType.Team)
 						{

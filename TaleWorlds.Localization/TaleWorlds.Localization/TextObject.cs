@@ -196,17 +196,17 @@ public class TextObject
 
 	public override string ToString()
 	{
-		string result;
+		string text;
 		try
 		{
-			result = MBTextManager.ProcessTextToString(this, shouldClear: true);
+			text = MBTextManager.ProcessTextToString(this, shouldClear: true);
 		}
 		catch (Exception ex)
 		{
-			result = "Error at id: " + GetID() + ". Lang: " + MBTextManager.ActiveTextLanguage;
-			Debug.Print(ex.Message);
+			text = "Error at id: " + GetID() + ". Lang: " + MBTextManager.ActiveTextLanguage;
+			Debug.Print(text + "\n" + ex.Message);
 		}
-		return result;
+		return text;
 	}
 
 	public string ToStringWithoutClear()

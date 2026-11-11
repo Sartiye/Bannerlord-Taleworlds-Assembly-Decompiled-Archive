@@ -107,6 +107,11 @@ public class ArenaPracticeFightMissionController : MissionLogic
 		missionBehavior.SpawnLocationCharacters();
 	}
 
+	public override void OnAfterMissionLoadingFinished()
+	{
+		base.Mission.OnInitialSpawnCompleted();
+	}
+
 	private void SpawnPlayerNearTournamentMaster()
 	{
 		GameEntity entity = base.Mission.Scene.FindEntityWithTag("sp_player_near_arena_master");
@@ -502,7 +507,7 @@ public class ArenaPracticeFightMissionController : MissionLogic
 		List<MatrixFrame> list = ((isInitialSpawn || _spawnFrames.IsEmpty()) ? _initialSpawnFrames : _spawnFrames);
 		if (list.Count == 1)
 		{
-			Debug.FailedAssert("Spawn point count is wrong! Arena practice spawn point set should be used in arena scenes.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\Missions\\MissionLogics\\Arena\\ArenaPracticeFightMissionController.cs", "GetSpawnFrame", 616);
+			Debug.FailedAssert("Spawn point count is wrong! Arena practice spawn point set should be used in arena scenes.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\Missions\\MissionLogics\\Arena\\ArenaPracticeFightMissionController.cs", "GetSpawnFrame", 621);
 			return list[0];
 		}
 		MatrixFrame result;

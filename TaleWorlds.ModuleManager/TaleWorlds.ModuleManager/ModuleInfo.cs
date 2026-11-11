@@ -65,6 +65,41 @@ public class ModuleInfo
 		IsActive = true;
 	}
 
+	private static string GetRequiredValueAttribute(XmlNode moduleNode, string elementName, string subModulePath)
+	{
+		XmlNode xmlNode = moduleNode.SelectSingleNode(elementName);
+		if (xmlNode == null)
+		{
+			throw new Exception("Required element <" + elementName + "> not found under <Module> in '" + subModulePath + "'.");
+		}
+		XmlAttribute xmlAttribute = xmlNode.Attributes?["value"];
+		if (xmlAttribute == null)
+		{
+			throw new Exception("Element <" + elementName + "> in '" + subModulePath + "' is missing the required 'value' attribute.");
+		}
+		return xmlAttribute.InnerText;
+	}
+
+	private static string GetValueAttribute(XmlNode node, string elementName, string subModulePath)
+	{
+		XmlAttribute xmlAttribute = node.Attributes?["value"];
+		if (xmlAttribute == null)
+		{
+			throw new Exception("Element <" + elementName + "> in '" + subModulePath + "' is missing the required 'value' attribute.");
+		}
+		return xmlAttribute.InnerText;
+	}
+
+	private static string GetRequiredAttribute(XmlNode node, string attributeName, string elementDescription, string subModulePath)
+	{
+		XmlAttribute xmlAttribute = node.Attributes?[attributeName];
+		if (xmlAttribute == null)
+		{
+			throw new Exception(elementDescription + " in '" + subModulePath + "' is missing the required '" + attributeName + "' attribute.");
+		}
+		return xmlAttribute.InnerText;
+	}
+
 	public void LoadWithFullPath(string fullPath)
 	{
 		SubModules.Clear();
@@ -74,31 +109,44 @@ public class ModuleInfo
 		FolderPath = fullPath;
 		string text = FolderPath + "/SubModule.xml";
 		Debug.Print("LoadWithFullPath  subModulePath = " + text);
-		StreamReader txtReader = new StreamReader(text);
 		XmlDocument xmlDocument = new XmlDocument();
-		xmlDocument.Load(txtReader);
+		try
+		{
+			using StreamReader txtReader = new StreamReader(text);
+			xmlDocument.Load(txtReader);
+		}
+		catch (XmlException ex)
+		{
+			throw new Exception($"Malformed XML in '{text}' at line {ex.LineNumber}, position {ex.LinePosition}: {ex.Message}", ex);
+		}
 		XmlNode xmlNode = xmlDocument.SelectSingleNode("Module");
-		Name = xmlNode.SelectSingleNode("Name").Attributes["value"].InnerText;
-		Id = xmlNode.SelectSingleNode("Id").Attributes["value"].InnerText;
+		if (xmlNode == null)
+		{
+			throw new Exception("Root element <Module> not found in '" + text + "'. The file may be empty or have an unexpected root element.");
+		}
+		Name = GetRequiredValueAttribute(xmlNode, "Name", text);
+		Id = GetRequiredValueAttribute(xmlNode, "Id", text);
 		if (!Id.Contains(';'.ToString()))
 		{
 			Id.Contains(':'.ToString());
 		}
-		Version = ApplicationVersion.FromString(xmlNode.SelectSingleNode("Version").Attributes["value"].InnerText);
-		if (xmlNode.SelectSingleNode("RequiredBaseVersion") != null)
+		Version = ApplicationVersion.FromString(GetRequiredValueAttribute(xmlNode, "Version", text));
+		XmlNode xmlNode2 = xmlNode.SelectSingleNode("RequiredBaseVersion");
+		if (xmlNode2 != null)
 		{
-			RequiredBaseVersion = ApplicationVersion.FromString(xmlNode.SelectSingleNode("RequiredBaseVersion").Attributes["value"].InnerText);
+			RequiredBaseVersion = ApplicationVersion.FromString(GetValueAttribute(xmlNode2, "RequiredBaseVersion", text));
 		}
-		IsDefault = xmlNode.SelectSingleNode("DefaultModule")?.Attributes["value"].InnerText.Equals("true") ?? false;
-		XmlNode xmlNode2 = xmlNode.SelectSingleNode("ModuleType");
-		if (xmlNode2 != null && Enum.TryParse<ModuleType>(xmlNode2.Attributes["value"].InnerText, out var result))
+		XmlNode xmlNode3 = xmlNode.SelectSingleNode("DefaultModule");
+		IsDefault = xmlNode3 != null && GetValueAttribute(xmlNode3, "DefaultModule", text).Equals("true");
+		XmlNode xmlNode4 = xmlNode.SelectSingleNode("ModuleType");
+		if (xmlNode4 != null && Enum.TryParse<ModuleType>(GetValueAttribute(xmlNode4, "ModuleType", text), out var result))
 		{
 			Type = result;
 		}
 		IsSelected = IsNative;
 		Category = ModuleCategory.Singleplayer;
-		XmlNode xmlNode3 = xmlNode.SelectSingleNode("ModuleCategory");
-		if (xmlNode3 != null && Enum.TryParse<ModuleCategory>(xmlNode3.Attributes["value"].InnerText, out var result2))
+		XmlNode xmlNode5 = xmlNode.SelectSingleNode("ModuleCategory");
+		if (xmlNode5 != null && Enum.TryParse<ModuleCategory>(GetValueAttribute(xmlNode5, "ModuleCategory", text), out var result2))
 		{
 			Category = result2;
 		}
@@ -107,7 +155,7 @@ public class ModuleInfo
 		{
 			for (int i = 0; i < xmlNodeList.Count; i++)
 			{
-				string innerText = xmlNodeList[i].Attributes["Id"].InnerText;
+				string requiredAttribute = GetRequiredAttribute(xmlNodeList[i], "Id", "A <DependedModule> element", text);
 				ApplicationVersion version = ApplicationVersion.Empty;
 				bool isOptional = false;
 				if (xmlNodeList[i].Attributes["DependentVersion"] != null)
@@ -118,14 +166,14 @@ public class ModuleInfo
 					}
 					catch
 					{
-						_ = "Couldn't parse dependent version of " + innerText + " for " + Id + ". Using default version.";
+						_ = "Couldn't parse dependent version of " + requiredAttribute + " for " + Id + ". Using default version.";
 					}
 				}
 				if (bool.TryParse(xmlNodeList[i].Attributes["Optional"]?.InnerText, out var result3))
 				{
 					isOptional = result3;
 				}
-				DependedModules.Add(new DependedModule(innerText, version, isOptional));
+				DependedModules.Add(new DependedModule(requiredAttribute, version, isOptional));
 			}
 		}
 		XmlNodeList xmlNodeList2 = xmlNode.SelectSingleNode("ModulesToLoadAfterThis")?.SelectNodes("Module");
@@ -133,8 +181,8 @@ public class ModuleInfo
 		{
 			for (int j = 0; j < xmlNodeList2.Count; j++)
 			{
-				string innerText2 = xmlNodeList2[j].Attributes["Id"].InnerText;
-				ModulesToLoadAfterThis.Add(new DependedModule(innerText2, ApplicationVersion.Empty));
+				string requiredAttribute2 = GetRequiredAttribute(xmlNodeList2[j], "Id", "A <ModulesToLoadAfterThis> <Module> element", text);
+				ModulesToLoadAfterThis.Add(new DependedModule(requiredAttribute2, ApplicationVersion.Empty));
 			}
 		}
 		XmlNodeList xmlNodeList3 = xmlNode.SelectSingleNode("IncompatibleModules")?.SelectNodes("Module");
@@ -142,8 +190,8 @@ public class ModuleInfo
 		{
 			for (int k = 0; k < xmlNodeList3.Count; k++)
 			{
-				string innerText3 = xmlNodeList3[k].Attributes["Id"].InnerText;
-				IncompatibleModules.Add(new DependedModule(innerText3, ApplicationVersion.Empty));
+				string requiredAttribute3 = GetRequiredAttribute(xmlNodeList3[k], "Id", "An <IncompatibleModules> <Module> element", text);
+				IncompatibleModules.Add(new DependedModule(requiredAttribute3, ApplicationVersion.Empty));
 			}
 		}
 		XmlNodeList xmlNodeList4 = xmlNode.SelectSingleNode("SubModules")?.SelectNodes("SubModule");
@@ -178,6 +226,6 @@ public class ModuleInfo
 
 	public void UpdateVersionChangeSet()
 	{
-		Version = new ApplicationVersion(Version.ApplicationVersionType, Version.Major, Version.Minor, Version.Revision, 119303);
+		Version = new ApplicationVersion(Version.ApplicationVersionType, Version.Major, Version.Minor, Version.Revision, 125802);
 	}
 }

@@ -602,7 +602,7 @@ public class Mangonel : RangedSiegeWeapon, ISpawnable
 		ShootingDirection.Normalize();
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		if (!gameEntity.HasTag(AmmoPickUpTag))
 		{

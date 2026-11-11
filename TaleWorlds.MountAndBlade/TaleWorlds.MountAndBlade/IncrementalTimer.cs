@@ -18,12 +18,12 @@ public class IncrementalTimer
 		_tickInterval = MathF.Max(tickInterval, 0.01f);
 		_totalDuration = MathF.Max(totalDuration, 0.01f);
 		TimerCounter = 0f;
-		_timer = new Timer(MBCommon.GetTotalMissionTime(), _tickInterval);
+		_timer = new Timer(Mission.Current.CurrentTime, _tickInterval);
 	}
 
 	public bool Check()
 	{
-		if (_timer.Check(MBCommon.GetTotalMissionTime()))
+		if (_timer.Check(Mission.Current.CurrentTime))
 		{
 			TimerCounter += _tickInterval / _totalDuration;
 			return true;

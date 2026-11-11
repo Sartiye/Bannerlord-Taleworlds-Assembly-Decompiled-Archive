@@ -535,6 +535,9 @@ internal interface IScene
 	[EngineMethod("get_entities", false, null, false)]
 	void GetEntities(UIntPtr scenePointer, UIntPtr entityObjectsArrayPointer);
 
+	[EngineMethod("get_entities_as_weak", false, null, false)]
+	int GetEntitiesAsWeak(UIntPtr scenePointer, UIntPtr[] entityIds, int maxCount);
+
 	[EngineMethod("get_root_entity_count", false, null, false)]
 	int GetRootEntityCount(UIntPtr scenePointer);
 
@@ -663,6 +666,9 @@ internal interface IScene
 
 	[EngineMethod("set_blocker_direction_for_faces_with_id", false, null, false)]
 	void SetBlockerDirectionForFacesWithId(UIntPtr scenePointer, int faceGroupId, float rotation);
+
+	[EngineMethod("set_ability_of_face_with_index", false, null, false)]
+	bool SetAbilityOfFaceWithIndex(UIntPtr scenePointer, int faceIndex, bool isEnabled, bool updateIslandIndices);
 
 	[EngineMethod("swap_face_connections_with_id", false, null, false)]
 	bool SwapFaceConnectionsWithId(UIntPtr scenePointer, int hubFaceGroupID, int toBeSeparatedFaceGroupId, int toBeMergedFaceGroupId, bool canFail);

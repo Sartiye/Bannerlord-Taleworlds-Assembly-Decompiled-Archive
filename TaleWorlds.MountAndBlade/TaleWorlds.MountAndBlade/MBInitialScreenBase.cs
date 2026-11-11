@@ -149,7 +149,7 @@ public class MBInitialScreenBase : ScreenBase, IGameStateListener
 				}
 			}
 		}
-		float framerate = 24f;
+		float framerate = 30f;
 		string text = string.Empty;
 		string text2 = string.Empty;
 		if (list.Count > 0)

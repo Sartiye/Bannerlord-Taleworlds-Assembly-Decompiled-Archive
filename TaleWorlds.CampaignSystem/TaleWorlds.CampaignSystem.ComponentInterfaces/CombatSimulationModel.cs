@@ -3,13 +3,12 @@ using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
-using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.ComponentInterfaces;
 
 public abstract class CombatSimulationModel : MBGameModel<CombatSimulationModel>
 {
-	public abstract ExplainedNumber SimulateHit(CharacterObject strikerTroop, CharacterObject struckTroop, PartyBase strikerParty, PartyBase struckParty, float strikerAdvantage, MapEvent battle, float strikerSideMorale, float struckSideMorale);
+	public abstract ExplainedNumber SimulateHit(CharacterObject strikerTroop, CharacterObject struckTroop, PartyBase strikerParty, PartyBase struckParty, float strikerAdvantage, MapEvent battle, BattleEnvironment battleEnvironment, float strikerSideMorale, float struckSideMorale);
 
 	public abstract ExplainedNumber SimulateHit(Ship strikerShip, Ship struckShip, PartyBase strikerParty, PartyBase struckParty, SiegeEngineType siegeEngine, float strikerAdvantage, MapEvent battle, out int troopCasualties);
 
@@ -31,7 +30,9 @@ public abstract class CombatSimulationModel : MBGameModel<CombatSimulationModel>
 
 	public abstract CampaignTime GetSimulationTickInterval(MapEvent mapEvent);
 
-	public abstract MBList<(Ship, MapEventParty)> GetSimulationShips(MapEvent mapEvent, MBList<MapEventParty> battleParties);
-
 	public abstract int GetParticipatingTroopCount(MapEventSide side);
+
+	public abstract float GetShipCombatImportance(Ship ship);
+
+	public abstract float GetShipCombatScore(Ship ship);
 }

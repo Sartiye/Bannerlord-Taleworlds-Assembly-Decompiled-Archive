@@ -69,7 +69,7 @@ public class SandBoxGameManager : MBGameManager
 			{
 				MBDebug.Print("Initializing new game begin...");
 				Campaign campaign = _campaignCreator();
-				Game.CreateGame(campaign, this);
+				Game.CreateGame(campaign, this, campaign.Options.Seed);
 				campaign.SetLoadingParameters(Campaign.GameLoadingType.NewCampaign);
 				MBDebug.Print("Initializing new game end...");
 			}

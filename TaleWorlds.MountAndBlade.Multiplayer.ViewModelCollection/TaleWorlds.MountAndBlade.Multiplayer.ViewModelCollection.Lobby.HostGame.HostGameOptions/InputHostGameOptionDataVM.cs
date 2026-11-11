@@ -7,6 +7,8 @@ public class InputHostGameOptionDataVM : GenericHostGameOptionDataVM
 {
 	private string _text;
 
+	private bool _isPassword;
+
 	[DataSourceProperty]
 	public string Text
 	{
@@ -21,6 +23,24 @@ public class InputHostGameOptionDataVM : GenericHostGameOptionDataVM
 				_text = value;
 				OnPropertyChangedWithValue(value, "Text");
 				base.OptionType.SetValue(value);
+				NotifyValueChanged();
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsPassword
+	{
+		get
+		{
+			return _isPassword;
+		}
+		set
+		{
+			if (value != _isPassword)
+			{
+				_isPassword = value;
+				OnPropertyChangedWithValue(value, "IsPassword");
 			}
 		}
 	}
@@ -28,6 +48,7 @@ public class InputHostGameOptionDataVM : GenericHostGameOptionDataVM
 	public InputHostGameOptionDataVM(MultiplayerOptions.OptionType optionType, int preferredIndex)
 		: base(OptionsVM.OptionsDataType.InputOption, optionType, preferredIndex)
 	{
+		IsPassword = base.Presentation.IsPassword;
 		RefreshData();
 	}
 

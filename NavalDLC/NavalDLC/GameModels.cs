@@ -12,8 +12,6 @@ public sealed class GameModels : GameModelsManager
 
 	public ClanShipOwnershipModel ClanShipOwnershipModel { get; private set; }
 
-	public ShipDistributionModel ShipDistributionModel { get; set; }
-
 	public ShipDeploymentModel ShipDeploymentModel { get; private set; }
 
 	public MapStormModel MapStormModel { get; private set; }
@@ -28,7 +26,6 @@ public sealed class GameModels : GameModelsManager
 	{
 		ShipPhysicsParametersModel = GetGameModel<ShipPhysicsParametersModel>();
 		ClanShipOwnershipModel = GetGameModel<ClanShipOwnershipModel>();
-		ShipDistributionModel = GetGameModel<ShipDistributionModel>();
 		ShipDeploymentModel = GetGameModel<ShipDeploymentModel>();
 		MapStormModel = GetGameModel<MapStormModel>();
 	}

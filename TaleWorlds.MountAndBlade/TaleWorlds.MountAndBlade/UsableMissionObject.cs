@@ -673,5 +673,5 @@ public abstract class UsableMissionObject : SynchedMissionObject, IFocusable, IU
 		}
 	}
 
-	public abstract TextObject GetDescriptionText(WeakGameEntity gameEntity);
+	public abstract TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent);
 }

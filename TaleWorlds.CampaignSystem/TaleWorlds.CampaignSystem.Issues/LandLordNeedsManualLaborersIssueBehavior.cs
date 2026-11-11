@@ -687,7 +687,6 @@ public class LandLordNeedsManualLaborersIssueBehavior : CampaignBehaviorBase
 				new Tuple<TraitObject, int>(DefaultTraits.Generosity, 20),
 				new Tuple<TraitObject, int>(DefaultTraits.Honor, -10)
 			});
-			base.QuestGiver.AddPower(-10f);
 			RelationshipChangeWithQuestGiver = -3;
 			Hero hero = base.QuestGiver.CurrentSettlement.Notables.First((Hero x) => x.IsHeadman);
 			hero.AddPower(10f);
@@ -765,6 +764,11 @@ public class LandLordNeedsManualLaborersIssueBehavior : CampaignBehaviorBase
 
 		protected override void OnFinalize()
 		{
+		}
+
+		public override void OnFailed()
+		{
+			base.QuestGiver.AddPower(-10f);
 		}
 
 		protected override void InitializeQuestOnGameLoad()

@@ -12,6 +12,9 @@ internal interface IParticleSystem
 	[EngineMethod("set_runtime_emission_rate_multiplier", false, null, false)]
 	void SetRuntimeEmissionRateMultiplier(UIntPtr pointer, float multiplier);
 
+	[EngineMethod("set_runtime_time_multiplier", false, null, false)]
+	void SetRuntimeTimeMultiplier(UIntPtr pointer, float multiplier);
+
 	[EngineMethod("restart", false, null, false)]
 	void Restart(UIntPtr psysPointer);
 

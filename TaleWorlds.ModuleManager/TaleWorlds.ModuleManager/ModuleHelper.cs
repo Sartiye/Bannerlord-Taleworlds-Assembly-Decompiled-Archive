@@ -19,13 +19,58 @@ public static class ModuleHelper
 
 	public static readonly MBList<string> ModulesDisablingLoadingAfterBeingAdded = new MBList<string> { "NavalDLC" };
 
+	private static bool _shouldNotifyNavalDLCVersionMismatch = false;
+
 	private static IPlatformModuleExtension _platformModuleExtension;
 
 	private static Dictionary<string, ModuleInfo> _loadedModules;
 
 	private static List<ModuleInfo> results = null;
 
+	public static bool NavalDLCVersionMismatch { get; private set; }
+
 	private static string _pathPrefix => BasePath.Name + "Modules/";
+
+	public static void SetNavalDLCVersionMismatch()
+	{
+		NavalDLCVersionMismatch = true;
+		_shouldNotifyNavalDLCVersionMismatch = true;
+	}
+
+	public static bool ShouldNotifyNavalDLCVersionMismatch()
+	{
+		bool shouldNotifyNavalDLCVersionMismatch = _shouldNotifyNavalDLCVersionMismatch;
+		_shouldNotifyNavalDLCVersionMismatch = false;
+		return shouldNotifyNavalDLCVersionMismatch;
+	}
+
+	private static bool IsModuleVersionMismatched(ModuleInfo module, string discoveryPath)
+	{
+		if (module == null || module.Name != "NavalDLC")
+		{
+			return false;
+		}
+		ApplicationVersion requiredBaseVersion = module.RequiredBaseVersion;
+		if (requiredBaseVersion == ApplicationVersion.Empty || requiredBaseVersion == default(ApplicationVersion))
+		{
+			Debug.Print("[NavalDLCVersionCheck] " + discoveryPath + ": NavalDLC declares no RequiredBaseVersion -> check skipped, NavalDLC kept.");
+			return false;
+		}
+		ApplicationVersion applicationVersion = ApplicationVersion.FromParametersFile();
+		if (applicationVersion == ApplicationVersion.Empty || applicationVersion == default(ApplicationVersion))
+		{
+			Debug.Print("[NavalDLCVersionCheck] " + discoveryPath + ": base game version unavailable -> check skipped, NavalDLC kept.");
+			return false;
+		}
+		if (requiredBaseVersion == applicationVersion)
+		{
+			return false;
+		}
+		NavalDLCVersionMismatch = true;
+		_shouldNotifyNavalDLCVersionMismatch = true;
+		Debug.Print(string.Concat("[NavalDLCVersionCheck] ", discoveryPath, ": NavalDLC RequiredBaseVersion ", requiredBaseVersion, " does not match base game version ", applicationVersion, " -> skipping NavalDLC, booting base game."));
+		return true;
+	}
 
 	public static string GetModuleFullPath(string moduleId)
 	{
@@ -365,8 +410,7 @@ public static class ModuleHelper
 
 	public static MBList<Assembly> GetActiveGameAssemblies()
 	{
-		HashSet<Assembly> hashSet = new HashSet<Assembly>();
-		Queue<Assembly> queue = new Queue<Assembly>();
+		HashSet<Assembly> visited = new HashSet<Assembly>();
 		Dictionary<string, Assembly> dictionary = new Dictionary<string, Assembly>();
 		Assembly[] array;
 		try
@@ -375,7 +419,7 @@ public static class ModuleHelper
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert(ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.ModuleManager\\ModuleHelper.cs", "GetActiveGameAssemblies", 443);
+			Debug.FailedAssert(ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.ModuleManager\\ModuleHelper.cs", "GetActiveGameAssemblies", 539);
 			array = new Assembly[0];
 		}
 		if (IsTestMode)
@@ -385,38 +429,40 @@ public static class ModuleHelper
 		Assembly[] array2 = array;
 		foreach (Assembly assembly in array2)
 		{
-			foreach (ModuleInfo activeModule in GetActiveModules())
-			{
-				if (IsAssemblyDirectlyReferencedInModule(assembly, activeModule))
-				{
-					queue.Enqueue(assembly);
-				}
-			}
 			dictionary[assembly.GetName().Name] = assembly;
 		}
-		MBList<Assembly> mBList = new MBList<Assembly>();
-		while (queue.Count > 0)
+		MBList<Assembly> result = new MBList<Assembly>();
+		List<ModuleInfo> activeModules = GetActiveModules();
+		for (int j = 0; j < activeModules.Count; j++)
 		{
-			Assembly assembly2 = queue.Dequeue();
-			if (!hashSet.Add(assembly2))
+			ModuleInfo moduleInfo = activeModules[j];
+			array2 = array;
+			foreach (Assembly assembly2 in array2)
 			{
-				continue;
-			}
-			mBList.Add(assembly2);
-			AssemblyName[] referencedAssemblies = assembly2.GetReferencedAssemblies();
-			foreach (AssemblyName assemblyName in referencedAssemblies)
-			{
-				if (dictionary.ContainsKey(assemblyName.Name))
+				if (IsAssemblyDirectlyReferencedInModule(assembly2, moduleInfo))
 				{
-					Assembly assembly3 = dictionary[assemblyName.Name];
-					if (IsGameAssembly(assembly3))
-					{
-						queue.Enqueue(assembly3);
-					}
+					CollectAssemblyRecursive(assembly2, dictionary, visited, result);
 				}
 			}
 		}
-		return mBList;
+		return result;
+	}
+
+	private static void CollectAssemblyRecursive(Assembly assembly, Dictionary<string, Assembly> assemblyLookup, HashSet<Assembly> visited, MBList<Assembly> result)
+	{
+		if (!visited.Add(assembly))
+		{
+			return;
+		}
+		AssemblyName[] referencedAssembliesSafe = assembly.GetReferencedAssembliesSafe();
+		foreach (AssemblyName assemblyName in referencedAssembliesSafe)
+		{
+			if (assemblyLookup.TryGetValue(assemblyName.Name, out var value) && IsGameAssembly(value))
+			{
+				CollectAssemblyRecursive(value, assemblyLookup, visited, result);
+			}
+		}
+		result.Add(assembly);
 	}
 
 	private static bool IsAssemblyDirectlyReferencedInModule(Assembly assembly, ModuleInfo moduleInfo)

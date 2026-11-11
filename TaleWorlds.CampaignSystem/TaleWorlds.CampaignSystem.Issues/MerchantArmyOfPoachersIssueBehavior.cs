@@ -778,7 +778,7 @@ public class MerchantArmyOfPoachersIssueBehavior : CampaignBehaviorBase
 			MapEvent.PlayerMapEvent.AttackerSide.RemoveNearbyPartiesFromPlayerMapEvent();
 			MapEvent.PlayerMapEvent.DefenderSide.RemoveNearbyPartiesFromPlayerMapEvent();
 			GameMenu.ActivateGameMenu("army_of_poachers_village");
-			CampaignMission.OpenBattleMission(_questVillage.Settlement.LocationComplex.GetScene("village_center", 1), usesTownDecalAtlas: false);
+			CampaignMission.OpenBattleMission(_questVillage.Settlement.LocationComplex.GetScene("village_center", 1), usesTownDecalAtlas: false, "land_raid");
 			_isReadyToBeFinalized = true;
 		}
 
@@ -905,7 +905,7 @@ public class MerchantArmyOfPoachersIssueBehavior : CampaignBehaviorBase
 		private void QuestCanceledTargetVillageRaided()
 		{
 			AddLog(QuestCanceledTargetVillageRaidedQuestLogText);
-			CompleteQuestWithFail();
+			CompleteQuestWithCancel();
 		}
 
 		protected override void RegisterEvents()

@@ -10,7 +10,7 @@ namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
 
 public class GarrisonRecruitmentCampaignBehavior : CampaignBehaviorBase, IGarrisonRecruitmentBehavior
 {
-	public struct VolunteerTroop : IComparable
+	private struct VolunteerTroop : IComparable
 	{
 		public Hero OwnerNotable;
 
@@ -41,7 +41,11 @@ public class GarrisonRecruitmentCampaignBehavior : CampaignBehaviorBase, IGarris
 		}
 	}
 
-	private SortedSet<VolunteerTroop> _volunteerListCache = new SortedSet<VolunteerTroop>();
+	private readonly SortedSet<VolunteerTroop> _volunteerListCache = new SortedSet<VolunteerTroop>();
+
+	public override void SyncData(IDataStore dataStore)
+	{
+	}
 
 	public override void RegisterEvents()
 	{
@@ -55,27 +59,28 @@ public class GarrisonRecruitmentCampaignBehavior : CampaignBehaviorBase, IGarris
 
 	private void OnDailySettlementTick(Settlement settlement)
 	{
-		if (settlement.IsFortification)
+		if (!settlement.IsFortification)
 		{
-			Town town = settlement.Town;
-			if (SettlementCheckGarrisonChangeCommonCondition(settlement))
-			{
-				TickGarrisonChangeForTown(town);
-			}
+			return;
+		}
+		Town town = settlement.Town;
+		if (settlement.Party.MapEvent == null && settlement.Party.SiegeEvent == null)
+		{
+			TickGarrisonChangeForTown(town);
 			if (CanSettlementAutoRecruit(settlement))
 			{
 				TickAutoRecruitmentGarrisonChange(town);
 			}
-			if (town.GarrisonParty != null)
-			{
-				HandleGarrisonXpChange(town);
-			}
+		}
+		if (town.GarrisonParty != null)
+		{
+			HandleGarrisonXpChange(town);
 		}
 	}
 
 	private void TickAutoRecruitmentGarrisonChange(Town town)
 	{
-		float resultNumber = GetAutoRecruitmentGarrisonChangeExplainedNumber(town).ResultNumber;
+		float resultNumber = GetAutoRecruitmentGarrisonChangeExplainedNumber(town, includeDescriptions: false).ResultNumber;
 		if (resultNumber > 0f)
 		{
 			if (town.GarrisonParty == null)
@@ -96,7 +101,7 @@ public class GarrisonRecruitmentCampaignBehavior : CampaignBehaviorBase, IGarris
 
 	private void TickGarrisonChangeForTown(Town town)
 	{
-		int num = (int)GetBaseGarrisonChangeExplainedNumber(town).ResultNumber;
+		int num = (int)GetBaseGarrisonChangeExplainedNumber(town, includeDescriptions: false).ResultNumber;
 		if (num > 0)
 		{
 			if (town.GarrisonParty == null)
@@ -110,11 +115,11 @@ public class GarrisonRecruitmentCampaignBehavior : CampaignBehaviorBase, IGarris
 	private void HandleGarrisonXpChange(Town town)
 	{
 		int num = Campaign.Current.Models.DailyTroopXpBonusModel.CalculateDailyTroopXpBonus(town);
-		float num2 = Campaign.Current.Models.DailyTroopXpBonusModel.CalculateGarrisonXpBonusMultiplier(town);
 		if (num <= 0)
 		{
 			return;
 		}
+		float num2 = Campaign.Current.Models.DailyTroopXpBonusModel.CalculateGarrisonXpBonusMultiplier(town);
 		foreach (TroopRosterElement item in town.GarrisonParty.MemberRoster.GetTroopRoster())
 		{
 			town.GarrisonParty.MemberRoster.AddXpToTroop(item.Character, TaleWorlds.Library.MathF.Round((float)num * num2 * (float)item.Number));
@@ -124,20 +129,12 @@ public class GarrisonRecruitmentCampaignBehavior : CampaignBehaviorBase, IGarris
 	private void RepopulateVolunteerListCache(Town town)
 	{
 		_volunteerListCache.Clear();
+		List<Hero> list = new List<Hero>();
 		foreach (Hero notable in town.Settlement.Notables)
 		{
-			if (!notable.IsAlive)
+			if (notable.IsAlive)
 			{
-				continue;
-			}
-			int num = Campaign.Current.Models.VolunteerModel.MaximumIndexGarrisonCanRecruitFromHero(town.Settlement, notable);
-			for (int i = 0; i < num; i++)
-			{
-				if (notable.VolunteerTypes[i] != null)
-				{
-					VolunteerTroop item = new VolunteerTroop(notable, i);
-					_volunteerListCache.Add(item);
-				}
+				list.Add(notable);
 			}
 		}
 		foreach (Village boundVillage in town.Settlement.BoundVillages)
@@ -148,62 +145,59 @@ public class GarrisonRecruitmentCampaignBehavior : CampaignBehaviorBase, IGarris
 			}
 			foreach (Hero notable2 in boundVillage.Settlement.Notables)
 			{
-				if (!notable2.IsAlive)
+				if (notable2.IsAlive)
 				{
-					continue;
-				}
-				int num2 = Campaign.Current.Models.VolunteerModel.MaximumIndexGarrisonCanRecruitFromHero(town.Settlement, notable2);
-				for (int j = 0; j < num2; j++)
-				{
-					if (notable2.VolunteerTypes[j] != null)
-					{
-						VolunteerTroop item2 = new VolunteerTroop(notable2, j);
-						_volunteerListCache.Add(item2);
-					}
+					list.Add(notable2);
 				}
 			}
 		}
-	}
-
-	private ExplainedNumber GetAutoRecruitmentGarrisonChangeExplainedNumber(Town town)
-	{
-		ExplainedNumber result = new ExplainedNumber(0f, includeDescriptions: true);
-		RepopulateVolunteerListCache(town);
-		int num = town.GarrisonParty?.GetAvailableWageBudget() ?? town.Settlement.GarrisonWagePaymentLimit;
-		if (num > 0)
+		foreach (Hero item2 in list)
 		{
-			int num2 = 0;
-			int num3 = 0;
-			int count = _volunteerListCache.Count;
-			result.Add(count, new TextObject("{=Uzsnek6O}Auto Recruitment"));
-			foreach (VolunteerTroop item in _volunteerListCache)
+			int num = Campaign.Current.Models.VolunteerModel.MaximumIndexGarrisonCanRecruitFromHero(town.Settlement, item2);
+			for (int i = 0; i < num; i++)
 			{
-				num2 += item.Wage;
-				if (num2 >= num)
+				if (item2.VolunteerTypes[i] != null)
 				{
-					break;
+					VolunteerTroop item = new VolunteerTroop(item2, i);
+					_volunteerListCache.Add(item);
 				}
-				num3++;
-			}
-			if ((float)num3 < result.LimitMaxValue)
-			{
-				result.LimitMax(num3, new TextObject("{=7GJOWuUO}Wage Limit"));
-			}
-			int num4 = ((town.GarrisonParty == null) ? ((int)Campaign.Current.Models.PartySizeLimitModel.CalculateGarrisonPartySizeLimit(town.Settlement).ResultNumber) : (town.GarrisonParty.Party.PartySizeLimit - town.GarrisonParty.Party.NumberOfAllMembers));
-			if ((float)num4 < result.LimitMaxValue)
-			{
-				result.LimitMax(num4, new TextObject("{=mp68RYnD}Party Size Limit"));
-			}
-			int maximumDailyAutoRecruitmentCount = Campaign.Current.Models.SettlementGarrisonModel.GetMaximumDailyAutoRecruitmentCount(town);
-			if ((float)maximumDailyAutoRecruitmentCount < result.LimitMaxValue)
-			{
-				result.LimitMax(maximumDailyAutoRecruitmentCount, new TextObject("{=91fnSU2A}Maximum Auto Recruitment"));
 			}
 		}
-		return result;
 	}
 
-	private ExplainedNumber GetBaseGarrisonChangeExplainedNumber(Town town, bool includeDescriptions = false)
+	private ExplainedNumber GetAutoRecruitmentGarrisonChangeExplainedNumber(Town town, bool includeDescriptions)
+	{
+		ExplainedNumber maximumDailyAutoRecruitmentCount = Campaign.Current.Models.SettlementGarrisonModel.GetMaximumDailyAutoRecruitmentCount(town, includeDescriptions);
+		RepopulateVolunteerListCache(town);
+		if ((float)_volunteerListCache.Count < maximumDailyAutoRecruitmentCount.LimitMaxValue)
+		{
+			maximumDailyAutoRecruitmentCount.LimitMax(_volunteerListCache.Count, new TextObject("{=H1hi1kfF}Max Available Units"));
+		}
+		int num = town.GarrisonParty?.GetAvailableWageBudget() ?? town.Settlement.GarrisonWagePaymentLimit;
+		int num2 = 0;
+		int num3 = 0;
+		foreach (VolunteerTroop item in _volunteerListCache)
+		{
+			num2 += item.Wage;
+			if (num2 >= num)
+			{
+				break;
+			}
+			num3++;
+		}
+		if ((float)num3 < maximumDailyAutoRecruitmentCount.LimitMaxValue)
+		{
+			maximumDailyAutoRecruitmentCount.LimitMax(num3, new TextObject("{=7GJOWuUO}Wage Limit"));
+		}
+		int num4 = ((town.GarrisonParty == null) ? ((int)Campaign.Current.Models.PartySizeLimitModel.CalculateGarrisonPartySizeLimit(town.Settlement).ResultNumber) : (town.GarrisonParty.Party.PartySizeLimit - town.GarrisonParty.Party.NumberOfAllMembers));
+		if ((float)num4 < maximumDailyAutoRecruitmentCount.LimitMaxValue)
+		{
+			maximumDailyAutoRecruitmentCount.LimitMax(num4, new TextObject("{=mp68RYnD}Party Size Limit"));
+		}
+		return maximumDailyAutoRecruitmentCount;
+	}
+
+	private ExplainedNumber GetBaseGarrisonChangeExplainedNumber(Town town, bool includeDescriptions)
 	{
 		ExplainedNumber result = Campaign.Current.Models.SettlementGarrisonModel.CalculateBaseGarrisonChange(town.Settlement, includeDescriptions);
 		int num = ((town.GarrisonParty == null) ? ((int)Campaign.Current.Models.PartySizeLimitModel.CalculateGarrisonPartySizeLimit(town.Settlement).ResultNumber) : (town.GarrisonParty.Party.PartySizeLimit - town.GarrisonParty.Party.NumberOfAllMembers));
@@ -227,7 +221,7 @@ public class GarrisonRecruitmentCampaignBehavior : CampaignBehaviorBase, IGarris
 		result.AddFromExplainedNumber(baseGarrisonChangeExplainedNumber, new TextObject("{=basevalue}Base"));
 		if (CanSettlementAutoRecruit(town.Settlement))
 		{
-			ExplainedNumber autoRecruitmentGarrisonChangeExplainedNumber = GetAutoRecruitmentGarrisonChangeExplainedNumber(town);
+			ExplainedNumber autoRecruitmentGarrisonChangeExplainedNumber = GetAutoRecruitmentGarrisonChangeExplainedNumber(town, includeDescriptions: true);
 			result.AddFromExplainedNumber(autoRecruitmentGarrisonChangeExplainedNumber, new TextObject("{=Uzsnek6O}Auto Recruitment"));
 		}
 		return result;
@@ -235,23 +229,10 @@ public class GarrisonRecruitmentCampaignBehavior : CampaignBehaviorBase, IGarris
 
 	private bool CanSettlementAutoRecruit(Settlement settlement)
 	{
-		if (settlement.Town.GarrisonAutoRecruitmentIsEnabled && settlement.Town.FoodChange > 0f)
+		if (settlement.Town.GarrisonAutoRecruitmentIsEnabled)
 		{
-			return SettlementCheckGarrisonChangeCommonCondition(settlement);
+			return settlement.Town.FoodChange > 0f;
 		}
 		return false;
-	}
-
-	private bool SettlementCheckGarrisonChangeCommonCondition(Settlement settlement)
-	{
-		if (settlement.Party.MapEvent == null)
-		{
-			return settlement.Party.SiegeEvent == null;
-		}
-		return false;
-	}
-
-	public override void SyncData(IDataStore dataStore)
-	{
 	}
 }

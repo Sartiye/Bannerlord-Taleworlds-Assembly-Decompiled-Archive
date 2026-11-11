@@ -85,22 +85,22 @@ public class AgentNavalAIComponent : AgentComponent
 
 	public bool UnderMeleeAttack(float timeLimit = 1f)
 	{
-		return MBCommon.GetTotalMissionTime() - Agent.LastMeleeHitTime < timeLimit;
+		return Mission.Current.CurrentTime - Agent.LastRecievedMeleeHitTime < timeLimit;
 	}
 
 	public bool UnderRangedAttack(float timeLimit = 1f)
 	{
-		return MBCommon.GetTotalMissionTime() - Agent.LastMeleeHitTime < timeLimit;
+		return Mission.Current.CurrentTime - Agent.LastRecievedMeleeHitTime < timeLimit;
 	}
 
 	public bool RangeAttacking(float timeLimit = 1f)
 	{
-		return MBCommon.GetTotalMissionTime() - Agent.LastRangedAttackTime < timeLimit;
+		return Mission.Current.CurrentTime - Agent.LastRangedHitTime < timeLimit;
 	}
 
 	public bool MeleeAttacking(float timeLimit = 1f)
 	{
-		return MBCommon.GetTotalMissionTime() - Agent.LastMeleeHitTime < timeLimit;
+		return Mission.Current.CurrentTime - Agent.LastMeleeHitTime < timeLimit;
 	}
 
 	private bool DecideBoardingTaunts()

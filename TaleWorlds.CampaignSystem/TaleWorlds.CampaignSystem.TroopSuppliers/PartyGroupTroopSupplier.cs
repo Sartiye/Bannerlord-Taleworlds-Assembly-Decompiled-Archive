@@ -139,8 +139,8 @@ public class PartyGroupTroopSupplier : IMissionTroopSupplier
 		return partyBase;
 	}
 
-	public void OnTroopScoreHit(UniqueTroopDescriptor descriptor, BasicCharacterObject attackedCharacter, int damage, bool isFatal, bool isTeamKill, WeaponComponentData attackerWeapon)
+	public void OnTroopScoreHit(UniqueTroopDescriptor descriptor, BasicCharacterObject attackedCharacter, int damage, bool isFatal, bool isTeamKill, WeaponComponentData attackerWeapon, BasicCharacterObject captain)
 	{
-		PartyGroup.OnTroopScoreHit(descriptor, (CharacterObject)attackedCharacter, damage, isFatal, isTeamKill, attackerWeapon, isSimulatedHit: false);
+		PartyGroup.OnTroopScoreHit(descriptor, (CharacterObject)attackedCharacter, damage, isFatal, isTeamKill, attackerWeapon, isSimulatedHit: false, (CharacterObject)captain);
 	}
 }

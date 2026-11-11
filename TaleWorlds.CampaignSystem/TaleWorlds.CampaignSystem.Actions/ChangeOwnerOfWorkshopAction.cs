@@ -8,11 +8,11 @@ public static class ChangeOwnerOfWorkshopAction
 	{
 		Hero owner = workshop.Owner;
 		workshop.ChangeOwnerOfWorkshop(newOwner, workshopType, capital);
-		if (newOwner == Hero.MainHero)
+		if (newOwner == Hero.MainHero && cost > 0)
 		{
 			GiveGoldAction.ApplyBetweenCharacters(newOwner, owner, cost);
 		}
-		if (owner == Hero.MainHero)
+		if (owner == Hero.MainHero && cost > 0)
 		{
 			GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, cost);
 		}
@@ -44,5 +44,10 @@ public static class ChangeOwnerOfWorkshopAction
 	public static void ApplyByWar(Workshop workshop, Hero newOwner, WorkshopType workshopType)
 	{
 		ApplyInternal(workshop, newOwner, workshopType, Campaign.Current.Models.WorkshopModel.InitialCapital, 0);
+	}
+
+	public static void ApplyByFree(Workshop workshop, Hero newOwner)
+	{
+		ApplyInternal(workshop, newOwner, workshop.WorkshopType, Campaign.Current.Models.WorkshopModel.InitialCapital, 0);
 	}
 }

@@ -294,15 +294,15 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 		OnPartySkillExercised(MobileParty.MainParty, DefaultSkills.Scouting, skillFromTrackDetected, PartyRole.Scout);
 	}
 
-	public void OnTravelOnFoot(Hero hero, float speed)
+	public void OnTravelOnFoot(Hero hero)
 	{
-		hero.AddSkillXp(DefaultSkills.Athletics, MBRandom.RoundRandomized(0.2f * speed) + 1);
+		hero.AddSkillXp(DefaultSkills.Athletics, MBRandom.RoundRandomized(0.2f * hero.PartyBelongedTo.Speed) + 1);
 	}
 
-	public void OnTravelOnHorse(Hero hero, float speed)
+	public void OnTravelOnHorse(Hero hero)
 	{
 		ItemObject item = hero.CharacterObject.Equipment.Horse.Item;
-		OnGainingRidingExperience(hero, MBRandom.RoundRandomized(0.3f * speed), item);
+		OnGainingRidingExperience(hero, MBRandom.RoundRandomized(0.3f * hero.PartyBelongedTo.Speed), item);
 	}
 
 	public void OnHeroHealedWhileWaiting(Hero hero, int healingAmount)
@@ -327,6 +327,12 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 	public void OnLeadingArmy(MobileParty mobileParty)
 	{
 		float skillXp = (mobileParty.Army?.EstimatedStrength ?? mobileParty.Party.EstimatedStrength) * 0.0004f * mobileParty.Army.Morale;
+		OnPartySkillExercised(mobileParty, DefaultSkills.Leadership, skillXp);
+	}
+
+	public void OnHighMorale(MobileParty mobileParty)
+	{
+		float skillXp = mobileParty.Party.EstimatedStrength * 0.004f * (mobileParty.Morale - Campaign.Current.Models.PartyMoraleModel.HighMoraleValue + 1f);
 		OnPartySkillExercised(mobileParty, DefaultSkills.Leadership, skillXp);
 	}
 
@@ -550,7 +556,7 @@ public class DefaultSkillLevelingManager : ISkillLevelingManager
 	{
 	}
 
-	public void OnTravelOnWater(MobileParty party, float speed)
+	public void OnTravelOnWater(MobileParty party)
 	{
 	}
 

@@ -8,7 +8,6 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.ViewModelCollection;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Information;
-using TaleWorlds.InputSystem;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.MountAndBlade.ViewModelCollection.OrderOfBattle;
@@ -231,13 +230,13 @@ public class SPOrderOfBattleVM : OrderOfBattleVM
 			OnlyShowWhenNotExtended = true
 		});
 		List<PerkObject> compatiblePerks;
-		float captainRatingForTroopUsages = Campaign.Current.Models.BattleCaptainModel.GetCaptainRatingForTroopUsages(hero, FormationClass.Infantry.GetTroopUsageFlags(), out compatiblePerks);
+		float captainRatingForTroopUsages = Campaign.Current.Models.BattleCaptainModel.GetCaptainRatingForTroopUsages(hero, FormationClass.Infantry.GetTroopUsageFlags(), BattleEnvironment.Land, out compatiblePerks);
 		List<PerkObject> compatiblePerks2;
-		float captainRatingForTroopUsages2 = Campaign.Current.Models.BattleCaptainModel.GetCaptainRatingForTroopUsages(hero, FormationClass.Ranged.GetTroopUsageFlags(), out compatiblePerks2);
+		float captainRatingForTroopUsages2 = Campaign.Current.Models.BattleCaptainModel.GetCaptainRatingForTroopUsages(hero, FormationClass.Ranged.GetTroopUsageFlags(), BattleEnvironment.Land, out compatiblePerks2);
 		List<PerkObject> compatiblePerks3;
-		float captainRatingForTroopUsages3 = Campaign.Current.Models.BattleCaptainModel.GetCaptainRatingForTroopUsages(hero, FormationClass.Cavalry.GetTroopUsageFlags(), out compatiblePerks3);
+		float captainRatingForTroopUsages3 = Campaign.Current.Models.BattleCaptainModel.GetCaptainRatingForTroopUsages(hero, FormationClass.Cavalry.GetTroopUsageFlags(), BattleEnvironment.Land, out compatiblePerks3);
 		List<PerkObject> compatiblePerks4;
-		float captainRatingForTroopUsages4 = Campaign.Current.Models.BattleCaptainModel.GetCaptainRatingForTroopUsages(hero, FormationClass.HorseArcher.GetTroopUsageFlags(), out compatiblePerks4);
+		float captainRatingForTroopUsages4 = Campaign.Current.Models.BattleCaptainModel.GetCaptainRatingForTroopUsages(hero, FormationClass.HorseArcher.GetTroopUsageFlags(), BattleEnvironment.Land, out compatiblePerks4);
 		agentTooltip.Add(new TooltipProperty(_infantryInfluenceText.ToString(), ((int)(captainRatingForTroopUsages * 100f)).ToString(), 0)
 		{
 			OnlyShowWhenNotExtended = true
@@ -270,14 +269,7 @@ public class SPOrderOfBattleVM : OrderOfBattleVM
 		{
 			agentTooltip.Add(new TooltipProperty(_noPerksText.ToString(), string.Empty, 0, onlyShowWhenExtended: true));
 		}
-		if (TaleWorlds.InputSystem.Input.IsGamepadActive)
-		{
-			GameTexts.SetVariable("EXTEND_KEY", Game.Current.GameTextManager.GetHotKeyGameText("MapHotKeyCategory", "MapFollowModifier").ToString());
-		}
-		else
-		{
-			GameTexts.SetVariable("EXTEND_KEY", Game.Current.GameTextManager.FindText("str_game_key_text", "anyalt").ToString());
-		}
+		GameTexts.SetVariable("EXTEND_KEY", HyperlinkTexts.GetTooltipExtendKeyHyperlinkText());
 		agentTooltip.Add(new TooltipProperty(string.Empty, GameTexts.FindText("str_map_tooltip_info").ToString(), -1)
 		{
 			OnlyShowWhenNotExtended = true

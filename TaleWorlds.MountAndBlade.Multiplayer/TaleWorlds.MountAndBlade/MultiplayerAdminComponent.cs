@@ -22,6 +22,8 @@ public class MultiplayerAdminComponent : MissionNetwork
 
 	public event OnSetAdminMenuActiveStateDelegate OnSetAdminMenuActiveState;
 
+	public event Action OnStreamerOptionsChangedByAdmin;
+
 	public MultiplayerAdminComponent()
 	{
 		if (string.IsNullOrEmpty(MultiplayerIntermissionVotingManager.Instance.InitialGameType))
@@ -211,6 +213,8 @@ public class MultiplayerAdminComponent : MissionNetwork
 			string text3 = null;
 			bool flag3 = false;
 			bool flag4 = false;
+			int intValue = MultiplayerOptions.OptionType.MaxStreamerCount.GetIntValue();
+			string strValue = MultiplayerOptions.OptionType.StreamerPassword.GetStrValue();
 			for (int i = 0; i < adminUpdateMultiplayerOptions.Options.Count; i++)
 			{
 				AdminUpdateMultiplayerOptions.AdminMultiplayerOptionInfo adminMultiplayerOptionInfo = adminUpdateMultiplayerOptions.Options[i];
@@ -302,9 +306,9 @@ public class MultiplayerAdminComponent : MissionNetwork
 			{
 				MultiplayerIntermissionVotingManager.Instance.IsCultureVoteEnabled = false;
 				MultiplayerIntermissionVotingManager.Instance.SelectRandomCultures(MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions);
-				string strValue = MultiplayerOptions.OptionType.CultureTeam1.GetStrValue(MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions);
-				string strValue2 = MultiplayerOptions.OptionType.CultureTeam2.GetStrValue(MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions);
-				Debug.Print("[Admin] Cultures weren't valid. Randomly setting " + strValue + " vs " + strValue2 + " for next game.");
+				string strValue2 = MultiplayerOptions.OptionType.CultureTeam1.GetStrValue(MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions);
+				string strValue3 = MultiplayerOptions.OptionType.CultureTeam2.GetStrValue(MultiplayerOptions.MultiplayerOptionsAccessMode.NextMapOptions);
+				Debug.Print("[Admin] Cultures weren't valid. Randomly setting " + strValue2 + " vs " + strValue3 + " for next game.");
 			}
 			else
 			{
@@ -317,6 +321,10 @@ public class MultiplayerAdminComponent : MissionNetwork
 			GameNetwork.BeginModuleEventAsServer(peer);
 			GameNetwork.WriteMessage(new UpdateIntermissionVotingManagerValues());
 			GameNetwork.EndModuleEventAsServer();
+			if (intValue != MultiplayerOptions.OptionType.MaxStreamerCount.GetIntValue() || strValue != MultiplayerOptions.OptionType.StreamerPassword.GetStrValue())
+			{
+				this.OnStreamerOptionsChangedByAdmin?.Invoke();
+			}
 		}
 		return true;
 	}

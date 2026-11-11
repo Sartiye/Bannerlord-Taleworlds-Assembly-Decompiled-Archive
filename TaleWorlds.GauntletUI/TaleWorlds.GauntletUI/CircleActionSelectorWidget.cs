@@ -29,6 +29,8 @@ public class CircleActionSelectorWidget : Widget
 
 	private bool _isRefreshingSelection;
 
+	private float _invalidSelectionDuration;
+
 	private bool _allowInvalidSelection;
 
 	private bool _activateOnlyWithController;
@@ -38,6 +40,10 @@ public class CircleActionSelectorWidget : Widget
 	private float _distanceFromCenterModifier;
 
 	private float _directionWidgetDistanceMultiplier;
+
+	private float _invalidSelectionDelay = 0.5f;
+
+	private float _directionWidgetDeadzone = 0.1f;
 
 	private Widget _directionWidget;
 
@@ -53,6 +59,38 @@ public class CircleActionSelectorWidget : Widget
 			{
 				_allowInvalidSelection = value;
 				OnPropertyChanged(value, "AllowInvalidSelection");
+			}
+		}
+	}
+
+	public float InvalidSelectionDelay
+	{
+		get
+		{
+			return _invalidSelectionDelay;
+		}
+		set
+		{
+			if (value != _invalidSelectionDelay)
+			{
+				_invalidSelectionDelay = value;
+				OnPropertyChanged(value, "InvalidSelectionDelay");
+			}
+		}
+	}
+
+	public float DirectionWidgetDeadzone
+	{
+		get
+		{
+			return _directionWidgetDeadzone;
+		}
+		set
+		{
+			if (value != _directionWidgetDeadzone)
+			{
+				_directionWidgetDeadzone = value;
+				OnPropertyChanged(value, "DirectionWidgetDeadzone");
 			}
 		}
 	}
@@ -201,7 +239,7 @@ public class CircleActionSelectorWidget : Widget
 			if (flag)
 			{
 				UpdateAverageMouseDirection();
-				UpdateCircularInput();
+				UpdateCircularInput(dt);
 			}
 		}
 		else
@@ -213,8 +251,11 @@ public class CircleActionSelectorWidget : Widget
 			if (DirectionWidget != null)
 			{
 				DirectionWidget.IsVisible = false;
+				DirectionWidget.PositionXOffset = 0f;
+				DirectionWidget.PositionYOffset = 0f;
 			}
 			_mouseMoveAccumulated = Vec2.Zero;
+			_invalidSelectionDuration = 0f;
 		}
 	}
 
@@ -309,20 +350,25 @@ public class CircleActionSelectorWidget : Widget
 		}
 	}
 
-	private void UpdateCircularInput()
+	private void UpdateCircularInput(float dt)
 	{
 		int currentSelectedIndex = _currentSelectedIndex;
 		if (_mouseDirection.Length > 0.391f)
 		{
+			_invalidSelectionDuration = 0f;
 			if (base.ChildCount > 0)
 			{
 				float mouseDirectionAngle = AngleFromDir(_mouseDirection);
 				_currentSelectedIndex = GetIndexOfSelectedItemByAngle(mouseDirectionAngle);
 			}
 		}
-		else if (AllowInvalidSelection)
+		else if (AllowInvalidSelection && _currentSelectedIndex != -1)
 		{
-			_currentSelectedIndex = -1;
+			_invalidSelectionDuration += dt;
+			if (_invalidSelectionDuration >= InvalidSelectionDelay)
+			{
+				_currentSelectedIndex = -1;
+			}
 		}
 		if (currentSelectedIndex != _currentSelectedIndex)
 		{
@@ -332,17 +378,21 @@ public class CircleActionSelectorWidget : Widget
 		}
 		if (DirectionWidget != null)
 		{
-			if (_mouseDirection.LengthSquared > 0f)
+			float length = _mouseDirection.Length;
+			float valueTo = 0f;
+			float valueTo2 = 0f;
+			if (length > DirectionWidgetDeadzone)
 			{
-				Vec2 vec = _mouseDirection.Normalized();
-				DirectionWidget.PositionXOffset = vec.X * (DistanceFromCenterModifier * DirectionWidgetDistanceMultiplier);
-				DirectionWidget.PositionYOffset = (0f - vec.Y) * (DistanceFromCenterModifier * DirectionWidgetDistanceMultiplier);
+				Vec2 vec = _mouseDirection * (1f / length);
+				float ratio = TaleWorlds.Library.MathF.Min((length - DirectionWidgetDeadzone) / (1f - DirectionWidgetDeadzone), 1f);
+				ratio = AnimationInterpolation.Ease(AnimationInterpolation.Type.EaseOut, AnimationInterpolation.Function.Cubic, ratio);
+				float num = DistanceFromCenterModifier * DirectionWidgetDistanceMultiplier * ratio;
+				valueTo = vec.X * num;
+				valueTo2 = (0f - vec.Y) * num;
 			}
-			else
-			{
-				DirectionWidget.PositionXOffset = 0f;
-				DirectionWidget.PositionYOffset = 0f;
-			}
+			float amount = TaleWorlds.Library.MathF.Min(dt * 30f, 1f);
+			DirectionWidget.PositionXOffset = TaleWorlds.Library.MathF.Lerp(DirectionWidget.PositionXOffset, valueTo, amount);
+			DirectionWidget.PositionYOffset = TaleWorlds.Library.MathF.Lerp(DirectionWidget.PositionYOffset, valueTo2, amount);
 		}
 	}
 

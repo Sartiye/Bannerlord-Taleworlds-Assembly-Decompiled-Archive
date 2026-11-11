@@ -28,6 +28,6 @@ public static class StoryModeHelpers
 		{
 			hero.HeroDeveloper.SetInitialSkillLevel(item2.Item1, item2.Item2);
 		}
-		hero.HeroDeveloper.InitializeHeroDeveloper();
+		hero.HeroDeveloper.InitializeHeroDeveloper(CampaignOptions.AutoAllocateClanMemberPerks);
 	}
 }

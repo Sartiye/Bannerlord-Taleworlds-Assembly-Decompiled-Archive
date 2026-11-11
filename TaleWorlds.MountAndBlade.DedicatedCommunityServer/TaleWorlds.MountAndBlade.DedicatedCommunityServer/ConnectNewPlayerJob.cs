@@ -68,7 +68,7 @@ public class ConnectNewPlayerJob : Job
 					PlayerId = PlayerJoinData.PlayerId,
 					PeerIndex = addPlayersResult.NetworkPeers[0].Index,
 					SessionKey = addPlayersResult.NetworkPeers[0].SessionKey,
-					IsAdmin = isAdmin
+					JoinType = PlayerJoinData.JoinType
 				};
 				customGameJoinResponse = CustomGameJoinResponse.Success;
 			}
@@ -84,7 +84,7 @@ public class ConnectNewPlayerJob : Job
 				PlayerId = PlayerJoinData.PlayerId,
 				PeerIndex = -1,
 				SessionKey = -1,
-				IsAdmin = false
+				JoinType = PlayerJoinData.JoinType
 			};
 		}
 		Response.CustomGameJoinResponse = customGameJoinResponse;

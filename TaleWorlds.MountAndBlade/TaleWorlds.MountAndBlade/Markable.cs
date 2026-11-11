@@ -40,7 +40,7 @@ public class Markable : ScriptComponentBehavior
 	{
 		base.OnInit();
 		_marker = TaleWorlds.Engine.GameEntity.Instantiate(Mission.Current.Scene, "highlight_beam", base.GameEntity.GetGlobalFrame());
-		DeactivateMarker();
+		DeactivateMarker(onInitCalled: true);
 		_destructibleComponent = base.GameEntity.GetFirstScriptOfType<DestructableComponent>();
 		SetScriptComponentToTick(GetTickRequirement());
 	}
@@ -100,11 +100,11 @@ public class Markable : ScriptComponentBehavior
 		}
 	}
 
-	private void DeactivateMarker()
+	private void DeactivateMarker(bool onInitCalled = false)
 	{
 		_markerVisible = false;
 		_marker.SetVisibilityExcludeParents(visible: false);
-		_markerEventBeginningTime = Mission.Current.CurrentTime;
+		_markerEventBeginningTime = ((!onInitCalled) ? Mission.Current.CurrentTime : 0f);
 	}
 
 	public void ResetPassiveDurationTimer()

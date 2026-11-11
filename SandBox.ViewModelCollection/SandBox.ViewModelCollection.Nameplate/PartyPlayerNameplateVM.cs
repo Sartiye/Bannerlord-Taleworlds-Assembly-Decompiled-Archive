@@ -1,5 +1,6 @@
 using System;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.ViewModelCollection;
 using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
@@ -94,6 +95,7 @@ public class PartyPlayerNameplateVM : PartyNameplateVM
 		base.Clear();
 		base.IsInSettlement = true;
 		base.IsVisibleOnMap = false;
+		base.IsShipBannerVisible = false;
 		MainHeroVisual = null;
 	}
 
@@ -121,17 +123,27 @@ public class PartyPlayerNameplateVM : PartyNameplateVM
 
 	public override void RefreshPosition()
 	{
-		Vec3 vec = (base.Party.Position + base.Party.EventPositionAdder).AsVec3();
-		Vec3 worldSpacePosition = vec + new Vec3(0f, 0f, 0.8f);
 		_latestX = 0f;
 		_latestY = 0f;
 		_latestW = 0f;
+		Vec3 vec = (base.Party.Position + base.Party.EventPositionAdder).AsVec3();
+		MapEvent mapEvent = base.Party.MapEvent;
+		bool flag = mapEvent != null && mapEvent.MapEventSettlement?.IsVillage == true && base.Party.IsCurrentlyAtSea;
+		if (flag)
+		{
+			MBWindowManager.WorldToScreenInsideUsableArea(_mapCamera, vec, ref _latestX, ref _latestY, ref _latestW);
+			_shipBannerPositionBind = new Vec2(_latestX, _latestY);
+			vec = base.Party.MapEvent.MapEventSettlement.GatePosition.AsVec3();
+			vec += new Vec3(base.Party.RandomFloatWithSeed((uint)base.Party.RandomValue, -0.3f, 0.3f), base.Party.RandomFloatWithSeed((uint)base.Party.RandomValue, -0.3f, 0.3f));
+		}
+		Vec3 worldSpacePosition = vec + new Vec3(0f, 0f, 0.8f);
 		MBWindowManager.WorldToScreenInsideUsableArea(_mapCamera, vec, ref _latestX, ref _latestY, ref _latestW);
 		_partyPositionBind = new Vec2(_latestX, _latestY);
 		_isHighBind = _mapCamera.Position.Distance(vec) >= 110f;
 		_isBehindBind = _latestW < 0f;
 		MBWindowManager.WorldToScreenInsideUsableArea(_mapCamera, worldSpacePosition, ref _latestX, ref _latestY, ref _latestW);
 		_headPositionBind = new Vec2(_latestX, _latestY);
+		_isShipBannerVisibleBind = flag && !_isHighBind && !_isBehindBind;
 		base.DistanceToCamera = vec.Distance(_mapCamera.Position);
 	}
 

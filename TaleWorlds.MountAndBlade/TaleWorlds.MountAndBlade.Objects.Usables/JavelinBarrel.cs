@@ -27,7 +27,7 @@ public class JavelinBarrel : AmmoBarrelBase
 		};
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		return new TextObject("{=ybGIoUvT}Ammunition Barrels");
 	}

@@ -20,7 +20,7 @@ public class KingdomDestroyedSceneNotificationItem : SceneNotificationData
 		{
 			GameTexts.SetVariable("DAY_OF_YEAR", CampaignSceneNotificationHelper.GetFormalDayAndSeasonText(_creationCampaignTime));
 			GameTexts.SetVariable("YEAR", _creationCampaignTime.GetYear);
-			GameTexts.SetVariable("FORMAL_NAME", CampaignSceneNotificationHelper.GetFormalNameForKingdom(DestroyedKingdom));
+			GameTexts.SetVariable("FORMAL_NAME", DestroyedKingdom.FormalName);
 			return GameTexts.FindText("str_kingdom_destroyed_scene_notification");
 		}
 	}

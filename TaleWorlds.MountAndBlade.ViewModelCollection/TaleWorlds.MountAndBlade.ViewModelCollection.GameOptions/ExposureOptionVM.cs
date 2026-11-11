@@ -219,6 +219,13 @@ public class ExposureOptionVM : ViewModel
 		_onClose?.Invoke(obj: false);
 	}
 
+	public override void OnFinalize()
+	{
+		base.OnFinalize();
+		ConfirmInputKey?.OnFinalize();
+		CancelInputKey?.OnFinalize();
+	}
+
 	public void SetCancelInputKey(HotKey hotkey)
 	{
 		CancelInputKey = InputKeyItemVM.CreateFromHotKey(hotkey, isConsoleOnly: true);

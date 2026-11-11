@@ -378,10 +378,9 @@ public class EncyclopediaHeroPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0_0.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_0_0_0.SuggestedWidth = 370f;
 		_widget_0_0_0.Sprite = base.Context.SpriteData.GetSprite("General\\CharacterCreation\\character_creation_background_gradient");
-		_widget_0_0_0_0.WidthSizePolicy = SizePolicy.Fixed;
-		_widget_0_0_0_0.SuggestedWidth = 370f;
+		_widget_0_0_0_0.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_0_0.HeightSizePolicy = SizePolicy.StretchToParent;
-		_widget_0_0_0_0.HorizontalAlignment = HorizontalAlignment.Left;
+		_widget_0_0_0_0.MarginLeft = 5f;
 		_widget_0_0_0_0.MarginBottom = 1f;
 		_widget_0_0_0_0.VerticalAlignment = VerticalAlignment.Center;
 		_widget_0_0_0_0.IsEnabled = false;

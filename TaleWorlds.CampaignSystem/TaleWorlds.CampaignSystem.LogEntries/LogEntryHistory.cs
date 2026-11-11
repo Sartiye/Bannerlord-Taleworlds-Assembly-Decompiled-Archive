@@ -39,7 +39,7 @@ public class LogEntryHistory
 	{
 		if (_logs.Count > 0 && _logs[_logs.Count - 1].Id > actionLog.Id)
 		{
-			Debug.FailedAssert("Log ids should always get bigger", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\LogEntries\\LogEntry.cs", "AddActionLog", 215);
+			Debug.FailedAssert("Log ids should always get bigger", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\LogEntries\\LogEntry.cs", "AddActionLog", 216);
 			int num = _logs.FindIndex((LogEntry l) => l.Id > actionLog.Id);
 			if (num >= 0)
 			{

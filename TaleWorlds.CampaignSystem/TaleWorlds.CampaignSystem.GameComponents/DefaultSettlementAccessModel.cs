@@ -491,36 +491,39 @@ public class DefaultSettlementAccessModel : SettlementAccessModel
 		if (settlement.IsVillage)
 		{
 			Village village = Settlement.CurrentSettlement.Village;
-			if (village.VillageState == Village.VillageStates.BeingRaided)
+			if (village.VillageState != 0)
 			{
-				disabledText = null;
 				disableOption = false;
+				disabledText = null;
 				return false;
 			}
-			bool flag = settlement.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction);
-			TextObject textObject = new TextObject("{=vYHVlydb}You cannot trade with a hostile village.");
-			if (village.VillageState == Village.VillageStates.Normal && village.Owner.ItemRoster.Count > 0)
+			if (settlement.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
 			{
-				disableOption = flag;
-				disabledText = (disableOption ? textObject : null);
-				return !disableOption;
-			}
-			if (village.Gold > 0)
-			{
-				disableOption = flag;
-				disabledText = (disableOption ? textObject : new TextObject("{=FbowXAC0}There are no available products right now."));
+				disableOption = true;
+				disabledText = new TextObject("{=vYHVlydb}You cannot trade with a hostile village.");
 				return false;
 			}
-			disableOption = flag;
-			disabledText = (disableOption ? textObject : new TextObject("{=bmfo7CaO}Village shop is not available right now."));
-			return false;
+			if (village.Owner.ItemRoster.Count <= 0)
+			{
+				disableOption = true;
+				disabledText = new TextObject("{=FbowXAC0}There are no available products right now.");
+				return false;
+			}
+			if (village.Gold <= 0)
+			{
+				disableOption = true;
+				disabledText = new TextObject("{=bmfo7CaO}Village shop is not available right now.");
+				return false;
+			}
+			disableOption = false;
+			disabledText = null;
+			return true;
 		}
 		if (Campaign.Current.IsMainHeroDisguised && !Hero.MainHero.GetPerkValue(DefaultPerks.Roguery.SmugglerConnections))
 		{
 			disableOption = true;
-			TextObject textObject2 = new TextObject("{=HVUHHuVA}{PERK_NAME} perk required to trade while in disguise.");
-			textObject2.SetTextVariable("PERK_NAME", DefaultPerks.Roguery.SmugglerConnections.Name);
-			disabledText = textObject2;
+			disabledText = new TextObject("{=HVUHHuVA}{PERK_NAME} perk required to trade while in disguise.");
+			disabledText.SetTextVariable("PERK_NAME", DefaultPerks.Roguery.SmugglerConnections.Name);
 			return false;
 		}
 		disableOption = false;

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using TaleWorlds.Library;
-using TaleWorlds.ModuleManager;
 using TaleWorlds.MountAndBlade.Diamond.Cosmetics.CosmeticTypes;
 
 namespace TaleWorlds.MountAndBlade.Diamond.Cosmetics;
@@ -36,7 +35,11 @@ public static class CosmeticsManager
 	{
 		_cosmeticElementList = new MBReadOnlyList<CosmeticElement>();
 		_cosmeticElementsLookup = new Dictionary<string, CosmeticElement>();
-		LoadFromXml(ModuleHelper.GetModuleFullPath("Native") + "ModuleData/mpcosmetics.xml");
+	}
+
+	public static void Initialize(string path)
+	{
+		LoadFromXml(path + "/mpcosmetics.xml");
 	}
 
 	public static CosmeticElement GetCosmeticElement(string cosmeticId)
@@ -87,7 +90,7 @@ public static class CosmeticsManager
 					cosmeticType = CosmeticType.Taunt;
 					break;
 				default:
-					Debug.FailedAssert("Invalid cosmetic type: " + value2, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Cosmetics\\CosmeticsManager.cs", "LoadFromXml", 103);
+					Debug.FailedAssert("Invalid cosmetic type: " + value2, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Cosmetics\\CosmeticsManager.cs", "LoadFromXml", 107);
 					break;
 				}
 				CosmeticRarity rarity = CosmeticRarity.Common;
@@ -104,7 +107,7 @@ public static class CosmeticsManager
 					rarity = CosmeticRarity.Unique;
 					break;
 				default:
-					Debug.FailedAssert("Invalid cosmetic rarity: " + value3, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Cosmetics\\CosmeticsManager.cs", "LoadFromXml", 123);
+					Debug.FailedAssert("Invalid cosmetic rarity: " + value3, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Cosmetics\\CosmeticsManager.cs", "LoadFromXml", 127);
 					break;
 				}
 				int cost = int.Parse(childNode2.Attributes["cost"].Value);
@@ -170,7 +173,7 @@ public static class CosmeticsManager
 			{
 				if (_cosmeticElementList[i].Id == _cosmeticElementList[j].Id)
 				{
-					Debug.FailedAssert(_cosmeticElementList[i].Id + " has more than one entry.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Cosmetics\\CosmeticsManager.cs", "CheckForCosmeticsListDuplicatesDebug", 200);
+					Debug.FailedAssert(_cosmeticElementList[i].Id + " has more than one entry.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Cosmetics\\CosmeticsManager.cs", "CheckForCosmeticsListDuplicatesDebug", 204);
 					return false;
 				}
 			}

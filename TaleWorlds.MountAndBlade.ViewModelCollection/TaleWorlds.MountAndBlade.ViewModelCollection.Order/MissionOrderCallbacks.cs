@@ -5,8 +5,6 @@ namespace TaleWorlds.MountAndBlade.ViewModelCollection.Order;
 
 public struct MissionOrderCallbacks
 {
-	public delegate void OnRefreshVisualsDelegate();
-
 	public delegate void OnToggleActivateOrderStateDelegate();
 
 	public delegate void OnTransferTroopsFinishedDelegate();
@@ -16,8 +14,6 @@ public struct MissionOrderCallbacks
 	public delegate void ToggleOrderPositionVisibilityDelegate(bool value);
 
 	public delegate VisualOrderExecutionParameters GetOrderExecutionParametersDelegate();
-
-	public OnRefreshVisualsDelegate RefreshVisuals;
 
 	public OnToggleActivateOrderStateDelegate OnActivateToggleOrder;
 

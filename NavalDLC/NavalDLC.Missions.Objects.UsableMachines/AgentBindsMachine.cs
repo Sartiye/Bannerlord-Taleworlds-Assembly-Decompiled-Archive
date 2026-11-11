@@ -66,7 +66,7 @@ public class AgentBindsMachine : UsableMachine
 		return textObject;
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		return new TextObject("{=ut9C8hA9}Chains");
 	}

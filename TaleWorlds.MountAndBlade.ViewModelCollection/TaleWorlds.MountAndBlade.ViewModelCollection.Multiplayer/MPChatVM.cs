@@ -60,6 +60,16 @@ public class MPChatVM : ViewModel, IChatHandler
 
 	private ChatChannelType _activeChannelType = ChatChannelType.None;
 
+	private bool _wasLocalPeerSpectator;
+
+	private const string StreamerChannelKey = "Streamer";
+
+	private static readonly Color StreamerMessageColor = Color.White;
+
+	private static readonly Color AttackerMessageColor = Color.ConvertStringToColor("#4EE04CFF");
+
+	private static readonly Color DefenderMessageColor = Color.ConvertStringToColor("#DD5454FF");
+
 	private float _chatBoxSizeX;
 
 	private float _chatBoxSizeY;
@@ -116,10 +126,17 @@ public class MPChatVM : ViewModel, IChatHandler
 			{
 				_activeChannelType = ChatChannelType.None;
 			}
-			else if (value != _activeChannelType)
+			else
 			{
-				_activeChannelType = value;
-				RefreshActiveChannelNameData();
+				if (value == ChatChannelType.All && IsLocalPeerSpectator())
+				{
+					value = ChatChannelType.Team;
+				}
+				if (value != _activeChannelType)
+				{
+					_activeChannelType = value;
+					RefreshActiveChannelNameData();
+				}
 			}
 			IsChatDisabled = value == ChatChannelType.None;
 		}
@@ -139,6 +156,8 @@ public class MPChatVM : ViewModel, IChatHandler
 			return text;
 		}
 	}
+
+	public bool CanCycleChannels => !IsLocalPeerSpectator();
 
 	[DataSourceProperty]
 	public float ChatBoxSizeX
@@ -555,6 +574,11 @@ public class MPChatVM : ViewModel, IChatHandler
 		RefreshActiveChannelNameData();
 	}
 
+	private static bool IsLocalPeerSpectator()
+	{
+		return GameNetwork.IsMyPeerSpectator;
+	}
+
 	private void RefreshActiveChannelNameData()
 	{
 		if (ActiveChannelType == ChatChannelType.None)
@@ -563,10 +587,12 @@ public class MPChatVM : ViewModel, IChatHandler
 			ActiveChannelColor = Color.White;
 			return;
 		}
-		string content = GameTexts.FindText("str_multiplayer_chat_channel", ActiveChannelType.ToString()).ToString();
+		bool flag = ActiveChannelType == ChatChannelType.Team && GameNetwork.IsMyPeerStreamer;
+		string variation = (flag ? "Streamer" : ((ActiveChannelType != ChatChannelType.Team || !IsLocalPeerSpectator()) ? ActiveChannelType.ToString() : "Spectator"));
+		string content = GameTexts.FindText("str_multiplayer_chat_channel", variation).ToString();
 		GameTexts.SetVariable("STR", content);
 		ActiveChannelNameText = GameTexts.FindText("str_STR_in_parentheses").ToString();
-		ActiveChannelColor = GetChannelColor(ActiveChannelType);
+		ActiveChannelColor = (flag ? StreamerMessageColor : GetChannelColor(ActiveChannelType));
 	}
 
 	private void OnOptionChange(ManagedOptions.ManagedOptionsType changedManagedOptionsType)
@@ -609,8 +635,15 @@ public class MPChatVM : ViewModel, IChatHandler
 
 	private void UpdateShortcutTexts()
 	{
-		_cycleChannelsText.SetTextVariable("KEY", _getCycleChannelsKeyText?.Invoke() ?? TextObject.GetEmpty());
-		CycleThroughChannelsText = _cycleChannelsText.ToString();
+		if (CanCycleChannels)
+		{
+			_cycleChannelsText.SetTextVariable("KEY", _getCycleChannelsKeyText?.Invoke() ?? TextObject.GetEmpty());
+			CycleThroughChannelsText = _cycleChannelsText.ToString();
+		}
+		else
+		{
+			CycleThroughChannelsText = string.Empty;
+		}
 		if (TaleWorlds.InputSystem.Input.IsGamepadActive)
 		{
 			_sendMessageTextObject.SetTextVariable("KEY", _getSendMessageKeyText?.Invoke() ?? TextObject.GetEmpty());
@@ -728,7 +761,35 @@ public class MPChatVM : ViewModel, IChatHandler
 				}
 			}
 		}
+		RefreshChannelForSpectatorState();
 		IsOptionsAvailable = IsInspectingMessages && IsTypingText;
+	}
+
+	private void RefreshChannelForSpectatorState()
+	{
+		if (_mission == null || ActiveChannelType == ChatChannelType.None)
+		{
+			return;
+		}
+		bool flag = IsLocalPeerSpectator();
+		if (flag == _wasLocalPeerSpectator)
+		{
+			return;
+		}
+		_wasLocalPeerSpectator = flag;
+		if (flag)
+		{
+			if (ActiveChannelType == ChatChannelType.All)
+			{
+				ActiveChannelType = ChatChannelType.Team;
+			}
+			RefreshActiveChannelNameData();
+		}
+		else
+		{
+			ActiveChannelType = ChatChannelType.All;
+		}
+		UpdateShortcutTexts();
 	}
 
 	private void ClearGame()
@@ -777,6 +838,7 @@ public class MPChatVM : ViewModel, IChatHandler
 	private void ClearMission()
 	{
 		_mission = null;
+		_wasLocalPeerSpectator = false;
 		ActiveChannelType = ChatChannelType.None;
 	}
 
@@ -849,7 +911,7 @@ public class MPChatVM : ViewModel, IChatHandler
 				CheckSpamAndSendMessage(ActiveChannelType, text);
 				break;
 			default:
-				Debug.FailedAssert("Player in invalid channel", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Multiplayer\\MPChatVM.cs", "ExecuteSendMessage", 496);
+				Debug.FailedAssert("Player in invalid channel", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Multiplayer\\MPChatVM.cs", "ExecuteSendMessage", 574);
 				break;
 			case ChatChannelType.Private:
 				break;
@@ -886,6 +948,10 @@ public class MPChatVM : ViewModel, IChatHandler
 		LobbyClient gameClient = NetworkMain.GameClient;
 		if (gameClient != null && gameClient.Connected)
 		{
+			if (channel == ChatChannelType.All && IsLocalPeerSpectator())
+			{
+				channel = ChatChannelType.Team;
+			}
 			switch (channel)
 			{
 			case ChatChannelType.All:
@@ -915,11 +981,11 @@ public class MPChatVM : ViewModel, IChatHandler
 		AddMessage(message, sender, channel, textObject);
 	}
 
-	private void AddMessage(string msg, string author, ChatChannelType type, TextObject customChannelName = null)
+	private void AddMessage(string msg, string author, ChatChannelType type, TextObject customChannelName = null, Color? colorOverride = null)
 	{
-		Color channelColor = GetChannelColor(type);
+		Color color = colorOverride ?? GetChannelColor(type);
 		string text = ((!TextObject.IsNullOrEmpty(customChannelName)) ? customChannelName.ToString() : type.ToString());
-		MPChatLineVM chatLine = new MPChatLineVM("(" + text + ") " + author + ": " + msg, channelColor, "Social");
+		MPChatLineVM chatLine = new MPChatLineVM("(" + text + ") " + author + ": " + msg, color, "Social");
 		AddChatLine(chatLine);
 	}
 
@@ -1019,7 +1085,53 @@ public class MPChatVM : ViewModel, IChatHandler
 			GameTexts.SetVariable("PLAYER_NAME", text);
 			text = GameTexts.FindText("str_chat_message_dead_player").ToString();
 		}
-		AddMessage(message, text, (!toTeamOnly) ? ChatChannelType.All : ChatChannelType.Team);
+		ChatChannelType type = ((!toTeamOnly) ? ChatChannelType.All : ChatChannelType.Team);
+		if (player.IsStreamer)
+		{
+			TextObject customChannelName = GameTexts.FindText("str_multiplayer_chat_channel", "Streamer");
+			AddMessage(message, text, type, customChannelName, StreamerMessageColor);
+			return;
+		}
+		Team team = Mission.Current?.SpectatorTeam;
+		int num;
+		object obj;
+		if (toTeamOnly && team != null)
+		{
+			num = ((component?.Team == team) ? 1 : 0);
+			if (num != 0)
+			{
+				obj = GameTexts.FindText("str_multiplayer_chat_channel", "Spectator");
+				goto IL_00bb;
+			}
+		}
+		else
+		{
+			num = 0;
+		}
+		obj = null;
+		goto IL_00bb;
+		IL_00bb:
+		TextObject customChannelName2 = (TextObject)obj;
+		Color? colorOverride = ((num != 0) ? null : GetSideColorForSpectator(component));
+		AddMessage(message, text, type, customChannelName2, colorOverride);
+	}
+
+	private static Color? GetSideColorForSpectator(MissionPeer sender)
+	{
+		if (!IsLocalPeerSpectator())
+		{
+			return null;
+		}
+		if ((Mission.Current?.GetMissionBehavior<MissionMultiplayerGameModeBaseClient>()).GameType == MultiplayerGameType.Duel)
+		{
+			return null;
+		}
+		return sender?.Team?.Side switch
+		{
+			BattleSideEnum.Attacker => AttackerMessageColor, 
+			BattleSideEnum.Defender => DefenderMessageColor, 
+			_ => null, 
+		};
 	}
 
 	private void OnWhisperMessageReceived(string fromUserName, string message)

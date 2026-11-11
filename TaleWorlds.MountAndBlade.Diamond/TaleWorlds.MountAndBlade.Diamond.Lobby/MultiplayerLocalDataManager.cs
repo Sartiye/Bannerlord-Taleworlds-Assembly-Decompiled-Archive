@@ -17,18 +17,21 @@ public class MultiplayerLocalDataManager
 
 	public FavoriteServerDataContainer FavoriteServers { get; private set; }
 
+	public HostGameSettingsDataContainer HostGameSettings { get; private set; }
+
 	private MultiplayerLocalDataManager()
 	{
 		TauntSlotData = new TauntSlotDataContainer();
 		MatchHistory = new MatchHistoryDataContainer();
 		FavoriteServers = new FavoriteServerDataContainer();
+		HostGameSettings = new HostGameSettingsDataContainer();
 	}
 
 	public static void InitializeManager()
 	{
 		if (Instance != null)
 		{
-			Debug.FailedAssert("Multiplayer local data manager is already initialized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\MultiplayerLocalDataManager.cs", "InitializeManager", 34);
+			Debug.FailedAssert("Multiplayer local data manager is already initialized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\MultiplayerLocalDataManager.cs", "InitializeManager", 36);
 		}
 		else
 		{
@@ -40,7 +43,7 @@ public class MultiplayerLocalDataManager
 	{
 		if (Instance == null)
 		{
-			Debug.FailedAssert("Multiplayer local data manager is not initialized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\MultiplayerLocalDataManager.cs", "FinalizeManager", 45);
+			Debug.FailedAssert("Multiplayer local data manager is not initialized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Diamond\\Lobby\\MultiplayerLocalDataManager.cs", "FinalizeManager", 47);
 			return;
 		}
 		Instance.WaitForAsyncOperations();
@@ -55,6 +58,7 @@ public class MultiplayerLocalDataManager
 			await TauntSlotData.Tick(dt);
 			await MatchHistory.Tick(dt);
 			await FavoriteServers.Tick(dt);
+			await HostGameSettings.Tick(dt);
 			_isBusy = false;
 		}
 	}

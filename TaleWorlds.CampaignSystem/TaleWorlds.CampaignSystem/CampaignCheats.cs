@@ -2049,6 +2049,21 @@ public static class CampaignCheats
 		return "OK";
 	}
 
+	[CommandLineFunctionality.CommandLineArgumentFunction("print_criminal_ratings", "campaign")]
+	public static string PrintCriminalRatingWithAllKingdoms(List<string> strings)
+	{
+		if (!CheckCheatUsage(ref ErrorType))
+		{
+			return ErrorType;
+		}
+		string text = "Criminal Ratings\n";
+		foreach (Kingdom item in Kingdom.All)
+		{
+			text = string.Concat(text, item.Name, ": ", item.MainHeroCrimeRating, "\n");
+		}
+		return text;
+	}
+
 	[CommandLineFunctionality.CommandLineArgumentFunction("join_kingdom", "campaign")]
 	public static string JoinKingdom(List<string> strings)
 	{
@@ -3040,6 +3055,13 @@ public static class CampaignCheats
 			return "Format is \"campaign.set_parties_visible [1/0]\".";
 		}
 		Campaign.Current.TrueSight = strings[0] == "1";
+		if (!Campaign.Current.TrueSight)
+		{
+			foreach (MobileParty item in MobileParty.All)
+			{
+				item.IsVisible = false;
+			}
+		}
 		return "Success";
 	}
 
@@ -3166,9 +3188,7 @@ public static class CampaignCheats
 			{
 				if (item.IsHideout && (result != 1 || item.Hideout.IsInfested))
 				{
-					Hideout hideout = item.Hideout;
-					hideout.IsSpotted = true;
-					hideout.Owner.Settlement.IsVisible = true;
+					item.Hideout.Owner.Settlement.IsVisible = true;
 				}
 			}
 			return ((result == 1) ? "Infested" : "All") + " hideouts is visible now.";
@@ -3181,9 +3201,7 @@ public static class CampaignCheats
 		{
 			if (item2.IsHideout && !item2.Hideout.IsInfested)
 			{
-				Hideout hideout2 = item2.Hideout;
-				hideout2.IsSpotted = true;
-				hideout2.Owner.Settlement.IsVisible = true;
+				item2.Hideout.Owner.Settlement.IsVisible = true;
 			}
 		}
 		return "Success";
@@ -3200,9 +3218,7 @@ public static class CampaignCheats
 		{
 			if (item.IsHideout)
 			{
-				Hideout hideout = item.Hideout;
-				hideout.IsSpotted = false;
-				hideout.Owner.Settlement.IsVisible = false;
+				item.Hideout.Owner.Settlement.IsVisible = false;
 			}
 		}
 		return "All hideouts should be invisible now.";

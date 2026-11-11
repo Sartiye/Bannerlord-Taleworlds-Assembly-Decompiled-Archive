@@ -332,12 +332,17 @@ public class BasicCharacterTableau
 					num++;
 					_maneMeshNames[i] = array[num];
 				}
+				if (!AreReferencedResourcesAvailable())
+				{
+					ResetProperties();
+					_characterCode = code;
+				}
 			}
 			catch (Exception ex)
 			{
 				ResetProperties();
-				Debug.FailedAssert("Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Tableaus\\BasicCharacterTableau.cs", "DeserializeCharacterCode", 348);
-				Debug.FailedAssert("Couldn't parse character code: " + code, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Tableaus\\BasicCharacterTableau.cs", "DeserializeCharacterCode", 349);
+				Debug.FailedAssert("Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Tableaus\\BasicCharacterTableau.cs", "DeserializeCharacterCode", 354);
+				Debug.FailedAssert("Couldn't parse character code: " + code, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\Tableaus\\BasicCharacterTableau.cs", "DeserializeCharacterCode", 355);
 			}
 		}
 		_isVisualsDirty = true;
@@ -372,6 +377,19 @@ public class BasicCharacterTableau
 		_race = 0;
 		_isVersionCompatible = false;
 		_characterCode = string.Empty;
+	}
+
+	private bool AreReferencedResourcesAvailable()
+	{
+		if (_race < 0 || _race >= TaleWorlds.Core.FaceGen.GetRaceCount())
+		{
+			return false;
+		}
+		if (!string.IsNullOrEmpty(_mountMaterialName) && Material.GetFromResource(_mountMaterialName) == null)
+		{
+			return false;
+		}
+		return true;
 	}
 
 	private void FirstTimeInit()

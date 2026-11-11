@@ -57,6 +57,7 @@ public class NavalStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 		float num = base.BaseModel.CalculateAdjustedArmorForBlow(in attackInformation, in collisionData, baseArmor, attackerCharacter, attackerCaptainCharacter, victimCharacter, victimCaptainCharacter, weaponComponent);
 		CharacterObject characterObject = attackerCharacter as CharacterObject;
 		CharacterObject characterObject2 = attackerCaptainCharacter as CharacterObject;
+		BattleEnvironment attackerBattleEnvironment = attackInformation.AttackerBattleEnvironment;
 		if (attackerCharacter == characterObject2)
 		{
 			characterObject2 = null;
@@ -65,11 +66,12 @@ public class NavalStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 		{
 			if (weaponComponent != null)
 			{
-				if (weaponComponent.RelevantSkill == DefaultSkills.Crossbow && baseArmor < DefaultPerks.Crossbow.Piercer.PrimaryBonus && characterObject.GetPerkValue(DefaultPerks.Crossbow.Piercer))
+				float bonus2;
+				if (weaponComponent.RelevantSkill == DefaultSkills.Crossbow && characterObject.GetPerkValue(DefaultPerks.Crossbow.Piercer) && PerkHelper.TryGetPerkEffectBonus(DefaultPerks.Crossbow.Piercer, isPrimary: true, out var bonus, attackInformation.AttackerBattleEnvironment) && baseArmor < bonus)
 				{
 					flag = true;
 				}
-				else if (weaponComponent.WeaponClass == WeaponClass.SlingStone && collisionData.VictimHitBodyPart == BoneBodyPartType.Head && characterObject.GetPerkValue(DefaultPerks.Throwing.SlingingCompetitions))
+				else if (weaponComponent.WeaponClass == WeaponClass.SlingStone && collisionData.VictimHitBodyPart == BoneBodyPartType.Head && characterObject.GetPerkValue(DefaultPerks.Throwing.SlingingCompetitions) && PerkHelper.TryGetPerkEffectBonus(DefaultPerks.Throwing.SlingingCompetitions, isPrimary: true, out bonus2, attackInformation.AttackerBattleEnvironment))
 				{
 					flag = true;
 				}
@@ -81,51 +83,51 @@ public class NavalStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 			else
 			{
 				ExplainedNumber bonuses = new ExplainedNumber(baseArmor);
-				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.TwoHanded.Vandal, characterObject, isPrimaryBonus: true, ref bonuses);
+				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.TwoHanded.Vandal, characterObject, isPrimaryBonus: true, ref bonuses, attackerBattleEnvironment);
 				if (weaponComponent != null)
 				{
 					if (weaponComponent.RelevantSkill == DefaultSkills.OneHanded)
 					{
-						PerkHelper.AddPerkBonusForCharacter(DefaultPerks.OneHanded.ChinkInTheArmor, characterObject, isPrimaryBonus: true, ref bonuses);
+						PerkHelper.AddPerkBonusForCharacter(DefaultPerks.OneHanded.ChinkInTheArmor, characterObject, isPrimaryBonus: true, ref bonuses, attackerBattleEnvironment);
 					}
 					else if (weaponComponent.RelevantSkill == DefaultSkills.Bow)
 					{
-						PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Bow.Bodkin, characterObject, isPrimaryBonus: true, ref bonuses);
+						PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Bow.Bodkin, characterObject, isPrimaryBonus: true, ref bonuses, attackerBattleEnvironment);
 						if (characterObject2 != null)
 						{
-							PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Bow.Bodkin, characterObject2, ref bonuses);
+							PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Bow.Bodkin, characterObject2, ref bonuses, attackerBattleEnvironment);
 						}
 					}
 					else if (weaponComponent.RelevantSkill == DefaultSkills.Crossbow)
 					{
-						PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Crossbow.Puncture, characterObject, isPrimaryBonus: true, ref bonuses);
+						PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Crossbow.Puncture, characterObject, isPrimaryBonus: true, ref bonuses, attackerBattleEnvironment);
 						if (characterObject2 != null)
 						{
-							PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Crossbow.Puncture, characterObject2, ref bonuses);
+							PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Crossbow.Puncture, characterObject2, ref bonuses, attackerBattleEnvironment);
 						}
 					}
 					else if (weaponComponent.RelevantSkill == DefaultSkills.Throwing)
 					{
-						PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Throwing.WeakSpot, characterObject, isPrimaryBonus: true, ref bonuses);
+						PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Throwing.WeakSpot, characterObject, isPrimaryBonus: true, ref bonuses, attackerBattleEnvironment);
 						if (characterObject2 != null)
 						{
-							PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Throwing.WeakSpot, characterObject2, ref bonuses);
+							PerkHelper.AddPerkBonusFromCaptain(DefaultPerks.Throwing.WeakSpot, characterObject2, ref bonuses, attackerBattleEnvironment);
 						}
 					}
 					if (weaponComponent.IsMeleeWeapon)
 					{
-						PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.ShatteringBlow, characterObject, isPrimaryBonus: true, ref bonuses);
+						PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.ShatteringBlow, characterObject, isPrimaryBonus: true, ref bonuses, attackerBattleEnvironment);
 						if (characterObject2 != null)
 						{
-							PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.ShatteringBlow, characterObject2, ref bonuses);
+							PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.ShatteringBlow, characterObject2, ref bonuses, attackerBattleEnvironment);
 						}
 					}
 					else if (weaponComponent.IsConsumable && weaponComponent.RelevantSkill != null)
 					{
-						PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.ShatteringVolley, characterObject, isPrimaryBonus: true, ref bonuses);
+						PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.ShatteringVolley, characterObject, isPrimaryBonus: true, ref bonuses, attackerBattleEnvironment);
 						if (characterObject2 != null)
 						{
-							PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.ShatteringVolley, characterObject2, ref bonuses);
+							PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Mariner.ShatteringVolley, characterObject2, ref bonuses, attackerBattleEnvironment);
 						}
 					}
 				}

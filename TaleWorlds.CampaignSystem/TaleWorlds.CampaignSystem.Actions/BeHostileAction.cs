@@ -104,13 +104,13 @@ public static class BeHostileAction
 		Hero leaderHero = attackerParty.LeaderHero;
 		if (leaderHero.Equals(Hero.MainHero))
 		{
-			if (num < 0f)
-			{
-				TraitLevelingHelper.OnHostileAction((int)num);
-			}
 			if (num2 > 0f)
 			{
 				ChangeCrimeRatingAction.Apply(defenderParty.MapFaction, num2);
+			}
+			if (num < 0f)
+			{
+				TraitLevelingHelper.OnHostileAction((int)num);
 			}
 		}
 		if (isClan)

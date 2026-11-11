@@ -247,6 +247,19 @@ public class AiPartyThinkBehavior : CampaignBehaviorBase
 				CheckMobilePartyActionAccordingToSettlement(warPartyComponent.MobileParty, warPartyComponent.MobileParty.TargetSettlement);
 			}
 		}
+		if (clan != Clan.PlayerClan)
+		{
+			return;
+		}
+		float radius = Campaign.Current.Models.EncounterModel.GetEncounterJoiningRadius * 4f;
+		LocatableSearchData<MobileParty> data = MobileParty.StartFindingLocatablesAroundPosition(MobileParty.MainParty.Position.ToVec2(), radius);
+		for (MobileParty mobileParty = MobileParty.FindNextLocatable(ref data); mobileParty != null; mobileParty = MobileParty.FindNextLocatable(ref data))
+		{
+			if (!mobileParty.MapFaction.IsAtWarWith(Clan.PlayerClan.MapFaction) && mobileParty.ShortTermTargetParty == MobileParty.MainParty && !mobileParty.IsCurrentlyUsedByAQuest && (mobileParty.MapFaction.IsKingdomFaction || mobileParty.IsLordParty))
+			{
+				mobileParty.SetMoveModeHold();
+			}
+		}
 	}
 
 	private void OnWarDeclared(IFaction faction1, IFaction faction2, DeclareWarAction.DeclareWarDetail detail)

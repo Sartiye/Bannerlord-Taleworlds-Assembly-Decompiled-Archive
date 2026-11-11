@@ -28,11 +28,11 @@ public class LauncherHintTriggerWidget : Widget
 		{
 			if (eventName == "HoverBegin")
 			{
-				EventFired("HoverBegin");
+				EventFired("HoverBegin", args);
 			}
 			else if (eventName == "HoverEnd")
 			{
-				EventFired("HoverEnd");
+				EventFired("HoverEnd", args);
 			}
 		}
 	}

@@ -65,6 +65,16 @@ public class PortScreenLootModeHandler : PortScreenHandler
 		return PortActionInfo.CreateValid(Campaign.Current.Models.FleetManagementModel.CanSendShipToPlayerClan(ship, base.RightShips.Count, troopsCountToSend, out hint), 0, GameTexts.FindText("str_port_send_ship_to_clan"), hint);
 	}
 
+	protected override PortActionInfo CanStashShip(Ship ship)
+	{
+		return PortActionInfo.CreateInvalid();
+	}
+
+	protected override PortActionInfo CanViewStash(bool isRightRoster)
+	{
+		return PortActionInfo.CreateInvalid();
+	}
+
 	public override bool GetCanConfirm(out TextObject disabledHint)
 	{
 		disabledHint = null;

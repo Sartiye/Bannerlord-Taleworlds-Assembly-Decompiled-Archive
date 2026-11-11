@@ -54,7 +54,7 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 
 	private HintWidget _widget_1_1_2_2;
 
-	private BoolStateChangerWidget _widget_2;
+	private BoolStateChangerBrushWidget _widget_2;
 
 	private PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_PartyVM_Dependency_5_Standard_TripleDialogCloseButtons__DependendPrefab _widget_3;
 
@@ -514,7 +514,7 @@ public class PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_Pa
 		_widget_1_1_2.AddChild(_widget_1_1_2_1);
 		_widget_1_1_2_2 = new HintWidget(base.Context);
 		_widget_1_1_2.AddChild(_widget_1_1_2_2);
-		_widget_2 = new BoolStateChangerWidget(base.Context);
+		_widget_2 = new BoolStateChangerBrushWidget(base.Context);
 		_widget.AddChild(_widget_2);
 		_widget_3 = new PartyScreen__TaleWorlds_CampaignSystem_ViewModelCollection_Party_PartyVM_Dependency_5_Standard_TripleDialogCloseButtons__DependendPrefab(base.Context);
 		_widget.AddChild(_widget_3);

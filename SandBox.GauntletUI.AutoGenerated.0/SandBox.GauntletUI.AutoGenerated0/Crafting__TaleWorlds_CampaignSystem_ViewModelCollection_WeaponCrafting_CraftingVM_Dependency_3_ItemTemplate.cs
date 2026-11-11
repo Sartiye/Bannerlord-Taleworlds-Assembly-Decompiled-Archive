@@ -132,6 +132,7 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 		_widget_1.MarginTop = 5f;
 		_widget_1.MarginRight = 5f;
 		_widget_1.Brush = base.Context.GetBrush("Crafting.Piece.Card.NewlyUnlocked.Dot");
+		_widget_1.UseGlobalTimeForAnimation = true;
 	}
 
 	public void DestroyDataSource()

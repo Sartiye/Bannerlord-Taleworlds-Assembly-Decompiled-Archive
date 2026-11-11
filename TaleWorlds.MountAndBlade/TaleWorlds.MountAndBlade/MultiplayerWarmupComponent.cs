@@ -259,4 +259,25 @@ public class MultiplayerWarmupComponent : MissionNetwork
 		missionBehavior.EndWarmupProgress();
 		return "Success";
 	}
+
+	[CommandLineFunctionality.CommandLineArgumentFunction("reset_warmup_timer", "mp_host")]
+	public static string CommandExtendWarmup(List<string> strings)
+	{
+		if (Mission.Current == null)
+		{
+			return "extend_warmup can only be called within a mission.";
+		}
+		if (!GameNetwork.IsServer)
+		{
+			return "extend_warmup can only be called by the server.";
+		}
+		MultiplayerWarmupComponent missionBehavior = Mission.Current.GetMissionBehavior<MultiplayerWarmupComponent>();
+		if (missionBehavior == null)
+		{
+			return "extend_warmup can only be called when the game is in warmup.";
+		}
+		missionBehavior.WarmupState = WarmupStates.InProgress;
+		missionBehavior._timerComponent.StartTimerAsServer(TotalWarmupDuration);
+		return "Success";
+	}
 }

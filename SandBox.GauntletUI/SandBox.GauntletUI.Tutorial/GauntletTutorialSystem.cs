@@ -12,7 +12,7 @@ using TaleWorlds.CampaignSystem.ViewModelCollection;
 using TaleWorlds.CampaignSystem.ViewModelCollection.ArmyManagement;
 using TaleWorlds.CampaignSystem.ViewModelCollection.CharacterDeveloper;
 using TaleWorlds.CampaignSystem.ViewModelCollection.CharacterDeveloper.PerkSelection;
-using TaleWorlds.CampaignSystem.ViewModelCollection.ClanManagement;
+using TaleWorlds.CampaignSystem.ViewModelCollection.ClanManagement.Categories;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Encyclopedia;
 using TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu.Events;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Inventory;
@@ -54,8 +54,6 @@ public class GauntletTutorialSystem : GlobalLayer
 
 	private List<CampaignTutorial> _currentCampaignTutorials;
 
-	private GauntletMovieIdentifier _movie;
-
 	public EncyclopediaPages CurrentEncyclopediaPageContext { get; private set; }
 
 	public bool IsCharacterPortraitPopupOpen { get; private set; }
@@ -66,10 +64,10 @@ public class GauntletTutorialSystem : GlobalLayer
 	{
 		_isInitialized = true;
 		_dataSource = new TutorialVM(DisableTutorialStep);
-		base.Layer = new GauntletLayer("TutorialScreen", 15300);
-		GauntletLayer gauntletLayer = (GauntletLayer)base.Layer;
-		_movie = gauntletLayer.LoadMovie("TutorialScreen", _dataSource);
-		gauntletLayer.InputRestrictions.SetInputRestrictions(isMouseVisible: false);
+		base.Layer = new GauntletLayer("TutorialScreen", 19100);
+		GauntletLayer obj = (GauntletLayer)base.Layer;
+		obj.LoadMovie("TutorialScreen", _dataSource);
+		obj.InputRestrictions.SetInputRestrictions(isMouseVisible: false);
 		ScreenManager.AddGlobalLayer(this, isFocusable: true);
 		_mappedTutorialItems = new Dictionary<string, TutorialItemBase>();
 		_tutorialItemIdentifiers = new Dictionary<TutorialItemBase, string>();
@@ -174,7 +172,6 @@ public class GauntletTutorialSystem : GlobalLayer
 			ResetCurrentTutorial();
 		}
 		_dataSource.IsVisible = _currentTutorialVisualItem?.IsConditionsMetForVisibility() ?? false;
-		_dataSource.Tick(dt);
 	}
 
 	private void SetCurrentTutorial(CampaignTutorial tutorial, TutorialItemBase tutorialItem)
@@ -234,7 +231,6 @@ public class GauntletTutorialSystem : GlobalLayer
 				TutorialVM.Instance = null;
 				Current._dataSource = null;
 				ScreenManager.RemoveGlobalLayer(Current);
-				(Current.Layer as GauntletLayer).ReleaseMovie(Current._movie);
 			}
 			Current = null;
 		}
@@ -570,20 +566,20 @@ public class GauntletTutorialSystem : GlobalLayer
 				TutorialAttribute customAttribute = type.GetCustomAttribute<TutorialAttribute>();
 				if (customAttribute == null)
 				{
-					Debug.FailedAssert("Tutorial: " + type.Name + " does not have a Tutorial attribute", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.GauntletUI\\Tutorial\\GauntletTutorialSystem.cs", "RegisterTutorialTypes", 508);
+					Debug.FailedAssert("Tutorial: " + type.Name + " does not have a Tutorial attribute", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.GauntletUI\\Tutorial\\GauntletTutorialSystem.cs", "RegisterTutorialTypes", 502);
 					continue;
 				}
 				ConstructorInfo constructor = type.GetConstructor(Type.EmptyTypes);
 				if (constructor == null)
 				{
-					Debug.FailedAssert("Tutorial: " + type.Name + " does not have a parameterless constructor", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.GauntletUI\\Tutorial\\GauntletTutorialSystem.cs", "RegisterTutorialTypes", 516);
+					Debug.FailedAssert("Tutorial: " + type.Name + " does not have a parameterless constructor", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.GauntletUI\\Tutorial\\GauntletTutorialSystem.cs", "RegisterTutorialTypes", 510);
 					continue;
 				}
 				TutorialItemBase tutorialItemBase = (TutorialItemBase)constructor.Invoke(new object[0]);
 				string tutorialIdentifier = customAttribute.TutorialIdentifier;
 				if (string.IsNullOrEmpty(tutorialIdentifier))
 				{
-					Debug.FailedAssert("Tutorial: " + type.Name + " does not have a valid identifier", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.GauntletUI\\Tutorial\\GauntletTutorialSystem.cs", "RegisterTutorialTypes", 526);
+					Debug.FailedAssert("Tutorial: " + type.Name + " does not have a valid identifier", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.GauntletUI\\Tutorial\\GauntletTutorialSystem.cs", "RegisterTutorialTypes", 520);
 					continue;
 				}
 				_mappedTutorialItems[tutorialIdentifier] = tutorialItemBase;

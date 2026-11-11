@@ -9,5 +9,6 @@ public enum PlayerIdProvidedTypes
 	GOG,
 	GDK,
 	PS,
-	GOGReal
+	GOGReal,
+	Encrypted
 }

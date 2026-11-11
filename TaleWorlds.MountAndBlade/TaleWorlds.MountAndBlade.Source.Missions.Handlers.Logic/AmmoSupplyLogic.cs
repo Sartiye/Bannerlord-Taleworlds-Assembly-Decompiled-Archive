@@ -9,12 +9,11 @@ public class AmmoSupplyLogic : MissionLogic
 
 	private readonly List<BattleSideEnum> _sideList;
 
-	private readonly BasicMissionTimer _checkTimer;
+	private BasicMissionTimer _checkTimer;
 
 	public AmmoSupplyLogic(List<BattleSideEnum> sideList)
 	{
 		_sideList = sideList;
-		_checkTimer = new BasicMissionTimer();
 	}
 
 	public bool IsAgentEligibleForAmmoSupply(Agent agent)
@@ -30,6 +29,11 @@ public class AmmoSupplyLogic : MissionLogic
 			}
 		}
 		return false;
+	}
+
+	public override void OnBehaviorInitialize()
+	{
+		_checkTimer = new BasicMissionTimer();
 	}
 
 	public override void OnMissionTick(float dt)

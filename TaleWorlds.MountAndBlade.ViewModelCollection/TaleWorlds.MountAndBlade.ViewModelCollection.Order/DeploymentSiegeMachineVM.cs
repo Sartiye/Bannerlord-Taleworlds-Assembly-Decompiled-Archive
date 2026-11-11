@@ -3,6 +3,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.MountAndBlade.Objects.Siege;
 
 namespace TaleWorlds.MountAndBlade.ViewModelCollection.Order;
 
@@ -196,18 +197,17 @@ public class DeploymentSiegeMachineVM : ViewModel
 		}
 	}
 
-	public DeploymentSiegeMachineVM(DeploymentPoint selectedDeploymentPoint, SiegeWeapon siegeMachine, Camera deploymentCamera, Action<DeploymentSiegeMachineVM> onSelectSiegeMachine, Action<DeploymentPoint> onHoverSiegeMachine, bool isSelected)
+	public DeploymentSiegeMachineVM(DeploymentPoint selectedDeploymentPoint, SiegeWeapon siegeMachine, Camera deploymentCamera, Action<DeploymentSiegeMachineVM> onSelectSiegeMachine, Action<DeploymentPoint> onHoverSiegeMachine)
 	{
 		_deploymentCamera = deploymentCamera;
 		DeploymentPoint = selectedDeploymentPoint;
 		_onSelect = onSelectSiegeMachine;
 		_onHover = onHoverSiegeMachine;
 		SiegeWeapon = siegeMachine;
-		IsSelected = isSelected;
 		if (siegeMachine != null)
 		{
 			MachineType = ((object)siegeMachine).GetType();
-			Machine = OrderSiegeMachineVM.GetSiegeType(MachineType, siegeMachine.Side);
+			Machine = GetSiegeEngineType(MachineType, siegeMachine.Side);
 			MachineClass = siegeMachine.GetSiegeEngineType().StringId;
 		}
 		else
@@ -301,5 +301,55 @@ public class DeploymentSiegeMachineVM : ViewModel
 			MachineType = null;
 			MachineClass = "none";
 		}
+	}
+
+	private SiegeEngineType GetSiegeEngineType(Type t, BattleSideEnum side)
+	{
+		if (t == typeof(SiegeLadder))
+		{
+			return DefaultSiegeEngineTypes.Ladder;
+		}
+		if (t == typeof(Ballista))
+		{
+			return DefaultSiegeEngineTypes.Ballista;
+		}
+		if (t == typeof(FireBallista))
+		{
+			return DefaultSiegeEngineTypes.FireBallista;
+		}
+		if (t == typeof(BatteringRam))
+		{
+			return DefaultSiegeEngineTypes.Ram;
+		}
+		if (t == typeof(SiegeTower))
+		{
+			return DefaultSiegeEngineTypes.SiegeTower;
+		}
+		if (t == typeof(Mangonel))
+		{
+			if (side != BattleSideEnum.Attacker)
+			{
+				return DefaultSiegeEngineTypes.Catapult;
+			}
+			return DefaultSiegeEngineTypes.Onager;
+		}
+		if (t == typeof(FireMangonel))
+		{
+			if (side != BattleSideEnum.Attacker)
+			{
+				return DefaultSiegeEngineTypes.FireCatapult;
+			}
+			return DefaultSiegeEngineTypes.FireOnager;
+		}
+		if (t == typeof(Trebuchet))
+		{
+			return DefaultSiegeEngineTypes.Trebuchet;
+		}
+		if (t == typeof(FireTrebuchet))
+		{
+			return DefaultSiegeEngineTypes.FireTrebuchet;
+		}
+		Debug.FailedAssert("Invalid siege weapon", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\Order\\DeploymentSiegeMachineVM.cs", "GetSiegeEngineType", 182);
+		return DefaultSiegeEngineTypes.Ladder;
 	}
 }

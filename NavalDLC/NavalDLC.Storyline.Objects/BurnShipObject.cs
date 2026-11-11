@@ -68,7 +68,7 @@ public class BurnShipObject : UsableMachine
 		}
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		return new TextObject("{=eAnAZNib}Barrel of oil");
 	}

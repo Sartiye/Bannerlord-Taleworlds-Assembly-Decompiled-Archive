@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.Library;
@@ -9,233 +10,260 @@ namespace TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.Lobby.HostGam
 
 public class MPHostGameOptionsVM : ViewModel
 {
-	private class OptionPreferredIndexComparer : IComparer<GenericHostGameOptionDataVM>
+	private static readonly HashSet<MultiplayerOptions.OptionType> _premadeGameOptions = new HashSet<MultiplayerOptions.OptionType>
 	{
-		public int Compare(GenericHostGameOptionDataVM x, GenericHostGameOptionDataVM y)
-		{
-			return x.PreferredIndex.CompareTo(y.PreferredIndex);
-		}
-	}
+		MultiplayerOptions.OptionType.ServerName,
+		MultiplayerOptions.OptionType.GamePassword,
+		MultiplayerOptions.OptionType.CultureTeam1,
+		MultiplayerOptions.OptionType.CultureTeam2,
+		MultiplayerOptions.OptionType.Map,
+		MultiplayerOptions.OptionType.PremadeMatchGameMode,
+		MultiplayerOptions.OptionType.PremadeGameType
+	};
 
-	private List<GenericHostGameOptionDataVM> _hostGameItemsForNextTick = new List<GenericHostGameOptionDataVM>();
+	private readonly MPCustomGameVM.CustomGameMode _customGameMode;
 
-	private OptionPreferredIndexComparer _optionComparer;
+	private readonly Dictionary<MultiplayerOptions.OptionType, GenericHostGameOptionDataVM> _optionsByType;
 
-	private MPCustomGameVM.CustomGameMode _customGameMode;
+	private readonly Dictionary<HostGameOptionSection, HostGameOptionSectionVM> _sectionsByType;
 
-	private bool _isRefreshed;
+	private MBBindingList<HostGameOptionSectionVM> _sections;
 
-	private bool _isInMission;
+	public Action OnAnyOptionChanged { get; set; }
 
-	private MBBindingList<GenericHostGameOptionDataVM> _generalOptions;
+	public Action OnGameModeChangedByUser { get; set; }
 
-	[DataSourceProperty]
-	public MBBindingList<GenericHostGameOptionDataVM> GeneralOptions
+	public string CurrentGameModeName
 	{
 		get
 		{
-			return _generalOptions;
+			if (_customGameMode != 0)
+			{
+				return MultiplayerOptions.OptionType.PremadeMatchGameMode.GetStrValue();
+			}
+			return MultiplayerOptions.OptionType.GameType.GetStrValue();
+		}
+	}
+
+	public IEnumerable<GenericHostGameOptionDataVM> AllOptions => _optionsByType.Values;
+
+	[DataSourceProperty]
+	public MBBindingList<HostGameOptionSectionVM> Sections
+	{
+		get
+		{
+			return _sections;
 		}
 		set
 		{
-			if (value != _generalOptions)
+			if (value != _sections)
 			{
-				_generalOptions = value;
-				OnPropertyChangedWithValue(value, "GeneralOptions");
+				_sections = value;
+				OnPropertyChangedWithValue(value, "Sections");
 			}
 		}
 	}
 
-	[DataSourceProperty]
-	public bool IsRefreshed
+	public MPHostGameOptionsVM(MPCustomGameVM.CustomGameMode customGameMode)
 	{
-		get
-		{
-			return _isRefreshed;
-		}
-		set
-		{
-			if (value != _isRefreshed)
-			{
-				_isRefreshed = value;
-				OnPropertyChangedWithValue(value, "IsRefreshed");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public bool IsInMission
-	{
-		get
-		{
-			return _isInMission;
-		}
-		set
-		{
-			if (value != _isInMission)
-			{
-				_isInMission = value;
-				OnPropertyChangedWithValue(value, "IsInMission");
-			}
-		}
-	}
-
-	public MPHostGameOptionsVM(bool isInMission, MPCustomGameVM.CustomGameMode customGameMode = MPCustomGameVM.CustomGameMode.CustomServer)
-	{
-		IsInMission = isInMission;
-		GeneralOptions = new MBBindingList<GenericHostGameOptionDataVM>();
-		_optionComparer = new OptionPreferredIndexComparer();
 		_customGameMode = customGameMode;
-		InitializeDefaultOptionList();
+		_optionsByType = new Dictionary<MultiplayerOptions.OptionType, GenericHostGameOptionDataVM>();
+		_sectionsByType = new Dictionary<HostGameOptionSection, HostGameOptionSectionVM>();
+		Sections = new MBBindingList<HostGameOptionSectionVM>();
+		CreateSectionsAndOptions();
+		InitializeGameMode();
 	}
 
 	public override void RefreshValues()
 	{
 		base.RefreshValues();
-		GeneralOptions.ApplyActionOnAllItems(delegate(GenericHostGameOptionDataVM x)
+		Sections.ApplyActionOnAllItems(delegate(HostGameOptionSectionVM x)
 		{
 			x.RefreshValues();
 		});
 	}
 
-	private void InitializeDefaultOptionList()
+	public bool HasOption(MultiplayerOptions.OptionType optionType)
 	{
-		IsRefreshed = false;
-		string text = "";
-		if (_customGameMode == MPCustomGameVM.CustomGameMode.CustomServer)
+		return _optionsByType.ContainsKey(optionType);
+	}
+
+	public bool IsOptionShown(MultiplayerOptions.OptionType optionType)
+	{
+		if (_optionsByType.TryGetValue(optionType, out var value))
 		{
-			text = MultiplayerOptions.OptionType.GameType.GetStrValue();
+			return value.IsVisible;
 		}
-		else
+		return false;
+	}
+
+	public void RefreshAllOptionData()
+	{
+		foreach (GenericHostGameOptionDataVM value in _optionsByType.Values)
 		{
-			text = "Skirmish";
-			MultiplayerOptions.Instance.SetValueForOptionWithMultipleSelectionFromText(MultiplayerOptions.OptionType.PremadeMatchGameMode, text);
+			value.RefreshData();
 		}
-		OnGameModeChanged(text);
-		foreach (GenericHostGameOptionDataVM item in GeneralOptions.ToList())
+		RefreshVisibility();
+	}
+
+	public void RefreshSelectionLists()
+	{
+		RefreshSelectionLists(includeGameModeOptions: true);
+	}
+
+	private void RefreshSelectionLists(bool includeGameModeOptions)
+	{
+		foreach (GenericHostGameOptionDataVM value in _optionsByType.Values)
 		{
-			if ((item.OptionType == MultiplayerOptions.OptionType.GameType || item.OptionType == MultiplayerOptions.OptionType.PremadeMatchGameMode) && item is MultipleSelectionHostGameOptionDataVM)
+			if ((includeGameModeOptions || !IsGameModeOption(value.OptionType)) && value is MultipleSelectionHostGameOptionDataVM multipleSelectionHostGameOptionDataVM)
 			{
-				(item as MultipleSelectionHostGameOptionDataVM).OnChangedSelection = OnChangeSelected;
+				multipleSelectionHostGameOptionDataVM.RefreshList();
 			}
 		}
-		IsRefreshed = true;
 	}
 
-	private void OnChangeSelected(MultipleSelectionHostGameOptionDataVM option)
+	private void CreateSectionsAndOptions()
 	{
-		IsRefreshed = false;
-		if (option.OptionType == MultiplayerOptions.OptionType.GameType || option.OptionType == MultiplayerOptions.OptionType.PremadeMatchGameMode)
+		HostGameOptionSection[] array = (HostGameOptionSection[])Enum.GetValues(typeof(HostGameOptionSection));
+		foreach (HostGameOptionSection hostGameOptionSection in array)
 		{
-			OnGameModeChanged(MultiplayerOptions.Instance.GetMultiplayerOptionsList(MultiplayerOptions.OptionType.GameType)[option.Selector.SelectedIndex]);
+			HostGameOptionSectionVM hostGameOptionSectionVM = new HostGameOptionSectionVM(hostGameOptionSection, hostGameOptionSection != HostGameOptionSection.Advanced);
+			_sectionsByType.Add(hostGameOptionSection, hostGameOptionSectionVM);
+			Sections.Add(hostGameOptionSectionVM);
 		}
-		IsRefreshed = true;
-	}
-
-	private void OnGameModeChanged(string gameModeName)
-	{
-		_hostGameItemsForNextTick.Clear();
-		if (_customGameMode == MPCustomGameVM.CustomGameMode.CustomServer)
-		{
-			FillOptionsForCustomServer(gameModeName);
-		}
-		else if (_customGameMode == MPCustomGameVM.CustomGameMode.PremadeGame)
-		{
-			FillOptionsForPremadeGame();
-		}
-		(GeneralOptions.First((GenericHostGameOptionDataVM o) => o.OptionType == MultiplayerOptions.OptionType.Map) as MultipleSelectionHostGameOptionDataVM)?.RefreshList();
-		GeneralOptions.Sort(_optionComparer);
-	}
-
-	private void FillOptionsForCustomServer(string gameModeName)
-	{
+		List<HostGameOptionPresentation> list = new List<HostGameOptionPresentation>();
 		for (MultiplayerOptions.OptionType optionType = MultiplayerOptions.OptionType.ServerName; optionType < MultiplayerOptions.OptionType.NumOfSlots; optionType++)
 		{
-			MultiplayerOptionsProperty optionProperty = optionType.GetOptionProperty();
-			if (optionType == MultiplayerOptions.OptionType.PremadeMatchGameMode || optionType == MultiplayerOptions.OptionType.PremadeGameType || optionProperty == null)
+			if (IsOptionUsedByThisMode(optionType))
 			{
-				continue;
-			}
-			int preferredIndex = (int)optionType;
-			bool flag = optionProperty.ValidGameModes == null;
-			if (optionProperty.ValidGameModes != null && optionProperty.ValidGameModes.Contains(gameModeName))
-			{
-				flag = true;
-			}
-			GenericHostGameOptionDataVM genericHostGameOptionDataVM = GeneralOptions.FirstOrDefault((GenericHostGameOptionDataVM o) => o.PreferredIndex == preferredIndex);
-			if (flag)
-			{
-				if (genericHostGameOptionDataVM == null)
+				HostGameOptionPresentation hostGameOptionPresentation = HostGameOptionPresentation.Get(optionType);
+				if (!hostGameOptionPresentation.IsTeam2HalfOfPair)
 				{
-					GenericHostGameOptionDataVM item = CreateOption(optionType, preferredIndex);
-					GeneralOptions.Add(item);
+					list.Add(hostGameOptionPresentation);
 				}
-				else
-				{
-					genericHostGameOptionDataVM.RefreshData();
-				}
-			}
-			else if (genericHostGameOptionDataVM != null)
-			{
-				GeneralOptions.Remove(genericHostGameOptionDataVM);
 			}
 		}
-	}
-
-	private void FillOptionsForPremadeGame()
-	{
-		for (MultiplayerOptions.OptionType optionType = MultiplayerOptions.OptionType.ServerName; optionType < MultiplayerOptions.OptionType.NumOfSlots; optionType++)
+		list.Sort(delegate(HostGameOptionPresentation x, HostGameOptionPresentation y)
 		{
-			MultiplayerOptionsProperty optionProperty = optionType.GetOptionProperty();
-			bool flag = false;
-			if (optionType == MultiplayerOptions.OptionType.ServerName || optionType == MultiplayerOptions.OptionType.GamePassword || optionType == MultiplayerOptions.OptionType.CultureTeam1 || optionType == MultiplayerOptions.OptionType.CultureTeam2 || optionType == MultiplayerOptions.OptionType.Map || optionType == MultiplayerOptions.OptionType.PremadeMatchGameMode || optionType == MultiplayerOptions.OptionType.PremadeGameType)
+			int order = x.Order;
+			return order.CompareTo(y.Order);
+		});
+		foreach (HostGameOptionPresentation item in list)
+		{
+			GenericHostGameOptionDataVM genericHostGameOptionDataVM = CreateOption(item.OptionType, (int)item.OptionType);
+			genericHostGameOptionDataVM.OnValueChanged = OnOptionValueChanged;
+			_optionsByType.Add(item.OptionType, genericHostGameOptionDataVM);
+			_sectionsByType[item.Section].Options.Add(genericHostGameOptionDataVM);
+			if (genericHostGameOptionDataVM is MultipleSelectionHostGameOptionDataVM multipleSelectionHostGameOptionDataVM && IsGameModeOption(item.OptionType))
 			{
-				flag = true;
-			}
-			if (flag && optionProperty != null)
-			{
-				int preferredIndex = (int)optionType;
-				GenericHostGameOptionDataVM genericHostGameOptionDataVM = GeneralOptions.FirstOrDefault((GenericHostGameOptionDataVM o) => o.PreferredIndex == preferredIndex);
-				if (genericHostGameOptionDataVM == null)
-				{
-					GenericHostGameOptionDataVM item = CreateOption(optionType, preferredIndex);
-					GeneralOptions.Add(item);
-				}
-				else
-				{
-					genericHostGameOptionDataVM.RefreshData();
-				}
+				multipleSelectionHostGameOptionDataVM.OnChangedSelection = OnGameModeSelectionChanged;
 			}
 		}
 	}
 
-	private GenericHostGameOptionDataVM CreateOption(MultiplayerOptions.OptionType type, int preferredIndex)
+	private bool IsOptionUsedByThisMode(MultiplayerOptions.OptionType optionType)
 	{
-		GenericHostGameOptionDataVM genericHostGameOptionDataVM = null;
+		if (_customGameMode == MPCustomGameVM.CustomGameMode.PremadeGame)
+		{
+			return _premadeGameOptions.Contains(optionType);
+		}
+		if (optionType != MultiplayerOptions.OptionType.PremadeMatchGameMode)
+		{
+			return optionType != MultiplayerOptions.OptionType.PremadeGameType;
+		}
+		return false;
+	}
+
+	private static bool IsGameModeOption(MultiplayerOptions.OptionType optionType)
+	{
+		if (optionType != MultiplayerOptions.OptionType.GameType)
+		{
+			return optionType == MultiplayerOptions.OptionType.PremadeMatchGameMode;
+		}
+		return true;
+	}
+
+	private void InitializeGameMode()
+	{
+		if (_customGameMode == MPCustomGameVM.CustomGameMode.PremadeGame)
+		{
+			MultiplayerOptions.Instance.SetValueForOptionWithMultipleSelectionFromText(MultiplayerOptions.OptionType.PremadeMatchGameMode, "Skirmish");
+		}
+		OnGameModeChanged();
+	}
+
+	private void OnGameModeSelectionChanged(MultipleSelectionHostGameOptionDataVM option)
+	{
+		OnGameModeChangedByUser?.Invoke();
+		OnGameModeChanged();
+	}
+
+	private void OnGameModeChanged()
+	{
+		RefreshSelectionLists(includeGameModeOptions: false);
+		RefreshAllOptionData();
+	}
+
+	private void OnOptionValueChanged(GenericHostGameOptionDataVM option)
+	{
+		RefreshVisibility();
+		OnAnyOptionChanged?.Invoke();
+	}
+
+	private void RefreshVisibility()
+	{
+		string currentGameModeName = CurrentGameModeName;
+		foreach (GenericHostGameOptionDataVM value in _optionsByType.Values)
+		{
+			value.IsVisible = IsValidForGameMode(value.OptionType, currentGameModeName) && IsRelevantNow(value.Presentation);
+			if (value is NumericHostGameOptionDataVM { Team2: not null } numericHostGameOptionDataVM)
+			{
+				numericHostGameOptionDataVM.Team2.IsVisible = IsValidForGameMode(numericHostGameOptionDataVM.Team2.OptionType, currentGameModeName);
+			}
+		}
+		foreach (HostGameOptionSectionVM section in Sections)
+		{
+			section.RefreshHasAnyVisibleOption();
+		}
+	}
+
+	private bool IsValidForGameMode(MultiplayerOptions.OptionType optionType, string gameModeName)
+	{
+		if (_customGameMode == MPCustomGameVM.CustomGameMode.PremadeGame)
+		{
+			return true;
+		}
+		return optionType.GetOptionProperty().ValidGameModes?.Contains(gameModeName) ?? true;
+	}
+
+	private static bool IsRelevantNow(HostGameOptionPresentation presentation)
+	{
+		if (presentation.IsRelevant != null)
+		{
+			return presentation.IsRelevant();
+		}
+		return true;
+	}
+
+	private static GenericHostGameOptionDataVM CreateOption(MultiplayerOptions.OptionType type, int preferredIndex)
+	{
 		switch (GetSpecificHostGameOptionTypeOf(type))
 		{
 		case OptionsVM.OptionsDataType.BooleanOption:
-			genericHostGameOptionDataVM = new BooleanHostGameOptionDataVM(type, preferredIndex);
-			break;
+			return new BooleanHostGameOptionDataVM(type, preferredIndex);
 		case OptionsVM.OptionsDataType.NumericOption:
-			genericHostGameOptionDataVM = new NumericHostGameOptionDataVM(type, preferredIndex);
-			break;
+			return new NumericHostGameOptionDataVM(type, preferredIndex);
 		case OptionsVM.OptionsDataType.InputOption:
-			genericHostGameOptionDataVM = new InputHostGameOptionDataVM(type, preferredIndex);
-			break;
+			return new InputHostGameOptionDataVM(type, preferredIndex);
 		case OptionsVM.OptionsDataType.MultipleSelectionOption:
-			genericHostGameOptionDataVM = new MultipleSelectionHostGameOptionDataVM(type, preferredIndex);
-			break;
-		}
-		if (genericHostGameOptionDataVM == null)
-		{
-			Debug.FailedAssert("Item was not added to host game options because it has an invalid type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\HostGame\\MPHostGameOptionsVM.cs", "CreateOption", 218);
+			return new MultipleSelectionHostGameOptionDataVM(type, preferredIndex);
+		default:
+			Debug.FailedAssert($"Host game option {type} has an option value type the host screen can't show.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\HostGame\\MPHostGameOptionsVM.cs", "CreateOption", 235);
 			return null;
 		}
-		return genericHostGameOptionDataVM;
 	}
 
-	private OptionsVM.OptionsDataType GetSpecificHostGameOptionTypeOf(MultiplayerOptions.OptionType type)
+	private static OptionsVM.OptionsDataType GetSpecificHostGameOptionTypeOf(MultiplayerOptions.OptionType type)
 	{
 		MultiplayerOptionsProperty optionProperty = type.GetOptionProperty();
 		switch (optionProperty.OptionValueType)

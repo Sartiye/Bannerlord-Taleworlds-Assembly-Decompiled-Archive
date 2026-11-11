@@ -290,10 +290,10 @@ public class WallSegment : SynchedMissionObject, IPointDefendable, ICastleKeyPos
 		bool result = base.OnCheckForProblems();
 		if (!base.Scene.IsMultiplayerScene() && SideTag == "left")
 		{
-			List<GameEntity> entities = new List<GameEntity>();
-			base.Scene.GetEntities(ref entities);
+			List<WeakGameEntity> entities = new List<WeakGameEntity>();
+			base.Scene.GetEntitiesAsWeak(ref entities);
 			int num = 0;
-			foreach (GameEntity item in entities)
+			foreach (WeakGameEntity item in entities)
 			{
 				if (base.GameEntity.GetUpgradeLevelOfEntity() == item.GetUpgradeLevelOfEntity() && item.GetFirstScriptOfType<SiegeLadderSpawner>() != null)
 				{

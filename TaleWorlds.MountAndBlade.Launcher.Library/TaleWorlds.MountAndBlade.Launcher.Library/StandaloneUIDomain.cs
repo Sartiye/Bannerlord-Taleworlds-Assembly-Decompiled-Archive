@@ -20,7 +20,7 @@ public class StandaloneUIDomain : FrameworkDomain
 
 	private GraphicsForm _graphicsForm;
 
-	private GraphicsContext _graphicsContext;
+	private DirectXGraphicsContext _graphicsContext;
 
 	private const int RenderExceptionFatalThreshold = 180;
 
@@ -166,11 +166,11 @@ public class StandaloneUIDomain : FrameworkDomain
 		GauntletGamepadNavigationManager.Instance?.OnFinalize();
 		_synchronizationContext = null;
 		_initialized = false;
-		_graphicsContext?.DestroyContext();
-		_gauntletUIContext = null;
 		_launcherUI.OnFinalize();
 		_launcherUI = null;
+		_gauntletUIContext = null;
 		_graphicsForm?.Destroy();
+		_graphicsContext?.DestroyContext();
 	}
 
 	private void OnStartGameRequest()

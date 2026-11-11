@@ -125,7 +125,7 @@ public class CircularAutoScrollablePanelWidget : Widget
 	protected override void OnMouseScroll()
 	{
 		base.OnMouseScroll();
-		if (!AutoScroll)
+		if (!AutoScroll && (!AutoScrollWhenSelected || !(base.CurrentState == "Selected")))
 		{
 			_isScrolling = false;
 			float num = ((ScrollPixelsPerSecond != 0f) ? (ScrollPixelsPerSecond * 0.2f) : 10f);
@@ -143,7 +143,7 @@ public class CircularAutoScrollablePanelWidget : Widget
 	protected override void OnHoverBegin()
 	{
 		base.OnHoverBegin();
-		if (!AutoScroll && !_isScrolling)
+		if (!AutoScroll && (!AutoScrollWhenSelected || !(base.CurrentState == "Selected")) && !_isScrolling)
 		{
 			_isScrolling = true;
 			_isIdle = false;
@@ -160,24 +160,38 @@ public class CircularAutoScrollablePanelWidget : Widget
 	protected override void OnHoverEnd()
 	{
 		base.OnHoverEnd();
-		if (!AutoScroll && _isScrolling)
+		if (!AutoScroll && (!AutoScrollWhenSelected || !(base.CurrentState == "Selected")) && _isScrolling)
 		{
-			_isScrolling = false;
-			_direction = -1;
-			if (_isIdle && _currentScrollValue < float.Epsilon)
-			{
-				_currentScrollValue = 1f;
-			}
-			if (ShouldResetImmediately)
-			{
-				_currentScrollValue = 0f;
-				InnerPanel.ScaledPositionYOffset = 0f;
-			}
+			StopScrolling();
 		}
 	}
 
 	public void SetHoverEnd()
 	{
 		OnHoverEnd();
+	}
+
+	public override void SetState(string stateName)
+	{
+		base.SetState(stateName);
+		if (_isScrolling && !AutoScroll && !base.IsHovered && (!AutoScrollWhenSelected || !(base.CurrentState == "Selected")))
+		{
+			StopScrolling();
+		}
+	}
+
+	protected void StopScrolling()
+	{
+		_isScrolling = false;
+		_direction = -1;
+		if (_isIdle && _currentScrollValue < float.Epsilon)
+		{
+			_currentScrollValue = 1f;
+		}
+		if (ShouldResetImmediately)
+		{
+			_currentScrollValue = 0f;
+			InnerPanel.ScaledPositionYOffset = 0f;
+		}
 	}
 }

@@ -129,10 +129,6 @@ public class NavalDLCMapWeatherModel : MapWeatherModel
 
 	public override WeatherEvent UpdateWeatherForPosition(CampaignVec2 position, CampaignTime ct)
 	{
-		if (!position.IsOnLand)
-		{
-			return WeatherEvent.Clear;
-		}
 		return base.BaseModel.UpdateWeatherForPosition(position, ct);
 	}
 

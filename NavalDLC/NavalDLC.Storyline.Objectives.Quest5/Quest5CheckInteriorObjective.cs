@@ -58,7 +58,11 @@ public class Quest5CheckInteriorObjective : MissionObjective
 	{
 		if (_targetDoor != null)
 		{
-			return Agent.Main.Position.Distance(_interiorSpawnPointEntity.GlobalPosition) <= 3f;
+			Agent main = Agent.Main;
+			if (main != null && main.IsActive())
+			{
+				return Agent.Main.Position.Distance(_interiorSpawnPointEntity.GlobalPosition) <= 3f;
+			}
 		}
 		return false;
 	}

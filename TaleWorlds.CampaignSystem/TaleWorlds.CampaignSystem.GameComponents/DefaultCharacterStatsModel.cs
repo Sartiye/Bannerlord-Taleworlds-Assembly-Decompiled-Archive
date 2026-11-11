@@ -34,15 +34,11 @@ public class DefaultCharacterStatsModel : CharacterStatsModel
 		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Athletics.WellBuilt, character, isPrimaryBonus: true, ref bonuses);
 		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.OneHanded.UnwaveringDefense, character, isPrimaryBonus: true, ref bonuses);
 		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Medicine.PreventiveMedicine, character, isPrimaryBonus: true, ref bonuses);
-		if (character.IsHero && character.HeroObject.PartyBelongedTo != null && character.HeroObject.PartyBelongedTo.LeaderHero != character.HeroObject && character.HeroObject.PartyBelongedTo.HasPerk(DefaultPerks.Medicine.FortitudeTonic))
+		if (character.IsHero && character.HeroObject.PartyBelongedTo != null && character.HeroObject.PartyBelongedTo.LeaderHero != character.HeroObject)
 		{
-			bonuses.Add(DefaultPerks.Medicine.FortitudeTonic.PrimaryBonus, DefaultPerks.Medicine.FortitudeTonic.Name);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Medicine.FortitudeTonic, character.HeroObject.PartyBelongedTo, isPrimaryBonus: true, ref bonuses);
 		}
-		if (character.GetPerkValue(DefaultPerks.Athletics.MightyBlow))
-		{
-			int num = character.GetSkillValue(DefaultSkills.Athletics) - Campaign.Current.Models.CharacterDevelopmentModel.MaxSkillRequiredForEpicPerkBonus;
-			bonuses.Add(num, DefaultPerks.Athletics.MightyBlow.Name);
-		}
+		PerkHelper.AddEpicPerkBonusForCharacter(DefaultPerks.Athletics.MightyBlow, character, DefaultSkills.Athletics, isPrimaryBonus: false, ref bonuses, Campaign.Current.Models.CharacterDevelopmentModel.MaxSkillRequiredForEpicPerkBonus);
 		return bonuses;
 	}
 }

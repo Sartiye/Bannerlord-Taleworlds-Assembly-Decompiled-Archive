@@ -57,7 +57,7 @@ public class BehaviorNavalRaidHoldChokePoint : BehaviorComponent
 		CalculateCurrentOrder();
 		base.Formation.SetMovementOrder(base.CurrentOrder);
 		base.Formation.SetFacingOrder(CurrentFacingOrder);
-		if (base.Formation.GetUnderAttackTypeOfUnits(5f) == Agent.UnderAttackType.UnderMeleeAttack)
+		if (base.Formation.HasUnitWithLastRecievedAttackType(Agent.LastRecievedAttackType.MeleeContact, 5f))
 		{
 			base.Formation.SetArrangementOrder(ArrangementOrder.ArrangementOrderLine);
 		}

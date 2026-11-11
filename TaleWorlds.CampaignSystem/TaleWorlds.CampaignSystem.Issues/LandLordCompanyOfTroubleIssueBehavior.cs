@@ -691,6 +691,7 @@ public class LandLordCompanyOfTroubleIssueBehavior : CampaignBehaviorBase
 			_companyOfTroubleParty.MemberRoster.AddToCounts(_troubleCharacterObject, _companyTroopCount);
 			TextObject customName = new TextObject("{=PV7RHgUl}Company of Trouble");
 			_companyOfTroubleParty.Party.SetCustomName(customName);
+			_companyOfTroubleParty.InitializePartyTrade(QuestHelper.CalculateInitialGoldForBanditQuestParty(_companyOfTroubleParty));
 			_companyOfTroubleParty.SetPartyUsedByQuest(isActivelyUsed: true);
 			_battleWillStart = true;
 		}

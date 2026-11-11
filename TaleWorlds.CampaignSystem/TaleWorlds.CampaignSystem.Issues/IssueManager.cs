@@ -326,11 +326,20 @@ public class IssueManager : CampaignEventReceiver
 
 	private void MakeAlternativeTroopsReturn(TroopRoster roster)
 	{
-		foreach (TroopRosterElement item in roster.GetTroopRoster())
+		for (int num = roster.Count - 1; num >= 0; num--)
 		{
-			if (item.Character.IsHero)
+			CharacterObject characterAtIndex = roster.GetCharacterAtIndex(num);
+			if (characterAtIndex.IsHero)
 			{
-				item.Character.HeroObject.ChangeState(Hero.CharacterStates.Active);
+				if (characterAtIndex.HeroObject.IsDead)
+				{
+					TroopRosterElement elementCopyAtIndex = roster.GetElementCopyAtIndex(num);
+					roster.AddToCounts(characterAtIndex, -elementCopyAtIndex.Number, insertAtFront: false, -elementCopyAtIndex.WoundedNumber);
+				}
+				else
+				{
+					characterAtIndex.HeroObject.ChangeState(Hero.CharacterStates.Active);
+				}
 			}
 		}
 		MobileParty.MainParty.MemberRoster.Add(roster);

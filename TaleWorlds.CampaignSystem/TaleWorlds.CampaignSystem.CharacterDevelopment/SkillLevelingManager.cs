@@ -139,19 +139,19 @@ public static class SkillLevelingManager
 		Instance.OnTrackDetected(track);
 	}
 
-	public static void OnTravelOnFoot(Hero hero, float speed)
+	public static void OnTravelOnFoot(Hero hero)
 	{
-		Instance.OnTravelOnFoot(hero, speed);
+		Instance.OnTravelOnFoot(hero);
 	}
 
-	public static void OnTravelOnHorse(Hero hero, float speed)
+	public static void OnTravelOnHorse(Hero hero)
 	{
-		Instance.OnTravelOnHorse(hero, speed);
+		Instance.OnTravelOnHorse(hero);
 	}
 
-	public static void OnTravelOnWater(MobileParty party, float speed)
+	public static void OnTravelOnWater(MobileParty party)
 	{
-		Instance.OnTravelOnWater(party, speed);
+		Instance.OnTravelOnWater(party);
 	}
 
 	public static void OnAIPartiesTravel(Hero hero, bool isCaravanParty, TerrainType currentTerrainType)
@@ -247,5 +247,10 @@ public static class SkillLevelingManager
 	public static void OnShipRepaired(Ship ship, float repairedHitPoints)
 	{
 		Instance.OnShipRepaired(ship, repairedHitPoints);
+	}
+
+	public static void OnHighMorale(MobileParty mobileParty)
+	{
+		Instance.OnHighMorale(mobileParty);
 	}
 }

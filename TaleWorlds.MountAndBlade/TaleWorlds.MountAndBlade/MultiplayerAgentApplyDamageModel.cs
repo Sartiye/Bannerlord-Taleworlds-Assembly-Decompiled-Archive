@@ -179,7 +179,7 @@ public class MultiplayerAgentApplyDamageModel : AgentApplyDamageModel
 
 	public override float GetHorseChargePenetration()
 	{
-		return 0.4f;
+		return 0.43f;
 	}
 
 	public override float CalculateStaggerThresholdDamage(Agent defenderAgent, in Blow blow)
@@ -214,7 +214,7 @@ public class MultiplayerAgentApplyDamageModel : AgentApplyDamageModel
 		return 1f;
 	}
 
-	public override float CalculatePassiveAttackDamage(BasicCharacterObject attackerCharacter, in AttackCollisionData collisionData, float baseDamage)
+	public override float CalculatePassiveAttackDamage(in AttackInformation attackInformation, in AttackCollisionData collisionData, float baseDamage)
 	{
 		return baseDamage;
 	}
@@ -263,7 +263,7 @@ public class MultiplayerAgentApplyDamageModel : AgentApplyDamageModel
 				result = 1.2f;
 				break;
 			case DamageTypes.Pierce:
-				result = ((!isHuman) ? 1.2f : (isMissile ? 2f : 1.25f));
+				result = ((!isHuman) ? 1.2f : (isMissile ? 2f : 1.15f));
 				break;
 			case DamageTypes.Blunt:
 				result = 1.2f;
@@ -280,7 +280,7 @@ public class MultiplayerAgentApplyDamageModel : AgentApplyDamageModel
 				result = 1.2f;
 				break;
 			case DamageTypes.Pierce:
-				result = ((!isHuman) ? 1.2f : (isMissile ? 2f : 1.25f));
+				result = ((!isHuman) ? 1.2f : (isMissile ? 2f : 1.15f));
 				break;
 			case DamageTypes.Blunt:
 				result = 1.2f;

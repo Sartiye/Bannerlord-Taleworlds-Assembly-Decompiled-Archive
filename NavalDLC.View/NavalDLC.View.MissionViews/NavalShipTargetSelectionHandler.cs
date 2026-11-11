@@ -14,13 +14,13 @@ public class NavalShipTargetSelectionHandler : MissionView
 {
 	public const float MaxDistanceForFocusCheck = 1000f;
 
-	public const float MinDistanceForFocusCheck = 10f;
+	public const float MinDistanceForFocusCheck = 8f;
 
 	public readonly float MaxDistanceToCenterForFocus = 70f * (Screen.RealScreenResolutionHeight / 1080f);
 
-	private readonly List<(MissionShip, float)> _distanceCache = new List<(MissionShip, float)>();
+	private readonly List<(MissionShip Ship, float DistanceToScreenCenter)> _distanceCache = new List<(MissionShip, float)>();
 
-	private readonly MBList<MissionShip> _focusedShipsCache = new MBList<MissionShip>();
+	private MissionShip _focusedShip;
 
 	private readonly MBList<MissionShip> _enemyShipsCache = new MBList<MissionShip>();
 
@@ -30,13 +30,13 @@ public class NavalShipTargetSelectionHandler : MissionView
 
 	private Camera ActiveCamera => base.MissionScreen.CustomCamera ?? base.MissionScreen.CombatCamera;
 
-	public event Action<MBReadOnlyList<MissionShip>> OnShipsFocused;
+	public event Action<MissionShip> OnShipsFocused;
 
 	public override void OnPreDisplayMissionTick(float dt)
 	{
 		base.OnPreDisplayMissionTick(dt);
 		_distanceCache.Clear();
-		_focusedShipsCache.Clear();
+		_focusedShip = null;
 		_enemyShipsCache.Clear();
 		NavalShipsLogic missionBehavior = base.Mission.GetMissionBehavior<NavalShipsLogic>();
 		if (missionBehavior == null)
@@ -52,58 +52,45 @@ public class NavalShipTargetSelectionHandler : MissionView
 			for (int i = 0; i < _enemyShipsCache.Count; i++)
 			{
 				MissionShip missionShip = _enemyShipsCache[i];
-				float shipDistanceToCenter = GetShipDistanceToCenter(missionShip, position);
-				_distanceCache.Add((missionShip, shipDistanceToCenter));
+				TryGetShipDistanceToCenter(missionShip, position, out var isShipFocusable, out var distanceToScreenCenter);
+				if (isShipFocusable)
+				{
+					_distanceCache.Add((missionShip, distanceToScreenCenter));
+				}
 			}
 		}
-		if (_distanceCache.Count == 0)
-		{
-			this.OnShipsFocused?.Invoke(null);
-			return;
-		}
-		MissionShip missionShip2 = null;
 		float num = MaxDistanceToCenterForFocus;
 		for (int j = 0; j < _distanceCache.Count; j++)
 		{
 			(MissionShip, float) tuple = _distanceCache[j];
-			if (tuple.Item2 == 0f)
-			{
-				_focusedShipsCache.Add(tuple.Item1);
-			}
-			else if (tuple.Item2 < num)
+			if (tuple.Item2 < num)
 			{
 				num = tuple.Item2;
-				(missionShip2, _) = tuple;
+				(_focusedShip, _) = tuple;
 			}
 		}
-		if (missionShip2 != null)
-		{
-			_focusedShipsCache.Add(missionShip2);
-		}
-		this.OnShipsFocused?.Invoke(_focusedShipsCache);
+		this.OnShipsFocused?.Invoke(_focusedShip);
 	}
 
-	private float GetShipDistanceToCenter(MissionShip ship, Vec3 cameraPosition)
+	private void TryGetShipDistanceToCenter(MissionShip ship, Vec3 cameraPosition, out bool isShipFocusable, out float distanceToScreenCenter)
 	{
 		Vec3 origin = ship.GlobalFrame.origin;
 		float num = origin.AsVec2.Distance(cameraPosition.AsVec2);
-		if (num >= 1000f)
-		{
-			return 2.1474836E+09f;
-		}
-		if (num <= 10f)
-		{
-			return 0f;
-		}
 		float screenX = 0f;
 		float screenY = 0f;
 		float w = 0f;
 		MBWindowManager.WorldToScreenInsideUsableArea(ActiveCamera, origin + Vec3.Up * 3f, ref screenX, ref screenY, ref w);
-		if (w <= 0f)
+		bool flag = w <= 0f;
+		if (num >= 1000f || num <= 8f || flag)
 		{
-			return 2.1474836E+09f;
+			distanceToScreenCenter = 2.1474836E+09f;
+			isShipFocusable = false;
 		}
-		return new Vec2(screenX, screenY).Distance(_centerOfScreen);
+		else
+		{
+			isShipFocusable = true;
+			distanceToScreenCenter = new Vec2(screenX, screenY).Distance(_centerOfScreen);
+		}
 	}
 
 	public void SetIsFormationTargetingDisabled(bool isDisabled)
@@ -115,7 +102,7 @@ public class NavalShipTargetSelectionHandler : MissionView
 			{
 				_distanceCache.Clear();
 				_enemyShipsCache.Clear();
-				_focusedShipsCache.Clear();
+				_focusedShip = null;
 				this.OnShipsFocused?.Invoke(null);
 			}
 		}
@@ -124,7 +111,7 @@ public class NavalShipTargetSelectionHandler : MissionView
 	public override void OnRemoveBehavior()
 	{
 		_distanceCache.Clear();
-		_focusedShipsCache.Clear();
+		_focusedShip = null;
 		this.OnShipsFocused = null;
 		base.OnRemoveBehavior();
 	}

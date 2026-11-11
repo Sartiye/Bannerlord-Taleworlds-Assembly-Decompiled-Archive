@@ -23,7 +23,7 @@ public class DefaultPartyMoraleModel : PartyMoraleModel
 
 	private readonly TextObject _partySizeMoraleText = GameTexts.FindText("str_party_size_morale");
 
-	public override float HighMoraleValue => 70f;
+	public override float HighMoraleValue => 60f;
 
 	public override int GetDailyStarvationMoralePenalty(PartyBase party)
 	{
@@ -110,7 +110,7 @@ public class DefaultPartyMoraleModel : PartyMoraleModel
 			num = 10f;
 			break;
 		}
-		if (num < 0f && party.LeaderHero != null && !party.IsCurrentlyAtSea && party.LeaderHero.GetPerkValue(DefaultPerks.Steward.WarriorsDiet))
+		if (num < 0f && party.LeaderHero != null && party.LeaderHero.GetPerkValue(DefaultPerks.Steward.WarriorsDiet))
 		{
 			num = 0f;
 		}
@@ -164,13 +164,14 @@ public class DefaultPartyMoraleModel : PartyMoraleModel
 		if (party.HasPerk(DefaultPerks.Crossbow.PeasantLeader))
 		{
 			float num = CalculateTroopTierRatio(party);
-			bonus.AddFactor(DefaultPerks.Crossbow.PeasantLeader.PrimaryBonus * num, DefaultPerks.Crossbow.PeasantLeader.Name);
+			float value = DefaultPerks.Crossbow.PeasantLeader.PrimaryBonus * num;
+			bonus.AddFactor(value, DefaultPerks.Crossbow.PeasantLeader.Name);
 		}
 		if (party.CurrentSettlement?.SiegeEvent != null && party.HasPerk(DefaultPerks.Charm.SelfPromoter, checkSecondaryRole: true))
 		{
 			bonus.Add(DefaultPerks.Charm.SelfPromoter.SecondaryBonus, DefaultPerks.Charm.SelfPromoter.Name);
 		}
-		if (party.IsCurrentlyAtSea || !party.HasPerk(DefaultPerks.Steward.Logistician))
+		if (!party.HasPerk(DefaultPerks.Steward.Logistician))
 		{
 			return;
 		}
@@ -214,34 +215,51 @@ public class DefaultPartyMoraleModel : PartyMoraleModel
 
 	public override ExplainedNumber GetEffectivePartyMorale(MobileParty mobileParty, bool includeDescription = false)
 	{
-		ExplainedNumber bonus = new ExplainedNumber(50f, includeDescription);
-		bonus.Add(mobileParty.RecentEventsMorale, _recentEventsText);
-		GetMoraleEffectsFromSkill(mobileParty, ref bonus);
+		ExplainedNumber result = new ExplainedNumber(50f, includeDescription);
+		ExplainedNumber result2 = new ExplainedNumber(mobileParty.RecentEventsMorale, includeDescription);
+		if (mobileParty.RecentEventsMorale > 0f && mobileParty.LeaderHero != null)
+		{
+			TraitEffectHelper.ApplyTraitEffect(mobileParty.LeaderHero, DefaultPersonalityTraitEffects.GenerosityMoraleGainEffect, ref result2);
+		}
+		else if (mobileParty.RecentEventsMorale < 0f)
+		{
+			Hero hero = mobileParty.Army?.LeaderParty?.LeaderHero ?? mobileParty.LeaderHero;
+			if (hero != null)
+			{
+				TraitEffectHelper.ApplyTraitEffect(hero, DefaultPersonalityTraitEffects.ValorLossMoraleResistEffect, ref result2);
+			}
+		}
+		if (mobileParty.LeaderHero != null)
+		{
+			TraitEffectHelper.ApplyTraitEffect(mobileParty.LeaderHero, DefaultPersonalityTraitEffects.GenerosityFlatMoraleEffect, ref result);
+		}
+		result.AddFromExplainedNumber(result2, _recentEventsText);
+		GetMoraleEffectsFromSkill(mobileParty, ref result);
 		if (mobileParty.IsMilitia || mobileParty.IsGarrison)
 		{
 			if (mobileParty.IsMilitia)
 			{
 				if (mobileParty.HomeSettlement.IsStarving)
 				{
-					bonus.Add(GetStarvationMoralePenalty(mobileParty), _starvationMoraleText);
+					result.Add(GetStarvationMoralePenalty(mobileParty), _starvationMoraleText);
 				}
 			}
 			else if (SettlementHelper.IsGarrisonStarving(mobileParty.CurrentSettlement))
 			{
-				bonus.Add(GetStarvationMoralePenalty(mobileParty), _starvationMoraleText);
+				result.Add(GetStarvationMoralePenalty(mobileParty), _starvationMoraleText);
 			}
 		}
 		else if (mobileParty.Party.IsStarving)
 		{
-			bonus.Add(GetStarvationMoralePenalty(mobileParty), _starvationMoraleText);
+			result.Add(GetStarvationMoralePenalty(mobileParty), _starvationMoraleText);
 		}
 		if (mobileParty.HasUnpaidWages > 0f)
 		{
-			bonus.Add(mobileParty.HasUnpaidWages * (float)GetNoWageMoralePenalty(mobileParty), _noWageMoraleText);
+			result.Add(mobileParty.HasUnpaidWages * (float)GetNoWageMoralePenalty(mobileParty), _noWageMoraleText);
 		}
-		GetMoraleEffectsFromPerks(mobileParty, ref bonus);
-		CalculateFoodVarietyMoraleBonus(mobileParty, ref bonus);
-		GetPartySizeMoraleEffect(mobileParty, ref bonus);
-		return bonus;
+		GetMoraleEffectsFromPerks(mobileParty, ref result);
+		CalculateFoodVarietyMoraleBonus(mobileParty, ref result);
+		GetPartySizeMoraleEffect(mobileParty, ref result);
+		return result;
 	}
 }

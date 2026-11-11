@@ -60,11 +60,11 @@ public interface ISkillLevelingManager
 
 	void OnTrackDetected(Track track);
 
-	void OnTravelOnFoot(Hero hero, float speed);
+	void OnTravelOnFoot(Hero hero);
 
-	void OnTravelOnHorse(Hero hero, float speed);
+	void OnTravelOnHorse(Hero hero);
 
-	void OnTravelOnWater(MobileParty party, float speed);
+	void OnTravelOnWater(MobileParty party);
 
 	void OnHeroHealedWhileWaiting(Hero hero, int healingAmount);
 
@@ -109,4 +109,6 @@ public interface ISkillLevelingManager
 	void OnHideoutMissionEnd(bool isSucceeded);
 
 	void OnHideoutClearedAsGhost();
+
+	void OnHighMorale(MobileParty mobileParty);
 }

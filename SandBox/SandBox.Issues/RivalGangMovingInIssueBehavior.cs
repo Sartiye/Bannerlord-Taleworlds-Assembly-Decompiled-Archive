@@ -874,10 +874,8 @@ public class RivalGangMovingInIssueBehavior : CampaignBehaviorBase
 			}
 		}
 
-		internal void HandlePlayerEncounterResult(bool hasPlayerWon)
+		internal void HandlePlayerTroops()
 		{
-			PlayerEncounter.Finish(forcePlayerOutFromSettlement: false);
-			EncounterManager.StartSettlementEncounter(MobileParty.MainParty, _questSettlement);
 			TroopRoster troopRoster = PartyBase.MainParty.MemberRoster.CloneRosterData();
 			PartyBase.MainParty.MemberRoster.RemoveIf((TroopRosterElement t) => !t.Character.IsPlayerCharacter);
 			foreach (TroopRosterElement playerTroop in _allPlayerTroops)
@@ -899,6 +897,12 @@ public class RivalGangMovingInIssueBehavior : CampaignBehaviorBase
 				}
 				PartyBase.MainParty.MemberRoster.AddToCounts(playerTroop.Character, num2, insertAtFront: false, num3, num4);
 			}
+		}
+
+		internal void HandlePlayerEncounterResult(bool hasPlayerWon)
+		{
+			PlayerEncounter.Finish(forcePlayerOutFromSettlement: false);
+			EncounterManager.StartSettlementEncounter(MobileParty.MainParty, _questSettlement);
 			MobileParty.MainParty.SetPartyEngineer(_partyEngineer);
 			MobileParty.MainParty.SetPartyScout(_partyScout);
 			MobileParty.MainParty.SetPartyQuartermaster(_partyQuartermaster);
@@ -1380,6 +1384,7 @@ public class RivalGangMovingInIssueBehavior : CampaignBehaviorBase
 		if (Instance != null && Instance._isReadyToBeFinalized)
 		{
 			bool hasPlayerWon = PlayerEncounter.Battle.WinningSide == PlayerEncounter.Battle.PlayerSide;
+			Instance.HandlePlayerTroops();
 			PlayerEncounter.Current.FinalizeBattle();
 			Instance.HandlePlayerEncounterResult(hasPlayerWon);
 		}

@@ -25,7 +25,7 @@ public class DuelZoneLandmark : ScriptComponentBehavior, IFocusable
 		return null;
 	}
 
-	public TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		return null;
 	}

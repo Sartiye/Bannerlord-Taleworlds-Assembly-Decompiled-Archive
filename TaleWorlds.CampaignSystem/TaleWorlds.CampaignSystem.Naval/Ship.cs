@@ -59,6 +59,36 @@ public sealed class Ship : IShipOrigin, IRandomOwner
 
 	public MBReadOnlyList<ShipUpgradePiece> UnlockedUpgradePieces => _unlockedUpgradePieces;
 
+	public bool CanHaveUnlockedPieces
+	{
+		get
+		{
+			return _unlockedUpgradePieces != null;
+		}
+		set
+		{
+			if (_unlockedUpgradePieces != null == value)
+			{
+				return;
+			}
+			if (value)
+			{
+				_unlockedUpgradePieces = new MBList<ShipUpgradePiece>(_shipPieces.Count);
+				{
+					foreach (KeyValuePair<string, ShipUpgradePiece> shipPiece in _shipPieces)
+					{
+						if (shipPiece.Value != null)
+						{
+							_unlockedUpgradePieces.Add(shipPiece.Value);
+						}
+					}
+					return;
+				}
+			}
+			_unlockedUpgradePieces = null;
+		}
+	}
+
 	public TextObject Name
 	{
 		get
@@ -117,7 +147,6 @@ public sealed class Ship : IShipOrigin, IRandomOwner
 				_owner = value;
 				owner?.RemoveShipInternal(this);
 				_owner?.AddShipInternal(this);
-				ResetUnlockedUpgradePieces();
 			}
 		}
 	}
@@ -421,7 +450,7 @@ public sealed class Ship : IShipOrigin, IRandomOwner
 	public void EquipUpgradePiece(string slotTag, ShipUpgradePiece newUpgradePiece)
 	{
 		GetPieceAtSlot(slotTag);
-		if (Owner == PartyBase.MainParty && newUpgradePiece != null)
+		if (CanHaveUnlockedPieces && newUpgradePiece != null && !_unlockedUpgradePieces.Contains(newUpgradePiece))
 		{
 			AddToUnlockedPieces(newUpgradePiece);
 		}
@@ -438,12 +467,9 @@ public sealed class Ship : IShipOrigin, IRandomOwner
 		UpdateVersionNo();
 	}
 
-	private void AddToUnlockedPieces(ShipUpgradePiece upgradePiece)
+	public void AddToUnlockedPieces(ShipUpgradePiece upgradePiece)
 	{
-		if (!_unlockedUpgradePieces.Contains(upgradePiece))
-		{
-			_unlockedUpgradePieces.Add(upgradePiece);
-		}
+		_unlockedUpgradePieces.Add(upgradePiece);
 	}
 
 	public bool HasSlot(string slotTag)
@@ -481,25 +507,6 @@ public sealed class Ship : IShipOrigin, IRandomOwner
 			}
 		}
 		return mBList;
-	}
-
-	private void ResetUnlockedUpgradePieces()
-	{
-		if (Owner == PartyBase.MainParty)
-		{
-			_unlockedUpgradePieces = new MBList<ShipUpgradePiece>(_shipPieces.Count);
-			{
-				foreach (KeyValuePair<string, ShipUpgradePiece> shipPiece in _shipPieces)
-				{
-					if (shipPiece.Value != null)
-					{
-						_unlockedUpgradePieces.Add(shipPiece.Value);
-					}
-				}
-				return;
-			}
-		}
-		_unlockedUpgradePieces = null;
 	}
 
 	public void UpdateVersionNo()
@@ -587,10 +594,5 @@ public sealed class Ship : IShipOrigin, IRandomOwner
 			list.Add(new ShipSlotAndPieceName(new TextObject("{=YLbBHN0Z}Figurehead").ToString(), Figurehead.GetName().ToString()));
 		}
 		return list;
-	}
-
-	public void OnPlayerCharacterChanged()
-	{
-		ResetUnlockedUpgradePieces();
 	}
 }

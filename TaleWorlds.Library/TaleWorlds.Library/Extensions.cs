@@ -6,6 +6,8 @@ namespace TaleWorlds.Library;
 
 public static class Extensions
 {
+	private static readonly HashSet<string> _reportedManifestReadFailures = new HashSet<string>();
+
 	public static List<Type> GetTypesSafe(this Assembly assembly, Func<Type, bool> func = null)
 	{
 		List<Type> list = new List<Type>();
@@ -43,6 +45,45 @@ public static class Extensions
 		return list;
 	}
 
+	public static AssemblyName[] GetReferencedAssembliesSafe(this Assembly assembly)
+	{
+		if (assembly == null || assembly.IsDynamic)
+		{
+			return Array.Empty<AssemblyName>();
+		}
+		try
+		{
+			return assembly.GetReferencedAssemblies();
+		}
+		catch (Exception exception)
+		{
+			ReportFailedManifestRead(assembly, exception);
+			return Array.Empty<AssemblyName>();
+		}
+	}
+
+	private static void ReportFailedManifestRead(Assembly assembly, Exception exception)
+	{
+		string text;
+		try
+		{
+			text = assembly.FullName;
+		}
+		catch
+		{
+			text = "<unknown assembly>";
+		}
+		lock (_reportedManifestReadFailures)
+		{
+			if (!_reportedManifestReadFailures.Add(text))
+			{
+				return;
+			}
+		}
+		string message = "Failed to read referenced assemblies of: " + text + ". Exception: " + exception.GetType().Name + ": " + exception.Message;
+		Debug.SilentAssert(condition: false, message, getDump: false, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "ReportFailedManifestRead", 105);
+	}
+
 	public static Assembly[] GetReferencingAssembliesSafe(this Assembly baseAssembly, Func<Assembly, bool> func = null)
 	{
 		Assembly[] assemblies;
@@ -52,19 +93,20 @@ public static class Extensions
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert(ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetReferencingAssembliesSafe", 72);
+			Debug.FailedAssert(ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetReferencingAssembliesSafe", 118);
 			return Array.Empty<Assembly>();
 		}
+		string text = baseAssembly.GetName().ToString();
 		List<Assembly> list = new List<Assembly>();
 		Assembly[] array = assemblies;
 		foreach (Assembly assembly in array)
 		{
-			AssemblyName[] referencedAssemblies = assembly.GetReferencedAssemblies();
-			foreach (AssemblyName assemblyName in referencedAssemblies)
+			AssemblyName[] referencedAssembliesSafe = assembly.GetReferencedAssembliesSafe();
+			foreach (AssemblyName assemblyName in referencedAssembliesSafe)
 			{
 				try
 				{
-					if (assemblyName.ToString() == baseAssembly.GetName().ToString() && (func == null || func(assembly)))
+					if (assemblyName.ToString() == text && (func == null || func(assembly)))
 					{
 						list.Add(assembly);
 						break;
@@ -72,7 +114,6 @@ public static class Extensions
 				}
 				catch
 				{
-					Debug.FailedAssert($"Error while resolving references of assembly: {assembly}", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetReferencingAssembliesSafe", 93);
 				}
 			}
 		}
@@ -87,7 +128,7 @@ public static class Extensions
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Failed to get custom attributes (" + attributeType.Name + ") for type: " + type.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 113);
+			Debug.FailedAssert("Failed to get custom attributes (" + attributeType.Name + ") for type: " + type.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 159);
 		}
 		return Array.Empty<object>();
 	}
@@ -100,7 +141,7 @@ public static class Extensions
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Failed to get custom attributes for type: " + type.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 128);
+			Debug.FailedAssert("Failed to get custom attributes for type: " + type.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 174);
 		}
 		return Array.Empty<object>();
 	}
@@ -113,7 +154,7 @@ public static class Extensions
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Failed to get custom attributes (" + attributeType.Name + ") for type: " + type.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 143);
+			Debug.FailedAssert("Failed to get custom attributes (" + attributeType.Name + ") for type: " + type.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 189);
 		}
 		return new List<Attribute>();
 	}
@@ -126,7 +167,7 @@ public static class Extensions
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Failed to get custom attributes (" + attributeType.Name + ") for property: " + property.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 158);
+			Debug.FailedAssert("Failed to get custom attributes (" + attributeType.Name + ") for property: " + property.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 204);
 		}
 		return Array.Empty<object>();
 	}
@@ -139,7 +180,7 @@ public static class Extensions
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Failed to get custom attributes for property: " + property.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 173);
+			Debug.FailedAssert("Failed to get custom attributes for property: " + property.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 219);
 		}
 		return Array.Empty<object>();
 	}
@@ -152,7 +193,7 @@ public static class Extensions
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Failed to get custom attributes for property: " + property.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 188);
+			Debug.FailedAssert("Failed to get custom attributes for property: " + property.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 234);
 		}
 		return new List<Attribute>();
 	}
@@ -165,7 +206,7 @@ public static class Extensions
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Failed to get custom attributes (" + attributeType.Name + ") for field: " + field.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 203);
+			Debug.FailedAssert("Failed to get custom attributes (" + attributeType.Name + ") for field: " + field.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 249);
 		}
 		return Array.Empty<object>();
 	}
@@ -178,7 +219,7 @@ public static class Extensions
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Failed to get custom attributes for field: " + field.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 218);
+			Debug.FailedAssert("Failed to get custom attributes for field: " + field.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 264);
 		}
 		return Array.Empty<object>();
 	}
@@ -191,7 +232,7 @@ public static class Extensions
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Failed to get custom attributes for field: " + field.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 233);
+			Debug.FailedAssert("Failed to get custom attributes for field: " + field.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 279);
 		}
 		return new List<Attribute>();
 	}
@@ -204,7 +245,7 @@ public static class Extensions
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Failed to get custom attributes (" + attributeType.Name + ") for method: " + method.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 248);
+			Debug.FailedAssert("Failed to get custom attributes (" + attributeType.Name + ") for method: " + method.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 294);
 		}
 		return Array.Empty<object>();
 	}
@@ -217,7 +258,7 @@ public static class Extensions
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Failed to get custom attributes for method: " + method.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 263);
+			Debug.FailedAssert("Failed to get custom attributes for method: " + method.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 309);
 		}
 		return Array.Empty<object>();
 	}
@@ -230,7 +271,7 @@ public static class Extensions
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Failed to get custom attributes for method: " + method.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 278);
+			Debug.FailedAssert("Failed to get custom attributes for method: " + method.Name + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 324);
 		}
 		return new List<Attribute>();
 	}
@@ -243,7 +284,7 @@ public static class Extensions
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Failed to get custom attributes (" + attributeType.Name + ") for assembly: " + assembly.FullName + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 293);
+			Debug.FailedAssert("Failed to get custom attributes (" + attributeType.Name + ") for assembly: " + assembly.FullName + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 339);
 		}
 		return Array.Empty<object>();
 	}
@@ -256,7 +297,7 @@ public static class Extensions
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Failed to get custom attributes for assembly: " + assembly.FullName + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 308);
+			Debug.FailedAssert("Failed to get custom attributes for assembly: " + assembly.FullName + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 354);
 		}
 		return Array.Empty<object>();
 	}
@@ -269,7 +310,7 @@ public static class Extensions
 		}
 		catch (Exception ex)
 		{
-			Debug.FailedAssert("Failed to get custom attributes for assembly: " + assembly.FullName + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 323);
+			Debug.FailedAssert("Failed to get custom attributes for assembly: " + assembly.FullName + ". Exception: " + ex.Message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.Library\\Extensions.cs", "GetCustomAttributesSafe", 369);
 		}
 		return new List<Attribute>();
 	}

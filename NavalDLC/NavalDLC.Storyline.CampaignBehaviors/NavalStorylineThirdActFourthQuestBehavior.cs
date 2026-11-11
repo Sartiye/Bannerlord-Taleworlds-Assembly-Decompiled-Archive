@@ -65,7 +65,10 @@ public class NavalStorylineThirdActFourthQuestBehavior : CampaignBehaviorBase
 			.PlayerOption("{=el44RZG4}Let us set out, then.", (IAgent agent) => agent.Character == NavalStorylineData.Bjolgur.CharacterObject)
 			.Consequence(delegate
 			{
-				Campaign.Current.ConversationManager.ConversationEndOneShot += OnPlayerAcceptsQuestThroughMission;
+				Campaign.Current.ConversationManager.ConversationEndOneShot += delegate
+				{
+					NavalStorylineData.OnPlayerAcceptsQuest(QuestAccepted, NavalStorylineData.OnPlayerPostponedQuestStart);
+				};
 			})
 			.CloseDialog()
 			.PlayerOption("{=a0j86F9C}I need a bit more time.", (IAgent agent) => agent.Character == NavalStorylineData.Bjolgur.CharacterObject)
@@ -88,7 +91,10 @@ public class NavalStorylineThirdActFourthQuestBehavior : CampaignBehaviorBase
 				}
 				else
 				{
-					Campaign.Current.ConversationManager.ConversationEndOneShot += OnPlayerAcceptsQuestThroughMission;
+					Campaign.Current.ConversationManager.ConversationEndOneShot += delegate
+					{
+						NavalStorylineData.OnPlayerAcceptsQuest(QuestAccepted, NavalStorylineData.OnPlayerPostponedQuestStart);
+					};
 				}
 			})
 			.CloseDialog()
@@ -186,7 +192,7 @@ public class NavalStorylineThirdActFourthQuestBehavior : CampaignBehaviorBase
 		return false;
 	}
 
-	private void OnPlayerAcceptsQuestThroughMission()
+	private void QuestAccepted()
 	{
 		_isQuestAcceptedThroughMission = true;
 		OpenQuestMenu();

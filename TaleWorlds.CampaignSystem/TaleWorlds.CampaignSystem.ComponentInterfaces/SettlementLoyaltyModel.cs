@@ -21,10 +21,6 @@ public abstract class SettlementLoyaltyModel : MBGameModel<SettlementLoyaltyMode
 
 	public abstract float LowSecurityLoyaltyEffect { get; }
 
-	public abstract float GovernorSameCultureLoyaltyEffect { get; }
-
-	public abstract float GovernorDifferentCultureLoyaltyEffect { get; }
-
 	public abstract float SettlementOwnerDifferentCultureLoyaltyEffect { get; }
 
 	public abstract int ThresholdForTaxBoost { get; }

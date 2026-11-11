@@ -36,12 +36,16 @@ public class PreloadScreen : ScreenBase, IGameStateListener
 		base.OnFrameTick(dt);
 		if (_delayCounter == _delayInFrames)
 		{
-			SandBoxSaveHelper.TryLoadSave(MBSaveLoad.GetSaveFileWithName(_state.SaveToLoad) ?? throw new MBException("Preload state called without a valid save name. Game will be stuck at this point."), StartGame);
+			SandBoxSaveHelper.TryLoadSave(MBSaveLoad.GetSaveFileWithName(_state.SaveToLoad) ?? throw new MBException("Preload state called without a valid save name. Game will be stuck at this point."), StartGame, OnLoadCancelled);
 		}
-		else
-		{
-			_delayCounter++;
-		}
+		_delayCounter++;
+	}
+
+	private void OnLoadCancelled()
+	{
+		LoadingWindow.DisableGlobalLoadingWindow();
+		_ = GameStateManager.Current.ActiveState;
+		GameStateManager.Current.PopState();
 	}
 
 	private void StartGame(LoadResult loadResult)

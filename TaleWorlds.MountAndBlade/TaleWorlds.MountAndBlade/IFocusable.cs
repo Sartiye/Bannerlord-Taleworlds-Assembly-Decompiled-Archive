@@ -15,5 +15,5 @@ public interface IFocusable
 
 	TextObject GetInfoTextForBeingNotInteractable(Agent userAgent);
 
-	TextObject GetDescriptionText(WeakGameEntity gameEntity);
+	TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent);
 }

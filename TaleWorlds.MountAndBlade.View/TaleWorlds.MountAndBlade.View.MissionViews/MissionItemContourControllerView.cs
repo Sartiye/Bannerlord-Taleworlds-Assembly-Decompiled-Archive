@@ -9,13 +9,67 @@ namespace TaleWorlds.MountAndBlade.View.MissionViews;
 
 public class MissionItemContourControllerView : MissionView
 {
+	private class ContourItemContainer
+	{
+		private readonly List<WeakGameEntity> _additionalContourEntities = new List<WeakGameEntity>();
+
+		private readonly List<GameEntity> _regularContourEntities = new List<GameEntity>();
+
+		private readonly List<GameEntity> _allEligibleContourItemsCache = new List<GameEntity>();
+
+		public void AddRegularContourEntity(GameEntity entity)
+		{
+			_regularContourEntities.Add(entity);
+		}
+
+		public void RemoveRegularContourEntity(GameEntity entity)
+		{
+			_regularContourEntities.Remove(entity);
+		}
+
+		public void ClearRegularContourEntities()
+		{
+			_regularContourEntities.Clear();
+		}
+
+		public void AddAdditionalContourEntity(WeakGameEntity entity)
+		{
+			_additionalContourEntities.Add(entity);
+		}
+
+		public void RemoveAdditionalContourEntity(WeakGameEntity entity)
+		{
+			_additionalContourEntities.Remove(entity);
+		}
+
+		public void ClearAdditionalontourEntities()
+		{
+			_additionalContourEntities.Clear();
+		}
+
+		public List<GameEntity> GetAllEligibleContourItems()
+		{
+			_allEligibleContourItemsCache.Clear();
+			for (int i = 0; i < _regularContourEntities.Count; i++)
+			{
+				_allEligibleContourItemsCache.Add(_regularContourEntities[i]);
+			}
+			for (int j = 0; j < _additionalContourEntities.Count; j++)
+			{
+				GameEntity item = GameEntity.CreateFromWeakEntity(_additionalContourEntities[j]);
+				_allEligibleContourItemsCache.Add(item);
+			}
+			return _allEligibleContourItemsCache;
+		}
+	}
+
 	private const float SceneItemQueryFreq = 1f;
 
 	private readonly WeakGameEntity[] _tempPickableEntities = new WeakGameEntity[128];
 
 	private readonly UIntPtr[] _pickableItemsId = new UIntPtr[128];
 
-	private readonly List<GameEntity> _contourItems = new List<GameEntity>();
+	private readonly ContourItemContainer _contourItemContainer = new ContourItemContainer();
 
 	private GameEntity _focusedGameEntity;
 
@@ -49,6 +103,14 @@ public class MissionItemContourControllerView : MissionView
 		}
 	}
 
+	public override void OnMissionScreenFinalize()
+	{
+		base.OnMissionScreenFinalize();
+		RemoveContourFromAllItems();
+		_contourItemContainer.ClearRegularContourEntities();
+		_contourItemContainer.ClearAdditionalontourEntities();
+	}
+
 	public override void OnMissionScreenTick(float dt)
 	{
 		base.OnMissionScreenTick(dt);
@@ -66,7 +128,7 @@ public class MissionItemContourControllerView : MissionView
 		else
 		{
 			RemoveContourFromAllItems();
-			_contourItems.Clear();
+			_contourItemContainer.ClearRegularContourEntities();
 		}
 		if (_isContourAppliedToAllItems)
 		{
@@ -115,15 +177,30 @@ public class MissionItemContourControllerView : MissionView
 		base.OnFocusLost(agent, focusableObject);
 		if (IsAllowedByOption)
 		{
-			RemoveContourFromFocusedItem();
+			if (_focusedGameEntity != null && _isContourAppliedToFocusedItem)
+			{
+				RemoveContourFromItem(_focusedGameEntity);
+				_isContourAppliedToFocusedItem = false;
+			}
 			_currentFocusedObject = null;
 			_focusedGameEntity = null;
 		}
 	}
 
+	public void AddAdditionalContourEntity(WeakGameEntity entity)
+	{
+		_contourItemContainer.AddAdditionalContourEntity(entity);
+	}
+
+	public void RemoveAdditionalContourEntity(WeakGameEntity entity)
+	{
+		RemoveContourFromItem(entity);
+		_contourItemContainer.RemoveAdditionalContourEntity(entity);
+	}
+
 	private void PopulateContourListWithNearbyItems()
 	{
-		_contourItems.Clear();
+		_contourItemContainer.ClearRegularContourEntities();
 		float num = (GameNetwork.IsSessionActive ? 1f : 3f);
 		Agent main = Agent.Main;
 		float num2 = main.GetMaximumForwardUnlimitedSpeed() * num;
@@ -155,12 +232,12 @@ public class MissionItemContourControllerView : MissionView
 			{
 				if (MissionGameModels.Current.BattleBannerBearersModel.IsInteractableFormationBanner(firstScriptOfType, main))
 				{
-					_contourItems.Add(GameEntity.CreateFromWeakEntity(weakGameEntity));
+					_contourItemContainer.AddRegularContourEntity(GameEntity.CreateFromWeakEntity(weakGameEntity));
 				}
 			}
 			else
 			{
-				_contourItems.Add(GameEntity.CreateFromWeakEntity(weakGameEntity));
+				_contourItemContainer.AddRegularContourEntity(GameEntity.CreateFromWeakEntity(weakGameEntity));
 			}
 		}
 		int num5 = base.Mission.Scene.SelectEntitiesInBoxWithScriptComponent<SpawnedItemEntity>(ref boundingBoxMin, ref boundingBoxMax, _tempPickableEntities, _pickableItemsId, isFixedTick: true);
@@ -184,12 +261,12 @@ public class MissionItemContourControllerView : MissionView
 			{
 				if (MissionGameModels.Current.BattleBannerBearersModel.IsInteractableFormationBanner(firstScriptOfType2, main))
 				{
-					_contourItems.Add(GameEntity.CreateFromWeakEntity(weakGameEntity2));
+					_contourItemContainer.AddRegularContourEntity(GameEntity.CreateFromWeakEntity(weakGameEntity2));
 				}
 			}
 			else
 			{
-				_contourItems.Add(GameEntity.CreateFromWeakEntity(weakGameEntity2));
+				_contourItemContainer.AddRegularContourEntity(GameEntity.CreateFromWeakEntity(weakGameEntity2));
 			}
 		}
 		int num6 = base.Mission.Scene.SelectEntitiesInBoxWithScriptComponent<UsableMachine>(ref boundingBoxMin, ref boundingBoxMax, _tempPickableEntities, _pickableItemsId, isFixedTick: false);
@@ -202,7 +279,7 @@ public class MissionItemContourControllerView : MissionView
 				WeakGameEntity validStandingPointForAgentWithoutDistanceCheck = firstScriptOfType3.GetValidStandingPointForAgentWithoutDistanceCheck(main);
 				if (validStandingPointForAgentWithoutDistanceCheck.IsValid && !(validStandingPointForAgentWithoutDistanceCheck.GetFirstScriptOfType<UsableMissionObject>() is SpawnedItemEntity) && validStandingPointForAgentWithoutDistanceCheck.GetScriptComponents().FirstOrDefault((ScriptComponentBehavior sc) => sc is IFocusable) is IFocusable focusable && focusable is UsableMissionObject)
 				{
-					_contourItems.Add(GameEntity.CreateFromWeakEntity(weakEntity));
+					_contourItemContainer.AddRegularContourEntity(GameEntity.CreateFromWeakEntity(weakEntity));
 				}
 			}
 		}
@@ -214,11 +291,11 @@ public class MissionItemContourControllerView : MissionView
 		{
 			return;
 		}
-		foreach (GameEntity contourItem in _contourItems)
+		foreach (GameEntity allEligibleContourItem in _contourItemContainer.GetAllEligibleContourItems())
 		{
-			uint nonFocusedColor = GetNonFocusedColor(contourItem);
-			uint value = ((contourItem == _focusedGameEntity) ? _focusedContourColor : nonFocusedColor);
-			contourItem.SetContourColor(value);
+			uint nonFocusedColor = GetNonFocusedColor(allEligibleContourItem);
+			uint value = ((allEligibleContourItem == _focusedGameEntity) ? _focusedContourColor : nonFocusedColor);
+			allEligibleContourItem.SetContourColor(value);
 		}
 		_isContourAppliedToAllItems = true;
 	}
@@ -249,11 +326,11 @@ public class MissionItemContourControllerView : MissionView
 		{
 			return;
 		}
-		foreach (GameEntity contourItem in _contourItems)
+		foreach (GameEntity allEligibleContourItem in _contourItemContainer.GetAllEligibleContourItems())
 		{
-			if (_focusedGameEntity == null || contourItem != _focusedGameEntity)
+			if (_focusedGameEntity == null || allEligibleContourItem != _focusedGameEntity)
 			{
-				contourItem.SetContourColor(null);
+				allEligibleContourItem.SetContourColor(null);
 			}
 		}
 		_isContourAppliedToAllItems = false;
@@ -268,19 +345,27 @@ public class MissionItemContourControllerView : MissionView
 		}
 	}
 
-	private void RemoveContourFromFocusedItem()
+	private void RemoveContourFromItem(WeakGameEntity entity)
 	{
-		if (_focusedGameEntity != null && _isContourAppliedToFocusedItem)
+		if (entity.IsValid)
 		{
-			if (_contourItems.Contains(_focusedGameEntity))
+			GameEntity entity2 = GameEntity.CreateFromWeakEntity(entity);
+			RemoveContourFromItem(entity2);
+		}
+	}
+
+	private void RemoveContourFromItem(GameEntity entity)
+	{
+		if (!(entity == null))
+		{
+			if (_contourItemContainer.GetAllEligibleContourItems().Contains(entity))
 			{
-				_focusedGameEntity.SetContourColor(_nonFocusedDefaultContourColor);
+				entity.SetContourColor(_nonFocusedDefaultContourColor);
 			}
 			else
 			{
-				_focusedGameEntity.SetContourColor(null);
+				entity.SetContourColor(null);
 			}
-			_isContourAppliedToFocusedItem = false;
 		}
 	}
 

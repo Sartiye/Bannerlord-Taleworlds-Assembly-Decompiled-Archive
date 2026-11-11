@@ -179,6 +179,7 @@ public class MissionAudienceHandler : MissionView
 				AgentBuildData agentBuildData2 = agentBuildData.InitialDirection(in direction).TroopOrigin(new SimpleAgentOrigin(randomAudienceCharacterToSpawn)).Team(Team.Invalid)
 					.ClothingColor1(Settlement.CurrentSettlement.MapFaction.Color)
 					.ClothingColor2(Settlement.CurrentSettlement.MapFaction.Color2)
+					.NoHorses(noHorses: true)
 					.CanSpawnOutsideOfMissionBoundary(canSpawn: true);
 				Agent agent = Mission.Current.SpawnAgent(agentBuildData2);
 				AnimationSystemData animationSystemData = MonsterExtensions.FillAnimationSystemData(actionSet: MBActionSet.GetActionSetWithIndex(0), monster: agentBuildData2.AgentMonster, stepSize: randomAudienceCharacterToSpawn.GetStepSize(), hasClippingPlane: false);

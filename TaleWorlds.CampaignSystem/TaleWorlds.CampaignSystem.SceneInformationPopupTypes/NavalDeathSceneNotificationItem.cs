@@ -42,7 +42,7 @@ public class NavalDeathSceneNotificationItem : SceneNotificationData
 			{
 				return GameTexts.FindText("str_main_hero_battle_death_in_labor");
 			}
-			if (KillDetail == KillCharacterAction.KillCharacterActionDetail.Executed || KillDetail == KillCharacterAction.KillCharacterActionDetail.ExecutionAfterMapEvent)
+			if (KillDetail == KillCharacterAction.KillCharacterActionDetail.Executed)
 			{
 				return GameTexts.FindText("str_main_hero_battle_executed");
 			}

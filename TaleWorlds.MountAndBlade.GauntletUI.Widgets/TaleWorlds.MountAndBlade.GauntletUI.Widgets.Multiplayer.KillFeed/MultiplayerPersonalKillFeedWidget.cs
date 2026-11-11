@@ -1,12 +1,13 @@
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
+using TaleWorlds.Library;
 using TaleWorlds.TwoDimension;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets.Multiplayer.KillFeed;
 
 public class MultiplayerPersonalKillFeedWidget : Widget
 {
-	private int _speedUpWidgetLimit => 2;
+	private float _normalWidgetHeight = -1f;
 
 	public MultiplayerPersonalKillFeedWidget(UIContext context)
 		: base(context)
@@ -16,67 +17,36 @@ public class MultiplayerPersonalKillFeedWidget : Widget
 	protected override void OnUpdate(float dt)
 	{
 		base.OnUpdate(dt);
+		if (_normalWidgetHeight <= 0f && base.ChildCount > 1)
+		{
+			_normalWidgetHeight = GetChild(0).SuggestedHeight;
+		}
 		for (int i = 0; i < base.ChildCount; i++)
 		{
 			Widget child = GetChild(i);
-			child.PositionYOffset = Mathf.Lerp(child.PositionYOffset, GetVerticalPositionOfChildByIndex(i), 0.35f);
+			child.PositionYOffset = Mathf.Lerp(child.PositionYOffset, GetVerticalPositionOfChildByIndex(i), 0.2f);
 		}
 	}
 
 	protected override void OnChildAdded(Widget child)
 	{
 		base.OnChildAdded(child);
+		child.PositionYOffset = GetVerticalPositionOfChildByIndex(child.GetSiblingIndex());
 		UpdateSpeedModifiers();
-		UpdateMaxTargetAlphas();
-	}
-
-	private void UpdateMaxTargetAlphas()
-	{
-		for (int num = base.ChildCount - 1; num >= 0; num--)
-		{
-			MultiplayerPersonalKillFeedItemWidget multiplayerPersonalKillFeedItemWidget = GetChild(num) as MultiplayerPersonalKillFeedItemWidget;
-			if (num <= base.ChildCount - 1 && num >= base.ChildCount - 4)
-			{
-				multiplayerPersonalKillFeedItemWidget.SetMaxAlphaValue(1f);
-			}
-			else if (num == base.ChildCount - 5)
-			{
-				multiplayerPersonalKillFeedItemWidget.SetMaxAlphaValue(0.7f);
-			}
-			else if (num == base.ChildCount - 6)
-			{
-				multiplayerPersonalKillFeedItemWidget.SetMaxAlphaValue(0.4f);
-			}
-			else if (num == base.ChildCount - 7)
-			{
-				multiplayerPersonalKillFeedItemWidget.SetMaxAlphaValue(0.15f);
-			}
-			else
-			{
-				multiplayerPersonalKillFeedItemWidget.SetMaxAlphaValue(0f);
-			}
-		}
 	}
 
 	private float GetVerticalPositionOfChildByIndex(int indexOfChild)
 	{
-		float num = 0f;
-		for (int num2 = base.ChildCount - 1; num2 > indexOfChild; num2--)
-		{
-			num += GetChild(num2).Size.Y * base._inverseScaleToUse;
-		}
-		return num;
+		return -1f * _normalWidgetHeight * (float)(base.ChildCount - indexOfChild - 1);
 	}
 
 	private void UpdateSpeedModifiers()
 	{
-		if (base.ChildCount > _speedUpWidgetLimit)
+		for (int i = 0; i < base.ChildCount; i++)
 		{
-			float speedModifier = (float)(base.ChildCount - _speedUpWidgetLimit) / 2f + 1f;
-			for (int i = 0; i < base.ChildCount - _speedUpWidgetLimit; i++)
-			{
-				(GetChild(i) as MultiplayerPersonalKillFeedItemWidget)?.SetSpeedModifier(speedModifier);
-			}
+			MultiplayerPersonalKillFeedItemWidget obj = GetChild(i) as MultiplayerPersonalKillFeedItemWidget;
+			float speedModifier = MathF.Pow(base.ChildCount - i, 0.33f);
+			obj.SetSpeedModifier(speedModifier);
 		}
 	}
 }

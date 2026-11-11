@@ -73,14 +73,15 @@ public class CampaignBattleRecoveryBehavior : CampaignBehaviorBase
 					{
 						num *= 0.5f;
 					}
-					GiveTroopXp(item, elementNumber, party, MathF.Round(num));
+					int xp = MathF.Round(num);
+					GiveTroopXp(item, elementNumber, party, xp);
 				}
 			}
 			foreach (TroopRosterElement item2 in party2.DiedInBattle.GetTroopRoster())
 			{
 				int index2 = party2.DiedInBattle.FindIndexOfTroop(item2.Character);
 				int elementNumber2 = party2.DiedInBattle.GetElementNumber(index2);
-				if (!mobileParty.IsCurrentlyAtSea && mobileParty.HasPerk(DefaultPerks.Medicine.Veterinarian) && item2.Character.IsMounted)
+				if (mobileParty.HasPerk(DefaultPerks.Medicine.Veterinarian) && item2.Character.IsMounted)
 				{
 					RecoverMountWithChance(item2, elementNumber2, party);
 				}

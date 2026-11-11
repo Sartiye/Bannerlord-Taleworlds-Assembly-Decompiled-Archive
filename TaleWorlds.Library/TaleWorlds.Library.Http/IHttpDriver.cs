@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TaleWorlds.Library.Http;
@@ -10,7 +11,9 @@ public interface IHttpDriver
 
 	Task<byte[]> HttpDownloadData(string url);
 
-	IHttpRequestTask CreateHttpPostRequestTask(string address, string postData, bool withUserToken);
+	IHttpRequestTask CreateHttpPostRequestTask(string address, string postData, bool withUserToken, CancellationToken cancellationToken);
 
 	IHttpRequestTask CreateHttpGetRequestTask(string address, bool withUserToken);
+
+	Task<HttpSendResponse> HttpSendAsync(HttpSendRequest request);
 }

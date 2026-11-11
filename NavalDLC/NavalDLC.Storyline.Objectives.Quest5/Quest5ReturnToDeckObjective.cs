@@ -58,7 +58,11 @@ public class Quest5ReturnToDeckObjective : MissionObjective
 	{
 		if (_targetDoor != null)
 		{
-			return Agent.Main.Position.Distance(_deckSpawnPointEntity.GlobalPosition) <= 3f;
+			Agent main = Agent.Main;
+			if (main != null && main.IsActive())
+			{
+				return Agent.Main.Position.Distance(_deckSpawnPointEntity.GlobalPosition) <= 3f;
+			}
 		}
 		return false;
 	}

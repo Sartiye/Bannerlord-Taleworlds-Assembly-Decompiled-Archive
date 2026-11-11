@@ -63,10 +63,13 @@ public class StoryModeCharacterCreationCampaignBehavior : CampaignBehaviorBase, 
 	{
 	}
 
-	private void OnCharacterCreationIsOver()
+	private void OnCharacterCreationIsOver(int index)
 	{
-		UpdateHomeSettlementsOfFamily();
-		FinalizeFamilyStory();
+		if (index == 1)
+		{
+			UpdateHomeSettlementsOfFamily();
+			FinalizeFamilyStory();
+		}
 	}
 
 	private void UpdateHomeSettlementsOfFamily()

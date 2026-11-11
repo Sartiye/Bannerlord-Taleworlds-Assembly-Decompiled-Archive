@@ -31,4 +31,9 @@ public class TownCenterMissionController : MissionLogic
 			SandBoxHelpers.MissionHelper.SpawnChicken();
 		}
 	}
+
+	public override void OnAfterMissionLoadingFinished()
+	{
+		base.Mission.OnInitialSpawnCompleted();
+	}
 }

@@ -185,7 +185,7 @@ public class CoverAnimalAgentComponent : AgentComponent, IFocusable
 		return null;
 	}
 
-	public TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		TextObject textObject = GameTexts.FindText("str_key_action");
 		textObject.SetTextVariable("KEY", HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId("CombatHotKeyCategory", 13)));

@@ -34,11 +34,14 @@ public class CustomBattleCombatant : IBattleCombatant
 
 	public int NumberOfHealthyMembers => _characters.Count;
 
-	public CustomBattleCombatant(TextObject name, BasicCultureObject culture, Banner banner)
+	public BattleEnvironment CurrentBattleEnvironment { get; }
+
+	public CustomBattleCombatant(TextObject name, BasicCultureObject culture, Banner banner, BattleEnvironment battleEnvironment = BattleEnvironment.Land)
 	{
 		Name = name;
 		BasicCulture = culture;
 		Banner = banner;
+		CurrentBattleEnvironment = battleEnvironment;
 		_characters = new List<BasicCharacterObject>();
 		_general = null;
 	}

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Security.Cryptography;
 using TaleWorlds.DotNet;
 using TaleWorlds.Library;
 
@@ -473,5 +474,24 @@ public static class ManagedExtensions
 		{
 			Utilities.AddCommandLineFunction(item);
 		}
+	}
+
+	[EngineCallback(null, false)]
+	internal static float GetSecureRandomFloat(float minValue, float maxValue)
+	{
+		using RandomNumberGenerator randomNumberGenerator = RandomNumberGenerator.Create();
+		byte[] array = new byte[4];
+		randomNumberGenerator.GetBytes(array);
+		float num = (float)BitConverter.ToUInt32(array, 0) / 4.2949673E+09f;
+		return minValue + num * (maxValue - minValue);
+	}
+
+	[EngineCallback(null, false)]
+	internal static int GetSecureRandomInt(int maxValue)
+	{
+		using RandomNumberGenerator randomNumberGenerator = RandomNumberGenerator.Create();
+		byte[] array = new byte[4];
+		randomNumberGenerator.GetBytes(array);
+		return (int)((BitConverter.ToUInt32(array, 0) & 0x7FFFFFFF) % maxValue);
 	}
 }

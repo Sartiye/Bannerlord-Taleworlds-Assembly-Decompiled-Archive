@@ -14,7 +14,7 @@ public static class DestroyPartyAction
 			if (!destroyedParty.IsActive)
 			{
 				Debug.Print("Trying to destroy an inactive party with id: " + destroyedParty.StringId);
-				Debug.FailedAssert("destroyedParty.IsActive", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\DestroyPartyAction.cs", "ApplyInternal", 19);
+				Debug.FailedAssert("destroyedParty.IsActive", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Actions\\DestroyPartyAction.cs", "ApplyInternal", 20);
 			}
 			if (destroyedParty.IsCaravan && destroyedParty.Party.Owner != null && destroyedParty.Party.Owner.GetPerkValue(DefaultPerks.Trade.InsurancePlans))
 			{
@@ -22,6 +22,10 @@ public static class DestroyPartyAction
 			}
 			CampaignEventDispatcher.Instance.OnMobilePartyDestroyed(destroyedParty, destroyerParty);
 			CampaignEventDispatcher.Instance.OnMapInteractableDestroyed(destroyedParty.Party);
+			if (destroyedParty.MapEvent != null && !destroyedParty.MapEvent.IsFinalized && !destroyedParty.IsCurrentlyUsedByAQuest)
+			{
+				destroyedParty.MapEventSide = null;
+			}
 			destroyedParty.RemoveParty();
 		}
 	}

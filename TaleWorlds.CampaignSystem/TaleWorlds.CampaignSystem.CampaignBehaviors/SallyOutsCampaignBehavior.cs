@@ -104,6 +104,10 @@ public class SallyOutsCampaignBehavior : CampaignBehaviorBase
 						break;
 					}
 					item.MapEventSide = settlement.SiegeEvent.BesiegerCamp.LeaderParty.MapEvent.AttackerSide;
+					if (settlement.SiegeEvent == null)
+					{
+						return;
+					}
 				}
 			}
 		}

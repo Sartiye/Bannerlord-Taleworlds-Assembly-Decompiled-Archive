@@ -125,7 +125,7 @@ public class PatrolPoint : StandingPoint
 		_itemsForBones = new List<AnimationPoint.ItemForBone>();
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		return null;
 	}

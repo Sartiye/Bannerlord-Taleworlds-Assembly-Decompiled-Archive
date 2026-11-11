@@ -3,6 +3,7 @@ using System.Numerics;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
+using TaleWorlds.GauntletUI.Data;
 using TaleWorlds.GauntletUI.Layout;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.GauntletUI.Widgets.Information;
@@ -25,7 +26,11 @@ public class PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Informati
 
 	private RichTextWidget _widget_0_0_1_0;
 
+	private ListPanel _widget_0_0_2;
+
 	private TooltipProperty _datasource_Root;
+
+	private MBBindingList<TooltipTraitLevelVM> _datasource_Root_TraitLevels;
 
 	public PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_1_ItemTemplate(UIContext context)
 		: base(context)
@@ -47,6 +52,8 @@ public class PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Informati
 		_widget_0_0.AddChild(_widget_0_0_1);
 		_widget_0_0_1_0 = new RichTextWidget(base.Context);
 		_widget_0_0_1.AddChild(_widget_0_0_1_0);
+		_widget_0_0_2 = new ListPanel(base.Context);
+		_widget_0_0.AddChild(_widget_0_0_2);
 	}
 
 	public void SetIds()
@@ -57,6 +64,7 @@ public class PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Informati
 		_widget_0_0_0_0.Id = "DefinitionLabel";
 		_widget_0_0_1.Id = "ValueLabelContainer";
 		_widget_0_0_1_0.Id = "ValueLabel";
+		_widget_0_0_2.Id = "TraitLevelsContainer";
 	}
 
 	public void SetAttributes()
@@ -77,6 +85,7 @@ public class PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Informati
 		base.ValueBackgroundSpriteWidget = _widget_0_0;
 		base.ValueLabel = _widget_0_0_1_0;
 		base.ValueLabelContainer = _widget_0_0_1;
+		base.TraitLevelsContainer = _widget_0_0_2;
 		base.ValueNameTextBrush = base.Context.GetBrush("Tooltip.ValueName.Text");
 		base.ValueTextBrush = base.Context.GetBrush("Tooltip.Value.Text");
 		_widget_0.WidthSizePolicy = SizePolicy.CoverChildren;
@@ -103,32 +112,51 @@ public class PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Informati
 		_widget_0_0_1_0.HorizontalAlignment = HorizontalAlignment.Left;
 		_widget_0_0_1_0.Brush = base.Context.GetBrush("Tooltip.Text");
 		_widget_0_0_1_0.VerticalAlignment = VerticalAlignment.Center;
+		_widget_0_0_2.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_0_0_2.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_0_0_2.VerticalAlignment = VerticalAlignment.Center;
+		_widget_0_0_2.MarginLeft = 20f;
+		_widget_0_0_2.MarginRight = 10f;
+		_widget_0_0_2.IsVisible = false;
+		_widget_0_0_2.StackLayout.LayoutMethod = LayoutMethod.HorizontalLeftToRight;
 	}
 
 	public void DestroyDataSource()
 	{
-		if (_datasource_Root != null)
+		if (_datasource_Root == null)
 		{
-			_datasource_Root.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root;
-			_datasource_Root.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root;
-			_datasource_Root.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root;
-			_datasource_Root.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root;
-			_datasource_Root.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root;
-			_datasource_Root.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root;
-			_datasource_Root.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
-			_datasource_Root.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
-			_datasource_Root.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
-			_widget.PropertyChanged -= PropertyChangedListenerOf_widget;
-			_widget.boolPropertyChanged -= boolPropertyChangedListenerOf_widget;
-			_widget.floatPropertyChanged -= floatPropertyChangedListenerOf_widget;
-			_widget.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget;
-			_widget.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget;
-			_widget.doublePropertyChanged -= doublePropertyChangedListenerOf_widget;
-			_widget.intPropertyChanged -= intPropertyChangedListenerOf_widget;
-			_widget.uintPropertyChanged -= uintPropertyChangedListenerOf_widget;
-			_widget.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget;
-			_datasource_Root = null;
+			return;
 		}
+		_datasource_Root.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root;
+		_datasource_Root.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root;
+		_datasource_Root.PropertyChangedWithBoolValue -= ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root;
+		_datasource_Root.PropertyChangedWithIntValue -= ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root;
+		_datasource_Root.PropertyChangedWithFloatValue -= ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root;
+		_datasource_Root.PropertyChangedWithUIntValue -= ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root;
+		_datasource_Root.PropertyChangedWithColorValue -= ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
+		_datasource_Root.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
+		_datasource_Root.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
+		_widget.PropertyChanged -= PropertyChangedListenerOf_widget;
+		_widget.boolPropertyChanged -= boolPropertyChangedListenerOf_widget;
+		_widget.floatPropertyChanged -= floatPropertyChangedListenerOf_widget;
+		_widget.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget;
+		_widget.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget;
+		_widget.doublePropertyChanged -= doublePropertyChangedListenerOf_widget;
+		_widget.intPropertyChanged -= intPropertyChangedListenerOf_widget;
+		_widget.uintPropertyChanged -= uintPropertyChangedListenerOf_widget;
+		_widget.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget;
+		if (_datasource_Root_TraitLevels != null)
+		{
+			_datasource_Root_TraitLevels.ListChanged -= OnList_datasource_Root_TraitLevelsChanged;
+			for (int num = _widget_0_0_2.ChildCount - 1; num >= 0; num--)
+			{
+				Widget child = _widget_0_0_2.GetChild(num);
+				((PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate)_widget_0_0_2.GetChild(num)).DestroyDataSource();
+			}
+			_datasource_Root_TraitLevels = null;
+		}
+		_datasource_Root = null;
 	}
 
 	public void SetDataSource(TooltipProperty dataSource)
@@ -252,6 +280,9 @@ public class PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Informati
 	{
 		switch (propertyName)
 		{
+		case "TraitLevels":
+			RefreshDataSource_datasource_Root_TraitLevels(_datasource_Root.TraitLevels);
+			break;
 		case "DefinitionLabel":
 			_widget.DefinitionText = _datasource_Root.DefinitionLabel;
 			break;
@@ -266,6 +297,62 @@ public class PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Informati
 			break;
 		case "ValueLabel":
 			_widget.ValueText = _datasource_Root.ValueLabel;
+			break;
+		}
+	}
+
+	public void OnList_datasource_Root_TraitLevelsChanged(object sender, TaleWorlds.Library.ListChangedEventArgs e)
+	{
+		switch (e.ListChangedType)
+		{
+		case TaleWorlds.Library.ListChangedType.Reset:
+		{
+			for (int num = _widget_0_0_2.ChildCount - 1; num >= 0; num--)
+			{
+				Widget child3 = _widget_0_0_2.GetChild(num);
+				((PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+				Widget child4 = _widget_0_0_2.GetChild(num);
+				((PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate)child4).SetDataSource(null);
+				_widget_0_0_2.RemoveChild(child4);
+			}
+			break;
+		}
+		case TaleWorlds.Library.ListChangedType.Sorted:
+		{
+			for (int i = 0; i < _datasource_Root_TraitLevels.Count; i++)
+			{
+				TooltipTraitLevelVM bindingObject = _datasource_Root_TraitLevels[i];
+				_widget_0_0_2.FindChild((Widget widget) => widget.GetComponent<GeneratedWidgetData>().Data == bindingObject).SetSiblingIndex(i);
+			}
+			break;
+		}
+		case TaleWorlds.Library.ListChangedType.ItemAdded:
+		{
+			PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate = new PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate(base.Context);
+			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate);
+			TooltipTraitLevelVM dataSource = (TooltipTraitLevelVM)(generatedWidgetData.Data = _datasource_Root_TraitLevels[e.NewIndex]);
+			propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate.AddComponent(generatedWidgetData);
+			_widget_0_0_2.AddChildAtIndex(propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate, e.NewIndex);
+			propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate.CreateWidgets();
+			propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate.SetIds();
+			propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate.SetAttributes();
+			propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate.SetDataSource(dataSource);
+			break;
+		}
+		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
+		{
+			Widget child2 = _widget_0_0_2.GetChild(e.NewIndex);
+			((PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate)child2).OnBeforeRemovedChild(child2);
+			break;
+		}
+		case TaleWorlds.Library.ListChangedType.ItemDeleted:
+		{
+			Widget child = _widget_0_0_2.GetChild(e.NewIndex);
+			((PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate)child).SetDataSource(null);
+			_widget_0_0_2.RemoveChild(child);
+			break;
+		}
+		case TaleWorlds.Library.ListChangedType.ItemChanged:
 			break;
 		}
 	}
@@ -292,34 +379,100 @@ public class PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Informati
 			_widget.intPropertyChanged -= intPropertyChangedListenerOf_widget;
 			_widget.uintPropertyChanged -= uintPropertyChangedListenerOf_widget;
 			_widget.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget;
+			if (_datasource_Root_TraitLevels != null)
+			{
+				_datasource_Root_TraitLevels.ListChanged -= OnList_datasource_Root_TraitLevelsChanged;
+				for (int num = _widget_0_0_2.ChildCount - 1; num >= 0; num--)
+				{
+					Widget child = _widget_0_0_2.GetChild(num);
+					((PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate)child).OnBeforeRemovedChild(child);
+					Widget child2 = _widget_0_0_2.GetChild(num);
+					((PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate)child2).SetDataSource(null);
+					_widget_0_0_2.RemoveChild(child2);
+				}
+				_datasource_Root_TraitLevels = null;
+			}
 			_datasource_Root = null;
 		}
 		_datasource_Root = newDataSource;
-		if (_datasource_Root != null)
+		if (_datasource_Root == null)
 		{
-			_datasource_Root.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root;
-			_datasource_Root.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root;
-			_datasource_Root.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root;
-			_datasource_Root.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root;
-			_datasource_Root.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root;
-			_datasource_Root.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root;
-			_datasource_Root.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
-			_datasource_Root.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
-			_datasource_Root.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
-			_widget.DefinitionText = _datasource_Root.DefinitionLabel;
-			_widget.PropertyModifier = _datasource_Root.PropertyModifier;
-			_widget.TextColor = _datasource_Root.TextColor;
-			_widget.TextHeight = _datasource_Root.TextHeight;
-			_widget.ValueText = _datasource_Root.ValueLabel;
-			_widget.PropertyChanged += PropertyChangedListenerOf_widget;
-			_widget.boolPropertyChanged += boolPropertyChangedListenerOf_widget;
-			_widget.floatPropertyChanged += floatPropertyChangedListenerOf_widget;
-			_widget.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget;
-			_widget.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget;
-			_widget.doublePropertyChanged += doublePropertyChangedListenerOf_widget;
-			_widget.intPropertyChanged += intPropertyChangedListenerOf_widget;
-			_widget.uintPropertyChanged += uintPropertyChangedListenerOf_widget;
-			_widget.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget;
+			return;
+		}
+		_datasource_Root.PropertyChanged += ViewModelPropertyChangedListenerOf_datasource_Root;
+		_datasource_Root.PropertyChangedWithValue += ViewModelPropertyChangedWithValueListenerOf_datasource_Root;
+		_datasource_Root.PropertyChangedWithBoolValue += ViewModelPropertyChangedWithBoolValueListenerOf_datasource_Root;
+		_datasource_Root.PropertyChangedWithIntValue += ViewModelPropertyChangedWithIntValueListenerOf_datasource_Root;
+		_datasource_Root.PropertyChangedWithFloatValue += ViewModelPropertyChangedWithFloatValueListenerOf_datasource_Root;
+		_datasource_Root.PropertyChangedWithUIntValue += ViewModelPropertyChangedWithUIntValueListenerOf_datasource_Root;
+		_datasource_Root.PropertyChangedWithColorValue += ViewModelPropertyChangedWithColorValueListenerOf_datasource_Root;
+		_datasource_Root.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
+		_datasource_Root.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
+		_widget.DefinitionText = _datasource_Root.DefinitionLabel;
+		_widget.PropertyModifier = _datasource_Root.PropertyModifier;
+		_widget.TextColor = _datasource_Root.TextColor;
+		_widget.TextHeight = _datasource_Root.TextHeight;
+		_widget.ValueText = _datasource_Root.ValueLabel;
+		_widget.PropertyChanged += PropertyChangedListenerOf_widget;
+		_widget.boolPropertyChanged += boolPropertyChangedListenerOf_widget;
+		_widget.floatPropertyChanged += floatPropertyChangedListenerOf_widget;
+		_widget.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget;
+		_widget.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget;
+		_widget.doublePropertyChanged += doublePropertyChangedListenerOf_widget;
+		_widget.intPropertyChanged += intPropertyChangedListenerOf_widget;
+		_widget.uintPropertyChanged += uintPropertyChangedListenerOf_widget;
+		_widget.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget;
+		_datasource_Root_TraitLevels = _datasource_Root.TraitLevels;
+		if (_datasource_Root_TraitLevels != null)
+		{
+			_datasource_Root_TraitLevels.ListChanged += OnList_datasource_Root_TraitLevelsChanged;
+			for (int i = 0; i < _datasource_Root_TraitLevels.Count; i++)
+			{
+				PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate = new PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate);
+				TooltipTraitLevelVM dataSource = (TooltipTraitLevelVM)(generatedWidgetData.Data = _datasource_Root_TraitLevels[i]);
+				propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_0_2.AddChildAtIndex(propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate, i);
+				propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate.CreateWidgets();
+				propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate.SetIds();
+				propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate.SetAttributes();
+				propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate.SetDataSource(dataSource);
+			}
+		}
+	}
+
+	private void RefreshDataSource_datasource_Root_TraitLevels(MBBindingList<TooltipTraitLevelVM> newDataSource)
+	{
+		if (_datasource_Root_TraitLevels != null)
+		{
+			_datasource_Root_TraitLevels.ListChanged -= OnList_datasource_Root_TraitLevelsChanged;
+			for (int num = _widget_0_0_2.ChildCount - 1; num >= 0; num--)
+			{
+				Widget child = _widget_0_0_2.GetChild(num);
+				((PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate)child).OnBeforeRemovedChild(child);
+				Widget child2 = _widget_0_0_2.GetChild(num);
+				((PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate)child2).SetDataSource(null);
+				_widget_0_0_2.RemoveChild(child2);
+			}
+			_datasource_Root_TraitLevels = null;
+		}
+		_datasource_Root_TraitLevels = newDataSource;
+		_datasource_Root_TraitLevels = _datasource_Root.TraitLevels;
+		if (_datasource_Root_TraitLevels != null)
+		{
+			_datasource_Root_TraitLevels.ListChanged += OnList_datasource_Root_TraitLevelsChanged;
+			for (int i = 0; i < _datasource_Root_TraitLevels.Count; i++)
+			{
+				PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate = new PropertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate);
+				TooltipTraitLevelVM dataSource = (TooltipTraitLevelVM)(generatedWidgetData.Data = _datasource_Root_TraitLevels[i]);
+				propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_0_2.AddChildAtIndex(propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate, i);
+				propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate.CreateWidgets();
+				propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate.SetIds();
+				propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate.SetAttributes();
+				propertyBasedTooltip__TaleWorlds_Core_ViewModelCollection_Information_PropertyBasedTooltipVM_Dependency_2_ItemTemplate.SetDataSource(dataSource);
+			}
 		}
 	}
 }

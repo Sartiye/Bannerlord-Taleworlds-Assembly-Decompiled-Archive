@@ -657,7 +657,7 @@ public class MPIntermissionVM : ViewModel
 				{
 					if (AvailableMaps.FirstOrDefault((MPIntermissionMapItemVM m) => m.MapID == mapItem.Id) == null)
 					{
-						AvailableMaps.Add(new MPIntermissionMapItemVM(mapItem.Id, OnPlayerVotedForMap));
+						AvailableMaps.Add(new MPIntermissionMapItemVM(mapItem.Id, !GameNetwork.IsMyPeerStreamer, OnPlayerVotedForMap));
 					}
 					int voteCount = mapItem.VoteCount;
 					AvailableMaps.First((MPIntermissionMapItemVM m) => m.MapID == mapItem.Id).Votes = voteCount;
@@ -683,7 +683,7 @@ public class MPIntermissionVM : ViewModel
 				{
 					if (AvailableCultures.FirstOrDefault((MPIntermissionCultureItemVM c) => c.CultureCode == cultureItem.Id) == null)
 					{
-						AvailableCultures.Add(new MPIntermissionCultureItemVM(cultureItem.Id, OnPlayerVotedForCulture));
+						AvailableCultures.Add(new MPIntermissionCultureItemVM(cultureItem.Id, !GameNetwork.IsMyPeerStreamer, OnPlayerVotedForCulture));
 					}
 					int voteCount2 = cultureItem.VoteCount;
 					AvailableCultures.FirstOrDefault((MPIntermissionCultureItemVM c) => c.CultureCode == cultureItem.Id).Votes = voteCount2;

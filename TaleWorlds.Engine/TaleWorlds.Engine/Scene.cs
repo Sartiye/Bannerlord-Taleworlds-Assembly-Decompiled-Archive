@@ -334,6 +334,31 @@ public sealed class Scene : NativeObject
 		return false;
 	}
 
+	public bool GetPathBetweenAIFaces(UIntPtr startingFace, UIntPtr endingFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, NavigationPath path, int[] excludedFaceIds, int excludedFaceIndex)
+	{
+		bool flag = false;
+		if (excludedFaceIndex >= 0)
+		{
+			flag = EngineApplicationInterface.IScene.SetAbilityOfFaceWithIndex(base.Pointer, excludedFaceIndex, isEnabled: false, updateIslandIndices: false);
+		}
+		int pathSize = path.PathPoints.Length;
+		if (EngineApplicationInterface.IScene.GetPathBetweenAIFacePointers(base.Pointer, startingFace, endingFace, startingPosition, endingPosition, agentRadius, path.PathPoints, ref pathSize, excludedFaceIds, (excludedFaceIds != null) ? excludedFaceIds.Length : 0))
+		{
+			path.Size = pathSize;
+			if (excludedFaceIndex >= 0 && flag)
+			{
+				EngineApplicationInterface.IScene.SetAbilityOfFaceWithIndex(base.Pointer, excludedFaceIndex, isEnabled: true, updateIslandIndices: false);
+			}
+			return true;
+		}
+		path.Size = 0;
+		if (excludedFaceIndex >= 0 && flag)
+		{
+			EngineApplicationInterface.IScene.SetAbilityOfFaceWithIndex(base.Pointer, excludedFaceIndex, isEnabled: true, updateIslandIndices: false);
+		}
+		return false;
+	}
+
 	public bool HasNavmeshFaceUnsharedEdges(in PathFaceRecord faceRecord)
 	{
 		return EngineApplicationInterface.IScene.HasNavmeshFaceUnsharedEdges(base.Pointer, in faceRecord);
@@ -371,6 +396,31 @@ public sealed class Scene : NativeObject
 		return false;
 	}
 
+	public bool GetPathBetweenAIFaces(UIntPtr startingFace, UIntPtr endingFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, NavigationPath path, int[] excludedFaceIds, int regionSwitchCostTo0, int regionSwitchCostTo1, int excludedFaceIndex)
+	{
+		bool flag = false;
+		if (excludedFaceIndex >= 0)
+		{
+			flag = EngineApplicationInterface.IScene.SetAbilityOfFaceWithIndex(base.Pointer, excludedFaceIndex, isEnabled: false, updateIslandIndices: false);
+		}
+		int pathSize = path.PathPoints.Length;
+		if (EngineApplicationInterface.IScene.GetPathBetweenAIFacePointersWithRegionSwitchCost(base.Pointer, startingFace, endingFace, startingPosition, endingPosition, agentRadius, path.PathPoints, ref pathSize, excludedFaceIds, (excludedFaceIds != null) ? excludedFaceIds.Length : 0, regionSwitchCostTo0, regionSwitchCostTo1))
+		{
+			path.Size = pathSize;
+			if (excludedFaceIndex >= 0 && flag)
+			{
+				EngineApplicationInterface.IScene.SetAbilityOfFaceWithIndex(base.Pointer, excludedFaceIndex, isEnabled: true, updateIslandIndices: false);
+			}
+			return true;
+		}
+		path.Size = 0;
+		if (excludedFaceIndex >= 0 && flag)
+		{
+			EngineApplicationInterface.IScene.SetAbilityOfFaceWithIndex(base.Pointer, excludedFaceIndex, isEnabled: true, updateIslandIndices: false);
+		}
+		return false;
+	}
+
 	public bool GetPathBetweenAIFaces(int startingFace, int endingFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, NavigationPath path, int[] excludedFaceIds, float extraCostMultiplier)
 	{
 		int pathSize = path.PathPoints.Length;
@@ -383,6 +433,31 @@ public sealed class Scene : NativeObject
 		return false;
 	}
 
+	public bool GetPathBetweenAIFaces(int startingFace, int endingFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, NavigationPath path, int[] excludedFaceIds, float extraCostMultiplier, int excludedFaceIndex)
+	{
+		bool flag = false;
+		if (excludedFaceIndex >= 0)
+		{
+			flag = EngineApplicationInterface.IScene.SetAbilityOfFaceWithIndex(base.Pointer, excludedFaceIndex, isEnabled: false, updateIslandIndices: false);
+		}
+		int pathSize = path.PathPoints.Length;
+		if (EngineApplicationInterface.IScene.GetPathBetweenAIFaceIndices(base.Pointer, startingFace, endingFace, startingPosition, endingPosition, agentRadius, path.PathPoints, ref pathSize, excludedFaceIds, (excludedFaceIds != null) ? excludedFaceIds.Length : 0, extraCostMultiplier))
+		{
+			path.Size = pathSize;
+			if (excludedFaceIndex >= 0 && flag)
+			{
+				EngineApplicationInterface.IScene.SetAbilityOfFaceWithIndex(base.Pointer, excludedFaceIndex, isEnabled: true, updateIslandIndices: false);
+			}
+			return true;
+		}
+		path.Size = 0;
+		if (excludedFaceIndex >= 0 && flag)
+		{
+			EngineApplicationInterface.IScene.SetAbilityOfFaceWithIndex(base.Pointer, excludedFaceIndex, isEnabled: true, updateIslandIndices: false);
+		}
+		return false;
+	}
+
 	public bool GetPathBetweenAIFaces(int startingFace, int endingFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, NavigationPath path, int[] excludedFaceIds, float extraCostMultiplier, int regionSwitchCostTo0, int regionSwitchCostTo1)
 	{
 		int pathSize = path.PathPoints.Length;
@@ -392,6 +467,31 @@ public sealed class Scene : NativeObject
 			return true;
 		}
 		path.Size = 0;
+		return false;
+	}
+
+	public bool GetPathBetweenAIFaces(int startingFace, int endingFace, Vec2 startingPosition, Vec2 endingPosition, float agentRadius, NavigationPath path, int[] excludedFaceIds, float extraCostMultiplier, int regionSwitchCostTo0, int regionSwitchCostTo1, int excludedFaceIndex)
+	{
+		bool flag = false;
+		if (excludedFaceIndex >= 0)
+		{
+			flag = EngineApplicationInterface.IScene.SetAbilityOfFaceWithIndex(base.Pointer, excludedFaceIndex, isEnabled: false, updateIslandIndices: false);
+		}
+		int pathSize = path.PathPoints.Length;
+		if (EngineApplicationInterface.IScene.GetPathBetweenAIFaceIndicesWithRegionSwitchCost(base.Pointer, startingFace, endingFace, startingPosition, endingPosition, agentRadius, path.PathPoints, ref pathSize, excludedFaceIds, (excludedFaceIds != null) ? excludedFaceIds.Length : 0, extraCostMultiplier, regionSwitchCostTo0, regionSwitchCostTo1))
+		{
+			path.Size = pathSize;
+			if (excludedFaceIndex >= 0 && flag)
+			{
+				EngineApplicationInterface.IScene.SetAbilityOfFaceWithIndex(base.Pointer, excludedFaceIndex, isEnabled: true, updateIslandIndices: false);
+			}
+			return true;
+		}
+		path.Size = 0;
+		if (excludedFaceIndex >= 0 && flag)
+		{
+			EngineApplicationInterface.IScene.SetAbilityOfFaceWithIndex(base.Pointer, excludedFaceIndex, isEnabled: true, updateIslandIndices: false);
+		}
 		return false;
 	}
 
@@ -1005,6 +1105,20 @@ public sealed class Scene : NativeObject
 		}
 	}
 
+	public void GetEntitiesAsWeak(ref List<WeakGameEntity> entities)
+	{
+		int entityCount = EngineApplicationInterface.IScene.GetEntityCount(base.Pointer);
+		if (entityCount > 0)
+		{
+			UIntPtr[] array = new UIntPtr[entityCount];
+			int entitiesAsWeak = EngineApplicationInterface.IScene.GetEntitiesAsWeak(base.Pointer, array, entityCount);
+			for (int i = 0; i < entitiesAsWeak; i++)
+			{
+				entities.Add(new WeakGameEntity(array[i]));
+			}
+		}
+	}
+
 	public void GetRootEntities(NativeObjectArray entities)
 	{
 		EngineApplicationInterface.IScene.GetRootEntities(this, entities);
@@ -1349,6 +1463,11 @@ public sealed class Scene : NativeObject
 	public void SetBlockerDirectionForFacesWithId(int faceGroupId, float rotation)
 	{
 		EngineApplicationInterface.IScene.SetBlockerDirectionForFacesWithId(base.Pointer, faceGroupId, rotation);
+	}
+
+	public bool SetAbilityOfFaceWithIndex(int faceIndex, bool isEnabled, bool updateIslandIndices)
+	{
+		return EngineApplicationInterface.IScene.SetAbilityOfFaceWithIndex(base.Pointer, faceIndex, isEnabled, updateIslandIndices);
 	}
 
 	public bool SwapFaceConnectionsWithID(int hubFaceGroupID, int toBeSeparatedFaceGroupId, int toBeMergedFaceGroupId, bool canFail)

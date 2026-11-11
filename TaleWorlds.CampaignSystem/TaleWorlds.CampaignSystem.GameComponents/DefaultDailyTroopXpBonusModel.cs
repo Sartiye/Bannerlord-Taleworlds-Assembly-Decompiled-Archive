@@ -17,8 +17,8 @@ public class DefaultDailyTroopXpBonusModel : DailyTroopXpBonusModel
 	{
 		ExplainedNumber result = new ExplainedNumber(0f, includeDescriptions: false, null);
 		town.AddEffectOfBuildings(BuildingEffectEnum.ExperiencePerDay, ref result);
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.Leadership.RaiseTheMeek, town, ref result);
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.TwoHanded.ProjectileDeflection, town, ref result);
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Leadership.RaiseTheMeek, town, isPrimaryBonus: false, ref result);
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.TwoHanded.ProjectileDeflection, town, isPrimaryBonus: false, ref result);
 		return (int)result.ResultNumber;
 	}
 

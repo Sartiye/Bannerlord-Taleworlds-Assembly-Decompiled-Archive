@@ -10,6 +10,8 @@ public class MPIntermissionMapItemVM : ViewModel
 
 	private bool _isSelected;
 
+	private bool _isVotingAllowed;
+
 	private string _mapID;
 
 	private string _mapName;
@@ -29,6 +31,23 @@ public class MPIntermissionMapItemVM : ViewModel
 			{
 				_isSelected = value;
 				OnPropertyChangedWithValue(value, "IsSelected");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsVotingAllowed
+	{
+		get
+		{
+			return _isVotingAllowed;
+		}
+		set
+		{
+			if (value != _isVotingAllowed)
+			{
+				_isVotingAllowed = value;
+				OnPropertyChangedWithValue(value, "IsVotingAllowed");
 			}
 		}
 	}
@@ -84,9 +103,10 @@ public class MPIntermissionMapItemVM : ViewModel
 		}
 	}
 
-	public MPIntermissionMapItemVM(string mapID, Action<MPIntermissionMapItemVM> onPlayerVoted)
+	public MPIntermissionMapItemVM(string mapID, bool isVotingAllowed, Action<MPIntermissionMapItemVM> onPlayerVoted)
 	{
 		MapID = mapID;
+		IsVotingAllowed = isVotingAllowed;
 		_onPlayerVoted = onPlayerVoted;
 		RefreshValues();
 	}

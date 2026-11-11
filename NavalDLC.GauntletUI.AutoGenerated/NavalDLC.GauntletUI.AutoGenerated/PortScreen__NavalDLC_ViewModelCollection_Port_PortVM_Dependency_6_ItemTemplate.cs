@@ -20,7 +20,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_6_I
 
 	private TextWidget _widget_2;
 
-	private BoolStateChangerWidget _widget_2_0;
+	private BoolStateChangerBrushWidget _widget_2_0;
 
 	private HintWidget _widget_3;
 
@@ -73,6 +73,20 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_6_I
 		return visualDefinition;
 	}
 
+	private VisualDefinition CreateVisualDefinitionBottomMenu()
+	{
+		VisualDefinition visualDefinition = new VisualDefinition("BottomMenu", 0.45f, 0f, AnimationInterpolation.Type.EaseOut, AnimationInterpolation.Function.Quint);
+		visualDefinition.AddVisualState(new VisualState("Default")
+		{
+			PositionYOffset = 6f
+		});
+		visualDefinition.AddVisualState(new VisualState("Opened")
+		{
+			PositionYOffset = 100f
+		});
+		return visualDefinition;
+	}
+
 	public void CreateWidgets()
 	{
 		_widget = this;
@@ -82,7 +96,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_6_I
 		_widget.AddChild(_widget_1);
 		_widget_2 = new TextWidget(base.Context);
 		_widget.AddChild(_widget_2);
-		_widget_2_0 = new BoolStateChangerWidget(base.Context);
+		_widget_2_0 = new BoolStateChangerBrushWidget(base.Context);
 		_widget_2.AddChild(_widget_2_0);
 		_widget_3 = new HintWidget(base.Context);
 		_widget.AddChild(_widget_3);

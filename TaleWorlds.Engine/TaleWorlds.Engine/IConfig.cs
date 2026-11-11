@@ -29,6 +29,9 @@ internal interface IConfig
 	[EngineMethod("get_development_mode", false, null, false)]
 	bool GetDevelopmentMode();
 
+	[EngineMethod("get_detailed_debug_mode", false, null, false)]
+	bool GetDetailedDebugMode();
+
 	[EngineMethod("get_localization_debug_mode", false, null, false)]
 	bool GetLocalizationDebugMode();
 

@@ -305,6 +305,21 @@ public class SynchedMissionObject : MissionObject
 		}
 	}
 
+	public void SetAnimationChannelSpeedSynched(int channelNo, float speed)
+	{
+		if (!base.GameEntity.Skeleton.GetAnimationSpeedAtChannel(channelNo).ApproximatelyEqualsTo(speed))
+		{
+			if (GameNetwork.IsServerOrRecorder)
+			{
+				GameNetwork.BeginBroadcastModuleEvent();
+				GameNetwork.WriteMessage(new SetMissionObjectAnimationChannelSpeed(base.Id, channelNo, speed));
+				GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.AddToMissionRecord);
+			}
+			base.GameEntity.Skeleton.SetAnimationSpeedAtChannel(channelNo, speed);
+			_initialSynchFlags |= SynchFlags.SynchAnimation;
+		}
+	}
+
 	public void PauseSkeletonAnimationSynched()
 	{
 		if (!base.GameEntity.IsSkeletonAnimationPaused())
@@ -453,10 +468,6 @@ public class SynchedMissionObject : MissionObject
 	public virtual void OnAfterReadFromNetwork((BaseSynchedMissionObjectReadableRecord, ISynchedMissionObjectReadableRecord) synchedMissionObjectReadableRecord, bool allowVisibilityUpdate = true)
 	{
 		var (baseSynchedMissionObjectReadableRecord, _) = synchedMissionObjectReadableRecord;
-		if (allowVisibilityUpdate)
-		{
-			base.GameEntity.SetVisibilityExcludeParents(baseSynchedMissionObjectReadableRecord.SetVisibilityExcludeParents);
-		}
 		if (baseSynchedMissionObjectReadableRecord.SynchTransform)
 		{
 			MatrixFrame frame = baseSynchedMissionObjectReadableRecord.GameObjectFrame;
@@ -495,6 +506,10 @@ public class SynchedMissionObject : MissionObject
 		if (baseSynchedMissionObjectReadableRecord.IsDisabled)
 		{
 			SetDisabledAndMakeInvisible();
+		}
+		if (allowVisibilityUpdate)
+		{
+			base.GameEntity.SetVisibilityExcludeParents(baseSynchedMissionObjectReadableRecord.SetVisibilityExcludeParents);
 		}
 	}
 }

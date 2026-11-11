@@ -15,6 +15,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 using TaleWorlds.SaveSystem;
 
@@ -191,6 +192,27 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
+	private bool IsMarriageCourtshipCooldownActive(Hero hero)
+	{
+		return _previousRomancePersuasionAttempts.AnyQ((PersuasionAttempt t) => t.PersuadedHero == hero && !t.IsSuccesful() && IsPersuiasionAttemptInCooldown(t.GameTime));
+	}
+
+	public bool IsPersuiasionAttemptInCooldown(CampaignTime persuasionAttemptTime)
+	{
+		return persuasionAttemptTime.ElapsedSeasonsUntilNow < 1f;
+	}
+
+	private void ClearRomancePersuasionAttemptsFor(Hero hero)
+	{
+		for (int num = _previousRomancePersuasionAttempts.Count - 1; num >= 0; num--)
+		{
+			if (_previousRomancePersuasionAttempts[num].PersuadedHero == hero)
+			{
+				_previousRomancePersuasionAttempts.RemoveAt(num);
+			}
+		}
+	}
+
 	protected void AddDialogs(CampaignGameStarter starter)
 	{
 		starter.AddPlayerLine("lord_special_request_flirt", "lord_talk_speak_diplomacy_2", "lord_start_courtship_response", "{=!}{FLIRTATION_LINE}", conversation_player_can_open_courtship_on_condition, conversation_player_opens_courtship_on_consequence);
@@ -240,6 +262,7 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 		starter.AddDialogLine("lord_propose_marriage_to_clan_leader_confirm", "lord_propose_marriage_to_clan_leader_confirm", "lord_start", "{=VJEM0IcV}Let's discuss the details then.", null, conversation_lord_propose_marriage_to_clan_leader_confirm_consequences);
 		starter.AddDialogLine("lord_start_courtship_response", "lord_start_courtship_response", "lord_start_courtship_response_player_offer", "{=!}{INITIAL_COURTSHIP_REACTION}", conversation_courtship_initial_reaction_on_condition, null);
 		starter.AddDialogLine("lord_start_courtship_response_decline", "lord_start_courtship_response", "lord_pretalk", "{=!}{COURTSHIP_DECLINE_REACTION}", conversation_courtship_decline_reaction_to_player_on_condition, null);
+		starter.AddDialogLine("lord_start_courtship_response_retry", "lord_start_courtship_response", "hero_main_options", "{=biFDcyVH}Very well, {?PLAYER.GENDER}madame{?}sir{\\?}. I will listen again to what you have to say.", conversation_courtship_cooldown_expired_on_condition, conversation_courtship_cooldown_expired_on_consequence);
 		starter.AddPlayerLine("lord_start_courtship_response_player_offer", "lord_start_courtship_response_player_offer", "lord_start_courtship_response_2", "{=cKtJBdPD}I wish to offer my hand in marriage.", conversation_player_eligible_for_marriage_with_conversation_hero_on_condition, null, 120);
 		starter.AddPlayerLine("lord_start_courtship_response_player_offer_2", "lord_start_courtship_response_player_offer", "lord_start_courtship_response_2", "{=gnXoIChw}Perhaps you and I...", conversation_player_eligible_for_marriage_with_conversation_hero_on_condition, null, 120);
 		starter.AddPlayerLine("lord_start_courtship_response_player_offer_nevermind", "lord_start_courtship_response_player_offer", "lord_pretalk", "{=D33fIGQe}Never mind.", null, null, 120);
@@ -629,17 +652,55 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 
 	private bool conversation_courtship_decline_reaction_to_player_on_condition()
 	{
-		if (Romance.GetRomanticLevel(Hero.MainHero, Hero.OneToOneConversationHero) == Romance.RomanceLevelEnum.FailedInPracticalities)
+		Romance.RomanceLevelEnum romanticLevel = Romance.GetRomanticLevel(Hero.MainHero, Hero.OneToOneConversationHero);
+		if (romanticLevel != Romance.RomanceLevelEnum.FailedInPracticalities && romanticLevel != Romance.RomanceLevelEnum.FailedInCompatibility)
 		{
-			MBTextManager.SetTextVariable("COURTSHIP_DECLINE_REACTION", "{=emLBsWj6}I am terribly sorry. It is practically not possible for us to be married.");
-			return true;
+			return false;
 		}
-		if (Romance.GetRomanticLevel(Hero.MainHero, Hero.OneToOneConversationHero) == Romance.RomanceLevelEnum.FailedInCompatibility)
+		if (!IsMarriageCourtshipCooldownActive(Hero.OneToOneConversationHero))
 		{
-			MBTextManager.SetTextVariable("COURTSHIP_DECLINE_REACTION", "{=s7idfhBO}I am terribly sorry. We are not really compatible with each other.");
-			return true;
+			return false;
 		}
-		return false;
+		TraitObject persona = Hero.OneToOneConversationHero.CharacterObject.GetPersona();
+		if (persona == DefaultTraits.PersonaCurt)
+		{
+			MBTextManager.SetTextVariable("COURTSHIP_DECLINE_REACTION", "{=v5FCS9hd}Maybe at some point in the future, but for now my decision stands.");
+		}
+		else if (persona == DefaultTraits.PersonaIronic)
+		{
+			MBTextManager.SetTextVariable("COURTSHIP_DECLINE_REACTION", "{=Y8WMSXqZ}Well, I try never to say 'never.' So instead I will say, 'Not now.'");
+		}
+		else
+		{
+			MBTextManager.SetTextVariable("COURTSHIP_DECLINE_REACTION", "{=TMT96lap}Perhaps we may speak again when your circumstances have changed, but not for now.");
+		}
+		return true;
+	}
+
+	private bool conversation_courtship_cooldown_expired_on_condition()
+	{
+		EvaluateCourtshipProgress(out var hasRetryCooldownExpired);
+		return hasRetryCooldownExpired;
+	}
+
+	private void conversation_courtship_cooldown_expired_on_consequence()
+	{
+		ClearRomancePersuasionAttemptsFor(Hero.OneToOneConversationHero);
+		ChangeRomanticStateAction.Apply(Hero.MainHero, Hero.OneToOneConversationHero, Romance.RomanceLevelEnum.CourtshipStarted);
+	}
+
+	private void EvaluateCourtshipProgress(out bool hasRetryCooldownExpired)
+	{
+		IEnumerable<PersuasionAttempt> enumerable = _previousRomancePersuasionAttempts.Where((PersuasionAttempt t) => t.PersuadedHero == Hero.OneToOneConversationHero);
+		hasRetryCooldownExpired = enumerable.Any();
+		foreach (PersuasionAttempt item in enumerable)
+		{
+			if (!item.IsSuccesful() && IsPersuiasionAttemptInCooldown(item.GameTime))
+			{
+				hasRetryCooldownExpired = false;
+				break;
+			}
+		}
 	}
 
 	private bool conversation_courtship_reaction_to_player_on_condition()
@@ -728,7 +789,7 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 			wooer = Hero.MainHero;
 		}
 		_allReservations = GetPersuasionTasksForCourtshipStage1(Hero.OneToOneConversationHero, wooer);
-		_maximumScoreCap = (float)_allReservations.Count * 1f;
+		_maximumScoreCap = (float)_allReservations.Count - 1f;
 		float num = 0f;
 		foreach (PersuasionTask allReservation in _allReservations)
 		{
@@ -786,7 +847,7 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 			wooer = Hero.MainHero;
 		}
 		_allReservations = GetPersuasionTasksForCourtshipStage2(Hero.OneToOneConversationHero, wooer);
-		_maximumScoreCap = (float)_allReservations.Count * 1f;
+		_maximumScoreCap = (float)_allReservations.Count - 1f;
 		float num = 0f;
 		foreach (PersuasionTask allReservation in _allReservations)
 		{
@@ -1280,7 +1341,8 @@ public class RomanceCampaignBehavior : CampaignBehaviorBase
 
 	private void conversation_player_opens_courtship_on_consequence()
 	{
-		if (Romance.GetRomanticLevel(Hero.MainHero, Hero.OneToOneConversationHero) != Romance.RomanceLevelEnum.FailedInCompatibility && Romance.GetRomanticLevel(Hero.MainHero, Hero.OneToOneConversationHero) != Romance.RomanceLevelEnum.FailedInPracticalities)
+		Romance.RomanceLevelEnum romanticLevel = Romance.GetRomanticLevel(Hero.MainHero, Hero.OneToOneConversationHero);
+		if (romanticLevel != Romance.RomanceLevelEnum.FailedInCompatibility && romanticLevel != Romance.RomanceLevelEnum.FailedInPracticalities)
 		{
 			ChangeRomanticStateAction.Apply(Hero.MainHero, Hero.OneToOneConversationHero, Romance.RomanceLevelEnum.CourtshipStarted);
 		}

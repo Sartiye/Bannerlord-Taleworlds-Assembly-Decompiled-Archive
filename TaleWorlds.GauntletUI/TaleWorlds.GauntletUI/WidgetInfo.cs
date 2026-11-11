@@ -53,10 +53,10 @@ public class WidgetInfo
 	private static bool CheckAssemblyReferencesThis(Assembly assembly)
 	{
 		Assembly assembly2 = typeof(Widget).Assembly;
-		AssemblyName[] referencedAssemblies = assembly.GetReferencedAssemblies();
-		for (int i = 0; i < referencedAssemblies.Length; i++)
+		AssemblyName[] referencedAssembliesSafe = assembly.GetReferencedAssembliesSafe();
+		for (int i = 0; i < referencedAssembliesSafe.Length; i++)
 		{
-			if (referencedAssemblies[i].Name == assembly2.GetName().Name)
+			if (referencedAssembliesSafe[i].Name == assembly2.GetName().Name)
 			{
 				return true;
 			}

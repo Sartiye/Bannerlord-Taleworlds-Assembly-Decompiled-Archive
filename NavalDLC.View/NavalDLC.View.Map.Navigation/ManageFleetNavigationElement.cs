@@ -28,7 +28,7 @@ public class ManageFleetNavigationElement : MapNavigationElementBase
 		{
 			if (base._game.GameStateManager.ActiveState is PortState portState)
 			{
-				return portState.PortScreenMode == PortScreenModes.TradeMode;
+				return portState.PortScreenMode != PortScreenModes.Manage;
 			}
 			return false;
 		}
@@ -85,6 +85,10 @@ public class ManageFleetNavigationElement : MapNavigationElementBase
 		{
 			return new NavigationPermissionItem(isAuthorized: false, new TextObject("{=Lo0E5dKh}You cannot manage your fleet while you are drifting to shore"));
 		}
+		if (MobileParty.MainParty.IsInFerryState)
+		{
+			return new NavigationPermissionItem(isAuthorized: false, new TextObject("{=WNwouX8y}You cannot manage your fleet while you are on a ferry"));
+		}
 		if (Hero.MainHero.IsPrisoner)
 		{
 			return new NavigationPermissionItem(isAuthorized: false, new TextObject("{=a8UQow7P}You cannot manage your fleet while you are imprisoned"));
@@ -112,7 +116,7 @@ public class ManageFleetNavigationElement : MapNavigationElementBase
 
 	public override void OpenView(params object[] parameters)
 	{
-		Debug.FailedAssert("Manage Fleet screen shouldn't be opened with parameters from navigation", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.View\\Map\\Navigation\\ManageFleetNavigationElement.cs", "OpenView", 106);
+		Debug.FailedAssert("Manage Fleet screen shouldn't be opened with parameters from navigation", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.View\\Map\\Navigation\\ManageFleetNavigationElement.cs", "OpenView", 111);
 		OpenView();
 	}
 

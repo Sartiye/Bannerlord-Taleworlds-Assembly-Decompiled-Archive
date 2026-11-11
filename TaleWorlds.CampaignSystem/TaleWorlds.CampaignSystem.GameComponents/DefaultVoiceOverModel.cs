@@ -66,27 +66,26 @@ public class DefaultVoiceOverModel : VoiceOverModel
 		if (string.IsNullOrEmpty(text))
 		{
 			string accentClass = Campaign.Current.Models.VoiceOverModel.GetAccentClass(character.Culture, ConversationTagHelper.UsesHighRegister(character));
-			Debug.Print("accentClass: " + accentClass);
 			string text2 = (character.IsFemale ? "female" : "male");
 			string stringId = character.GetPersona().StringId;
 			List<string> possibleVoicePaths = new List<string>();
 			List<string> list = new List<string>();
-			list.Add(".+\\\\" + accentClass + "_" + text2 + "_" + stringId + "_.+");
-			list.Add(".+\\\\" + accentClass + "_" + text2 + "_generic_.+");
+			list.Add(".+[\\\\/]" + accentClass + "_" + text2 + "_" + stringId + "_.+");
+			list.Add(".+[\\\\/]" + accentClass + "_" + text2 + "_generic_.+");
 			CheckPossibleMatches(voiceObject, list, ref possibleVoicePaths);
 			if (possibleVoicePaths.IsEmpty())
 			{
 				list.Clear();
-				list.Add(".+\\\\" + accentClass + "_" + stringId + "_.+");
-				list.Add(".+\\\\" + accentClass + "_generic_.+");
-				list.Add(".+\\\\" + text2 + "_" + stringId + "_.+");
-				list.Add(".+\\\\" + text2 + "_generic_.+");
+				list.Add(".+[\\\\/]" + accentClass + "_" + stringId + "_.+");
+				list.Add(".+[\\\\/]" + accentClass + "_generic_.+");
+				list.Add(".+[\\\\/]" + text2 + "_" + stringId + "_.+");
+				list.Add(".+[\\\\/]" + text2 + "_generic_.+");
 				CheckPossibleMatches(voiceObject, list, ref possibleVoicePaths);
 				if (possibleVoicePaths.IsEmpty())
 				{
 					list.Clear();
-					list.Add(".+\\\\" + stringId + "_.+");
-					list.Add(".+\\\\generic_.+");
+					list.Add(".+[\\\\/]" + stringId + "_.+");
+					list.Add(".+[\\\\/]generic_.+");
 					list.Add(".+" + accentClass + "_.+");
 					CheckPossibleMatches(voiceObject, list, ref possibleVoicePaths, doubleCheckForGender: true, character.IsFemale);
 				}
@@ -116,15 +115,12 @@ public class DefaultVoiceOverModel : VoiceOverModel
 				{
 					continue;
 				}
-				if (doubleCheckForGender)
+				if (doubleCheckForGender && (voicePath.Contains("_male") || voicePath.Contains("_female")))
 				{
-					if (voicePath.Contains("_male") || voicePath.Contains("_female"))
+					string value = (isFemale ? "_female" : "_male");
+					if (voicePath.Contains(value))
 					{
-						string value = (isFemale ? "_female" : "_male");
-						if (voicePath.Contains(value))
-						{
-							possibleVoicePaths.Add(voicePath);
-						}
+						possibleVoicePaths.Add(voicePath);
 					}
 				}
 				else

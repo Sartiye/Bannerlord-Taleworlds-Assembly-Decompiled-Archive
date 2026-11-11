@@ -212,14 +212,24 @@ public class GameMenu
 
 	public GameMenuOption GetLeaveMenuOption(Game game, MenuContext menuContext)
 	{
+		int leaveMenuOptionIndex = GetLeaveMenuOptionIndex(game, menuContext);
+		if (leaveMenuOptionIndex < 0)
+		{
+			return null;
+		}
+		return _menuItems[leaveMenuOptionIndex];
+	}
+
+	public int GetLeaveMenuOptionIndex(Game game, MenuContext menuContext)
+	{
 		for (int i = 0; i < _menuItems.Count; i++)
 		{
 			if (_menuItems[i].IsLeave && _menuItems[i].IsEnabled && _menuItems[i].GetConditionsHold(game, menuContext))
 			{
-				return _menuItems[i];
+				return i;
 			}
 		}
-		return null;
+		return -1;
 	}
 
 	public void RunOnTick(MenuContext menuContext, float dt)
@@ -268,7 +278,7 @@ public class GameMenu
 	{
 		if (menuItemNumber >= _menuItems.Count || menuItemNumber < 0)
 		{
-			Debug.FailedAssert("menuItemNumber out of bounds", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameMenus\\GameMenu.cs", "RunMenuOptionConsequence", 263);
+			Debug.FailedAssert("menuItemNumber out of bounds", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameMenus\\GameMenu.cs", "RunMenuOptionConsequence", 269);
 			menuItemNumber = _menuItems.Count - 1;
 		}
 		GameMenuOption gameMenuOption = _menuItems[menuItemNumber];
@@ -370,7 +380,7 @@ public class GameMenu
 		}
 		else
 		{
-			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameMenus\\GameMenu.cs", "SwitchToMenu", 384);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameMenus\\GameMenu.cs", "SwitchToMenu", 390);
 		}
 	}
 

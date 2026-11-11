@@ -30,6 +30,8 @@ public class MPMatchmakingVM : ViewModel
 
 	private bool _regionsRequireRefresh;
 
+	private bool _suppressGameTypeSelectionNotification;
+
 	private MatchmakingSubPages _currentSubPage;
 
 	private IEnumerable<MultiplayerClassDivisions.MPHeroClass> _heroClasses;
@@ -718,6 +720,11 @@ public class MPMatchmakingVM : ViewModel
 		RefreshValues();
 		RefreshWaitingTime();
 		OnSelectionChanged(updatedRegion: true, updatedGameTypes: true);
+		ServerStatus serverStatus = NetworkMain.GameClient.ServerStatus;
+		if (serverStatus != null)
+		{
+			OnServerStatusReceived(serverStatus);
+		}
 	}
 
 	public override void RefreshValues()
@@ -803,7 +810,7 @@ public class MPMatchmakingVM : ViewModel
 			{
 				if (!IsServerCustomGameListAvailable)
 				{
-					Debug.FailedAssert("Trying to open matchmaking when nothing is available", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\OfficialGame\\MPMatchmakingVM.cs", "TrySetMatchmakingSubPage", 182);
+					Debug.FailedAssert("Trying to open matchmaking when nothing is available", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\OfficialGame\\MPMatchmakingVM.cs", "TrySetMatchmakingSubPage", 195);
 					return;
 				}
 				newPage = MatchmakingSubPages.CustomGameList;
@@ -819,7 +826,7 @@ public class MPMatchmakingVM : ViewModel
 
 	public void RefreshPlayerData(PlayerData playerData)
 	{
-		if (!string.IsNullOrEmpty(playerData.LastRegion))
+		if (!string.IsNullOrEmpty(playerData?.LastRegion))
 		{
 			for (int i = 0; i < Regions.ItemList.Count; i++)
 			{
@@ -862,7 +869,10 @@ public class MPMatchmakingVM : ViewModel
 
 	private void GameModeOnSelectionChanged(MPMatchmakingItemVM sender, bool isSelected)
 	{
-		OnSelectionChanged(updatedRegion: false, updatedGameTypes: true);
+		if (!_suppressGameTypeSelectionNotification)
+		{
+			OnSelectionChanged(updatedRegion: false, updatedGameTypes: true);
+		}
 	}
 
 	private void OnRegionSelectionChanged(SelectorVM<MPMatchmakingRegionSelectorItemVM> selectorVM)
@@ -877,7 +887,7 @@ public class MPMatchmakingVM : ViewModel
 		}
 	}
 
-	private void OnSelectionChanged(bool updatedRegion = false, bool updatedGameTypes = false)
+	private async void OnSelectionChanged(bool updatedRegion = false, bool updatedGameTypes = false)
 	{
 		string[] gameTypes;
 		bool selectedGameTypesInfo = GetSelectedGameTypesInfo(out gameTypes);
@@ -892,15 +902,25 @@ public class MPMatchmakingVM : ViewModel
 				string variable = Regions.SelectedItem?.StringItem;
 				_selectionInfoTextObject.SetTextVariable("REGIONS", variable);
 				string regionCode = Regions.SelectedItem.RegionCode;
-				NetworkMain.GameClient.ChangeRegion(regionCode);
+				if (!(await NetworkMain.GameClient.ChangeRegion(regionCode)))
+				{
+					_regionsRequireRefresh = true;
+					RefreshPlayerData(NetworkMain.GameClient.PlayerData);
+					return;
+				}
 			}
 		}
-		if (updatedGameTypes && IsMatchFindPossible)
+		if (updatedGameTypes && IsMatchFindPossible && !(await NetworkMain.GameClient.ChangeGameTypes(gameTypes.ToArray())))
 		{
-			NetworkMain.GameClient.ChangeGameTypes(gameTypes.ToArray());
+			_suppressGameTypeSelectionNotification = true;
+			RefreshPlayerData(NetworkMain.GameClient.PlayerData);
+			_suppressGameTypeSelectionNotification = false;
 		}
-		SelectionInfoText = _selectionInfoTextObject.ToString();
-		_onMatchSelectionChanged?.Invoke(SelectionInfoText, IsMatchFindPossible);
+		else
+		{
+			SelectionInfoText = _selectionInfoTextObject.ToString();
+			_onMatchSelectionChanged?.Invoke(SelectionInfoText, IsMatchFindPossible);
+		}
 	}
 
 	internal void OnServerStatusReceived(ServerStatus serverStatus)

@@ -1031,7 +1031,7 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void ReplacePhysicsBodyWithQuadPhysicsBodyDelegate(UIntPtr pointer, UIntPtr quad, int physicsMaterial, BodyFlags bodyFlags, int numberOfVertices, UIntPtr indices, int numberOfIndices);
+	public delegate void ReplacePhysicsBodyWithQuadPhysicsBodyDelegate(UIntPtr pointer, UIntPtr quad, int physicsMaterial, BodyFlags bodyFlags, int numberOfVertices, UIntPtr indices, int numberOfIndices, [MarshalAs(UnmanagedType.U1)] bool replaceTrianglemeshDescriptions);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -3268,9 +3268,9 @@ internal class ScriptingInterfaceOfIGameEntity : IGameEntity
 		call_RemoveTagDelegate(entityId, array);
 	}
 
-	public void ReplacePhysicsBodyWithQuadPhysicsBody(UIntPtr pointer, UIntPtr quad, int physicsMaterial, BodyFlags bodyFlags, int numberOfVertices, UIntPtr indices, int numberOfIndices)
+	public void ReplacePhysicsBodyWithQuadPhysicsBody(UIntPtr pointer, UIntPtr quad, int physicsMaterial, BodyFlags bodyFlags, int numberOfVertices, UIntPtr indices, int numberOfIndices, bool replaceTrianglemeshDescriptions)
 	{
-		call_ReplacePhysicsBodyWithQuadPhysicsBodyDelegate(pointer, quad, physicsMaterial, bodyFlags, numberOfVertices, indices, numberOfIndices);
+		call_ReplacePhysicsBodyWithQuadPhysicsBodyDelegate(pointer, quad, physicsMaterial, bodyFlags, numberOfVertices, indices, numberOfIndices, replaceTrianglemeshDescriptions);
 	}
 
 	public void ResetHullWater(UIntPtr visualPrefab)

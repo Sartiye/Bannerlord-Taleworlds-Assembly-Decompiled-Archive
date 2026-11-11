@@ -180,6 +180,12 @@ public class SiegeQuerySystem
 		int num7 = 0;
 		foreach (Agent activeAgent in _attackerTeam.ActiveAgents)
 		{
+			bool flag = false;
+			if (activeAgent.GetCurrentNavigationFaceId() % 10 == 1)
+			{
+				num7++;
+				flag = true;
+			}
 			Vec2 vec = activeAgent.Position.AsVec2 - LeftDefenderOrigin.AsVec2;
 			Vec2 vec2 = activeAgent.Position.AsVec2 - MidDefenderOrigin.AsVec2;
 			Vec2 vec3 = activeAgent.Position.AsVec2 - RightDefenderOrigin.AsVec2;
@@ -192,10 +198,18 @@ public class SiegeQuerySystem
 			if (vec.DotProduct(LeftToMidDir) >= 0f && vec.DotProduct(LeftToMidDir.RightVec()) >= 0f)
 			{
 				num++;
+				if (flag)
+				{
+					num2++;
+				}
 			}
 			else if (vec2.DotProduct(MidToLeftDir) >= 0f && vec2.DotProduct(MidToLeftDir.RightVec()) >= 0f)
 			{
 				num++;
+				if (flag)
+				{
+					num2++;
+				}
 			}
 			if (vec3.Normalize() < 15f && Math.Abs(activeAgent.Position.z - RightDefenderOrigin.z) <= 3f)
 			{
@@ -206,24 +220,31 @@ public class SiegeQuerySystem
 			if (vec3.DotProduct(RightToMidDir) >= 0f && vec3.DotProduct(RightToMidDir.LeftVec()) >= 0f)
 			{
 				num5++;
+				if (flag)
+				{
+					num6++;
+				}
 			}
 			else if (vec2.DotProduct(MidToRightDir) >= 0f && vec2.DotProduct(MidToRightDir.LeftVec()) >= 0f)
 			{
 				num5++;
+				if (flag)
+				{
+					num6++;
+				}
 			}
 			if (vec2.Normalize() < 15f && Math.Abs(activeAgent.Position.z - MidDefenderOrigin.z) <= 3f)
 			{
 				num4++;
 				num3++;
-				continue;
 			}
-			if ((vec2.DotProduct(MidToLeftDir) < 0f || vec2.DotProduct(MidToLeftDir.RightVec()) < 0f || vec.DotProduct(LeftToMidDir) < 0f || vec.DotProduct(LeftToMidDir.RightVec()) < 0f) && (vec2.DotProduct(MidToRightDir) < 0f || vec2.DotProduct(MidToRightDir.LeftVec()) < 0f || vec3.DotProduct(RightToMidDir) < 0f || vec3.DotProduct(RightToMidDir.LeftVec()) < 0f))
+			else if ((vec2.DotProduct(MidToLeftDir) < 0f || vec2.DotProduct(MidToLeftDir.RightVec()) < 0f || vec.DotProduct(LeftToMidDir) < 0f || vec.DotProduct(LeftToMidDir.RightVec()) < 0f) && (vec2.DotProduct(MidToRightDir) < 0f || vec2.DotProduct(MidToRightDir.LeftVec()) < 0f || vec3.DotProduct(RightToMidDir) < 0f || vec3.DotProduct(RightToMidDir.LeftVec()) < 0f))
 			{
 				num3++;
-			}
-			if (activeAgent.GetCurrentNavigationFaceId() % 10 == 1)
-			{
-				num7++;
+				if (flag)
+				{
+					num4++;
+				}
 			}
 		}
 		float currentTime = Mission.Current.CurrentTime;

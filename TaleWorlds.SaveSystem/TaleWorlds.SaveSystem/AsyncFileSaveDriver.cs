@@ -7,81 +7,74 @@ public class AsyncFileSaveDriver : ISaveDriver
 {
 	private FileDriver _saveDriver;
 
-	private Task _currentNonSaveTask;
-
 	private Task<SaveResultWithMessage> _currentSaveTask;
+
+	private string _currentSaveName;
 
 	public AsyncFileSaveDriver()
 	{
 		_saveDriver = new FileDriver();
 	}
 
-	private void WaitPreviousTask()
+	private void WaitPreviousSave()
 	{
-		Task currentNonSaveTask = _currentNonSaveTask;
 		Task<SaveResultWithMessage> currentSaveTask = _currentSaveTask;
-		if (currentNonSaveTask != null && !currentNonSaveTask.IsCompleted)
-		{
-			using (new PerformanceTestBlock("AsyncFileSaveDriver::Save - waiting previous save"))
-			{
-				currentNonSaveTask.Wait();
-				return;
-			}
-		}
 		if (currentSaveTask != null && !currentSaveTask.IsCompleted)
 		{
-			using (new PerformanceTestBlock("MBAsyncSaveDriver::Save - waiting previous save"))
+			using (new PerformanceTestBlock("AsyncFileSaveDriver::Save - waiting previous save"))
 			{
 				currentSaveTask.Wait();
 			}
 		}
 	}
 
+	private void WaitPreviousSaveOfFile(string saveName)
+	{
+		if (_currentSaveName == saveName)
+		{
+			WaitPreviousSave();
+		}
+	}
+
 	Task<SaveResultWithMessage> ISaveDriver.Save(string saveName, int version, MetaData metaData, GameData gameData)
 	{
-		WaitPreviousTask();
-		_currentSaveTask = Task.Run(delegate
-		{
-			Task<SaveResultWithMessage> result = _saveDriver.Save(saveName, version, metaData, gameData);
-			_currentNonSaveTask = null;
-			return result;
-		});
+		WaitPreviousSave();
+		_currentSaveName = saveName;
+		_currentSaveTask = Task.Run(() => _saveDriver.Save(saveName, version, metaData, gameData));
 		return _currentSaveTask;
 	}
 
 	SaveGameFileInfo[] ISaveDriver.GetSaveGameFileInfos()
 	{
-		WaitPreviousTask();
 		return _saveDriver.GetSaveGameFileInfos();
 	}
 
 	string[] ISaveDriver.GetSaveGameFileNames()
 	{
-		WaitPreviousTask();
 		return _saveDriver.GetSaveGameFileNames();
 	}
 
 	MetaData ISaveDriver.LoadMetaData(string saveName)
 	{
-		WaitPreviousTask();
+		WaitPreviousSaveOfFile(saveName);
 		return _saveDriver.LoadMetaData(saveName);
 	}
 
 	LoadData ISaveDriver.Load(string saveName)
 	{
-		WaitPreviousTask();
+		WaitPreviousSaveOfFile(saveName);
 		return _saveDriver.Load(saveName);
 	}
 
 	bool ISaveDriver.Delete(string saveName)
 	{
-		WaitPreviousTask();
+		WaitPreviousSave();
 		return _saveDriver.Delete(saveName);
 	}
 
 	bool ISaveDriver.IsSaveGameFileExists(string saveName)
 	{
-		WaitPreviousTask();
+		WaitPreviousSaveOfFile(saveName);
 		return _saveDriver.IsSaveGameFileExists(saveName);
 	}
 

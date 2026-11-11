@@ -275,7 +275,6 @@ public class PlayerArmyWaitBehavior : CampaignBehaviorBase
 		if (MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty != MobileParty.MainParty && (MobileParty.MainParty.CurrentSettlement == null || PlayerEncounter.Current == null))
 		{
 			EncounterManager.StartSettlementEncounter(MobileParty.MainParty, MobileParty.MainParty.Army.LeaderParty.LastVisitedSettlement);
-			return;
 		}
 		Settlement currentSettlement = MobileParty.MainParty.CurrentSettlement;
 		if (currentSettlement.IsTown)
@@ -407,5 +406,13 @@ public class PlayerArmyWaitBehavior : CampaignBehaviorBase
 		{
 			args.MenuContext.SetBackgroundMeshName("wait_fallback");
 		}
+	}
+
+	[GameMenuInitializationHandler("menu_player_kicked_out_from_army_navigation_incapability")]
+	private static void game_menu_player_kicked_out_from_army_navigation_incapability_on_init(MenuCallbackArgs args)
+	{
+		CultureObject cultureObject = MobileParty.MainParty.Army?.Kingdom?.Culture ?? Hero.MainHero.MapFaction?.Culture;
+		string backgroundMeshName = (string.IsNullOrEmpty(cultureObject?.EncounterBackgroundMesh) ? "encounter_naval" : (cultureObject.EncounterBackgroundMesh + "_naval"));
+		args.MenuContext.SetBackgroundMeshName(backgroundMeshName);
 	}
 }

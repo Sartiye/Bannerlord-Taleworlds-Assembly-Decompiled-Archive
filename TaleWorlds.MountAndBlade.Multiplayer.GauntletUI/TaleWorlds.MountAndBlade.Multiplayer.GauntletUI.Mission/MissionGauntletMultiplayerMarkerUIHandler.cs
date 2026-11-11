@@ -1,5 +1,6 @@
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.MountAndBlade.Multiplayer.View.MissionViews;
+using TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection;
 using TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.FlagMarker;
 using TaleWorlds.MountAndBlade.View;
 using TaleWorlds.MountAndBlade.View.MissionViews;
@@ -12,6 +13,8 @@ public class MissionGauntletMultiplayerMarkerUIHandler : MissionView
 	private GauntletLayer _gauntletLayer;
 
 	private MultiplayerMissionMarkerVM _dataSource;
+
+	private bool _spectatorMarkersToggled;
 
 	public override void OnMissionScreenInitialize()
 	{
@@ -34,13 +37,25 @@ public class MissionGauntletMultiplayerMarkerUIHandler : MissionView
 	public override void OnMissionScreenTick(float dt)
 	{
 		base.OnMissionScreenTick(dt);
-		if (base.Input.IsGameKeyDown(5))
+		if (GameNetwork.IsMultiplayer && MultiplayerSpectatorHelper.IsLocalPeerSpectator())
 		{
-			_dataSource.IsEnabled = true;
+			if (base.Input.IsGameKeyPressed(5))
+			{
+				_spectatorMarkersToggled = !_spectatorMarkersToggled;
+			}
+			_dataSource.IsEnabled = _spectatorMarkersToggled;
 		}
 		else
 		{
-			_dataSource.IsEnabled = false;
+			_spectatorMarkersToggled = false;
+			if (base.Input.IsGameKeyDown(5))
+			{
+				_dataSource.IsEnabled = true;
+			}
+			else
+			{
+				_dataSource.IsEnabled = false;
+			}
 		}
 		_dataSource.Tick(dt);
 	}

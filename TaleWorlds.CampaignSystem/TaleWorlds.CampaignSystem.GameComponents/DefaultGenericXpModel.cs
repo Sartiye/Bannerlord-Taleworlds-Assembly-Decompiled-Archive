@@ -7,10 +7,11 @@ public class DefaultGenericXpModel : GenericXpModel
 {
 	public override float GetXpMultiplier(Hero hero)
 	{
+		float num = 1f;
 		if (hero.IsPlayerCompanion && Hero.MainHero.GetPerkValue(DefaultPerks.Charm.NaturalLeader))
 		{
-			return 1.2f;
+			num += 0.2f;
 		}
-		return 1f;
+		return num;
 	}
 }

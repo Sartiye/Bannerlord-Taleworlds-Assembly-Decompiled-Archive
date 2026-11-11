@@ -25,7 +25,8 @@ public class TooltipPropertyWidget : Widget
 		DefaultSeperator = 0x400,
 		Cost = 0x800,
 		Title = 0x1000,
-		RundownResult = 0x2000
+		RundownResult = 0x2000,
+		TraitTitle = 0x4000
 	}
 
 	private const int HeaderSize = 30;
@@ -49,6 +50,8 @@ public class TooltipPropertyWidget : Widget
 	private bool _isRundownResult;
 
 	private bool _isTitle;
+
+	private bool _isTraitTitle;
 
 	private bool _isSubtext;
 
@@ -81,6 +84,8 @@ public class TooltipPropertyWidget : Widget
 	private Widget _definitionLabelContainer;
 
 	private Widget _valueLabelContainer;
+
+	private Widget _traitLevelsContainer;
 
 	private ListPanel _valueBackgroundSpriteWidget;
 
@@ -393,6 +398,23 @@ public class TooltipPropertyWidget : Widget
 	}
 
 	[Editor(false)]
+	public Widget TraitLevelsContainer
+	{
+		get
+		{
+			return _traitLevelsContainer;
+		}
+		set
+		{
+			if (_traitLevelsContainer != value)
+			{
+				_traitLevelsContainer = value;
+				OnPropertyChanged(value, "TraitLevelsContainer");
+			}
+		}
+	}
+
+	[Editor(false)]
 	public Color TextColor
 	{
 		get
@@ -579,10 +601,12 @@ public class TooltipPropertyWidget : Widget
 		ValueBackgroundSpriteWidget.HeightSizePolicy = SizePolicy.CoverChildren;
 		if (_currentSprite != null)
 		{
-			if (DefinitionLabelContainer.Size.X + ValueLabelContainer.Size.X > base.ParentWidget.Size.X)
+			float num = ((_isTraitTitle && TraitLevelsContainer != null) ? TraitLevelsContainer.Size.X : 0f);
+			float num2 = DefinitionLabelContainer.Size.X + ValueLabelContainer.Size.X + num;
+			if (num2 > base.ParentWidget.Size.X)
 			{
 				ValueBackgroundSpriteWidget.WidthSizePolicy = SizePolicy.Fixed;
-				ValueBackgroundSpriteWidget.ScaledSuggestedWidth = DefinitionLabelContainer.Size.X + ValueLabelContainer.Size.X;
+				ValueBackgroundSpriteWidget.ScaledSuggestedWidth = num2;
 				base.MarginLeft = 0f;
 				base.MarginRight = 0f;
 			}
@@ -599,7 +623,8 @@ public class TooltipPropertyWidget : Widget
 				if (!IsTwoColumn)
 				{
 					ValueLabelContainer.MarginLeft = base.MarginLeft;
-					ValueBackgroundSpriteWidget.ScaledSuggestedHeight = ValueLabel.Size.Y;
+					float b = ((_isTraitTitle && TraitLevelsContainer != null) ? TraitLevelsContainer.Size.Y : 0f);
+					ValueBackgroundSpriteWidget.ScaledSuggestedHeight = TaleWorlds.Library.MathF.Max(ValueLabel.Size.Y, b);
 				}
 				else
 				{
@@ -623,6 +648,10 @@ public class TooltipPropertyWidget : Widget
 		DefinitionLabelContainer.IsVisible = true;
 		DefinitionLabel.IsVisible = true;
 		ValueLabel.IsVisible = true;
+		if (TraitLevelsContainer != null)
+		{
+			TraitLevelsContainer.IsVisible = _isTraitTitle;
+		}
 		_currentSprite = null;
 		if (_allBrushesInitialized)
 		{
@@ -788,7 +817,8 @@ public class TooltipPropertyWidget : Widget
 		_isBattleMode = (PropertyModifierAsFlag & TooltipPropertyFlags.BattleMode) == TooltipPropertyFlags.BattleMode;
 		_isBattleModeOver = (PropertyModifierAsFlag & TooltipPropertyFlags.BattleModeOver) == TooltipPropertyFlags.BattleModeOver;
 		_isCost = (PropertyModifierAsFlag & TooltipPropertyFlags.Cost) == TooltipPropertyFlags.Cost;
-		_isTitle = (PropertyModifierAsFlag & TooltipPropertyFlags.Title) == TooltipPropertyFlags.Title;
+		_isTraitTitle = (PropertyModifierAsFlag & TooltipPropertyFlags.TraitTitle) == TooltipPropertyFlags.TraitTitle;
+		_isTitle = _isTraitTitle || (PropertyModifierAsFlag & TooltipPropertyFlags.Title) == TooltipPropertyFlags.Title;
 		_isRelation = (PropertyModifierAsFlag & TooltipPropertyFlags.WarFirstEnemy) == TooltipPropertyFlags.WarFirstEnemy || (PropertyModifierAsFlag & TooltipPropertyFlags.WarFirstAlly) == TooltipPropertyFlags.WarFirstAlly || (PropertyModifierAsFlag & TooltipPropertyFlags.WarFirstNeutral) == TooltipPropertyFlags.WarFirstNeutral || (PropertyModifierAsFlag & TooltipPropertyFlags.WarSecondEnemy) == TooltipPropertyFlags.WarSecondEnemy || (PropertyModifierAsFlag & TooltipPropertyFlags.WarSecondAlly) == TooltipPropertyFlags.WarSecondAlly || (PropertyModifierAsFlag & TooltipPropertyFlags.WarSecondNeutral) == TooltipPropertyFlags.WarSecondNeutral;
 		_isRundownSeperator = (PropertyModifierAsFlag & TooltipPropertyFlags.RundownSeperator) == TooltipPropertyFlags.RundownSeperator;
 		_isDefaultSeperator = (PropertyModifierAsFlag & TooltipPropertyFlags.DefaultSeperator) == TooltipPropertyFlags.DefaultSeperator;

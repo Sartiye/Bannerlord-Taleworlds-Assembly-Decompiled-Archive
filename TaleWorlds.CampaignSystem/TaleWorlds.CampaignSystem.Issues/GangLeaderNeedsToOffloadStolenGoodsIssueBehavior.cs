@@ -553,7 +553,6 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 		{
 			StartQuest();
 			_playerStartsQuestLog = AddLog(PlayerStartsQuestLogText, hideInformation: true);
-			_questHideout.Hideout.IsSpotted = true;
 			_questHideout.IsVisible = true;
 			AddTrackedObject(_questHideout);
 		}
@@ -953,7 +952,7 @@ public class GangLeaderNeedsToOffloadStolenGoodsIssueBehavior : CampaignBehavior
 	{
 		Settlement result = null;
 		float num = float.MaxValue;
-		foreach (Hideout item in Campaign.Current.AllHideouts.Where((Hideout t) => t.IsInfested))
+		foreach (Hideout item in Campaign.Current.AllHideouts.Where((Hideout t) => t.IsInfested && t.NextPossibleAttackTime.IsPast))
 		{
 			if (!item.Settlement.IsSettlementBusy(null))
 			{

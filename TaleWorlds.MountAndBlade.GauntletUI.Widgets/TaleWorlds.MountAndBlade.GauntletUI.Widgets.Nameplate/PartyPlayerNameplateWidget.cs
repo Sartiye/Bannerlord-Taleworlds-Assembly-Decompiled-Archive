@@ -10,6 +10,8 @@ public class PartyPlayerNameplateWidget : PartyNameplateWidget
 {
 	private bool _isPrisoner;
 
+	private bool _shouldShowShipBanner;
+
 	private Widget _mainPartyArrowWidget;
 
 	public bool IsPrisoner
@@ -53,7 +55,7 @@ public class PartyPlayerNameplateWidget : PartyNameplateWidget
 	{
 		float num = 0f;
 		float num2 = 0f;
-		bool flag = IsPositionOutsideScreen() || base.IsBehind || base.IsHigh;
+		bool flag = !base.IsInSettlement && (IsPositionOutsideScreen() || base.IsBehind || base.IsHigh);
 		bool flag2 = flag || base.IsInArmy || IsPrisoner || base.IsInSettlement;
 		base.NameplateTextWidget.IsVisible = !flag2;
 		base.NameplateFullNameTextWidget.IsVisible = !flag2;
@@ -83,14 +85,16 @@ public class PartyPlayerNameplateWidget : PartyNameplateWidget
 		base.NameplateExtraInfoTextWidget.Brush.GlobalAlphaFactor = TaleWorlds.Library.MathF.Lerp(base.NameplateExtraInfoTextWidget.ReadOnlyBrush.GlobalAlphaFactor, base.ShouldShowFullName ? 1 : 0, dt * base._animSpeedModifier);
 		base.PartyBannerWidget.Brush.GlobalAlphaFactor = TaleWorlds.Library.MathF.Lerp(base.PartyBannerWidget.ReadOnlyBrush.GlobalAlphaFactor, num, dt * base._animSpeedModifier);
 		base.ParleyIconWidget.AlphaFactor = TaleWorlds.Library.MathF.Lerp(base.ParleyIconWidget.AlphaFactor, base.CanParley ? 1 : 0, dt * base._animSpeedModifier);
+		_shouldShowShipBanner = base.IsShipBannerVisible && !flag;
+		base.ShipBannerContainerWidget.IsVisible = _shouldShowShipBanner;
+		float alphaFactor2 = TaleWorlds.Library.MathF.Lerp(base.ShipBannerWidget.ReadOnlyBrush.GlobalAlphaFactor, _shouldShowShipBanner ? 1 : 0, dt * base._animSpeedModifier);
+		base.ShipBannerContainerWidget.SetGlobalAlphaRecursively(alphaFactor2);
 	}
 
 	protected override void UpdateNameplatesScreenPosition()
 	{
-		_screenWidth = base.Context.EventManager.PageSize.X;
-		_screenHeight = base.Context.EventManager.PageSize.Y;
 		bool num = base.IsBehind || IsPositionOutsideScreen();
-		bool flag = base.IsHigh || base.IsBehind || IsPositionOutsideScreen();
+		bool flag = !base.IsInSettlement && (base.IsHigh || base.IsBehind || IsPositionOutsideScreen());
 		if (num)
 		{
 			Vec2 vec = new Vec2(_screenWidth / 2f, _screenHeight / 2f);
@@ -131,5 +135,19 @@ public class PartyPlayerNameplateWidget : PartyNameplateWidget
 			base.ScaledPositionXOffset = TaleWorlds.Library.MathF.Clamp(base.ScaledPositionXOffset, 0f, _screenWidth - base.Size.X);
 			base.ScaledPositionYOffset = TaleWorlds.Library.MathF.Clamp(base.ScaledPositionYOffset, 0f, _screenHeight - base.Size.Y);
 		}
+		if (_shouldShowShipBanner)
+		{
+			base.ShipBannerContainerWidget.ScaledPositionXOffset = base.ShipBannerPosition.x - base.ScaledPositionXOffset - base.ShipBannerContainerWidget.Size.X / 2f;
+			base.ShipBannerContainerWidget.ScaledPositionYOffset = base.ShipBannerPosition.y - base.ScaledPositionYOffset - base.ShipBannerContainerWidget.Size.Y;
+		}
+	}
+
+	protected override bool IsPositionOutsideScreen()
+	{
+		if (!(base.Position.X > _screenWidth) && !(base.HeadPosition.X > _screenWidth) && !(base.Position.X < 0f) && !(base.HeadPosition.X < 0f) && !(base.Position.Y > _screenHeight) && !(base.HeadPosition.Y > _screenHeight) && !(base.Position.Y < 0f))
+		{
+			return base.HeadPosition.Y < 0f;
+		}
+		return true;
 	}
 }

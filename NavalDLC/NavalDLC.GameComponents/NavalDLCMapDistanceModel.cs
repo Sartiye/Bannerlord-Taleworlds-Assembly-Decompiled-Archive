@@ -180,16 +180,16 @@ public class NavalDLCMapDistanceModel : MapDistanceModel
 		return distance <= maxDistance;
 	}
 
-	public override float GetDistance(MobileParty fromMobileParty, in CampaignVec2 toPoint, MobileParty.NavigationType customCapability, out float landRatio)
+	public override float GetDistance(in CampaignVec2 fromPoint, in CampaignVec2 toPoint, MobileParty.NavigationType customCapability, out float landRatio)
 	{
 		float num = float.MaxValue;
 		landRatio = -1f;
 		PathFaceRecord face = toPoint.Face;
-		if (fromMobileParty.CurrentNavigationFace.FaceIndex == face.FaceIndex)
+		if (fromPoint.Face.FaceIndex == face.FaceIndex)
 		{
-			if (Campaign.Current.Models.PartyNavigationModel.IsTerrainTypeValidForNavigationType(Campaign.Current.MapSceneWrapper.GetFaceTerrainType(fromMobileParty.Position.Face), customCapability))
+			if (Campaign.Current.Models.PartyNavigationModel.IsTerrainTypeValidForNavigationType(Campaign.Current.MapSceneWrapper.GetFaceTerrainType(fromPoint.Face), customCapability))
 			{
-				num = fromMobileParty.Position.Distance(toPoint);
+				num = fromPoint.Distance(toPoint);
 				landRatio = customCapability switch
 				{
 					MobileParty.NavigationType.Naval => 0f, 
@@ -201,7 +201,7 @@ public class NavalDLCMapDistanceModel : MapDistanceModel
 		else
 		{
 			MapDistanceModel mapDistanceModel = Campaign.Current.Models.MapDistanceModel;
-			(Settlement, bool) closestEntranceToFace = mapDistanceModel.GetClosestEntranceToFace(fromMobileParty.CurrentNavigationFace, customCapability);
+			(Settlement, bool) closestEntranceToFace = mapDistanceModel.GetClosestEntranceToFace(fromPoint.Face, customCapability);
 			(Settlement, bool) closestEntranceToFace2 = mapDistanceModel.GetClosestEntranceToFace(face, customCapability);
 			var (settlement, _) = closestEntranceToFace;
 			var (settlement2, _) = closestEntranceToFace2;
@@ -212,19 +212,24 @@ public class NavalDLCMapDistanceModel : MapDistanceModel
 				bool item2 = closestEntranceToFace2.Item2;
 				CampaignVec2 campaignVec = (item ? settlement.PortPosition : settlement.GatePosition);
 				CampaignVec2 v = (item2 ? settlement2.PortPosition : settlement2.GatePosition);
-				num = fromMobileParty.Position.Distance(toPoint) - campaignVec.Distance(v) + GetDistance(settlement, settlement2, item, item2, customCapability);
+				num = fromPoint.Distance(toPoint) - campaignVec.Distance(v) + GetDistance(settlement, settlement2, item, item2, customCapability);
 				if (customCapability == MobileParty.NavigationType.All)
 				{
-					num += mapDistanceModel.GetTransitionCostAdjustment(settlement, item, settlement2, item2, fromMobileParty.IsCurrentlyAtSea, flag);
-					if (fromMobileParty.IsCurrentlyAtSea == flag)
+					num += mapDistanceModel.GetTransitionCostAdjustment(settlement, item, settlement2, item2, !fromPoint.IsOnLand, flag);
+					if (fromPoint.IsOnLand != flag)
 					{
-						float distance = mapDistanceModel.GetDistance(fromMobileParty, in toPoint, (!fromMobileParty.IsCurrentlyAtSea) ? MobileParty.NavigationType.Default : MobileParty.NavigationType.Naval, out landRatio);
+						float distance = mapDistanceModel.GetDistance(in fromPoint, in toPoint, fromPoint.IsOnLand ? MobileParty.NavigationType.Default : MobileParty.NavigationType.Naval, out landRatio);
 						num = MathF.Min(num, distance);
 					}
 				}
 			}
 		}
 		return MBMath.ClampFloat(num, 0f, float.MaxValue);
+	}
+
+	public override float GetDistance(MobileParty fromMobileParty, in CampaignVec2 toPoint, MobileParty.NavigationType navigationType, out float landRatio)
+	{
+		return base.BaseModel.GetDistance(fromMobileParty, in toPoint, navigationType, out landRatio);
 	}
 
 	public override float GetDistance(Settlement fromSettlement, in CampaignVec2 toPoint, bool isFromPort, MobileParty.NavigationType customCapability)
@@ -287,7 +292,7 @@ public class NavalDLCMapDistanceModel : MapDistanceModel
 	{
 		if (!_navigationCaches.TryGetValue(navigationCapabilities, out var value))
 		{
-			Debug.FailedAssert("cache not found", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\GameComponents\\NavalDLCMapDistanceModel.cs", "GetNeighborsOfFortification", 376);
+			Debug.FailedAssert("cache not found", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\GameComponents\\NavalDLCMapDistanceModel.cs", "GetNeighborsOfFortification", 382);
 			return new MBReadOnlyList<Settlement>();
 		}
 		return value.GetNeighbors(town.Settlement);

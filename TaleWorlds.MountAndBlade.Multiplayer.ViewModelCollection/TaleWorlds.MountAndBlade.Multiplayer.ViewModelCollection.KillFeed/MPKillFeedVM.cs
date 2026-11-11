@@ -1,3 +1,4 @@
+using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.KillFeed.General;
 using TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.KillFeed.Personal;
@@ -50,7 +51,7 @@ public class MPKillFeedVM : ViewModel
 		PersonalCasualty = new MPPersonalKillNotificationVM();
 	}
 
-	public void OnAgentRemoved(Agent affectedAgent, Agent affectorAgent, bool isPersonalFeedEnabled)
+	public void OnAgentRemoved(Agent affectedAgent, Agent affectorAgent, bool isPersonalFeedEnabled, WeaponClass killWeaponClass = WeaponClass.Undefined)
 	{
 		Agent assistedAgent = GetAssistedAgent(affectedAgent, affectorAgent);
 		if ((assistedAgent?.IsMainAgent ?? false) && isPersonalFeedEnabled)
@@ -62,7 +63,7 @@ public class MPKillFeedVM : ViewModel
 			}
 			OnPersonalAssist(victimAgentName);
 		}
-		GeneralCasualty.OnAgentRemoved(affectedAgent, affectorAgent, assistedAgent);
+		GeneralCasualty.OnAgentRemoved(affectedAgent, affectorAgent, assistedAgent, killWeaponClass);
 	}
 
 	private void OnPersonalAssist(string victimAgentName)

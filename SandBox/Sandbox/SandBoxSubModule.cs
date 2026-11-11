@@ -76,6 +76,7 @@ public class SandBoxSubModule : MBSubModuleBase
 				campaignGameStarter.AddBehavior(new StealthCharactersCampaignBehavior());
 				campaignGameStarter.AddBehavior(new TavernEmployeesCampaignBehavior());
 				campaignGameStarter.AddBehavior(new TownMerchantsCampaignBehavior());
+				campaignGameStarter.AddBehavior(new CampaignPermanentOptionsBehavior());
 				campaignGameStarter.AddBehavior(new RecruitmentAgentSpawnBehavior());
 			}
 		}
@@ -147,6 +148,11 @@ public class SandBoxSubModule : MBSubModuleBase
 			MBSaveLoad.Initialize(Module.CurrentModule.GlobalTextManager);
 			_initialized = true;
 		}
+	}
+
+	protected override void OnSubModuleUnloaded()
+	{
+		base.OnSubModuleUnloaded();
 	}
 
 	public override void OnConfigChanged()

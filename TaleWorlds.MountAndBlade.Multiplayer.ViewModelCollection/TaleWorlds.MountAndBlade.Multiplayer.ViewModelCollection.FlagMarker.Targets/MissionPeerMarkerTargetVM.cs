@@ -37,8 +37,13 @@ public class MissionPeerMarkerTargetVM : MissionMarkerTargetVM
 	{
 		TargetPeer = peer;
 		_isFriend = isFriend;
-		base.Name = peer.DisplayedName;
+		RefreshName();
 		SetVisual();
+	}
+
+	public void RefreshName()
+	{
+		base.Name = TargetPeer.DisplayedName;
 	}
 
 	private void SetVisual()

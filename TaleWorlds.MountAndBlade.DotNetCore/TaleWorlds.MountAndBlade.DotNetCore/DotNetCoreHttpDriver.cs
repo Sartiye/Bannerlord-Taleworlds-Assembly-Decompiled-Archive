@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TaleWorlds.Library.Http;
 
@@ -20,9 +21,9 @@ public class DotNetCoreHttpDriver : IHttpDriver
 		_httpClient.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
 	}
 
-	IHttpRequestTask IHttpDriver.CreateHttpPostRequestTask(string address, string postData, bool withUserToken)
+	IHttpRequestTask IHttpDriver.CreateHttpPostRequestTask(string address, string postData, bool withUserToken, CancellationToken cancellationToken)
 	{
-		return new HttpPostRequest(_httpClient, address, postData, new Version("3.0"));
+		return new HttpPostRequest(_httpClient, address, postData, new Version("3.0"), cancellationToken);
 	}
 
 	IHttpRequestTask IHttpDriver.CreateHttpGetRequestTask(string address, bool withUserToken)
@@ -51,5 +52,10 @@ public class DotNetCoreHttpDriver : IHttpDriver
 	async Task<byte[]> IHttpDriver.HttpDownloadData(string url)
 	{
 		return await _httpClient.GetByteArrayAsync(url);
+	}
+
+	Task<HttpSendResponse> IHttpDriver.HttpSendAsync(HttpSendRequest request)
+	{
+		return HttpClientSend.SendAsync(_httpClient, request, new Version("3.0"));
 	}
 }

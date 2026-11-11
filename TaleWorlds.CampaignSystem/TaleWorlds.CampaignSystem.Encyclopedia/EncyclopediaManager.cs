@@ -32,10 +32,10 @@ public class EncyclopediaManager
 		Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 		foreach (Assembly assembly2 in assemblies)
 		{
-			AssemblyName[] referencedAssemblies = assembly2.GetReferencedAssemblies();
-			for (int j = 0; j < referencedAssemblies.Length; j++)
+			AssemblyName[] referencedAssembliesSafe = assembly2.GetReferencedAssembliesSafe();
+			for (int j = 0; j < referencedAssembliesSafe.Length; j++)
 			{
-				if (referencedAssemblies[j].ToString() == assembly.GetName().ToString())
+				if (referencedAssembliesSafe[j].ToString() == assembly.GetName().ToString())
 				{
 					list2.Add(assembly2);
 					break;

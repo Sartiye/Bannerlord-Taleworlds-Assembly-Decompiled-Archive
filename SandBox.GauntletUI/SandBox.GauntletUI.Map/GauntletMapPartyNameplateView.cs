@@ -25,7 +25,16 @@ public class GauntletMapPartyNameplateView : MapView
 		base.Layer = mapView.GauntletNameplateLayer;
 		_layerAsGauntletLayer = base.Layer as GauntletLayer;
 		_movie = _layerAsGauntletLayer.LoadMovie("PartyNameplate", _dataSource);
+		CampaignEvents.OnCharacterCreationIsOverEvent.AddNonSerializedListener(this, OnCharacterCreationIsOver);
 		_dataSource.Initialize();
+	}
+
+	private void OnCharacterCreationIsOver(int index)
+	{
+		if (index == 9)
+		{
+			_dataSource.Reset();
+		}
 	}
 
 	protected override void OnMapScreenUpdate(float dt)
@@ -33,12 +42,13 @@ public class GauntletMapPartyNameplateView : MapView
 		base.OnMapScreenUpdate(dt);
 		_dataSource.Update();
 		bool shouldShowFullName = base.MapScreen.SceneLayer.Input.IsGameKeyDown(5);
+		bool flag = base.MapScreen.SceneLayer.Input.IsHotKeyDown("MapParleyModifier");
 		EncounterModel encounterModel = Campaign.Current.Models.EncounterModel;
 		for (int i = 0; i < _dataSource.Nameplates.Count; i++)
 		{
 			PartyNameplateVM partyNameplateVM = _dataSource.Nameplates[i];
 			partyNameplateVM.ShouldShowFullName = shouldShowFullName;
-			partyNameplateVM.CanParley = partyNameplateVM.ShouldShowFullName && encounterModel.CanMainHeroDoParleyWithParty(partyNameplateVM.Party.Party, out var _);
+			partyNameplateVM.CanParley = flag && encounterModel.CanMainHeroDoParleyWithParty(partyNameplateVM.Party.Party, out var _);
 		}
 		if (_dataSource.PlayerNameplate != null)
 		{
@@ -57,6 +67,7 @@ public class GauntletMapPartyNameplateView : MapView
 
 	protected override void OnFinalize()
 	{
+		CampaignEvents.OnCharacterCreationIsOverEvent.ClearListeners(this);
 		_layerAsGauntletLayer.ReleaseMovie(_movie);
 		_dataSource.OnFinalize();
 		_layerAsGauntletLayer = null;

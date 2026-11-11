@@ -99,7 +99,7 @@ public class HeroDeveloper
 			}
 			return value;
 		}
-		Debug.FailedAssert("skill in GetPropertyValue can not be null!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CharacterDevelopment\\HeroDeveloper.cs", "GetSkillXp", 55);
+		Debug.FailedAssert("skill in GetPropertyValue can not be null!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CharacterDevelopment\\HeroDeveloper.cs", "GetSkillXp", 54);
 		return 0f;
 	}
 
@@ -138,13 +138,13 @@ public class HeroDeveloper
 		ClearHeroLevel();
 	}
 
-	public void InitializeHeroDeveloper()
+	public void InitializeHeroDeveloper(bool developCharacterStats = true)
 	{
 		SetInitialLevelFromSkills();
 		CheckLevel(shouldNotify: false);
 		SetupDefaultPoints();
 		SetInitialFocusAndAttributePoints();
-		if (!Hero.IsChild)
+		if (!Hero.IsChild && developCharacterStats)
 		{
 			DevelopCharacterStats();
 		}
@@ -249,7 +249,7 @@ public class HeroDeveloper
 		}
 	}
 
-	public void CheckLevel(bool shouldNotify)
+	private void CheckLevel(bool shouldNotify)
 	{
 		bool flag = false;
 		int totalXp = TotalXp;

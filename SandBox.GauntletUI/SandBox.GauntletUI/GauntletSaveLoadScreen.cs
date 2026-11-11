@@ -9,6 +9,7 @@ using TaleWorlds.Library;
 using TaleWorlds.LinQuick;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.MountAndBlade.View;
+using TaleWorlds.SaveSystem;
 using TaleWorlds.ScreenSystem;
 using TaleWorlds.TwoDimension;
 
@@ -24,6 +25,8 @@ public class GauntletSaveLoadScreen : ScreenBase
 	private SpriteCategory _spriteCategory;
 
 	private readonly bool _isSaving;
+
+	private SaveDirectoryWatcher _saveDirectoryWatcher;
 
 	public GauntletSaveLoadScreen(bool isSaving)
 	{
@@ -52,18 +55,31 @@ public class GauntletSaveLoadScreen : ScreenBase
 			Utilities.SetForceVsync(value: true);
 		}
 		InformationManager.HideAllMessages();
-		_dataSource.InitializeAsync();
+		ScreenManager.FocusGained += OnFocusGained;
+		_saveDirectoryWatcher = new SaveDirectoryWatcher();
+		_dataSource.LoadSavesAsync();
+	}
+
+	private void OnFocusGained()
+	{
+		_dataSource.RequestSaveListRefresh();
 	}
 
 	protected override void OnPostFrameTick(float dt)
 	{
 		base.OnPostFrameTick(dt);
 		UpdateInputRestrictions();
+		_dataSource.OnTick(dt);
 	}
 
 	protected override void OnFrameTick(float dt)
 	{
 		base.OnFrameTick(dt);
+		if (_saveDirectoryWatcher.HasAnyChanges())
+		{
+			_dataSource.RequestSaveListRefresh();
+		}
+		_dataSource.OnFrameTick();
 		UpdateInputRestrictions();
 		if (_gauntletLayer.Input.IsHotKeyReleased("Exit"))
 		{
@@ -84,6 +100,9 @@ public class GauntletSaveLoadScreen : ScreenBase
 
 	protected override void OnFinalize()
 	{
+		ScreenManager.FocusGained -= OnFocusGained;
+		_saveDirectoryWatcher.Dispose();
+		_saveDirectoryWatcher = null;
 		base.OnFinalize();
 		if (Game.Current != null)
 		{

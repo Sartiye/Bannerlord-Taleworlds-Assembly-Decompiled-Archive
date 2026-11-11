@@ -164,9 +164,9 @@ public abstract class NativeObject
 		{
 			return true;
 		}
-		AssemblyName[] referencedAssemblies = assembly.GetReferencedAssemblies();
+		AssemblyName[] referencedAssembliesSafe = assembly.GetReferencedAssembliesSafe();
 		string fullName = typeof(NativeObject).Assembly.FullName;
-		AssemblyName[] array = referencedAssemblies;
+		AssemblyName[] array = referencedAssembliesSafe;
 		for (int i = 0; i < array.Length; i++)
 		{
 			if (array[i].FullName == fullName)

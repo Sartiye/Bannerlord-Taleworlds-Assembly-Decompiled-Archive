@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
+using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.MapEvents;
@@ -301,7 +302,7 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 			}
 			if (value != null && IsMobile && MapEvent != null && MapEvent.DefenderSide.LeaderParty == this)
 			{
-				Debug.FailedAssert($"Double MapEvent For {Name}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyBase.cs", "MapEventSide", 242);
+				Debug.FailedAssert($"Double MapEvent For {Name}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyBase.cs", "MapEventSide", 247);
 			}
 			if (_mapEventSide != null)
 			{
@@ -341,6 +342,18 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 		}
 	}
 
+	BattleEnvironment IBattleCombatant.CurrentBattleEnvironment
+	{
+		get
+		{
+			if (!IsMobile || !MobileParty.IsCurrentlyAtSea)
+			{
+				return BattleEnvironment.Land;
+			}
+			return BattleEnvironment.Naval;
+		}
+	}
+
 	public int PartySizeLimit
 	{
 		get
@@ -349,7 +362,7 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 			if (_partyMemberSizeLastCheckVersion != versionNo || _cachedPartyMemberSizeLimit == 0)
 			{
 				_partyMemberSizeLastCheckVersion = versionNo;
-				_cachedPartyMemberSizeLimit = (int)Campaign.Current.Models.PartySizeLimitModel.GetPartyMemberSizeLimit(this).ResultNumber;
+				_cachedPartyMemberSizeLimit = (int)Campaign.Current.Models.PartySizeLimitModel.GetPartyMemberSizeLimit(this, IsMobile && MobileParty.IsCurrentlyAtSea).ResultNumber;
 			}
 			return _cachedPartyMemberSizeLimit;
 		}
@@ -369,7 +382,7 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 		}
 	}
 
-	public ExplainedNumber PartySizeLimitExplainer => Campaign.Current.Models.PartySizeLimitModel.GetPartyMemberSizeLimit(this, includeDescriptions: true);
+	public ExplainedNumber PartySizeLimitExplainer => Campaign.Current.Models.PartySizeLimitModel.GetPartyMemberSizeLimit(this, IsMobile && MobileParty.IsCurrentlyAtSea, includeDescriptions: true);
 
 	public ExplainedNumber PrisonerSizeLimitExplainer => Campaign.Current.Models.PartySizeLimitModel.GetPartyPrisonerSizeLimit(this, includeDescriptions: true);
 
@@ -625,6 +638,10 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 			float length = (mobileParty.Position.ToVec2() - targetPoint.ToVec2()).Length;
 			flag = (mobileParty.BesiegedSettlement != null && mobileParty.BesiegedSettlement == mobileParty.TargetSettlement) || length < neededMaximumDistanceForEncountering;
 		}
+		if (flag && MobileParty.MainParty.ShortTermTargetParty?.Party == this && PlayerEncounter.Current != null && PlayerEncounter.EncounteredParty == this && PlayerEncounter.Current.EncounterState == PlayerEncounterState.Begin)
+		{
+			flag = false;
+		}
 		return flag;
 	}
 
@@ -687,6 +704,11 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 		SetVisualAsDirty();
 	}
 
+	public int GetNumberOfMissionReadyTroops()
+	{
+		return NumberOfHealthyMembers;
+	}
+
 	int IBattleCombatant.GetTacticsSkillAmount()
 	{
 		if (LeaderHero != null)
@@ -694,11 +716,6 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 			return LeaderHero.GetSkillValue(DefaultSkills.Tactics);
 		}
 		return 0;
-	}
-
-	public int GetNumberOfMissionReadyTroops()
-	{
-		return NumberOfHealthyMembers;
 	}
 
 	public bool IsUnderPlayersCommand(BattleSideEnum playerSide)
@@ -752,26 +769,31 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 					PrisonRoster.RemoveTroop(CharacterObject.PlayerCharacter);
 				}
 			}
-			foreach (TroopRosterElement item2 in PrisonRoster.GetTroopRoster())
-			{
-				if (item2.Character.HeroObject == null || item2.Character == CharacterObject.PlayerCharacter)
-				{
-					continue;
-				}
-				Hero heroObject = item2.Character.HeroObject;
-				if (heroObject.PartyBelongedTo != null || heroObject.PartyBelongedToAsPrisoner != this)
-				{
-					PrisonRoster.RemoveTroop(item2.Character);
-					if (!heroObject.IsDead && !heroObject.IsDisabled)
-					{
-						MakeHeroFugitiveAction.Apply(heroObject);
-					}
-				}
-			}
+			PrisonRoster.RemoveZeroCounts();
 			if (IsMobile && MobileParty.IsCaravan && !MobileParty.IsCurrentlyUsedByAQuest && _customOwner != null && MobileParty.Owner != Owner)
 			{
 				SetCustomOwner(null);
 			}
+		}
+		if (MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.5.3.123225")))
+		{
+			foreach (TroopRosterElement item2 in PrisonRoster.GetTroopRoster())
+			{
+				if (!item2.Character.IsHero || item2.Character == CharacterObject.PlayerCharacter)
+				{
+					continue;
+				}
+				Hero heroObject = item2.Character.HeroObject;
+				if (!heroObject.IsPrisoner || item2.Number > 1 || heroObject.PartyBelongedTo != null || heroObject.PartyBelongedToAsPrisoner != this)
+				{
+					PrisonRoster.RemoveTroop(item2.Character, item2.Number);
+					if (heroObject.IsPrisoner && !heroObject.IsDead && !heroObject.IsDisabled)
+					{
+						EndCaptivityAction.ApplyByEscape(heroObject);
+					}
+				}
+			}
+			PrisonRoster.RemoveZeroCounts();
 		}
 		if (MBSaveLoad.LastLoadedGameVersion < ApplicationVersion.FromString("v1.2.0"))
 		{
@@ -802,7 +824,7 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 	{
 		if (tier < 0)
 		{
-			Debug.FailedAssert("Requested men count for negative tier.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyBase.cs", "GetNumberOfHealthyMenOfTier", 655);
+			Debug.FailedAssert("Requested men count for negative tier.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\PartyBase.cs", "GetNumberOfHealthyMenOfTier", 684);
 			return 0;
 		}
 		bool flag = false;
@@ -1019,96 +1041,6 @@ public sealed class PartyBase : IBattleCombatant, IRandomOwner, IInteractablePoi
 	public void WoundMemberRosterElementsWithIndex(int elementIndex, int numberToWound)
 	{
 		MemberRoster.AddToCountsAtIndex(elementIndex, 0, numberToWound);
-	}
-
-	public void UpdateVisibilityAndInspected(CampaignVec2 fromPosition, float mainPartySeeingRange = 0f)
-	{
-		bool isVisible = false;
-		bool isInspected = false;
-		if (IsSettlement)
-		{
-			isVisible = true;
-			if (Settlement.SettlementComponent is ISpottable { IsSpotted: false })
-			{
-				isVisible = false;
-			}
-			if (isVisible)
-			{
-				isInspected = CalculateSettlementInspected(fromPosition.ToVec2(), Settlement, mainPartySeeingRange);
-			}
-		}
-		else if (MobileParty.IsActive)
-		{
-			if (Campaign.Current.TrueSight)
-			{
-				isVisible = true;
-				isInspected = true;
-			}
-			else if (MobileParty.CurrentSettlement == null || MobileParty.LeaderHero?.ClanBanner != null || (MobileParty.MapEvent != null && MobileParty.MapEvent.IsSiegeAssault && MobileParty.Party.Side == BattleSideEnum.Attacker))
-			{
-				CalculateVisibilityAndInspected(fromPosition.ToVec2(), MobileParty, out isVisible, out isInspected, mainPartySeeingRange);
-			}
-		}
-		if (IsSettlement)
-		{
-			Settlement.IsVisible = isVisible;
-			Settlement.IsInspected = isInspected;
-		}
-		else
-		{
-			MobileParty.IsVisible = isVisible;
-			MobileParty.IsInspected = isInspected;
-		}
-	}
-
-	private static void CalculateVisibilityAndInspected(Vec2 fromPosition, IMapPoint mapPoint, out bool isVisible, out bool isInspected, float mainPartySeeingRange = 0f)
-	{
-		isInspected = false;
-		isVisible = false;
-		MobileParty mobileParty = mapPoint as MobileParty;
-		if (mobileParty?.Army != null && mobileParty.Army.LeaderParty.AttachedParties.IndexOf(mobileParty) >= 0)
-		{
-			isVisible = mobileParty.Army.LeaderParty.IsVisible;
-			return;
-		}
-		if (mobileParty != null && mobileParty.SiegeEvent != null && mobileParty.SiegeEvent.BesiegedSettlement.IsInspected)
-		{
-			isVisible = true;
-			return;
-		}
-		if (mobileParty != null && mobileParty.MapEvent != null && mobileParty.MapEvent.IsRaid && mobileParty.MapEvent.MapEventSettlement.IsInspected)
-		{
-			isVisible = true;
-			return;
-		}
-		float num = CalculateVisibilityRangeOfMapPoint(fromPosition, mapPoint, mainPartySeeingRange);
-		if (num < 1f)
-		{
-			float partySpottingRatioForMainPartySeeingRange = Campaign.Current.Models.MapVisibilityModel.GetPartySpottingRatioForMainPartySeeingRange(mobileParty);
-			isVisible = mapPoint.IsActive && num <= partySpottingRatioForMainPartySeeingRange;
-			if (isVisible)
-			{
-				isInspected = true;
-			}
-		}
-	}
-
-	private static bool CalculateSettlementInspected(Vec2 fromPosition, IMapPoint mapPoint, float mainPartySeeingRange = 0f)
-	{
-		float num = 1.5f;
-		return CalculateVisibilityRangeOfMapPoint(fromPosition, mapPoint, mainPartySeeingRange) <= num;
-	}
-
-	private static float CalculateVisibilityRangeOfMapPoint(Vec2 fromPosition, IMapPoint mapPoint, float mainPartySeeingRange)
-	{
-		MobileParty mainParty = MobileParty.MainParty;
-		Vec2 vec = fromPosition - mapPoint.Position.ToVec2();
-		float num = mainPartySeeingRange;
-		if (mainPartySeeingRange == 0f)
-		{
-			num = mainParty.SeeingRange;
-		}
-		return vec.Length / num;
 	}
 
 	public void SetAsCameraFollowParty()

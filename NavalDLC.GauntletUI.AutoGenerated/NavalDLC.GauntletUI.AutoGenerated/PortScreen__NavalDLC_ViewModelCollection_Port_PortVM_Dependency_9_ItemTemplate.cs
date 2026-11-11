@@ -63,6 +63,20 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_9_I
 		return visualDefinition;
 	}
 
+	private VisualDefinition CreateVisualDefinitionBottomMenu()
+	{
+		VisualDefinition visualDefinition = new VisualDefinition("BottomMenu", 0.45f, 0f, AnimationInterpolation.Type.EaseOut, AnimationInterpolation.Function.Quint);
+		visualDefinition.AddVisualState(new VisualState("Default")
+		{
+			PositionYOffset = 6f
+		});
+		visualDefinition.AddVisualState(new VisualState("Opened")
+		{
+			PositionYOffset = 100f
+		});
+		return visualDefinition;
+	}
+
 	public void CreateWidgets()
 	{
 		_widget = this;
@@ -81,6 +95,8 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_9_I
 		base.WidthSizePolicy = SizePolicy.StretchToParent;
 		base.HeightSizePolicy = SizePolicy.CoverChildren;
 		base.StackLayout.LayoutMethod = LayoutMethod.HorizontalLeftToRight;
+		base.MarginTop = 1f;
+		base.MarginBottom = 1f;
 		_widget_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0.MarginRight = 5f;

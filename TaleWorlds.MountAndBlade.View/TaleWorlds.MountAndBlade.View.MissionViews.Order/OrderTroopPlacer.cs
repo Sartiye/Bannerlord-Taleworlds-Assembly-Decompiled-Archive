@@ -147,6 +147,11 @@ public class OrderTroopPlacer : MissionView
 		return OrderController.SelectedFormations.Count > 0;
 	}
 
+	protected virtual bool CanGiveMovementOrder()
+	{
+		return true;
+	}
+
 	protected virtual CursorState GetCursorState()
 	{
 		CursorState cursorState = CursorState.Invisible;
@@ -418,7 +423,7 @@ public class OrderTroopPlacer : MissionView
 	{
 		_isDrawnThisFrame = true;
 		OrderController.SimulateNewOrderWithPositionAndDirection(formationRealStartingPosition, formationRealEndingPosition, out var simulationAgentFrames, isFormationLayoutVertical);
-		if (giveOrder)
+		if (giveOrder && CanGiveMovementOrder())
 		{
 			if (!isFormationLayoutVertical)
 			{

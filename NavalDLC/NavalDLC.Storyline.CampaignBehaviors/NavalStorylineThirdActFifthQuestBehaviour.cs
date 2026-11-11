@@ -143,9 +143,15 @@ public class NavalStorylineThirdActFifthQuestBehaviour : CampaignBehaviorBase
 				}
 				else
 				{
-					Campaign.Current.ConversationManager.ConversationEndOneShot += OnPlayerAcceptsQuestThroughMission;
+					Campaign.Current.ConversationManager.ConversationEndOneShot += delegate
+					{
+						NavalStorylineData.OnPlayerAcceptsQuest(QuestAccepted, delegate
+						{
+							_navalStorylineFinalQuestState = NavalStorylineFinalQuestState.GunnarWaitsForAnAnswer;
+							NavalStorylineData.OnPlayerPostponedQuestStart();
+						});
+					};
 				}
-				_navalStorylineFinalQuestState = NavalStorylineFinalQuestState.Quest5IsInProgress;
 			})
 			.CloseDialog()
 			.PlayerOption(new TextObject("{=a0j86F9C}I need a bit more time."))
@@ -169,9 +175,15 @@ public class NavalStorylineThirdActFifthQuestBehaviour : CampaignBehaviorBase
 				}
 				else
 				{
-					Campaign.Current.ConversationManager.ConversationEndOneShot += OnPlayerAcceptsQuestThroughMission;
+					Campaign.Current.ConversationManager.ConversationEndOneShot += delegate
+					{
+						NavalStorylineData.OnPlayerAcceptsQuest(QuestAccepted, delegate
+						{
+							_navalStorylineFinalQuestState = NavalStorylineFinalQuestState.GunnarWaitsForAnAnswer;
+							NavalStorylineData.OnPlayerPostponedQuestStart();
+						});
+					};
 				}
-				_navalStorylineFinalQuestState = NavalStorylineFinalQuestState.Quest5IsInProgress;
 			})
 			.CloseDialog()
 			.PlayerOption(new TextObject("{=4LhjHfSY}I am still not ready."))
@@ -183,8 +195,8 @@ public class NavalStorylineThirdActFifthQuestBehaviour : CampaignBehaviorBase
 			.PlayerOption("{=aEKNUI45}This war on the Sea Hounds is too risky. There must be another way to get my sister back.")
 			.GotoDialogState("gunnar_ransom_sister")
 			.EndPlayerOptions();
-		TextObject text = new TextObject("{=7SzwQ5NK}{PLAYER.NAME}, welcome! I've been entertaining the village with tales of our adventurers. If you're looking for recruits, then I doubt you'll find a more promising batch than the lads of Lagsholfn. You always have a place by my hearth, old friend.");
-		TextObject text2 = new TextObject("{=dV5ai0PF}Well, {PLAYER.NAME}... Alas, you appear to have made some enemies here. I do not know if what they say is true, and at any rate, I will never raise a hand against you. But I do not think it is good for you to stay here just now.");
+		TextObject text = new TextObject("{=7SzwQ5NK}[if:convo_merry]{PLAYER.NAME}, welcome! I've been entertaining the village with tales of our adventurers. If you're looking for recruits, then I doubt you'll find a more promising batch than the lads of Lagsholfn. You always have a place by my hearth, old friend.");
+		TextObject text2 = new TextObject("{=dV5ai0PF}[if:convo_grave]Well, {PLAYER.NAME}... Alas, you appear to have made some enemies here. I do not know if what they say is true, and at any rate, I will never raise a hand against you. But I do not think it is good for you to stay here just now.");
 		DialogFlow dialogFlow3 = DialogFlow.CreateDialogFlow("start", 1200).BeginNpcOptions().NpcOption(text, delegate
 		{
 			if (GunnarNotableConditions())
@@ -272,11 +284,12 @@ public class NavalStorylineThirdActFifthQuestBehaviour : CampaignBehaviorBase
 		}
 	}
 
-	private void OnPlayerAcceptsQuestThroughMission()
+	private void QuestAccepted()
 	{
 		_isQuestAcceptedThroughMission = true;
 		OpenQuestMenu();
 		Mission.Current.EndMission();
+		_navalStorylineFinalQuestState = NavalStorylineFinalQuestState.Quest5IsInProgress;
 	}
 
 	private void OpenQuestMenu()
@@ -384,7 +397,7 @@ public class NavalStorylineThirdActFifthQuestBehaviour : CampaignBehaviorBase
 		MobileParty.MainParty.MemberRoster.AddToCounts(object2, 10);
 		if (!MobileParty.MainParty.Anchor.IsValid && Settlement.CurrentSettlement != null && Settlement.CurrentSettlement.HasPort)
 		{
-			MobileParty.MainParty.Anchor.SetSettlement(Settlement.CurrentSettlement);
+			MobileParty.MainParty.Anchor.Settlement = Settlement.CurrentSettlement;
 		}
 		TextObject textObject = new TextObject("{=06sIBlHR}{NUMBER} troops and {SHIP_NAME} were added to your party.");
 		textObject.SetTextVariable("NUMBER", 20);

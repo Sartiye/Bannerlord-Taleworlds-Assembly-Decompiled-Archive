@@ -954,7 +954,7 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void SetFormationInfoDelegate(UIntPtr agentPointer, int fileIndex, int rankIndex, int fileCount, int rankCount, int unitCount, Vec2 wallDir, int unitSpacing);
+	public delegate void SetFormationInfoDelegate(UIntPtr agentPointer, int fileIndex, int rankIndex, int fileCount, int rankCount, int unitCount, Vec2 wallDir, int unitSpacing, [MarshalAs(UnmanagedType.U1)] bool isUnderRangedAttack);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
@@ -2748,9 +2748,9 @@ internal class ScriptingInterfaceOfIMBAgent : IMBAgent
 		return call_SetFormationFrameEnabledDelegate(agentPointer, position, direction, positionVelocity, formationDirectionEnforcingFactor, teleportAgents);
 	}
 
-	public void SetFormationInfo(UIntPtr agentPointer, int fileIndex, int rankIndex, int fileCount, int rankCount, int unitCount, Vec2 wallDir, int unitSpacing)
+	public void SetFormationInfo(UIntPtr agentPointer, int fileIndex, int rankIndex, int fileCount, int rankCount, int unitCount, Vec2 wallDir, int unitSpacing, bool isUnderRangedAttack)
 	{
-		call_SetFormationInfoDelegate(agentPointer, fileIndex, rankIndex, fileCount, rankCount, unitCount, wallDir, unitSpacing);
+		call_SetFormationInfoDelegate(agentPointer, fileIndex, rankIndex, fileCount, rankCount, unitCount, wallDir, unitSpacing, isUnderRangedAttack);
 	}
 
 	public void SetFormationIntegrityData(UIntPtr agentPointer, in Vec2 position, in Vec2 currentFormationDirection, in Vec2 averageVelocityOfCloseAgents, float averageMaxUnlimitedSpeedOfCloseAgents, float deviationOfPositions, bool shouldKeepWithFormationInsteadOfMovingToAgent)

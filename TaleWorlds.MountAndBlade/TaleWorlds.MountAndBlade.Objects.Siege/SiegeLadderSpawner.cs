@@ -139,9 +139,9 @@ public class SiegeLadderSpawner : SpawnerBase
 		}
 		if (OnWallNavMeshId != -1)
 		{
-			List<GameEntity> entities = new List<GameEntity>();
-			base.Scene.GetEntities(ref entities);
-			foreach (GameEntity item in entities)
+			List<WeakGameEntity> entities = new List<WeakGameEntity>();
+			base.Scene.GetEntitiesAsWeak(ref entities);
+			foreach (WeakGameEntity item in entities)
 			{
 				SiegeLadderSpawner firstScriptOfType = item.GetFirstScriptOfType<SiegeLadderSpawner>();
 				if (firstScriptOfType != null && item != base.GameEntity && OnWallNavMeshId == firstScriptOfType.OnWallNavMeshId && base.GameEntity.GetVisibilityLevelMaskIncludingParents() == item.GetVisibilityLevelMaskIncludingParents())

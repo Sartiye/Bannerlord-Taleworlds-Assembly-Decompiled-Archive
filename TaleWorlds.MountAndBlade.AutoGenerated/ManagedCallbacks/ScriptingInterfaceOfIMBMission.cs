@@ -102,6 +102,11 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
+	public delegate void DefragRenderBuffersDelegate();
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
 	[return: MarshalAs(UnmanagedType.U1)]
 	public delegate bool EndOfRecordDelegate(UIntPtr missionPointer);
 
@@ -651,6 +656,8 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 
 	public static CreateMissionDelegate call_CreateMissionDelegate;
 
+	public static DefragRenderBuffersDelegate call_DefragRenderBuffersDelegate;
+
 	public static EndOfRecordDelegate call_EndOfRecordDelegate;
 
 	public static FinalizeMissionDelegate call_FinalizeMissionDelegate;
@@ -1004,6 +1011,11 @@ internal class ScriptingInterfaceOfIMBMission : IMBMission
 	public UIntPtr CreateMission(Mission mission)
 	{
 		return call_CreateMissionDelegate(mission?.GetManagedId() ?? 0);
+	}
+
+	public void DefragRenderBuffers()
+	{
+		call_DefragRenderBuffersDelegate();
 	}
 
 	public bool EndOfRecord(UIntPtr missionPointer)

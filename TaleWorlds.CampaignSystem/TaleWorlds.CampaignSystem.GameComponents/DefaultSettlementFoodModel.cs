@@ -48,10 +48,15 @@ public class DefaultSettlementFoodModel : SettlementFoodModel
 		ExplainedNumber bonuses4 = new ExplainedNumber((((float?)town.GarrisonParty?.Party.NumberOfAllMembers) ?? 0f) / (float)NumberOfMenOnGarrisonToEatOneFood);
 		if (town.IsUnderSiege)
 		{
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.Gourmet, town, ref bonuses4);
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Medicine.TriageTent, town, ref bonuses2);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.Gourmet, town, isPrimaryBonus: false, ref bonuses4);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Medicine.TriageTent, town, isPrimaryBonus: false, ref bonuses2);
 		}
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.MasterOfWarcraft, town, ref bonuses3);
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.MasterOfWarcraft, town, isPrimaryBonus: false, ref bonuses3);
+		Hero governor = town.Governor;
+		if (governor != null && governor.CurrentSettlement?.Town == town)
+		{
+			TraitEffectHelper.ApplyTraitEffect(governor, DefaultPersonalityTraitEffects.GenerosityFoodCostEffect, ref bonuses4);
+		}
 		bonuses2.Add(bonuses3.ResultNumber, ProsperityText);
 		bonuses2.Add(bonuses4.ResultNumber, GarrisonText);
 		town.AddEffectOfBuildings(BuildingEffectEnum.FoodConsumption, ref bonuses2);
@@ -77,7 +82,7 @@ public class DefaultSettlementFoodModel : SettlementFoodModel
 		}
 		else
 		{
-			PerkHelper.AddPerkBonusForTown(DefaultPerks.Roguery.DirtyFighting, town, ref bonuses);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Roguery.DirtyFighting, town, isPrimaryBonus: false, ref bonuses);
 		}
 		if (includeMarketStocks)
 		{

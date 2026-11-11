@@ -121,4 +121,16 @@ public interface IViewDataTracker
 	MBReadOnlyList<ItemRosterElement> GetPlunderItems();
 
 	void OnFigureheadExamined(Figurehead figurehead);
+
+	void RemoveCraftingPieceNewlyUnlockedList(CraftingPiece craftingPiece);
+
+	int GetLastOpenedKingdomTabIndex();
+
+	void SetLastOpenedKingdomTabIndex(int tabIndex);
+
+	int GetLastOpenedClanTabIndex();
+
+	void SetLastOpenedClanTabIndex(int tabIndex);
+
+	bool IsCraftingPieceNewlyUnlocked(CraftingPiece craftingPiece);
 }

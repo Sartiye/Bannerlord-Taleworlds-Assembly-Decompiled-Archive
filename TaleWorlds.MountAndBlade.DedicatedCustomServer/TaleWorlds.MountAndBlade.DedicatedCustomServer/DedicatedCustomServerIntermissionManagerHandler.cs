@@ -21,6 +21,8 @@ public class DedicatedCustomServerIntermissionManagerHandler : IServerSideInterm
 
 	private CustomServerListedServerAdapter _adapter;
 
+	private string _lastSentStreamerPasswordHash;
+
 	public CustomBattleServer DedicatedCustomGameServer { get; private set; }
 
 	public MultiplayerGameLogger GameLogger { get; private set; }
@@ -121,14 +123,49 @@ public class DedicatedCustomServerIntermissionManagerHandler : IServerSideInterm
 
 	void IServerSideIntermissionManagerHandler.OnGameParametersChanged(string gameType, string mapID, string uniqueMapIdentifierString)
 	{
+		SendGameProperties(gameType, mapID, uniqueMapIdentifierString);
+	}
+
+	public void OnStreamerOptionsChangedByAdmin()
+	{
+		string strValue = MultiplayerOptions.OptionType.GameType.GetStrValue();
+		string strValue2 = MultiplayerOptions.OptionType.Map.GetStrValue();
+		string uniqueMapIdentifierString = null;
+		if (Utilities.TryGetUniqueIdentifiersForScene(strValue2, out var identifiers))
+		{
+			uniqueMapIdentifierString = identifiers.Serialize();
+		}
+		SendGameProperties(strValue, strValue2, uniqueMapIdentifierString);
+	}
+
+	private void SendGameProperties(string gameType, string mapID, string uniqueMapIdentifierString)
+	{
 		if (DedicatedCustomGameServer.IsRegistered)
 		{
-			DedicatedCustomGameServer.UpdateGameProperties(gameType, mapID, uniqueMapIdentifierString);
+			DedicatedCustomGameServer.UpdateGameProperties(gameType, mapID, uniqueMapIdentifierString, MultiplayerOptions.OptionType.MaxStreamerCount.GetIntValue(), GetHashedStreamerPassword());
 		}
+	}
+
+	private string GetHashedStreamerPassword()
+	{
+		string strValue = MultiplayerOptions.OptionType.StreamerPassword.GetStrValue();
+		if (string.IsNullOrEmpty(strValue))
+		{
+			_lastSentStreamerPasswordHash = null;
+			return null;
+		}
+		if (strValue != _lastSentStreamerPasswordHash)
+		{
+			_lastSentStreamerPasswordHash = Common.CalculateMD5Hash(strValue);
+			MultiplayerOptions.OptionType.StreamerPassword.SetValue(_lastSentStreamerPasswordHash);
+		}
+		return _lastSentStreamerPasswordHash;
 	}
 
 	async Task IServerSideIntermissionManagerHandler.OnGameStart(string selectedGameType, string selectedScene, string uniqueSceneId, int gameDefinitionId, string gameModule, int portToUse, string regionToUse)
 	{
-		await DedicatedCustomGameServer.RegisterGame(gameDefinitionId, gameModule, selectedGameType, MultiplayerOptions.OptionType.ServerName.GetStrValue(), MultiplayerOptions.OptionType.MaxNumberOfPlayers.GetIntValue(), selectedScene, uniqueSceneId, portToUse, regionToUse, MultiplayerOptions.OptionType.GamePassword.GetStrValue(), MultiplayerOptions.OptionType.AdminPassword.GetStrValue(), Module.CurrentModule.StartupInfo.Permission, Module.CurrentModule.StartupInfo.CustomServerHostIP);
+		string strValue = MultiplayerOptions.OptionType.StreamerPassword.GetStrValue();
+		_lastSentStreamerPasswordHash = (string.IsNullOrEmpty(strValue) ? null : strValue);
+		await DedicatedCustomGameServer.RegisterGame(gameDefinitionId, gameModule, selectedGameType, MultiplayerOptions.OptionType.ServerName.GetStrValue(), MultiplayerOptions.OptionType.MaxNumberOfPlayers.GetIntValue(), selectedScene, uniqueSceneId, portToUse, regionToUse, MultiplayerOptions.OptionType.GamePassword.GetStrValue(), MultiplayerOptions.OptionType.AdminPassword.GetStrValue(), MultiplayerOptions.OptionType.StreamerPassword.GetStrValue(), Module.CurrentModule.StartupInfo.Permission, Module.CurrentModule.StartupInfo.CustomServerHostIP, MultiplayerOptions.OptionType.MaxStreamerCount.GetIntValue());
 	}
 }

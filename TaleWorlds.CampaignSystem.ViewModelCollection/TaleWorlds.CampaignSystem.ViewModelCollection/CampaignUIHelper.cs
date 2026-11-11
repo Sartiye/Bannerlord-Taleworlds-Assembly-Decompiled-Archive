@@ -427,21 +427,7 @@ public static class CampaignUIHelper
 		{
 			OnlyShowWhenNotExtended = true
 		});
-		if (TaleWorlds.InputSystem.Input.IsGamepadActive)
-		{
-			if (TaleWorlds.InputSystem.Input.ControllerType.IsPlaystation())
-			{
-				GameTexts.SetVariable("EXTEND_KEY", GameTexts.FindText("str_game_key_text", "controllerlbumper_ps").ToString());
-			}
-			else
-			{
-				GameTexts.SetVariable("EXTEND_KEY", GameTexts.FindText("str_game_key_text", "controllerlbumper").ToString());
-			}
-		}
-		else
-		{
-			GameTexts.SetVariable("EXTEND_KEY", Game.Current.GameTextManager.FindText("str_game_key_text", "anyalt").ToString());
-		}
+		GameTexts.SetVariable("EXTEND_KEY", HyperlinkTexts.GetTooltipExtendKeyHyperlinkText());
 		properties.Add(new TooltipProperty(string.Empty, GameTexts.FindText("str_map_tooltip_info").ToString(), -1)
 		{
 			OnlyShowWhenNotExtended = true
@@ -494,12 +480,12 @@ public static class CampaignUIHelper
 		{
 			if (!town.OwnerClan.IsRebelClan)
 			{
-				if (town.Loyalty < (float)Campaign.Current.Models.SettlementLoyaltyModel.RebellionStartLoyaltyThreshold)
+				if (town.Loyalty <= (float)Campaign.Current.Models.SettlementLoyaltyModel.RebellionStartLoyaltyThreshold)
 				{
 					TooltipAddSeperator(settlementPropertyTooltip);
 					settlementPropertyTooltip.Add(new TooltipProperty(" ", new TextObject("{=NxEy5Nbt}High risk of rebellion").ToString(), 1, UIColors.NegativeIndicator));
 				}
-				else if (town.Loyalty < (float)Campaign.Current.Models.SettlementLoyaltyModel.RebelliousStateStartLoyaltyThreshold && loyaltyChangeExplanation.ResultNumber < 0f)
+				else if (town.Loyalty <= (float)Campaign.Current.Models.SettlementLoyaltyModel.RebelliousStateStartLoyaltyThreshold && loyaltyChangeExplanation.ResultNumber < 0f)
 				{
 					TooltipAddSeperator(settlementPropertyTooltip);
 					settlementPropertyTooltip.Add(new TooltipProperty(" ", new TextObject("{=F0a7hyp0}Risk of rebellion").ToString(), 1, UIColors.NegativeIndicator));
@@ -565,6 +551,27 @@ public static class CampaignUIHelper
 	{
 		ExplainedNumber explainedNumber = party.PartySizeLimitExplainer;
 		return GetTooltipForAccumulatingPropertyWithResult(_partyTroopSizeLimitStr.ToString(), explainedNumber.ResultNumber, ref explainedNumber);
+	}
+
+	public static TextObject GetPartySizeLimitWithDifferentLeader(PartyBase party, Hero newLeader)
+	{
+		TextObject textObject = GameTexts.FindText("str_LEFT_over_RIGHT");
+		textObject.SetTextVariable("LEFT", party.PartySizeLimit.ToString());
+		textObject.SetTextVariable("RIGHT", GetPartySizeLimitForLeader(newLeader));
+		return textObject;
+	}
+
+	public static TextObject GetPartySizeLimitWithDifferentLeader(Hero currentLeader, Hero newLeader)
+	{
+		TextObject textObject = GameTexts.FindText("str_LEFT_over_RIGHT");
+		textObject.SetTextVariable("LEFT", GetPartySizeLimitForLeader(currentLeader));
+		textObject.SetTextVariable("RIGHT", GetPartySizeLimitForLeader(newLeader));
+		return textObject;
+	}
+
+	public static int GetPartySizeLimitForLeader(Hero leader)
+	{
+		return Campaign.Current.Models.PartySizeLimitModel.GetAssumedPartySizeForLordParty(leader, leader.Clan.MapFaction, leader.Clan);
 	}
 
 	public static List<TooltipProperty> GetPartyPrisonerSizeLimitTooltip(PartyBase party)
@@ -687,27 +694,29 @@ public static class CampaignUIHelper
 	public static List<TooltipProperty> GetArmyFoodTooltip(Army army)
 	{
 		List<TooltipProperty> list = new List<TooltipProperty>();
-		list.Add(new TooltipProperty(new TextObject("{=Q8dhryRX}Parties' Food").ToString(), "", 0, onlyShowWhenExtended: false, TooltipProperty.TooltipPropertyFlags.Title));
 		float num = army.LeaderParty.Food;
+		float num2 = army.LeaderParty.FoodChange;
 		foreach (MobileParty attachedParty in army.LeaderParty.AttachedParties)
 		{
 			num += attachedParty.Food;
+			num2 += attachedParty.FoodChange;
 		}
-		list.Add(new TooltipProperty(GameTexts.FindText("str_total_army_food").ToString(), FloatToString(num), 0));
+		TooltipAddPropertyTitleWithValue(list, new TextObject("{=ptTtBHU1}Army's Food").ToString(), num);
+		list.Add(new TooltipProperty(_changeStr.ToString(), FloatToString(num2), 0));
 		list.Add(new TooltipProperty("", string.Empty, 0, onlyShowWhenExtended: false, TooltipProperty.TooltipPropertyFlags.DefaultSeperator));
-		double num2 = 0.0;
+		double num3 = 0.0;
 		foreach (MobileParty party in army.Parties)
 		{
 			if (army.DoesLeaderPartyAndAttachedPartiesContain(party))
 			{
 				float val = party.Party.MobileParty.Food / (0f - party.Party.MobileParty.FoodChange);
-				num2 += (double)Math.Max(val, 0f);
+				num3 += (double)Math.Max(val, 0f);
 				string daysUntilNoFood = GetDaysUntilNoFood(party.Party.MobileParty.Food, party.Party.MobileParty.FoodChange);
 				list.Add(new TooltipProperty(party.Party.MobileParty.Name.ToString(), daysUntilNoFood, 0));
 			}
 		}
 		list.Add(new TooltipProperty("", string.Empty, 0, onlyShowWhenExtended: false, TooltipProperty.TooltipPropertyFlags.RundownSeperator));
-		list.Add(new TooltipProperty(new TextObject("{=rwKBR4NE}Average Days Until Food Runs Out").ToString(), TaleWorlds.Library.MathF.Ceiling(num2 / (double)army.LeaderPartyAndAttachedPartiesCount).ToString(), 0));
+		list.Add(new TooltipProperty(new TextObject("{=rwKBR4NE}Average Days Until Food Runs Out").ToString(), TaleWorlds.Library.MathF.Ceiling(num3 / (double)army.LeaderPartyAndAttachedPartiesCount).ToString(), 0));
 		return list;
 	}
 
@@ -1081,9 +1090,9 @@ public static class CampaignUIHelper
 		TextObject textObject = GameTexts.FindText("str_LEFT_over_RIGHT_no_space");
 		Color color = new Color(0.82f, 0.12f, 0.07f);
 		int totalManCount2 = party.MemberRoster.TotalManCount;
-		int partySizeLimit = party.PartySizeLimit;
-		textObject.SetTextVariable("LEFT", totalManCount2).SetTextVariable("RIGHT", partySizeLimit);
-		if (totalManCount2 > partySizeLimit)
+		int num2 = (int)Campaign.Current.Models.PartySizeLimitModel.GetPartyMemberSizeLimit(party, isCurrentlyAtSea: false).ResultNumber;
+		textObject.SetTextVariable("LEFT", totalManCount2).SetTextVariable("RIGHT", num2);
+		if (totalManCount2 > num2)
 		{
 			list.Add(new TooltipProperty(new TextObject("{=ZgYAGfbD}Land Troop Capacity").ToString(), textObject.ToString(), 0, color));
 		}
@@ -1093,9 +1102,10 @@ public static class CampaignUIHelper
 		}
 		if (party.Ships.Count > 0)
 		{
-			int num2 = party.Ships.Sum((Ship s) => s.SkeletalCrewCapacity);
-			textObject.SetTextVariable("LEFT", totalManCount2).SetTextVariable("RIGHT", num2);
-			if (totalManCount2 < num2)
+			int num3 = party.Ships.Sum((Ship s) => s.SkeletalCrewCapacity);
+			int skeletalCrewCount = Campaign.Current.Models.PartySpeedCalculatingModel.GetSkeletalCrewCount(party.MobileParty);
+			textObject.SetTextVariable("LEFT", skeletalCrewCount).SetTextVariable("RIGHT", num3);
+			if (skeletalCrewCount < num3)
 			{
 				list.Add(new TooltipProperty(new TextObject("{=p9wUyxfb}Ship Skeletal Crew").ToString(), textObject.ToString(), 0, color));
 			}
@@ -1103,9 +1113,9 @@ public static class CampaignUIHelper
 			{
 				list.Add(new TooltipProperty(new TextObject("{=p9wUyxfb}Ship Skeletal Crew").ToString(), textObject.ToString(), 0));
 			}
-			int num3 = party.Ships.Sum((Ship s) => s.TotalCrewCapacity);
-			textObject.SetTextVariable("LEFT", totalManCount2).SetTextVariable("RIGHT", num3);
-			if (totalManCount2 > num3)
+			int num4 = party.Ships.Sum((Ship s) => s.TotalCrewCapacity);
+			textObject.SetTextVariable("LEFT", totalManCount2).SetTextVariable("RIGHT", num4);
+			if (totalManCount2 > num4)
 			{
 				list.Add(new TooltipProperty(new TextObject("{=w1tgTNvK}Ship Troop Capacity").ToString(), textObject.ToString(), 0, color));
 			}
@@ -1184,6 +1194,11 @@ public static class CampaignUIHelper
 		{
 			list.Add(new TooltipProperty("", perkRoleText.ToString(), 0));
 			list.Add(new TooltipProperty("", perk.PrimaryDescription.ToString(), 0));
+			TextObject perkEnvironmentText = GetPerkEnvironmentText(perk, getSecondary: false);
+			if (!TextObject.IsNullOrEmpty(perkEnvironmentText))
+			{
+				list.Add(new TooltipProperty("", perkEnvironmentText.ToString(), -1));
+			}
 			list.Add(new TooltipProperty("", "", 0));
 		}
 		TextObject perkRoleText2 = GetPerkRoleText(perk, getSecondary: true);
@@ -1191,6 +1206,11 @@ public static class CampaignUIHelper
 		{
 			list.Add(new TooltipProperty("", perkRoleText2.ToString(), 0));
 			list.Add(new TooltipProperty("", perk.SecondaryDescription.ToString(), 0));
+			TextObject perkEnvironmentText2 = GetPerkEnvironmentText(perk, getSecondary: true);
+			if (!TextObject.IsNullOrEmpty(perkEnvironmentText2))
+			{
+				list.Add(new TooltipProperty("", perkEnvironmentText2.ToString(), -1));
+			}
 			list.Add(new TooltipProperty("", "", 0));
 		}
 		if (isActive)
@@ -1232,6 +1252,17 @@ public static class CampaignUIHelper
 			textObject.SetTextVariable("PRIMARY_ROLE", GameTexts.FindText("role", perk.PrimaryRole.ToString()));
 		}
 		return textObject;
+	}
+
+	public static TextObject GetPerkEnvironmentText(PerkObject perk, bool getSecondary)
+	{
+		return (getSecondary ? perk.SecondaryEffectEnvironment : perk.PrimaryEffectEnvironment) switch
+		{
+			PerkObject.EffectEnvironment.LandOnly => new TextObject("{=TkEibGTE}Land only"), 
+			PerkObject.EffectEnvironment.NavalOnly => new TextObject("{=So8MyZrJ}Sea only"), 
+			PerkObject.EffectEnvironment.NavalReduced => new TextObject("{=EeaQQaFU}Reduced effect at sea"), 
+			_ => null, 
+		};
 	}
 
 	public static List<TooltipProperty> GetSiegeMachineTooltip(SiegeEngineType engineType, bool showDescription = true, int hoursUntilCompletion = 0)
@@ -1338,7 +1369,7 @@ public static class CampaignUIHelper
 		}
 		else
 		{
-			Debug.FailedAssert("Only towns' consumptions are tracked", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetSettlementConsumptionTooltip", 1388);
+			Debug.FailedAssert("Only towns' consumptions are tracked", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetSettlementConsumptionTooltip", 1428);
 		}
 		return list;
 	}
@@ -1443,17 +1474,17 @@ public static class CampaignUIHelper
 	public static TextObject GetTeleportationDelayText(Hero hero, PartyBase target)
 	{
 		TextObject result = TextObject.GetEmpty();
-		if (hero != null && target != null)
+		if (hero != null)
 		{
-			float resultNumber = Campaign.Current.Models.DelayedTeleportationModel.GetTeleportationDelayAsHours(hero, target).ResultNumber;
+			float num = ((target != null) ? Campaign.Current.Models.DelayedTeleportationModel.GetTeleportationDelayAsHours(hero, target).ResultNumber : Campaign.Current.Models.DelayedTeleportationModel.MaximumDistanceForDelayAsDays);
 			if (hero.IsTraveling)
 			{
 				result = _travelingText.CopyTextObject();
 			}
-			else if (resultNumber > 0f)
+			else if (num > 0f)
 			{
 				TextObject textObject = new TextObject("{=P0To9aRW}Travel time: {TRAVEL_TIME}");
-				textObject.SetTextVariable("TRAVEL_TIME", GetHoursAndDaysTextFromHourValue((int)Math.Ceiling(resultNumber)));
+				textObject.SetTextVariable("TRAVEL_TIME", GetHoursAndDaysTextFromHourValue((int)Math.Ceiling(num)));
 				result = textObject;
 			}
 			else
@@ -1467,8 +1498,16 @@ public static class CampaignUIHelper
 	public static List<TooltipProperty> GetTimeOfDayAndResetCameraTooltip()
 	{
 		List<TooltipProperty> list = new List<TooltipProperty>();
-		int getHourOfDay = CampaignTime.Now.GetHourOfDay;
-		TextObject textObject = ((getHourOfDay >= 6 && getHourOfDay < 12) ? new TextObject("{=X3gcUz7C}Morning") : ((getHourOfDay >= 12 && getHourOfDay < 15) ? new TextObject("{=CTtjSwRb}Noon") : ((getHourOfDay >= 15 && getHourOfDay < 18) ? new TextObject("{=J2gvnexb}Afternoon") : ((getHourOfDay < 18 || getHourOfDay >= 22) ? new TextObject("{=fAxjyMt5}Night") : new TextObject("{=gENb9SSW}Evening")))));
+		TextObject textObject;
+		if (CampaignTime.Now.IsNightTime)
+		{
+			textObject = new TextObject("{=fAxjyMt5}Night");
+		}
+		else
+		{
+			int getHourOfDay = CampaignTime.Now.GetHourOfDay;
+			textObject = ((getHourOfDay < 12) ? new TextObject("{=X3gcUz7C}Morning") : ((getHourOfDay < 15) ? new TextObject("{=CTtjSwRb}Noon") : ((getHourOfDay >= 18) ? new TextObject("{=gENb9SSW}Evening") : new TextObject("{=J2gvnexb}Afternoon"))));
+		}
 		list.Add(new TooltipProperty(textObject.ToString(), "", 0));
 		list.Add(new TooltipProperty("", new TextObject("{=sFiU3Ss2}Click to Reset Camera").ToString(), 0));
 		return list;
@@ -2396,6 +2435,11 @@ public static class CampaignUIHelper
 			disabledReason = GameTexts.FindText("str_action_disabled_reason_raft_state");
 			return false;
 		}
+		if (MobileParty.MainParty.IsInFerryState)
+		{
+			disabledReason = GameTexts.FindText("str_action_disabled_reason_ferry_state");
+			return false;
+		}
 		if (CampaignMission.Current != null)
 		{
 			disabledReason = new TextObject("{=FdzsOvDq}This action is disabled while in a mission");
@@ -2743,21 +2787,6 @@ public static class CampaignUIHelper
 		return GameTexts.FindText("str_near_settlement").ToString();
 	}
 
-	public static Hero GetTeleportingLeaderHero(MobileParty party, ITeleportationCampaignBehavior teleportationBehavior)
-	{
-		if (party != null && teleportationBehavior != null)
-		{
-			foreach (Hero item in Hero.MainHero.Clan.Heroes.Where((Hero x) => x.IsAlive && x.IsTraveling))
-			{
-				if (teleportationBehavior.GetTargetOfTeleportingHero(item, out var _, out var isPartyLeader, out var target) && isPartyLeader && target is MobileParty mobileParty && mobileParty == party)
-				{
-					return item;
-				}
-			}
-		}
-		return null;
-	}
-
 	public static Hero GetTeleportingGovernor(Settlement settlement, ITeleportationCampaignBehavior teleportationBehavior)
 	{
 		if (settlement != null && teleportationBehavior != null)
@@ -2887,41 +2916,80 @@ public static class CampaignUIHelper
 
 	public static string GetTraitNameText(TraitObject traitObject, Hero hero)
 	{
-		if (traitObject != DefaultTraits.Mercy && traitObject != DefaultTraits.Valor && traitObject != DefaultTraits.Honor && traitObject != DefaultTraits.Generosity && traitObject != DefaultTraits.Calculating)
-		{
-			Debug.FailedAssert("Cannot show this trait as text.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetTraitNameText", 3326);
-			return "";
-		}
-		int traitLevel = hero.GetTraitLevel(traitObject);
-		if (traitLevel != 0)
-		{
-			return GameTexts.FindText("str_trait_name_" + traitObject.StringId.ToLower(), (traitLevel + TaleWorlds.Library.MathF.Abs(traitObject.MinValue)).ToString()).ToString();
-		}
-		return "";
+		return GetTraitLevelName(traitObject, hero.GetTraitLevel(traitObject));
 	}
 
 	public static string GetTraitTooltipText(TraitObject traitObject, int traitValue)
 	{
-		if (traitObject != DefaultTraits.Mercy && traitObject != DefaultTraits.Valor && traitObject != DefaultTraits.Honor && traitObject != DefaultTraits.Generosity && traitObject != DefaultTraits.Calculating)
+		if (!IsPersonalityTrait(traitObject))
 		{
-			Debug.FailedAssert("Cannot show this trait's tooltip.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetTraitTooltipText", 3351);
+			Debug.FailedAssert("Cannot show this trait's tooltip.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetTraitTooltipText", 3360);
 			return null;
 		}
 		GameTexts.SetVariable("NEWLINE", "\n");
 		if (traitValue != 0)
 		{
-			TextObject content = GameTexts.FindText("str_trait_name_" + traitObject.StringId.ToLower(), (traitValue + TaleWorlds.Library.MathF.Abs(traitObject.MinValue)).ToString());
 			GameTexts.SetVariable("TRAIT_VALUE", traitValue);
-			GameTexts.SetVariable("TRAIT_NAME", content);
-			TextObject content2 = GameTexts.FindText("str_trait", traitObject.StringId.ToLower());
-			GameTexts.SetVariable("TRAIT", content2);
+			GameTexts.SetVariable("TRAIT_NAME", GetTraitLevelName(traitObject, traitValue));
+			TextObject content = GameTexts.FindText("str_trait", traitObject.StringId.ToLower());
+			GameTexts.SetVariable("TRAIT", content);
 			GameTexts.SetVariable("TRAIT_DESCRIPTION", traitObject.Description);
 			return GameTexts.FindText("str_trait_tooltip").ToString();
 		}
-		TextObject content3 = GameTexts.FindText("str_trait", traitObject.StringId.ToLower());
-		GameTexts.SetVariable("TRAIT", content3);
+		TextObject content2 = GameTexts.FindText("str_trait", traitObject.StringId.ToLower());
+		GameTexts.SetVariable("TRAIT", content2);
 		GameTexts.SetVariable("TRAIT_DESCRIPTION", traitObject.Description);
 		return GameTexts.FindText("str_trait_description_tooltip").ToString();
+	}
+
+	private static bool IsPersonalityTrait(TraitObject traitObject)
+	{
+		if (traitObject != DefaultTraits.Mercy && traitObject != DefaultTraits.Valor && traitObject != DefaultTraits.Honor && traitObject != DefaultTraits.Generosity)
+		{
+			return traitObject == DefaultTraits.Calculating;
+		}
+		return true;
+	}
+
+	private static string GetTraitLevelName(TraitObject traitObject, int level)
+	{
+		if (!IsPersonalityTrait(traitObject))
+		{
+			Debug.FailedAssert("Cannot show this trait as text.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CampaignUIHelper.cs", "GetTraitLevelName", 3403);
+			return string.Empty;
+		}
+		if (level == 0)
+		{
+			return string.Empty;
+		}
+		return GameTexts.FindText("str_trait_name_" + traitObject.StringId.ToLower(), (level + TaleWorlds.Library.MathF.Abs(traitObject.MinValue)).ToString()).ToString();
+	}
+
+	public static List<TooltipProperty> GetTraitEffectTooltip(TraitObject traitObject, int traitValue)
+	{
+		List<TooltipProperty> list = new List<TooltipProperty>();
+		List<(string, bool)> list2 = new List<(string, bool)>();
+		for (int i = traitObject.MinValue; i <= traitObject.MaxValue; i++)
+		{
+			list2.Add((GetTraitLevelName(traitObject, i), i == traitValue));
+		}
+		list.Add(new TooltipProperty("", GetTraitLevelName(traitObject, traitValue), 0, onlyShowWhenExtended: false, TooltipProperty.TooltipPropertyFlags.TraitTitle, list2));
+		list.Add(new TooltipProperty("", traitObject.Description.ToString(), 0, onlyShowWhenExtended: false, TooltipProperty.TooltipPropertyFlags.MultiLine));
+		bool flag = false;
+		foreach (TraitEffectObject objectType in Campaign.Current.ObjectManager.GetObjectTypeList<TraitEffectObject>())
+		{
+			if (objectType.Trait == traitObject && objectType.GetBonus(traitValue) != 0f)
+			{
+				if (!flag)
+				{
+					list.Add(new TooltipProperty("", "", 0));
+					flag = true;
+				}
+				Color color = (objectType.IsPositive ? UIColors.PositiveIndicator : UIColors.NegativeIndicator);
+				list.Add(new TooltipProperty(objectType.Description.ToString(), objectType.GetBonusText(traitValue), 0, color));
+			}
+		}
+		return list;
 	}
 
 	public static string GetTextForRole(PartyRole role)

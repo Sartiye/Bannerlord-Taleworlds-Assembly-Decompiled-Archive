@@ -120,7 +120,7 @@ internal interface IMBAgent
 	void SetFormationIntegrityData(UIntPtr agentPointer, in Vec2 position, in Vec2 currentFormationDirection, in Vec2 averageVelocityOfCloseAgents, float averageMaxUnlimitedSpeedOfCloseAgents, float deviationOfPositions, bool shouldKeepWithFormationInsteadOfMovingToAgent);
 
 	[EngineMethod("set_formation_info", false, null, false)]
-	void SetFormationInfo(UIntPtr agentPointer, int fileIndex, int rankIndex, int fileCount, int rankCount, int unitCount, Vec2 wallDir, int unitSpacing);
+	void SetFormationInfo(UIntPtr agentPointer, int fileIndex, int rankIndex, int fileCount, int rankCount, int unitCount, Vec2 wallDir, int unitSpacing, bool isUnderRangedAttack);
 
 	[EngineMethod("set_retreat_mode", false, null, false)]
 	void SetRetreatMode(UIntPtr agentPointer, WorldPosition retreatPos, bool retreat);

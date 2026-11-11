@@ -14,35 +14,27 @@ public class MPGeneralKillNotificationItemVM : ViewModel
 
 	private string _murdererName;
 
-	private string _murdererType;
-
 	private string _victimName;
-
-	private string _victimType;
 
 	private MPTeammateCompassTargetVM _murdererCompassElement;
 
 	private MPTeammateCompassTargetVM _victimCompassElement;
 
-	private Color _color1;
+	private bool _isRelatedToPlayer;
 
-	private Color _color2;
+	private bool _isMurdererAlly;
 
-	private bool _isPlayerDeath;
+	private bool _isVictimAlly;
 
-	private bool _isItemInitializationOver;
+	private bool _isNeutral;
 
-	private bool _isVictimBot;
+	private Color _murdererTeamColor;
 
-	private bool _isMurdererBot;
+	private Color _victimTeamColor;
 
-	private bool _isDamageNotification;
+	private string _killWeaponSprite;
 
-	private bool _isDamagedMount;
-
-	private bool _isRelatedToFriendlyTroop;
-
-	private bool _isFriendlyTroopDeath;
+	private bool _showKillWeapon;
 
 	private string _message;
 
@@ -64,23 +56,6 @@ public class MPGeneralKillNotificationItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public string MurdererType
-	{
-		get
-		{
-			return _murdererType;
-		}
-		set
-		{
-			if (value != _murdererType)
-			{
-				_murdererType = value;
-				OnPropertyChangedWithValue(value, "MurdererType");
-			}
-		}
-	}
-
-	[DataSourceProperty]
 	public string VictimName
 	{
 		get
@@ -93,91 +68,6 @@ public class MPGeneralKillNotificationItemVM : ViewModel
 			{
 				_victimName = value;
 				OnPropertyChangedWithValue(value, "VictimName");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public string VictimType
-	{
-		get
-		{
-			return _victimType;
-		}
-		set
-		{
-			if (value != _victimType)
-			{
-				_victimType = value;
-				OnPropertyChangedWithValue(value, "VictimType");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public bool IsDamageNotification
-	{
-		get
-		{
-			return _isDamageNotification;
-		}
-		set
-		{
-			if (value != _isDamageNotification)
-			{
-				_isDamageNotification = value;
-				OnPropertyChangedWithValue(value, "IsDamageNotification");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public bool IsDamagedMount
-	{
-		get
-		{
-			return _isDamagedMount;
-		}
-		set
-		{
-			if (value != _isDamagedMount)
-			{
-				_isDamagedMount = value;
-				OnPropertyChangedWithValue(value, "IsDamagedMount");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public Color Color1
-	{
-		get
-		{
-			return _color1;
-		}
-		set
-		{
-			if (value != _color1)
-			{
-				_color1 = value;
-				OnPropertyChangedWithValue(value, "Color1");
-			}
-		}
-	}
-
-	[DataSourceProperty]
-	public Color Color2
-	{
-		get
-		{
-			return _color2;
-		}
-		set
-		{
-			if (value != _color2)
-			{
-				_color2 = value;
-				OnPropertyChangedWithValue(value, "Color2");
 			}
 		}
 	}
@@ -217,103 +107,137 @@ public class MPGeneralKillNotificationItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public bool IsPlayerDeath
+	public bool IsRelatedToPlayer
 	{
 		get
 		{
-			return _isPlayerDeath;
+			return _isRelatedToPlayer;
 		}
 		set
 		{
-			if (value != _isPlayerDeath)
+			if (value != _isRelatedToPlayer)
 			{
-				_isPlayerDeath = value;
-				OnPropertyChangedWithValue(value, "IsPlayerDeath");
+				_isRelatedToPlayer = value;
+				OnPropertyChangedWithValue(value, "IsRelatedToPlayer");
 			}
 		}
 	}
 
 	[DataSourceProperty]
-	public bool IsItemInitializationOver
+	public string KillWeaponSprite
 	{
 		get
 		{
-			return _isItemInitializationOver;
+			return _killWeaponSprite;
 		}
 		set
 		{
-			if (value != _isItemInitializationOver)
+			if (value != _killWeaponSprite)
 			{
-				_isItemInitializationOver = value;
-				OnPropertyChangedWithValue(value, "IsItemInitializationOver");
+				_killWeaponSprite = value;
+				OnPropertyChangedWithValue(value, "KillWeaponSprite");
 			}
 		}
 	}
 
 	[DataSourceProperty]
-	public bool IsVictimBot
+	public bool ShowKillWeapon
 	{
 		get
 		{
-			return _isVictimBot;
+			return _showKillWeapon;
 		}
 		set
 		{
-			if (value != _isVictimBot)
+			if (value != _showKillWeapon)
 			{
-				_isVictimBot = value;
-				OnPropertyChangedWithValue(value, "IsVictimBot");
+				_showKillWeapon = value;
+				OnPropertyChangedWithValue(value, "ShowKillWeapon");
 			}
 		}
 	}
 
 	[DataSourceProperty]
-	public bool IsMurdererBot
+	public bool IsMurdererAlly
 	{
 		get
 		{
-			return _isMurdererBot;
+			return _isMurdererAlly;
 		}
 		set
 		{
-			if (value != _isMurdererBot)
+			if (value != _isMurdererAlly)
 			{
-				_isMurdererBot = value;
-				OnPropertyChangedWithValue(value, "IsMurdererBot");
+				_isMurdererAlly = value;
+				OnPropertyChangedWithValue(value, "IsMurdererAlly");
 			}
 		}
 	}
 
 	[DataSourceProperty]
-	public bool IsRelatedToFriendlyTroop
+	public bool IsVictimAlly
 	{
 		get
 		{
-			return _isRelatedToFriendlyTroop;
+			return _isVictimAlly;
 		}
 		set
 		{
-			if (value != _isRelatedToFriendlyTroop)
+			if (value != _isVictimAlly)
 			{
-				_isRelatedToFriendlyTroop = value;
-				OnPropertyChangedWithValue(value, "IsRelatedToFriendlyTroop");
+				_isVictimAlly = value;
+				OnPropertyChangedWithValue(value, "IsVictimAlly");
 			}
 		}
 	}
 
 	[DataSourceProperty]
-	public bool IsFriendlyTroopDeath
+	public bool IsNeutral
 	{
 		get
 		{
-			return _isFriendlyTroopDeath;
+			return _isNeutral;
 		}
 		set
 		{
-			if (value != _isFriendlyTroopDeath)
+			if (value != _isNeutral)
 			{
-				_isFriendlyTroopDeath = value;
-				OnPropertyChangedWithValue(value, "IsFriendlyTroopDeath");
+				_isNeutral = value;
+				OnPropertyChangedWithValue(value, "IsNeutral");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public Color MurdererTeamColor
+	{
+		get
+		{
+			return _murdererTeamColor;
+		}
+		set
+		{
+			if (value != _murdererTeamColor)
+			{
+				_murdererTeamColor = value;
+				OnPropertyChangedWithValue(value, "MurdererTeamColor");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public Color VictimTeamColor
+	{
+		get
+		{
+			return _victimTeamColor;
+		}
+		set
+		{
+			if (value != _victimTeamColor)
+			{
+				_victimTeamColor = value;
+				OnPropertyChangedWithValue(value, "VictimTeamColor");
 			}
 		}
 	}
@@ -335,17 +259,60 @@ public class MPGeneralKillNotificationItemVM : ViewModel
 		}
 	}
 
-	public MPGeneralKillNotificationItemVM(Agent affectedAgent, Agent affectorAgent, Agent assistedAgent, Action<MPGeneralKillNotificationItemVM> onRemove)
+	public MPGeneralKillNotificationItemVM(Agent affectedAgent, Agent affectorAgent, Agent assistedAgent, Action<MPGeneralKillNotificationItemVM> onRemove, WeaponClass killWeaponClass = WeaponClass.Undefined)
 	{
 		_onRemove = onRemove;
-		IsDamageNotification = false;
 		InitProperties(affectedAgent, affectorAgent);
+		InitWeaponProperties(killWeaponClass);
 		InitDeathProperties(affectedAgent, affectorAgent, assistedAgent);
+	}
+
+	private void InitWeaponProperties(WeaponClass killWeaponClass)
+	{
+		string weaponClassSpriteName = GetWeaponClassSpriteName(killWeaponClass);
+		ShowKillWeapon = weaponClassSpriteName != null;
+		KillWeaponSprite = weaponClassSpriteName ?? string.Empty;
+	}
+
+	private static string GetWeaponClassSpriteName(WeaponClass weaponClass)
+	{
+		switch (weaponClass)
+		{
+		case WeaponClass.Dagger:
+		case WeaponClass.OneHandedSword:
+		case WeaponClass.OneHandedAxe:
+		case WeaponClass.Mace:
+		case WeaponClass.Pick:
+			return "General\\EquipmentIcons\\equipment_type_one_handed";
+		case WeaponClass.TwoHandedSword:
+		case WeaponClass.TwoHandedAxe:
+		case WeaponClass.TwoHandedMace:
+			return "General\\EquipmentIcons\\equipment_type_two_handed";
+		case WeaponClass.OneHandedPolearm:
+		case WeaponClass.TwoHandedPolearm:
+		case WeaponClass.LowGripPolearm:
+			return "General\\EquipmentIcons\\equipment_type_polearm";
+		case WeaponClass.Arrow:
+		case WeaponClass.Bow:
+			return "General\\EquipmentIcons\\equipment_type_bow";
+		case WeaponClass.Bolt:
+		case WeaponClass.Crossbow:
+			return "General\\EquipmentIcons\\equipment_type_crossbow";
+		case WeaponClass.SlingStone:
+		case WeaponClass.Sling:
+			return "General\\EquipmentIcons\\equipment_type_sling";
+		case WeaponClass.Stone:
+		case WeaponClass.ThrowingAxe:
+		case WeaponClass.ThrowingKnife:
+		case WeaponClass.Javelin:
+			return "General\\EquipmentIcons\\equipment_type_throwing";
+		default:
+			return null;
+		}
 	}
 
 	public virtual void InitProperties(Agent affectedAgent, Agent affectorAgent)
 	{
-		IsItemInitializationOver = false;
 		GetAgentColors(affectorAgent, out var color, out var color2);
 		TargetIconType multiplayerAgentType = GetMultiplayerAgentType(affectorAgent);
 		Banner agentBanner = GetAgentBanner(affectorAgent);
@@ -354,45 +321,34 @@ public class MPGeneralKillNotificationItemVM : ViewModel
 		TargetIconType multiplayerAgentType2 = GetMultiplayerAgentType(affectedAgent);
 		Banner agentBanner2 = GetAgentBanner(affectedAgent);
 		bool flag2 = affectedAgent.Team?.IsPlayerAlly ?? false;
-		MurdererName = ((affectorAgent == null) ? "" : ((affectorAgent.MissionPeer != null) ? affectorAgent.MissionPeer.DisplayedName : affectorAgent.Name));
-		MurdererType = multiplayerAgentType.ToString();
-		IsMurdererBot = affectorAgent != null && !affectorAgent.IsPlayerControlled;
-		MurdererCompassElement = new MPTeammateCompassTargetVM(multiplayerAgentType, color, color2, agentBanner, flag);
-		VictimName = ((affectedAgent.MissionPeer != null) ? affectedAgent.MissionPeer.DisplayedName : affectedAgent.Name);
-		VictimType = multiplayerAgentType2.ToString();
-		IsVictimBot = !affectedAgent.IsPlayerControlled;
-		VictimCompassElement = new MPTeammateCompassTargetVM(multiplayerAgentType2, color3, color4, agentBanner2, flag2);
-		IsPlayerDeath = affectedAgent.IsMainAgent;
-		if (flag && flag2)
+		MissionPeer missionPeer = GameNetwork.MyPeer?.GetComponent<MissionPeer>();
+		IsNeutral = MultiplayerSpectatorHelper.IsLocalPeerStreamer();
+		MurdererTeamColor = Color.FromUint(color);
+		VictimTeamColor = Color.FromUint(color3);
+		if (IsNeutral)
 		{
-			Color1 = Color.FromUint(4278190080u);
-			Color2 = Color.FromUint(uint.MaxValue);
+			IsMurdererAlly = false;
+			IsVictimAlly = false;
 		}
-		else if (!flag && !flag2)
+		else if (missionPeer?.Team != null)
 		{
-			Color1 = Color.FromUint(4281545266u);
-			Color2 = Color.FromUint(uint.MaxValue);
+			IsMurdererAlly = flag && !flag2;
+			IsVictimAlly = flag2;
 		}
 		else
 		{
-			Color1 = Color.FromUint(color);
-			Color2 = Color.FromUint(color2);
+			IsMurdererAlly = true;
+			IsVictimAlly = false;
 		}
-		if (IsVictimBot && affectedAgent.Formation == Agent.Main?.Formation)
-		{
-			IsRelatedToFriendlyTroop = true;
-			IsFriendlyTroopDeath = true;
-		}
-		else if (IsMurdererBot && affectorAgent != null && affectorAgent.Formation == Agent.Main?.Formation)
-		{
-			IsRelatedToFriendlyTroop = true;
-		}
-		IsItemInitializationOver = true;
+		MurdererName = ((affectorAgent == null) ? "" : ((affectorAgent.MissionPeer != null) ? affectorAgent.MissionPeer.DisplayedName : affectorAgent.Name));
+		MurdererCompassElement = new MPTeammateCompassTargetVM(multiplayerAgentType, color, color2, agentBanner, flag);
+		VictimName = ((affectedAgent.MissionPeer != null) ? affectedAgent.MissionPeer.DisplayedName : affectedAgent.Name);
+		VictimCompassElement = new MPTeammateCompassTargetVM(multiplayerAgentType2, color3, color4, agentBanner2, flag2);
+		IsRelatedToPlayer = affectedAgent.IsPlayerUnit || (affectorAgent?.IsPlayerUnit ?? false);
 	}
 
 	public void InitDeathProperties(Agent affectedAgent, Agent affectorAgent, Agent assistedAgent)
 	{
-		IsItemInitializationOver = false;
 		if (affectorAgent != null && affectorAgent.IsMainAgent)
 		{
 			MBTextManager.SetTextVariable("TROOP_NAME", affectedAgent.NameTextObject.ToString());
@@ -408,7 +364,6 @@ public class MPGeneralKillNotificationItemVM : ViewModel
 			MBTextManager.SetTextVariable("TROOP_NAME", affectedAgent.NameTextObject.ToString());
 			Message = GameTexts.FindText("str_assist_feed_message").ToString();
 		}
-		IsItemInitializationOver = true;
 	}
 
 	protected TargetIconType GetMultiplayerAgentType(Agent agent)
@@ -424,7 +379,7 @@ public class MPGeneralKillNotificationItemVM : ViewModel
 		MultiplayerClassDivisions.MPHeroClass mPHeroClassForCharacter = MultiplayerClassDivisions.GetMPHeroClassForCharacter(agent.Character);
 		if (mPHeroClassForCharacter == null)
 		{
-			Debug.FailedAssert("Hero class is not set for agent: " + agent.Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\KillFeed\\General\\MPGeneralKillNotificationItemVM.cs", "GetMultiplayerAgentType", 116);
+			Debug.FailedAssert("Hero class is not set for agent: " + agent.Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\KillFeed\\General\\MPGeneralKillNotificationItemVM.cs", "GetMultiplayerAgentType", 144);
 			return TargetIconType.None;
 		}
 		return mPHeroClassForCharacter.IconType;

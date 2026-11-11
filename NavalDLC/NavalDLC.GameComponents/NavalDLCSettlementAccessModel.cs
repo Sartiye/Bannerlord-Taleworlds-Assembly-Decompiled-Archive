@@ -57,6 +57,12 @@ public class NavalDLCSettlementAccessModel : SettlementAccessModel
 
 	public override bool IsRequestMeetingOptionAvailable(Settlement settlement, out bool disableOption, out TextObject disabledText)
 	{
+		if (MobileParty.MainParty.IsCurrentlyAtSea)
+		{
+			disableOption = true;
+			disabledText = new TextObject("{=W0YmExzK}You can not request a meeting while you are at sea.");
+			return true;
+		}
 		return base.BaseModel.IsRequestMeetingOptionAvailable(settlement, out disableOption, out disabledText);
 	}
 

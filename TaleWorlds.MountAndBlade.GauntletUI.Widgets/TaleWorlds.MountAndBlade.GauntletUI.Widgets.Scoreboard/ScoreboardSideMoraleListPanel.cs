@@ -30,6 +30,19 @@ public class ScoreboardSideMoraleListPanel : ListPanel
 	}
 
 	[Editor(false)]
+	public int MoraleInt
+	{
+		get
+		{
+			return (int)_morale;
+		}
+		set
+		{
+			Morale = value;
+		}
+	}
+
+	[Editor(false)]
 	public float MaxMorale
 	{
 		get

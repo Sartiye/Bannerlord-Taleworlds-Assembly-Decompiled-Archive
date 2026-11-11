@@ -42,6 +42,18 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 
 	private HintViewModel _showWarLogsHint;
 
+	private HintViewModel _warHint;
+
+	private HintViewModel _peaceHint;
+
+	private HintViewModel _tradeAgreementHint;
+
+	private HintViewModel _allianceHint;
+
+	private HintViewModel _payingTributeHint;
+
+	private HintViewModel _receivingTributeHint;
+
 	private string _playerWarsText;
 
 	private string _numOfPlayerWarsText;
@@ -342,6 +354,108 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 	}
 
 	[DataSourceProperty]
+	public HintViewModel WarHint
+	{
+		get
+		{
+			return _warHint;
+		}
+		set
+		{
+			if (value != _warHint)
+			{
+				_warHint = value;
+				OnPropertyChangedWithValue(value, "WarHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public HintViewModel PeaceHint
+	{
+		get
+		{
+			return _peaceHint;
+		}
+		set
+		{
+			if (value != _peaceHint)
+			{
+				_peaceHint = value;
+				OnPropertyChangedWithValue(value, "PeaceHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public HintViewModel TradeAgreementHint
+	{
+		get
+		{
+			return _tradeAgreementHint;
+		}
+		set
+		{
+			if (value != _tradeAgreementHint)
+			{
+				_tradeAgreementHint = value;
+				OnPropertyChangedWithValue(value, "TradeAgreementHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public HintViewModel AllianceHint
+	{
+		get
+		{
+			return _allianceHint;
+		}
+		set
+		{
+			if (value != _allianceHint)
+			{
+				_allianceHint = value;
+				OnPropertyChangedWithValue(value, "AllianceHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public HintViewModel PayingTributeHint
+	{
+		get
+		{
+			return _payingTributeHint;
+		}
+		set
+		{
+			if (value != _payingTributeHint)
+			{
+				_payingTributeHint = value;
+				OnPropertyChangedWithValue(value, "PayingTributeHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public HintViewModel ReceivingTributeHint
+	{
+		get
+		{
+			return _receivingTributeHint;
+		}
+		set
+		{
+			if (value != _receivingTributeHint)
+			{
+				_receivingTributeHint = value;
+				OnPropertyChangedWithValue(value, "ReceivingTributeHint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public MBBindingList<KingdomDiplomacyProposalActionItemVM> Actions
 	{
 		get
@@ -386,6 +500,12 @@ public class KingdomDiplomacyVM : KingdomCategoryVM
 		WarsText = GameTexts.FindText("str_diplomatic_group").ToString();
 		ShowStatBarsHint = new HintViewModel(GameTexts.FindText("str_kingdom_war_show_comparison_bars"));
 		ShowWarLogsHint = new HintViewModel(GameTexts.FindText("str_kingdom_war_show_war_logs"));
+		WarHint = new HintViewModel(GameTexts.FindText("str_kingdom_at_war"));
+		PeaceHint = new HintViewModel(GameTexts.FindText("str_kingdom_at_peace"));
+		TradeAgreementHint = new HintViewModel(GameTexts.FindText("str_kingdom_trade_agreement"));
+		AllianceHint = new HintViewModel(GameTexts.FindText("str_kingdom_alliance"));
+		PayingTributeHint = new HintViewModel(new TextObject("{=Jq8h4XAg}Paying Tribute to {PLAYER_KINGDOM}").SetTextVariable("PLAYER_KINGDOM", _playerKingdom.Name));
+		ReceivingTributeHint = new HintViewModel(new TextObject("{=UPpRGWae}Receiving Tribute from {PLAYER_KINGDOM}").SetTextVariable("PLAYER_KINGDOM", _playerKingdom.Name));
 		PlayerWars.ApplyActionOnAllItems(delegate(KingdomWarItemVM x)
 		{
 			x.RefreshValues();

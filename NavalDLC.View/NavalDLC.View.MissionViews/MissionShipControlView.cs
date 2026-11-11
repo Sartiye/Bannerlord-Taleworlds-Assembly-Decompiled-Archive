@@ -259,7 +259,7 @@ public class MissionShipControlView : MissionBattleUIBaseView
 		RowerLongitudinalInput longitudinalControlDoubleTap = RowerLongitudinalInput.None;
 		RowerLateralInput lateralRowerControl = RowerLateralInput.None;
 		float rudderLateral = 0f;
-		if (!base.MissionScreen.IsCheatGhostMode)
+		if (!base.MissionScreen.IsCheatGhostMode && !base.MissionScreen.IsPhotoModeEnabled)
 		{
 			float gameKeyAxis = base.Input.GetGameKeyAxis("MovementAxisY");
 			float gameKeyAxis2 = base.Input.GetGameKeyAxis("MovementAxisX");

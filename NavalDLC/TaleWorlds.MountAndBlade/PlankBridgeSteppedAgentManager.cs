@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NavalDLC.Missions.Objects.UsableMachines;
+using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
 
@@ -15,13 +16,15 @@ public class PlankBridgeSteppedAgentManager : ScriptComponentBehavior
 
 	public int AgentCount { get; private set; }
 
+	public bool AttackerSideAgentExists { get; private set; }
+
+	public bool DefenderSideAgentExists { get; private set; }
+
 	public ShipAttachmentMachine.ShipBridgeNavmeshHolder NavmeshHolder { get; private set; }
 
 	public void SetNavmeshHolder(ShipAttachmentMachine.ShipBridgeNavmeshHolder navmeshHolder)
 	{
 		NavmeshHolder = navmeshHolder;
-		_accumulatedCostDict = new Dictionary<int, float>();
-		_accumulatedCostDict.Add(NavmeshHolder.GetFace1GroupIndex(), 0f);
 	}
 
 	protected override void OnInit()
@@ -30,6 +33,7 @@ public class PlankBridgeSteppedAgentManager : ScriptComponentBehavior
 		WeightedPosition = Vec3.Zero;
 		TotalMass = 0f;
 		AgentCount = 0;
+		_accumulatedCostDict = new Dictionary<int, float>();
 	}
 
 	public void ClearAgentWeightAndPositionInformation()
@@ -38,10 +42,21 @@ public class PlankBridgeSteppedAgentManager : ScriptComponentBehavior
 		TotalMass = 0f;
 		AgentCount = 0;
 		NavmeshHolder?.GameEntity.SetCostAdderForAttachedFaces(0f);
+		_accumulatedCostDict.Clear();
+		AttackerSideAgentExists = false;
+		DefenderSideAgentExists = false;
 	}
 
 	public void AddAgentWeightAndPositionInformation(Agent agent)
 	{
+		if (!AttackerSideAgentExists && agent.Team.Side == BattleSideEnum.Attacker)
+		{
+			AttackerSideAgentExists = true;
+		}
+		else if (!DefenderSideAgentExists && agent.Team.Side == BattleSideEnum.Defender)
+		{
+			DefenderSideAgentExists = true;
+		}
 		float totalMass = agent.GetTotalMass();
 		int currentNavigationFaceId = agent.GetCurrentNavigationFaceId();
 		if (NavmeshHolder != null && _accumulatedCostDict.ContainsKey(currentNavigationFaceId))

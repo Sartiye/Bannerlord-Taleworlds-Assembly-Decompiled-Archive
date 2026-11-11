@@ -19,22 +19,16 @@ namespace NavalDLC.View;
 
 public static class NavalTooltipRefresherCollection
 {
-	private static string ExtendKeyId = "ExtendModifier";
-
-	private static string FollowModifierKeyId = "FollowModifier";
-
-	private static string MapClickKeyId = "MapClick";
-
 	public static void RefreshShipTooltip(PropertyBasedTooltipVM propertyBasedTooltipVM, object[] args)
 	{
 		if (args == null || args.Length == 0)
 		{
-			Debug.FailedAssert("Invalid ship arguments for tooltip", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\NavalTooltipRefresherCollection.cs", "RefreshShipTooltip", 28);
+			Debug.FailedAssert("Invalid ship arguments for tooltip", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\NavalTooltipRefresherCollection.cs", "RefreshShipTooltip", 24);
 			return;
 		}
 		if (!(args[0] is Ship ship))
 		{
-			Debug.FailedAssert("Invalid ship arguments for tooltip", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\NavalTooltipRefresherCollection.cs", "RefreshShipTooltip", 34);
+			Debug.FailedAssert("Invalid ship arguments for tooltip", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\NavalTooltipRefresherCollection.cs", "RefreshShipTooltip", 30);
 			return;
 		}
 		propertyBasedTooltipVM.Mode = 1;
@@ -57,12 +51,12 @@ public static class NavalTooltipRefresherCollection
 	{
 		if (args == null || args.Length == 0)
 		{
-			Debug.FailedAssert("Invalid ship hull arguments for tooltip", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\NavalTooltipRefresherCollection.cs", "RefreshShipHullTooltip", 74);
+			Debug.FailedAssert("Invalid ship hull arguments for tooltip", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\NavalTooltipRefresherCollection.cs", "RefreshShipHullTooltip", 70);
 			return;
 		}
 		if (!(args[0] is ShipHull shipHull))
 		{
-			Debug.FailedAssert("Invalid ship hull arguments for tooltip", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\NavalTooltipRefresherCollection.cs", "RefreshShipHullTooltip", 80);
+			Debug.FailedAssert("Invalid ship hull arguments for tooltip", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\NavalTooltipRefresherCollection.cs", "RefreshShipHullTooltip", 76);
 			return;
 		}
 		propertyBasedTooltipVM.Mode = 1;
@@ -78,12 +72,12 @@ public static class NavalTooltipRefresherCollection
 	{
 		if (args == null || args.Length == 0)
 		{
-			Debug.FailedAssert("Invalid ship piece arguments for tooltip", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\NavalTooltipRefresherCollection.cs", "RefreshShipPieceTooltip", 112);
+			Debug.FailedAssert("Invalid ship piece arguments for tooltip", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\NavalTooltipRefresherCollection.cs", "RefreshShipPieceTooltip", 108);
 			return;
 		}
 		if (!(args[0] is ShipUpgradePiece shipUpgradePiece))
 		{
-			Debug.FailedAssert("Invalid ship piece arguments for tooltip", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\NavalTooltipRefresherCollection.cs", "RefreshShipPieceTooltip", 119);
+			Debug.FailedAssert("Invalid ship piece arguments for tooltip", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\NavalTooltipRefresherCollection.cs", "RefreshShipPieceTooltip", 115);
 			return;
 		}
 		bool flag = false;
@@ -215,7 +209,7 @@ public static class NavalTooltipRefresherCollection
 	{
 		if (args == null || args.Length == 0 || !(args[0] is Figurehead figurehead))
 		{
-			Debug.FailedAssert("Invalid arguments for figurehead tooltip", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\NavalTooltipRefresherCollection.cs", "RefreshFigureheadTooltip", 295);
+			Debug.FailedAssert("Invalid arguments for figurehead tooltip", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\NavalTooltipRefresherCollection.cs", "RefreshFigureheadTooltip", 291);
 			return;
 		}
 		propertyBasedTooltipVM.Mode = 1;
@@ -232,12 +226,12 @@ public static class NavalTooltipRefresherCollection
 	{
 		if (args == null || args.Length == 0 || !(args[0] is AnchorPoint anchorPoint))
 		{
-			Debug.FailedAssert("Invalid anchor arguments for tooltip", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\NavalTooltipRefresherCollection.cs", "RefreshAnchorPointTooltip", 319);
+			Debug.FailedAssert("Invalid anchor arguments for tooltip", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\NavalTooltipRefresherCollection.cs", "RefreshAnchorPointTooltip", 315);
 			return;
 		}
 		if (!anchorPoint.IsValid)
 		{
-			Debug.FailedAssert("Anchor tooltip should not be visible when its not at a valid position", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\NavalTooltipRefresherCollection.cs", "RefreshAnchorPointTooltip", 325);
+			Debug.FailedAssert("Anchor tooltip should not be visible when its not at a valid position", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\NavalTooltipRefresherCollection.cs", "RefreshAnchorPointTooltip", 321);
 			return;
 		}
 		propertyBasedTooltipVM.Mode = 1;
@@ -365,11 +359,11 @@ public static class NavalTooltipRefresherCollection
 				{
 					int num5 = (int)settlementAsParty.Settlement.Town.FoodChange;
 					int variable3 = (int)settlementAsParty.Settlement.Town.FoodStocks;
-					TextObject textObject9 = new TextObject("{=Jyfkahka}{VALUE} ({?POSITIVE}+{?}{\\?}{DELTA_VALUE})");
-					textObject9.SetTextVariable("VALUE", variable3);
-					textObject9.SetTextVariable("POSITIVE", (num5 > 0) ? 1 : 0);
-					textObject9.SetTextVariable("DELTA_VALUE", num5);
-					return textObject9.ToString();
+					TextObject textObject7 = new TextObject("{=Jyfkahka}{VALUE} ({?POSITIVE}+{?}{\\?}{DELTA_VALUE})");
+					textObject7.SetTextVariable("VALUE", variable3);
+					textObject7.SetTextVariable("POSITIVE", (num5 > 0) ? 1 : 0);
+					textObject7.SetTextVariable("DELTA_VALUE", num5);
+					return textObject7.ToString();
 				};
 				propertyBasedTooltipVM.AddProperty(GameTexts.FindText("str_map_tooltip_food_stocks").ToString(), value);
 			}
@@ -379,11 +373,11 @@ public static class NavalTooltipRefresherCollection
 				{
 					float num4 = (settlementAsParty.Settlement.IsFortification ? settlementAsParty.Settlement.Town.ProsperityChange : settlementAsParty.Settlement.Village.HearthChange);
 					int variable2 = (int)(settlementAsParty.Settlement.IsFortification ? settlementAsParty.Settlement.Town.Prosperity : settlementAsParty.Settlement.Village.Hearth);
-					TextObject textObject8 = new TextObject("{=Jyfkahka}{VALUE} ({?POSITIVE}+{?}{\\?}{DELTA_VALUE})");
-					textObject8.SetTextVariable("VALUE", variable2);
-					textObject8.SetTextVariable("POSITIVE", (num4 > 0f) ? 1 : 0);
-					textObject8.SetTextVariable("DELTA_VALUE", num4);
-					return textObject8.ToString();
+					TextObject textObject6 = new TextObject("{=Jyfkahka}{VALUE} ({?POSITIVE}+{?}{\\?}{DELTA_VALUE})");
+					textObject6.SetTextVariable("VALUE", variable2);
+					textObject6.SetTextVariable("POSITIVE", (num4 > 0f) ? 1 : 0);
+					textObject6.SetTextVariable("DELTA_VALUE", num4);
+					return textObject6.ToString();
 				};
 				propertyBasedTooltipVM.AddProperty(settlementAsParty.Settlement.IsFortification ? GameTexts.FindText("str_map_tooltip_prosperity").ToString() : GameTexts.FindText("str_map_tooltip_hearths").ToString(), value2);
 			}
@@ -391,20 +385,20 @@ public static class NavalTooltipRefresherCollection
 			{
 				Func<string> value3 = delegate
 				{
-					TextObject textObject7 = new TextObject("{=Jyfkahka}{VALUE} ({?POSITIVE}+{?}{\\?}{DELTA_VALUE})");
-					textObject7.SetTextVariable("VALUE", settlement.Town.Loyalty);
-					textObject7.SetTextVariable("POSITIVE", (settlement.Town.LoyaltyChange > 0f) ? 1 : 0);
-					textObject7.SetTextVariable("DELTA_VALUE", settlement.Town.LoyaltyChange);
-					return textObject7.ToString();
+					TextObject textObject5 = new TextObject("{=Jyfkahka}{VALUE} ({?POSITIVE}+{?}{\\?}{DELTA_VALUE})");
+					textObject5.SetTextVariable("VALUE", settlement.Town.Loyalty);
+					textObject5.SetTextVariable("POSITIVE", (settlement.Town.LoyaltyChange > 0f) ? 1 : 0);
+					textObject5.SetTextVariable("DELTA_VALUE", settlement.Town.LoyaltyChange);
+					return textObject5.ToString();
 				};
 				propertyBasedTooltipVM.AddProperty(GameTexts.FindText("str_loyalty").ToString(), value3);
 				Func<string> value4 = delegate
 				{
-					TextObject textObject6 = new TextObject("{=Jyfkahka}{VALUE} ({?POSITIVE}+{?}{\\?}{DELTA_VALUE})");
-					textObject6.SetTextVariable("VALUE", settlement.Town.Security);
-					textObject6.SetTextVariable("POSITIVE", (settlement.Town.SecurityChange > 0f) ? 1 : 0);
-					textObject6.SetTextVariable("DELTA_VALUE", settlement.Town.SecurityChange);
-					return textObject6.ToString();
+					TextObject textObject4 = new TextObject("{=Jyfkahka}{VALUE} ({?POSITIVE}+{?}{\\?}{DELTA_VALUE})");
+					textObject4.SetTextVariable("VALUE", settlement.Town.Security);
+					textObject4.SetTextVariable("POSITIVE", (settlement.Town.SecurityChange > 0f) ? 1 : 0);
+					textObject4.SetTextVariable("DELTA_VALUE", settlement.Town.SecurityChange);
+					return textObject4.ToString();
 				};
 				propertyBasedTooltipVM.AddProperty(GameTexts.FindText("str_security").ToString(), value4);
 			}
@@ -556,20 +550,7 @@ public static class NavalTooltipRefresherCollection
 		{
 			propertyBasedTooltipVM.AddProperty(string.Empty, GameTexts.FindText("str_settlement_rebellious_state").ToString(), -1);
 		}
-		propertyBasedTooltipVM.AddProperty(string.Empty, string.Empty, -1);
-		if (!settlement.IsHideout && !propertyBasedTooltipVM.IsExtended && flag)
-		{
-			TextObject textObject4 = GameTexts.FindText("str_map_tooltip_info");
-			textObject4.SetTextVariable("EXTEND_KEY", propertyBasedTooltipVM.GetKeyText(ExtendKeyId));
-			propertyBasedTooltipVM.AddProperty(string.Empty, textObject4.ToString(), -1);
-		}
-		if (Campaign.Current.Models.EncounterModel.CanMainHeroDoParleyWithParty(settlementAsParty, out disableReason))
-		{
-			TextObject textObject5 = new TextObject("{=uEeLvYXT}Press '{MODIFIER_KEY}' + '{CLICK_KEY}' to parley.");
-			textObject5.SetTextVariable("MODIFIER_KEY", propertyBasedTooltipVM.GetKeyText(FollowModifierKeyId));
-			textObject5.SetTextVariable("CLICK_KEY", propertyBasedTooltipVM.GetKeyText(MapClickKeyId));
-			propertyBasedTooltipVM.AddProperty(string.Empty, textObject5.ToString(), -1);
-		}
+		TooltipRefresherCollection.AddTooltipHintProperties(propertyBasedTooltipVM, !settlement.IsHideout && flag, settlementAsParty);
 	}
 
 	private static void AddPartyTroopProperties(PropertyBasedTooltipVM propertyBasedTooltipVM, TroopRoster troopRoster, TextObject title, bool isInspected, Func<TroopRoster> funcToDoBeforeLambda = null)

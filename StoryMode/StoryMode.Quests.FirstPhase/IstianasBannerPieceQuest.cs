@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Helpers;
 using StoryMode.StoryModePhases;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
@@ -53,6 +54,7 @@ public class IstianasBannerPieceQuest : StoryModeQuestBase
 		: base("istiana_banner_piece_quest", questGiver, StoryModeManager.Current.MainStoryLine.FirstPhase.FirstPhaseEndTime)
 	{
 		_hideout = hideout;
+		_hideout.Hideout.ResetNextPossibleAttackTime();
 		_raiderParties = new List<MobileParty>();
 		InitializeHideout();
 		AddTrackedObject(_hideout);
@@ -73,7 +75,7 @@ public class IstianasBannerPieceQuest : StoryModeQuestBase
 
 	protected override void HourlyTick()
 	{
-		if (!_hideout.Hideout.IsInfested || !_hideout.Hideout.IsSpotted || !_hideout.IsVisible)
+		if (!_hideout.Hideout.IsInfested || !_hideout.IsVisible)
 		{
 			InitializeHideout();
 		}
@@ -131,11 +133,14 @@ public class IstianasBannerPieceQuest : StoryModeQuestBase
 	protected override void InitializeQuestOnGameLoad()
 	{
 		SetDialogs();
+		if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.5.5.124508")) && (double)_hideout.Hideout.NextPossibleAttackTime.RemainingHoursFromNow > StoryModeData.StorylineQuestHideoutHiddenDuration.ToHours)
+		{
+			_hideout.Hideout.ResetNextPossibleAttackTime();
+		}
 	}
 
 	private void InitializeHideout()
 	{
-		_hideout.Hideout.IsSpotted = true;
 		_hideout.IsVisible = true;
 		_hideoutBattleEndState = HideoutBattleEndState.None;
 		if (_hideout.Hideout.IsInfested)
@@ -161,9 +166,7 @@ public class IstianasBannerPieceQuest : StoryModeQuestBase
 		mobileParty.ActualClan = hideoutClan;
 		mobileParty.Position = _hideout.Position;
 		mobileParty.Party.SetVisualAsDirty();
-		float num = mobileParty.Party.CalculateCurrentStrength();
-		int initialGold = (int)(1f * MBRandom.RandomFloat * 20f * num + 50f);
-		mobileParty.InitializePartyTrade(initialGold);
+		mobileParty.InitializePartyTrade(QuestHelper.CalculateInitialGoldForBanditQuestParty(mobileParty));
 		mobileParty.SetMoveGoToSettlement(_hideout, MobileParty.NavigationType.Default, isTargetingThePort: false);
 		mobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: true);
 		mobileParty.SetPartyUsedByQuest(isActivelyUsed: true);

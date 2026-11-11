@@ -286,6 +286,10 @@ public class ButtonWidget : ImageWidget
 
 	protected virtual void HandleClick()
 	{
+		if (base.IsDisabled)
+		{
+			return;
+		}
 		foreach (Action<Widget> clickEventHandler in ClickEventHandlers)
 		{
 			clickEventHandler(this);

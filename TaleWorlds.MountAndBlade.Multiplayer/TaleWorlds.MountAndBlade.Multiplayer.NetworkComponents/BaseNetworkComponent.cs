@@ -509,6 +509,10 @@ public class BaseNetworkComponent : UdpNetworkComponent
 	private bool HandleIntermissionClientVote(NetworkCommunicator networkPeer, GameNetworkMessage baseMessage)
 	{
 		IntermissionVote intermissionVote = (IntermissionVote)baseMessage;
+		if (networkPeer.IsStreamer)
+		{
+			return false;
+		}
 		int voteCount = intermissionVote.VoteCount;
 		if (voteCount == -1 || voteCount == 1)
 		{

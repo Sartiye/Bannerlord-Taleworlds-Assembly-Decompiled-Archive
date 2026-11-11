@@ -68,7 +68,7 @@ public static class NavalMissions
 			NavalShipDeploymentLimit teamShipDeploymentLimit = NavalDLCManager.Instance.GameModels.ShipDeploymentModel.GetTeamShipDeploymentLimit(teamMapEventParties);
 			MBList<IShipOrigin> mBList3 = new MBList<IShipOrigin>();
 			NavalDLCManager.Instance.GameModels.ShipDeploymentModel.FillShipsOfTeamParties(teamMapEventParties, teamShipDeploymentLimit, mBList3);
-			int deployablePlayerShipCount = MathF.Min(mBList.Count, playerTeamDeploymentLimit.NetDeploymentLimit);
+			int deployablePlayerShipCount = MathF.Min(mBList.Count, playerTeamDeploymentLimit.NetDeploymentLimitWithoutSkeletal);
 			int maximumDeployableTroopCountForTeam = NavalDLCManager.Instance.GameModels.ShipDeploymentModel.GetMaximumDeployableTroopCountForTeam(mBList, isPlayerTeam: true);
 			int maximumDeployableTroopCountForTeam2 = NavalDLCManager.Instance.GameModels.ShipDeploymentModel.GetMaximumDeployableTroopCountForTeam(mBList2);
 			int maximumDeployableTroopCountForTeam3 = NavalDLCManager.Instance.GameModels.ShipDeploymentModel.GetMaximumDeployableTroopCountForTeam(mBList3);
@@ -143,10 +143,10 @@ public static class NavalMissions
 			array[(int)navalSide] = new PartyGroupTroopSupplier(mapEvent, navalSide, navalRaidTroops.ToFlattenedRoster());
 			NavalDLCManager.Instance.GameModels.ShipDeploymentModel.GetOrderedCaptainsForPlayerTeamShips(mapEvent.PartiesOnSide(navalSide), navalSideShips, out var playerTeamCaptainsByPriority);
 			int totalManCount = navalRaidTroops.TotalManCount;
-			int totalHealthyTroopCountOfSide = mapEvent.GetMapEventSide(otherSide).GetTotalHealthyTroopCountOfSide();
+			int numberOfInvolvedMen = mapEvent.GetNumberOfInvolvedMen(otherSide);
 			bool flag = navalSide == BattleSideEnum.Attacker;
 			bool isPlayerAttacker = mapEvent.PlayerSide == BattleSideEnum.Attacker;
-			NavalRaidMissionAgentSpawnLogic.ComputeInitialTroopCounts(flag ? totalManCount : totalHealthyTroopCountOfSide, flag ? totalHealthyTroopCountOfSide : totalManCount, out var initialAttackerTroopCount, out var initialDefenderTroopCount);
+			NavalRaidMissionAgentSpawnLogic.ComputeInitialTroopCounts(flag ? totalManCount : numberOfInvolvedMen, flag ? numberOfInvolvedMen : totalManCount, out var initialAttackerTroopCount, out var initialDefenderTroopCount);
 			return new MissionBehavior[30]
 			{
 				new NavalShipsLogic(),
@@ -204,7 +204,7 @@ public static class NavalMissions
 			NavalShipDeploymentLimit playerTeamShipDeploymentLimit = NavalShipDeploymentLimit.Max();
 			NavalShipDeploymentLimit playerAllyTeamShipDeploymentLimit = NavalShipDeploymentLimit.Max();
 			NavalShipDeploymentLimit enemyTeamShipDeploymentLimit = NavalShipDeploymentLimit.Max();
-			int deployablePlayerShipCount = MathF.Min(playerShips.Count, NavalShipDeploymentLimit.Max().NetDeploymentLimit);
+			int deployablePlayerShipCount = MathF.Min(playerShips.Count, 8);
 			int maximumDeployableTroopCountForTeam = NavalDLCManager.Instance.GameModels.ShipDeploymentModel.GetMaximumDeployableTroopCountForTeam(playerShips, isPlayerTeam: true);
 			int maximumDeployableTroopCountForTeam2 = NavalDLCManager.Instance.GameModels.ShipDeploymentModel.GetMaximumDeployableTroopCountForTeam(playerAllyShips);
 			int maximumDeployableTroopCountForTeam3 = NavalDLCManager.Instance.GameModels.ShipDeploymentModel.GetMaximumDeployableTroopCountForTeam(enemyShips);

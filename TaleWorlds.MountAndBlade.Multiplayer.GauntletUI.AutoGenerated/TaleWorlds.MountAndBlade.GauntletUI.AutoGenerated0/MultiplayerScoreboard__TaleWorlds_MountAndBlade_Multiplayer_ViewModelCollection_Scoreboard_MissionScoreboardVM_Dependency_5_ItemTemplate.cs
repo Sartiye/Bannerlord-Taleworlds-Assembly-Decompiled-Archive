@@ -116,7 +116,6 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		_widget_1.VerticalAlignment = VerticalAlignment.Center;
 		_widget_1.MarginLeft = 30f;
 		_widget_1.MarginRight = 10f;
-		_widget_2.DoNotAcceptEvents = true;
 		_widget_2.WidthSizePolicy = SizePolicy.Fixed;
 		_widget_2.HeightSizePolicy = SizePolicy.StretchToParent;
 		_widget_2.HorizontalAlignment = HorizontalAlignment.Center;
@@ -194,15 +193,6 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 				_datasource_Root_Hint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Hint;
 				_datasource_Root_Hint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Hint;
 				_widget_2_0.EventFire -= EventListenerOf_widget_2_0;
-				_widget_2_0.PropertyChanged -= PropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2_0;
 				_datasource_Root_Hint = null;
 			}
 			_datasource_Root = null;
@@ -284,6 +274,10 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		if (propertyName == "TypeIconState")
 		{
 			_datasource_Root.Value = _widget.TypeIconState;
+		}
+		else if (propertyName == "CanBeUsed")
+		{
+			_datasource_Root.IsEnabled = _widget.CanBeUsed;
 		}
 	}
 
@@ -387,9 +381,9 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 
 	private void HandleWidgetPropertyChangeOf_widget_2(string propertyName)
 	{
-		if (propertyName == "IsEnabled")
+		if (propertyName == "DoNotAcceptEvents")
 		{
-			_datasource_Root.IsEnabled = _widget_2.IsEnabled;
+			_datasource_Root.IsEnabled = _widget_2.DoNotAcceptEvents;
 		}
 	}
 
@@ -444,56 +438,6 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		{
 			_datasource_Root.IsEnabled = _widget_2_1.CanAcceptEvents;
 		}
-	}
-
-	private void PropertyChangedListenerOf_widget_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
-	{
-		HandleWidgetPropertyChangeOf_widget_2_0(propertyName);
-	}
-
-	private void boolPropertyChangedListenerOf_widget_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
-	{
-		HandleWidgetPropertyChangeOf_widget_2_0(propertyName);
-	}
-
-	private void floatPropertyChangedListenerOf_widget_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
-	{
-		HandleWidgetPropertyChangeOf_widget_2_0(propertyName);
-	}
-
-	private void Vec2PropertyChangedListenerOf_widget_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_2_0(propertyName);
-	}
-
-	private void Vector2PropertyChangedListenerOf_widget_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
-	{
-		HandleWidgetPropertyChangeOf_widget_2_0(propertyName);
-	}
-
-	private void doublePropertyChangedListenerOf_widget_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
-	{
-		HandleWidgetPropertyChangeOf_widget_2_0(propertyName);
-	}
-
-	private void intPropertyChangedListenerOf_widget_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
-	{
-		HandleWidgetPropertyChangeOf_widget_2_0(propertyName);
-	}
-
-	private void uintPropertyChangedListenerOf_widget_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
-	{
-		HandleWidgetPropertyChangeOf_widget_2_0(propertyName);
-	}
-
-	private void ColorPropertyChangedListenerOf_widget_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
-	{
-		HandleWidgetPropertyChangeOf_widget_2_0(propertyName);
-	}
-
-	private void HandleWidgetPropertyChangeOf_widget_2_0(string propertyName)
-	{
-		_ = propertyName == "DoNotAcceptEvents";
 	}
 
 	private void ViewModelPropertyChangedListenerOf_datasource_Root(object sender, PropertyChangedEventArgs e)
@@ -551,12 +495,13 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		case "Value":
 			_widget.TypeIconState = _datasource_Root.Value;
 			break;
+		case "IsEnabled":
+			_widget.CanBeUsed = _datasource_Root.IsEnabled;
+			_widget_2.DoNotAcceptEvents = _datasource_Root.IsEnabled;
+			_widget_2_1.CanAcceptEvents = _datasource_Root.IsEnabled;
+			break;
 		case "Definition":
 			_widget_1.Text = _datasource_Root.Definition;
-			break;
-		case "IsEnabled":
-			_widget_2.IsEnabled = _datasource_Root.IsEnabled;
-			_widget_2_1.CanAcceptEvents = _datasource_Root.IsEnabled;
 			break;
 		}
 	}
@@ -608,7 +553,6 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 
 	private void HandleViewModelPropertyChangeOf_datasource_Root_Hint(string propertyName)
 	{
-		_ = propertyName == "IsEnabled";
 	}
 
 	private void RefreshDataSource_datasource_Root(StringPairItemWithActionVM newDataSource)
@@ -673,15 +617,6 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 				_datasource_Root_Hint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Hint;
 				_datasource_Root_Hint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Hint;
 				_widget_2_0.EventFire -= EventListenerOf_widget_2_0;
-				_widget_2_0.PropertyChanged -= PropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2_0;
 				_datasource_Root_Hint = null;
 			}
 			_datasource_Root = null;
@@ -699,6 +634,7 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 			_datasource_Root.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root;
 			_widget.TypeIconState = _datasource_Root.Value;
+			_widget.CanBeUsed = _datasource_Root.IsEnabled;
 			_widget.PropertyChanged += PropertyChangedListenerOf_widget;
 			_widget.boolPropertyChanged += boolPropertyChangedListenerOf_widget;
 			_widget.floatPropertyChanged += floatPropertyChangedListenerOf_widget;
@@ -718,7 +654,7 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 			_widget_1.intPropertyChanged += intPropertyChangedListenerOf_widget_1;
 			_widget_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1;
 			_widget_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1;
-			_widget_2.IsEnabled = _datasource_Root.IsEnabled;
+			_widget_2.DoNotAcceptEvents = _datasource_Root.IsEnabled;
 			_widget_2.PropertyChanged += PropertyChangedListenerOf_widget_2;
 			_widget_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_2;
 			_widget_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_2;
@@ -752,15 +688,6 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 				_datasource_Root_Hint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Hint;
 				_datasource_Root_Hint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Hint;
 				_widget_2_0.EventFire += EventListenerOf_widget_2_0;
-				_widget_2_0.PropertyChanged += PropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.intPropertyChanged += intPropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_2_0;
-				_widget_2_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_2_0;
 			}
 		}
 	}
@@ -779,15 +706,6 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 			_datasource_Root_Hint.PropertyChangedWithDoubleValue -= ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Hint;
 			_datasource_Root_Hint.PropertyChangedWithVec2Value -= ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Hint;
 			_widget_2_0.EventFire -= EventListenerOf_widget_2_0;
-			_widget_2_0.PropertyChanged -= PropertyChangedListenerOf_widget_2_0;
-			_widget_2_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_2_0;
-			_widget_2_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_2_0;
-			_widget_2_0.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_2_0;
-			_widget_2_0.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_2_0;
-			_widget_2_0.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_2_0;
-			_widget_2_0.intPropertyChanged -= intPropertyChangedListenerOf_widget_2_0;
-			_widget_2_0.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2_0;
-			_widget_2_0.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2_0;
 			_datasource_Root_Hint = null;
 		}
 		_datasource_Root_Hint = newDataSource;
@@ -804,15 +722,6 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 			_datasource_Root_Hint.PropertyChangedWithDoubleValue += ViewModelPropertyChangedWithDoubleValueListenerOf_datasource_Root_Hint;
 			_datasource_Root_Hint.PropertyChangedWithVec2Value += ViewModelPropertyChangedWithVec2ValueListenerOf_datasource_Root_Hint;
 			_widget_2_0.EventFire += EventListenerOf_widget_2_0;
-			_widget_2_0.PropertyChanged += PropertyChangedListenerOf_widget_2_0;
-			_widget_2_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_2_0;
-			_widget_2_0.floatPropertyChanged += floatPropertyChangedListenerOf_widget_2_0;
-			_widget_2_0.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_2_0;
-			_widget_2_0.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_2_0;
-			_widget_2_0.doublePropertyChanged += doublePropertyChangedListenerOf_widget_2_0;
-			_widget_2_0.intPropertyChanged += intPropertyChangedListenerOf_widget_2_0;
-			_widget_2_0.uintPropertyChanged += uintPropertyChangedListenerOf_widget_2_0;
-			_widget_2_0.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_2_0;
 		}
 	}
 }

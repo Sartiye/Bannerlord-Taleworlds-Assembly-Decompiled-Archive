@@ -183,7 +183,6 @@ public class PreloadHelper
 		}
 		foreach (string item in _uniqueDynamicPhysicsShapeName)
 		{
-			MBDebug.Print("Preload physics: " + item);
 			PhysicsShape.AddPreloadQueueWithName(item, new Vec3(1f, 1f, 1f));
 		}
 		PhysicsShape.ProcessPreloadQueue();

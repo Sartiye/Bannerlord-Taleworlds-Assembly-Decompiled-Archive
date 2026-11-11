@@ -25,8 +25,6 @@ public class RetirementCampaignBehavior : CampaignBehaviorBase
 
 	private bool _playerEndedGame;
 
-	private Settlement _retirementSettlement;
-
 	public override void SyncData(IDataStore dataStore)
 	{
 		dataStore.SyncData("_hasTalkedWithHermitBefore", ref _hasTalkedWithHermitBefore);
@@ -35,7 +33,6 @@ public class RetirementCampaignBehavior : CampaignBehaviorBase
 	public override void RegisterEvents()
 	{
 		CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
-		CampaignEvents.HourlyTickEvent.AddNonSerializedListener(this, HourlyTick);
 		CampaignEvents.GameMenuOpened.AddNonSerializedListener(this, GameMenuOpened);
 	}
 
@@ -57,14 +54,8 @@ public class RetirementCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private void HourlyTick()
-	{
-		CheckRetirementSettlementVisibility();
-	}
-
 	private void OnSessionLaunched(CampaignGameStarter starter)
 	{
-		_retirementSettlement = Settlement.Find("retirement_retreat");
 		SetupGameMenus(starter);
 		SetupConversationDialogues(starter);
 	}
@@ -224,20 +215,5 @@ public class RetirementCampaignBehavior : CampaignBehaviorBase
 	{
 		PlayerEncounter.LeaveSettlement();
 		PlayerEncounter.Finish();
-	}
-
-	private void CheckRetirementSettlementVisibility()
-	{
-		float hideoutSpottingDistance = Campaign.Current.Models.MapVisibilityModel.GetHideoutSpottingDistance();
-		float num = MobileParty.MainParty.Position.DistanceSquared(_retirementSettlement.Position);
-		if (1f - num / (hideoutSpottingDistance * hideoutSpottingDistance) > 0f)
-		{
-			_retirementSettlement.IsVisible = true;
-			RetirementSettlementComponent retirementSettlementComponent = _retirementSettlement.SettlementComponent as RetirementSettlementComponent;
-			if (!retirementSettlementComponent.IsSpotted)
-			{
-				retirementSettlementComponent.IsSpotted = true;
-			}
-		}
 	}
 }

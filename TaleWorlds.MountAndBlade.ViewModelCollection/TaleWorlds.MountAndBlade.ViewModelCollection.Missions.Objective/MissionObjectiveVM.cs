@@ -27,6 +27,8 @@ public class MissionObjectiveVM : ViewModel
 
 	private bool _isEnabled;
 
+	private bool _shouldHaveOffset;
+
 	private bool _hasTitle;
 
 	private bool _hasDescription;
@@ -142,6 +144,23 @@ public class MissionObjectiveVM : ViewModel
 				_isEnabled = value;
 				OnPropertyChangedWithValue(value, "IsEnabled");
 				Markers.IsEnabled = value;
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool ShouldHaveOffset
+	{
+		get
+		{
+			return _shouldHaveOffset;
+		}
+		set
+		{
+			if (_shouldHaveOffset != value)
+			{
+				_shouldHaveOffset = value;
+				OnPropertyChangedWithValue(value, "ShouldHaveOffset");
 			}
 		}
 	}

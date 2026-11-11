@@ -7,7 +7,7 @@ namespace SandBox.Objects.Usables;
 
 public class UsablePlace : UsableMachine
 {
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		return base.PilotStandingPoint?.DescriptionMessage ?? TextObject.GetEmpty();
 	}

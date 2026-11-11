@@ -20,7 +20,7 @@ public class Passage : UsableMachine
 		}
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		return base.PilotStandingPoint?.DescriptionMessage ?? TextObject.GetEmpty();
 	}

@@ -197,7 +197,6 @@ public class MissionFaceCacheView : MissionView
 		item.BeardCover = beardCoverType;
 		_alreadyAssignedFaces.Add(item);
 		_uniqueCacheIndex++;
-		MBDebug.Print($"GetRandomBodyPropertyForTroop::Unique troop index: {_uniqueCacheIndex}\n");
 		UpdateFaceSimilarityThreshold();
 		return bodyProperties;
 	}

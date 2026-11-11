@@ -503,9 +503,10 @@ public static class SettlementHelper
 			float num8 = 1f - TaleWorlds.Library.MathF.Clamp(value, 0f, 1f);
 			float num9 = num8 * num8;
 			float num10 = 1f;
-			if (hero.LastKnownClosestSettlement != null)
+			Settlement settlement = ((hero.IsActive || hero.IsPrisoner) ? HeroHelper.GetClosestSettlement(hero) : hero.LastKnownClosestSettlement);
+			if (settlement != null)
 			{
-				value = Campaign.Current.Models.MapDistanceModel.GetDistance(hero.LastKnownClosestSettlement, item, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) / Campaign.MapDiagonal;
+				value = Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, item, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) / Campaign.MapDiagonal;
 				num10 = 1f - TaleWorlds.Library.MathF.Clamp(value, 0f, 1f);
 				num10 *= num10;
 			}

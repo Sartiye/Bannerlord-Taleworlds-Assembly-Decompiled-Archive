@@ -21,11 +21,11 @@ public class NavalDLCVillageProductionCalculatorModel : VillageProductionCalcula
 		{
 			if (item.ItemCategory == NavalItemCategories.WalrusTusk || item.ItemCategory == NavalItemCategories.WhaleOil)
 			{
-				PerkHelper.AddPerkBonusForTown(NavalPerks.Boatswain.PortAuthority, village.TradeBound.Town, ref bonuses);
+				PerkHelper.AddPerkBonusForTown(NavalPerks.Boatswain.PortAuthority, village.TradeBound.Town, isPrimaryBonus: false, ref bonuses);
 			}
 			if (item.ItemCategory == DefaultItemCategories.Fish)
 			{
-				PerkHelper.AddPerkBonusForTown(NavalPerks.Boatswain.BlessingsOfTheSea, village.TradeBound.Town, ref bonuses);
+				PerkHelper.AddPerkBonusForTown(NavalPerks.Boatswain.BlessingsOfTheSea, village.TradeBound.Town, isPrimaryBonus: false, ref bonuses);
 			}
 		}
 		Kingdom kingdom = village.Bound.OwnerClan?.Kingdom;

@@ -505,7 +505,7 @@ public class WoundedBeastMissionController : MissionLogic
 	{
 		if (!_targetedBiggerVessel)
 		{
-			CampaignInformationManager.AddDialogLine(new TextObject("{=isa8iCbC}No! No! If you board that monster we’re finished! Cut loose!"), NavalStorylineData.Lahar.CharacterObject);
+			CampaignInformationManager.AddDialogLine(new TextObject("{=isa8iCbC}No! No! If you board that monster we're finished! Cut loose!"), NavalStorylineData.Lahar.CharacterObject);
 			_targetedBiggerVessel = true;
 		}
 	}
@@ -514,12 +514,12 @@ public class WoundedBeastMissionController : MissionLogic
 	{
 		if (hasPlayerAttemptedToBoard && !_targetedSmallerVessels && IsShipActive(_fahdaMissionShip))
 		{
-			CampaignInformationManager.AddDialogLine(new TextObject("{=AFdg8UHM}Go for her flagship! We don’t want it to get away! We’ll deal with the lesser vessels later."), NavalStorylineData.Lahar.CharacterObject);
+			CampaignInformationManager.AddDialogLine(new TextObject("{=AFdg8UHM}Go for her flagship! We don't want it to get away! We'll deal with the lesser vessels later."), NavalStorylineData.Lahar.CharacterObject);
 			_targetedSmallerVessels = true;
 		}
 		if (!hasPlayerAttemptedToBoard && !_targetedBySmallerVessels && IsShipActive(_fahdaMissionShip))
 		{
-			CampaignInformationManager.AddDialogLine(new TextObject("{=HOAwSlCQ}One of the others is going to board us! Repel them and cut loose, or we’ll never catch her!"), NavalStorylineData.Lahar.CharacterObject);
+			CampaignInformationManager.AddDialogLine(new TextObject("{=HOAwSlCQ}One of the others is going to board us! Repel them and cut loose, or we'll never catch her!"), NavalStorylineData.Lahar.CharacterObject);
 			_targetedBySmallerVessels = true;
 		}
 	}
@@ -532,7 +532,7 @@ public class WoundedBeastMissionController : MissionLogic
 		{
 			FinishOffConsortsObjective objective = new FinishOffConsortsObjective(base.Mission, list);
 			_missionObjectiveLogic.StartObjective(objective);
-			CampaignInformationManager.AddDialogLine(new TextObject("{=CzYbzDM8}Good! You dealt her ship a mortal wound. It’s going down! Now, finish off its consorts."), NavalStorylineData.Lahar.CharacterObject, null, 3000);
+			CampaignInformationManager.AddDialogLine(new TextObject("{=CzYbzDM8}Good! You dealt her ship a mortal wound. It's going down! Now, finish off its consorts."), NavalStorylineData.Lahar.CharacterObject, null, 3000);
 		}
 	}
 
@@ -665,7 +665,7 @@ public class WoundedBeastMissionController : MissionLogic
 		_fleePoint = base.Mission.Scene.FindWeakEntityWithTag("sp_flee_point").GlobalPosition.AsVec2;
 		_gunnarInitialDestination = base.Mission.Scene.FindWeakEntityWithTag("sp_gangradir_ship_destination").GlobalPosition.AsVec2;
 		_initialized = true;
-		CampaignInformationManager.AddDialogLine(new TextObject("{=Gdaayb1y}Ha! It looks like her ship took a lot of damage. Her crew must not have furled the sails properly before the winds hit, and now she’s just limping along. Sink her!"), NavalStorylineData.Lahar.CharacterObject);
+		CampaignInformationManager.AddDialogLine(new TextObject("{=Gdaayb1y}Ha! It looks like her ship took a lot of damage. Her crew must not have furled the sails properly before the winds hit, and now she's just limping along. Sink her!"), NavalStorylineData.Lahar.CharacterObject);
 		_availailableEnemyFormations.AddRange(base.Mission.PlayerEnemyTeam.FormationsIncludingEmpty);
 		_navalShipsLogic.SetDeploymentMode(value: true);
 		SpawnPlayerSide();
@@ -686,7 +686,7 @@ public class WoundedBeastMissionController : MissionLogic
 		_navalShipsLogic.TeleportShip(_gunnarMissionShip, _gunnarMissionShip.GameEntity.GetGlobalFrame(), checkFreeArea: true);
 		_navalAgentsLogic.AssignAndTeleportCrewToShipMachines(TeamSideEnum.PlayerTeam);
 		_navalAgentsLogic.AssignAndTeleportCrewToShipMachines(TeamSideEnum.EnemyTeam);
-		Mission.Current.OnDeploymentFinished();
+		base.Mission.OnInitialSpawnCompleted();
 		_navalShipsLogic.SetDeploymentMode(value: false);
 		UpdateSceneWindDirectionAndWaterStrength();
 	}
@@ -731,7 +731,8 @@ public class WoundedBeastMissionController : MissionLogic
 		{
 			IsTradeable = false,
 			IsUsedByQuest = true,
-			Owner = PartyBase.MainParty
+			Owner = PartyBase.MainParty,
+			CanHaveUnlockedPieces = true
 		};
 		_laharShip.ChangeFigurehead(DefaultFigureheads.Hawk);
 		AddShipUpgradePieces(_laharShip, LaharShipUpgradePieces);
@@ -748,7 +749,8 @@ public class WoundedBeastMissionController : MissionLogic
 		{
 			IsTradeable = false,
 			IsUsedByQuest = true,
-			Owner = PartyBase.MainParty
+			Owner = PartyBase.MainParty,
+			CanHaveUnlockedPieces = true
 		};
 		_gunnarShip.ChangeFigurehead(DefaultFigureheads.Dragon);
 		AddShipUpgradePieces(_gunnarShip, GunnarShipUpgradePieces);

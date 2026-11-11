@@ -175,7 +175,7 @@ internal class ContainerLoadData
 					elementLoadData4.SetCustomStructData(obj6);
 				}
 				object dataToUse4 = elementLoadData4.GetDataToUse();
-				obj5.SetValue(dataToUse4, i);
+				obj5?.SetValue(dataToUse4, i);
 			}
 			else if (_containerType == ContainerType.Queue)
 			{
@@ -189,7 +189,7 @@ internal class ContainerLoadData
 					elementLoadData5.SetCustomStructData(obj7);
 				}
 				object dataToUse5 = elementLoadData5.GetDataToUse();
-				collection.GetType().GetMethod("Enqueue").Invoke(collection, new object[1] { dataToUse5 });
+				collection?.GetType().GetMethod("Enqueue").Invoke(collection, new object[1] { dataToUse5 });
 			}
 		}
 	}
@@ -199,6 +199,11 @@ internal class ContainerLoadData
 		ContainerSaveId containerSaveId = (ContainerSaveId)saveId;
 		TypeDefinitionBase typeDefinitionBase = null;
 		typeDefinitionBase = ((!getValueId) ? context.DefinitionContext.TryGetTypeDefinition(containerSaveId.KeyId) : context.DefinitionContext.TryGetTypeDefinition(containerSaveId.ValueId));
-		return Activator.CreateInstance(((StructDefinition)typeDefinitionBase).Type);
+		StructDefinition structDefinition = (StructDefinition)typeDefinitionBase;
+		if (structDefinition == null)
+		{
+			return null;
+		}
+		return Activator.CreateInstance(structDefinition.Type);
 	}
 }

@@ -90,13 +90,14 @@ public class LocateAndRescueTravellerTutorialQuest : StoryModeQuestBase
 		CharacterObject object3 = MBObjectManager.Instance.GetObject<CharacterObject>("tutorial_placeholder_volunteer");
 		mobileParty.PrisonRoster.AddToCounts(object3, (MBRandom.RandomFloat >= 0.5f) ? 1 : 2);
 		mobileParty.Party.SetCustomName(new TextObject("{=u1Pkt4HC}Raiders"));
-		mobileParty.InitializePartyTrade(200);
+		mobileParty.InitializePartyTrade(QuestHelper.CalculateInitialGoldForBanditQuestParty(mobileParty));
 		mobileParty.ActualClan = settlement.OwnerClan;
 		SetPartyAiAction.GetActionForPatrollingAroundSettlement(mobileParty, @object, MobileParty.NavigationType.Default, isFromPort: false, isTargetingPort: false);
 		mobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: true);
 		mobileParty.IgnoreByOtherPartiesTill(CampaignTime.Never);
 		mobileParty.Party.SetVisualAsDirty();
 		AddTrackedObject(mobileParty);
+		Campaign.Current.MapTrackerManager.AddMapTracker(mobileParty);
 		mobileParty.IsActive = true;
 		_raiderPartyCount++;
 		mobileParty.SetPartyUsedByQuest(isActivelyUsed: true);
@@ -112,6 +113,7 @@ public class LocateAndRescueTravellerTutorialQuest : StoryModeQuestBase
 		foreach (MobileParty item in _raiderParties.ToList())
 		{
 			RemoveTrackedObject(item);
+			Campaign.Current.MapTrackerManager.RemoveMapTracker(item);
 			DestroyPartyAction.Apply(null, item);
 		}
 		_raiderParties.Clear();
@@ -181,7 +183,7 @@ public class LocateAndRescueTravellerTutorialQuest : StoryModeQuestBase
 		{
 			GameMenu.SwitchToMenu("encounter_raiders_quest");
 		}
-		if (Hero.MainHero.HitPoints < 50)
+		if (Hero.MainHero.HitPoints < 50 && MobileParty.MainParty.MapEvent == null)
 		{
 			Hero.MainHero.Heal(50 - Hero.MainHero.HitPoints);
 		}
@@ -306,44 +308,49 @@ public class LocateAndRescueTravellerTutorialQuest : StoryModeQuestBase
 
 	private void OnMapEventEnded(MapEvent mapEvent)
 	{
-		if (!mapEvent.IsPlayerMapEvent)
+		if (mapEvent.IsPlayerMapEvent)
 		{
-			return;
-		}
-		if (mapEvent.PlayerSide == mapEvent.WinningSide)
-		{
-			foreach (MobileParty party in _raiderParties.ToList())
+			if (mapEvent.PlayerSide == mapEvent.WinningSide)
 			{
-				if (mapEvent.InvolvedParties.Any((PartyBase p) => p == party.Party))
+				foreach (MobileParty party in _raiderParties.ToList())
 				{
-					_defeatedRaiderPartyCount++;
-					_startQuestLog.UpdateCurrentProgress(_defeatedRaiderPartyCount);
-					party.MemberRoster.Clear();
-					if (_raiderParties.Count > 1)
+					if (mapEvent.InvolvedParties.Any((PartyBase p) => p == party.Party))
 					{
+						_defeatedRaiderPartyCount++;
+						_startQuestLog.UpdateCurrentProgress(_defeatedRaiderPartyCount);
+						party.MemberRoster.Clear();
+						if (_raiderParties.Count > 1)
+						{
+							Campaign.Current.MapTrackerManager.RemoveMapTracker(party);
+							_raiderParties.Remove(party);
+						}
+					}
+					if (party.MemberRoster.TotalManCount == 0 && _raiderParties.Count > 1)
+					{
+						Campaign.Current.MapTrackerManager.RemoveMapTracker(party);
 						_raiderParties.Remove(party);
 					}
 				}
-				if (party.MemberRoster.TotalManCount == 0 && _raiderParties.Count > 1)
+				if (_defeatedRaiderPartyCount >= 3)
 				{
-					_raiderParties.Remove(party);
+					MobileParty mobileParty = _raiderParties[0];
+					TakePrisonerAction.Apply(prisonerCharacter: StoryModeHeroes.Tacitus, capturerParty: mobileParty.Party);
+					mobileParty.PrisonRoster.AddToCounts(Campaign.Current.ObjectManager.GetObject<CharacterObject>("villager_empire"), 2);
+					InformationManager.ShowInquiry(new InquiryData(new TextObject("{=EWD4Op6d}Notification").ToString(), new TextObject("{=OMrnTIe0}You rescue several prisoners that the raiders had been dragging along. They look parched and exhausted. You give them a bit of water and bread, and after a short while one staggers to his feet and comes over to you.").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, new TextObject("{=lmG7uRK2}Okay").ToString(), null, delegate
+					{
+						CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, noHorse: true, noWeapon: true), new ConversationCharacterData(StoryModeHeroes.Tacitus.CharacterObject, null, noHorse: true, noWeapon: true));
+					}, null));
 				}
 			}
-			if (_defeatedRaiderPartyCount >= 3)
+			if (4 > MobileParty.MainParty.MemberRoster.TotalManCount)
 			{
-				MobileParty mobileParty = _raiderParties[0];
-				TakePrisonerAction.Apply(prisonerCharacter: StoryModeHeroes.Tacitus, capturerParty: mobileParty.Party);
-				mobileParty.PrisonRoster.AddToCounts(Campaign.Current.ObjectManager.GetObject<CharacterObject>("villager_empire"), 2);
-				InformationManager.ShowInquiry(new InquiryData(new TextObject("{=EWD4Op6d}Notification").ToString(), new TextObject("{=OMrnTIe0}You rescue several prisoners that the raiders had been dragging along. They look parched and exhausted. You give them a bit of water and bread, and after a short while one staggers to his feet and comes over to you.").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, new TextObject("{=lmG7uRK2}Okay").ToString(), null, delegate
-				{
-					CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, noHorse: true, noWeapon: true), new ConversationCharacterData(StoryModeHeroes.Tacitus.CharacterObject, null, noHorse: true, noWeapon: true));
-				}, null));
+				DespawnRaiderParties();
+				OpenRecruitMoreTroopsPopUp();
 			}
 		}
-		if (4 > MobileParty.MainParty.MemberRoster.TotalManCount)
+		if (Hero.MainHero.HitPoints < 50)
 		{
-			DespawnRaiderParties();
-			OpenRecruitMoreTroopsPopUp();
+			Hero.MainHero.Heal(50 - Hero.MainHero.HitPoints);
 		}
 	}
 
@@ -361,6 +368,7 @@ public class LocateAndRescueTravellerTutorialQuest : StoryModeQuestBase
 	{
 		if (_raiderParties.Contains(mobileParty))
 		{
+			Campaign.Current.MapTrackerManager.RemoveMapTracker(mobileParty);
 			_raiderParties.Remove(mobileParty);
 		}
 	}

@@ -8,6 +8,7 @@ using TaleWorlds.MountAndBlade.Multiplayer.View.MissionViews;
 using TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.Scoreboard;
 using TaleWorlds.MountAndBlade.View;
 using TaleWorlds.MountAndBlade.View.MissionViews;
+using TaleWorlds.ScreenSystem;
 
 namespace TaleWorlds.MountAndBlade.Multiplayer.GauntletUI.Mission;
 
@@ -82,11 +83,6 @@ public class MissionGauntletMultiplayerScoreboard : MissionView
 
 	private void RegisterEvents()
 	{
-		if (base.MissionScreen != null)
-		{
-			base.MissionScreen.OnSpectateAgentFocusIn += HandleSpectateAgentFocusIn;
-			base.MissionScreen.OnSpectateAgentFocusOut += HandleSpectateAgentFocusOut;
-		}
 		_missionLobbyComponent.CurrentMultiplayerStateChanged += MissionLobbyComponentOnCurrentMultiplayerStateChanged;
 		_missionLobbyComponent.OnCultureSelectionRequested += OnCultureSelectionRequested;
 		if (_teamSelectComponent != null)
@@ -98,11 +94,6 @@ public class MissionGauntletMultiplayerScoreboard : MissionView
 
 	private void UnregisterEvents()
 	{
-		if (base.MissionScreen != null)
-		{
-			base.MissionScreen.OnSpectateAgentFocusIn -= HandleSpectateAgentFocusIn;
-			base.MissionScreen.OnSpectateAgentFocusOut -= HandleSpectateAgentFocusOut;
-		}
 		_missionLobbyComponent.CurrentMultiplayerStateChanged -= MissionLobbyComponentOnCurrentMultiplayerStateChanged;
 		_missionLobbyComponent.OnCultureSelectionRequested -= OnCultureSelectionRequested;
 		if (_teamSelectComponent != null)
@@ -158,10 +149,7 @@ public class MissionGauntletMultiplayerScoreboard : MissionView
 			_isActive = isActive;
 			_dataSource.IsActive = _isActive;
 			base.MissionScreen.SetCameraLockState(_isActive);
-			if (!_isActive)
-			{
-				_mouseRequstedWhileScoreboardActive = false;
-			}
+			_mouseRequstedWhileScoreboardActive = _isActive && ScreenManager.GetMouseVisibility();
 			OnScoreboardToggled?.Invoke(_isActive);
 		}
 	}
@@ -180,24 +168,6 @@ public class MissionGauntletMultiplayerScoreboard : MissionView
 				_gauntletLayer.InputRestrictions.SetInputRestrictions(_isMouseVisible, InputUsageMask.Mouse);
 			}
 			_dataSource?.SetMouseState(isMouseVisible);
-		}
-	}
-
-	private void HandleSpectateAgentFocusOut(Agent followedAgent)
-	{
-		if (followedAgent.MissionPeer != null)
-		{
-			MissionPeer component = followedAgent.MissionPeer.GetComponent<MissionPeer>();
-			_dataSource.DecreaseSpectatorCount(component);
-		}
-	}
-
-	private void HandleSpectateAgentFocusIn(Agent followedAgent)
-	{
-		if (followedAgent.MissionPeer != null)
-		{
-			MissionPeer component = followedAgent.MissionPeer.GetComponent<MissionPeer>();
-			_dataSource.IncreaseSpectatorCount(component);
 		}
 	}
 

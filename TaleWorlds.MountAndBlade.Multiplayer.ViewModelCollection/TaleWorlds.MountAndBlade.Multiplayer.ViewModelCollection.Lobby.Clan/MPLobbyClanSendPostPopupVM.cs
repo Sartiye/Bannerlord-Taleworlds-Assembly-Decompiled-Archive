@@ -160,17 +160,12 @@ public class MPLobbyClanSendPostPopupVM : ViewModel
 		IsSelected = false;
 	}
 
-	public void ExecuteSend()
+	public async void ExecuteSend()
 	{
-		if (_popupMode == PostPopupMode.Information)
+		if ((_popupMode == PostPopupMode.Information) ? (await NetworkMain.GameClient.SetClanInformationText(PostData)) : (_popupMode != PostPopupMode.Announcement || await NetworkMain.GameClient.AddClanAnnouncement(PostData)))
 		{
-			NetworkMain.GameClient.SetClanInformationText(PostData);
+			ExecuteClosePopup();
 		}
-		else if (_popupMode == PostPopupMode.Announcement)
-		{
-			NetworkMain.GameClient.AddClanAnnouncement(PostData);
-		}
-		ExecuteClosePopup();
 	}
 
 	public override void OnFinalize()

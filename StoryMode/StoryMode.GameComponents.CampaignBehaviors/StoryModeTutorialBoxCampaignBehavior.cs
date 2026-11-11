@@ -90,6 +90,8 @@ public class StoryModeTutorialBoxCampaignBehavior : CampaignBehaviorBase
 		BackupTutorial("AssignRolesTutorial", num++);
 		BackupTutorial("BombardmentStep1", num++);
 		BackupTutorial("KingdomDecisionVotingTutorial", num++);
+		BackupTutorial("StartingBloodFeudTutorial", num++);
+		BackupTutorial("ContinuingBloodFeudTutorial", num++);
 		foreach (KeyValuePair<string, int> item in _tutorialBackup)
 		{
 			AddTutorial(item.Key, item.Value);

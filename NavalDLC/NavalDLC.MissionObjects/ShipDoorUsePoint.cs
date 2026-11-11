@@ -37,7 +37,7 @@ public class ShipDoorUsePoint : UsableMissionObject
 		DescriptionMessage = GameTexts.FindText(string.IsNullOrEmpty(_descriptionStringId) ? "str_ui_door" : _descriptionStringId);
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		return DescriptionMessage;
 	}

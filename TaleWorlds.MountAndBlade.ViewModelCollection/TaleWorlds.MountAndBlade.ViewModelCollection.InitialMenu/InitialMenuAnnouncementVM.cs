@@ -160,7 +160,7 @@ public class InitialMenuAnnouncementVM : ViewModel
 	{
 		try
 		{
-			_announcementInfo = Common.DeserializeObjectFromJson<Dictionary<string, Dictionary<string, AnnouncementInformation>>>(await HttpHelper.DownloadStringTaskAsync("https://taleworldswebsiteassets.blob.core.windows.net/upload/upsell/data.json"));
+			_announcementInfo = Common.DeserializeObjectFromJson<Dictionary<string, Dictionary<string, AnnouncementInformation>>>(await HttpHelper.DownloadStringTaskAsync("https://cdn.taleworlds.com/upload/upsell/data.json"));
 		}
 		catch (Exception)
 		{

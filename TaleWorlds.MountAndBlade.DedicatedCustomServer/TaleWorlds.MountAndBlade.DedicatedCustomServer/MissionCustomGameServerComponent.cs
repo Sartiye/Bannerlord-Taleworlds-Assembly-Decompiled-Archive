@@ -25,6 +25,8 @@ public class MissionCustomGameServerComponent : MissionLobbyComponent
 
 	private MultiplayerGameLogger _gameLogger;
 
+	private MultiplayerAdminComponent _adminComponent;
+
 	private MultipleBattleResult _battleResult;
 
 	private int _currentMatchIndex = -1;
@@ -87,6 +89,8 @@ public class MissionCustomGameServerComponent : MissionLobbyComponent
 		_teamScores = new Dictionary<int, int>();
 		_playerScores = new Dictionary<PlayerId, int>();
 		MissionPeer.OnTeamChanged += OnMissionPeerTeamChanged;
+		_adminComponent = base.Mission.GetMissionBehavior<MultiplayerAdminComponent>();
+		_adminComponent.OnStreamerOptionsChangedByAdmin += DedicatedCustomServerSubModule.Instance.IntermissionManagerHandler.OnStreamerOptionsChangedByAdmin;
 	}
 
 	private void OnRoundPropertiesChanged()
@@ -106,6 +110,7 @@ public class MissionCustomGameServerComponent : MissionLobbyComponent
 		{
 			_warmupComponent.OnWarmupEnded -= OnWarmupEnded;
 		}
+		_adminComponent.OnStreamerOptionsChangedByAdmin -= DedicatedCustomServerSubModule.Instance.IntermissionManagerHandler.OnStreamerOptionsChangedByAdmin;
 		MissionMultiplayerGameModeBase missionBehavior = Mission.Current.GetMissionBehavior<MissionMultiplayerGameModeBase>();
 		MultiplayerGameType missionType = _gameMode.GetMissionType();
 		if (missionType == MultiplayerGameType.Siege && missionBehavior is MissionMultiplayerSiege)

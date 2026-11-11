@@ -355,7 +355,11 @@ public class VoiceChatHandler : MissionNetwork
 		}
 		if (!IsVoiceRecordActive && base.Mission.InputManager.IsGameKeyPressed(33))
 		{
-			IsVoiceRecordActive = true;
+			MissionPeer missionPeer = GameNetwork.MyPeer?.GetComponent<MissionPeer>();
+			if (missionPeer != null && missionPeer.Team != null && missionPeer.Team != Mission.Current.SpectatorTeam)
+			{
+				IsVoiceRecordActive = true;
+			}
 		}
 		if (IsVoiceRecordActive && base.Mission.InputManager.IsGameKeyReleased(33))
 		{
@@ -462,7 +466,7 @@ public class VoiceChatHandler : MissionNetwork
 			{
 				RemovePlayerFromVoiceChat(num);
 			}
-			if (newTeam == null)
+			if (newTeam == null || newTeam == Mission.Current.SpectatorTeam)
 			{
 				return;
 			}
@@ -493,7 +497,7 @@ public class VoiceChatHandler : MissionNetwork
 				}
 			}
 		}
-		else if (missionPeer.Team == newTeam)
+		else if (missionPeer.Team != Mission.Current.SpectatorTeam && missionPeer.Team == newTeam)
 		{
 			AddPlayerToVoiceChat(component);
 		}

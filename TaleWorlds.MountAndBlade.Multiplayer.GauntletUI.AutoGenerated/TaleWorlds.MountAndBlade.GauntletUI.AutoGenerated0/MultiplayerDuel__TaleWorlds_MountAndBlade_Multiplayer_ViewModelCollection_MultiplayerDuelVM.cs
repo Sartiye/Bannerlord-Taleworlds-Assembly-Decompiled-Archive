@@ -540,6 +540,15 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 		_widget_4_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_1;
 		_widget_4_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_1;
 		_widget_4_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_1;
+		_widget_6.PropertyChanged -= PropertyChangedListenerOf_widget_6;
+		_widget_6.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_6;
+		_widget_6.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_6;
+		_widget_6.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_6;
+		_widget_6.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_6;
+		_widget_6.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_6;
+		_widget_6.intPropertyChanged -= intPropertyChangedListenerOf_widget_6;
+		_widget_6.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_6;
+		_widget_6.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_6;
 		_widget_6_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_6_0_0;
 		_widget_6_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_6_0_0;
 		_widget_6_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_6_0_0;
@@ -1111,6 +1120,59 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 		if (propertyName == "ArenaType")
 		{
 			_datasource_Root.PlayerPrefferedArenaType = _widget_4_1.ArenaType;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_6(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_6(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_6(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_6(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_6(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_6(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_6(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_6(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_6(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_6(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_6(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_6(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_6(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_6(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_6(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_6(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_6(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_6(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_6(string propertyName)
+	{
+		if (propertyName == "IsVisible")
+		{
+			_datasource_Root.ShowPlayerStats = _widget_6.IsVisible;
 		}
 	}
 
@@ -1947,6 +2009,9 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 			_widget_4_0.ArenaType = _datasource_Root.PlayerPrefferedArenaType;
 			_widget_4_1.ArenaType = _datasource_Root.PlayerPrefferedArenaType;
 			break;
+		case "ShowPlayerStats":
+			_widget_6.IsVisible = _datasource_Root.ShowPlayerStats;
+			break;
 		case "PlayerBounty":
 			_widget_6_0_0.IntText = _datasource_Root.PlayerBounty;
 			break;
@@ -2573,6 +2638,15 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 			_widget_4_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_4_1;
 			_widget_4_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_4_1;
 			_widget_4_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_4_1;
+			_widget_6.PropertyChanged -= PropertyChangedListenerOf_widget_6;
+			_widget_6.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_6;
+			_widget_6.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_6;
+			_widget_6.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_6;
+			_widget_6.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_6;
+			_widget_6.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_6;
+			_widget_6.intPropertyChanged -= intPropertyChangedListenerOf_widget_6;
+			_widget_6.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_6;
+			_widget_6.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_6;
 			_widget_6_0_0.PropertyChanged -= PropertyChangedListenerOf_widget_6_0_0;
 			_widget_6_0_0.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_6_0_0;
 			_widget_6_0_0.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_6_0_0;
@@ -2899,6 +2973,16 @@ public class MultiplayerDuel__TaleWorlds_MountAndBlade_Multiplayer_ViewModelColl
 		_widget_4_1.intPropertyChanged += intPropertyChangedListenerOf_widget_4_1;
 		_widget_4_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_4_1;
 		_widget_4_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_4_1;
+		_widget_6.IsVisible = _datasource_Root.ShowPlayerStats;
+		_widget_6.PropertyChanged += PropertyChangedListenerOf_widget_6;
+		_widget_6.boolPropertyChanged += boolPropertyChangedListenerOf_widget_6;
+		_widget_6.floatPropertyChanged += floatPropertyChangedListenerOf_widget_6;
+		_widget_6.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_6;
+		_widget_6.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_6;
+		_widget_6.doublePropertyChanged += doublePropertyChangedListenerOf_widget_6;
+		_widget_6.intPropertyChanged += intPropertyChangedListenerOf_widget_6;
+		_widget_6.uintPropertyChanged += uintPropertyChangedListenerOf_widget_6;
+		_widget_6.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_6;
 		_widget_6_0_0.IntText = _datasource_Root.PlayerBounty;
 		_widget_6_0_0.PropertyChanged += PropertyChangedListenerOf_widget_6_0_0;
 		_widget_6_0_0.boolPropertyChanged += boolPropertyChangedListenerOf_widget_6_0_0;

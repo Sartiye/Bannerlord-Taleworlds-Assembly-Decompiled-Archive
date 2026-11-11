@@ -111,6 +111,8 @@ public class Army : ITrackableCampaignObject, ITrackableBase
 
 	public int CohesionThresholdForDispersion => Campaign.Current.Models.ArmyManagementCalculationModel.CohesionThresholdForDispersion;
 
+	public bool IsDispersing => _armyIsDispersing;
+
 	[SaveableProperty(13)]
 	public float Morale { get; private set; }
 
@@ -906,7 +908,6 @@ public class Army : ITrackableCampaignObject, ITrackableBase
 			}
 		}
 		mobileParty.Party.SetVisualAsDirty();
-		mobileParty.Party.UpdateVisibilityAndInspected(MobileParty.MainParty.Position);
 	}
 
 	internal void OnAddPartyInternal(MobileParty mobileParty)

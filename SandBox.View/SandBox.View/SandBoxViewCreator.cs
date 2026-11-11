@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using SandBox.AdvancedStartOptions;
 using SandBox.View.Map;
 using SandBox.View.Menu;
 using SandBox.View.Missions;
@@ -62,11 +63,6 @@ public static class SandBoxViewCreator
 	public static ScreenBase CreateSaveLoadScreen(bool isSaving)
 	{
 		return ViewCreatorManager.CreateScreenView<SaveLoadScreen>(new object[1] { isSaving });
-	}
-
-	public static MissionView CreateMissionCraftingView()
-	{
-		return null;
 	}
 
 	public static MissionView CreateMissionNameMarkerUIHandler(Mission mission = null)
@@ -153,5 +149,10 @@ public static class SandBoxViewCreator
 	public static MissionView CreateMissionArenaPracticeFightView()
 	{
 		return ViewCreatorManager.CreateMissionView<MissionArenaPracticeFightView>(isNetwork: false, null, Array.Empty<object>());
+	}
+
+	public static GlobalLayer CreateCampaignAdvancedStartOptions(SandBox.AdvancedStartOptions.AdvancedStartOptions startOptions, Action<SandBox.AdvancedStartOptions.AdvancedStartOptions> onConfirm, Action onClose)
+	{
+		return ViewCreatorManager.CreateGlobalLayer<CampaignAdvancedStartingOptionsView>(new object[3] { startOptions, onConfirm, onClose });
 	}
 }

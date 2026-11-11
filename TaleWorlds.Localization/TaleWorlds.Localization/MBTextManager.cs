@@ -120,12 +120,12 @@ public static class MBTextManager
 		}
 		if (LocalizationDebugMode)
 		{
-			string text2 = to.GetID();
-			if (string.IsNullOrEmpty(text2))
+			string iD = to.GetID();
+			if (string.IsNullOrEmpty(iD) || string.Equals("!", iD))
 			{
-				text2 = "!";
+				return text;
 			}
-			return "(" + text2 + ") " + text;
+			return "(" + iD + ") " + text;
 		}
 		return text;
 	}

@@ -38,7 +38,9 @@ public class DefaultPregnancyModel : PregnancyModel
 		float num4 = (1.2f - (hero.Age - 18f) * 0.04f) / (float)(num * num) * 0.12f * num3;
 		float baseNumber = ((hero.Spouse != null && IsHeroAgeSuitableForPregnancy(hero)) ? num4 : 0f);
 		ExplainedNumber explainedNumber = new ExplainedNumber(baseNumber);
-		if (hero.GetPerkValue(DefaultPerks.Charm.Virile) || hero.Spouse.GetPerkValue(DefaultPerks.Charm.Virile))
+		bool perkValue = hero.GetPerkValue(DefaultPerks.Charm.Virile);
+		bool perkValue2 = hero.Spouse.GetPerkValue(DefaultPerks.Charm.Virile);
+		if (perkValue || perkValue2)
 		{
 			explainedNumber.AddFactor(DefaultPerks.Charm.Virile.PrimaryBonus, DefaultPerks.Charm.Virile.Name);
 		}

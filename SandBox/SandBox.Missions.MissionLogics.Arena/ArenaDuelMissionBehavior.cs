@@ -9,4 +9,9 @@ public class ArenaDuelMissionBehavior : MissionLogic
 	{
 		TournamentBehavior.DeleteTournamentSetsExcept(base.Mission.Scene.FindEntityWithTag("tournament_fight"));
 	}
+
+	public override void OnAfterMissionLoadingFinished()
+	{
+		base.Mission.OnInitialSpawnCompleted();
+	}
 }

@@ -15,7 +15,8 @@ public static class DeclareWarAction
 		CausedByCrimeRatingChange,
 		CausedByKingdomCreation,
 		CausedByClaimOnThrone,
-		CausedByCallToWarAgreement
+		CausedByCallToWarAgreement,
+		CausedByQuest
 	}
 
 	private static void ApplyInternal(IFaction faction1, IFaction faction2, DeclareWarDetail declareWarDetail)
@@ -92,5 +93,10 @@ public static class DeclareWarAction
 	public static void ApplyByCallToWarAgreement(IFaction faction1, IFaction faction2)
 	{
 		ApplyInternal(faction1, faction2, DeclareWarDetail.CausedByCallToWarAgreement);
+	}
+
+	public static void ApplyByQuest(IFaction faction1, IFaction faction2)
+	{
+		ApplyInternal(faction1, faction2, DeclareWarDetail.CausedByQuest);
 	}
 }

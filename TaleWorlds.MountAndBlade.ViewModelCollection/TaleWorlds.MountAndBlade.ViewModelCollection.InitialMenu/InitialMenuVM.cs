@@ -9,6 +9,8 @@ namespace TaleWorlds.MountAndBlade.ViewModelCollection.InitialMenu;
 
 public class InitialMenuVM : ViewModel
 {
+	private bool _isMenuOptionsRefreshPending;
+
 	private MBBindingList<InitialMenuOptionVM> _menuOptions;
 
 	private InitialMenuAnnouncementVM _announcement;
@@ -207,6 +209,20 @@ public class InitialMenuVM : ViewModel
 	public void Tick()
 	{
 		Announcement?.Tick();
+	}
+
+	public void RequestMenuOptionsRefresh()
+	{
+		_isMenuOptionsRefreshPending = true;
+	}
+
+	public void OnFrameTick()
+	{
+		if (_isMenuOptionsRefreshPending)
+		{
+			_isMenuOptionsRefreshPending = false;
+			RefreshMenuOptions();
+		}
 	}
 
 	public void RefreshMenuOptions()

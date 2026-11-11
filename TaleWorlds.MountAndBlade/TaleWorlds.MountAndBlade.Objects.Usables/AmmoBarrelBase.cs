@@ -68,7 +68,7 @@ public abstract class AmmoBarrelBase : UsableMachine
 		return textObject;
 	}
 
-	public abstract override TextObject GetDescriptionText(WeakGameEntity gameEntity);
+	public abstract override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent);
 
 	public override TickRequirement GetTickRequirement()
 	{

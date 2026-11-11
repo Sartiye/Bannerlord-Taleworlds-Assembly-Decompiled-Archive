@@ -31,14 +31,15 @@ public class DefaultWallHitPointCalculationModel : WallHitPointCalculationModel
 			num += 67000f;
 			break;
 		default:
-			Debug.FailedAssert(string.Concat("Settlement \"", town.Name, "\" has a wrong wall level set."), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultWallHitPointCalculationModel.cs", "CalculateMaximumWallHitPointInternal", 35);
+			Debug.FailedAssert(string.Concat("Settlement \"", town.Name, "\" has a wrong wall level set."), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultWallHitPointCalculationModel.cs", "CalculateMaximumWallHitPointInternal", 37);
 			num += -1f;
 			break;
 		}
 		Hero governor = town.Governor;
 		if (governor != null && governor.GetPerkValue(DefaultPerks.Engineering.EngineeringGuilds))
 		{
-			num += num * DefaultPerks.Engineering.EngineeringGuilds.SecondaryBonus;
+			float num2 = num * DefaultPerks.Engineering.EngineeringGuilds.SecondaryBonus;
+			num += num2;
 		}
 		return num;
 	}

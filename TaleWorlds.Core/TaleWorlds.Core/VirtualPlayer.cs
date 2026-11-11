@@ -98,10 +98,10 @@ public class VirtualPlayer
 		{
 			return true;
 		}
-		AssemblyName[] referencedAssemblies = assembly.GetReferencedAssemblies();
-		for (int i = 0; i < referencedAssemblies.Length; i++)
+		AssemblyName[] referencedAssembliesSafe = assembly.GetReferencedAssembliesSafe();
+		for (int i = 0; i < referencedAssembliesSafe.Length; i++)
 		{
-			if (referencedAssemblies[i].FullName == assembly2.FullName)
+			if (referencedAssembliesSafe[i].FullName == assembly2.FullName)
 			{
 				return true;
 			}

@@ -198,9 +198,10 @@ public class EncyclopediaData
 		Type type = null;
 		EncyclopediaPageArgs encyclopediaPageArgs = new EncyclopediaPageArgs(o);
 		Assembly assembly = typeof(EncyclopediaHomeVM).Assembly;
-		Type[] types = assembly.GetTypes();
-		foreach (Type type2 in types)
+		List<Type> typesSafe = assembly.GetTypesSafe();
+		for (int i = 0; i < typesSafe.Count; i++)
 		{
+			Type type2 = typesSafe[i];
 			if (IsEncyclopediaPageType(page, type2))
 			{
 				type = type2;
@@ -209,10 +210,10 @@ public class EncyclopediaData
 		Assembly[] activeReferencingGameAssembliesSafe = assembly.GetActiveReferencingGameAssembliesSafe();
 		for (int j = 0; j < activeReferencingGameAssembliesSafe.Length; j++)
 		{
-			List<Type> typesSafe = activeReferencingGameAssembliesSafe[j].GetTypesSafe();
-			for (int k = 0; k < typesSafe.Count; k++)
+			List<Type> typesSafe2 = activeReferencingGameAssembliesSafe[j].GetTypesSafe();
+			for (int k = 0; k < typesSafe2.Count; k++)
 			{
-				Type type3 = typesSafe[k];
+				Type type3 = typesSafe2[k];
 				if (IsEncyclopediaPageType(page, type3))
 				{
 					type = type3;

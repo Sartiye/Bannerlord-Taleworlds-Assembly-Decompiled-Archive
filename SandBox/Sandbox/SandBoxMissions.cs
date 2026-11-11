@@ -23,6 +23,7 @@ using TaleWorlds.CampaignSystem.TroopSuppliers;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
+using TaleWorlds.LinQuick;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.MountAndBlade.Missions.Handlers;
 using TaleWorlds.MountAndBlade.Missions.MissionLogics;
@@ -268,6 +269,7 @@ public static class SandBoxMissions
 				new MissionCrimeHandler(),
 				new MissionFacialAnimationHandler(),
 				new LocationItemSpawnHandler(),
+				new MissionObjectiveLogic(),
 				new PrisonBreakMissionController(prisonerCharacter),
 				new CorpseDraggingMissionLogic(),
 				new StealthFailCounterMissionLogic(),
@@ -463,6 +465,25 @@ public static class SandBoxMissions
 		bool isPlayerAttacker = !MobileParty.MainParty.MapEvent.AttackerSide.Parties.Where((MapEventParty p) => p.Party == MobileParty.MainParty.Party).IsEmpty();
 		bool isPlayerSergeant = MobileParty.MainParty.MapEvent.IsPlayerSergeant();
 		bool isPlayerInArmy = MobileParty.MainParty.Army != null;
+		BattleSideEnum playerSide = (isPlayerAttacker ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
+		PartyBase caravanCombatant = MapEvent.PlayerMapEvent.InvolvedParties.FirstOrDefaultQ((PartyBase ip) => ip.IsMobile && ip.MobileParty.IsCaravan);
+		if (caravanCombatant == null)
+		{
+			caravanCombatant = MapEvent.PlayerMapEvent.InvolvedParties.FirstOrDefaultQ((PartyBase ip) => ip.IsMobile && ip.Owner != null && ip.Owner.IsMerchant);
+		}
+		if (caravanCombatant == null)
+		{
+			caravanCombatant = MapEvent.PlayerMapEvent.InvolvedParties.FirstOrDefaultQ((PartyBase ip) => ip.IsMobile && ip.MobileParty.IsVillager);
+		}
+		bool isCaravanCulture = caravanCombatant.Culture.StringId == "aserai" || caravanCombatant.Culture.StringId == "khuzait";
+		if (caravanCombatant.Side == BattleSideEnum.Attacker && caravanCombatant != MapEvent.PlayerMapEvent.AttackerSide.LeaderParty)
+		{
+			caravanCombatant = MapEvent.PlayerMapEvent.AttackerSide.LeaderParty;
+		}
+		else if (caravanCombatant.Side == BattleSideEnum.Defender && caravanCombatant != MapEvent.PlayerMapEvent.DefenderSide.LeaderParty)
+		{
+			caravanCombatant = MapEvent.PlayerMapEvent.DefenderSide.LeaderParty;
+		}
 		return MissionState.OpenNew("Battle", rec, (Mission mission) => new MissionBehavior[31]
 		{
 			new MissionOptionsComponent(),
@@ -492,7 +513,7 @@ public static class SandBoxMissions
 			new SandboxGeneralsAndCaptainsAssignmentLogic(MapEvent.PlayerMapEvent.AttackerSide.LeaderParty.LeaderHero?.Name, MapEvent.PlayerMapEvent.DefenderSide.LeaderParty.LeaderHero?.Name),
 			new EquipmentControllerLeaveLogic(),
 			new MissionCaravanOrVillagerTacticsHandler(),
-			new CaravanBattleMissionHandler(TaleWorlds.Library.MathF.Min(MapEvent.PlayerMapEvent.InvolvedParties.Where((PartyBase ip) => ip.Side == BattleSideEnum.Attacker).Sum((PartyBase ip) => ip.MobileParty.Party.MemberRoster.TotalManCount - ip.MobileParty.Party.MemberRoster.TotalWounded), MapEvent.PlayerMapEvent.InvolvedParties.Where((PartyBase ip) => ip.Side == BattleSideEnum.Defender).Sum((PartyBase ip) => ip.MobileParty.Party.MemberRoster.TotalManCount - ip.MobileParty.Party.MemberRoster.TotalWounded)), MapEvent.PlayerMapEvent.InvolvedParties.Any((PartyBase ip) => (ip.MobileParty.IsCaravan || ip.MobileParty.IsVillager) && (ip.Culture.StringId == "aserai" || ip.Culture.StringId == "khuzait")), isCaravan),
+			new CaravanBattleMissionHandler(caravanCombatant, isCaravanCulture, isCaravan, playerSide),
 			new BattleDeploymentHandler(isPlayerAttacker),
 			new BattleDeploymentMissionController(isPlayerAttacker),
 			new BattleSurgeonLogic()
@@ -765,23 +786,6 @@ public static class SandBoxMissions
 	}
 
 	[MissionMethod]
-	public static Mission OpenCampMission(string scene)
-	{
-		return MissionState.OpenNew("Camp", CreateSandBoxMissionInitializerRecord(scene, "", doNotUseLoadingScreen: false, DecalAtlasGroup.Town), (Mission mission) => new MissionBehavior[9]
-		{
-			new MissionOptionsComponent(),
-			new CampaignMissionComponent(),
-			new BattleEndLogic(),
-			new MissionCombatantsLogic(MobileParty.MainParty.MapEvent.InvolvedParties, PartyBase.MainParty, MobileParty.MainParty.MapEvent.GetLeaderParty(BattleSideEnum.Defender), MobileParty.MainParty.MapEvent.GetLeaderParty(BattleSideEnum.Attacker), Mission.MissionTeamAITypeEnum.NoTeamAI, isPlayerSergeant: false),
-			new BasicLeaveMissionLogic(),
-			new MissionHardBorderPlacer(),
-			new MissionBoundaryPlacer(),
-			new MissionBoundaryCrossingHandler(),
-			new EquipmentControllerLeaveLogic()
-		});
-	}
-
-	[MissionMethod]
 	public static Mission OpenSiegeMissionWithDeployment(string scene, float[] wallHitPointPercentages, bool hasAnySiegeTower, List<MissionSiegeWeapon> siegeWeaponsOfAttackers, List<MissionSiegeWeapon> siegeWeaponsOfDefenders, bool isPlayerAttacker, int sceneUpgradeLevel = 0, bool isSallyOut = false, bool isReliefForceAttack = false)
 	{
 		string upgradeLevelTag = Campaign.Current.Models.LocationModel.GetUpgradeLevelTag(sceneUpgradeLevel);
@@ -997,7 +1001,7 @@ public static class SandBoxMissions
 	[MissionMethod]
 	public static Mission OpenMeetingMission(string scene, CharacterObject character)
 	{
-		Debug.FailedAssert("This mission was broken", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\Missions\\SandBoxMissions.cs", "OpenMeetingMission", 1335);
+		Debug.FailedAssert("This mission was broken", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox\\Missions\\SandBoxMissions.cs", "OpenMeetingMission", 1339);
 		return MissionState.OpenNew("Conversation", CreateSandBoxMissionInitializerRecord(scene, "", doNotUseLoadingScreen: false, DecalAtlasGroup.Town), (Mission mission) => new MissionBehavior[5]
 		{
 			new CampaignMissionComponent(),

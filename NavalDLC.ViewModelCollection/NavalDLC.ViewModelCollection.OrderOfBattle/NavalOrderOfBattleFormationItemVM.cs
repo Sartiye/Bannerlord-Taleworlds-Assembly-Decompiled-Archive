@@ -75,6 +75,10 @@ public class NavalOrderOfBattleFormationItemVM : ViewModel
 
 	private string _skeletalCrewCountWarning;
 
+	private bool _isMinimumCrewCountWarningActive;
+
+	private string _minimumCrewCountWarning;
+
 	private HintViewModel _captainSlotHint;
 
 	private HintViewModel _shipSlotHint;
@@ -192,7 +196,7 @@ public class NavalOrderOfBattleFormationItemVM : ViewModel
 				_hasShip = value;
 				OnPropertyChangedWithValue(value, "HasShip");
 				IsSelectable = HasShip && IsEnabled;
-				IsSkeletalCrewCountWarningActive = HasShip && TroopCount < Ship.ShipOrigin.SkeletalCrewCapacity;
+				UpdateIsWarned();
 			}
 		}
 	}
@@ -329,7 +333,7 @@ public class NavalOrderOfBattleFormationItemVM : ViewModel
 			{
 				_troopCount = value;
 				OnPropertyChangedWithValue(value, "TroopCount");
-				IsSkeletalCrewCountWarningActive = HasShip && TroopCount < Ship.ShipOrigin.SkeletalCrewCapacity;
+				UpdateIsWarned();
 			}
 		}
 	}
@@ -381,6 +385,40 @@ public class NavalOrderOfBattleFormationItemVM : ViewModel
 			{
 				_skeletalCrewCountWarning = value;
 				OnPropertyChangedWithValue(value, "SkeletalCrewCountWarning");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsMinimumCrewCountWarningActive
+	{
+		get
+		{
+			return _isMinimumCrewCountWarningActive;
+		}
+		set
+		{
+			if (value != _isMinimumCrewCountWarningActive)
+			{
+				_isMinimumCrewCountWarningActive = value;
+				OnPropertyChangedWithValue(value, "IsMinimumCrewCountWarningActive");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public string MinimumCrewCountWarning
+	{
+		get
+		{
+			return _minimumCrewCountWarning;
+		}
+		set
+		{
+			if (value != _minimumCrewCountWarning)
+			{
+				_minimumCrewCountWarning = value;
+				OnPropertyChangedWithValue(value, "MinimumCrewCountWarning");
 			}
 		}
 	}
@@ -494,7 +532,7 @@ public class NavalOrderOfBattleFormationItemVM : ViewModel
 					filterItem.IsActive = false;
 				}
 			}
-			IsSkeletalCrewCountWarningActive = HasShip && TroopCount < Ship.ShipOrigin.SkeletalCrewCapacity;
+			UpdateIsWarned();
 		}
 	}
 
@@ -671,6 +709,7 @@ public class NavalOrderOfBattleFormationItemVM : ViewModel
 		InfantryAndRangedHint = new HintViewModel(_infantryAndRangedHintText);
 		TroopCount = Formation.CountOfUnits;
 		SkeletalCrewCountWarning = new TextObject("{=JEwakKND}Ship is undercrewed!").ToString();
+		MinimumCrewCountWarning = new TextObject("{=DY1uYOVI}Ship cannot be operated!").ToString();
 	}
 
 	public override void OnFinalize()
@@ -914,5 +953,11 @@ public class NavalOrderOfBattleFormationItemVM : ViewModel
 			return FormationClass.HorseArcher;
 		}
 		return FormationClass.NumberOfAllFormations;
+	}
+
+	private void UpdateIsWarned()
+	{
+		IsMinimumCrewCountWarningActive = HasShip && TroopCount < 4;
+		IsSkeletalCrewCountWarningActive = !IsMinimumCrewCountWarningActive && HasShip && TroopCount < Ship.ShipOrigin.SkeletalCrewCapacity;
 	}
 }

@@ -46,7 +46,7 @@ public class PartyNavigationElement : MapNavigationElementBase
 		{
 			return new NavigationPermissionItem(isAuthorized: false, null);
 		}
-		if (MobileParty.MainParty.IsInRaftState || Hero.MainHero.HeroState == Hero.CharacterStates.Prisoner)
+		if (MobileParty.MainParty.IsInNavalAutoTravel || Hero.MainHero.HeroState == Hero.CharacterStates.Prisoner)
 		{
 			return new NavigationPermissionItem(isAuthorized: false, null);
 		}
@@ -101,7 +101,7 @@ public class PartyNavigationElement : MapNavigationElementBase
 
 	public override void OpenView(params object[] parameters)
 	{
-		Debug.FailedAssert("Party screen shouldn't be opened with parameters from navigation", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\Navigation\\NavigationElements\\PartyNavigationElement.cs", "OpenView", 118);
+		Debug.FailedAssert("Party screen shouldn't be opened with parameters from navigation", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\Navigation\\NavigationElements\\PartyNavigationElement.cs", "OpenView", 119);
 		OpenView();
 	}
 

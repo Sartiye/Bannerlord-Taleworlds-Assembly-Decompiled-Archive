@@ -32,54 +32,43 @@ public class MultipleSelectionHostGameOptionDataVM : GenericHostGameOptionDataVM
 	public MultipleSelectionHostGameOptionDataVM(MultiplayerOptions.OptionType optionType, int preferredIndex)
 		: base(OptionsVM.OptionsDataType.MultipleSelectionOption, optionType, preferredIndex)
 	{
-		List<string> multiplayerOptionsList = MultiplayerOptions.Instance.GetMultiplayerOptionsList(base.OptionType);
-		List<string> multiplayerOptionsTextList = MultiplayerOptions.Instance.GetMultiplayerOptionsTextList(base.OptionType);
-		List<string> list = new List<string>();
-		foreach (string item in multiplayerOptionsTextList)
-		{
-			list.Add(item);
-		}
-		Selector = new SelectorVM<SelectorItemVM>(list, multiplayerOptionsList.IndexOf(MultiplayerOptions.Instance.GetValueTextForOptionWithMultipleSelection(base.OptionType)), null);
+		Selector = new SelectorVM<SelectorItemVM>(GetOptionTexts(), GetCurrentIndex(), null);
 		Selector.SetOnChangeAction(OnChangeSelected);
 	}
 
 	public override void RefreshData()
 	{
 		Selector.SetOnChangeAction(null);
-		List<string> multiplayerOptionsList = MultiplayerOptions.Instance.GetMultiplayerOptionsList(base.OptionType);
-		List<string> multiplayerOptionsTextList = MultiplayerOptions.Instance.GetMultiplayerOptionsTextList(base.OptionType);
-		List<string> list = new List<string>();
-		foreach (string item in multiplayerOptionsTextList)
+		int currentIndex = GetCurrentIndex();
+		if (currentIndex != Selector.SelectedIndex)
 		{
-			list.Add(item);
-		}
-		int num = multiplayerOptionsList.IndexOf(MultiplayerOptions.Instance.GetValueTextForOptionWithMultipleSelection(base.OptionType));
-		if (num != Selector.SelectedIndex)
-		{
-			Selector.SelectedIndex = num;
+			Selector.SelectedIndex = currentIndex;
 		}
 		Selector.SetOnChangeAction(OnChangeSelected);
 	}
 
 	public void RefreshList()
 	{
-		List<string> multiplayerOptionsList = MultiplayerOptions.Instance.GetMultiplayerOptionsList(base.OptionType);
-		List<string> multiplayerOptionsTextList = MultiplayerOptions.Instance.GetMultiplayerOptionsTextList(base.OptionType);
-		List<string> list = new List<string>();
-		foreach (string item in multiplayerOptionsTextList)
-		{
-			list.Add(item);
-		}
-		Selector.Refresh(list, multiplayerOptionsList.IndexOf(MultiplayerOptions.Instance.GetValueTextForOptionWithMultipleSelection(base.OptionType)), OnChangeSelected);
+		Selector.SetOnChangeAction(null);
+		Selector.Refresh(GetOptionTexts(), GetCurrentIndex(), null);
+		Selector.SetOnChangeAction(OnChangeSelected);
+	}
+
+	private List<string> GetOptionTexts()
+	{
+		return new List<string>(MultiplayerOptions.Instance.GetMultiplayerOptionsTextList(base.OptionType));
+	}
+
+	private int GetCurrentIndex()
+	{
+		return MultiplayerOptions.Instance.GetMultiplayerOptionsList(base.OptionType).IndexOf(MultiplayerOptions.Instance.GetValueTextForOptionWithMultipleSelection(base.OptionType));
 	}
 
 	private void OnChangeSelected(SelectorVM<SelectorItemVM> selector)
 	{
-		if (selector.SelectedIndex >= 0 && selector.SelectedIndex < selector.ItemList.Count)
-		{
-			string value = MultiplayerOptions.Instance.GetMultiplayerOptionsList(base.OptionType)[selector.SelectedIndex];
-			MultiplayerOptions.Instance.SetValueForOptionWithMultipleSelectionFromText(base.OptionType, value);
-			OnChangedSelection?.Invoke(this);
-		}
+		string value = MultiplayerOptions.Instance.GetMultiplayerOptionsList(base.OptionType)[selector.SelectedIndex];
+		MultiplayerOptions.Instance.SetValueForOptionWithMultipleSelectionFromText(base.OptionType, value);
+		OnChangedSelection?.Invoke(this);
+		NotifyValueChanged();
 	}
 }

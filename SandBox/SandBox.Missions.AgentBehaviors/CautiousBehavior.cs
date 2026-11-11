@@ -23,7 +23,7 @@ public class CautiousBehavior : AgentBehavior
 		{
 			if (base.OwnerAgent.IsAIAtMoveDestination())
 			{
-				base.OwnerAgent.SetActionChannel(1, in ActionIndexCache.act_guard_cautious_look_around_1, ignorePriority: false, (AnimFlags)0uL);
+				base.OwnerAgent.SetActionChannel(1, in ActionIndexCache.act_stealth_mission_guard_look_around_cautious_1, ignorePriority: false, (AnimFlags)0uL);
 			}
 			else
 			{
@@ -65,7 +65,7 @@ public class CautiousBehavior : AgentBehavior
 				}
 				else
 				{
-					base.OwnerAgent.SetActionChannel(1, in ActionIndexCache.act_guard_patrolling_cautious_look_around_1, ignorePriority: false, (AnimFlags)0uL);
+					base.OwnerAgent.SetActionChannel(1, in ActionIndexCache.act_stealth_mission_guard_look_around_cautious_1, ignorePriority: false, (AnimFlags)0uL);
 				}
 			}
 		}

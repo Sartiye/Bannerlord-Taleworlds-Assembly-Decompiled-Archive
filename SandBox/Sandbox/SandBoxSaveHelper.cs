@@ -52,6 +52,21 @@ public static class SandBoxSaveHelper
 	{
 		GameTexts.SetVariable("newline", "\n");
 		SandBoxSaveHelper.OnStateChange?.Invoke(SaveHelperState.Start);
+		SaveGameFileInfo saveFileWithName = MBSaveLoad.GetSaveFileWithName(saveInfo.Name);
+		if (saveFileWithName == null)
+		{
+			LoadGameAction(saveInfo, onStartGame, onCancel);
+			return;
+		}
+		saveInfo = saveFileWithName;
+		if (GetIsDisabledWithReason(saveInfo, out var reason))
+		{
+			InformationManager.ShowInquiry(new InquiryData(_errorTitle.ToString(), reason.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, new TextObject("{=yS7PvrTD}OK").ToString(), string.Empty, delegate
+			{
+				onCancel?.Invoke();
+			}, null));
+			return;
+		}
 		ApplicationVersion saveVersion = saveInfo.MetaData.GetApplicationVersion();
 		bool flag = true;
 		MBList<string> officialModules = ModuleHelper.GetOfficialModuleIds();

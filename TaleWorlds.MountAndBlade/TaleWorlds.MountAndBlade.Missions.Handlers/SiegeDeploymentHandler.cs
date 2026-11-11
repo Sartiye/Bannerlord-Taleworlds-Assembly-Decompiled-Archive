@@ -308,4 +308,35 @@ public class SiegeDeploymentHandler : BattleDeploymentHandler
 			}
 		}
 	}
+
+	public override void HandleGeneralsDeploymentFrames()
+	{
+		bool isTeleportingAgents = base.Mission.IsTeleportingAgents;
+		base.Mission.IsTeleportingAgents = true;
+		Agent initialPlayerAgent = base.Mission.InitialPlayerAgent;
+		if (initialPlayerAgent != null)
+		{
+			Team team = initialPlayerAgent.Team;
+			if (team != null)
+			{
+				if (base.Mission.DeploymentPlan.HasPlayerSpawnFrame(team.Side))
+				{
+					base.Mission.DeploymentPlan.GetPlayerSpawnFrame(team.Side, out var position, out var direction);
+					if (position.GetNavMesh() != UIntPtr.Zero && position.IsValid)
+					{
+						initialPlayerAgent.TrySetFormationFrame(in position, in direction);
+					}
+				}
+				else if (team.GeneralAgent == initialPlayerAgent)
+				{
+					base.Mission.GetFormationSpawnFrame(team, FormationClass.NumberOfRegularFormations, isReinforcement: false, out var spawnPosition, out var spawnDirection);
+					if (spawnPosition.GetNavMesh() != UIntPtr.Zero && spawnPosition.IsValid)
+					{
+						initialPlayerAgent.TrySetFormationFrame(in spawnPosition, in spawnDirection);
+					}
+				}
+			}
+		}
+		base.Mission.IsTeleportingAgents = isTeleportingAgents;
+	}
 }

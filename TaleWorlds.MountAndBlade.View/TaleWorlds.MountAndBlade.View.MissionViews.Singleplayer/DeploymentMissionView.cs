@@ -8,12 +8,9 @@ public class DeploymentMissionView : MissionView
 
 	protected MissionDeploymentBoundaryMarker _deploymentBoundaryMarkerHandler;
 
-	protected MissionEntitySelectionUIHandler _entitySelectionHandler;
-
 	public override void AfterStart()
 	{
 		_orderTroopPlacer = base.Mission.GetMissionBehavior<OrderTroopPlacer>();
-		_entitySelectionHandler = base.Mission.GetMissionBehavior<MissionEntitySelectionUIHandler>();
 		_deploymentBoundaryMarkerHandler = base.Mission.GetMissionBehavior<MissionDeploymentBoundaryMarker>();
 	}
 
@@ -27,10 +24,6 @@ public class DeploymentMissionView : MissionView
 
 	public override void OnDeploymentFinished()
 	{
-		if (_entitySelectionHandler != null)
-		{
-			base.Mission.RemoveMissionBehavior(_entitySelectionHandler);
-		}
 		if (_deploymentBoundaryMarkerHandler != null)
 		{
 			if (base.Mission.DeploymentPlan.HasDeploymentBoundaries(base.Mission.PlayerTeam))

@@ -4,6 +4,7 @@ using System.Linq;
 using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
+using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
@@ -490,7 +491,6 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 		private void OnQuestAccepted()
 		{
 			StartQuest();
-			_targetHideout.Hideout.IsSpotted = true;
 			_targetHideout.IsVisible = true;
 			AddTrackedObject(_targetHideout);
 			QuestHelper.AddMapArrowFromPointToTarget(new TextObject("{=xpsQyPaV}Direction to Bandits"), _questSettlement.Position, _targetHideout.Position, 5f, 0.1f);
@@ -578,7 +578,7 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 
 		private void OnHideoutCleared(Settlement hideout)
 		{
-			if (_targetHideout == hideout)
+			if (_targetHideout == hideout && (PlayerEncounter.Current == null || PlayerEncounter.Current.EncounterSettlementAux != _targetHideout))
 			{
 				CompleteQuestWithCancel();
 			}
@@ -633,7 +633,7 @@ public class NearbyBanditBaseIssueBehavior : CampaignBehaviorBase
 		for (int i = 0; i < Campaign.Current.AllHideouts.Count; i++)
 		{
 			Hideout hideout = Campaign.Current.AllHideouts[i];
-			if (hideout.IsInfested)
+			if (hideout.IsInfested && hideout.NextPossibleAttackTime.IsPast)
 			{
 				float distance = Campaign.Current.Models.MapDistanceModel.GetDistance(hideout.Settlement, issueOwner.CurrentSettlement, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default);
 				if (distance <= NearbyHideoutMaxRange && distance < num)

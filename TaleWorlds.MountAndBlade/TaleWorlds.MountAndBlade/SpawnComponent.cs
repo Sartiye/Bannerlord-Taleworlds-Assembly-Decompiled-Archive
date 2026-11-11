@@ -93,6 +93,12 @@ public class SpawnComponent : MissionLogic
 		SetNewSpawningBehavior(SpawningBehavior);
 	}
 
+	public override void OnAfterMissionLoadingFinished()
+	{
+		base.OnAfterMissionLoadingFinished();
+		base.Mission.OnInitialSpawnCompleted();
+	}
+
 	public override void OnMissionTick(float dt)
 	{
 		base.OnMissionTick(dt);

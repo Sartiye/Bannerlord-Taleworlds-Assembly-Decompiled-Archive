@@ -582,9 +582,9 @@ public class EducationCampaignBehavior : CampaignBehaviorBase, IEducationLogic
 		}
 	}
 
-	private void OnCharacterCreationOver()
+	private void OnCharacterCreationOver(int index)
 	{
-		if (CampaignOptions.IsLifeDeathCycleDisabled)
+		if (index == 1 && CampaignOptions.IsLifeDeathCycleDisabled)
 		{
 			CampaignEventDispatcher.Instance.RemoveListeners(this);
 		}

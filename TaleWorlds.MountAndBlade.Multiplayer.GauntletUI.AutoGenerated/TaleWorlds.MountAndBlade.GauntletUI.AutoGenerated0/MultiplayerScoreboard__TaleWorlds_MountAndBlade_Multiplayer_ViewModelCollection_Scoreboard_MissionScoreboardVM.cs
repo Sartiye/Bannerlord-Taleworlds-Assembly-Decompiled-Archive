@@ -105,9 +105,11 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 
 	private ListPanel _widget_2_0_0_3_5;
 
-	private TextWidget _widget_2_0_0_3_5_0;
+	private ScrollingTextWidget _widget_2_0_0_3_5_0;
 
 	private TextWidget _widget_2_0_0_3_5_1;
+
+	private TextWidget _widget_2_0_0_3_5_2;
 
 	private Widget _widget_2_0_0_3_6;
 
@@ -279,10 +281,12 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		_widget_2_0_0_3.AddChild(_widget_2_0_0_3_4);
 		_widget_2_0_0_3_5 = new ListPanel(base.Context);
 		_widget_2_0_0_3.AddChild(_widget_2_0_0_3_5);
-		_widget_2_0_0_3_5_0 = new TextWidget(base.Context);
+		_widget_2_0_0_3_5_0 = new ScrollingTextWidget(base.Context);
 		_widget_2_0_0_3_5.AddChild(_widget_2_0_0_3_5_0);
 		_widget_2_0_0_3_5_1 = new TextWidget(base.Context);
 		_widget_2_0_0_3_5.AddChild(_widget_2_0_0_3_5_1);
+		_widget_2_0_0_3_5_2 = new TextWidget(base.Context);
+		_widget_2_0_0_3_5.AddChild(_widget_2_0_0_3_5_2);
 		_widget_2_0_0_3_6 = new Widget(base.Context);
 		_widget_2_0_0_3.AddChild(_widget_2_0_0_3_6);
 		_widget_2_0_0_3_6_0 = new ListPanel(base.Context);
@@ -605,12 +609,18 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		_widget_2_0_0_3_5.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
 		_widget_2_0_0_3_5_0.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0_3_5_0.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_2_0_0_3_5_0.MaxWidth = 450f;
 		_widget_2_0_0_3_5_0.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_2_0_0_3_5_0.Brush = base.Context.GetBrush("MPScoreboard.Info.Text");
+		_widget_2_0_0_3_5_0.IsAutoScrolling = true;
 		_widget_2_0_0_3_5_1.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0_3_5_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0_3_5_1.HorizontalAlignment = HorizontalAlignment.Right;
 		_widget_2_0_0_3_5_1.Brush = base.Context.GetBrush("MPScoreboard.Info.Text");
+		_widget_2_0_0_3_5_2.WidthSizePolicy = SizePolicy.CoverChildren;
+		_widget_2_0_0_3_5_2.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_2_0_0_3_5_2.HorizontalAlignment = HorizontalAlignment.Right;
+		_widget_2_0_0_3_5_2.Brush = base.Context.GetBrush("MPScoreboard.Info.Text");
 		_widget_2_0_0_3_6.WidthSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0_3_6.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_2_0_0_3_6.VerticalAlignment = VerticalAlignment.Bottom;
@@ -729,6 +739,15 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		_widget_2_0_0_3_5_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_2_0_0_3_5_1;
 		_widget_2_0_0_3_5_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2_0_0_3_5_1;
 		_widget_2_0_0_3_5_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2_0_0_3_5_1;
+		_widget_2_0_0_3_5_2.PropertyChanged -= PropertyChangedListenerOf_widget_2_0_0_3_5_2;
+		_widget_2_0_0_3_5_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_2_0_0_3_5_2;
+		_widget_2_0_0_3_5_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_2_0_0_3_5_2;
+		_widget_2_0_0_3_5_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_2_0_0_3_5_2;
+		_widget_2_0_0_3_5_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_2_0_0_3_5_2;
+		_widget_2_0_0_3_5_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_2_0_0_3_5_2;
+		_widget_2_0_0_3_5_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_2_0_0_3_5_2;
+		_widget_2_0_0_3_5_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2_0_0_3_5_2;
+		_widget_2_0_0_3_5_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2_0_0_3_5_2;
 		_widget_2_0_0_3_6.PropertyChanged -= PropertyChangedListenerOf_widget_2_0_0_3_6;
 		_widget_2_0_0_3_6.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_2_0_0_3_6;
 		_widget_2_0_0_3_6.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_2_0_0_3_6;
@@ -1249,6 +1268,63 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		if (propertyName == "Text")
 		{
 			_datasource_Root.MapName = _widget_2_0_0_3_5_1.Text;
+		}
+	}
+
+	private void PropertyChangedListenerOf_widget_2_0_0_3_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2_0_0_3_5_2(propertyName);
+	}
+
+	private void boolPropertyChangedListenerOf_widget_2_0_0_3_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, bool e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2_0_0_3_5_2(propertyName);
+	}
+
+	private void floatPropertyChangedListenerOf_widget_2_0_0_3_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, float e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2_0_0_3_5_2(propertyName);
+	}
+
+	private void Vec2PropertyChangedListenerOf_widget_2_0_0_3_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vec2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2_0_0_3_5_2(propertyName);
+	}
+
+	private void Vector2PropertyChangedListenerOf_widget_2_0_0_3_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Vector2 e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2_0_0_3_5_2(propertyName);
+	}
+
+	private void doublePropertyChangedListenerOf_widget_2_0_0_3_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, double e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2_0_0_3_5_2(propertyName);
+	}
+
+	private void intPropertyChangedListenerOf_widget_2_0_0_3_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, int e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2_0_0_3_5_2(propertyName);
+	}
+
+	private void uintPropertyChangedListenerOf_widget_2_0_0_3_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, uint e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2_0_0_3_5_2(propertyName);
+	}
+
+	private void ColorPropertyChangedListenerOf_widget_2_0_0_3_5_2(PropertyOwnerObject propertyOwnerObject, string propertyName, Color e)
+	{
+		HandleWidgetPropertyChangeOf_widget_2_0_0_3_5_2(propertyName);
+	}
+
+	private void HandleWidgetPropertyChangeOf_widget_2_0_0_3_5_2(string propertyName)
+	{
+		if (propertyName == "Text")
+		{
+			_datasource_Root.Spectators = _widget_2_0_0_3_5_2.Text;
+		}
+		else if (propertyName == "IsVisible")
+		{
+			_datasource_Root.ShowSpectatorCount = _widget_2_0_0_3_5_2.IsVisible;
 		}
 	}
 
@@ -2402,6 +2478,12 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		case "MapName":
 			_widget_2_0_0_3_5_1.Text = _datasource_Root.MapName;
 			break;
+		case "Spectators":
+			_widget_2_0_0_3_5_2.Text = _datasource_Root.Spectators;
+			break;
+		case "ShowSpectatorCount":
+			_widget_2_0_0_3_5_2.IsVisible = _datasource_Root.ShowSpectatorCount;
+			break;
 		case "IsMouseEnabled":
 			_widget_2_0_0_3_6.IsHidden = _datasource_Root.IsMouseEnabled;
 			break;
@@ -2952,6 +3034,15 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 			_widget_2_0_0_3_5_1.intPropertyChanged -= intPropertyChangedListenerOf_widget_2_0_0_3_5_1;
 			_widget_2_0_0_3_5_1.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2_0_0_3_5_1;
 			_widget_2_0_0_3_5_1.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2_0_0_3_5_1;
+			_widget_2_0_0_3_5_2.PropertyChanged -= PropertyChangedListenerOf_widget_2_0_0_3_5_2;
+			_widget_2_0_0_3_5_2.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_2_0_0_3_5_2;
+			_widget_2_0_0_3_5_2.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_2_0_0_3_5_2;
+			_widget_2_0_0_3_5_2.Vec2PropertyChanged -= Vec2PropertyChangedListenerOf_widget_2_0_0_3_5_2;
+			_widget_2_0_0_3_5_2.Vector2PropertyChanged -= Vector2PropertyChangedListenerOf_widget_2_0_0_3_5_2;
+			_widget_2_0_0_3_5_2.doublePropertyChanged -= doublePropertyChangedListenerOf_widget_2_0_0_3_5_2;
+			_widget_2_0_0_3_5_2.intPropertyChanged -= intPropertyChangedListenerOf_widget_2_0_0_3_5_2;
+			_widget_2_0_0_3_5_2.uintPropertyChanged -= uintPropertyChangedListenerOf_widget_2_0_0_3_5_2;
+			_widget_2_0_0_3_5_2.ColorPropertyChanged -= ColorPropertyChangedListenerOf_widget_2_0_0_3_5_2;
 			_widget_2_0_0_3_6.PropertyChanged -= PropertyChangedListenerOf_widget_2_0_0_3_6;
 			_widget_2_0_0_3_6.boolPropertyChanged -= boolPropertyChangedListenerOf_widget_2_0_0_3_6;
 			_widget_2_0_0_3_6.floatPropertyChanged -= floatPropertyChangedListenerOf_widget_2_0_0_3_6;
@@ -3304,6 +3395,17 @@ public class MultiplayerScoreboard__TaleWorlds_MountAndBlade_Multiplayer_ViewMod
 		_widget_2_0_0_3_5_1.intPropertyChanged += intPropertyChangedListenerOf_widget_2_0_0_3_5_1;
 		_widget_2_0_0_3_5_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_2_0_0_3_5_1;
 		_widget_2_0_0_3_5_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_2_0_0_3_5_1;
+		_widget_2_0_0_3_5_2.Text = _datasource_Root.Spectators;
+		_widget_2_0_0_3_5_2.IsVisible = _datasource_Root.ShowSpectatorCount;
+		_widget_2_0_0_3_5_2.PropertyChanged += PropertyChangedListenerOf_widget_2_0_0_3_5_2;
+		_widget_2_0_0_3_5_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_2_0_0_3_5_2;
+		_widget_2_0_0_3_5_2.floatPropertyChanged += floatPropertyChangedListenerOf_widget_2_0_0_3_5_2;
+		_widget_2_0_0_3_5_2.Vec2PropertyChanged += Vec2PropertyChangedListenerOf_widget_2_0_0_3_5_2;
+		_widget_2_0_0_3_5_2.Vector2PropertyChanged += Vector2PropertyChangedListenerOf_widget_2_0_0_3_5_2;
+		_widget_2_0_0_3_5_2.doublePropertyChanged += doublePropertyChangedListenerOf_widget_2_0_0_3_5_2;
+		_widget_2_0_0_3_5_2.intPropertyChanged += intPropertyChangedListenerOf_widget_2_0_0_3_5_2;
+		_widget_2_0_0_3_5_2.uintPropertyChanged += uintPropertyChangedListenerOf_widget_2_0_0_3_5_2;
+		_widget_2_0_0_3_5_2.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_2_0_0_3_5_2;
 		_widget_2_0_0_3_6.IsHidden = _datasource_Root.IsMouseEnabled;
 		_widget_2_0_0_3_6.PropertyChanged += PropertyChangedListenerOf_widget_2_0_0_3_6;
 		_widget_2_0_0_3_6.boolPropertyChanged += boolPropertyChangedListenerOf_widget_2_0_0_3_6;

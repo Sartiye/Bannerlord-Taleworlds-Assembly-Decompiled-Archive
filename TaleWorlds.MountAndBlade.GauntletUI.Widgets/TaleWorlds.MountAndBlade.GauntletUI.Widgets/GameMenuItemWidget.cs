@@ -410,6 +410,9 @@ public class GameMenuItemWidget : Widget
 		case "RepairShips":
 			audioProperty.AudioName = "repair_all_ships";
 			break;
+		case "TakeFerry":
+			audioProperty.AudioName = "panels/take_ferry";
+			break;
 		}
 	}
 

@@ -4,6 +4,8 @@ using NavalDLC.Map;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
 namespace NavalDLC.GameComponents;
@@ -24,7 +26,7 @@ public class NavalDLCMapVisibilityModel : MapVisibilityModel
 		float num = base.BaseModel.GetPartySeeingRangeBase(party);
 		if (party.IsCurrentlyAtSea)
 		{
-			if (party.IsInRaftState)
+			if (party.IsInNavalAutoTravel)
 			{
 				num *= 0.5f;
 			}
@@ -63,5 +65,20 @@ public class NavalDLCMapVisibilityModel : MapVisibilityModel
 	public override float GetHideoutSpottingDistance()
 	{
 		return base.BaseModel.GetHideoutSpottingDistance();
+	}
+
+	public override void GetMobilePartyVisibilityAndInspectedState(MobileParty mobileParty, Vec2[] points, float seeingRange, out bool isVisible, out bool isInspected)
+	{
+		base.BaseModel.GetMobilePartyVisibilityAndInspectedState(mobileParty, points, seeingRange, out isVisible, out isInspected);
+	}
+
+	public override void GetSettlementInspectedState(Settlement settlement, Vec2[] points, float seeingRange, out bool isInspected, out bool isDistanceDependent)
+	{
+		base.BaseModel.GetSettlementInspectedState(settlement, points, seeingRange, out isInspected, out isDistanceDependent);
+	}
+
+	public override bool IsVisibilityPersistent(MobileParty mobileParty)
+	{
+		return base.BaseModel.IsVisibilityPersistent(mobileParty);
 	}
 }

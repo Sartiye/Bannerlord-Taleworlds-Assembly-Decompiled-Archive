@@ -81,11 +81,11 @@ public class NavalDLCPartyWageModel : PartyWageModel
 
 	public override ExplainedNumber GetTroopRecruitmentCost(CharacterObject troop, Hero buyerHero, bool withoutItemCost = false)
 	{
-		ExplainedNumber bonuses = base.BaseModel.GetTroopRecruitmentCost(troop, buyerHero, withoutItemCost);
-		if (buyerHero != null)
+		ExplainedNumber stat = base.BaseModel.GetTroopRecruitmentCost(troop, buyerHero, withoutItemCost);
+		if (troop.IsMariner && buyerHero != null && buyerHero.PartyBelongedTo != null)
 		{
-			PerkHelper.AddPerkBonusForCharacter(NavalPerks.Boatswain.PopularCaptain, buyerHero.CharacterObject, isPrimaryBonus: true, ref bonuses);
+			PerkHelper.AddPerkBonusForParty(NavalPerks.Boatswain.PopularCaptain, buyerHero.PartyBelongedTo, isPrimaryBonus: true, ref stat);
 		}
-		return bonuses;
+		return stat;
 	}
 }

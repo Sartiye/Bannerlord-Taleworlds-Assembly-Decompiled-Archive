@@ -156,15 +156,6 @@ public static class CampaignSceneNotificationHelper
 		return textObject;
 	}
 
-	public static TextObject GetFormalNameForKingdom(Kingdom kingdom)
-	{
-		if (!GameTexts.TryGetText("str_kingdom_formal_name", out var textObject, kingdom.StringId))
-		{
-			return kingdom.InformalName;
-		}
-		return textObject;
-	}
-
 	public static SceneNotificationData.SceneNotificationCharacter CreateNotificationCharacterFromHero(Hero hero, Equipment overridenEquipment = null, bool useCivilian = false, BodyProperties overriddenBodyProperties = default(BodyProperties), uint overriddenColor1 = uint.MaxValue, uint overriddenColor2 = uint.MaxValue, bool useHorse = false)
 	{
 		if (overriddenColor1 == uint.MaxValue)
@@ -192,7 +183,7 @@ public static class CampaignSceneNotificationHelper
 		MissionShipObject @object = MBObjectManager.Instance.GetObject<MissionShipObject>(ship.ShipHull.MissionShipObjectId);
 		if (@object != null)
 		{
-			Debug.FailedAssert($"Ship ({ship}) does not have a valid mission ship object id", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\SceneInformationPopupTypes\\CampaignSceneNotificationHelper.cs", "CreateNotificationShipFromShip", 261);
+			Debug.FailedAssert($"Ship ({ship}) does not have a valid mission ship object id", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\SceneInformationPopupTypes\\CampaignSceneNotificationHelper.cs", "CreateNotificationShipFromShip", 248);
 			return new SceneNotificationData.SceneNotificationShip("", shipVisualSlotInfos, shipHitPointRatio, sailColor, sailColor2, randomValue);
 		}
 		return new SceneNotificationData.SceneNotificationShip(@object.Prefab, shipVisualSlotInfos, shipHitPointRatio, sailColor, sailColor2, randomValue);
@@ -208,7 +199,7 @@ public static class CampaignSceneNotificationHelper
 		MissionShipObject @object = MBObjectManager.Instance.GetObject<MissionShipObject>(ship.ShipHull.MissionShipObjectId);
 		if (@object != null)
 		{
-			Debug.FailedAssert($"Ship ({ship}) does not have a valid mission ship object id", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\SceneInformationPopupTypes\\CampaignSceneNotificationHelper.cs", "CreateNotificationShipFromShip", 279);
+			Debug.FailedAssert($"Ship ({ship}) does not have a valid mission ship object id", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\SceneInformationPopupTypes\\CampaignSceneNotificationHelper.cs", "CreateNotificationShipFromShip", 266);
 			return new SceneNotificationData.SceneNotificationShip("", shipVisualSlotInfos, hitPointRatio, sailColor, sailColor2, randomValue);
 		}
 		return new SceneNotificationData.SceneNotificationShip(@object.Prefab, shipVisualSlotInfos, hitPointRatio, sailColor, sailColor2, randomValue);

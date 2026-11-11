@@ -12,4 +12,6 @@ public abstract class PartySpeedModel : MBGameModel<PartySpeedModel>
 	public abstract ExplainedNumber CalculateBaseSpeed(MobileParty party, bool includeDescriptions = false, int additionalTroopOnFootCount = 0, int additionalTroopOnHorseCount = 0);
 
 	public abstract ExplainedNumber CalculateFinalSpeed(MobileParty mobileParty, ExplainedNumber finalSpeed);
+
+	public abstract int GetSkeletalCrewCount(MobileParty party);
 }

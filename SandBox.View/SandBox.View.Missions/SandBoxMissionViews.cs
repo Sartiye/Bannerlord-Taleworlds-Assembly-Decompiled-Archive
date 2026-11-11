@@ -117,7 +117,8 @@ public class SandBoxMissionViews
 			new MissionItemContourControllerView(),
 			new MissionAgentContourControllerView(),
 			SandBoxViewCreator.CreateMissionAgentAlarmStateView(mission),
-			ViewCreator.CreateSingleplayerMissionKillNotificationUIHandler()
+			ViewCreator.CreateSingleplayerMissionKillNotificationUIHandler(),
+			ViewCreator.CreateMissionObjectiveView()
 		}.ToArray();
 	}
 
@@ -324,15 +325,15 @@ public class SandBoxMissionViews
 			ViewCreator.CreateOptionsUIHandler(),
 			ViewCreator.CreateMissionMainAgentEquipDropView(mission)
 		};
-		MissionView missionView = ViewCreator.CreateMissionOrderUIHandler();
-		obj.Add(missionView);
+		MissionView item = ViewCreator.CreateMissionOrderUIHandler();
+		obj.Add(item);
 		obj.Add(new OrderTroopPlacer(null));
 		obj.Add(new MissionSingleplayerViewHandler());
 		obj.Add(ViewCreator.CreateMissionAgentStatusUIHandler(mission));
 		obj.Add(ViewCreator.CreateMissionMainAgentEquipmentController(mission));
 		obj.Add(ViewCreator.CreateMissionMainAgentCheerBarkControllerView(mission));
 		obj.Add(ViewCreator.CreateMissionAgentLockVisualizerView(mission));
-		obj.Add(new MusicBattleMissionView(isSiegeBattle: false));
+		obj.Add(new MusicBattleMissionView(isSiegeBattle: false, isKeepBattle: false));
 		obj.Add(new DeploymentMissionView());
 		obj.Add(new MissionDeploymentBoundaryMarker("swallowtail_banner"));
 		obj.Add(ViewCreator.CreateMissionBoundaryCrossingView());
@@ -347,8 +348,6 @@ public class SandBoxMissionViews
 		obj.Add(new MissionCampaignBattleSpectatorView());
 		obj.Add(ViewCreator.CreatePhotoModeView());
 		obj.Add(new MissionFaceCacheView());
-		ISiegeDeploymentView siegeDeploymentView = missionView as ISiegeDeploymentView;
-		obj.Add(new MissionEntitySelectionUIHandler(siegeDeploymentView.OnEntitySelection, siegeDeploymentView.OnEntityHover));
 		obj.Add(ViewCreator.CreateMissionOrderOfBattleUIHandler(mission, new SPOrderOfBattleVM()));
 		return obj.ToArray();
 	}
@@ -555,29 +554,6 @@ public class SandBoxMissionViews
 		throw new NotImplementedException("Ambush battle is not implemented.");
 	}
 
-	[ViewMethod("Camp")]
-	public static MissionView[] OpenCampMission(Mission mission)
-	{
-		return new List<MissionView>
-		{
-			new MissionCampaignView(),
-			new MissionConversationCameraView(),
-			ViewCreator.CreateMissionSingleplayerEscapeMenu(CampaignOptions.IsIronmanMode),
-			ViewCreator.CreateOptionsUIHandler(),
-			ViewCreator.CreateMissionMainAgentEquipDropView(mission),
-			new MissionSingleplayerViewHandler(),
-			ViewCreator.CreateMissionAgentStatusUIHandler(mission),
-			ViewCreator.CreateMissionMainAgentEquipmentController(mission),
-			ViewCreator.CreateMissionMainAgentCheerBarkControllerView(mission),
-			ViewCreator.CreateMissionAgentLockVisualizerView(mission),
-			ViewCreator.CreateMissionBoundaryCrossingView(),
-			new MissionBoundaryWallView(),
-			new MissionCampaignBattleSpectatorView(),
-			ViewCreator.CreatePhotoModeView(),
-			ViewCreator.CreateSingleplayerMissionKillNotificationUIHandler()
-		}.ToArray();
-	}
-
 	[ViewMethod("SiegeMissionWithDeployment")]
 	public static MissionView[] OpenSiegeMissionWithDeployment(Mission mission)
 	{
@@ -590,15 +566,15 @@ public class SandBoxMissionViews
 		list.Add(ViewCreator.CreateMissionMainAgentEquipDropView(mission));
 		list.Add(ViewCreator.CreateMissionAgentLabelUIHandler(mission));
 		list.Add(ViewCreator.CreateMissionBattleScoreUIHandler(mission, SPScoreboardVM.CreateMission(mission)));
-		MissionView missionView = ViewCreator.CreateMissionOrderUIHandler();
+		MissionView item = ViewCreator.CreateMissionOrderUIHandler();
 		list.Add(ViewCreator.CreateMissionAgentStatusUIHandler(mission));
 		list.Add(ViewCreator.CreateMissionMainAgentEquipmentController(mission));
 		list.Add(ViewCreator.CreateMissionMainAgentCheerBarkControllerView(mission));
 		list.Add(ViewCreator.CreateMissionAgentLockVisualizerView(mission));
-		list.Add(missionView);
+		list.Add(item);
 		list.Add(new OrderTroopPlacer(null));
 		list.Add(new MissionSingleplayerViewHandler());
-		list.Add(new MusicBattleMissionView(isSiegeBattle: true));
+		list.Add(new MusicBattleMissionView(isSiegeBattle: true, isKeepBattle: false));
 		list.Add(new DeploymentMissionView());
 		list.Add(new MissionDeploymentBoundaryMarker("swallowtail_banner"));
 		list.Add(ViewCreator.CreateMissionBoundaryCrossingView());
@@ -606,8 +582,6 @@ public class SandBoxMissionViews
 		list.Add(ViewCreator.CreatePhotoModeView());
 		list.Add(ViewCreator.CreateMissionFormationMarkerUIHandler(mission));
 		list.Add(new MissionFormationTargetSelectionHandler());
-		ISiegeDeploymentView siegeDeploymentView = missionView as ISiegeDeploymentView;
-		list.Add(new MissionEntitySelectionUIHandler(siegeDeploymentView.OnEntitySelection, siegeDeploymentView.OnEntityHover));
 		list.Add(ViewCreator.CreateMissionSpectatorControlView(mission));
 		list.Add(new MissionItemContourControllerView());
 		list.Add(new MissionAgentContourControllerView());
@@ -642,7 +616,7 @@ public class SandBoxMissionViews
 			ViewCreator.CreatePhotoModeView(),
 			ViewCreator.CreateMissionFormationMarkerUIHandler(mission),
 			new MissionFormationTargetSelectionHandler(),
-			new MusicBattleMissionView(isSiegeBattle: true),
+			new MusicBattleMissionView(isSiegeBattle: true, isKeepBattle: false),
 			ViewCreator.CreateMissionBoundaryCrossingView(),
 			new MissionBoundaryWallView(),
 			ViewCreator.CreateMissionSpectatorControlView(mission),
@@ -681,7 +655,8 @@ public class SandBoxMissionViews
 			new MissionItemContourControllerView(),
 			new MissionAgentContourControllerView(),
 			new MissionPreloadView(),
-			ViewCreator.CreatePhotoModeView()
+			ViewCreator.CreatePhotoModeView(),
+			new MusicBattleMissionView(isSiegeBattle: false, isKeepBattle: true)
 		}.ToArray();
 	}
 
@@ -695,8 +670,8 @@ public class SandBoxMissionViews
 		list.Add(ViewCreator.CreateMissionSingleplayerEscapeMenu(CampaignOptions.IsIronmanMode));
 		list.Add(ViewCreator.CreateOptionsUIHandler());
 		list.Add(ViewCreator.CreateMissionMainAgentEquipDropView(mission));
-		MissionView missionView = ViewCreator.CreateMissionOrderUIHandler();
-		list.Add(missionView);
+		MissionView item = ViewCreator.CreateMissionOrderUIHandler();
+		list.Add(item);
 		list.Add(new OrderTroopPlacer(null));
 		list.Add(new MissionSingleplayerViewHandler());
 		list.Add(new DeploymentMissionView());
@@ -709,8 +684,6 @@ public class SandBoxMissionViews
 		list.Add(ViewCreator.CreateMissionAgentLockVisualizerView(mission));
 		list.Add(ViewCreator.CreateMissionSpectatorControlView(mission));
 		list.Add(ViewCreator.CreatePhotoModeView());
-		ISiegeDeploymentView siegeDeploymentView = missionView as ISiegeDeploymentView;
-		list.Add(new MissionEntitySelectionUIHandler(siegeDeploymentView.OnEntitySelection, siegeDeploymentView.OnEntityHover));
 		list.Add(ViewCreator.CreateMissionFormationMarkerUIHandler(mission));
 		list.Add(new MissionFormationTargetSelectionHandler());
 		list.Add(new MissionItemContourControllerView());
@@ -718,13 +691,14 @@ public class SandBoxMissionViews
 		list.Add(new MissionCampaignBattleSpectatorView());
 		list.Add(ViewCreator.CreateMissionSiegeEngineMarkerView(mission));
 		list.Add(new MissionFaceCacheView());
+		list.Add(new MusicBattleMissionView(isSiegeBattle: true, isKeepBattle: false));
 		return list.ToArray();
 	}
 
 	[ViewMethod("SiegeMissionForTutorial")]
 	public static MissionView[] OpenSiegeMissionForTutorial(Mission mission)
 	{
-		Debug.FailedAssert("Do not use SiegeForTutorial! Use campaign!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Missions\\SandBoxMissionViews.cs", "OpenSiegeMissionForTutorial", 883);
+		Debug.FailedAssert("Do not use SiegeForTutorial! Use campaign!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Missions\\SandBoxMissionViews.cs", "OpenSiegeMissionForTutorial", 853);
 		List<MissionView> obj = new List<MissionView>
 		{
 			new MissionConversationCameraView(),
@@ -732,8 +706,8 @@ public class SandBoxMissionViews
 			ViewCreator.CreateOptionsUIHandler(),
 			ViewCreator.CreateMissionMainAgentEquipDropView(mission)
 		};
-		MissionView missionView = ViewCreator.CreateMissionOrderUIHandler();
-		obj.Add(missionView);
+		MissionView item = ViewCreator.CreateMissionOrderUIHandler();
+		obj.Add(item);
 		obj.Add(new OrderTroopPlacer(null));
 		obj.Add(new MissionSingleplayerViewHandler());
 		obj.Add(ViewCreator.CreateMissionAgentStatusUIHandler(mission));
@@ -743,8 +717,6 @@ public class SandBoxMissionViews
 		obj.Add(ViewCreator.CreateMissionSpectatorControlView(mission));
 		obj.Add(ViewCreator.CreatePhotoModeView());
 		obj.Add(ViewCreator.CreateMissionSiegeEngineMarkerView(mission));
-		ISiegeDeploymentView siegeDeploymentView = missionView as ISiegeDeploymentView;
-		obj.Add(new MissionEntitySelectionUIHandler(siegeDeploymentView.OnEntitySelection, siegeDeploymentView.OnEntityHover));
 		obj.Add(new MissionDeploymentBoundaryMarker("swallowtail_banner"));
 		obj.Add(new MissionCampaignBattleSpectatorView());
 		return obj.ToArray();

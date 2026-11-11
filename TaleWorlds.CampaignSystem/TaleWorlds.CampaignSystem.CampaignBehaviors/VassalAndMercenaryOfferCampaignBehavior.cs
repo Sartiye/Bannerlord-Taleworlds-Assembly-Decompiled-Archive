@@ -82,7 +82,7 @@ public class VassalAndMercenaryOfferCampaignBehavior : CampaignBehaviorBase, IVa
 		}
 		else
 		{
-			if (Hero.MainHero.IsPrisoner || MobileParty.MainParty.IsInRaftState)
+			if (Hero.MainHero.IsPrisoner || MobileParty.MainParty.IsInNavalAutoTravel)
 			{
 				return;
 			}

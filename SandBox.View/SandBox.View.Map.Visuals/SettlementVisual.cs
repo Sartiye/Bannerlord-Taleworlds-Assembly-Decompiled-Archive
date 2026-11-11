@@ -14,7 +14,6 @@ using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
-using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
 
 namespace SandBox.View.Map.Visuals;
@@ -206,28 +205,23 @@ public class SettlementVisual : MapEntityVisual<PartyBase>
 		}
 	}
 
+	public override bool OnMapParleyClick()
+	{
+		return base.MapScreen.TryParleyWith(base.MapEntity);
+	}
+
 	public override bool OnMapClick(bool followModifierUsed)
 	{
-		if (followModifierUsed)
-		{
-			if (Campaign.Current.Models.EncounterModel.CanMainHeroDoParleyWithParty(base.MapEntity, out var explanation))
-			{
-				base.MapScreen.BeginParleyWith(base.MapEntity);
-			}
-			else if (!TextObject.IsNullOrEmpty(explanation))
-			{
-				MBInformationManager.AddQuickInformation(explanation);
-			}
-		}
-		else if (base.MapEntity.IsVisible)
+		if (base.MapEntity.IsVisible)
 		{
 			NavigationHelper.GetInteractionDataForMainParty(base.MapEntity.Settlement, out var canNavigate, out var bestNavigationType, out var isTargetingPort);
 			if (canNavigate)
 			{
 				MobileParty.MainParty.SetMoveGoToSettlement(base.MapEntity.Settlement, bestNavigationType, isTargetingPort);
+				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 
 	public override void OnOpenEncyclopedia()
@@ -309,7 +303,7 @@ public class SettlementVisual : MapEntityVisual<PartyBase>
 				}
 				return matrixFrame.origin + vec * ((num + 1) / 2) * (num % 2 * 2 - 1) * num3 * num4;
 			}
-			Debug.FailedAssert($"{base.MapEntity.Settlement.Name} - has no Banner Entities at level {wallLevel}.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\Visuals\\SettlementVisual.cs", "GetBannerPositionForParty", 304);
+			Debug.FailedAssert($"{base.MapEntity.Settlement.Name} - has no Banner Entities at level {wallLevel}.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\Visuals\\SettlementVisual.cs", "GetBannerPositionForParty", 297);
 		}
 		return Vec3.Invalid;
 	}
@@ -1072,7 +1066,7 @@ public class SettlementVisual : MapEntityVisual<PartyBase>
 		}
 		if (mBReadOnlyList.Count == 0)
 		{
-			Debug.FailedAssert("Town (" + base.MapEntity.Settlement.Name.ToString() + ") doesn't have wall entities defined for it's current level(" + base.MapEntity.Settlement.Town.GetWallLevel() + ")", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\Visuals\\SettlementVisual.cs", "RefreshWallState", 1301);
+			Debug.FailedAssert("Town (" + base.MapEntity.Settlement.Name.ToString() + ") doesn't have wall entities defined for it's current level(" + base.MapEntity.Settlement.Town.GetWallLevel() + ")", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\Map\\Visuals\\SettlementVisual.cs", "RefreshWallState", 1294);
 			return;
 		}
 		for (int i = 0; i < _defenderBreachableWallEntitiesForAllLevels.Length; i++)

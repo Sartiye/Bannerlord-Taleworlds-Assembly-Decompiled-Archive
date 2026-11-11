@@ -24,6 +24,15 @@ public class PlayerTrackCompanionBehavior : CampaignBehaviorBase
 		CampaignEvents.OnGameLoadFinishedEvent.AddNonSerializedListener(this, OnGameLoadFinished);
 		CampaignEvents.MobilePartyCreated.AddNonSerializedListener(this, OnMobilePartyCreated);
 		CampaignEvents.OnHeroTeleportationRequestedEvent.AddNonSerializedListener(this, OnHeroTeleportationRequested);
+		CampaignEvents.OnHeroJoinedPartyEvent.AddNonSerializedListener(this, OnHeroJoinedParty);
+	}
+
+	private void OnHeroJoinedParty(Hero hero, MobileParty party)
+	{
+		if (party == MobileParty.MainParty && _scatteredCompanions.ContainsKey(hero))
+		{
+			_scatteredCompanions.Remove(hero);
+		}
 	}
 
 	private void OnHeroTeleportationRequested(Hero hero, Settlement settlement, MobileParty party, TeleportHeroAction.TeleportationDetail detail)

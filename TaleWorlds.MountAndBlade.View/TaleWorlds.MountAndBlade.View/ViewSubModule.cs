@@ -124,6 +124,7 @@ public class ViewSubModule : MBSubModuleBase
 		ScreenManager.OnPushScreen += OnScreenManagerPushScreen;
 		EngineController.OnConstrainedStateChanged += OnConstrainedStateChange;
 		HyperlinkTexts.IsPlayStationGamepadActive = GetIsPlaystationGamepadActive;
+		HyperlinkTexts.IsGamepadActive = () => Input.IsGamepadActive;
 		_dlcInstallationQueryView = new DLCInstallationQueryView();
 		_dlcInstallationQueryView.Initialize();
 	}

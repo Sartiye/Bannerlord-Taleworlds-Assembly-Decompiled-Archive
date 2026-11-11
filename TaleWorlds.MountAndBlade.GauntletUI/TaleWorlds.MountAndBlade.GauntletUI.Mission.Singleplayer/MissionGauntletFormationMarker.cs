@@ -21,7 +21,7 @@ public class MissionGauntletFormationMarker : MissionBattleUIBaseView
 
 	private MissionFormationTargetSelectionHandler _formationTargetHandler;
 
-	private MBReadOnlyList<Formation> _focusedFormationsCache;
+	private Formation _focusedFormation;
 
 	private readonly Vec3 _heightOffset = new Vec3(0f, 0f, 3f);
 
@@ -29,9 +29,14 @@ public class MissionGauntletFormationMarker : MissionBattleUIBaseView
 
 	private bool _showDistanceTexts;
 
+	public void SetMarkerDistanceConfig(float farDistanceCutoff, float farAlphaTarget, float alwaysOnDistance)
+	{
+		_dataSource?.SetMarkerDistanceConfig(farDistanceCutoff, farAlphaTarget, alwaysOnDistance);
+	}
+
 	protected override void OnCreateView()
 	{
-		_dataSource = new MissionFormationMarkerVM(base.Mission);
+		_dataSource = new MissionFormationMarkerVM(base.Mission, GameNetwork.IsMultiplayer);
 		_gauntletLayer = new GauntletLayer("MissionFormationMarker", ViewOrderPriority++);
 		_gauntletLayer.LoadMovie("FormationMarker", _dataSource);
 		base.MissionScreen.AddLayer(_gauntletLayer);
@@ -133,6 +138,8 @@ public class MissionGauntletFormationMarker : MissionBattleUIBaseView
 				missionFormationMarkerTargetVM.WSign = ((!(w < 0f)) ? 1 : (-1));
 				missionFormationMarkerTargetVM.Distance = base.MissionScreen.CombatCamera.Position.Distance(cachedMedianPosition.GetGroundVec3());
 				missionFormationMarkerTargetVM.ScreenPosition = new Vec2(screenX, screenY);
+				missionFormationMarkerTargetVM.VisibilityRatio = ((_formationTargetHandler != null) ? _formationTargetHandler.GetFormationVisibilityRatio(missionFormationMarkerTargetVM.Formation) : 1f);
+				missionFormationMarkerTargetVM.VisibilityState = GetVisibilityState(missionFormationMarkerTargetVM);
 				if (_dataSource.ShowDistanceTexts)
 				{
 					Agent main = Agent.Main;
@@ -149,7 +156,30 @@ public class MissionGauntletFormationMarker : MissionBattleUIBaseView
 				missionFormationMarkerTargetVM.Distance = 10000f;
 				missionFormationMarkerTargetVM.DistanceText = string.Empty;
 				missionFormationMarkerTargetVM.ScreenPosition = new Vec2(-10000f, -10000f);
+				missionFormationMarkerTargetVM.VisibilityRatio = 1f;
+				missionFormationMarkerTargetVM.VisibilityState = -1;
 			}
+		}
+	}
+
+	private int GetVisibilityState(MissionFormationMarkerTargetVM target)
+	{
+		if (_formationTargetHandler == null)
+		{
+			return -1;
+		}
+		switch (_formationTargetHandler.GetFormationMarkerVisibility(target.Formation))
+		{
+		case MissionFormationTargetSelectionHandler.FormationMarkerVisibility.NotEvaluated:
+			return -1;
+		case MissionFormationTargetSelectionHandler.FormationMarkerVisibility.Hidden:
+			return 0;
+		default:
+			if (!(target.Distance <= target.AlwaysOnDistance))
+			{
+				return 1;
+			}
+			return 2;
 		}
 	}
 
@@ -185,14 +215,14 @@ public class MissionGauntletFormationMarker : MissionBattleUIBaseView
 			if (missionFormationMarkerTargetVM.TeamType == 2)
 			{
 				bool isTargetingAFormation = list.Contains(missionFormationMarkerTargetVM.Formation);
-				missionFormationMarkerTargetVM.SetTargetedState(_focusedFormationsCache?.Contains(missionFormationMarkerTargetVM.Formation) ?? false, isTargetingAFormation);
+				missionFormationMarkerTargetVM.SetTargetedState(_focusedFormation == missionFormationMarkerTargetVM.Formation, isTargetingAFormation);
 			}
 		}
 	}
 
-	private void OnFormationFocusedFromHandler(MBReadOnlyList<Formation> focusedFormations)
+	private void OnFormationFocusedFromHandler(Formation focusedFormation)
 	{
-		_focusedFormationsCache = focusedFormations;
+		_focusedFormation = focusedFormation;
 	}
 
 	public override void OnPhotoModeActivated()

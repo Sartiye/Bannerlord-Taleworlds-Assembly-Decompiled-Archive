@@ -38,7 +38,7 @@ public class MusicianGroup : UsableMachine
 		return null;
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		return null;
 	}

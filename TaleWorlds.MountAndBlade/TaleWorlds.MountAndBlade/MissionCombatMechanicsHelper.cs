@@ -11,6 +11,8 @@ public static class MissionCombatMechanicsHelper
 
 	private const float SpeedBonusFactorForThrust = 0.5f;
 
+	public static MeleeCollisionReaction? NextBlowCollisionReactionOverride;
+
 	public static bool DecideAgentShrugOffBlow(Agent victimAgent, in AttackCollisionData collisionData, in Blow blow)
 	{
 		bool result = false;
@@ -108,6 +110,12 @@ public static class MissionCombatMechanicsHelper
 
 	public static void DecideWeaponCollisionReaction(in Blow registeredBlow, in AttackCollisionData collisionData, Agent attacker, Agent defender, in MissionWeapon attackerWeapon, bool isFatalHit, bool isShruggedOff, float momentumRemaining, out MeleeCollisionReaction colReaction)
 	{
+		if (NextBlowCollisionReactionOverride.HasValue)
+		{
+			colReaction = NextBlowCollisionReactionOverride.Value;
+			NextBlowCollisionReactionOverride = null;
+			return;
+		}
 		if (collisionData.IsColliderAgent && collisionData.StrikeType == 1 && collisionData.CollisionHitResultFlags.HasAnyFlag(CombatHitResultFlags.HitWithStartOfTheAnimation))
 		{
 			colReaction = MeleeCollisionReaction.Staggered;
@@ -624,7 +632,6 @@ public static class MissionCombatMechanicsHelper
 		Vec3 attackerAgentCurrentWeaponOffset = attackInformation.AttackerAgentCurrentWeaponOffset;
 		movementSpeedDamageModifier = 0f;
 		speedBonusInt = 0;
-		BasicCharacterObject attackerAgentCharacter = attackInformation.AttackerAgentCharacter;
 		if (collisionData.IsAlternativeAttack)
 		{
 			WeaponComponentData currentUsageItem = attackInformation.AttackerWeapon.CurrentUsageItem;
@@ -664,7 +671,7 @@ public static class MissionCombatMechanicsHelper
 			{
 				baseMagnitude = MissionGameModels.Current.StrikeMagnitudeModel.CalculateBaseBlowMagnitudeForPassiveUsage(in attackInformation, in collisionData, num3);
 			}
-			baseMagnitude = MissionGameModels.Current.AgentApplyDamageModel.CalculatePassiveAttackDamage(attackerAgentCharacter, in collisionData, baseMagnitude);
+			baseMagnitude = MissionGameModels.Current.AgentApplyDamageModel.CalculatePassiveAttackDamage(in attackInformation, in collisionData, baseMagnitude);
 		}
 		else
 		{

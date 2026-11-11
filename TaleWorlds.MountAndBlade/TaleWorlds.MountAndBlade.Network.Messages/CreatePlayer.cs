@@ -13,13 +13,22 @@ public sealed class CreatePlayer : GameNetworkMessage
 
 	public bool IsReceiverPeer { get; private set; }
 
-	public CreatePlayer(int playerIndex, string playerName, int disconnectedPeerIndex, bool isNonExistingDisconnectedPeer = false, bool isReceiverPeer = false)
+	public bool IsStreamer { get; private set; }
+
+	public bool IsWatcher { get; private set; }
+
+	public bool IsAdmin { get; private set; }
+
+	public CreatePlayer(int playerIndex, string playerName, int disconnectedPeerIndex, bool isNonExistingDisconnectedPeer = false, bool isReceiverPeer = false, bool isStreamer = false, bool isAdmin = false, bool isWatcher = false)
 	{
 		PlayerIndex = playerIndex;
 		PlayerName = playerName;
 		DisconnectedPeerIndex = disconnectedPeerIndex;
 		IsNonExistingDisconnectedPeer = isNonExistingDisconnectedPeer;
 		IsReceiverPeer = isReceiverPeer;
+		IsStreamer = isStreamer;
+		IsWatcher = isWatcher;
+		IsAdmin = isAdmin;
 	}
 
 	public CreatePlayer()
@@ -33,6 +42,9 @@ public sealed class CreatePlayer : GameNetworkMessage
 		GameNetworkMessage.WriteIntToPacket(DisconnectedPeerIndex, CompressionBasic.PlayerCompressionInfo);
 		GameNetworkMessage.WriteBoolToPacket(IsNonExistingDisconnectedPeer);
 		GameNetworkMessage.WriteBoolToPacket(IsReceiverPeer);
+		GameNetworkMessage.WriteBoolToPacket(IsStreamer);
+		GameNetworkMessage.WriteBoolToPacket(IsWatcher);
+		GameNetworkMessage.WriteBoolToPacket(IsAdmin);
 	}
 
 	protected override bool OnRead()
@@ -43,6 +55,9 @@ public sealed class CreatePlayer : GameNetworkMessage
 		DisconnectedPeerIndex = GameNetworkMessage.ReadIntFromPacket(CompressionBasic.PlayerCompressionInfo, ref bufferReadValid);
 		IsNonExistingDisconnectedPeer = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
 		IsReceiverPeer = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
+		IsStreamer = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
+		IsWatcher = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
+		IsAdmin = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
 		return bufferReadValid;
 	}
 
@@ -53,6 +68,6 @@ public sealed class CreatePlayer : GameNetworkMessage
 
 	protected override string OnGetLogFormat()
 	{
-		return "Create a new player with name: " + PlayerName + " and index: " + PlayerIndex + " and dcedIndex: " + DisconnectedPeerIndex + " which is " + ((!IsNonExistingDisconnectedPeer) ? "not" : "") + " a NonExistingDisconnectedPeer";
+		return "Create a new player with name: " + PlayerName + " and index: " + PlayerIndex + " and dcedIndex: " + DisconnectedPeerIndex + " which is " + ((!IsNonExistingDisconnectedPeer) ? "not" : "") + " a NonExistingDisconnectedPeer, isStreamer: " + IsStreamer.ToString() + ", isWatcher: " + IsWatcher.ToString() + ", isAdmin: " + IsAdmin.ToString();
 	}
 }

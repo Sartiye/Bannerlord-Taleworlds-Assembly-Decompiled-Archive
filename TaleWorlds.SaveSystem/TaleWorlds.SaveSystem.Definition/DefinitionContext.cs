@@ -277,10 +277,10 @@ public class DefinitionContext
 			{
 				continue;
 			}
-			AssemblyName[] referencedAssemblies = assembly2.GetReferencedAssemblies();
-			for (int j = 0; j < referencedAssemblies.Length; j++)
+			AssemblyName[] referencedAssembliesSafe = assembly2.GetReferencedAssembliesSafe();
+			for (int j = 0; j < referencedAssembliesSafe.Length; j++)
 			{
-				if (referencedAssemblies[j].ToString() == assembly.GetName().ToString())
+				if (referencedAssembliesSafe[j].ToString() == assembly.GetName().ToString())
 				{
 					list.Add(assembly2);
 					break;

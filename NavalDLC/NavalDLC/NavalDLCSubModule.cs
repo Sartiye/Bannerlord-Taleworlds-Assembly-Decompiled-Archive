@@ -21,6 +21,12 @@ public class NavalDLCSubModule : MBSubModuleBase
 
 	public const string MissionShipsXMLPath = "MissionShips";
 
+	public const string ShipHullsXMLPath = "ShipHulls";
+
+	public const string ShipSlotsXMLPath = "ShipSlots";
+
+	public const string ShipUpgradePiecesXMLPath = "ShipUpgradePieces";
+
 	public const string ModuleName = "NavalDLC";
 
 	public const string FigureheadSlotTag = "figurehead";
@@ -120,6 +126,9 @@ public class NavalDLCSubModule : MBSubModuleBase
 		gameStarter.AddBehavior(new ShipNameCampaignBehavior());
 		gameStarter.AddBehavior(new NavalInitializationCampaignBehavior());
 		gameStarter.AddBehavior(new NavalCompanionRolesCampaignBehavior());
+		gameStarter.AddBehavior(new NavalAdvancedStartingPlayerOptionsCampaignBehavior());
+		gameStarter.AddBehavior(new FerryCampaignBehavior());
+		gameStarter.AddBehavior(new NavalIncidentsCampaignBehaviour());
 		if (game.GameType is CampaignStoryMode && StoryModeManager.Current != null)
 		{
 			gameStarter.AddBehavior(new NavalStorylineCampaignBehavior());
@@ -205,6 +214,8 @@ public class NavalDLCSubModule : MBSubModuleBase
 		campaignGameStarter.AddModel(new NavalDLCShipDistributionModel());
 		campaignGameStarter.AddModel(new NavalDLCClanMemberPartyRoleModel());
 		campaignGameStarter.AddModel(new NavalTargetScoreCalculatingModel());
+		campaignGameStarter.AddModel(new NavalDLCBattleWreckageModel());
+		campaignGameStarter.AddModel(new NavalFerryModel());
 		if (Game.Current.GameType is Campaign)
 		{
 			campaignGameStarter.AddModel(new NavalDLCMapWeatherModel());

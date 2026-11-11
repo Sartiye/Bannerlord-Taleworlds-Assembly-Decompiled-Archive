@@ -84,6 +84,7 @@ public class AlleyFightMissionHandler : MissionLogic, IMissionAgentSpawnLogic, I
 	{
 		Mission.Current.SetMissionMode(MissionMode.Battle, atStart: true);
 		SpawnAgentsForBothSides();
+		base.Mission.OnInitialSpawnCompleted();
 		base.Mission.PlayerTeam.PlayerOrderController.SelectAllFormations();
 		base.Mission.PlayerTeam.PlayerOrderController.SetOrder(OrderType.Charge);
 		base.Mission.PlayerEnemyTeam.MasterOrderController.SelectAllFormations();

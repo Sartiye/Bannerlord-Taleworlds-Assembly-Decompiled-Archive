@@ -9,6 +9,8 @@ public class GameLoadingState : GameState
 
 	private MBGameManager _gameLoader;
 
+	public override bool CanBeDisabled => false;
+
 	public override bool IsMusicMenuState => true;
 
 	public void SetLoadingParameters(MBGameManager gameLoader)

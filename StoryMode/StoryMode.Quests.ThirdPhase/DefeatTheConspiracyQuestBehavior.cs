@@ -309,7 +309,7 @@ public class DefeatTheConspiracyQuestBehavior : CampaignBehaviorBase
 				{
 					ChangeKingdomAction.ApplyByLeaveKingdom(Clan.PlayerClan);
 				}
-				else if (item.IsUnderMercenaryService)
+				else if (item.IsUnderMercenaryService || item.IsClanTypeMercenary)
 				{
 					ChangeKingdomAction.ApplyByJoinFactionAsMercenary(item, targetKingdom, CampaignTime.Zero, item.MercenaryAwardMultiplier, showNotification: false);
 				}

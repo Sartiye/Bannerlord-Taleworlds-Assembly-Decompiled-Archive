@@ -76,32 +76,49 @@ public class DefaultEncounterModel : EncounterModel
 				explanation = new TextObject("{=6LG4BDZZ}You can't start parley with Rebels.");
 				result = false;
 			}
-			else
+			else if (partyBase.IsMobile)
 			{
-				if (partyBase.IsMobile)
-				{
-					return false;
-				}
-				if (partyBase.IsSettlement && partyBase.Settlement.IsFortification && !partyBase.Settlement.IsUnderSiege && partyBase.Settlement.IsInspected)
-				{
-					Settlement settlement = partyBase.Settlement;
-					float estimatedLandRatio;
-					bool flag = Campaign.Current.Models.MapDistanceModel.GetDistance(MobileParty.MainParty, settlement, MobileParty.MainParty.IsCurrentlyAtSea && settlement.HasPort, MobileParty.MainParty.NavigationCapability, out estimatedLandRatio) < Campaign.Current.Models.EncounterModel.PlayerParleyDistance;
-					if (!Campaign.Current.Models.SettlementAccessModel.IsRequestMeetingOptionAvailable(settlement, out var disableOption, out explanation) || disableOption)
-					{
-						result = false;
-					}
-					else if (!flag)
-					{
-						explanation = new TextObject("{=Y8JPgz1c}You are too far away from {SETTLEMENT} to start parley.");
-						explanation.SetTextVariable("SETTLEMENT", partyBase.Settlement.Name);
-						result = false;
-					}
-				}
-				else
+				MobileParty mobileParty = partyBase.MobileParty;
+				if (mobileParty == null || !mobileParty.IsActive || !mobileParty.IsLordParty || mobileParty.LeaderHero == null || mobileParty.MapEvent != null || mobileParty.SiegeEvent != null || mobileParty.CurrentSettlement != null || mobileParty.MapFaction == Clan.PlayerClan.MapFaction)
 				{
 					result = false;
 				}
+				else if (MobileParty.MainParty.IsCurrentlyAtSea != mobileParty.IsCurrentlyAtSea)
+				{
+					explanation = (MobileParty.MainParty.IsCurrentlyAtSea ? new TextObject("{=wL8DpUNf}You can't start parley with {PARTY} while you are at sea and they are on land.") : new TextObject("{=MgY7HVd5}You can't start parley with {PARTY} while you are on land and they are at sea."));
+					explanation.SetTextVariable("PARTY", mobileParty.Name);
+					result = false;
+				}
+				else
+				{
+					float playerParleyDistance = Campaign.Current.Models.EncounterModel.PlayerParleyDistance;
+					if (!(MobileParty.MainParty.Position.DistanceSquared(mobileParty.Position) < playerParleyDistance * playerParleyDistance))
+					{
+						explanation = new TextObject("{=Qb88UYEa}You are too far away from {PARTY} to start parley.");
+						explanation.SetTextVariable("PARTY", mobileParty.Name);
+						result = false;
+					}
+				}
+			}
+			else if (partyBase.IsSettlement && partyBase.Settlement.IsFortification && !partyBase.Settlement.IsUnderSiege && partyBase.Settlement.IsInspected)
+			{
+				Settlement settlement = partyBase.Settlement;
+				float playerParleyDistance2 = Campaign.Current.Models.EncounterModel.PlayerParleyDistance;
+				bool flag = MobileParty.MainParty.Position.DistanceSquared(settlement.GatePosition) < playerParleyDistance2 * playerParleyDistance2;
+				if (!Campaign.Current.Models.SettlementAccessModel.IsRequestMeetingOptionAvailable(settlement, out var disableOption, out explanation) || disableOption)
+				{
+					result = false;
+				}
+				else if (!flag)
+				{
+					explanation = new TextObject("{=Y8JPgz1c}You are too far away from {SETTLEMENT} to start parley.");
+					explanation.SetTextVariable("SETTLEMENT", partyBase.Settlement.Name);
+					result = false;
+				}
+			}
+			else
+			{
+				result = false;
 			}
 		}
 		else
@@ -265,22 +282,22 @@ public class DefaultEncounterModel : EncounterModel
 			result = RaidEventComponent.CreateRaidEvent(attackerParty, defenderParty);
 			break;
 		case MapEvent.BattleTypes.Siege:
-			Campaign.Current.MapEventManager.StartSiegeMapEvent(attackerParty, defenderParty);
+			result = SiegeAssaultEventComponent.CreateSiegeAssaultMapEvent(attackerParty, defenderParty);
 			break;
 		case MapEvent.BattleTypes.Hideout:
 			result = HideoutEventComponent.CreateHideoutEvent(attackerParty, defenderParty, isSendTroops: false);
 			break;
 		case MapEvent.BattleTypes.SallyOut:
-			Campaign.Current.MapEventManager.StartSallyOutMapEvent(attackerParty, defenderParty);
+			result = SiegeSallyOutEventComponent.CreateSiegeSallyOutEvent(attackerParty, defenderParty);
 			break;
 		case MapEvent.BattleTypes.SiegeOutside:
-			Campaign.Current.MapEventManager.StartSiegeOutsideMapEvent(attackerParty, defenderParty);
+			result = SiegeOutsideEventComponent.CreateSiegeOutsideMapEvent(attackerParty, defenderParty);
 			break;
 		case MapEvent.BattleTypes.BlockadeBattle:
-			result = BlockadeBattleMapEvent.CreateBlockadeBattleMapEvent(attackerParty, defenderParty, isSallyOut: false);
+			result = BlockadeBattleEventComponent.CreateBlockadeBattleMapEvent(attackerParty, defenderParty, isSallyOut: false);
 			break;
 		case MapEvent.BattleTypes.BlockadeSallyOutBattle:
-			result = BlockadeBattleMapEvent.CreateBlockadeBattleMapEvent(attackerParty, defenderParty, isSallyOut: true);
+			result = BlockadeBattleEventComponent.CreateBlockadeBattleMapEvent(attackerParty, defenderParty, isSallyOut: true);
 			break;
 		}
 		return result;
@@ -321,7 +338,7 @@ public class DefaultEncounterModel : EncounterModel
 		}
 		else
 		{
-			Debug.FailedAssert("Unable to calculate threshold and exponentialScalingFactor!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultEncounterModel.cs", "GetSurrenderChance", 351);
+			Debug.FailedAssert("Unable to calculate threshold and exponentialScalingFactor!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultEncounterModel.cs", "GetSurrenderChance", 375);
 		}
 		float num5 = num / num2;
 		float num6 = num4 * (num5 - num3);
@@ -368,7 +385,7 @@ public class DefaultEncounterModel : EncounterModel
 		}
 		else
 		{
-			Debug.FailedAssert("Unable to calculate threshold and exponentialScalingFactor!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultEncounterModel.cs", "GetBribeChance", 406);
+			Debug.FailedAssert("Unable to calculate threshold and exponentialScalingFactor!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultEncounterModel.cs", "GetBribeChance", 430);
 		}
 		float num5 = num / num2;
 		float num6 = num4 * (num5 - num3);

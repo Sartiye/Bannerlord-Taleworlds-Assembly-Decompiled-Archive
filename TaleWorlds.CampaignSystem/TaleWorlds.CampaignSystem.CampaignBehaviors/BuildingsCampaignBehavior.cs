@@ -92,7 +92,8 @@ public class BuildingsCampaignBehavior : CampaignBehaviorBase
 			Hero randomElement = settlement.Notables.GetRandomElement();
 			if (randomElement != null)
 			{
-				ChangeRelationAction.ApplyRelationChangeBetweenHeroes(town.Governor.Clan.Leader, randomElement, 1, showQuickNotification: false);
+				int relationChange = 1;
+				ChangeRelationAction.ApplyRelationChangeBetweenHeroes(town.Governor.Clan.Leader, randomElement, relationChange, showQuickNotification: false);
 			}
 		}
 	}
@@ -110,10 +111,10 @@ public class BuildingsCampaignBehavior : CampaignBehaviorBase
 		BuildingConstructionModel buildingConstructionModel = Campaign.Current.Models.BuildingConstructionModel;
 		Building building = town.BuildingsInProgress.Peek();
 		building.BuildingProgress += town.Construction;
-		int num = (town.IsCastle ? buildingConstructionModel.CastleBoostCost : buildingConstructionModel.TownBoostCost);
+		int boostCost = buildingConstructionModel.GetBoostCost(town);
 		if (town.BoostBuildingProcess > 0)
 		{
-			town.BoostBuildingProcess -= num;
+			town.BoostBuildingProcess -= boostCost;
 			if (town.BoostBuildingProcess < 0)
 			{
 				town.BoostBuildingProcess = 0;
@@ -142,7 +143,8 @@ public class BuildingsCampaignBehavior : CampaignBehaviorBase
 			{
 				foreach (Hero notable in town.Settlement.Notables)
 				{
-					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(town.Settlement.OwnerClan.Leader, notable, MathF.Round(DefaultPerks.Charm.MoralLeader.SecondaryBonus));
+					int relationChange = MathF.Round(DefaultPerks.Charm.MoralLeader.SecondaryBonus);
+					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(town.Settlement.OwnerClan.Leader, notable, relationChange);
 				}
 			}
 			if (town.Governor.GetPerkValue(DefaultPerks.Engineering.Foreman))

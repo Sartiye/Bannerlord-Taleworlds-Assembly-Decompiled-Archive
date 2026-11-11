@@ -193,7 +193,7 @@ public class DefaultEncounter
 					textObject.SetTextVariable("PARTY", PlayerEncounter.Battle.AttackerSide.LeaderParty.Name);
 				}
 				textObject.SetTextVariable("SETTLEMENT", currentSettlement.Name);
-				textObject.SetTextVariable("KINGDOM", currentSettlement.MapFaction.IsKingdomFaction ? ((Kingdom)currentSettlement.MapFaction).EncyclopediaTitle : currentSettlement.MapFaction.Name);
+				textObject.SetTextVariable("KINGDOM", currentSettlement.MapFaction.IsKingdomFaction ? ((Kingdom)currentSettlement.MapFaction).FormalName : currentSettlement.MapFaction.Name);
 				MBTextManager.SetTextVariable("ENCOUNTER_TEXT", textObject, sendClients: true);
 			}
 			else if (currentSettlement.IsFortification)
@@ -301,7 +301,7 @@ public class DefaultEncounter
 			{
 				textObject9 = GameTexts.FindText("str_you_have_encountered_PARTY_on_peace");
 				IFaction mapFaction = PlayerEncounter.EncounteredMobileParty.MapFaction;
-				textObject9.SetTextVariable("KINGDOM", mapFaction.IsKingdomFaction ? ((Kingdom)mapFaction).EncyclopediaTitle : mapFaction.Name);
+				textObject9.SetTextVariable("KINGDOM", mapFaction.IsKingdomFaction ? ((Kingdom)mapFaction).FormalName : mapFaction.Name);
 				textObject9.SetTextVariable("PARTY", PlayerEncounter.EncounteredMobileParty.Name);
 			}
 			else if (PlayerEncounter.Battle != null && (PlayerEncounter.Battle.IsSallyOut || PlayerEncounter.Battle.IsBlockadeSallyOut) && MobileParty.MainParty.BesiegedSettlement != null)
@@ -342,6 +342,7 @@ public class DefaultEncounter
 	}
 
 	[GameMenuInitializationHandler("naval_town_outside")]
+	[GameMenuInitializationHandler("naval_castle_outside")]
 	private static void game_menu_naval_town_outside_on_init(MenuCallbackArgs args)
 	{
 		args.MenuContext.SetBackgroundMeshName("town_blockade");

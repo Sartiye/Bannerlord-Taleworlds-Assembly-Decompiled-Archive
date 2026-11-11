@@ -12,6 +12,7 @@ using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade.Diamond;
 using TaleWorlds.MountAndBlade.Diamond.MultiplayerBadges;
 using TaleWorlds.MountAndBlade.Diamond.Ranked;
+using TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.Lobby.CustomGame;
 using TaleWorlds.ObjectSystem;
 using TaleWorlds.PlatformService;
 using TaleWorlds.PlayerServices;
@@ -47,6 +48,8 @@ public class MPLobbyPlayerBaseVM : ViewModel
 	public static Action OnClanLeaderboardRequested;
 
 	private const int DefaultBannerBackgroundColorId = 99;
+
+	private CustomBattleId? _spectatableCustomBattleId;
 
 	private PlayerId _providedID;
 
@@ -201,6 +204,8 @@ public class MPLobbyPlayerBaseVM : ViewModel
 	private MBBindingList<MPLobbyPlayerStatItemVM> _displayedStats;
 
 	private MBBindingList<MPLobbyGameTypeVM> _gameTypes;
+
+	private bool _canSpectate;
 
 	public OnlineStatus CurrentOnlineStatus { get; private set; }
 
@@ -381,6 +386,23 @@ public class MPLobbyPlayerBaseVM : ViewModel
 			{
 				_canInviteToParty = value;
 				OnPropertyChangedWithValue(value, "CanInviteToParty");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool CanSpectate
+	{
+		get
+		{
+			return _canSpectate;
+		}
+		set
+		{
+			if (value != _canSpectate)
+			{
+				_canSpectate = value;
+				OnPropertyChangedWithValue(value, "CanSpectate");
 			}
 		}
 	}
@@ -1409,6 +1431,8 @@ public class MPLobbyPlayerBaseVM : ViewModel
 				State = playerData.PlayerState;
 				StateText = GameTexts.FindText("str_multiplayer_lobby_state", State.ToString()).ToString();
 			}
+			_spectatableCustomBattleId = playerData.SpectatableCustomBattleId;
+			CanSpectate = _spectatableCustomBattleId.HasValue;
 			TimeSinceLastStateUpdate = Game.Current.ApplicationTime;
 		}
 	}
@@ -1417,7 +1441,7 @@ public class MPLobbyPlayerBaseVM : ViewModel
 	{
 		if (playerData == null)
 		{
-			Debug.FailedAssert("PlayerData shouldn't be null at this stage!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyPlayerBaseVM.cs", "UpdateWith", 280);
+			Debug.FailedAssert("PlayerData shouldn't be null at this stage!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyPlayerBaseVM.cs", "UpdateWith", 286);
 			return;
 		}
 		PlayerData = playerData;
@@ -1439,6 +1463,8 @@ public class MPLobbyPlayerBaseVM : ViewModel
 		BannerlordID = $"{playerData.Username}#{playerData.UserId}";
 		SelectedBadgeID = playerData.ShownBadgeId;
 		StateText = "";
+		_spectatableCustomBattleId = null;
+		CanSpectate = false;
 		_hasReceivedPlayerStats = false;
 		_isReceivingPlayerStats = false;
 	}
@@ -1721,6 +1747,19 @@ public class MPLobbyPlayerBaseVM : ViewModel
 	public void ExecuteInviteToParty()
 	{
 		_onInviteToParty?.Invoke(ProvidedID);
+	}
+
+	public void ExecuteSpectateMatch()
+	{
+		if (_spectatableCustomBattleId.HasValue)
+		{
+			SpectateMatchAsync(_spectatableCustomBattleId.Value);
+		}
+	}
+
+	private async void SpectateMatchAsync(CustomBattleId battleId)
+	{
+		await CustomGameJoinHelper.JoinByIdAsync(Game.Current?.GameStateManager?.ActiveState as LobbyState, battleId, CustomGameJoinType.Watcher, null);
 	}
 
 	public void ExecuteInviteToClan()

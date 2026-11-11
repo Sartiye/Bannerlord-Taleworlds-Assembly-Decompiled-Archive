@@ -384,19 +384,12 @@ public class NavalRaidMissionAgentSpawnLogic : MissionLogic, IBattleMissionAgent
 
 	public void OnSideDeploymentOver(BattleSideEnum battleSide)
 	{
+		base.Mission.OnInitialSpawnCompleted(battleSide);
 		foreach (Team team in base.Mission.Teams)
 		{
 			if (team.Side == battleSide)
 			{
-				base.Mission.OnTeamDeployed(team);
-			}
-		}
-		base.Mission.OnBattleSideDeployed(battleSide);
-		foreach (Team team2 in base.Mission.Teams)
-		{
-			if (team2.Side == battleSide)
-			{
-				foreach (Formation item in team2.FormationsIncludingEmpty)
+				foreach (Formation item in team.FormationsIncludingEmpty)
 				{
 					if (item.CountOfUnits > 0)
 					{
@@ -404,23 +397,23 @@ public class NavalRaidMissionAgentSpawnLogic : MissionLogic, IBattleMissionAgent
 					}
 				}
 			}
-			if (team2.Side != 0)
+			if (team.Side != 0)
 			{
 				continue;
 			}
-			team2.MasterOrderController.OnOrderIssued += OrderController_OnOrderIssued;
+			team.MasterOrderController.OnOrderIssued += OrderController_OnOrderIssued;
 			for (int i = 8; i < 10; i++)
 			{
-				Formation formation = team2.FormationsIncludingSpecialAndEmpty[i];
+				Formation formation = team.FormationsIncludingSpecialAndEmpty[i];
 				if (formation.CountOfUnits > 0)
 				{
-					team2.MasterOrderController.SelectFormation(formation);
-					team2.MasterOrderController.SetOrderWithAgent(OrderType.FollowMe, team2.GeneralAgent);
-					team2.MasterOrderController.ClearSelectedFormations();
+					team.MasterOrderController.SelectFormation(formation);
+					team.MasterOrderController.SetOrderWithAgent(OrderType.FollowMe, team.GeneralAgent);
+					team.MasterOrderController.ClearSelectedFormations();
 					formation.SetControlledByAI(isControlledByAI: true);
 				}
 			}
-			team2.MasterOrderController.OnOrderIssued -= OrderController_OnOrderIssued;
+			team.MasterOrderController.OnOrderIssued -= OrderController_OnOrderIssued;
 		}
 		if (battleSide == BattleSideEnum.Attacker && battleSide == _playerSide)
 		{

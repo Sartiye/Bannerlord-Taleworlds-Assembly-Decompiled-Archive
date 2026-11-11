@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
+using TaleWorlds.MountAndBlade;
 
 namespace SandBox.View.Map;
 
@@ -92,11 +93,12 @@ public class BlockadePositionScript : ScriptComponentBehavior
 				float num = vec.AngleBetween(frame.rotation.f.AsVec2);
 				frame.Rotate(System.MathF.PI / 2f - num, in Vec3.Up);
 				frame.rotation.ApplyScaleLocal(ShipScaleFactor);
-				GameEntity gameEntity = TaleWorlds.Engine.GameEntity.Instantiate(base.GameEntity.Scene, MissionShipId, callScriptCallbacks: false);
+				GameEntity gameEntity = VisualShipFactory.CreateVisualShipForCampaign(MissionShipId, base.GameEntity.Scene, new List<ShipVisualSlotInfo>(), 0, "");
 				if (gameEntity == null)
 				{
 					break;
 				}
+				gameEntity.SetVisibilityExcludeParents(visible: true);
 				gameEntity.SetFrame(ref frame);
 				_shipEntities.Add(gameEntity);
 			}

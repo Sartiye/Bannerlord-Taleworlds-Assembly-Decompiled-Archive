@@ -270,6 +270,9 @@ internal interface IUtil
 	[EngineMethod("take_screenshot_from_platform_path", false, null, false)]
 	void TakeScreenshotFromPlatformPath(PlatformFilePath path);
 
+	[EngineMethod("take_screenshot_as_png", false, null, false)]
+	void TakeScreenshotAsPng(string path);
+
 	[EngineMethod("check_resource_modifications", false, null, false)]
 	void CheckResourceModifications();
 
@@ -312,6 +315,9 @@ internal interface IUtil
 	[EngineMethod("dump_gpu_memory_statistics", false, null, false)]
 	void DumpGPUMemoryStatistics(string filePath);
 
+	[EngineMethod("dump_render_buffer_memory", false, null, false)]
+	void DumpRenderBufferMemory(string filePath);
+
 	[EngineMethod("save_data_as_texture", false, null, false)]
 	int SaveDataAsTexture(string path, int width, int height, float[] data);
 
@@ -353,6 +359,12 @@ internal interface IUtil
 
 	[EngineMethod("get_return_code", false, null, false)]
 	int GetReturnCode();
+
+	[EngineMethod("get_unique_assert_count", false, null, false)]
+	int GetUniqueAssertCount();
+
+	[EngineMethod("get_unique_warning_count", false, null, false)]
+	int GetUniqueWarningCount();
 
 	[EngineMethod("do_light_only_bake_single_level_automated", false, null, false)]
 	void DoLightOnlyBakeSingleLevelAutomated(string module, string sceneName);
@@ -401,6 +413,9 @@ internal interface IUtil
 
 	[EngineMethod("is_async_physics_thread", false, null, false)]
 	bool IsAsyncPhysicsThread();
+
+	[EngineMethod("get_naval_dlc_version_mismatch", false, null, false)]
+	bool GetNavalDlcVersionMismatch();
 
 	[EngineMethod("start_loading_stuck_check_state", false, null, false)]
 	void StartLoadingStuckCheckState(float seconds);

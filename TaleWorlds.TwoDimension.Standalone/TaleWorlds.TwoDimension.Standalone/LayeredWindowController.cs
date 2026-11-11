@@ -1,7 +1,6 @@
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
-using TaleWorlds.TwoDimension.Standalone.Native.OpenGL;
 using TaleWorlds.TwoDimension.Standalone.Native.Windows;
 
 namespace TaleWorlds.TwoDimension.Standalone;
@@ -18,78 +17,175 @@ public class LayeredWindowController
 
 	private readonly IntPtr _memoryDC;
 
-	private Size _windowSize;
+	private DirectXGraphicsContext _context;
 
-	private byte[] _pixelData;
+	private IntPtr _stagingTexture;
+
+	private IntPtr _hDib;
+
+	private IntPtr _dibBits;
+
+	private IntPtr _hOldBitmap;
+
+	private int _width;
+
+	private int _height;
+
+	private byte[] _rowBuffer;
 
 	private BlendFunction _blendFunction = BlendFunction.Default;
 
 	private System.Drawing.Point _localOriginPoint = new System.Drawing.Point(0, 0);
 
-	private BitmapInfo _bitmapInfo;
-
-	public LayeredWindowController(IntPtr windowHandle, int width, int height)
+	public LayeredWindowController(IntPtr windowHandle, int width, int height, DirectXGraphicsContext context)
 	{
 		_windowHandle = windowHandle;
+		_context = context;
 		User32.SetWindowLong(_windowHandle, -20, 524288u);
 		_screenDC = User32.GetDC(IntPtr.Zero);
 		_memoryDC = Gdi32.CreateCompatibleDC(_screenDC);
 		SetSize(width, height);
 	}
 
-	private void CreateBitmapInfo()
-	{
-		BitmapInfoHeader bmiHeader = default(BitmapInfoHeader);
-		bmiHeader.biWidth = _windowSize.Width;
-		bmiHeader.biHeight = _windowSize.Height;
-		bmiHeader.biPlanes = 1;
-		bmiHeader.biBitCount = 32;
-		bmiHeader.biCompression = 0u;
-		bmiHeader.biSizeImage = 0u;
-		bmiHeader.biXPelsPerMeter = 0;
-		bmiHeader.biYPelsPerMeter = 0;
-		bmiHeader.biClrUsed = 0u;
-		bmiHeader.biClrImportant = 0u;
-		bmiHeader.biSize = (uint)Marshal.SizeOf(typeof(BitmapInfoHeader));
-		_bitmapInfo.bmiHeader = bmiHeader;
-		_bitmapInfo.r = 0;
-		_bitmapInfo.g = 0;
-		_bitmapInfo.b = 0;
-		_bitmapInfo.a = 0;
-	}
-
 	public void SetSize(int width, int height)
 	{
-		_windowSize = new Size(width, height);
-		if (_windowSize.Width > 0 && _windowSize.Height > 0)
+		if (width > 0 && height > 0 && (width != _width || height != _height))
 		{
-			_pixelData = new byte[_windowSize.Width * _windowSize.Height * 4];
+			_width = width;
+			_height = height;
+			ReleaseDibResources();
+			ReleaseStaging();
+			_rowBuffer = new byte[_width * 4];
+			CreateStagingTexture();
+			CreateDib();
 		}
-		CreateBitmapInfo();
 	}
 
-	public void PostRender()
+	private void CreateStagingTexture()
 	{
-		if (_windowSize.Width > 0 && _windowSize.Height > 0)
+		if (_context != null && !(_context.DeviceHandle == IntPtr.Zero))
 		{
-			Opengl32.PixelStore(Target.PACK_ALIGNMENT, 1);
-			Opengl32.ReadPixels(0, 0, _windowSize.Width, _windowSize.Height, PixelFormat.BGRA, DataType.UnsignedByte, _pixelData);
-			IntPtr intPtr = Gdi32.CreateCompatibleBitmap(_screenDC, _windowSize.Width, _windowSize.Height);
-			IntPtr h = Gdi32.SelectObject(_memoryDC, intPtr);
-			Gdi32.StretchDIBits(_memoryDC, 0, 0, _windowSize.Width, _windowSize.Height, 0, 0, _windowSize.Width, _windowSize.Height, _pixelData, ref _bitmapInfo, 0u, 13369376);
-			User32.GetWindowRect(_windowHandle, out var lpRect);
-			System.Drawing.Point pptDst = new System.Drawing.Point(lpRect.Left, lpRect.Top);
-			User32.UpdateLayeredWindow(_windowHandle, _screenDC, ref pptDst, ref _windowSize, _memoryDC, ref _localOriginPoint, 0, ref _blendFunction, 2);
-			if (intPtr != IntPtr.Zero)
+			D3D11_TEXTURE2D_DESC d3D11_TEXTURE2D_DESC = default(D3D11_TEXTURE2D_DESC);
+			d3D11_TEXTURE2D_DESC.Width = (uint)_width;
+			d3D11_TEXTURE2D_DESC.Height = (uint)_height;
+			d3D11_TEXTURE2D_DESC.MipLevels = 1u;
+			d3D11_TEXTURE2D_DESC.ArraySize = 1u;
+			d3D11_TEXTURE2D_DESC.Format = 87u;
+			d3D11_TEXTURE2D_DESC.SampleDesc = new DXGI_SAMPLE_DESC
 			{
-				Gdi32.SelectObject(_memoryDC, h);
-				Gdi32.DeleteObject(intPtr);
+				Count = 1u,
+				Quality = 0u
+			};
+			d3D11_TEXTURE2D_DESC.Usage = 3u;
+			d3D11_TEXTURE2D_DESC.BindFlags = 0u;
+			d3D11_TEXTURE2D_DESC.CPUAccessFlags = 131072u;
+			d3D11_TEXTURE2D_DESC.MiscFlags = 0u;
+			D3D11_TEXTURE2D_DESC desc = d3D11_TEXTURE2D_DESC;
+			if (D3D11Device.CreateTexture2DEmpty(_context.DeviceHandle, ref desc, out _stagingTexture) < 0)
+			{
+				_stagingTexture = IntPtr.Zero;
 			}
 		}
 	}
 
+	private void ReleaseStaging()
+	{
+		if (_stagingTexture != IntPtr.Zero)
+		{
+			ComRelease.Release(_stagingTexture);
+			_stagingTexture = IntPtr.Zero;
+		}
+	}
+
+	private void CreateDib()
+	{
+		BitmapInfo pbmi = default(BitmapInfo);
+		pbmi.bmiHeader.biSize = (uint)Marshal.SizeOf(typeof(BitmapInfoHeader));
+		pbmi.bmiHeader.biWidth = _width;
+		pbmi.bmiHeader.biHeight = -_height;
+		pbmi.bmiHeader.biPlanes = 1;
+		pbmi.bmiHeader.biBitCount = 32;
+		pbmi.bmiHeader.biCompression = 0u;
+		pbmi.bmiHeader.biSizeImage = 0u;
+		pbmi.bmiHeader.biXPelsPerMeter = 0;
+		pbmi.bmiHeader.biYPelsPerMeter = 0;
+		pbmi.bmiHeader.biClrUsed = 0u;
+		pbmi.bmiHeader.biClrImportant = 0u;
+		pbmi.r = 0;
+		pbmi.g = 0;
+		pbmi.b = 0;
+		pbmi.a = 0;
+		_hDib = Gdi32.CreateDIBSection(_screenDC, ref pbmi, 0u, out _dibBits, IntPtr.Zero, 0u);
+		if (_hDib == IntPtr.Zero)
+		{
+			_dibBits = IntPtr.Zero;
+		}
+		else
+		{
+			_hOldBitmap = Gdi32.SelectObject(_memoryDC, _hDib);
+		}
+	}
+
+	private void ReleaseDibResources()
+	{
+		if (_hDib != IntPtr.Zero)
+		{
+			if (_hOldBitmap != IntPtr.Zero)
+			{
+				Gdi32.SelectObject(_memoryDC, _hOldBitmap);
+				_hOldBitmap = IntPtr.Zero;
+			}
+			Gdi32.DeleteObject(_hDib);
+			_hDib = IntPtr.Zero;
+			_dibBits = IntPtr.Zero;
+		}
+	}
+
+	public void PostRender()
+	{
+		if (_width <= 0 || _height <= 0 || _context == null || _stagingTexture == IntPtr.Zero || _context.DeviceContextHandle == IntPtr.Zero || _context.IsDeviceLost || _hDib == IntPtr.Zero || _dibBits == IntPtr.Zero)
+		{
+			return;
+		}
+		IntPtr currentBackBuffer = _context.GetCurrentBackBuffer();
+		if (currentBackBuffer == IntPtr.Zero)
+		{
+			return;
+		}
+		D3D11Context.CopyResource(_context.DeviceContextHandle, _stagingTexture, currentBackBuffer);
+		ComRelease.Release(currentBackBuffer);
+		D3D11_MAPPED_SUBRESOURCE mapped;
+		int num = D3D11Context.Map(_context.DeviceContextHandle, _stagingTexture, 1u, out mapped);
+		if (num < 0)
+		{
+			_context.ReportDeviceLost(num);
+			return;
+		}
+		try
+		{
+			int num2 = _width * 4;
+			for (int i = 0; i < _height; i++)
+			{
+				IntPtr source = mapped.pData + i * (int)mapped.RowPitch;
+				IntPtr destination = _dibBits + i * num2;
+				Marshal.Copy(source, _rowBuffer, 0, num2);
+				Marshal.Copy(_rowBuffer, 0, destination, num2);
+			}
+		}
+		finally
+		{
+			D3D11Context.Unmap(_context.DeviceContextHandle, _stagingTexture);
+		}
+		User32.GetWindowRect(_windowHandle, out var lpRect);
+		System.Drawing.Point pptDst = new System.Drawing.Point(lpRect.Left, lpRect.Top);
+		Size psize = new Size(_width, _height);
+		User32.UpdateLayeredWindow(_windowHandle, _screenDC, ref pptDst, ref psize, _memoryDC, ref _localOriginPoint, 0, ref _blendFunction, 2);
+	}
+
 	public void OnFinalize()
 	{
+		ReleaseDibResources();
+		ReleaseStaging();
 		User32.ReleaseDC(IntPtr.Zero, _screenDC);
 		Gdi32.DeleteDC(_memoryDC);
 	}

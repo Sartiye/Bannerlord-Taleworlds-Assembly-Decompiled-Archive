@@ -198,15 +198,16 @@ public class MPLobbyClanChangeFactionPopupVM : ViewModel
 		IsSelected = false;
 	}
 
-	public void ExecuteChangeFaction()
+	public async void ExecuteChangeFaction()
 	{
 		BasicCultureObject @object = Game.Current.ObjectManager.GetObject<BasicCultureObject>(_selectedFaction.CultureCode);
 		Banner banner = new Banner(NetworkMain.GameClient.ClanInfo.Sigil);
 		banner.ChangeIconColors(@object.ForegroundColor1);
 		banner.ChangePrimaryColor(@object.BackgroundColor1);
-		NetworkMain.GameClient.ChangeClanSigil(banner.Serialize());
-		NetworkMain.GameClient.ChangeClanFaction(_selectedFaction.CultureCode);
-		ExecuteClosePopup();
+		if (await NetworkMain.GameClient.ChangeClanSigil(banner.Serialize()) & await NetworkMain.GameClient.ChangeClanFaction(_selectedFaction.CultureCode))
+		{
+			ExecuteClosePopup();
+		}
 	}
 
 	public override void OnFinalize()

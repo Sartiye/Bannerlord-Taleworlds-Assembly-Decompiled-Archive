@@ -478,7 +478,7 @@ public class HideoutMissionController : MissionLogic, IMissionAgentSpawnLogic, I
 			}
 			_missionSides[i].SpawnTroops(_areaMarkers, _patrolAreas, _defenderAgentObjects, spawnCount);
 		}
-		Mission.Current.OnDeploymentFinished();
+		base.Mission.OnInitialSpawnCompleted();
 		foreach (Agent activeAgent in base.Mission.PlayerEnemyTeam.ActiveAgents)
 		{
 			_clearObjectiveTargetAgents.Add(activeAgent);

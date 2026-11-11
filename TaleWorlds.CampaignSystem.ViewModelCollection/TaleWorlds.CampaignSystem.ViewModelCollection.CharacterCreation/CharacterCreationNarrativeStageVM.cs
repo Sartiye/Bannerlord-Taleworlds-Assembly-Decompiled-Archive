@@ -167,6 +167,7 @@ public class CharacterCreationNarrativeStageVM : CharacterCreationStageBaseVM
 
 	public override void OnNextStage()
 	{
+		CanAdvanceToNextStage();
 		if (CharacterCreationManager.TrySwitchToNextMenu())
 		{
 			RefreshMenu();

@@ -622,7 +622,8 @@ public class Town : Fief
 				Hero randomElement = base.Settlement.Notables.GetRandomElement();
 				if (randomElement != null)
 				{
-					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(Governor, randomElement, 1);
+					int relationChange = 1;
+					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(Governor, randomElement, relationChange);
 				}
 			}
 			if (Governor.GetPerkValue(DefaultPerks.Roguery.Scarface) && MBRandom.RandomFloat <= DefaultPerks.Roguery.Scarface.SecondaryBonus)
@@ -630,7 +631,8 @@ public class Town : Fief
 				Hero randomElementWithPredicate = base.Settlement.Notables.GetRandomElementWithPredicate((Hero x) => x.IsGangLeader);
 				if (randomElementWithPredicate != null)
 				{
-					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(Governor, randomElementWithPredicate, 1);
+					int relationChange2 = 1;
+					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(Governor, randomElementWithPredicate, relationChange2);
 				}
 			}
 		}

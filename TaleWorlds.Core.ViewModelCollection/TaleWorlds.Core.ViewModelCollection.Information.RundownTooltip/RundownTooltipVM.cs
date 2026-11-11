@@ -189,7 +189,7 @@ public class RundownTooltipVM : TooltipBaseVM
 
 	private void RefreshExtendText()
 	{
-		GameTexts.SetVariable("EXTEND_KEY", GameTexts.FindText("str_game_key_text", "anyalt").ToString());
+		GameTexts.SetVariable("EXTEND_KEY", HyperlinkTexts.GetTooltipExtendKeyHyperlinkText());
 		ExtendText = GameTexts.FindText("str_map_tooltip_info").ToString();
 	}
 

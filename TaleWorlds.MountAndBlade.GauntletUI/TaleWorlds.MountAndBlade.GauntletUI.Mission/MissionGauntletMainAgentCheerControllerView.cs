@@ -100,7 +100,7 @@ public class MissionGauntletMainAgentCheerControllerView : MissionView
 	public override void OnMissionScreenTick(float dt)
 	{
 		base.OnMissionScreenTick(dt);
-		if (IsMainAgentAvailable() && base.Mission.Mode != MissionMode.Deployment && (!base.MissionScreen.IsRadialMenuActive || _dataSource.IsActive))
+		if (IsMainAgentAvailable() && base.Mission.Mode != MissionMode.Deployment && !base.MissionScreen.IsPhotoModeEnabled && (!base.MissionScreen.IsRadialMenuActive || _dataSource.IsActive))
 		{
 			TickControls(dt);
 		}

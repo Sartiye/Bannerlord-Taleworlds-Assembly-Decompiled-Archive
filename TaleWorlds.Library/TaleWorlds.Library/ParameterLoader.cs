@@ -64,19 +64,16 @@ public class ParameterLoader
 	private static bool TryGetFromEnvironment(XmlNode node, out string value)
 	{
 		value = "";
-		if (node.Attributes?["GetFromEnvironment"] != null && node.Attributes["GetFromEnvironment"].InnerText.ToLower() == "true")
+		string innerText = node.Attributes["Name"].InnerText;
+		string environmentVariable = Environment.GetEnvironmentVariable(innerText);
+		if (string.IsNullOrEmpty(environmentVariable))
 		{
-			string innerText = node.Attributes["Name"].InnerText;
-			string environmentVariable = Environment.GetEnvironmentVariable(innerText);
-			if (string.IsNullOrEmpty(environmentVariable))
-			{
-				environmentVariable = Environment.GetEnvironmentVariable(GetAltEnvironmentVariableName(innerText));
-			}
-			if (!string.IsNullOrEmpty(environmentVariable))
-			{
-				value = environmentVariable;
-				return true;
-			}
+			environmentVariable = Environment.GetEnvironmentVariable(GetAltEnvironmentVariableName(innerText));
+		}
+		if (!string.IsNullOrEmpty(environmentVariable))
+		{
+			value = environmentVariable;
+			return true;
 		}
 		return false;
 	}

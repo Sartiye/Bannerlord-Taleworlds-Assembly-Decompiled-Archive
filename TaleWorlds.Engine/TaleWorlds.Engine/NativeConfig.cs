@@ -8,6 +8,8 @@ public static class NativeConfig
 
 	public static bool IsDevelopmentMode { get; private set; }
 
+	public static bool IsDetailedDebugMode { get; private set; }
+
 	public static bool LocalizationDebugMode { get; private set; }
 
 	public static bool GetUIDebugMode { get; private set; }
@@ -44,6 +46,7 @@ public static class NativeConfig
 	{
 		CheatMode = EngineApplicationInterface.IConfig.GetCheatMode();
 		IsDevelopmentMode = EngineApplicationInterface.IConfig.GetDevelopmentMode();
+		IsDetailedDebugMode = EngineApplicationInterface.IConfig.GetDetailedDebugMode();
 		GetUIDebugMode = EngineApplicationInterface.IConfig.GetUIDebugMode();
 		LocalizationDebugMode = EngineApplicationInterface.IConfig.GetLocalizationDebugMode();
 		EnableEditMode = EngineApplicationInterface.IConfig.GetEnableEditMode();

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SandBox.AdvancedStartOptions;
 using SandBox.View.Conversation;
 using SandBox.View.Map;
 using SandBox.View.Map.Managers;
@@ -10,6 +11,8 @@ using SandBox.View.Overlay;
 using SandBox.ViewModelCollection.Missions.NameMarker;
 using Sandbox.View.GameStates;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.BattleWreckages;
+using TaleWorlds.CampaignSystem.GameState;
 using TaleWorlds.CampaignSystem.Inventory;
 using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.MapEvents;
@@ -56,6 +59,8 @@ public class SandBoxViewSubModule : MBSubModuleBase
 	private Dictionary<UIntPtr, MapEntityVisual> _visualsOfEntities;
 
 	private Dictionary<UIntPtr, Tuple<MatrixFrame, SettlementVisual>> _frameAndVisualOfEngines;
+
+	private SandBox.AdvancedStartOptions.AdvancedStartOptions _startingOptionsCache;
 
 	private static SandBoxViewSubModule _instance;
 
@@ -116,6 +121,20 @@ public class SandBoxViewSubModule : MBSubModuleBase
 		{
 			CampaignOptionsManager.Initialize();
 			_isInitialized = true;
+		}
+		if (GameStateManager.Current?.ActiveState is MapState)
+		{
+			_startingOptionsCache = null;
+		}
+	}
+
+	protected override void OnBeforeInitialModuleScreenSetAsRoot()
+	{
+		base.OnBeforeInitialModuleScreenSetAsRoot();
+		SandBox.AdvancedStartOptions.AdvancedStartOptions startingOptionsCache = _startingOptionsCache;
+		if (startingOptionsCache != null && startingOptionsCache.HasAnyChange())
+		{
+			ScreenManager.AddGlobalLayer(SandBoxViewCreator.CreateCampaignAdvancedStartOptions(_startingOptionsCache, OnStartingOptionsConfirmed, OnStartingOptionsClosed), isFocusable: true);
 		}
 	}
 
@@ -213,6 +232,16 @@ public class SandBoxViewSubModule : MBSubModuleBase
 		return (false, null);
 	}
 
+	private void OnStartingOptionsClosed()
+	{
+		_startingOptionsCache = null;
+	}
+
+	private void OnStartingOptionsConfirmed(SandBox.AdvancedStartOptions.AdvancedStartOptions options)
+	{
+		_startingOptionsCache = options;
+	}
+
 	private void ContinueCampaign(string saveName)
 	{
 		SandBoxSaveHelper.TryLoadSave(MBSaveLoad.GetSaveFileWithName(saveName), StartGame);
@@ -226,14 +255,13 @@ public class SandBoxViewSubModule : MBSubModuleBase
 			return;
 		}
 		_latestSaveLoaded = true;
-		SaveGameFileInfo[] saveFiles = MBSaveLoad.GetSaveFiles();
-		if (!saveFiles.IsEmpty())
+		string latestSaveGameName = BannerlordConfig.LatestSaveGameName;
+		if (!string.IsNullOrEmpty(latestSaveGameName))
 		{
-			string name = saveFiles.MaxBy((SaveGameFileInfo s) => s.MetaData.GetCreationTime()).Name;
-			(bool, TextObject) tuple = IsContinueCampaignDisabled(name);
+			(bool, TextObject) tuple = IsContinueCampaignDisabled(latestSaveGameName);
 			if (!tuple.Item1)
 			{
-				ContinueCampaign(name);
+				ContinueCampaign(latestSaveGameName);
 			}
 			else
 			{
@@ -249,7 +277,13 @@ public class SandBoxViewSubModule : MBSubModuleBase
 
 	private void StartGame()
 	{
-		MBGameManager.StartNewGame(new SandBoxGameManager(() => new Campaign(CampaignGameMode.Campaign)));
+		SandBox.AdvancedStartOptions.AdvancedStartOptions options = AdvancedStartOptionsManager.CreateCampaignStartOptions();
+		if (!options.IsEmpty())
+		{
+			ScreenManager.AddGlobalLayer(SandBoxViewCreator.CreateCampaignAdvancedStartOptions(options, OnStartingOptionsConfirmed, OnStartingOptionsClosed), isFocusable: true);
+			return;
+		}
+		MBGameManager.StartNewGame(new SandBoxGameManager(() => new Campaign(CampaignGameMode.Campaign, options.GetChangedOptions())));
 	}
 
 	private void OnImguiProfilerTick()
@@ -347,6 +381,7 @@ public class SandBoxViewSubModule : MBSubModuleBase
 		InformationManager.RegisterTooltip<Kingdom, PropertyBasedTooltipVM>(TooltipRefresherCollection.RefreshKingdomTooltip, "PropertyBasedTooltip");
 		InformationManager.RegisterTooltip<MapMarker, PropertyBasedTooltipVM>(TooltipRefresherCollection.RefreshMapMarkerTooltip, "PropertyBasedTooltip");
 		InformationManager.RegisterTooltip<ExplainedNumber, RundownTooltipVM>(TooltipRefresherCollection.RefreshExplainedNumberTooltip, "RundownTooltip");
+		InformationManager.RegisterTooltip<BattleWreckage, PropertyBasedTooltipVM>(TooltipRefresherCollection.RefreshBattleWreckageTooltip, "PropertyBasedTooltip");
 	}
 
 	private void UnregisterTooltipTypes()
@@ -366,6 +401,7 @@ public class SandBoxViewSubModule : MBSubModuleBase
 		InformationManager.UnregisterTooltip<Workshop>();
 		InformationManager.UnregisterTooltip<Clan>();
 		InformationManager.UnregisterTooltip<Kingdom>();
+		InformationManager.UnregisterTooltip<BattleWreckage>();
 		InformationManager.UnregisterTooltip<ExplainedNumber>();
 	}
 
@@ -386,7 +422,7 @@ public class SandBoxViewSubModule : MBSubModuleBase
 			LoadingWindow.DisableGlobalLoadingWindow();
 			break;
 		default:
-			Debug.FailedAssert("Undefined save state for listener!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\SandBoxViewSubModule.cs", "OnSaveHelperStateChange", 683);
+			Debug.FailedAssert("Undefined save state for listener!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.View\\SandBoxViewSubModule.cs", "OnSaveHelperStateChange", 728);
 			break;
 		}
 	}

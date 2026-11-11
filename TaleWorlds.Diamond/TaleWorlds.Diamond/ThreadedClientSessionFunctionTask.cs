@@ -10,7 +10,7 @@ internal sealed class ThreadedClientSessionFunctionTask : ThreadedClientSessionT
 
 	private Task _task;
 
-	public FunctionResult FunctionResult { get; private set; }
+	public CallResult CallResult { get; private set; }
 
 	public ThreadedClientSessionFunctionTask(IClientSession session, Message message)
 		: base(session)
@@ -26,7 +26,7 @@ internal sealed class ThreadedClientSessionFunctionTask : ThreadedClientSessionT
 
 	private async Task CallFunction()
 	{
-		FunctionResult = await base.Session.CallFunction<FunctionResult>(_message);
+		CallResult = await base.Session.CallFunction<FunctionResult>(_message);
 	}
 
 	public override void DoMainThreadJob()

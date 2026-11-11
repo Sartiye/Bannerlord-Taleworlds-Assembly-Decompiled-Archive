@@ -143,7 +143,10 @@ public class NavalKingdomPolicyCampaignBehaviour : CampaignBehaviorBase
 		}
 		foreach (MapEventParty party in raidEvent.AttackerSide.Parties)
 		{
-			GainKingdomInfluenceAction.ApplyForDefault(party.Party.LeaderHero, 5f);
+			if (party.Party.LeaderHero != null && party.Party.LeaderHero.MapFaction == kingdom)
+			{
+				GainKingdomInfluenceAction.ApplyForDefault(party.Party.LeaderHero, 5f);
+			}
 		}
 	}
 

@@ -53,6 +53,10 @@ public sealed class MapHotKeyCategory : GameKeyContext
 
 	public const string MapFollowModifier = "MapFollowModifier";
 
+	public const string MapParleyModifier = "MapParleyModifier";
+
+	public const string MapParleyClick = "MapParleyClick";
+
 	public const string MapChangeCursorMode = "MapChangeCursorMode";
 
 	public const int MapTimeStop = 60;
@@ -92,9 +96,20 @@ public sealed class MapHotKeyCategory : GameKeyContext
 		RegisterHotKey(new HotKey("MapFollowModifier", "MapHotKeyCategory", keys3));
 		List<Key> keys4 = new List<Key>
 		{
+			new Key(InputKey.LeftControl),
+			new Key(InputKey.ControllerRUp)
+		};
+		RegisterHotKey(new HotKey("MapParleyModifier", "MapHotKeyCategory", keys4));
+		List<Key> keys5 = new List<Key>
+		{
+			new Key(InputKey.ControllerRUp)
+		};
+		RegisterHotKey(new HotKey("MapParleyClick", "MapHotKeyCategory", keys5));
+		List<Key> keys6 = new List<Key>
+		{
 			new Key(InputKey.ControllerRRight)
 		};
-		RegisterHotKey(new HotKey("MapChangeCursorMode", "MapHotKeyCategory", keys4));
+		RegisterHotKey(new HotKey("MapChangeCursorMode", "MapHotKeyCategory", keys6));
 	}
 
 	private void RegisterGameKeys()

@@ -1,4 +1,6 @@
+using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
+using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade.Missions.MissionLogics;
 using TaleWorlds.MountAndBlade.Missions.Objectives;
@@ -26,7 +28,7 @@ public class MissionGauntletObjectiveView : MissionObjectiveView
 		_objectiveLogic = base.Mission.GetMissionBehavior<MissionObjectiveLogic>();
 		if (_objectiveLogic == null)
 		{
-			Debug.FailedAssert("Mission objective view is enabled but there is no objective logic in mission", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\Mission\\MissionGauntletObjectiveView.cs", "OnMissionScreenInitialize", 34);
+			Debug.FailedAssert("Mission objective view is enabled but there is no objective logic in mission", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\Mission\\MissionGauntletObjectiveView.cs", "OnMissionScreenInitialize", 35);
 			return;
 		}
 		_dataSource = new MissionObjectiveVM(_objectiveLogic, base.MissionScreen.CombatCamera);
@@ -62,8 +64,18 @@ public class MissionGauntletObjectiveView : MissionObjectiveView
 				_latestObjective = currentObjective;
 				_dataSource.UpdateObjective(_latestObjective);
 			}
+			_dataSource.ShouldHaveOffset = GetShouldHaveOffset();
 			_dataSource.Tick(dt);
 		}
+	}
+
+	private bool GetShouldHaveOffset()
+	{
+		if (base.Mission.IsOrderMenuOpen && base.Mission.Mode != MissionMode.Deployment)
+		{
+			return !TaleWorlds.InputSystem.Input.IsGamepadActive;
+		}
+		return false;
 	}
 
 	private void UpdateContextAlpha(float dt)

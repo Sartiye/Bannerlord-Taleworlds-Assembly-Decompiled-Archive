@@ -24,7 +24,6 @@ public abstract class MissionGauntletEscapeMenuBase : MissionEscapeMenuView
 
 	protected MissionGauntletEscapeMenuBase(string viewFile)
 	{
-		base.OnMissionScreenInitialize();
 		_viewFile = viewFile;
 		ViewOrderPriority = 50;
 		Game.Current.EventManager.RegisterEvent<TutorialContextChangedEvent>(OnTutorialContextChanged);

@@ -9,6 +9,25 @@ public class MPIntermissionCultureItemVM : MPCultureItemVM
 
 	private int _votes;
 
+	private bool _isVotingAllowed;
+
+	[DataSourceProperty]
+	public bool IsVotingAllowed
+	{
+		get
+		{
+			return _isVotingAllowed;
+		}
+		set
+		{
+			if (value != _isVotingAllowed)
+			{
+				_isVotingAllowed = value;
+				OnPropertyChangedWithValue(value, "IsVotingAllowed");
+			}
+		}
+	}
+
 	[DataSourceProperty]
 	public int Votes
 	{
@@ -26,9 +45,10 @@ public class MPIntermissionCultureItemVM : MPCultureItemVM
 		}
 	}
 
-	public MPIntermissionCultureItemVM(string cultureCode, Action<MPIntermissionCultureItemVM> onPlayerVoted)
+	public MPIntermissionCultureItemVM(string cultureCode, bool isVotingAllowed, Action<MPIntermissionCultureItemVM> onPlayerVoted)
 		: base(cultureCode, null)
 	{
+		IsVotingAllowed = isVotingAllowed;
 		_onPlayerVoted = onPlayerVoted;
 	}
 

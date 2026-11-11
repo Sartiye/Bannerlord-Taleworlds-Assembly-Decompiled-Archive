@@ -869,10 +869,10 @@ public class NavalOrderOfBattleVM : ViewModel
 			CanStartMission = true;
 			CanStartHint = null;
 		}
-		if (AllFormations.Any((NavalOrderOfBattleFormationItemVM x) => x.HasShip && x.TroopCount == 0))
+		if (AllFormations.Any((NavalOrderOfBattleFormationItemVM x) => x.IsMinimumCrewCountWarningActive) && AllFormations.Count((NavalOrderOfBattleFormationItemVM x) => x.HasShip) > 1)
 		{
 			CanStartMission = false;
-			CanStartHint = new HintViewModel(new TextObject("{=UL3x9GoP}There is a ship without any troops!"));
+			CanStartHint = new HintViewModel((AllFormations.Count((NavalOrderOfBattleFormationItemVM x) => x.IsMinimumCrewCountWarningActive) > 1) ? new TextObject("{=cabaUQjc}There are ships with too few troops!") : new TextObject("{=XjtHpi22}There is a ship with too few troops!"));
 		}
 		else
 		{
@@ -1111,7 +1111,7 @@ public class NavalOrderOfBattleVM : ViewModel
 			}
 			else
 			{
-				Debug.FailedAssert("Trying to deselect ship that isn't SelectedShip!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\OrderOfBattle\\NavalOrderOfBattleVM.cs", "OnShipSelected", 793);
+				Debug.FailedAssert("Trying to deselect ship that isn't SelectedShip!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\OrderOfBattle\\NavalOrderOfBattleVM.cs", "OnShipSelected", 795);
 			}
 		}
 	}
@@ -1132,7 +1132,7 @@ public class NavalOrderOfBattleVM : ViewModel
 			}
 			else
 			{
-				Debug.FailedAssert("Trying to deselect hero that isn't SelectedHero!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\OrderOfBattle\\NavalOrderOfBattleVM.cs", "OnHeroSelected", 818);
+				Debug.FailedAssert("Trying to deselect hero that isn't SelectedHero!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\OrderOfBattle\\NavalOrderOfBattleVM.cs", "OnHeroSelected", 820);
 			}
 		}
 	}
@@ -1148,7 +1148,7 @@ public class NavalOrderOfBattleVM : ViewModel
 			}
 			else
 			{
-				Debug.FailedAssert("OnFormationAcceptCaptain called without a selected hero!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\OrderOfBattle\\NavalOrderOfBattleVM.cs", "OnFormationAcceptCaptain", 836);
+				Debug.FailedAssert("OnFormationAcceptCaptain called without a selected hero!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\OrderOfBattle\\NavalOrderOfBattleVM.cs", "OnFormationAcceptCaptain", 838);
 			}
 		}
 	}
@@ -1164,7 +1164,7 @@ public class NavalOrderOfBattleVM : ViewModel
 			}
 			else
 			{
-				Debug.FailedAssert("OnFormationAcceptShip called without a selected ship!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\OrderOfBattle\\NavalOrderOfBattleVM.cs", "OnFormationAcceptShip", 854);
+				Debug.FailedAssert("OnFormationAcceptShip called without a selected ship!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\OrderOfBattle\\NavalOrderOfBattleVM.cs", "OnFormationAcceptShip", 856);
 			}
 		}
 	}
@@ -1186,7 +1186,7 @@ public class NavalOrderOfBattleVM : ViewModel
 		}
 		else
 		{
-			Debug.FailedAssert("ExecuteReturnHeroToPool called without a selected hero!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\OrderOfBattle\\NavalOrderOfBattleVM.cs", "ExecuteReturnHeroToPool", 877);
+			Debug.FailedAssert("ExecuteReturnHeroToPool called without a selected hero!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\OrderOfBattle\\NavalOrderOfBattleVM.cs", "ExecuteReturnHeroToPool", 879);
 		}
 	}
 
@@ -1207,7 +1207,7 @@ public class NavalOrderOfBattleVM : ViewModel
 		}
 		else
 		{
-			Debug.FailedAssert("ExecuteReturnShipToPool called without a selected ship!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\OrderOfBattle\\NavalOrderOfBattleVM.cs", "ExecuteReturnShipToPool", 900);
+			Debug.FailedAssert("ExecuteReturnShipToPool called without a selected ship!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\OrderOfBattle\\NavalOrderOfBattleVM.cs", "ExecuteReturnShipToPool", 902);
 		}
 	}
 
@@ -1215,7 +1215,7 @@ public class NavalOrderOfBattleVM : ViewModel
 	{
 		if (formation == null)
 		{
-			Debug.FailedAssert("Trying to assign hero to null formation!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\OrderOfBattle\\NavalOrderOfBattleVM.cs", "AssignCaptainToFormation", 908);
+			Debug.FailedAssert("Trying to assign hero to null formation!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\OrderOfBattle\\NavalOrderOfBattleVM.cs", "AssignCaptainToFormation", 910);
 			return;
 		}
 		bool flag = false;
@@ -1233,7 +1233,7 @@ public class NavalOrderOfBattleVM : ViewModel
 	{
 		if (formation == null)
 		{
-			Debug.FailedAssert("Trying to assign ship to null formation!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\OrderOfBattle\\NavalOrderOfBattleVM.cs", "AssignShipToFormation", 934);
+			Debug.FailedAssert("Trying to assign ship to null formation!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC.ViewModelCollection\\OrderOfBattle\\NavalOrderOfBattleVM.cs", "AssignShipToFormation", 936);
 			return false;
 		}
 		bool num = _navalDeploymentController.TryAssignShipToFormation(ship?.ShipOrigin, formation.Formation, !isBatch);

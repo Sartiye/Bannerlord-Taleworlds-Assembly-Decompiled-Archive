@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -9,13 +8,13 @@ namespace TaleWorlds.CampaignSystem.ViewModelCollection.WeaponCrafting.WeaponDes
 
 public class WeaponClassSelectionPopupVM : ViewModel
 {
-	private readonly ICraftingCampaignBehavior _craftingBehavior;
-
 	private readonly Action<int> _onSelect;
 
 	private readonly List<CraftingTemplate> _templatesList;
 
 	private readonly Func<CraftingTemplate, int> _getUnlockedPiecesCount;
+
+	private readonly Func<CraftingTemplate, int> _getUninspectedPiecesCount;
 
 	private string _popupHeader;
 
@@ -75,13 +74,13 @@ public class WeaponClassSelectionPopupVM : ViewModel
 		}
 	}
 
-	public WeaponClassSelectionPopupVM(ICraftingCampaignBehavior craftingBehavior, List<CraftingTemplate> templatesList, Action<int> onSelect, Func<CraftingTemplate, int> getUnlockedPiecesCount)
+	public WeaponClassSelectionPopupVM(List<CraftingTemplate> templatesList, Action<int> onSelect, Func<CraftingTemplate, int> getUnlockedPiecesCount, Func<CraftingTemplate, int> getUninspectedPiecesCount)
 	{
 		WeaponClasses = new MBBindingList<WeaponClassVM>();
-		_craftingBehavior = craftingBehavior;
 		_onSelect = onSelect;
 		_templatesList = templatesList;
 		_getUnlockedPiecesCount = getUnlockedPiecesCount;
+		_getUninspectedPiecesCount = getUninspectedPiecesCount;
 		foreach (CraftingTemplate templates in _templatesList)
 		{
 			WeaponClasses.Add(new WeaponClassVM(_templatesList.IndexOf(templates), templates, ExecuteSelectWeaponClass));
@@ -95,7 +94,8 @@ public class WeaponClassSelectionPopupVM : ViewModel
 		foreach (WeaponClassVM weaponClass in WeaponClasses)
 		{
 			weaponClass.UnlockedPiecesCount = _getUnlockedPiecesCount?.Invoke(weaponClass.Template) ?? 0;
-			weaponClass.HasNewlyUnlockedPieces = weaponClass.NewlyUnlockedPieceCount > 0;
+			Func<CraftingTemplate, int> getUninspectedPiecesCount = _getUninspectedPiecesCount;
+			weaponClass.HasNewlyUnlockedPieces = getUninspectedPiecesCount != null && getUninspectedPiecesCount(weaponClass.Template) > 0;
 		}
 	}
 
@@ -103,40 +103,6 @@ public class WeaponClassSelectionPopupVM : ViewModel
 	{
 		base.RefreshValues();
 		PopupHeader = new TextObject("{=wZGj3qO1}Choose What to Craft").ToString();
-	}
-
-	public void UpdateNewlyUnlockedPiecesCount(List<CraftingPiece> newlyUnlockedPieces)
-	{
-		for (int i = 0; i < WeaponClasses.Count; i++)
-		{
-			WeaponClassVM weaponClassVM = WeaponClasses[i];
-			int num = 0;
-			for (int j = 0; j < newlyUnlockedPieces.Count; j++)
-			{
-				CraftingPiece craftingPiece = newlyUnlockedPieces[j];
-				if (weaponClassVM.Template.IsPieceTypeUsable(craftingPiece.PieceType))
-				{
-					CraftingPiece craftingPiece2 = FindPieceInTemplate(weaponClassVM.Template, craftingPiece);
-					if (craftingPiece2 != null && !craftingPiece2.IsHiddenOnDesigner && _craftingBehavior.IsOpened(craftingPiece2, weaponClassVM.Template))
-					{
-						num++;
-					}
-				}
-			}
-			weaponClassVM.NewlyUnlockedPieceCount = num;
-		}
-	}
-
-	private CraftingPiece FindPieceInTemplate(CraftingTemplate template, CraftingPiece piece)
-	{
-		foreach (CraftingPiece piece2 in template.Pieces)
-		{
-			if (piece.StringId == piece2.StringId)
-			{
-				return piece2;
-			}
-		}
-		return null;
 	}
 
 	public void ExecuteSelectWeaponClass(int index)

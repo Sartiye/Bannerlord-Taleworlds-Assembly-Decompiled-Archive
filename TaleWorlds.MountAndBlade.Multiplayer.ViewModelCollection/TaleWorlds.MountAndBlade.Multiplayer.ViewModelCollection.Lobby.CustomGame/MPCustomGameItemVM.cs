@@ -67,9 +67,28 @@ public class MPCustomGameItemVM : ViewModel
 
 	private BasicTooltipViewModel _loadedModulesHint;
 
+	private bool _allowsStreamers;
+
 	public GameServerEntry GameServerInfo { get; }
 
 	public PremadeGameEntry PremadeGameInfo { get; }
+
+	[DataSourceProperty]
+	public bool AllowsStreamers
+	{
+		get
+		{
+			return _allowsStreamers;
+		}
+		set
+		{
+			if (value != _allowsStreamers)
+			{
+				_allowsStreamers = value;
+				OnPropertyChangedWithValue(value, "AllowsStreamers");
+			}
+		}
+	}
 
 	[DataSourceProperty]
 	public bool IsPasswordProtected
@@ -451,6 +470,7 @@ public class MPCustomGameItemVM : ViewModel
 		IsOfficialServer = GameServerInfo.IsOfficial;
 		IsByOfficialServerProvider = GameServerInfo.ByOfficialProvider;
 		IsCommunityServer = !IsOfficialServer && !IsByOfficialServerProvider;
+		AllowsStreamers = GameServerInfo.MaxStreamerCount > 0;
 		HostText = GameServerInfo.HostName;
 		IsPingInfoAvailable = MPCustomGameVM.IsPingInfoAvailable;
 		await UpdatePingText();

@@ -305,7 +305,7 @@ public class MarriageOfferCampaignBehavior : CampaignBehaviorBase, IMarriageOffe
 
 	private bool CanOfferMarriageForClan(Clan consideringClan)
 	{
-		if (!IsThereActiveMarriageOffer && _lastMarriageOfferTime.ElapsedDaysUntilNow >= 7f && !Hero.MainHero.IsPrisoner && !MobileParty.MainParty.IsInRaftState && consideringClan != Clan.PlayerClan && Campaign.Current.Models.MarriageModel.IsClanSuitableForMarriage(consideringClan))
+		if (!IsThereActiveMarriageOffer && _lastMarriageOfferTime.ElapsedDaysUntilNow >= 7f && !Hero.MainHero.IsPrisoner && !MobileParty.MainParty.IsInNavalAutoTravel && consideringClan != Clan.PlayerClan && !consideringClan.HasBloodFeudWithPlayer && Campaign.Current.Models.MarriageModel.IsClanSuitableForMarriage(consideringClan))
 		{
 			return Campaign.Current.Models.MarriageModel.ShouldNpcMarriageBetweenClansBeAllowed(Clan.PlayerClan, consideringClan);
 		}

@@ -128,8 +128,8 @@ public static class NavalCustomBattleHelper
 		}
 		CustomBattleCombatant[] array = new CustomBattleCombatant[2]
 		{
-			new CustomBattleCombatant(new TextObject("{=sSJSTe5p}Player Party"), playerFaction, banner),
-			new CustomBattleCombatant(new TextObject("{=0xC75dN6}Enemy Party"), enemyFaction, banner2)
+			new CustomBattleCombatant(new TextObject("{=sSJSTe5p}Player Party"), playerFaction, banner, BattleEnvironment.Naval),
+			new CustomBattleCombatant(new TextObject("{=0xC75dN6}Enemy Party"), enemyFaction, banner2, BattleEnvironment.Naval)
 		};
 		int num = playerHeroCount - 1;
 		int num2 = enemyHeroCount - 1;

@@ -613,7 +613,7 @@ public class ColumnFormation : IFormationArrangement
 
 	private Vec2 GetLocalPositionOfUnit(int fileIndex, int rankIndex)
 	{
-		if (UnitPositionsOnVanguardFileIndex == null)
+		if (UnitPositionsOnVanguardFileIndex == null || UnitPositionsOnVanguardFileIndex.Count < (owner as Formation).Arrangement.RankCount)
 		{
 			UnitPositionsOnVanguardFileIndex = GetUnitPositionsOnVanguardFileIndex();
 		}
@@ -810,7 +810,7 @@ public class ColumnFormation : IFormationArrangement
 
 	public void SwitchUnitLocationsWithUnpositionedUnit(IFormationUnit firstUnit, IFormationUnit secondUnit)
 	{
-		TaleWorlds.Library.Debug.FailedAssert("Column formation should NOT have an unpositioned unit", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Formation\\ColumnFormation.cs", "SwitchUnitLocationsWithUnpositionedUnit", 1215);
+		TaleWorlds.Library.Debug.FailedAssert("Column formation should NOT have an unpositioned unit", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Formation\\ColumnFormation.cs", "SwitchUnitLocationsWithUnpositionedUnit", 1218);
 	}
 
 	public void SwitchUnitLocationsWithBackMostUnit(IFormationUnit unit)
@@ -887,7 +887,7 @@ public class ColumnFormation : IFormationArrangement
 		{
 			return ((formationUnit as Agent).Position.AsVec2 - ((Formation)owner).CachedMedianPosition.AsVec2).Normalized();
 		}
-		TaleWorlds.Library.Debug.FailedAssert("Unexpected case", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Formation\\ColumnFormation.cs", "CalculateArrangementOrientation", 1300);
+		TaleWorlds.Library.Debug.FailedAssert("Unexpected case", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\AI\\Formation\\ColumnFormation.cs", "CalculateArrangementOrientation", 1303);
 		return GetLocalDirectionOfUnit(formationUnit.FormationFileIndex, formationUnit.FormationRankIndex);
 	}
 

@@ -270,7 +270,7 @@ public class BannerInvestigationQuest : StoryModeQuestBase
 	{
 		SetNobleDialogs();
 		Campaign.Current.ConversationManager.AddDialogFlow(DialogFlow.CreateDialogFlow("hero_main_options", 150).BeginPlayerOptions().PlayerSpecialOption(new TextObject("{=qV1e0x8i}What is 'Neretzes' Folly'?"))
-			.Condition(() => Hero.OneToOneConversationHero != null && CharacterObject.OneToOneConversationCharacter.Occupation == Occupation.Lord && Hero.OneToOneConversationHero.Clan != Hero.MainHero.Clan && !_battleSummarized && !MobileParty.MainParty.IsInRaftState && (MobileParty.ConversationParty == null || !MobileParty.ConversationParty.IsInRaftState))
+			.Condition(() => Hero.OneToOneConversationHero != null && CharacterObject.OneToOneConversationCharacter.Occupation == Occupation.Lord && Hero.OneToOneConversationHero.Clan != Hero.MainHero.Clan && !_battleSummarized && !MobileParty.MainParty.IsInNavalAutoTravel && (MobileParty.ConversationParty == null || !MobileParty.ConversationParty.IsInNavalAutoTravel))
 			.NpcLine(new TextObject("{=hFYG3lXw}Well, that's what some people call the great Battle of Pendraic in the year 1077.[ib:normal][if:convo_normal]"))
 			.NpcLine(new TextObject("{=TKpFB4qN}Emperor Neretzes led an army accompanied by Khuzaits and Aserai to fight a coalition of Sturgians, Battanians and Vlandians."))
 			.NpcLine(new TextObject("{=0yxEvgGf}It was a disaster for him - he died in it - but the victors didn't fare much better."))
@@ -287,11 +287,11 @@ public class BannerInvestigationQuest : StoryModeQuestBase
 
 	private bool talk_with_any_noble_condition()
 	{
-		if (_battleSummarized && Hero.OneToOneConversationHero != null && CharacterObject.OneToOneConversationCharacter.Occupation == Occupation.Lord && Hero.OneToOneConversationHero.Clan != Hero.MainHero.Clan && !_noblesToTalk.ContainsKey(Hero.OneToOneConversationHero) && !MobileParty.MainParty.IsInRaftState)
+		if (_battleSummarized && Hero.OneToOneConversationHero != null && CharacterObject.OneToOneConversationCharacter.Occupation == Occupation.Lord && Hero.OneToOneConversationHero.Clan != Hero.MainHero.Clan && !_noblesToTalk.ContainsKey(Hero.OneToOneConversationHero) && !MobileParty.MainParty.IsInNavalAutoTravel)
 		{
 			if (MobileParty.ConversationParty != null)
 			{
-				return !MobileParty.ConversationParty.IsInRaftState;
+				return !MobileParty.ConversationParty.IsInNavalAutoTravel;
 			}
 			return true;
 		}

@@ -24,6 +24,7 @@ public abstract class MapTrackerItemVM<T> : MapTrackerItemVM where T : ITrackabl
 		_isVisibleOnMapBind = IsVisibleOnMap();
 		_canToggleTrackBind = GetCanToggleTrack();
 		_questsBind = GetRelatedQuests();
+		_isTrackedBind = Campaign.Current.VisualTrackerManager.CheckTracked(TrackedObject);
 	}
 
 	protected sealed override void OnUpdatePosition(float screenX, float screenY, float screenW)
@@ -62,6 +63,7 @@ public abstract class MapTrackerItemVM<T> : MapTrackerItemVM where T : ITrackabl
 		base.IsBehind = _isBehindBind;
 		base.FactionVisual = _factionVisualBind;
 		base.CanToggleTrack = _canToggleTrackBind;
+		base.IsTracked = _isTrackedBind;
 		if (base.IsEnabled)
 		{
 			base.PartyPosition = _partyPositionBind;
@@ -125,6 +127,8 @@ public abstract class MapTrackerItemVM : ViewModel
 	protected Vec2 _partyPositionBind;
 
 	protected BannerImageIdentifierVM _factionVisualBind;
+
+	protected bool _isTrackedBind;
 
 	public static Action<CampaignVec2> OnFastMoveCameraToPosition;
 

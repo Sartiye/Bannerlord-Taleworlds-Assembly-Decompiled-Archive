@@ -69,8 +69,8 @@ public class CivilianPortShipSpawnMissionLogic : MissionLogic
 	private void SpawnShip(Ship ship)
 	{
 		MissionShipObject @object = MBObjectManager.Instance.GetObject<MissionShipObject>(ship.ShipHull.MissionShipObjectId);
-		(uint sailColor1, uint sailColor2) sailColors = ShipHelper.GetSailColors(ship);
-		GameEntity gameEntity = VisualShipFactory.CreateVisualShip(sailColor1: sailColors.sailColor1, sailColor2: sailColors.sailColor2, shipPrefab: @object.Prefab, scene: base.Mission.Scene, upgrades: ship.GetShipVisualSlotInfos(), shipSeed: ship.RandomValue, hitPointRatio: ship.HitPoints / ship.MaxSailHitPoints, createPhysics: true);
+		ShipHelper.TryGetSailColors(ship, out (uint, uint) sailColors);
+		GameEntity gameEntity = VisualShipFactory.CreateVisualShip(@object.Prefab, base.Mission.Scene, ship.GetShipVisualSlotInfos(), ship.RandomValue, ship.HitPoints / ship.MaxSailHitPoints, sailColors.Item1, sailColors.Item2, createPhysics: true, ship.ShipHull.FloatingForceMultiplier);
 		MatrixFrame frame = _shipyardShipSpawnPoints.Dequeue().GetGlobalFrame();
 		float waterLevelAtPosition = base.Mission.Scene.GetWaterLevelAtPosition(frame.origin.AsVec2, useWaterRenderer: true, checkWaterBodyEntities: true);
 		frame.origin.z = waterLevelAtPosition;

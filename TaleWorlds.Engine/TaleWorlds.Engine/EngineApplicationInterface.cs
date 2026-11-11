@@ -90,6 +90,8 @@ internal class EngineApplicationInterface
 
 	internal static IManagedMeshEditOperations IManagedMeshEditOperations;
 
+	internal static ITerrainEdit ITerrainEdit;
+
 	private static Dictionary<string, object> _objects;
 
 	private static T GetObject<T>() where T : class
@@ -147,5 +149,6 @@ internal class EngineApplicationInterface
 		ISoundManager = GetObject<ISoundManager>();
 		IConfig = GetObject<IConfig>();
 		IManagedMeshEditOperations = GetObject<IManagedMeshEditOperations>();
+		ITerrainEdit = GetObject<ITerrainEdit>();
 	}
 }

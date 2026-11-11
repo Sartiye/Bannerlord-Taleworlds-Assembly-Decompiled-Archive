@@ -1150,7 +1150,7 @@ public class MPLobbyVM : ViewModel
 		MPLobbyPlayerBaseVM.OnClanLeaderboardRequested = OnClanLeaderboardRequested;
 		MPArmoryCosmeticItemBaseVM.OnPurchaseRequested += OnItemObtainRequested;
 		MPAnnouncementItemVM.OnInspect += OnAnnouncementInspected;
-		MPCustomGameVM.OnMapCheckingStateChanged += OnCustomGameMapCheckingStateChanged;
+		CustomGameJoinHelper.OnMapCheckingStateChanged += OnCustomGameMapCheckingStateChanged;
 	}
 
 	private void FinalizeCallbacks()
@@ -1166,7 +1166,7 @@ public class MPLobbyVM : ViewModel
 		MPLobbyPlayerBaseVM.OnClanLeaderboardRequested = null;
 		MPArmoryCosmeticItemBaseVM.OnPurchaseRequested -= OnItemObtainRequested;
 		MPAnnouncementItemVM.OnInspect -= OnAnnouncementInspected;
-		MPCustomGameVM.OnMapCheckingStateChanged -= OnCustomGameMapCheckingStateChanged;
+		CustomGameJoinHelper.OnMapCheckingStateChanged -= OnCustomGameMapCheckingStateChanged;
 	}
 
 	public void OnActivate()

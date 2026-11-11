@@ -1,7 +1,6 @@
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
-using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.ViewModelCollection.Encyclopedia.Items;
 
@@ -13,7 +12,7 @@ public class EncyclopediaTraitItemVM : ViewModel
 
 	private int _value;
 
-	private HintViewModel _hint;
+	private BasicTooltipViewModel _hint;
 
 	[DataSourceProperty]
 	public string TraitId
@@ -33,7 +32,7 @@ public class EncyclopediaTraitItemVM : ViewModel
 	}
 
 	[DataSourceProperty]
-	public HintViewModel Hint
+	public BasicTooltipViewModel Hint
 	{
 		get
 		{
@@ -71,8 +70,7 @@ public class EncyclopediaTraitItemVM : ViewModel
 		_traitObj = traitObj;
 		TraitId = traitObj.StringId;
 		Value = value;
-		string traitTooltipText = CampaignUIHelper.GetTraitTooltipText(traitObj, Value);
-		Hint = new HintViewModel(new TextObject("{=!}" + traitTooltipText));
+		Hint = new BasicTooltipViewModel(() => CampaignUIHelper.GetTraitEffectTooltip(_traitObj, Value));
 	}
 
 	public EncyclopediaTraitItemVM(TraitObject traitObj, Hero hero)

@@ -45,7 +45,17 @@ public class PlayerCaptivity
 			{
 				Campaign.Current.PlayerCaptivity._captorParty.PrisonRoster.RemoveTroop(Hero.MainHero.CharacterObject);
 			}
+			PartyBase captorParty = Campaign.Current.PlayerCaptivity._captorParty;
+			if (captorParty != null && captorParty.IsMobile)
+			{
+				Campaign.Current.PlayerCaptivity._captorParty.MobileParty.IsVisible = false;
+			}
 			Campaign.Current.PlayerCaptivity._captorParty = value;
+			PartyBase captorParty2 = Campaign.Current.PlayerCaptivity._captorParty;
+			if (captorParty2 != null && captorParty2.IsMobile)
+			{
+				Campaign.Current.PlayerCaptivity._captorParty.MobileParty.IsVisible = true;
+			}
 			if (value != null)
 			{
 				Campaign.Current.PlayerCaptivity._captorParty.AddPrisoner(Hero.MainHero.CharacterObject, 1);
@@ -168,7 +178,12 @@ public class PlayerCaptivity
 
 	private int GetPlayerRansomValue()
 	{
-		return (int)((MBRandom.RandomFloat * 0.5f + 0.5f) * ((float)Hero.MainHero.Gold * 0.05f + 300f) * (float)((!Hero.MainHero.PartyBelongedToAsPrisoner.IsSettlement) ? 1 : (Hero.MainHero.PartyBelongedToAsPrisoner.Settlement.MapFaction.IsKingdomFaction ? 4 : 2)) * (float)((!Hero.MainHero.PartyBelongedToAsPrisoner.IsMobile || !Hero.MainHero.PartyBelongedToAsPrisoner.MobileParty.IsLordParty) ? 1 : 2) * (Hero.MainHero.GetPerkValue(DefaultPerks.Trade.ManOfMeans) ? (1f + DefaultPerks.Trade.ManOfMeans.SecondaryBonus) : 1f));
+		float num = 1f;
+		if (Hero.MainHero.GetPerkValue(DefaultPerks.Trade.ManOfMeans))
+		{
+			num += DefaultPerks.Trade.ManOfMeans.SecondaryBonus;
+		}
+		return (int)((MBRandom.RandomFloat * 0.5f + 0.5f) * ((float)Hero.MainHero.Gold * 0.05f + 300f) * (float)((!Hero.MainHero.PartyBelongedToAsPrisoner.IsSettlement) ? 1 : (Hero.MainHero.PartyBelongedToAsPrisoner.Settlement.MapFaction.IsKingdomFaction ? 4 : 2)) * (float)((!Hero.MainHero.PartyBelongedToAsPrisoner.IsMobile || !Hero.MainHero.PartyBelongedToAsPrisoner.MobileParty.IsLordParty) ? 1 : 2) * num);
 	}
 
 	private void StartCaptivityInternal(PartyBase captorParty)
@@ -184,10 +199,8 @@ public class PlayerCaptivity
 			LeaveSettlementAction.ApplyForParty(MobileParty.MainParty);
 		}
 		MobileParty.MainParty.IsActive = false;
-		PartyBase.MainParty.UpdateVisibilityAndInspected(MobileParty.MainParty.Position);
 		_captorParty = captorParty;
 		_captorParty.SetAsCameraFollowParty();
-		_captorParty.UpdateVisibilityAndInspected(MobileParty.MainParty.Position);
 		if (MobileParty.MainParty.Army != null)
 		{
 			if (MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty)
@@ -243,10 +256,6 @@ public class PlayerCaptivity
 			PartyBase.MainParty.SetAsCameraFollowParty();
 			MobileParty.MainParty.SetMoveModeHold();
 			SkillLevelingManager.OnMainHeroReleasedFromCaptivity(CaptivityStartTime.ElapsedHoursUntilNow);
-			if (!MobileParty.MainParty.IsCurrentlyAtSea)
-			{
-				PartyBase.MainParty.UpdateVisibilityAndInspected(MobileParty.MainParty.Position);
-			}
 		}
 		_captorParty = null;
 		CountOfOffers = 0;

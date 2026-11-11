@@ -81,6 +81,10 @@ public abstract class PortScreenHandler
 
 	private MBList<Ship> _shipsToSend;
 
+	private MBList<Ship> _shipsToStash;
+
+	private MBList<Ship> _shipsToRetrieveFromStash;
+
 	private MBList<ShipRenameInfo> _shipsToRename;
 
 	private MBList<ShipUpgradePieceInfo> _selectedShipPieces;
@@ -99,6 +103,10 @@ public abstract class PortScreenHandler
 
 	public MBReadOnlyList<Ship> ShipsToSend => _shipsToSend;
 
+	public MBReadOnlyList<Ship> ShipsToStash => _shipsToStash;
+
+	public MBReadOnlyList<Ship> ShipsToRetrieveFromStash => _shipsToRetrieveFromStash;
+
 	public MBReadOnlyList<ShipRenameInfo> ShipsToRename => _shipsToRename;
 
 	public MBReadOnlyList<ShipUpgradePieceInfo> SelectedShipPieces => _selectedShipPieces;
@@ -116,6 +124,8 @@ public abstract class PortScreenHandler
 		_shipsToRepair = new MBList<Ship>();
 		_shipsToRename = new MBList<ShipRenameInfo>();
 		_shipsToSend = new MBList<Ship>();
+		_shipsToStash = new MBList<Ship>();
+		_shipsToRetrieveFromStash = new MBList<Ship>();
 		_selectedShipPieces = new MBList<ShipUpgradePieceInfo>();
 		_selectedFigureheads = new MBList<ShipFigureheadInfo>();
 	}
@@ -210,6 +220,29 @@ public abstract class PortScreenHandler
 		return result;
 	}
 
+	public PortActionInfo GetCanStashShip(Ship ship)
+	{
+		if (!RightShips.Contains(ship))
+		{
+			return PortActionInfo.CreateInvalid();
+		}
+		PortActionInfo result = CanStashShip(ship);
+		if (result.IsRelevant && RightShips.Count == 1)
+		{
+			return PortActionInfo.CreateValid(isEnabled: false, 0, result.ActionName, new TextObject("{=nW1cRMoP}You can't moor your only ship"));
+		}
+		return result;
+	}
+
+	public PortActionInfo GetCanViewStash(bool isSelectedRosterRightSide)
+	{
+		if (!isSelectedRosterRightSide && RightShips.Count != 0)
+		{
+			return PortActionInfo.CreateInvalid();
+		}
+		return CanViewStash(isSelectedRosterRightSide);
+	}
+
 	public abstract int GetTradeCostOfShip(Ship ship, bool isRightSideSelling);
 
 	public abstract int GetRepairCostOfShip(Ship ship, bool isRightSideRepairing);
@@ -238,9 +271,13 @@ public abstract class PortScreenHandler
 
 	protected abstract PortActionInfo CanSendToClan(Ship ship);
 
+	protected abstract PortActionInfo CanStashShip(Ship ship);
+
+	protected abstract PortActionInfo CanViewStash(bool isRightRoster);
+
 	public virtual bool AreThereAnyChanges()
 	{
-		if (ShipsToBuy.Count <= 0 && ShipsToSell.Count <= 0 && ShipsToSend.Count <= 0 && ShipsToRename.Count <= 0 && ShipsToRepair.Count <= 0 && SelectedShipPieces.Count <= 0)
+		if (ShipsToBuy.Count <= 0 && ShipsToSell.Count <= 0 && ShipsToSend.Count <= 0 && ShipsToStash.Count <= 0 && ShipsToRetrieveFromStash.Count <= 0 && ShipsToRename.Count <= 0 && ShipsToRepair.Count <= 0 && SelectedShipPieces.Count <= 0)
 		{
 			return SelectedFigureheads.Count > 0;
 		}
@@ -322,6 +359,50 @@ public abstract class PortScreenHandler
 			_rightShips.Remove(ship);
 		}
 		ClearCurrentFigurehead(ship);
+	}
+
+	public void OnSendToStash(Ship ship)
+	{
+		bool flag = false;
+		if (_shipsToRetrieveFromStash.Any((Ship x) => x == ship))
+		{
+			flag = true;
+			_shipsToRetrieveFromStash.RemoveAll((Ship x) => x == ship);
+		}
+		else if (!_shipsToStash.Any((Ship x) => x == ship))
+		{
+			_shipsToStash.Add(ship);
+		}
+		if (_rightShips.Contains(ship))
+		{
+			_rightShips.Remove(ship);
+		}
+		if (!flag)
+		{
+			ClearCurrentFigurehead(ship);
+		}
+	}
+
+	public void OnRetrieveFromStash(Ship ship)
+	{
+		bool flag = false;
+		if (_shipsToStash.Any((Ship x) => x == ship))
+		{
+			flag = true;
+			_shipsToStash.RemoveAll((Ship x) => x == ship);
+		}
+		else if (!_shipsToRetrieveFromStash.Any((Ship x) => x == ship))
+		{
+			_shipsToRetrieveFromStash.Add(ship);
+		}
+		if (!_rightShips.Contains(ship))
+		{
+			_rightShips.Insert(0, ship);
+		}
+		if (flag)
+		{
+			ReequipPreviousFigurehead(ship);
+		}
 	}
 
 	public void OnRenameShip(Ship ship, string newName)
@@ -433,6 +514,8 @@ public abstract class PortScreenHandler
 		_selectedShipPieces.Clear();
 		_selectedFigureheads.Clear();
 		_shipsToSend.Clear();
+		_shipsToStash.Clear();
+		_shipsToRetrieveFromStash.Clear();
 		_leftShips.Clear();
 		_rightShips.Clear();
 		_leftShips.AddRange(_initialLeftShips);

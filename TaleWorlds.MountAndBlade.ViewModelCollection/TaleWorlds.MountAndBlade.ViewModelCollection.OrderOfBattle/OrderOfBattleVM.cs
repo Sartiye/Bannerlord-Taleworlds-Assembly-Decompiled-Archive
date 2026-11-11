@@ -8,6 +8,7 @@ using TaleWorlds.Engine;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.MountAndBlade.Missions.Handlers;
 using TaleWorlds.MountAndBlade.ViewModelCollection.Input;
 using TaleWorlds.MountAndBlade.ViewModelCollection.Order;
 
@@ -90,6 +91,8 @@ public class OrderOfBattleVM : ViewModel
 	private int _selectedHeroCount;
 
 	private bool _areHotkeysEnabled = true;
+
+	private SiegeDeploymentVM _siegeDeployment;
 
 	private MBBindingList<OrderOfBattleFormationItemVM> _formationsSecondHalf;
 
@@ -468,6 +471,23 @@ public class OrderOfBattleVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public SiegeDeploymentVM SiegeDeployment
+	{
+		get
+		{
+			return _siegeDeployment;
+		}
+		set
+		{
+			if (value != _siegeDeployment)
+			{
+				_siegeDeployment = value;
+				OnPropertyChangedWithValue(value, "SiegeDeployment");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public MBBindingList<OrderOfBattleFormationItemVM> FormationsSecondHalf
 	{
 		get
@@ -533,6 +553,7 @@ public class OrderOfBattleVM : ViewModel
 		{
 			c.RefreshValues();
 		});
+		SiegeDeployment?.RefreshValues();
 	}
 
 	public override void OnFinalize()
@@ -542,6 +563,7 @@ public class OrderOfBattleVM : ViewModel
 		FinalizeFormationCallbacks();
 		DoneInputKey?.OnFinalize();
 		ResetInputKey?.OnFinalize();
+		SiegeDeployment?.OnFinalize();
 	}
 
 	private void InitializeFormationCallbacks()
@@ -594,6 +616,7 @@ public class OrderOfBattleVM : ViewModel
 
 	public void Tick()
 	{
+		SiegeDeployment?.Update();
 		foreach (OrderOfBattleFormationItemVM allFormation in _allFormations)
 		{
 			allFormation?.Tick();
@@ -757,6 +780,11 @@ public class OrderOfBattleVM : ViewModel
 				_allHeroes.First((OrderOfBattleHeroItemVM h) => h.Agent == preAssignedCaptain.Value).SetIsPreAssigned(isPreAssigned: true);
 				AssignCaptain(preAssignedCaptain.Value, _allFormations[preAssignedCaptain.Key]);
 			}
+		}
+		SiegeDeploymentHandler missionBehavior = mission.GetMissionBehavior<SiegeDeploymentHandler>();
+		if (missionBehavior != null)
+		{
+			SiegeDeployment = new SiegeDeploymentVM(missionBehavior, missionCamera, missionBehavior.PlayerDeploymentPoints.ToList());
 		}
 		IsEnabled = true;
 		SetAllFormationsLockState(isLocked: true);
@@ -970,7 +998,7 @@ public class OrderOfBattleVM : ViewModel
 			}
 			else
 			{
-				Debug.FailedAssert("Failed to find an initial formation for hero: " + _allHeroes[i].Agent.Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "SetInitialHeroFormations", 608);
+				Debug.FailedAssert("Failed to find an initial formation for hero: " + _allHeroes[i].Agent.Name, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "SetInitialHeroFormations", 623);
 			}
 		}
 	}
@@ -1018,7 +1046,7 @@ public class OrderOfBattleVM : ViewModel
 			}
 			else
 			{
-				Debug.FailedAssert("Agent's formation banner name should not be null!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "GetAgentTooltip", 670);
+				Debug.FailedAssert("Agent's formation banner name should not be null!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "GetAgentTooltip", 685);
 			}
 		}
 		else
@@ -1069,7 +1097,7 @@ public class OrderOfBattleVM : ViewModel
 						orderOfBattleFormationClassVM3.SetWeightAdjustmentLock(isLocked: true);
 						orderOfBattleFormationClassVM3.Weight = 0;
 						orderOfBattleFormationClassVM3.SetWeightAdjustmentLock(isLocked: false);
-						Debug.FailedAssert("Formation unit count is out of bounds! Skipping...", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "RefreshWeights", 731);
+						Debug.FailedAssert("Formation unit count is out of bounds! Skipping...", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "RefreshWeights", 746);
 						Debug.Print("Formation unit count is out of bounds! Skipping...");
 					}
 					else
@@ -1106,7 +1134,7 @@ public class OrderOfBattleVM : ViewModel
 					orderOfBattleFormationClassVM5.SetWeightAdjustmentLock(isLocked: true);
 					orderOfBattleFormationClassVM5.Weight = 0;
 					orderOfBattleFormationClassVM5.SetWeightAdjustmentLock(isLocked: false);
-					Debug.FailedAssert("Item weight is out of bounds! Skipping...", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "RefreshWeights", 772);
+					Debug.FailedAssert("Item weight is out of bounds! Skipping...", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "RefreshWeights", 787);
 					Debug.Print("Item weight is out of bounds! Skipping...");
 				}
 				else
@@ -1380,6 +1408,7 @@ public class OrderOfBattleVM : ViewModel
 				_orderController.OnOrderIssued -= OnOrderIssued;
 			}
 		}
+		SiegeDeployment?.OnDeploymentFinalized();
 		IsEnabled = false;
 	}
 
@@ -1490,7 +1519,7 @@ public class OrderOfBattleVM : ViewModel
 			}
 			if (num3 == num2)
 			{
-				Debug.FailedAssert("Failed to sum up all weights to 100", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "DistributeWeights", 1191);
+				Debug.FailedAssert("Failed to sum up all weights to 100", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "DistributeWeights", 1207);
 				break;
 			}
 		}
@@ -1504,7 +1533,7 @@ public class OrderOfBattleVM : ViewModel
 	{
 		if (_mission.PlayerTeam == null)
 		{
-			Debug.FailedAssert("Player team should be initialized before distributing troops", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "DistributeAllTroops", 1203);
+			Debug.FailedAssert("Player team should be initialized before distributing troops", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ViewModelCollection\\OrderOfBattle\\OrderOfBattleVM.cs", "DistributeAllTroops", 1219);
 			Debug.Print("Player team should be initialized before distributing troops");
 			return;
 		}
@@ -1891,6 +1920,12 @@ public class OrderOfBattleVM : ViewModel
 
 	public bool OnEscape()
 	{
+		SiegeDeploymentVM siegeDeployment = SiegeDeployment;
+		if (siegeDeployment != null && siegeDeployment.IsSiegeDeploymentListActive)
+		{
+			SiegeDeployment.ExecuteCancelSelectedDeploymentPoint();
+			return true;
+		}
 		if (_allFormations.Any((OrderOfBattleFormationItemVM f) => f.IsSelected))
 		{
 			DeselectAllFormations();
@@ -1977,9 +2012,16 @@ public class OrderOfBattleVM : ViewModel
 	{
 		if (IsPlayerGeneral)
 		{
+			BeforeAutoDeploy();
 			_onAutoDeploy();
 			AfterAutoDeploy();
 		}
+	}
+
+	private void BeforeAutoDeploy()
+	{
+		ClearHeroItemSelection();
+		ClearAllHeroAssignments();
 	}
 
 	private void AfterAutoDeploy()
@@ -1988,8 +2030,6 @@ public class OrderOfBattleVM : ViewModel
 		{
 			allFormation.RefreshFormation(allFormation.Formation);
 		}
-		ClearHeroItemSelection();
-		ClearAllHeroAssignments();
 		RefreshWeights();
 		OnUnitDeployed();
 		_allFormations.ForEach(delegate(OrderOfBattleFormationItemVM f)

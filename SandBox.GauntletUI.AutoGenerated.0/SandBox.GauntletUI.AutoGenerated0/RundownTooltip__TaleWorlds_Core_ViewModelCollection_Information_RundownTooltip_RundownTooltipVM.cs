@@ -42,7 +42,7 @@ public class RundownTooltip__TaleWorlds_Core_ViewModelCollection_Information_Run
 
 	private DimensionSyncWidget _widget_0_0_2;
 
-	private TextWidget _widget_0_0_2_0;
+	private RichTextWidget _widget_0_0_2_0;
 
 	private DimensionSyncWidget _widget_0_0_3;
 
@@ -94,7 +94,7 @@ public class RundownTooltip__TaleWorlds_Core_ViewModelCollection_Information_Run
 		_widget_0_0_1_1.AddChild(_widget_0_0_1_1_0);
 		_widget_0_0_2 = new DimensionSyncWidget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_2);
-		_widget_0_0_2_0 = new TextWidget(base.Context);
+		_widget_0_0_2_0 = new RichTextWidget(base.Context);
 		_widget_0_0_2.AddChild(_widget_0_0_2_0);
 		_widget_0_0_3 = new DimensionSyncWidget(base.Context);
 		_widget_0_0.AddChild(_widget_0_0_3);

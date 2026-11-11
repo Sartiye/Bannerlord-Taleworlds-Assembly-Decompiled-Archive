@@ -20,9 +20,9 @@ public class SubModuleInfo
 		EngineType
 	}
 
-	private const string CertHashString = "29B0C803942C9D4221EF0CFB1AB1FEE47683DF7D";
+	private const string CertHashString = "64A1AC8AF5E01DAE9F1AC49DDDA4688DCC17BB2C";
 
-	private const string CertSerialNum = "61EB518586D5D0884531D7FBC0316B69";
+	private const string CertSerialNum = "4C4242B31A43B99BAB36C723";
 
 	public readonly List<Tuple<SubModuleTags, string>> Tags;
 
@@ -103,7 +103,7 @@ public class SubModuleInfo
 			while (enumerator.MoveNext())
 			{
 				X509ChainElement current = enumerator.Current;
-				if (current.Certificate.GetCertHashString() == "29B0C803942C9D4221EF0CFB1AB1FEE47683DF7D" && current.Certificate.GetSerialNumberString() == "61EB518586D5D0884531D7FBC0316B69")
+				if (current.Certificate.GetCertHashString() == "64A1AC8AF5E01DAE9F1AC49DDDA4688DCC17BB2C" && current.Certificate.GetSerialNumberString() == "4C4242B31A43B99BAB36C723")
 				{
 					return true;
 				}

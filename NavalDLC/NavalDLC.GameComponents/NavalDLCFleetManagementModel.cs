@@ -49,7 +49,7 @@ public class NavalDLCFleetManagementModel : FleetManagementModel
 			hint = GameTexts.FindText("str_cannot_give_all_ships");
 			result = false;
 		}
-		else if (Clan.PlayerClan.WarPartyComponents.AllQ((WarPartyComponent x) => !NavalDLCManager.Instance.GameModels.ShipDistributionModel.CanSendShipToParty(ship, x.MobileParty)))
+		else if (Clan.PlayerClan.WarPartyComponents.AllQ((WarPartyComponent x) => !Campaign.Current.Models.ShipDistributionModel.CanSendShipToParty(ship, x.MobileParty)))
 		{
 			hint = new TextObject("{=SwV5iZbN}There are no suitable parties in your clan to send ships to.");
 			result = false;

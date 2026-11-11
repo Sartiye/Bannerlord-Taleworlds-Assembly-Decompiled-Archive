@@ -340,10 +340,6 @@ public class GauntletPartyScreen : ScreenBase, IGameStateListener, IChangeableSc
 		if (dataSource != null && dataSource.IsInConversation)
 		{
 			_dataSource.IsInConversation = false;
-			if (_dataSource.PartyScreenLogic.IsDoneActive())
-			{
-				_dataSource.PartyScreenLogic.DoneLogic(isForced: false);
-			}
 		}
 	}
 

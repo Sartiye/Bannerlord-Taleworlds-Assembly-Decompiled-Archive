@@ -337,7 +337,8 @@ public class VillagerCampaignBehavior : CampaignBehaviorBase
 			}
 			if (settlement.IsTown && settlement.Town.Governor != null && settlement.Town.Governor.GetPerkValue(DefaultPerks.Trade.TravelingRumors))
 			{
-				settlement.Town.TradeTaxAccumulated += MathF.Round(DefaultPerks.Trade.TravelingRumors.SecondaryBonus);
+				int num2 = MathF.Round(DefaultPerks.Trade.TravelingRumors.SecondaryBonus);
+				settlement.Town.TradeTaxAccumulated += num2;
 			}
 		}
 	}

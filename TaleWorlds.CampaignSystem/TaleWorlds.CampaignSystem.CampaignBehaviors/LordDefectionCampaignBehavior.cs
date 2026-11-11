@@ -13,6 +13,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 using TaleWorlds.SaveSystem;
 
@@ -42,12 +43,15 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 		LordDefectionSelfinterest
 	}
 
+	private const float BarterRetrySuccessThresholdModifier = 0.2f;
+
 	private const PersuasionDifficulty _difficulty = PersuasionDifficulty.Medium;
 
 	private List<PersuasionTask> _allReservations;
 
-	[SaveableField(1)]
 	private List<PersuasionAttempt> _previousDefectionPersuasionAttempts;
+
+	private Dictionary<Hero, float> _lastBarterScores = new Dictionary<Hero, float>();
 
 	private float _maximumScoreCap;
 
@@ -67,12 +71,12 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 	public override void RegisterEvents()
 	{
 		CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
-		CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnDailyTick);
 	}
 
 	public override void SyncData(IDataStore dataStore)
 	{
 		dataStore.SyncData("previousPersuasionAttempts", ref _previousDefectionPersuasionAttempts);
+		dataStore.SyncData("_lastPersuasionScores", ref _lastBarterScores);
 	}
 
 	public void OnSessionLaunched(CampaignGameStarter campaignGameStarter)
@@ -80,21 +84,17 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 		AddDialogs(campaignGameStarter);
 	}
 
-	public void ClearPersuasion()
+	public void ClearPersuasionForHero(Hero hero)
 	{
-		_previousDefectionPersuasionAttempts.Clear();
+		_previousDefectionPersuasionAttempts.RemoveAll((PersuasionAttempt t) => t.PersuadedHero == hero);
 	}
 
-	private PersuasionTask GetFailedPersuasionTask(DefectionReservationType reservationType)
+	private void ClearLastBarterScoreForHero(Hero hero)
 	{
-		foreach (PersuasionTask allReservation in _allReservations)
+		if (_lastBarterScores.ContainsKey(hero))
 		{
-			if (allReservation.ReservationType == (int)reservationType && !CanAttemptToPersuade(Hero.OneToOneConversationHero, (int)reservationType))
-			{
-				return allReservation;
-			}
+			_lastBarterScores.Remove(hero);
 		}
-		return null;
 	}
 
 	private PersuasionTask GetAnyFailedPersuasionTask()
@@ -134,13 +134,15 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 
 	private void AddLordDefectionPersuasionOptions(CampaignGameStarter starter)
 	{
-		starter.AddPlayerLine("player_is_requesting_enemy_change_sides", "lord_talk_speak_diplomacy_2", "persuasion_leave_faction_npc", "{=5a0NhbOA}Your liege, {FIRST_NAME}, is not worth of your loyalty.", conversation_player_is_asking_to_recruit_enemy_on_condition, null);
-		starter.AddPlayerLine("player_is_requesting_neutral_change_sides", "lord_talk_speak_diplomacy_2", "persuasion_leave_faction_npc", "{=3gbgjJfZ}Candidly, what do you think of your liege, {FIRST_NAME}?", conversation_player_is_asking_to_recruit_neutral_on_condition, null);
-		starter.AddPlayerLine("player_suggesting_treason", "lord_talk_speak_diplomacy_2", "persuasion_leave_faction_npc", "{=bKsb7tcr}Candidly, what do you think of our liege, {FIRST_NAME}?", conversation_suggest_treason_on_condition, null);
+		starter.AddPlayerLine("player_is_requesting_enemy_change_sides", "lord_talk_speak_diplomacy_2", "persuasion_leave_faction_npc", "{=5a0NhbOA}Your liege, {FIRST_NAME}, is not worth of your loyalty.", conversation_player_is_asking_to_recruit_enemy_on_condition, conversation_player_initiates_defection_on_consequence);
+		starter.AddPlayerLine("player_is_requesting_neutral_change_sides", "lord_talk_speak_diplomacy_2", "persuasion_leave_faction_npc", "{=3gbgjJfZ}Candidly, what do you think of your liege, {FIRST_NAME}?", conversation_player_is_asking_to_recruit_neutral_on_condition, conversation_player_initiates_defection_on_consequence);
+		starter.AddPlayerLine("player_suggesting_treason", "lord_talk_speak_diplomacy_2", "persuasion_leave_faction_npc", "{=bKsb7tcr}Candidly, what do you think of our liege, {FIRST_NAME}?", conversation_suggest_treason_on_condition, conversation_player_initiates_defection_on_consequence);
 		starter.AddPlayerLine("persuasion_leave_faction_player_cheat", "lord_talk_speak_diplomacy_2", "start", "{=Cd405TC7}Clear past persuasion attempts (CHEAT)", () => Game.Current.IsDevelopmentMode && _previousDefectionPersuasionAttempts.Any((PersuasionAttempt x) => x.PersuadedHero == Hero.OneToOneConversationHero), conversation_clear_persuasion_on_consequence);
-		starter.AddPlayerLine("player_prisoner_talk", "hero_main_options", "persuasion_leave_faction_npc", "{=wNSH1JdJ}I have an offer for you: join us, and be set free.", conversation_player_start_defection_with_prisoner_on_condition, null);
+		starter.AddPlayerLine("player_prisoner_talk", "hero_main_options", "persuasion_leave_faction_npc", "{=wNSH1JdJ}I have an offer for you: join us, and be set free.", conversation_player_start_defection_with_prisoner_on_condition, conversation_player_initiates_defection_on_consequence);
 		starter.AddDialogLine("player_prisoner_talk_pre_barter", "player_prisoner_defection", "persuasion_leave_faction_npc", "{=DRkWMe5X}Even now, I am not sure that's in my best interests...", null, null);
 		starter.AddDialogLine("persuasion_leave_faction_npc_refuse", "persuasion_leave_faction_npc", "lord_pretalk", "{=!}{LIEGE_IS_RELATIVE}", conversation_lord_from_ruling_clan_on_condition, null);
+		starter.AddDialogLine("persuasion_leave_faction_npc_retry", "persuasion_leave_faction_npc", "hero_main_options", "{=zdaLHJrw}Very well. Things have changed since our last conversation. Speak.", conversation_defection_cooldown_expired_on_condition, conversation_defection_cooldown_expired_on_consequence);
+		starter.AddDialogLine("persuasion_leave_faction_npc_retry", "persuasion_leave_faction_npc", "lord_defection_post_barter", "{=wpx92bbT}Let's see what you have to offer again.", conversation_defection_retry_barter_on_condition, conversation_defection_retry_barter_on_consequence);
 		starter.AddDialogLine("persuasion_leave_faction_npc_refuse_high_negative_score", "persuasion_leave_faction_npc", "lord_pretalk", "{=ZYUHljOa}I am happy with my current liege. Neither your purse nor our relationship is deep enough to change that.", conversation_lord_persuade_option_reaction_pre_reject_on_condition, null);
 		starter.AddDialogLine("persuasion_leave_faction_npc_redirected", "persuasion_leave_faction_npc", "lord_pretalk", "{=UW1roOES}You should discuss this issue with {REDIRECT_HERO_RELATIONSHIP}, who speaks for our family.", conversation_lord_redirects_to_clan_leader_on_condition, persuasion_redierect_player_finish_on_consequece);
 		starter.AddDialogLine("persuasion_leave_faction_npc_answer", "persuasion_leave_faction_npc", "persuasion_leave_faction_player", "{=yub5GWVq}What are you saying, exactly?[if:convo_thinking]", () => !conversation_lord_redirects_to_clan_leader_on_condition(), null);
@@ -148,7 +150,7 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 		starter.AddDialogLine("lord_ask_recruit_next_reservation_fail", "lord_defection_next_reservation", "lord_pretalk", "{=!}{FAILED_PERSUASION_LINE}", conversation_lord_player_has_failed_in_defection_on_condition, conversation_on_end_persuasion_on_consequence);
 		starter.AddDialogLine("lord_ask_recruit_next_reservation_attempt", "lord_defection_next_reservation", "lord_ask_recruit_persuasion", "{=!}{PERSUASION_TASK_LINE}[if:convo_thinking]", conversation_lord_recruit_check_if_reservations_met_on_condition, null);
 		starter.AddDialogLine("lord_ask_recruit_next_reservation_success_without_barter", "lord_defection_next_reservation", "close_window", "{=!}{DEFECTION_AGREE_WITHOUT_BARTER}", conversation_lord_check_if_ready_to_join_faction_without_barter_on_condition, conversation_lord_defect_to_clan_without_barter_on_consequence);
-		starter.AddDialogLine("lord_ask_recruit_next_reservation_success_with_barter", "lord_defection_next_reservation", "lord_ask_recruit_ai_argument_reaction", "{=BeYbp6M2}Very well. You've convinced me that this is something I can consider.", conversation_lord_check_if_ready_to_join_faction_with_barter_on_condition, null);
+		starter.AddDialogLine("lord_ask_recruit_next_reservation_success_with_barter", "lord_defection_next_reservation", "lord_ask_recruit_ai_argument_reaction", "{=BeYbp6M2}Very well. You've convinced me that this is something I can consider.", conversation_lord_check_if_ready_to_join_faction_with_barter_on_condition, conversation_lord_check_if_ready_to_join_faction_with_barter_on_consequence);
 		starter.AddDialogLine("persuasion_leave_faction_npc_result_success_2", "lord_ask_recruit_ai_argument_reaction", "lord_defection_barter_line", "{=0dY1xyyK}This is a dangerous step, however, and I'm putting my life and the lives of my people at risk. I need some sort of support from you before I can change my allegiance.[if:convo_stern]", null, null);
 		starter.AddDialogLine("persuasion_leave_faction_npc_result_success_open_barter", "lord_defection_barter_line", "lord_defection_post_barter", "{=!}BARTER LINE - Covered by barter interface. Please do not remove these lines!", null, conversation_leave_faction_barter_consequence);
 		starter.AddDialogLine("lord_defection_post_barter_s", "lord_defection_post_barter", "close_window", "{=9aZgTNiU}Very well. This is a great step to take, but it must be done.[if:convo_calm_friendly][ib:confident]", defection_barter_successful_on_condition, defection_successful_on_consequence);
@@ -189,6 +191,19 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 			}
 		}
 		Campaign.Current.CampaignBehaviorManager.GetBehavior<IStatisticsCampaignBehavior>()?.OnDefectionPersuasionSucess();
+		Hero oneToOneConversationHero = Hero.OneToOneConversationHero;
+		ClearPersuasionForHero(oneToOneConversationHero);
+		ClearLastBarterScoreForHero(oneToOneConversationHero);
+	}
+
+	private void conversation_lord_check_if_ready_to_join_faction_with_barter_on_consequence()
+	{
+		int valueForFaction = new JoinKingdomAsClanBarterable(Hero.OneToOneConversationHero, (Kingdom)Hero.MainHero.MapFaction, isDefecting: true).GetValueForFaction(Hero.OneToOneConversationHero.Clan);
+		if (!_lastBarterScores.ContainsKey(Hero.OneToOneConversationHero))
+		{
+			_lastBarterScores.Add(Hero.OneToOneConversationHero, 0f);
+		}
+		_lastBarterScores[Hero.OneToOneConversationHero] = valueForFaction;
 	}
 
 	private bool conversation_lord_recruit_1_persuade_option_on_condition()
@@ -353,7 +368,7 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 
 	private bool conversation_player_start_defection_with_prisoner_on_condition()
 	{
-		if (Hero.OneToOneConversationHero != null && Clan.PlayerClan.Kingdom != null && Hero.MainHero.IsKingdomLeader && Hero.OneToOneConversationHero.Clan?.Leader == Hero.OneToOneConversationHero && Hero.OneToOneConversationHero.HeroState == Hero.CharacterStates.Prisoner && Campaign.Current.CurrentConversationContext != ConversationContext.CapturedLord && Campaign.Current.CurrentConversationContext != ConversationContext.FreeOrCapturePrisonerHero && Hero.OneToOneConversationHero.Clan != Hero.OneToOneConversationHero.MapFaction.Leader.Clan)
+		if (Hero.OneToOneConversationHero != null && Clan.PlayerClan.Kingdom != null && Hero.MainHero.IsKingdomLeader && Hero.OneToOneConversationHero.Clan?.Leader == Hero.OneToOneConversationHero && Hero.OneToOneConversationHero.HeroState == Hero.CharacterStates.Prisoner && Campaign.Current.CurrentConversationContext != ConversationContext.CapturedLord && Campaign.Current.CurrentConversationContext != ConversationContext.FreeOrCapturePrisonerHero && Hero.OneToOneConversationHero.Clan != Hero.OneToOneConversationHero.MapFaction.Leader.Clan && !Hero.OneToOneConversationHero.Clan.HasBloodFeudWithPlayer)
 		{
 			if (Hero.OneToOneConversationHero.PartyBelongedToAsPrisoner == null || Hero.OneToOneConversationHero.PartyBelongedToAsPrisoner != PartyBase.MainParty)
 			{
@@ -481,8 +496,9 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 		return ConversationManager.GetPersuasionProgressSatisfied();
 	}
 
-	private List<PersuasionTask> GetPersuasionTasksForDefection(Hero forLord, Hero newLiege)
+	private List<PersuasionTask> GetPersuasionTasksForDefection(Hero forLord, out int reservationCount)
 	{
+		Hero newLiege = Hero.MainHero.MapFaction.Leader;
 		Hero currentLiege = forLord.MapFaction.Leader;
 		LogEntry logEntry = null;
 		LogEntry logEntry2 = null;
@@ -507,12 +523,10 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 		List<PersuasionTask> list = new List<PersuasionTask>();
 		StringHelpers.SetCharacterProperties("CURRENT_LIEGE", forLord.MapFaction.Leader.CharacterObject);
 		StringHelpers.SetCharacterProperties("NEW_LIEGE", newLiege.CharacterObject);
-		PersuasionTask persuasionTask = new PersuasionTask(0)
-		{
-			SpokenLine = new TextObject("{=PtWQ789Z}I'm not sure I trust you people."),
-			ImmediateFailLine = new TextObject("{=u3eGQRn8}I am not entirely comfortable discussing this with you."),
-			FinalFailLine = new TextObject("{=yxeyl4LW}I am simply not comfortable discussing this with you.")
-		};
+		PersuasionTask persuasionTask = new PersuasionTask(0);
+		persuasionTask.SpokenLine = new TextObject("{=PtWQ789Z}I'm not sure I trust you people.");
+		persuasionTask.ImmediateFailLine = new TextObject("{=u3eGQRn8}I am not entirely comfortable discussing this with you.");
+		persuasionTask.FinalFailLine = new TextObject("{=yxeyl4LW}I am simply not comfortable discussing this with you.");
 		float unmodifiedClanLeaderRelationshipWithPlayer = Hero.OneToOneConversationHero.GetUnmodifiedClanLeaderRelationshipWithPlayer();
 		PersuasionArgumentStrength persuasionArgumentStrength = PersuasionArgumentStrength.Normal;
 		if (unmodifiedClanLeaderRelationshipWithPlayer <= -10f)
@@ -575,11 +589,9 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 			persuasionTask.AddOptionToTask(option7);
 		}
 		list.Add(persuasionTask);
-		PersuasionTask persuasionTask2 = new PersuasionTask(1)
-		{
-			ImmediateFailLine = new TextObject("{=VnECJbmq}That is not enough."),
-			FinalFailLine = new TextObject("{=KbQQV5rI}My oath is my oath. I cannot break it. (Oath persuasion failed.)")
-		};
+		PersuasionTask persuasionTask2 = new PersuasionTask(1);
+		persuasionTask2.ImmediateFailLine = new TextObject("{=VnECJbmq}That is not enough.");
+		persuasionTask2.FinalFailLine = new TextObject("{=KbQQV5rI}My oath is my oath. I cannot break it. (Oath persuasion failed.)");
 		PersuasionArgumentStrength persuasionArgumentStrength2;
 		if (forLord.IsEnemy(currentLiege) && logEntry != null)
 		{
@@ -634,11 +646,9 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 		PersuasionOptionArgs option11 = new PersuasionOptionArgs(DefaultSkills.Charm, DefaultTraits.Calculating, TraitEffect.Positive, PersuasionArgumentStrength.Hard, givesCriticalSuccess: false, new TextObject("{=lhnuawq3}You know very well that in politics oaths are easily made, and just as easily broken."), null, canBlockOtherOption: false, canMoveToTheNextReservation: true);
 		persuasionTask2.AddOptionToTask(option11);
 		list.Add(persuasionTask2);
-		PersuasionTask persuasionTask3 = new PersuasionTask(2)
-		{
-			FinalFailLine = new TextObject("{=5E2bIcGb}I will not betray my liege. (Loyalty persuasion failed.)"),
-			SpokenLine = new TextObject("{=ttpan5jp}{CURRENT_LIEGE.LINK} and I have been through a great deal together.")
-		};
+		PersuasionTask persuasionTask3 = new PersuasionTask(2);
+		persuasionTask3.FinalFailLine = new TextObject("{=5E2bIcGb}I will not betray my liege. (Loyalty persuasion failed.)");
+		persuasionTask3.SpokenLine = new TextObject("{=ttpan5jp}{CURRENT_LIEGE.LINK} and I have been through a great deal together.");
 		PersuasionArgumentStrength persuasionArgumentStrength3;
 		if (logEntry3 != null)
 		{
@@ -710,10 +720,8 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 		PersuasionOptionArgs option17 = new PersuasionOptionArgs(DefaultSkills.Charm, DefaultTraits.Calculating, TraitEffect.Positive, persuasionArgumentStrength3, givesCriticalSuccess: false, new TextObject("{=y3xguaCc}Put your interests and the good of the realm first. There's too much at stake for that."), null, canBlockOtherOption: false, canMoveToTheNextReservation: true);
 		persuasionTask3.AddOptionToTask(option17);
 		list.Add(persuasionTask3);
-		PersuasionTask persuasionTask4 = new PersuasionTask(4)
-		{
-			FinalFailLine = new TextObject("{=2P9mMbrq}It is not in my interest to change sides. (Self-interest persuasion failed.)")
-		};
+		PersuasionTask persuasionTask4 = new PersuasionTask(4);
+		persuasionTask4.FinalFailLine = new TextObject("{=2P9mMbrq}It is not in my interest to change sides. (Self-interest persuasion failed.)");
 		float renown = newLiege.Clan.Renown;
 		List<Settlement> list2 = Settlement.All.Where((Settlement x) => x.MapFaction == newLiege.MapFaction).ToList();
 		List<Settlement> list3 = Settlement.All.Where((Settlement x) => x.MapFaction == currentLiege.MapFaction).ToList();
@@ -766,13 +774,14 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 			persuasionTask4.AddOptionToTask(option23);
 		}
 		list.Add(persuasionTask4);
+		reservationCount = list.Count - 1;
 		return list;
 	}
 
 	public bool conversation_player_is_asking_to_recruit_enemy_on_condition()
 	{
 		Kingdom kingdom = Clan.PlayerClan.Kingdom;
-		if (kingdom != null && Campaign.Current.Models.DefectionModel.CanHeroDefectToFaction(Hero.OneToOneConversationHero, kingdom) && FactionManager.IsAtWarAgainstFaction(Hero.OneToOneConversationHero.MapFaction, Hero.MainHero.MapFaction))
+		if (kingdom != null && Campaign.Current.Models.DefectionModel.CanHeroDefectToFaction(Hero.OneToOneConversationHero, kingdom) && FactionManager.IsAtWarAgainstFaction(Hero.OneToOneConversationHero.MapFaction, Hero.MainHero.MapFaction) && !Hero.OneToOneConversationHero.Clan.HasBloodFeudWithPlayer)
 		{
 			Hero.OneToOneConversationHero.MapFaction.Leader.SetTextVariables();
 			MBTextManager.SetTextVariable("FACTION_NAME", Hero.MainHero.MapFaction.Name);
@@ -784,7 +793,7 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 	public bool conversation_player_is_asking_to_recruit_neutral_on_condition()
 	{
 		Kingdom kingdom = Clan.PlayerClan.Kingdom;
-		if (kingdom != null && Campaign.Current.Models.DefectionModel.CanHeroDefectToFaction(Hero.OneToOneConversationHero, kingdom) && !FactionManager.IsAtWarAgainstFaction(Hero.OneToOneConversationHero.MapFaction, Hero.MainHero.MapFaction))
+		if (kingdom != null && Campaign.Current.Models.DefectionModel.CanHeroDefectToFaction(Hero.OneToOneConversationHero, kingdom) && !FactionManager.IsAtWarAgainstFaction(Hero.OneToOneConversationHero.MapFaction, Hero.MainHero.MapFaction) && !Hero.OneToOneConversationHero.Clan.HasBloodFeudWithPlayer)
 		{
 			Hero.OneToOneConversationHero.MapFaction.Leader.SetTextVariables();
 			MBTextManager.SetTextVariable("FACTION_NAME", Hero.MainHero.MapFaction.Name);
@@ -801,7 +810,6 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 	public bool conversation_lord_from_ruling_clan_on_condition()
 	{
 		float num = 0f;
-		_allReservations = GetPersuasionTasksForDefection(Hero.OneToOneConversationHero, Hero.MainHero.MapFaction.Leader);
 		foreach (PersuasionTask allReservation in _allReservations)
 		{
 			foreach (PersuasionAttempt previousDefectionPersuasionAttempt in _previousDefectionPersuasionAttempts)
@@ -826,9 +834,22 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 				}
 			}
 		}
-		if (_maximumScoreCap > num && _previousDefectionPersuasionAttempts.Any((PersuasionAttempt x) => x.PersuadedHero == Hero.OneToOneConversationHero))
+		EvaluateDefectionProgress(out var willRetry, out var willSkipToBarter);
+		if (IsDefectionCooldownActive(Hero.OneToOneConversationHero) && !willSkipToBarter && !willRetry)
 		{
-			MBTextManager.SetTextVariable("LIEGE_IS_RELATIVE", new TextObject("{=03lc5R2t}You have tried to persuade me before. I will not stand your words again."));
+			TraitObject persona = Hero.OneToOneConversationHero.CharacterObject.GetPersona();
+			if (persona == DefaultTraits.PersonaCurt)
+			{
+				MBTextManager.SetTextVariable("LIEGE_IS_RELATIVE", new TextObject("{=ZZ6uOq0u}This isn't something I'm willing to discuss any more, at least not now."));
+			}
+			else if (persona == DefaultTraits.PersonaIronic)
+			{
+				MBTextManager.SetTextVariable("LIEGE_IS_RELATIVE", new TextObject("{=0HiSsoDX}For now, I think, we should let this matter rest."));
+			}
+			else
+			{
+				MBTextManager.SetTextVariable("LIEGE_IS_RELATIVE", new TextObject("{=srL0inRI}No, no.... This is clearly not the time for such a move."));
+			}
 			return true;
 		}
 		if (Hero.OneToOneConversationHero.Clan.IsMapFaction)
@@ -849,6 +870,68 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 			return true;
 		}
 		return false;
+	}
+
+	private void conversation_player_initiates_defection_on_consequence()
+	{
+		_allReservations = GetPersuasionTasksForDefection(Hero.OneToOneConversationHero, out var reservationCount);
+		_maximumScoreCap = reservationCount;
+	}
+
+	private void EvaluateDefectionProgress(out bool willRetry, out bool willSkipToBarter)
+	{
+		willSkipToBarter = false;
+		IEnumerable<PersuasionAttempt> source = _previousDefectionPersuasionAttempts.Where((PersuasionAttempt t) => t.PersuadedHero == Hero.OneToOneConversationHero);
+		IEnumerable<PersuasionAttempt> source2 = source.WhereQ((PersuasionAttempt t) => IsPersuiasionAttemptInCooldown(t.GameTime));
+		willRetry = source.Count() > source2.Count();
+		if ((float)(source2.CountQ((PersuasionAttempt t) => t.Result == PersuasionOptionResult.Success) + source.CountQ((PersuasionAttempt t) => t.Result == PersuasionOptionResult.CriticalSuccess) * 2) >= _maximumScoreCap)
+		{
+			int valueForFaction = new JoinKingdomAsClanBarterable(Hero.OneToOneConversationHero, (Kingdom)Hero.MainHero.MapFaction, isDefecting: true).GetValueForFaction(Hero.OneToOneConversationHero.Clan);
+			float num = 0f;
+			if (_lastBarterScores.TryGetValue(Hero.OneToOneConversationHero, out var value))
+			{
+				num = value;
+			}
+			if (TaleWorlds.Library.MathF.Abs((float)valueForFaction - num) >= TaleWorlds.Library.MathF.Abs(num * 0.2f))
+			{
+				willRetry = true;
+			}
+			else
+			{
+				willSkipToBarter = true;
+			}
+		}
+	}
+
+	private bool conversation_defection_cooldown_expired_on_condition()
+	{
+		EvaluateDefectionProgress(out var willRetry, out var _);
+		return willRetry;
+	}
+
+	private void conversation_defection_cooldown_expired_on_consequence()
+	{
+		Hero oneToOneConversationHero = Hero.OneToOneConversationHero;
+		ClearPersuasionForHero(oneToOneConversationHero);
+		ClearLastBarterScoreForHero(oneToOneConversationHero);
+	}
+
+	private bool conversation_defection_retry_barter_on_condition()
+	{
+		EvaluateDefectionProgress(out var _, out var willSkipToBarter);
+		return willSkipToBarter;
+	}
+
+	private void conversation_defection_retry_barter_on_consequence()
+	{
+		BarterManager.Instance.StartBarterOffer(Hero.MainHero, Hero.OneToOneConversationHero, PartyBase.MainParty, Hero.OneToOneConversationHero.PartyBelongedTo?.Party, null, BarterManager.Instance.InitializeJoinFactionBarterContext, 0, isAIBarter: false, new Barterable[1]
+		{
+			new JoinKingdomAsClanBarterable(Hero.OneToOneConversationHero, Clan.PlayerClan.Kingdom, isDefecting: true)
+		});
+		if (Hero.OneToOneConversationHero.PartyBelongedTo != null && !Hero.OneToOneConversationHero.PartyBelongedTo.MapFaction.IsAtWarWith(MobileParty.MainParty.MapFaction))
+		{
+			PlayerEncounter.LeaveEncounter = true;
+		}
 	}
 
 	public bool conversation_lord_redirects_to_clan_leader_on_condition()
@@ -890,13 +973,6 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 
 	private void start_lord_defection_persuasion_on_consequence()
 	{
-		Hero newLiege = Hero.MainHero.MapFaction.Leader;
-		if (Hero.MainHero.MapFaction == Hero.OneToOneConversationHero.MapFaction)
-		{
-			newLiege = Hero.MainHero;
-		}
-		_allReservations = GetPersuasionTasksForDefection(Hero.OneToOneConversationHero, newLiege);
-		_maximumScoreCap = (float)_allReservations.Count * 1f;
 		float num = 0f;
 		foreach (PersuasionTask allReservation in _allReservations)
 		{
@@ -925,14 +1001,9 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 		ConversationManager.StartPersuasion(_maximumScoreCap, _successValue, _failValue, _criticalSuccessValue, _criticalFailValue, num);
 	}
 
-	private void OnDailyTick()
-	{
-		RemoveOldAttempts();
-	}
-
 	private void conversation_clear_persuasion_on_consequence()
 	{
-		ClearPersuasion();
+		ClearPersuasionForHero(Hero.OneToOneConversationHero);
 	}
 
 	private void conversation_leave_faction_barter_consequence()
@@ -961,14 +1032,13 @@ public class LordDefectionCampaignBehavior : CampaignBehaviorBase
 		return true;
 	}
 
-	private void RemoveOldAttempts()
+	private bool IsDefectionCooldownActive(Hero hero)
 	{
-		for (int num = _previousDefectionPersuasionAttempts.Count - 1; num >= 0; num--)
-		{
-			if (_previousDefectionPersuasionAttempts[num].GameTime.ElapsedYearsUntilNow > 1f)
-			{
-				_previousDefectionPersuasionAttempts.RemoveAt(num);
-			}
-		}
+		return _previousDefectionPersuasionAttempts.AnyQ((PersuasionAttempt t) => t.PersuadedHero == hero && !t.IsSuccesful() && IsPersuiasionAttemptInCooldown(t.GameTime));
+	}
+
+	public bool IsPersuiasionAttemptInCooldown(CampaignTime persuasionAttemptTime)
+	{
+		return persuasionAttemptTime.ElapsedSeasonsUntilNow < 1f;
 	}
 }

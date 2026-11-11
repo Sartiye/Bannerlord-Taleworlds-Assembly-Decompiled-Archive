@@ -111,7 +111,7 @@ public static class NavalDLCCheats
 			}
 			if (!MobileParty.MainParty.IsCurrentlyAtSea && !MobileParty.MainParty.Anchor.IsValid)
 			{
-				MobileParty.MainParty.Anchor.SetSettlement(FindAnchorSettlementForParty(MobileParty.MainParty));
+				MobileParty.MainParty.Anchor.Settlement = FindAnchorSettlementForParty(MobileParty.MainParty);
 			}
 			return $"{result} {obj.Name} were added to main party.";
 		}

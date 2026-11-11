@@ -15,8 +15,6 @@ public abstract class PartyHealingModel : MBGameModel<PartyHealingModel>
 
 	public abstract ExplainedNumber GetDailyHealingHpForHeroes(PartyBase partyBase, bool isPrisoners, bool includeDescriptions = false);
 
-	public abstract int GetHeroesEffectedHealingAmount(Hero hero, float healingRate);
-
 	public abstract float GetSiegeBombardmentHitSurgeryChance(PartyBase party);
 
 	public abstract ExplainedNumber GetBattleEndHealingAmount(PartyBase partyBase, Hero hero);

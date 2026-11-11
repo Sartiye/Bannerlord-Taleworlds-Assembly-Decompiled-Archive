@@ -25,7 +25,7 @@ public class NavalDLCTroopSacrificeModel : TroopSacrificeModel
 	public override ExplainedNumber GetLostTroopCountForBreakingInBesiegedSettlement(MobileParty party, SiegeEvent siegeEvent)
 	{
 		ExplainedNumber lostTroopCountForBreakingInBesiegedSettlement = base.BaseModel.GetLostTroopCountForBreakingInBesiegedSettlement(party, siegeEvent);
-		if (party.IsCurrentlyAtSea && party.HasPerk(NavalPerks.Shipmaster.GhostShip))
+		if (party.HasPerk(NavalPerks.Shipmaster.GhostShip))
 		{
 			lostTroopCountForBreakingInBesiegedSettlement.AddFactor(NavalPerks.Shipmaster.GhostShip.PrimaryBonus * -1f, NavalPerks.Shipmaster.GhostShip.Name);
 		}

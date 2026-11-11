@@ -283,11 +283,11 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 		}
 	}
 
-	private void OnFacegenClosed(bool updateCharacter)
+	private async void OnFacegenClosed(bool updateCharacter)
 	{
 		if (updateCharacter)
 		{
-			NetworkMain.GameClient.UpdateCharacter(_playerCharacter.GetBodyPropertiesMin(), _playerCharacter.IsFemale);
+			await NetworkMain.GameClient.UpdateCharacter(_playerCharacter.GetBodyPropertiesMin(), _playerCharacter.IsFemale);
 		}
 		ScreenManager.TrySetFocus(_lobbyLayer);
 		_lobbyDataSource.RefreshPlayerData(_lobbyState.LobbyClient.PlayerData);
@@ -973,6 +973,18 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 		case CustomGameJoinResponse.NotAllPlayersModulesMatchWithServer:
 			message = new TextObject("{=LCzAvLUB}Not all players' modules match with the server");
 			break;
+		case CustomGameJoinResponse.StreamerCapacityIsFull:
+			message = new TextObject("{=KnjChPKF}All streamer slots for this game are full.");
+			break;
+		case CustomGameJoinResponse.StreamersNotAllowed:
+			message = new TextObject("{=SV6h04ak}This server does not allow streamers.");
+			break;
+		case CustomGameJoinResponse.StreamersCannotJoinAsParty:
+			message = new TextObject("{=7xOAbJRG}You can't join a game as a streamer while you are in a party.");
+			break;
+		case CustomGameJoinResponse.WatchersCannotJoinAsParty:
+			message = new TextObject("{=0axRNCCG}You can't watch a game while you are in a party.");
+			break;
 		}
 		TextObject title = new TextObject("{=mO9bh5sy}Couldn't join custom game");
 		_lobbyDataSource.QueryPopup.ShowMessage(title, message);
@@ -1079,7 +1091,7 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 		{
 			if (_lobbyDataSource?.Options.GameKeyOptionGroups.GameKeyGroups.FirstOrDefault((GameKeyGroupVM g) => g.GameKeys.Contains(gameKey)) == null)
 			{
-				TaleWorlds.Library.Debug.FailedAssert("Could not find GameKeyGroup during SetHotKey", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.GauntletUI\\MultiplayerLobbyGauntletScreen.cs", "SetHotKey", 1301);
+				TaleWorlds.Library.Debug.FailedAssert("Could not find GameKeyGroup during SetHotKey", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.GauntletUI\\MultiplayerLobbyGauntletScreen.cs", "SetHotKey", 1313);
 				MBInformationManager.AddQuickInformation(new TextObject("{=oZrVNUOk}Error"));
 				_keybindingPopup.OnToggle(isActive: false);
 				return;
@@ -1101,7 +1113,7 @@ public class MultiplayerLobbyGauntletScreen : ScreenBase, IGameStateListener, IL
 		{
 			if (_lobbyDataSource.Options.GameKeyOptionGroups.AuxiliaryKeyGroups.FirstOrDefault((AuxiliaryKeyGroupVM g) => g.HotKeys.Contains(auxiliaryKey)) == null)
 			{
-				TaleWorlds.Library.Debug.FailedAssert("Could not find AuxiliaryKeyGroup during SetHotKey", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.GauntletUI\\MultiplayerLobbyGauntletScreen.cs", "SetHotKey", 1324);
+				TaleWorlds.Library.Debug.FailedAssert("Could not find AuxiliaryKeyGroup during SetHotKey", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.GauntletUI\\MultiplayerLobbyGauntletScreen.cs", "SetHotKey", 1336);
 				MBInformationManager.AddQuickInformation(new TextObject("{=oZrVNUOk}Error"));
 				_keybindingPopup.OnToggle(isActive: false);
 				return;

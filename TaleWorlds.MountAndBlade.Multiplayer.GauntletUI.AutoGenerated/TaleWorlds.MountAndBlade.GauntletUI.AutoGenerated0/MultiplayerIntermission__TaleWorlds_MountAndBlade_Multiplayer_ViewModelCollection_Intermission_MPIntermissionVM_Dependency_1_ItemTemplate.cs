@@ -283,6 +283,10 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		{
 			_datasource_Root.IsSelected = _widget_2.IsSelected;
 		}
+		else if (propertyName == "IsEnabled")
+		{
+			_datasource_Root.IsVotingAllowed = _widget_2.IsEnabled;
+		}
 	}
 
 	private void PropertyChangedListenerOf_widget_2_0(PropertyOwnerObject propertyOwnerObject, string propertyName, object e)
@@ -446,6 +450,9 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 		case "IsSelected":
 			_widget_2.IsSelected = _datasource_Root.IsSelected;
 			break;
+		case "IsVotingAllowed":
+			_widget_2.IsEnabled = _datasource_Root.IsVotingAllowed;
+			break;
 		case "MapID":
 			_widget_2_0.MapID = _datasource_Root.MapID;
 			break;
@@ -530,6 +537,7 @@ public class MultiplayerIntermission__TaleWorlds_MountAndBlade_Multiplayer_ViewM
 			_widget_1.uintPropertyChanged += uintPropertyChangedListenerOf_widget_1;
 			_widget_1.ColorPropertyChanged += ColorPropertyChangedListenerOf_widget_1;
 			_widget_2.IsSelected = _datasource_Root.IsSelected;
+			_widget_2.IsEnabled = _datasource_Root.IsVotingAllowed;
 			_widget_2.EventFire += EventListenerOf_widget_2;
 			_widget_2.PropertyChanged += PropertyChangedListenerOf_widget_2;
 			_widget_2.boolPropertyChanged += boolPropertyChangedListenerOf_widget_2;

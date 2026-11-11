@@ -17,4 +17,6 @@ internal interface ISaveContext
 	int GetStringId(string target);
 
 	bool Save(object target, MetaData metaData, out string errorMessage);
+
+	void ReportSaveIntegrityDrift(string message);
 }

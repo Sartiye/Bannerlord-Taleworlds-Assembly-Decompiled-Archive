@@ -54,7 +54,8 @@ public class BattleCampaignBehavior : CampaignBehaviorBase
 			TroopRosterElement elementCopyAtIndex = party.MemberRoster.GetElementCopyAtIndex(i);
 			if (!elementCopyAtIndex.Character.IsHero && elementCopyAtIndex.Character.IsInfantry)
 			{
-				party.MemberRoster.AddXpToTroopAtIndex(i, (int)DefaultPerks.TwoHanded.BaptisedInBlood.PrimaryBonus * elementCopyAtIndex.Number);
+				int xpAmount = (int)DefaultPerks.TwoHanded.BaptisedInBlood.PrimaryBonus * elementCopyAtIndex.Number;
+				party.MemberRoster.AddXpToTroopAtIndex(i, xpAmount);
 			}
 		}
 	}

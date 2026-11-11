@@ -27,50 +27,16 @@ public static class PerkHelper
 		hero.HitPoints = MathF.Min(hero.HitPoints, hero.MaxHitPoints);
 	}
 
-	private static void ClearPermanentBonusesIfExists(Hero hero, PerkObject perk)
-	{
-		if (hero.GetPerkValue(perk))
-		{
-			if (perk == DefaultPerks.Crafting.VigorousSmith)
-			{
-				hero.HeroDeveloper.RemoveAttribute(DefaultCharacterAttributes.Vigor, 1);
-			}
-			else if (perk == DefaultPerks.Crafting.StrongSmith)
-			{
-				hero.HeroDeveloper.RemoveAttribute(DefaultCharacterAttributes.Control, 1);
-			}
-			else if (perk == DefaultPerks.Crafting.EnduringSmith)
-			{
-				hero.HeroDeveloper.RemoveAttribute(DefaultCharacterAttributes.Endurance, 1);
-			}
-			else if (perk == DefaultPerks.Crafting.WeaponMasterSmith)
-			{
-				hero.HeroDeveloper.RemoveFocus(DefaultSkills.OneHanded, 1);
-				hero.HeroDeveloper.RemoveFocus(DefaultSkills.TwoHanded, 1);
-			}
-			else if (perk == DefaultPerks.Athletics.Durable)
-			{
-				hero.HeroDeveloper.RemoveAttribute(DefaultCharacterAttributes.Endurance, 1);
-			}
-			else if (perk == DefaultPerks.Athletics.Steady)
-			{
-				hero.HeroDeveloper.RemoveAttribute(DefaultCharacterAttributes.Control, 1);
-			}
-			else if (perk == DefaultPerks.Athletics.Strong)
-			{
-				hero.HeroDeveloper.RemoveAttribute(DefaultCharacterAttributes.Vigor, 1);
-			}
-		}
-	}
-
-	public static IEnumerable<PerkObject> GetCaptainPerksForTroopUsages(TroopUsageFlags troopUsageFlags)
+	public static IEnumerable<PerkObject> GetCaptainPerksForTroopUsages(TroopUsageFlags troopUsageFlags, BattleEnvironment battleEnvironment = BattleEnvironment.Any)
 	{
 		List<PerkObject> list = new List<PerkObject>();
 		foreach (PerkObject item in PerkObject.All)
 		{
-			bool num = item.PrimaryTroopUsageMask != TroopUsageFlags.Undefined && troopUsageFlags.HasAllFlags(item.PrimaryTroopUsageMask);
-			bool flag = item.SecondaryTroopUsageMask != TroopUsageFlags.Undefined && troopUsageFlags.HasAllFlags(item.SecondaryTroopUsageMask);
-			if (num || flag)
+			if (item.PrimaryRole == PartyRole.Captain && item.PrimaryTroopUsageMask != 0 && TryGetPerkEffectBonus(item, isPrimary: true, out var bonus, battleEnvironment) && (item.PrimaryTroopUsageMask == TroopUsageFlags.Any || troopUsageFlags.HasAllFlags(item.PrimaryTroopUsageMask)))
+			{
+				list.Add(item);
+			}
+			else if (item.SecondaryRole == PartyRole.Captain && item.SecondaryTroopUsageMask != 0 && TryGetPerkEffectBonus(item, isPrimary: false, out bonus, battleEnvironment) && (item.SecondaryTroopUsageMask == TroopUsageFlags.Any || troopUsageFlags.HasAllFlags(item.SecondaryTroopUsageMask)))
 			{
 				list.Add(item);
 			}
@@ -87,116 +53,115 @@ public static class PerkHelper
 		return true;
 	}
 
-	public static void AddPerkBonusForParty(PerkObject perk, MobileParty party, bool isPrimaryBonus, ref ExplainedNumber stat, bool shouldApplyNavalMultiplier = false)
+	public static bool TryGetPerkEffectBonus(PerkObject perk, bool isPrimary, out float bonus, BattleEnvironment battleEnvironment = BattleEnvironment.Any)
 	{
-		if (party != null && party.HasPerk(perk, !isPrimaryBonus))
+		bonus = (isPrimary ? perk.PrimaryBonus : perk.SecondaryBonus);
+		if (battleEnvironment == BattleEnvironment.Any)
 		{
-			float num = (isPrimaryBonus ? perk.PrimaryBonus : perk.SecondaryBonus);
-			if (shouldApplyNavalMultiplier)
+			return true;
+		}
+		PerkObject.EffectEnvironment effectEnvironment = (isPrimary ? perk.PrimaryEffectEnvironment : perk.SecondaryEffectEnvironment);
+		if (battleEnvironment == BattleEnvironment.Land)
+		{
+			if (effectEnvironment == PerkObject.EffectEnvironment.NavalOnly)
 			{
-				num *= 0.5f;
+				bonus = 0f;
+				return false;
 			}
+			return true;
+		}
+		switch (effectEnvironment)
+		{
+		case PerkObject.EffectEnvironment.LandOnly:
+			bonus = 0f;
+			return false;
+		case PerkObject.EffectEnvironment.NavalReduced:
+			bonus *= 0.5f;
+			break;
+		}
+		return true;
+	}
+
+	public static bool AddPerkBonusForParty(PerkObject perk, MobileParty party, bool isPrimaryBonus, ref ExplainedNumber stat, BattleEnvironment battleEnvironment = BattleEnvironment.Any)
+	{
+		if (party == null)
+		{
+			return false;
+		}
+		if (battleEnvironment == BattleEnvironment.Any)
+		{
+			battleEnvironment = party.CurrentBattleEnvironment;
+		}
+		if (TryGetPerkEffectBonus(perk, isPrimaryBonus, out var bonus, battleEnvironment) && party.GetPerkOwnerHero(perk, !isPrimaryBonus) != null)
+		{
 			EffectIncrementType effectIncrementType = (isPrimaryBonus ? perk.PrimaryIncrementType : perk.SecondaryIncrementType);
-			AddToStat(ref stat, effectIncrementType, num, perk.Name);
+			AddToStat(ref stat, effectIncrementType, bonus, perk.Name);
+			return true;
 		}
+		return false;
 	}
 
-	private static void AddToStat(ref ExplainedNumber stat, EffectIncrementType effectIncrementType, float number, TextObject text)
+	public static bool AddPerkBonusForCharacter(PerkObject perk, CharacterObject character, bool isPrimaryBonus, ref ExplainedNumber bonuses, BattleEnvironment battleEnvironment = BattleEnvironment.Any)
 	{
-		switch (effectIncrementType)
+		if (character == null || !TryGetPerkEffectBonus(perk, isPrimaryBonus, out var bonus, battleEnvironment))
 		{
-		case EffectIncrementType.Add:
-			stat.Add(number, text);
-			break;
-		case EffectIncrementType.AddFactor:
-			stat.AddFactor(number, text);
-			break;
+			return false;
 		}
+		PartyRole partyRole = (isPrimaryBonus ? perk.PrimaryRole : perk.SecondaryRole);
+		EffectIncrementType effectIncrementType = (isPrimaryBonus ? perk.PrimaryIncrementType : perk.SecondaryIncrementType);
+		if (partyRole == PartyRole.Personal && character.GetPerkValue(perk))
+		{
+			AddToStat(ref bonuses, effectIncrementType, bonus, perk.Name);
+			return true;
+		}
+		if (partyRole == PartyRole.ClanLeader && character.IsHero && character.HeroObject.Clan?.Leader != null && character.HeroObject.Clan.Leader.GetPerkValue(perk))
+		{
+			AddToStat(ref bonuses, effectIncrementType, bonus, perk.Name);
+			return true;
+		}
+		return false;
 	}
 
-	public static void AddPerkBonusForCharacter(PerkObject perk, CharacterObject character, bool isPrimaryBonus, ref ExplainedNumber bonuses, bool shouldApplyNavalMultiplier = false)
+	public static bool AddEpicPerkBonusForCharacter(PerkObject perk, CharacterObject character, SkillObject skillType, bool isPrimaryBonus, ref ExplainedNumber bonuses, int skillRequired, int effectiveSkill = -1, BattleEnvironment battleEnvironment = BattleEnvironment.Any)
 	{
-		float num = (shouldApplyNavalMultiplier ? 0.5f : 1f);
-		if (isPrimaryBonus && perk.PrimaryRole == PartyRole.Personal)
+		if (character == null || !character.GetPerkValue(perk))
 		{
-			if (character.GetPerkValue(perk))
-			{
-				AddToStat(ref bonuses, perk.PrimaryIncrementType, perk.PrimaryBonus * num, perk.Name);
-			}
+			return false;
 		}
-		else if (!isPrimaryBonus && perk.SecondaryRole == PartyRole.Personal && character.GetPerkValue(perk))
+		int num = ((effectiveSkill >= 0) ? effectiveSkill : character.GetSkillValue(skillType));
+		if (num > skillRequired && TryGetPerkEffectBonus(perk, isPrimaryBonus, out var bonus, battleEnvironment))
 		{
-			AddToStat(ref bonuses, perk.SecondaryIncrementType, perk.SecondaryBonus * num, perk.Name);
+			EffectIncrementType effectIncrementType = (isPrimaryBonus ? perk.PrimaryIncrementType : perk.SecondaryIncrementType);
+			float number = bonus * (float)(num - skillRequired);
+			AddToStat(ref bonuses, effectIncrementType, number, perk.Name);
+			return true;
 		}
-		if (isPrimaryBonus && perk.PrimaryRole == PartyRole.ClanLeader)
-		{
-			if (character.IsHero && character.HeroObject.Clan?.Leader != null && character.HeroObject.Clan.Leader.GetPerkValue(perk))
-			{
-				AddToStat(ref bonuses, perk.PrimaryIncrementType, perk.PrimaryBonus * num, perk.Name);
-			}
-		}
-		else if (!isPrimaryBonus && perk.SecondaryRole == PartyRole.ClanLeader && character.IsHero && character.HeroObject.Clan.Leader != null && character.HeroObject.Clan.Leader.GetPerkValue(perk))
-		{
-			AddToStat(ref bonuses, perk.SecondaryIncrementType, perk.SecondaryBonus * num, perk.Name);
-		}
+		return false;
 	}
 
-	public static void AddEpicPerkBonusForCharacter(PerkObject perk, CharacterObject character, SkillObject skillType, bool applyPrimaryBonus, ref ExplainedNumber bonuses, int skillRequired, bool shouldApplyNavalMultiplier = false)
+	public static bool AddPerkBonusFromCaptain(PerkObject perk, CharacterObject captainCharacter, ref ExplainedNumber bonuses, BattleEnvironment battleEnvironment = BattleEnvironment.Any)
 	{
-		if (!character.GetPerkValue(perk))
+		bool flag = perk.PrimaryRole == PartyRole.Captain;
+		if ((flag || perk.SecondaryRole == PartyRole.Captain) && captainCharacter != null && captainCharacter.GetPerkValue(perk) && TryGetPerkEffectBonus(perk, flag, out var bonus, battleEnvironment))
 		{
-			return;
+			EffectIncrementType effectIncrementType = (flag ? perk.PrimaryIncrementType : perk.SecondaryIncrementType);
+			AddToStat(ref bonuses, effectIncrementType, bonus, perk.Name);
+			return true;
 		}
-		int skillValue = character.GetSkillValue(skillType);
-		if (skillValue > skillRequired)
-		{
-			float num = (shouldApplyNavalMultiplier ? 0.5f : 1f);
-			if (applyPrimaryBonus)
-			{
-				AddToStat(ref bonuses, perk.PrimaryIncrementType, perk.PrimaryBonus * (float)(skillValue - skillRequired) * num, perk.Name);
-			}
-			else
-			{
-				AddToStat(ref bonuses, perk.SecondaryIncrementType, perk.SecondaryBonus * (float)(skillValue - skillRequired) * num, perk.Name);
-			}
-		}
+		return false;
 	}
 
-	public static void AddPerkBonusFromCaptain(PerkObject perk, CharacterObject captainCharacter, ref ExplainedNumber bonuses)
+	public static bool AddPerkBonusForTown(PerkObject perk, Town town, bool isPrimaryBonus, ref ExplainedNumber bonuses)
 	{
-		if (perk.PrimaryRole == PartyRole.Captain)
-		{
-			if (captainCharacter != null && captainCharacter.GetPerkValue(perk))
-			{
-				AddToStat(ref bonuses, perk.PrimaryIncrementType, perk.PrimaryBonus, perk.Name);
-			}
-		}
-		else if (perk.SecondaryRole == PartyRole.Captain && captainCharacter != null && captainCharacter.GetPerkValue(perk))
-		{
-			AddToStat(ref bonuses, perk.SecondaryIncrementType, perk.SecondaryBonus, perk.Name);
-		}
-	}
-
-	public static void AddPerkBonusForTown(PerkObject perk, Town town, ref ExplainedNumber bonuses)
-	{
-		bool flag = perk.PrimaryRole == PartyRole.Governor;
-		bool flag2 = perk.SecondaryRole == PartyRole.Governor;
-		if (!(flag || flag2))
-		{
-			return;
-		}
 		Hero governor = town.Governor;
 		if (governor != null && governor.GetPerkValue(perk) && governor.CurrentSettlement != null && governor.CurrentSettlement == town.Settlement)
 		{
-			if (flag)
-			{
-				AddToStat(ref bonuses, perk.PrimaryIncrementType, perk.PrimaryBonus, perk.Name);
-			}
-			else
-			{
-				AddToStat(ref bonuses, perk.SecondaryIncrementType, perk.SecondaryBonus, perk.Name);
-			}
+			EffectIncrementType effectIncrementType = (isPrimaryBonus ? perk.PrimaryIncrementType : perk.SecondaryIncrementType);
+			float number = (isPrimaryBonus ? perk.PrimaryBonus : perk.SecondaryBonus);
+			AddToStat(ref bonuses, effectIncrementType, number, perk.Name);
+			return true;
 		}
+		return false;
 	}
 
 	public static bool GetPerkValueForTown(PerkObject perk, Town town)
@@ -257,5 +222,54 @@ public static class PerkHelper
 			}
 		}
 		return mBList.Count;
+	}
+
+	private static void ClearPermanentBonusesIfExists(Hero hero, PerkObject perk)
+	{
+		if (hero.GetPerkValue(perk))
+		{
+			if (perk == DefaultPerks.Crafting.VigorousSmith)
+			{
+				hero.HeroDeveloper.RemoveAttribute(DefaultCharacterAttributes.Vigor, 1);
+			}
+			else if (perk == DefaultPerks.Crafting.StrongSmith)
+			{
+				hero.HeroDeveloper.RemoveAttribute(DefaultCharacterAttributes.Control, 1);
+			}
+			else if (perk == DefaultPerks.Crafting.EnduringSmith)
+			{
+				hero.HeroDeveloper.RemoveAttribute(DefaultCharacterAttributes.Endurance, 1);
+			}
+			else if (perk == DefaultPerks.Crafting.WeaponMasterSmith)
+			{
+				hero.HeroDeveloper.RemoveFocus(DefaultSkills.OneHanded, 1);
+				hero.HeroDeveloper.RemoveFocus(DefaultSkills.TwoHanded, 1);
+			}
+			else if (perk == DefaultPerks.Athletics.Durable)
+			{
+				hero.HeroDeveloper.RemoveAttribute(DefaultCharacterAttributes.Endurance, 1);
+			}
+			else if (perk == DefaultPerks.Athletics.Steady)
+			{
+				hero.HeroDeveloper.RemoveAttribute(DefaultCharacterAttributes.Control, 1);
+			}
+			else if (perk == DefaultPerks.Athletics.Strong)
+			{
+				hero.HeroDeveloper.RemoveAttribute(DefaultCharacterAttributes.Vigor, 1);
+			}
+		}
+	}
+
+	private static void AddToStat(ref ExplainedNumber stat, EffectIncrementType effectIncrementType, float number, TextObject text)
+	{
+		switch (effectIncrementType)
+		{
+		case EffectIncrementType.Add:
+			stat.Add(number, text);
+			break;
+		case EffectIncrementType.AddFactor:
+			stat.AddFactor(number, text);
+			break;
+		}
 	}
 }

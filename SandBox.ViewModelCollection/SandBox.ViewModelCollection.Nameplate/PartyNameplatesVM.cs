@@ -131,13 +131,29 @@ public class PartyNameplatesVM : ViewModel
 		PlayerNameplate?.RefreshValues();
 	}
 
+	public void Reset()
+	{
+		Nameplates.ApplyActionOnAllItems(delegate(PartyNameplateVM n)
+		{
+			n.OnFinalize();
+		});
+		Nameplates.Clear();
+		_nameplatesByParty.Clear();
+		if (PlayerNameplate != null)
+		{
+			PlayerNameplate.Clear();
+			PlayerNameplate = null;
+		}
+		Initialize();
+	}
+
 	public void Initialize()
 	{
 		MBReadOnlyList<MobileParty> all = MobileParty.All;
 		for (int i = 0; i < all.Count; i++)
 		{
 			MobileParty mobileParty = all[i];
-			if (mobileParty.IsSpotted() && mobileParty.CurrentSettlement == null)
+			if (mobileParty.IsVisible && mobileParty.CurrentSettlement == null)
 			{
 				CreateNameplateFor(mobileParty);
 			}
@@ -219,13 +235,13 @@ public class PartyNameplatesVM : ViewModel
 			for (int i = 0; i < party.Army.Parties.Count; i++)
 			{
 				MobileParty armyParty = party.Army.Parties[i];
-				if (armyParty.IsSpotted() && Nameplates.All((PartyNameplateVM p) => p.Party != armyParty))
+				if (armyParty.IsVisible && Nameplates.All((PartyNameplateVM p) => p.Party != armyParty))
 				{
 					CreateNameplateFor(armyParty);
 				}
 			}
 		}
-		else if (party.IsSpotted() && !_nameplatesByParty.ContainsKey(party) && PlayerNameplate?.Party != party)
+		else if (party.IsVisible && !_nameplatesByParty.ContainsKey(party) && PlayerNameplate?.Party != party)
 		{
 			CreateNameplateFor(party);
 		}
@@ -243,7 +259,7 @@ public class PartyNameplatesVM : ViewModel
 	private void UpdateMobilePartyVisibility(MobileParty mobileParty)
 	{
 		PartyNameplateVM value;
-		if (mobileParty.IsSpotted() && mobileParty.CurrentSettlement == null && Nameplates.All((PartyNameplateVM p) => p.Party != mobileParty))
+		if (mobileParty.IsVisible && mobileParty.CurrentSettlement == null && Nameplates.All((PartyNameplateVM p) => p.Party != mobileParty))
 		{
 			CreateNameplateFor(mobileParty);
 		}
@@ -252,7 +268,7 @@ public class PartyNameplatesVM : ViewModel
 			PlayerNameplate.Clear();
 			PlayerNameplate = null;
 		}
-		else if ((!mobileParty.IsSpotted() || mobileParty.CurrentSettlement != null) && _nameplatesByParty.TryGetValue(mobileParty, out value))
+		else if ((!mobileParty.IsVisible || mobileParty.CurrentSettlement != null) && _nameplatesByParty.TryGetValue(mobileParty, out value))
 		{
 			RemoveNameplate(value);
 		}

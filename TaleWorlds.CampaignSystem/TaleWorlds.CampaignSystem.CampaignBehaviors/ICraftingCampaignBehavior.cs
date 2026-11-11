@@ -40,7 +40,7 @@ public interface ICraftingCampaignBehavior : ICampaignBehavior
 
 	bool IsOpened(CraftingPiece craftingPiece, CraftingTemplate craftingTemplate);
 
-	CraftingOrder CreateCustomOrderForHero(Hero orderOwner, float orderDifficulty = -1f, WeaponDesign weaponDesign = null, CraftingTemplate craftingTemplate = null);
+	CraftingOrder CreateCustomOrderForHero(Town town, Hero orderOwner, float orderDifficulty = -1f, WeaponDesign weaponDesign = null, CraftingTemplate craftingTemplate = null);
 
 	void CancelCustomOrder(Town town, CraftingOrder craftingOrder);
 

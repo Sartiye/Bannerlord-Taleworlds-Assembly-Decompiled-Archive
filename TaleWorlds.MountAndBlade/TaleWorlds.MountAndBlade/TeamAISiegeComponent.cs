@@ -301,12 +301,5 @@ public abstract class TeamAISiegeComponent : TeamAIComponent
 		{
 			item2.OnDeploymentFinished();
 		}
-		foreach (SiegeWeapon sceneSiegeWeapon in SceneSiegeWeapons)
-		{
-			if (!sceneSiegeWeapon.IsDisabled && sceneSiegeWeapon.Side == Team.Side)
-			{
-				sceneSiegeWeapon.OnDeploymentFinished();
-			}
-		}
 	}
 }

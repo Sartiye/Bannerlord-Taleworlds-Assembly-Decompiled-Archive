@@ -65,6 +65,10 @@ internal static class EngineCallbacksGenerated
 
 	internal delegate UIntPtr ManagedExtensions_GetScriptComponentClassNames_delegate();
 
+	internal delegate float ManagedExtensions_GetSecureRandomFloat_delegate(float minValue, float maxValue);
+
+	internal delegate int ManagedExtensions_GetSecureRandomInt_delegate(int maxValue);
+
 	internal delegate RglScriptFieldType ManagedExtensions_GetTypeOfField_delegate(uint classNameHash, uint fieldNameHash);
 
 	internal delegate void ManagedExtensions_SetObjectFieldBool_delegate(int managedObject, uint classNameHash, uint fieldNameHash, [MarshalAs(UnmanagedType.U1)] bool value, int callFieldChangeEventAsInteger);
@@ -189,7 +193,7 @@ internal static class EngineCallbacksGenerated
 
 	public static void Initialize()
 	{
-		Delegates = new Delegate[85];
+		Delegates = new Delegate[87];
 		Delegates[0] = new CrashInformationCollector_CollectInformation_delegate(CrashInformationCollector_CollectInformation);
 		Delegates[1] = new EngineController_GetApplicationPlatformName_delegate(EngineController_GetApplicationPlatformName);
 		Delegates[2] = new EngineController_GetModulesVersionStr_delegate(EngineController_GetModulesVersionStr);
@@ -218,63 +222,65 @@ internal static class EngineCallbacksGenerated
 		Delegates[25] = new ManagedExtensions_GetEditorVisibilityOfField_delegate(ManagedExtensions_GetEditorVisibilityOfField);
 		Delegates[26] = new ManagedExtensions_GetObjectField_delegate(ManagedExtensions_GetObjectField);
 		Delegates[27] = new ManagedExtensions_GetScriptComponentClassNames_delegate(ManagedExtensions_GetScriptComponentClassNames);
-		Delegates[28] = new ManagedExtensions_GetTypeOfField_delegate(ManagedExtensions_GetTypeOfField);
-		Delegates[29] = new ManagedExtensions_SetObjectFieldBool_delegate(ManagedExtensions_SetObjectFieldBool);
-		Delegates[30] = new ManagedExtensions_SetObjectFieldColor_delegate(ManagedExtensions_SetObjectFieldColor);
-		Delegates[31] = new ManagedExtensions_SetObjectFieldDouble_delegate(ManagedExtensions_SetObjectFieldDouble);
-		Delegates[32] = new ManagedExtensions_SetObjectFieldEntity_delegate(ManagedExtensions_SetObjectFieldEntity);
-		Delegates[33] = new ManagedExtensions_SetObjectFieldEnum_delegate(ManagedExtensions_SetObjectFieldEnum);
-		Delegates[34] = new ManagedExtensions_SetObjectFieldFloat_delegate(ManagedExtensions_SetObjectFieldFloat);
-		Delegates[35] = new ManagedExtensions_SetObjectFieldInt_delegate(ManagedExtensions_SetObjectFieldInt);
-		Delegates[36] = new ManagedExtensions_SetObjectFieldMaterial_delegate(ManagedExtensions_SetObjectFieldMaterial);
-		Delegates[37] = new ManagedExtensions_SetObjectFieldMatrixFrame_delegate(ManagedExtensions_SetObjectFieldMatrixFrame);
-		Delegates[38] = new ManagedExtensions_SetObjectFieldMesh_delegate(ManagedExtensions_SetObjectFieldMesh);
-		Delegates[39] = new ManagedExtensions_SetObjectFieldString_delegate(ManagedExtensions_SetObjectFieldString);
-		Delegates[40] = new ManagedExtensions_SetObjectFieldTexture_delegate(ManagedExtensions_SetObjectFieldTexture);
-		Delegates[41] = new ManagedExtensions_SetObjectFieldVec3_delegate(ManagedExtensions_SetObjectFieldVec3);
-		Delegates[42] = new ManagedScriptHolder_CreateManagedScriptHolder_delegate(ManagedScriptHolder_CreateManagedScriptHolder);
-		Delegates[43] = new ManagedScriptHolder_FixedTickComponents_delegate(ManagedScriptHolder_FixedTickComponents);
-		Delegates[44] = new ManagedScriptHolder_GetNumberOfScripts_delegate(ManagedScriptHolder_GetNumberOfScripts);
-		Delegates[45] = new ManagedScriptHolder_RemoveScriptComponentFromAllTickLists_delegate(ManagedScriptHolder_RemoveScriptComponentFromAllTickLists);
-		Delegates[46] = new ManagedScriptHolder_SetScriptComponentHolder_delegate(ManagedScriptHolder_SetScriptComponentHolder);
-		Delegates[47] = new ManagedScriptHolder_TickComponents_delegate(ManagedScriptHolder_TickComponents);
-		Delegates[48] = new ManagedScriptHolder_TickComponentsEditor_delegate(ManagedScriptHolder_TickComponentsEditor);
-		Delegates[49] = new MessageManagerBase_PostMessageLine_delegate(MessageManagerBase_PostMessageLine);
-		Delegates[50] = new MessageManagerBase_PostMessageLineFormatted_delegate(MessageManagerBase_PostMessageLineFormatted);
-		Delegates[51] = new MessageManagerBase_PostSuccessLine_delegate(MessageManagerBase_PostSuccessLine);
-		Delegates[52] = new MessageManagerBase_PostWarningLine_delegate(MessageManagerBase_PostWarningLine);
-		Delegates[53] = new NativeParallelDriver_ParalelForLoopBodyCaller_delegate(NativeParallelDriver_ParalelForLoopBodyCaller);
-		Delegates[54] = new NativeParallelDriver_ParalelForLoopBodyWithDtCaller_delegate(NativeParallelDriver_ParalelForLoopBodyWithDtCaller);
-		Delegates[55] = new RenderTargetComponent_CreateRenderTargetComponent_delegate(RenderTargetComponent_CreateRenderTargetComponent);
-		Delegates[56] = new RenderTargetComponent_OnPaintNeeded_delegate(RenderTargetComponent_OnPaintNeeded);
-		Delegates[57] = new SceneProblemChecker_OnCheckForSceneProblems_delegate(SceneProblemChecker_OnCheckForSceneProblems);
-		Delegates[58] = new ScriptComponentBehavior_AddScriptComponentToTick_delegate(ScriptComponentBehavior_AddScriptComponentToTick);
-		Delegates[59] = new ScriptComponentBehavior_DeregisterAsPrefabScriptComponent_delegate(ScriptComponentBehavior_DeregisterAsPrefabScriptComponent);
-		Delegates[60] = new ScriptComponentBehavior_DeregisterAsUndoStackScriptComponent_delegate(ScriptComponentBehavior_DeregisterAsUndoStackScriptComponent);
-		Delegates[61] = new ScriptComponentBehavior_DisablesOroCreation_delegate(ScriptComponentBehavior_DisablesOroCreation);
-		Delegates[62] = new ScriptComponentBehavior_GetEditableFields_delegate(ScriptComponentBehavior_GetEditableFields);
-		Delegates[63] = new ScriptComponentBehavior_HandleOnRemoved_delegate(ScriptComponentBehavior_HandleOnRemoved);
-		Delegates[64] = new ScriptComponentBehavior_IsOnlyVisual_delegate(ScriptComponentBehavior_IsOnlyVisual);
-		Delegates[65] = new ScriptComponentBehavior_MovesEntity_delegate(ScriptComponentBehavior_MovesEntity);
-		Delegates[66] = new ScriptComponentBehavior_OnBoundingBoxValidate_delegate(ScriptComponentBehavior_OnBoundingBoxValidate);
-		Delegates[67] = new ScriptComponentBehavior_OnCheckForProblems_delegate(ScriptComponentBehavior_OnCheckForProblems);
-		Delegates[68] = new ScriptComponentBehavior_OnDynamicNavmeshVertexUpdate_delegate(ScriptComponentBehavior_OnDynamicNavmeshVertexUpdate);
-		Delegates[69] = new ScriptComponentBehavior_OnEditModeVisibilityChanged_delegate(ScriptComponentBehavior_OnEditModeVisibilityChanged);
-		Delegates[70] = new ScriptComponentBehavior_OnEditorInit_delegate(ScriptComponentBehavior_OnEditorInit);
-		Delegates[71] = new ScriptComponentBehavior_OnEditorTick_delegate(ScriptComponentBehavior_OnEditorTick);
-		Delegates[72] = new ScriptComponentBehavior_OnEditorValidate_delegate(ScriptComponentBehavior_OnEditorValidate);
-		Delegates[73] = new ScriptComponentBehavior_OnEditorVariableChanged_delegate(ScriptComponentBehavior_OnEditorVariableChanged);
-		Delegates[74] = new ScriptComponentBehavior_OnInit_delegate(ScriptComponentBehavior_OnInit);
-		Delegates[75] = new ScriptComponentBehavior_OnPhysicsCollisionAux_delegate(ScriptComponentBehavior_OnPhysicsCollisionAux);
-		Delegates[76] = new ScriptComponentBehavior_OnPreInit_delegate(ScriptComponentBehavior_OnPreInit);
-		Delegates[77] = new ScriptComponentBehavior_OnSaveAsPrefab_delegate(ScriptComponentBehavior_OnSaveAsPrefab);
-		Delegates[78] = new ScriptComponentBehavior_OnSceneSave_delegate(ScriptComponentBehavior_OnSceneSave);
-		Delegates[79] = new ScriptComponentBehavior_OnTerrainReload_delegate(ScriptComponentBehavior_OnTerrainReload);
-		Delegates[80] = new ScriptComponentBehavior_RegisterAsPrefabScriptComponent_delegate(ScriptComponentBehavior_RegisterAsPrefabScriptComponent);
-		Delegates[81] = new ScriptComponentBehavior_RegisterAsUndoStackScriptComponent_delegate(ScriptComponentBehavior_RegisterAsUndoStackScriptComponent);
-		Delegates[82] = new ScriptComponentBehavior_SetScene_delegate(ScriptComponentBehavior_SetScene);
-		Delegates[83] = new ScriptComponentBehavior_SkeletonPostIntegrateCallbackAux_delegate(ScriptComponentBehavior_SkeletonPostIntegrateCallbackAux);
-		Delegates[84] = new ThumbnailCreatorView_OnThumbnailRenderComplete_delegate(ThumbnailCreatorView_OnThumbnailRenderComplete);
+		Delegates[28] = new ManagedExtensions_GetSecureRandomFloat_delegate(ManagedExtensions_GetSecureRandomFloat);
+		Delegates[29] = new ManagedExtensions_GetSecureRandomInt_delegate(ManagedExtensions_GetSecureRandomInt);
+		Delegates[30] = new ManagedExtensions_GetTypeOfField_delegate(ManagedExtensions_GetTypeOfField);
+		Delegates[31] = new ManagedExtensions_SetObjectFieldBool_delegate(ManagedExtensions_SetObjectFieldBool);
+		Delegates[32] = new ManagedExtensions_SetObjectFieldColor_delegate(ManagedExtensions_SetObjectFieldColor);
+		Delegates[33] = new ManagedExtensions_SetObjectFieldDouble_delegate(ManagedExtensions_SetObjectFieldDouble);
+		Delegates[34] = new ManagedExtensions_SetObjectFieldEntity_delegate(ManagedExtensions_SetObjectFieldEntity);
+		Delegates[35] = new ManagedExtensions_SetObjectFieldEnum_delegate(ManagedExtensions_SetObjectFieldEnum);
+		Delegates[36] = new ManagedExtensions_SetObjectFieldFloat_delegate(ManagedExtensions_SetObjectFieldFloat);
+		Delegates[37] = new ManagedExtensions_SetObjectFieldInt_delegate(ManagedExtensions_SetObjectFieldInt);
+		Delegates[38] = new ManagedExtensions_SetObjectFieldMaterial_delegate(ManagedExtensions_SetObjectFieldMaterial);
+		Delegates[39] = new ManagedExtensions_SetObjectFieldMatrixFrame_delegate(ManagedExtensions_SetObjectFieldMatrixFrame);
+		Delegates[40] = new ManagedExtensions_SetObjectFieldMesh_delegate(ManagedExtensions_SetObjectFieldMesh);
+		Delegates[41] = new ManagedExtensions_SetObjectFieldString_delegate(ManagedExtensions_SetObjectFieldString);
+		Delegates[42] = new ManagedExtensions_SetObjectFieldTexture_delegate(ManagedExtensions_SetObjectFieldTexture);
+		Delegates[43] = new ManagedExtensions_SetObjectFieldVec3_delegate(ManagedExtensions_SetObjectFieldVec3);
+		Delegates[44] = new ManagedScriptHolder_CreateManagedScriptHolder_delegate(ManagedScriptHolder_CreateManagedScriptHolder);
+		Delegates[45] = new ManagedScriptHolder_FixedTickComponents_delegate(ManagedScriptHolder_FixedTickComponents);
+		Delegates[46] = new ManagedScriptHolder_GetNumberOfScripts_delegate(ManagedScriptHolder_GetNumberOfScripts);
+		Delegates[47] = new ManagedScriptHolder_RemoveScriptComponentFromAllTickLists_delegate(ManagedScriptHolder_RemoveScriptComponentFromAllTickLists);
+		Delegates[48] = new ManagedScriptHolder_SetScriptComponentHolder_delegate(ManagedScriptHolder_SetScriptComponentHolder);
+		Delegates[49] = new ManagedScriptHolder_TickComponents_delegate(ManagedScriptHolder_TickComponents);
+		Delegates[50] = new ManagedScriptHolder_TickComponentsEditor_delegate(ManagedScriptHolder_TickComponentsEditor);
+		Delegates[51] = new MessageManagerBase_PostMessageLine_delegate(MessageManagerBase_PostMessageLine);
+		Delegates[52] = new MessageManagerBase_PostMessageLineFormatted_delegate(MessageManagerBase_PostMessageLineFormatted);
+		Delegates[53] = new MessageManagerBase_PostSuccessLine_delegate(MessageManagerBase_PostSuccessLine);
+		Delegates[54] = new MessageManagerBase_PostWarningLine_delegate(MessageManagerBase_PostWarningLine);
+		Delegates[55] = new NativeParallelDriver_ParalelForLoopBodyCaller_delegate(NativeParallelDriver_ParalelForLoopBodyCaller);
+		Delegates[56] = new NativeParallelDriver_ParalelForLoopBodyWithDtCaller_delegate(NativeParallelDriver_ParalelForLoopBodyWithDtCaller);
+		Delegates[57] = new RenderTargetComponent_CreateRenderTargetComponent_delegate(RenderTargetComponent_CreateRenderTargetComponent);
+		Delegates[58] = new RenderTargetComponent_OnPaintNeeded_delegate(RenderTargetComponent_OnPaintNeeded);
+		Delegates[59] = new SceneProblemChecker_OnCheckForSceneProblems_delegate(SceneProblemChecker_OnCheckForSceneProblems);
+		Delegates[60] = new ScriptComponentBehavior_AddScriptComponentToTick_delegate(ScriptComponentBehavior_AddScriptComponentToTick);
+		Delegates[61] = new ScriptComponentBehavior_DeregisterAsPrefabScriptComponent_delegate(ScriptComponentBehavior_DeregisterAsPrefabScriptComponent);
+		Delegates[62] = new ScriptComponentBehavior_DeregisterAsUndoStackScriptComponent_delegate(ScriptComponentBehavior_DeregisterAsUndoStackScriptComponent);
+		Delegates[63] = new ScriptComponentBehavior_DisablesOroCreation_delegate(ScriptComponentBehavior_DisablesOroCreation);
+		Delegates[64] = new ScriptComponentBehavior_GetEditableFields_delegate(ScriptComponentBehavior_GetEditableFields);
+		Delegates[65] = new ScriptComponentBehavior_HandleOnRemoved_delegate(ScriptComponentBehavior_HandleOnRemoved);
+		Delegates[66] = new ScriptComponentBehavior_IsOnlyVisual_delegate(ScriptComponentBehavior_IsOnlyVisual);
+		Delegates[67] = new ScriptComponentBehavior_MovesEntity_delegate(ScriptComponentBehavior_MovesEntity);
+		Delegates[68] = new ScriptComponentBehavior_OnBoundingBoxValidate_delegate(ScriptComponentBehavior_OnBoundingBoxValidate);
+		Delegates[69] = new ScriptComponentBehavior_OnCheckForProblems_delegate(ScriptComponentBehavior_OnCheckForProblems);
+		Delegates[70] = new ScriptComponentBehavior_OnDynamicNavmeshVertexUpdate_delegate(ScriptComponentBehavior_OnDynamicNavmeshVertexUpdate);
+		Delegates[71] = new ScriptComponentBehavior_OnEditModeVisibilityChanged_delegate(ScriptComponentBehavior_OnEditModeVisibilityChanged);
+		Delegates[72] = new ScriptComponentBehavior_OnEditorInit_delegate(ScriptComponentBehavior_OnEditorInit);
+		Delegates[73] = new ScriptComponentBehavior_OnEditorTick_delegate(ScriptComponentBehavior_OnEditorTick);
+		Delegates[74] = new ScriptComponentBehavior_OnEditorValidate_delegate(ScriptComponentBehavior_OnEditorValidate);
+		Delegates[75] = new ScriptComponentBehavior_OnEditorVariableChanged_delegate(ScriptComponentBehavior_OnEditorVariableChanged);
+		Delegates[76] = new ScriptComponentBehavior_OnInit_delegate(ScriptComponentBehavior_OnInit);
+		Delegates[77] = new ScriptComponentBehavior_OnPhysicsCollisionAux_delegate(ScriptComponentBehavior_OnPhysicsCollisionAux);
+		Delegates[78] = new ScriptComponentBehavior_OnPreInit_delegate(ScriptComponentBehavior_OnPreInit);
+		Delegates[79] = new ScriptComponentBehavior_OnSaveAsPrefab_delegate(ScriptComponentBehavior_OnSaveAsPrefab);
+		Delegates[80] = new ScriptComponentBehavior_OnSceneSave_delegate(ScriptComponentBehavior_OnSceneSave);
+		Delegates[81] = new ScriptComponentBehavior_OnTerrainReload_delegate(ScriptComponentBehavior_OnTerrainReload);
+		Delegates[82] = new ScriptComponentBehavior_RegisterAsPrefabScriptComponent_delegate(ScriptComponentBehavior_RegisterAsPrefabScriptComponent);
+		Delegates[83] = new ScriptComponentBehavior_RegisterAsUndoStackScriptComponent_delegate(ScriptComponentBehavior_RegisterAsUndoStackScriptComponent);
+		Delegates[84] = new ScriptComponentBehavior_SetScene_delegate(ScriptComponentBehavior_SetScene);
+		Delegates[85] = new ScriptComponentBehavior_SkeletonPostIntegrateCallbackAux_delegate(ScriptComponentBehavior_SkeletonPostIntegrateCallbackAux);
+		Delegates[86] = new ThumbnailCreatorView_OnThumbnailRenderComplete_delegate(ThumbnailCreatorView_OnThumbnailRenderComplete);
 	}
 
 	[MonoPInvokeCallback(typeof(CrashInformationCollector_CollectInformation_delegate))]
@@ -472,6 +478,18 @@ internal static class EngineCallbacksGenerated
 		UIntPtr threadLocalCachedRglVarString = NativeStringHelper.GetThreadLocalCachedRglVarString();
 		NativeStringHelper.SetRglVarString(threadLocalCachedRglVarString, scriptComponentClassNames);
 		return threadLocalCachedRglVarString;
+	}
+
+	[MonoPInvokeCallback(typeof(ManagedExtensions_GetSecureRandomFloat_delegate))]
+	internal static float ManagedExtensions_GetSecureRandomFloat(float minValue, float maxValue)
+	{
+		return ManagedExtensions.GetSecureRandomFloat(minValue, maxValue);
+	}
+
+	[MonoPInvokeCallback(typeof(ManagedExtensions_GetSecureRandomInt_delegate))]
+	internal static int ManagedExtensions_GetSecureRandomInt(int maxValue)
+	{
+		return ManagedExtensions.GetSecureRandomInt(maxValue);
 	}
 
 	[MonoPInvokeCallback(typeof(ManagedExtensions_GetTypeOfField_delegate))]

@@ -417,7 +417,7 @@ public abstract class KingdomDiplomacyItemVM : KingdomItemVM
 		StanceLink stanceWith = _playerKingdom.GetStanceWith(Faction2);
 		int dailyTributeToPay = stanceWith.GetDailyTributeToPay(_playerKingdom);
 		int remainingTributePaymentCount = stanceWith.GetRemainingTributePaymentCount();
-		TextObject textObject = new TextObject("{=SDhQWonF}Paying {DENAR}{GOLD_ICON} as tribute per day, {TRIBUTE_PAYMENTS_REMAINING} days remaining.");
+		TextObject textObject = new TextObject("{=GxzLctcG}Paying {DENAR}{GOLD_ICON} per day, {TRIBUTE_PAYMENTS_REMAINING} days remaining.");
 		textObject.SetTextVariable("DENAR", MathF.Abs(dailyTributeToPay));
 		textObject.SetTextVariable("TRIBUTE_PAYMENTS_REMAINING", remainingTributePaymentCount);
 		Faction1TributeText = ((dailyTributeToPay > 0) ? textObject.ToString() : string.Empty);

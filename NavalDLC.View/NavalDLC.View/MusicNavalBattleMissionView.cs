@@ -212,6 +212,7 @@ internal class MusicNavalBattleMissionView : MissionView, IMusicHandler
 		{
 			if (Mission.Current.MissionResult != null)
 			{
+				base.Mission.MusicCulture = Mission.Current.GetMissionBehavior<MissionCombatantsLogic>().GetCultureForPlayerSide();
 				MusicTheme battleEndTheme = MBMusicManager.Current.GetBattleEndTheme(base.Mission.MusicCulture, Mission.Current.MissionResult.PlayerVictory);
 				MBMusicManager.Current.StartTheme(battleEndTheme, PsaiCore.Instance.GetPsaiInfo().currentIntensity, queueEndSegment: true);
 				_battleState = BattleState.Ending;
@@ -257,7 +258,7 @@ internal class MusicNavalBattleMissionView : MissionView, IMusicHandler
 				}
 				else
 				{
-					base.Mission.MusicCulture = Game.Current.PlayerTroop.Culture;
+					base.Mission.MusicCulture = Mission.Current.GetMissionBehavior<MissionCombatantsLogic>().GetCultureForPlayerSide();
 				}
 			}
 			if (base.Mission.MusicCulture != null)

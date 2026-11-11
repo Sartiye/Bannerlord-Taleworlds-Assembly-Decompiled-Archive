@@ -71,7 +71,7 @@ public class ShipProductionCampaignBehavior : CampaignBehaviorBase
 			return;
 		}
 		ExplainedNumber bonuses = new ExplainedNumber(0.5f);
-		PerkHelper.AddPerkBonusForTown(NavalPerks.Boatswain.StreamlinedOperations, town, ref bonuses);
+		PerkHelper.AddPerkBonusForTown(NavalPerks.Boatswain.StreamlinedOperations, town, isPrimaryBonus: false, ref bonuses);
 		int maxShipCountForTown = GetMaxShipCountForTown(town);
 		if (town.AvailableShips.Count < maxShipCountForTown && MBRandom.RandomFloat < bonuses.ResultNumber)
 		{
@@ -163,7 +163,8 @@ public class ShipProductionCampaignBehavior : CampaignBehaviorBase
 
 	private void OnShipOwnerChanged(Ship ship, PartyBase oldOwner, ChangeShipOwnerAction.ShipOwnerChangeDetail changeDetail)
 	{
-		if (ship.Owner.IsSettlement)
+		PartyBase owner = ship.Owner;
+		if (owner != null && owner.IsSettlement)
 		{
 			RepairShipAction.ApplyForFree(ship);
 		}
@@ -210,7 +211,7 @@ public class ShipProductionCampaignBehavior : CampaignBehaviorBase
 		MBList<(ShipHull, float)> availableShipHullsForTown = GetAvailableShipHullsForTown(town);
 		if (availableShipHullsForTown.Count == 0)
 		{
-			Debug.FailedAssert("Could not find ships to create.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\CampaignBehaviors\\ShipProductionCampaignBehavior.cs", "GetRandomShipHull", 231);
+			Debug.FailedAssert("Could not find ships to create.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\CampaignBehaviors\\ShipProductionCampaignBehavior.cs", "GetRandomShipHull", 233);
 		}
 		return MBRandom.ChooseWeighted(availableShipHullsForTown);
 	}

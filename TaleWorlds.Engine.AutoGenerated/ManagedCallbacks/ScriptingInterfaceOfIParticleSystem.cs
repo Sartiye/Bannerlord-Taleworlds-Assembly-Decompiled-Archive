@@ -71,6 +71,11 @@ internal class ScriptingInterfaceOfIParticleSystem : IParticleSystem
 	[MonoNativeFunctionWrapper]
 	public delegate void SetRuntimeEmissionRateMultiplierDelegate(UIntPtr pointer, float multiplier);
 
+	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+	[SuppressUnmanagedCodeSecurity]
+	[MonoNativeFunctionWrapper]
+	public delegate void SetRuntimeTimeMultiplierDelegate(UIntPtr pointer, float multiplier);
+
 	private static readonly Encoding _utf8 = Encoding.UTF8;
 
 	public static CreateParticleSystemAttachedToBoneDelegate call_CreateParticleSystemAttachedToBoneDelegate;
@@ -96,6 +101,8 @@ internal class ScriptingInterfaceOfIParticleSystem : IParticleSystem
 	public static SetPreviousGlobalFrameDelegate call_SetPreviousGlobalFrameDelegate;
 
 	public static SetRuntimeEmissionRateMultiplierDelegate call_SetRuntimeEmissionRateMultiplierDelegate;
+
+	public static SetRuntimeTimeMultiplierDelegate call_SetRuntimeTimeMultiplierDelegate;
 
 	public ParticleSystem CreateParticleSystemAttachedToBone(int runtimeId, UIntPtr skeletonPtr, sbyte boneIndex, ref MatrixFrame boneLocalFrame)
 	{
@@ -185,6 +192,11 @@ internal class ScriptingInterfaceOfIParticleSystem : IParticleSystem
 	public void SetRuntimeEmissionRateMultiplier(UIntPtr pointer, float multiplier)
 	{
 		call_SetRuntimeEmissionRateMultiplierDelegate(pointer, multiplier);
+	}
+
+	public void SetRuntimeTimeMultiplier(UIntPtr pointer, float multiplier)
+	{
+		call_SetRuntimeTimeMultiplierDelegate(pointer, multiplier);
 	}
 
 	void IParticleSystem.SetLocalFrame(UIntPtr pointer, in MatrixFrame newFrame)

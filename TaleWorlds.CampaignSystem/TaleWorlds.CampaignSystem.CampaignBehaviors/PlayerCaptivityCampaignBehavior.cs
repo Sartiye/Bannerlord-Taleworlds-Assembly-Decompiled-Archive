@@ -14,28 +14,16 @@ namespace TaleWorlds.CampaignSystem.CampaignBehaviors;
 
 public class PlayerCaptivityCampaignBehavior : CampaignBehaviorBase, ICaptivityCampaignBehavior
 {
-	private const float PlayerExecutionProbability = 0.02f;
-
-	private const float PlayerExecutionRelationLimit = -30f;
-
 	private const int MaxDaysOfImprisonment = 7;
-
-	private bool _isMainHeroExecuted;
-
-	private Hero _mainHeroExecuter;
 
 	public override void SyncData(IDataStore dataStore)
 	{
-		dataStore.SyncData("_isPlayerExecuted", ref _isMainHeroExecuted);
-		dataStore.SyncData("_mainHeroExecuter", ref _mainHeroExecuter);
 	}
 
 	public override void RegisterEvents()
 	{
 		CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
-		CampaignEvents.HeroPrisonerTaken.AddNonSerializedListener(this, OnPrisonerTaken);
 		CampaignEvents.HeroPrisonerReleased.AddNonSerializedListener(this, OnHeroPrisonerReleased);
-		CampaignEvents.GameMenuOpened.AddNonSerializedListener(this, OnGameMenuOpened);
 	}
 
 	private void OnHeroPrisonerReleased(Hero prisoner, PartyBase party, IFaction capturerFaction, EndCaptivityDetail detail, bool showNotification = true)
@@ -53,24 +41,6 @@ public class PlayerCaptivityCampaignBehavior : CampaignBehaviorBase, ICaptivityC
 	private void OnSessionLaunched(CampaignGameStarter campaignGameStarter)
 	{
 		AddGameMenus(campaignGameStarter);
-	}
-
-	private void OnGameMenuOpened(MenuCallbackArgs args)
-	{
-		if (_isMainHeroExecuted)
-		{
-			_isMainHeroExecuted = false;
-			KillCharacterAction.ApplyByExecution(Hero.MainHero, _mainHeroExecuter);
-		}
-	}
-
-	private void OnPrisonerTaken(PartyBase capturer, Hero prisoner)
-	{
-		if (prisoner == Hero.MainHero && capturer.LeaderHero != null && (float)capturer.LeaderHero.GetRelation(prisoner) < -30f && MBRandom.RandomFloat <= 0.02f)
-		{
-			_isMainHeroExecuted = true;
-			_mainHeroExecuter = capturer.LeaderHero;
-		}
 	}
 
 	private Hero FindEnemyPrisonerToSwapWithPlayer()

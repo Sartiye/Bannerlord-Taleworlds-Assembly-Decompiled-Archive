@@ -54,7 +54,13 @@ public static class HyperlinkTexts
 
 	public const string FocusIcon = "{=!}<img src=\"CharacterDeveloper\\cp_icon\">";
 
+	public const string BloodFeudIcon = "{=!}<img src=\"SPGeneral\\blood_feud_icon\" extend=\"3\">";
+
 	public static Func<bool> IsPlayStationGamepadActive;
+
+	public static Func<bool> IsGamepadActive;
+
+	public const float TooltipKeyExtendScale = 0.5f;
 
 	public static TextObject GetSettlementHyperlinkText(string link, TextObject settlementName)
 	{
@@ -120,6 +126,12 @@ public static class HyperlinkTexts
 	public static string GetGenericImageText(string meshId, int extend = 0)
 	{
 		return $"<img src=\"{meshId}\" extend=\"{extend}\">";
+	}
+
+	public static string GetTooltipExtendKeyHyperlinkText()
+	{
+		Func<bool> isGamepadActive = IsGamepadActive;
+		return GetKeyHyperlinkText((isGamepadActive != null && isGamepadActive()) ? "ControllerLBumper" : "LeftAlt", 0.5f);
 	}
 
 	public static string GetKeyHyperlinkText(string keyID, float overrideExtendScale = 1f)

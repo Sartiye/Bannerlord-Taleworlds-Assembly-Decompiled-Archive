@@ -9,27 +9,29 @@ namespace NavalDLC.Missions.Deployment;
 
 public class NavalTeamDeploymentPlan : ITeamDeploymentPlan
 {
-	public const float DeployZoneMinimumWidth = 400f;
+	public const float DeployZoneMinimumWidth = 100f;
 
-	public const float RiverSceneDeployZoneFixedWidth = 200f;
+	public const float DeployZoneMaximumWidth = 400f;
+
+	public const float RiverDeployZoneMaximumWidth = 200f;
+
+	public const float RiverDeployZoneMarginWidth = 10f;
 
 	public const float DeployZoneForwardMargin = 50f;
 
-	public const float DeployZoneBackwardMargin = 100f;
+	public const float DeployZoneBackwardsMargin = 50f;
+
+	public const float DeployZoneExtraWidthPerShip = 20f;
 
 	private Mission _mission;
 
 	private readonly NavalDeploymentPlan _initialPlan;
 
-	private readonly MBList<(string id, MBList<Vec2> points)> _deploymentBoundaries = new MBList<(string, MBList<Vec2>)>();
+	private MatrixFrame _deploymentZoneFrame;
 
-	private MatrixFrame _deploymentFrame;
+	private readonly MBList<(string id, MBList<Vec2> points)> _deploymentBoundaries;
 
-	private float _deploymentWidth;
-
-	private float _deploymentDepth;
-
-	private MBList<Vec2> _meanBoundaryPositions;
+	private readonly MBList<Vec2> _meanBoundaryPositions;
 
 	public Team Team { get; private set; }
 
@@ -37,20 +39,26 @@ public class NavalTeamDeploymentPlan : ITeamDeploymentPlan
 	{
 		_mission = mission;
 		Team = team;
-		_deploymentFrame = MatrixFrame.Identity;
-		_deploymentWidth = 0f;
-		_deploymentDepth = 0f;
+		_deploymentZoneFrame = MatrixFrame.Identity;
+		_deploymentBoundaries = new MBList<(string, MBList<Vec2>)>();
 		_meanBoundaryPositions = new MBList<Vec2>();
 		bool isRiverPlan = mission.MissionTeamAIType == Mission.MissionTeamAITypeEnum.NavalBattle && _mission.Scene.GetNavmeshFaceCountBetweenTwoIds(1, 1) > 0;
 		bool isRaidPlan = mission.MissionTeamAIType == Mission.MissionTeamAITypeEnum.NavalRaid;
 		_initialPlan = NavalDeploymentPlan.CreatePlan(_mission, team, isRiverPlan, isRaidPlan);
-		_deploymentBoundaries.Clear();
 	}
 
 	public void MakeDeploymentPlan(float spawnPathOffset, float targetOffset = 0f, FormationSceneSpawnEntry[,] formationSpawnEntries = null, bool isReinforcement = false)
 	{
 		_initialPlan.MakeDeploymentPlan(spawnPathOffset, targetOffset, formationSpawnEntries);
-		PlanDeploymentZone();
+		if (_initialPlan.IsRiverPlan || _initialPlan.IsRaidPlan)
+		{
+			float fixedWidth = (_initialPlan.IsRiverPlan ? 200f : 0f);
+			ComputeDeploymentZoneFromFormations(addExtraWidthFromShipCount: false, useMaxDepth: false, fixedWidth);
+		}
+		else
+		{
+			ComputeDeploymentZoneFromFormations(addExtraWidthFromShipCount: true, useMaxDepth: true);
+		}
 	}
 
 	public void ClearPlan(bool isReinforcement = false)
@@ -74,11 +82,6 @@ public class NavalTeamDeploymentPlan : ITeamDeploymentPlan
 		return _initialPlan.RemoveShip(formationIndex);
 	}
 
-	public int GetShipCount()
-	{
-		return _initialPlan.ShipCount;
-	}
-
 	public bool IsFirstPlan(bool isReinforcement = false)
 	{
 		return _initialPlan.PlanCount == 1;
@@ -89,9 +92,9 @@ public class NavalTeamDeploymentPlan : ITeamDeploymentPlan
 		return _initialPlan.IsPlanMade;
 	}
 
-	public MBReadOnlyList<(string id, MBList<Vec2> points)> GetDeploymentBoundaries()
+	public int GetShipCount()
 	{
-		return _deploymentBoundaries;
+		return _initialPlan.ShipCount;
 	}
 
 	public float GetSpawnPathOffset(bool isReinforcement = false)
@@ -99,14 +102,25 @@ public class NavalTeamDeploymentPlan : ITeamDeploymentPlan
 		return _initialPlan.SpawnPathOffset;
 	}
 
+	public MBReadOnlyList<(string id, MBList<Vec2> points)> GetDeploymentBoundaries()
+	{
+		return _deploymentBoundaries;
+	}
+
+	public MatrixFrame GetFormationsCenterFrameAndExtents(out Vec2 halfExtents, bool ignoreDimensionlessFormations = true)
+	{
+		return _initialPlan.ComputeFormationsCenterFrameAndExtents(ignoreDimensionlessFormations, out halfExtents);
+	}
+
 	public float GetTargetOffset(bool isReinforcement = false)
 	{
 		return _initialPlan.TargetOffset;
 	}
 
-	public MatrixFrame GetDeploymentFrame()
+	public MatrixFrame GetDeploymentZoneFrame()
 	{
-		return _deploymentFrame;
+		UpdateDeploymentFrameZ();
+		return _deploymentZoneFrame;
 	}
 
 	public bool HasDeploymentBoundaries()
@@ -167,131 +181,74 @@ public class NavalTeamDeploymentPlan : ITeamDeploymentPlan
 		return _meanBoundaryPositions[boundaryIndex];
 	}
 
-	private void PlanDeploymentZone()
+	private void ComputeDeploymentZoneFromFormations(bool addExtraWidthFromShipCount, bool useMaxDepth, float fixedWidth = 0f)
 	{
-		Vec3 o = Vec3.Zero;
-		Vec2 zero = Vec2.Zero;
-		int num = 0;
-		for (int i = 0; i < 10; i++)
-		{
-			FormationClass fClass = (FormationClass)i;
-			NavalFormationDeploymentPlan formationPlan = _initialPlan.GetFormationPlan(fClass);
-			if (formationPlan.HasFrame())
-			{
-				o += formationPlan.GetPosition();
-				zero += formationPlan.GetDirection();
-				num++;
-			}
-		}
-		o /= (float)num;
-		Vec3 direction = zero.ToVec3().NormalizedCopy();
-		Mat3 rot = Mat3.CreateMat3WithForward(in direction);
-		_deploymentFrame = new MatrixFrame(in rot, in o);
+		_initialPlan.GetFirstValidFormationFrame(out _deploymentZoneFrame, checkDimensions: false);
+		float num = 0f;
 		float num2 = 0f;
 		float num3 = 0f;
 		float num4 = 0f;
-		float num5 = 0f;
-		for (int j = 0; j < 10; j++)
+		for (int i = 0; i < 10; i++)
 		{
-			FormationClass fClass2 = (FormationClass)j;
-			IFormationDeploymentPlan formationPlan2 = GetFormationPlan(fClass2);
-			float num6 = formationPlan2.PlannedDepth / 2f;
-			float num7 = formationPlan2.PlannedWidth / 2f;
-			if (formationPlan2.HasFrame())
+			FormationClass fClass = (FormationClass)i;
+			IFormationDeploymentPlan formationPlan = GetFormationPlan(fClass);
+			if (formationPlan.HasFrame() && formationPlan.PlannedTroopCount > 0)
 			{
-				ref MatrixFrame deploymentFrame = ref _deploymentFrame;
-				MatrixFrame m = formationPlan2.GetFrame();
-				MatrixFrame matrixFrame = deploymentFrame.TransformToLocal(in m);
-				num2 = Math.Max(matrixFrame.origin.y + num6, num2);
-				num3 = Math.Min(matrixFrame.origin.y - num6, num3);
-				num4 = Math.Max(matrixFrame.origin.x + num7, num4);
-				num5 = Math.Min(matrixFrame.origin.x - num7, num5);
+				ref MatrixFrame deploymentZoneFrame = ref _deploymentZoneFrame;
+				MatrixFrame m = formationPlan.GetFrame();
+				MatrixFrame matrixFrame = deploymentZoneFrame.TransformToLocal(in m);
+				float num5 = formationPlan.PlannedDepth * 0.5f;
+				float num6 = formationPlan.PlannedWidth * 0.5f;
+				Vec3 s = matrixFrame.rotation.s;
+				Vec3 f = matrixFrame.rotation.f;
+				float num7 = TaleWorlds.Library.MathF.Abs(s.x) * num6 + TaleWorlds.Library.MathF.Abs(f.x) * num5;
+				float num8 = TaleWorlds.Library.MathF.Abs(s.y) * num6 + TaleWorlds.Library.MathF.Abs(f.y) * num5;
+				num = Math.Max(matrixFrame.origin.y + num8, num);
+				num2 = Math.Min(matrixFrame.origin.y - num8, num2);
+				num3 = Math.Max(matrixFrame.origin.x + num7, num3);
+				num4 = Math.Min(matrixFrame.origin.x - num7, num4);
 			}
 		}
-		float val = num4 + TaleWorlds.Library.MathF.Abs(num5);
-		float b = num2 + TaleWorlds.Library.MathF.Abs(num3);
-		_deploymentFrame.Advance(num2 + 50f);
+		num += 50f;
+		num2 = TaleWorlds.Library.MathF.Abs(num2) + 50f;
+		_deploymentZoneFrame.Advance(num);
+		float a = (num3 + num4) * 0.5f;
+		_deploymentZoneFrame.Strafe(a);
+		float num9 = num3 + TaleWorlds.Library.MathF.Abs(num4);
 		_deploymentBoundaries.Clear();
 		_meanBoundaryPositions.Clear();
-		if (_initialPlan.IsRiverPlan)
+		float desiredWidth;
+		if (fixedWidth > 1E-05f)
 		{
-			_deploymentWidth = 200f;
+			desiredWidth = fixedWidth;
 		}
 		else
 		{
-			_deploymentWidth = Math.Max(val, 400f);
+			desiredWidth = num9;
+			if (addExtraWidthFromShipCount)
+			{
+				float num10 = 20f * (float)_initialPlan.ShipCount;
+				desiredWidth += num10;
+			}
+			desiredWidth = Math.Max(desiredWidth, 100f);
+			desiredWidth = Math.Min(desiredWidth, 400f);
 		}
-		_deploymentDepth = 50f + TaleWorlds.Library.MathF.Max(100f, b);
+		float num11 = num + num2;
+		float desiredDepth = (useMaxDepth ? float.MaxValue : num11);
 		foreach (KeyValuePair<string, ICollection<Vec2>> boundary in _mission.Boundaries)
 		{
 			string key = boundary.Key;
-			ICollection<Vec2> value = boundary.Value;
-			MBList<Vec2> mBList = ComputeDeploymentBoundariesFromMissionBoundaries(value);
+			MBList<Vec2> mBList = DefaultTeamDeploymentPlan.ComputeDeploymentBoundariesFromMissionBoundaries(boundary.Value, in _deploymentZoneFrame, desiredWidth, desiredDepth);
 			_deploymentBoundaries.Add((key, mBList));
 			Vec2 item = new Vec2(mBList.Average((Vec2 v) => v.x), mBList.Average((Vec2 v) => v.y));
 			_meanBoundaryPositions.Add(item);
 		}
-		_deploymentFrame.origin.z = _mission.Scene.GetWaterLevelAtPosition(_deploymentFrame.origin.AsVec2, useWaterRenderer: true, checkWaterBodyEntities: false);
+		UpdateDeploymentFrameZ();
 	}
 
-	private MBList<Vec2> ComputeDeploymentBoundariesFromMissionBoundaries(ICollection<Vec2> missionBoundaries)
+	private void UpdateDeploymentFrameZ()
 	{
-		MBList<Vec2> boundary = new MBList<Vec2>();
-		if (missionBoundaries.Count > 2)
-		{
-			Vec2 asVec = _deploymentFrame.origin.AsVec2;
-			Vec2 vec = _deploymentFrame.rotation.s.AsVec2.Normalized();
-			Vec2 vec2 = _deploymentFrame.rotation.f.AsVec2.Normalized();
-			Vec2 vec3 = asVec - _deploymentDepth / 2f * vec2;
-			MBList<Vec2> mBList = new MBList<Vec2>();
-			Vec2 vec4 = asVec - _deploymentWidth / 2f * vec;
-			mBList.Add(vec4);
-			Vec2 vec5 = vec4 - vec2 * _deploymentDepth;
-			mBList.Add(vec5);
-			Vec2 vec6 = vec5 + vec * _deploymentWidth;
-			mBList.Add(vec6);
-			Vec2 item = vec6 + vec2 * _deploymentDepth;
-			mBList.Add(item);
-			MBList<Vec2> mBList2 = missionBoundaries.ToMBList();
-			foreach (Vec2 item2 in mBList)
-			{
-				Vec2 point = item2;
-				if (MBSceneUtilities.IsPointInsideBoundaries(in point, mBList2))
-				{
-					AddDeploymentBoundaryPoint(boundary, point);
-					continue;
-				}
-				Vec2 va = (vec3 - point).Normalized();
-				if (MBMath.IntersectRayWithPolygon(rayDir: (Vec2.DotProduct(va, vec) >= 0f) ? vec : (-vec), rayOrigin: point, polygon: mBList2, intersectionPoint: out var intersectionPoint))
-				{
-					AddDeploymentBoundaryPoint(boundary, intersectionPoint);
-				}
-				Vec2 rayDir2 = ((Vec2.DotProduct(va, vec2) >= 0f) ? vec2 : (-vec2));
-				if (MBMath.IntersectRayWithPolygon(point, rayDir2, mBList2, out var intersectionPoint2))
-				{
-					AddDeploymentBoundaryPoint(boundary, intersectionPoint2);
-				}
-			}
-			foreach (Vec2 item3 in mBList2)
-			{
-				Vec2 point2 = item3;
-				if (MBSceneUtilities.IsPointInsideBoundaries(in point2, mBList))
-				{
-					AddDeploymentBoundaryPoint(boundary, point2);
-				}
-			}
-			MBSceneUtilities.RadialSortBoundary(ref boundary);
-			MBSceneUtilities.FindConvexHull(ref boundary);
-		}
-		return boundary;
-	}
-
-	private void AddDeploymentBoundaryPoint(MBList<Vec2> deploymentBoundaries, Vec2 point)
-	{
-		if (!deploymentBoundaries.Exists((Vec2 boundaryPoint) => boundaryPoint.Distance(point) <= 0.1f))
-		{
-			deploymentBoundaries.Add(point);
-		}
+		_deploymentZoneFrame.origin.z = _mission.Scene.GetWaterLevelAtPosition(_deploymentZoneFrame.origin.AsVec2, useWaterRenderer: true, checkWaterBodyEntities: false);
 	}
 
 	bool ITeamDeploymentPlan.IsPositionInsideDeploymentBoundaries(in Vec2 position, out (string id, MBList<Vec2> points) containingBoundaryTuple)

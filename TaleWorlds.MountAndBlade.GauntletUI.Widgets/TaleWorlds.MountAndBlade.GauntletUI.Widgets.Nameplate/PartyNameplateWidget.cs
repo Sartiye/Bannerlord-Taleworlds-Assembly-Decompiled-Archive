@@ -26,6 +26,8 @@ public class PartyNameplateWidget : Widget
 
 	protected TutorialAnimState _tutorialAnimState;
 
+	protected bool _isNameplateVisible;
+
 	private Vec2 _position;
 
 	private Vec2 _headPosition;
@@ -38,6 +40,8 @@ public class PartyNameplateWidget : Widget
 
 	private Widget _speedIconWidget;
 
+	private Widget _bloodFeudIconWidget;
+
 	private Widget _parleyIconWidget;
 
 	private TextWidget _nameplateExtraInfoTextWidget;
@@ -49,6 +53,16 @@ public class PartyNameplateWidget : Widget
 	private ListPanel _nameplateLayoutListPanel;
 
 	private MaskedTextureWidget _partyBannerWidget;
+
+	private MaskedTextureWidget _shipBannerWidget;
+
+	private Widget _shipBannerContainerWidget;
+
+	private Widget _shipBannerFrameWidget;
+
+	private Vec2 _shipBannerPosition;
+
+	private bool _isShipBannerVisible;
 
 	private bool _isVisibleOnMap;
 
@@ -71,6 +85,8 @@ public class PartyNameplateWidget : Widget
 	private bool _canParley;
 
 	private bool _isDisorganized;
+
+	private bool _hasBloodFeud;
 
 	protected float _animSpeedModifier => 8f;
 
@@ -106,6 +122,86 @@ public class PartyNameplateWidget : Widget
 			{
 				_partyBannerWidget = value;
 				OnPropertyChanged(value, "PartyBannerWidget");
+			}
+		}
+	}
+
+	public MaskedTextureWidget ShipBannerWidget
+	{
+		get
+		{
+			return _shipBannerWidget;
+		}
+		set
+		{
+			if (_shipBannerWidget != value)
+			{
+				_shipBannerWidget = value;
+				OnPropertyChanged(value, "ShipBannerWidget");
+			}
+		}
+	}
+
+	public Widget ShipBannerContainerWidget
+	{
+		get
+		{
+			return _shipBannerContainerWidget;
+		}
+		set
+		{
+			if (_shipBannerContainerWidget != value)
+			{
+				_shipBannerContainerWidget = value;
+				OnPropertyChanged(value, "ShipBannerContainerWidget");
+			}
+		}
+	}
+
+	public Widget ShipBannerFrameWidget
+	{
+		get
+		{
+			return _shipBannerFrameWidget;
+		}
+		set
+		{
+			if (_shipBannerFrameWidget != value)
+			{
+				_shipBannerFrameWidget = value;
+				OnPropertyChanged(value, "ShipBannerFrameWidget");
+			}
+		}
+	}
+
+	public Vec2 ShipBannerPosition
+	{
+		get
+		{
+			return _shipBannerPosition;
+		}
+		set
+		{
+			if (_shipBannerPosition != value)
+			{
+				_shipBannerPosition = value;
+				OnPropertyChanged(value, "ShipBannerPosition");
+			}
+		}
+	}
+
+	public bool IsShipBannerVisible
+	{
+		get
+		{
+			return _isShipBannerVisible;
+		}
+		set
+		{
+			if (_isShipBannerVisible != value)
+			{
+				_isShipBannerVisible = value;
+				OnPropertyChanged(value, "IsShipBannerVisible");
 			}
 		}
 	}
@@ -335,6 +431,22 @@ public class PartyNameplateWidget : Widget
 		}
 	}
 
+	public bool HasBloodFeud
+	{
+		get
+		{
+			return _hasBloodFeud;
+		}
+		set
+		{
+			if (_hasBloodFeud != value)
+			{
+				_hasBloodFeud = value;
+				OnPropertyChanged(value, "HasBloodFeud");
+			}
+		}
+	}
+
 	public TextWidget NameplateTextWidget
 	{
 		get
@@ -415,6 +527,22 @@ public class PartyNameplateWidget : Widget
 		}
 	}
 
+	public Widget BloodFeudIconWidget
+	{
+		get
+		{
+			return _bloodFeudIconWidget;
+		}
+		set
+		{
+			if (value != _bloodFeudIconWidget)
+			{
+				_bloodFeudIconWidget = value;
+				OnPropertyChanged(value, "BloodFeudIconWidget");
+			}
+		}
+	}
+
 	public Widget ParleyIconWidget
 	{
 		get
@@ -452,9 +580,9 @@ public class PartyNameplateWidget : Widget
 	{
 	}
 
-	protected override void OnLateUpdate(float dt)
+	protected override void OnUpdate(float dt)
 	{
-		base.OnLateUpdate(dt);
+		base.OnUpdate(dt);
 		if (_isFirstFrame)
 		{
 			NameplateFullNameTextWidget.Brush.GlobalAlphaFactor = 0f;
@@ -463,6 +591,7 @@ public class PartyNameplateWidget : Widget
 			PartyBannerWidget.Brush.GlobalAlphaFactor = 0f;
 			SpeedTextWidget.Brush.GlobalAlphaFactor = 0f;
 			ParleyIconWidget.AlphaFactor = 0f;
+			ShipBannerContainerWidget.SetGlobalAlphaRecursively(0f);
 			_defaultNameplateFontSize = NameplateTextWidget.ReadOnlyBrush.FontSize;
 			_isFirstFrame = false;
 		}
@@ -471,58 +600,78 @@ public class PartyNameplateWidget : Widget
 		{
 			NameplateTextWidget.Brush.FontSize = num;
 		}
-		UpdateNameplatesScreenPosition();
+		_screenWidth = base.Context.TwoDimensionContext.Width;
+		_screenHeight = base.Context.TwoDimensionContext.Height;
 		UpdateNameplatesVisibility(dt);
+	}
+
+	protected override void OnLateUpdate(float dt)
+	{
+		base.OnLateUpdate(dt);
+		UpdateNameplatesScreenPosition();
 		UpdateTutorialStatus();
 	}
 
 	protected virtual void UpdateNameplatesVisibility(float dt)
 	{
-		float num = 0f;
-		float valueTo = 0f;
+		float valueTo = (IsVisibleOnMap ? 1 : 0);
+		float valueTo2 = 0f;
 		PartyBannerWidget.IsVisible = true;
 		NameplateTextWidget.IsVisible = IsVisibleOnMap;
 		NameplateFullNameTextWidget.IsVisible = IsVisibleOnMap;
+		BloodFeudIconWidget.IsVisible = IsVisibleOnMap && HasBloodFeud;
 		SpeedTextWidget.IsVisible = IsVisibleOnMap;
 		SpeedIconWidget.IsVisible = IsVisibleOnMap;
 		DisorganizedWidget.IsVisible = IsVisibleOnMap && IsDisorganized;
-		num = (IsVisibleOnMap ? 1 : 0);
 		TrackerFrame.IsVisible = false;
 		base.IsEnabled = false;
+		_isNameplateVisible = IsVisibleOnMap && !IsPositionOutsideScreen();
+		base.IsVisible = _isNameplateVisible || IsShipBannerVisible;
+		NameplateLayoutListPanel.IsVisible = _isNameplateVisible;
+		HeadGroupWidget.IsVisible = _isNameplateVisible;
+		ShipBannerContainerWidget.IsVisible = IsShipBannerVisible;
 		if (IsVisibleOnMap)
 		{
 			if (_initialDelayAmount <= 0f)
 			{
-				valueTo = (ShouldShowFullName ? 1 : 0);
+				valueTo2 = (ShouldShowFullName ? 1 : 0);
 			}
 			else
 			{
 				_initialDelayAmount -= dt;
-				valueTo = 1f;
+				valueTo2 = 1f;
 			}
 		}
-		NameplateTextWidget.Brush.GlobalAlphaFactor = MathF.Lerp(NameplateTextWidget.ReadOnlyBrush.GlobalAlphaFactor, num, dt * _animSpeedModifier);
-		NameplateFullNameTextWidget.Brush.GlobalAlphaFactor = MathF.Lerp(NameplateFullNameTextWidget.ReadOnlyBrush.GlobalAlphaFactor, valueTo, dt * _animSpeedModifier);
-		SpeedTextWidget.Brush.GlobalAlphaFactor = MathF.Lerp(SpeedTextWidget.ReadOnlyBrush.GlobalAlphaFactor, valueTo, dt * _animSpeedModifier);
-		float alphaFactor = MathF.Lerp(SpeedIconWidget.AlphaFactor, valueTo, dt * _animSpeedModifier);
+		NameplateTextWidget.Brush.GlobalAlphaFactor = MathF.Lerp(NameplateTextWidget.ReadOnlyBrush.GlobalAlphaFactor, valueTo, dt * _animSpeedModifier);
+		NameplateFullNameTextWidget.Brush.GlobalAlphaFactor = MathF.Lerp(NameplateFullNameTextWidget.ReadOnlyBrush.GlobalAlphaFactor, valueTo2, dt * _animSpeedModifier);
+		SpeedTextWidget.Brush.GlobalAlphaFactor = MathF.Lerp(SpeedTextWidget.ReadOnlyBrush.GlobalAlphaFactor, valueTo2, dt * _animSpeedModifier);
+		float alphaFactor = MathF.Lerp(SpeedIconWidget.AlphaFactor, valueTo2, dt * _animSpeedModifier);
 		SpeedIconWidget.SetGlobalAlphaRecursively(alphaFactor);
+		BloodFeudIconWidget.SetGlobalAlphaRecursively(alphaFactor);
 		NameplateExtraInfoTextWidget.Brush.GlobalAlphaFactor = MathF.Lerp(NameplateExtraInfoTextWidget.ReadOnlyBrush.GlobalAlphaFactor, ShouldShowFullName ? 1 : 0, dt * _animSpeedModifier);
-		PartyBannerWidget.Brush.GlobalAlphaFactor = MathF.Lerp(PartyBannerWidget.ReadOnlyBrush.GlobalAlphaFactor, num, dt * _animSpeedModifier);
+		PartyBannerWidget.Brush.GlobalAlphaFactor = MathF.Lerp(PartyBannerWidget.ReadOnlyBrush.GlobalAlphaFactor, valueTo, dt * _animSpeedModifier);
 		ParleyIconWidget.AlphaFactor = MathF.Lerp(ParleyIconWidget.AlphaFactor, CanParley ? 1 : 0, dt * _animSpeedModifier);
+		float alphaFactor2 = MathF.Lerp(ShipBannerWidget.ReadOnlyBrush.GlobalAlphaFactor, IsShipBannerVisible ? 1 : 0, dt * _animSpeedModifier);
+		ShipBannerContainerWidget.SetGlobalAlphaRecursively(alphaFactor2);
 	}
 
 	protected virtual void UpdateNameplatesScreenPosition()
 	{
-		_screenWidth = base.Context.EventManager.PageSize.X;
-		_screenHeight = base.Context.EventManager.PageSize.Y;
-		base.IsVisible = IsVisibleOnMap && !IsPositionOutsideScreen();
 		if (base.IsVisible)
 		{
 			float num = HeadGroupWidget?.Size.Y ?? 0f;
-			NameplateLayoutListPanel.ScaledPositionXOffset = base.Size.X / 2f - PartyBannerWidget.Size.X;
-			NameplateLayoutListPanel.ScaledPositionYOffset = Position.y - HeadPosition.y + num;
+			if (_isNameplateVisible)
+			{
+				NameplateLayoutListPanel.ScaledPositionXOffset = base.Size.X / 2f - PartyBannerWidget.Size.X;
+				NameplateLayoutListPanel.ScaledPositionYOffset = Position.y - HeadPosition.y + num;
+			}
 			base.ScaledPositionXOffset = HeadPosition.x - base.Size.X / 2f;
 			base.ScaledPositionYOffset = HeadPosition.y - num;
+			if (IsShipBannerVisible)
+			{
+				ShipBannerContainerWidget.ScaledPositionXOffset = ShipBannerPosition.x - base.ScaledPositionXOffset - ShipBannerContainerWidget.Size.X / 2f;
+				ShipBannerContainerWidget.ScaledPositionYOffset = ShipBannerPosition.y - base.ScaledPositionYOffset - ShipBannerContainerWidget.Size.Y;
+			}
 		}
 	}
 
@@ -547,11 +696,15 @@ public class PartyNameplateWidget : Widget
 		}
 	}
 
-	protected bool IsPositionOutsideScreen()
+	protected virtual bool IsPositionOutsideScreen()
 	{
-		if (!(Position.X > _screenWidth) && !(HeadPosition.X > _screenWidth) && !(Position.X < 0f) && !(HeadPosition.X < 0f) && !(Position.Y > _screenHeight) && !(HeadPosition.Y > _screenHeight) && !(Position.Y < 0f))
+		if ((!(Position.X > _screenWidth) || !(HeadPosition.X > _screenWidth)) && (!(Position.X < 0f) || !(HeadPosition.X < 0f)) && (!(Position.Y > _screenHeight) || !(HeadPosition.Y > _screenHeight)))
 		{
-			return HeadPosition.Y < 0f;
+			if (Position.Y < 0f)
+			{
+				return HeadPosition.Y < 0f;
+			}
+			return false;
 		}
 		return true;
 	}

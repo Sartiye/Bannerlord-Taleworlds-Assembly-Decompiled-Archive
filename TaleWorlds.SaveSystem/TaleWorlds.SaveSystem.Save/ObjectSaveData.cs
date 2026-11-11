@@ -253,13 +253,11 @@ internal class ObjectSaveData
 		foreach (KeyValuePair<FieldInfo, FieldSaveData> fieldValue in _fieldValues)
 		{
 			WriteMemberEntry(writer, fieldValue.Value, folderId, num++, SaveEntryExtension.Field);
-			fieldValue.Value.SaveTo(writer);
 		}
 		num = 0;
 		foreach (KeyValuePair<PropertyInfo, PropertySaveData> propertyValue in _propertyValues)
 		{
 			WriteMemberEntry(writer, propertyValue.Value, folderId, num++, SaveEntryExtension.Property);
-			propertyValue.Value.SaveTo(writer);
 		}
 		folderId++;
 		foreach (KeyValuePair<MemberDefinition, ObjectSaveData> childStruct in _childStructs)
@@ -305,18 +303,46 @@ internal class ObjectSaveData
 
 	private void WriteHeader(BinaryWriter writer)
 	{
-		writer.WriteShort((short)GetHeaderDataSize());
+		int headerDataSize = GetHeaderDataSize();
+		if (headerDataSize > 32767)
+		{
+			Context.ReportSaveIntegrityDrift($"[SaveSystem] Obj {Type?.FullName} header size {headerDataSize} overflows short");
+		}
+		writer.WriteShort((short)headerDataSize);
 		_typeDefinition.SaveId.WriteTo(writer);
-		writer.WriteShort((short)_propertyValues.Count);
-		writer.WriteShort((short)_childStructs.Count);
+		int count = _propertyValues.Count;
+		int count2 = _childStructs.Count;
+		if (count > 32767)
+		{
+			Context.ReportSaveIntegrityDrift($"[SaveSystem] Obj {Type?.FullName} property count {count} overflows short");
+		}
+		if (count2 > 32767)
+		{
+			Context.ReportSaveIntegrityDrift($"[SaveSystem] Obj {Type?.FullName} child struct count {count2} overflows short");
+		}
+		writer.WriteShort((short)count);
+		writer.WriteShort((short)count2);
 	}
 
 	private void WriteMemberEntry(BinaryWriter writer, VariableSaveData data, int parentFolderId, int id, SaveEntryExtension extension)
 	{
+		int dataSize = data.GetDataSize();
+		BinaryWriter binaryWriter = new BinaryWriter((dataSize > 0) ? dataSize : 16);
+		data.SaveTo(binaryWriter);
+		int length = binaryWriter.Length;
+		if (dataSize != length)
+		{
+			Context.ReportSaveIntegrityDrift($"[SaveSystem] Obj[{ObjectId}] {Type?.FullName} member {extension}[{id}] len mismatch predicted={dataSize} actual={length}");
+		}
 		writer.Write3ByteInt(parentFolderId);
 		writer.Write3ByteInt(id);
 		writer.WriteByte((byte)extension);
-		writer.WriteShort((short)data.GetDataSize());
+		if (length > 32767)
+		{
+			Context.ReportSaveIntegrityDrift($"[SaveSystem] Obj {Type?.FullName} member {extension}[{id}] size {length} overflows short");
+		}
+		writer.WriteShort((short)length);
+		writer.AppendData(binaryWriter);
 	}
 
 	private int GetMemberEntrySize()

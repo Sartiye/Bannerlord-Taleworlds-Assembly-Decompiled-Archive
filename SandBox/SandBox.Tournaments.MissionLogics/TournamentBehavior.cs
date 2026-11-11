@@ -150,6 +150,11 @@ public class TournamentBehavior : MissionLogic, ICameraModeLogic
 		}
 	}
 
+	public override void OnAfterMissionLoadingFinished()
+	{
+		base.Mission.OnInitialSpawnCompleted();
+	}
+
 	public void StartMatch()
 	{
 		if (CurrentMatch.IsPlayerParticipating())

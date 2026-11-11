@@ -18,14 +18,14 @@ public class NavalDLCSettlementMilitiaModel : SettlementMilitiaModel
 		ExplainedNumber bonuses = base.BaseModel.CalculateMilitiaChange(settlement, includeDescriptions);
 		if (settlement.IsTown && settlement.HasPort)
 		{
-			PerkHelper.AddPerkBonusForTown(NavalPerks.Boatswain.AccuracyTraining, settlement.Town, ref bonuses);
+			PerkHelper.AddPerkBonusForTown(NavalPerks.Boatswain.AccuracyTraining, settlement.Town, isPrimaryBonus: false, ref bonuses);
 		}
 		else if (settlement.IsVillage)
 		{
 			Town town = settlement.Village.Bound.Town;
-			if (town != null && town.Settlement.HasPort && town.Governor != null && town.Governor.GetPerkValue(NavalPerks.Boatswain.AccuracyTraining))
+			if (town != null && town.Settlement.HasPort)
 			{
-				bonuses.Add(NavalPerks.Boatswain.AccuracyTraining.SecondaryBonus, NavalPerks.Boatswain.AccuracyTraining.SecondaryDescription);
+				PerkHelper.AddPerkBonusForTown(NavalPerks.Boatswain.AccuracyTraining, town, isPrimaryBonus: false, ref bonuses);
 			}
 		}
 		Kingdom kingdom = settlement.OwnerClan?.Kingdom;
@@ -41,11 +41,11 @@ public class NavalDLCSettlementMilitiaModel : SettlementMilitiaModel
 		ExplainedNumber bonuses = base.BaseModel.CalculateVeteranMilitiaSpawnChance(settlement);
 		if (settlement.IsTown && settlement.HasPort)
 		{
-			PerkHelper.AddPerkBonusForTown(NavalPerks.Mariner.NavalFightingTraining, settlement.Town, ref bonuses);
+			PerkHelper.AddPerkBonusForTown(NavalPerks.Mariner.NavalFightingTraining, settlement.Town, isPrimaryBonus: false, ref bonuses);
 		}
 		if (settlement.IsVillage && settlement.Village.Bound.HasPort)
 		{
-			PerkHelper.AddPerkBonusForTown(NavalPerks.Mariner.NavalFightingTraining, settlement.Village.Bound.Town, ref bonuses);
+			PerkHelper.AddPerkBonusForTown(NavalPerks.Mariner.NavalFightingTraining, settlement.Village.Bound.Town, isPrimaryBonus: false, ref bonuses);
 		}
 		return bonuses;
 	}

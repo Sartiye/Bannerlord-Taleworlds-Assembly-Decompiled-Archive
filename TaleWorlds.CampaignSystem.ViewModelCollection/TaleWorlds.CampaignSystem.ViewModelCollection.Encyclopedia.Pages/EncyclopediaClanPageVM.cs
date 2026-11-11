@@ -27,6 +27,8 @@ public class EncyclopediaClanPageVM : EncyclopediaContentPageVM
 
 	private MBBindingList<EncyclopediaFactionVM> _enemies;
 
+	private MBBindingList<EncyclopediaFactionVM> _bloodFeuds;
+
 	private MBBindingList<EncyclopediaSettlementVM> _settlements;
 
 	private MBBindingList<EncyclopediaHistoryEventVM> _history;
@@ -38,6 +40,8 @@ public class EncyclopediaClanPageVM : EncyclopediaContentPageVM
 	private string _membersText;
 
 	private string _enemiesText;
+
+	private string _bloodFeudsText;
 
 	private string _alliesText;
 
@@ -122,6 +126,23 @@ public class EncyclopediaClanPageVM : EncyclopediaContentPageVM
 			{
 				_enemies = value;
 				OnPropertyChangedWithValue(value, "Enemies");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public MBBindingList<EncyclopediaFactionVM> BloodFeuds
+	{
+		get
+		{
+			return _bloodFeuds;
+		}
+		set
+		{
+			if (value != _bloodFeuds)
+			{
+				_bloodFeuds = value;
+				OnPropertyChangedWithValue(value, "BloodFeuds");
 			}
 		}
 	}
@@ -365,6 +386,23 @@ public class EncyclopediaClanPageVM : EncyclopediaContentPageVM
 	}
 
 	[DataSourceProperty]
+	public string BloodFeudsText
+	{
+		get
+		{
+			return _bloodFeudsText;
+		}
+		set
+		{
+			if (value != _bloodFeudsText)
+			{
+				_bloodFeudsText = value;
+				OnPropertyChangedWithValue(value, "BloodFeudsText");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public string AlliesText
 	{
 		get
@@ -541,6 +579,7 @@ public class EncyclopediaClanPageVM : EncyclopediaContentPageVM
 		_clan = _faction as Clan;
 		Members = new MBBindingList<HeroVM>();
 		Enemies = new MBBindingList<EncyclopediaFactionVM>();
+		BloodFeuds = new MBBindingList<EncyclopediaFactionVM>();
 		Settlements = new MBBindingList<EncyclopediaSettlementVM>();
 		History = new MBBindingList<EncyclopediaHistoryEventVM>();
 		ClanInfo = new MBBindingList<StringPairItemVM>();
@@ -556,6 +595,7 @@ public class EncyclopediaClanPageVM : EncyclopediaContentPageVM
 		MembersText = GameTexts.FindText("str_members").ToString();
 		AlliesText = new TextObject("{=bfQLwMUp}Clans").ToString();
 		EnemiesText = new TextObject("{=zZlWRZjO}Wars").ToString();
+		BloodFeudsText = new TextObject("{=kUxmw6U3}Blood Feuds").ToString();
 		SettlementsText = GameTexts.FindText("str_settlements").ToString();
 		VillagesText = GameTexts.FindText("str_villages").ToString();
 		DestroyedText = new TextObject("{=w8Yzf0F0}Destroyed").ToString();
@@ -570,6 +610,7 @@ public class EncyclopediaClanPageVM : EncyclopediaContentPageVM
 	{
 		Members.Clear();
 		Enemies.Clear();
+		BloodFeuds.Clear();
 		Settlements.Clear();
 		History.Clear();
 		ClanInfo.Clear();
@@ -632,14 +673,31 @@ public class EncyclopediaClanPageVM : EncyclopediaContentPageVM
 				Enemies.Add(new EncyclopediaFactionVM(mapFaction));
 			}
 		}
+		if (_clan != Clan.PlayerClan.MapFaction && _clan != Clan.PlayerClan)
+		{
+			if (_clan.HasBloodFeudWithPlayer)
+			{
+				BloodFeuds.Add(new EncyclopediaFactionVM(Clan.PlayerClan));
+			}
+		}
+		else
+		{
+			foreach (Clan item3 in Campaign.Current.Clans.OrderBy((Clan x) => x.Name.ToString()))
+			{
+				if (pageOf2.IsValidEncyclopediaItem(item3) && item3 != _faction.MapFaction && item3 != _faction && item3.HasBloodFeudWithPlayer)
+				{
+					BloodFeuds.Add(new EncyclopediaFactionVM(item3));
+				}
+			}
+		}
 		EncyclopediaPage pageOf3 = Campaign.Current.EncyclopediaManager.GetPageOf(typeof(Settlement));
-		foreach (Settlement item3 in from s in Settlement.All
+		foreach (Settlement item4 in from s in Settlement.All
 			orderby s.IsVillage, s.IsCastle, s.IsTown
 			select s)
 		{
-			if ((item3.MapFaction == _faction || (item3.OwnerClan == _faction && item3.OwnerClan.Leader != null)) && pageOf3.IsValidEncyclopediaItem(item3) && (item3.IsTown || item3.IsCastle))
+			if ((item4.MapFaction == _faction || (item4.OwnerClan == _faction && item4.OwnerClan.Leader != null)) && pageOf3.IsValidEncyclopediaItem(item4) && (item4.IsTown || item4.IsCastle))
 			{
-				Settlements.Add(new EncyclopediaSettlementVM(item3));
+				Settlements.Add(new EncyclopediaSettlementVM(item4));
 			}
 		}
 		GameTexts.SetVariable("LEFT", new TextObject("{=tTLvo8sM}Clan Tier").ToString());

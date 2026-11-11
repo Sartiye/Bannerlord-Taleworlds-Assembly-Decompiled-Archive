@@ -630,7 +630,7 @@ public class BatteringRam : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMove
 		MovementComponent.SetupGhostEntity();
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		return new TextObject("{=MaBSSg7I}Battering Ram");
 	}

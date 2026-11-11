@@ -302,7 +302,8 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 	{
 		if (commandName == "HoverBegin")
 		{
-			_datasource_Root.ExecuteOpenTooltip();
+			bool isMouseMoving = (bool)args[0];
+			_datasource_Root.ExecuteOpenTooltip(isMouseMoving);
 		}
 		if (commandName == "HoverEnd")
 		{
@@ -314,7 +315,8 @@ public class Crafting__TaleWorlds_CampaignSystem_ViewModelCollection_WeaponCraft
 	{
 		if (commandName == "HoverBegin")
 		{
-			_datasource_Root.ExecuteOpenTooltip();
+			bool isMouseMoving = (bool)args[0];
+			_datasource_Root.ExecuteOpenTooltip(isMouseMoving);
 		}
 		if (commandName == "HoverEnd")
 		{

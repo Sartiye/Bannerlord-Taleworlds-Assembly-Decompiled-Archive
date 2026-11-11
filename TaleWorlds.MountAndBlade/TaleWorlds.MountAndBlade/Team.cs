@@ -61,6 +61,18 @@ public class Team : IMissionTeam
 		}
 	}
 
+	public bool IsPlayerEnemy
+	{
+		get
+		{
+			if (Mission != null && Mission.PlayerTeam != null)
+			{
+				return Mission.PlayerTeam.Side != Side;
+			}
+			return false;
+		}
+	}
+
 	public TeamSideEnum TeamSide
 	{
 		get
@@ -861,6 +873,11 @@ public class Team : IMissionTeam
 	public void DisableDetachmentTicking()
 	{
 		_tickDetachments = false;
+	}
+
+	[Conditional("DEBUG")]
+	private void TickTaskForceDebug()
+	{
 	}
 
 	[Conditional("DEBUG")]

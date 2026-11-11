@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Helpers;
 using NavalDLC.Storyline.CampaignBehaviors;
 using NavalDLC.Storyline.Quests;
@@ -7,12 +9,12 @@ using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.GameState;
-using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.ObjectSystem;
@@ -407,7 +409,7 @@ public class NavalStorylineData
 			}
 			if (MobileParty.MainParty.Anchor.IsValid)
 			{
-				MobileParty.MainParty.Anchor.SetPosition(new CampaignVec2(Vec2.Invalid, isOnLand: false));
+				MobileParty.MainParty.Anchor.ResetPosition();
 			}
 			EncounterManager.StartSettlementEncounter(MobileParty.MainParty, HomeSettlement);
 		}
@@ -416,7 +418,6 @@ public class NavalStorylineData
 		{
 			mapState.Handler.TeleportCameraToMainParty();
 		}
-		UpdateVisibilityAndInspectedAroundHomeSettlement();
 	}
 
 	public static void TeleportMainHeroAndGunnarBackToBase()
@@ -425,21 +426,6 @@ public class NavalStorylineData
 		Gunnar.Heal(Gunnar.MaxHitPoints);
 		EnterSettlementAction.ApplyForCharacterOnly(Gunnar, HomeSettlement);
 		GameMenu.ActivateGameMenu("naval_storyline_outside_town");
-	}
-
-	private static void UpdateVisibilityAndInspectedAroundHomeSettlement()
-	{
-		float seeingRange = MobileParty.MainParty.SeeingRange;
-		CampaignVec2 position = HomeSettlement.Position;
-		LocatableSearchData<MobileParty> data = MobileParty.StartFindingLocatablesAroundPosition(position.ToVec2(), Campaign.Current.Models.MapVisibilityModel.MaximumSeeingRange() + 5f);
-		HomeSettlement.Party.UpdateVisibilityAndInspected(position, seeingRange);
-		for (MobileParty mobileParty = MobileParty.FindNextLocatable(ref data); mobileParty != null; mobileParty = MobileParty.FindNextLocatable(ref data))
-		{
-			if (!mobileParty.IsMilitia && !mobileParty.IsGarrison)
-			{
-				mobileParty.Party.UpdateVisibilityAndInspected(position, seeingRange);
-			}
-		}
 	}
 
 	private static void FadeToBlack()
@@ -465,5 +451,61 @@ public class NavalStorylineData
 		{
 			Mission.Current?.EndMission();
 		}
+	}
+
+	public static void OnPlayerAcceptsQuest(Action questAccepted, Action questRejected)
+	{
+		TextObject textObject = new TextObject("{=1A0ssk7f}If you continue, the following quests will be cancelled: {newline}{newline}{QUESTS}{newline}Are you sure you wish to proceed?");
+		IEnumerable<QuestBase> enumerable = Campaign.Current.QuestManager.Quests.WhereQ((QuestBase q) => ShouldIssueQuestCancelled(q));
+		int num = enumerable.CountQ();
+		if (num > 0)
+		{
+			TextObject textObject2 = GameTexts.FindText("str_string_newline_string");
+			textObject.SetTextVariable("QUESTS", textObject2);
+			int num2 = 0;
+			foreach (QuestBase item in enumerable)
+			{
+				textObject2.SetTextVariable("STR1", item.Title);
+				if (num2 + 1 == num)
+				{
+					textObject2.SetTextVariable("STR2", "");
+				}
+				else
+				{
+					TextObject textObject3 = GameTexts.FindText("str_string_newline_string");
+					textObject2.SetTextVariable("STR2", textObject3);
+					textObject2 = textObject3;
+				}
+				num2++;
+			}
+			InformationManager.ShowInquiry(new InquiryData("", textObject.ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: true, GameTexts.FindText("str_yes").ToString(), GameTexts.FindText("str_no").ToString(), delegate
+			{
+				for (int num3 = Campaign.Current.QuestManager.Quests.Count - 1; num3 >= 0; num3--)
+				{
+					QuestBase questBase = Campaign.Current.QuestManager.Quests[num3];
+					if (ShouldIssueQuestCancelled(questBase))
+					{
+						questBase.CompleteQuestWithCancel(GameTexts.FindText("str_quest_cancellation_due_to_naval_storyline"));
+					}
+				}
+				questAccepted?.Invoke();
+			}, delegate
+			{
+				questRejected?.Invoke();
+			}), pauseGameActiveState: true);
+		}
+		else
+		{
+			questAccepted?.Invoke();
+		}
+	}
+
+	public static bool ShouldIssueQuestCancelled(QuestBase quest)
+	{
+		if (quest.IsOngoing)
+		{
+			return !quest.IsSpecialQuest;
+		}
+		return false;
 	}
 }

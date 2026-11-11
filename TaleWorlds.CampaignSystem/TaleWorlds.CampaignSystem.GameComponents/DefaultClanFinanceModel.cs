@@ -435,10 +435,10 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 	{
 		ExplainedNumber bonuses = new ExplainedNumber((int)((float)town.TradeTaxAccumulated / RevenueSmoothenFraction()));
 		int num = MathF.Round(bonuses.ResultNumber);
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.Trade.ContentTrades, town, ref bonuses);
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.Crossbow.Steady, town, ref bonuses);
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.Roguery.SaltTheEarth, town, ref bonuses);
-		PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.GivingHands, town, ref bonuses);
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Trade.ContentTrades, town, isPrimaryBonus: true, ref bonuses);
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Crossbow.Steady, town, isPrimaryBonus: false, ref bonuses);
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Roguery.SaltTheEarth, town, isPrimaryBonus: false, ref bonuses);
+		PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.GivingHands, town, isPrimaryBonus: false, ref bonuses);
 		CalculateSettlementProjectTariffBonuses(town, ref bonuses);
 		if (applyWithdrawals)
 		{
@@ -458,13 +458,13 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 
 	public override int CalculateTownIncomeFromProjects(Town town)
 	{
-		ExplainedNumber result = default(ExplainedNumber);
-		if (town.CurrentDefaultBuilding != null && town.Governor != null && town.Governor.GetPerkValue(DefaultPerks.Engineering.ArchitecturalCommisions))
+		ExplainedNumber bonuses = default(ExplainedNumber);
+		if (town.CurrentDefaultBuilding != null && town.Governor != null)
 		{
-			result.Add((int)DefaultPerks.Engineering.ArchitecturalCommisions.SecondaryBonus);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Engineering.ArchitecturalCommisions, town, isPrimaryBonus: false, ref bonuses);
 		}
-		town.AddEffectOfBuildings(BuildingEffectEnum.DenarByBoundVillageHeartPerDay, ref result);
-		return (int)result.ResultNumber;
+		town.AddEffectOfBuildings(BuildingEffectEnum.DenarByBoundVillageHeartPerDay, ref bonuses);
+		return (int)bonuses.ResultNumber;
 	}
 
 	public override int CalculateVillageIncome(Clan clan, Village village, bool applyWithdrawals = false)
@@ -477,7 +477,8 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 		}
 		if (village.Bound.Town != null && village.Bound.Town.Governor != null && village.Bound.Town.Governor.GetPerkValue(DefaultPerks.Scouting.ForestKin))
 		{
-			num += MathF.Round((float)num * DefaultPerks.Scouting.ForestKin.SecondaryBonus);
+			int num3 = MathF.Round((float)num * DefaultPerks.Scouting.ForestKin.SecondaryBonus);
+			num += num3;
 		}
 		if (village.Bound?.Town?.Governor != null && village.Bound.Town.Governor.GetPerkValue(DefaultPerks.Steward.Logistician))
 		{
@@ -929,7 +930,8 @@ public class DefaultClanFinanceModel : ClanFinanceModel
 		goldChange.Add(num, _shopIncomeText);
 		if (hero.Clan != null && (hero.Clan.Leader?.GetPerkValue(DefaultPerks.Trade.ArtisanCommunity) ?? false) && applyWithdrawals && num2 > 0)
 		{
-			hero.Clan.AddRenown((float)num2 * DefaultPerks.Trade.ArtisanCommunity.PrimaryBonus);
+			float value = (float)num2 * DefaultPerks.Trade.ArtisanCommunity.PrimaryBonus;
+			hero.Clan.AddRenown(value);
 		}
 	}
 

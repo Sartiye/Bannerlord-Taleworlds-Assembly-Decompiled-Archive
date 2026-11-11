@@ -80,6 +80,10 @@ public class LegacySaveContext : ISaveContext
 
 	public static bool EnableSaveStatistics => false;
 
+	public void ReportSaveIntegrityDrift(string message)
+	{
+	}
+
 	public static SaveStatistics GetStatistics()
 	{
 		return new SaveStatistics(_typeStatistics, _containerStatistics);
@@ -134,7 +138,7 @@ public class LegacySaveContext : ISaveContext
 		{
 			string message = "Cant find definition for " + type.FullName;
 			Debug.Print(message, 0, Debug.DebugColor.Red);
-			Debug.FailedAssert(message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\LegacySaveContext.cs", "CollectContainerObjects", 151);
+			Debug.FailedAssert(message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\LegacySaveContext.cs", "CollectContainerObjects", 155);
 		}
 		ContainerSaveData.GetChildObjects(this, containerDefinition, containerType, parent, _temporaryCollectedObjects);
 		for (int i = 0; i < _temporaryCollectedObjects.Count; i++)
@@ -223,7 +227,7 @@ public class LegacySaveContext : ISaveContext
 		if (!_idsOfChildObjects.TryGetValue(target, out var value))
 		{
 			Debug.Print($"SAVE ERROR. Cant find {target} with type {target.GetType()}");
-			Debug.FailedAssert("SAVE ERROR. Cant find target object on save", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\LegacySaveContext.cs", "GetObjectId", 258);
+			Debug.FailedAssert("SAVE ERROR. Cant find target object on save", "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\LegacySaveContext.cs", "GetObjectId", 262);
 		}
 		return value;
 	}

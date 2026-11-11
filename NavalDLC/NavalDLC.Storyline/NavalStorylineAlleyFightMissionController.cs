@@ -36,7 +36,7 @@ public class NavalStorylineAlleyFightMissionController : MissionLogic
 
 	private float _gunnarInvulnerabilityTimer;
 
-	private float _gunnarInvulnerabilityDurationAfterCinematic = 10f;
+	private float _gunnarInvulnerabilityDurationAfterCinematic = 18f;
 
 	private bool _shouldShowEndNotification;
 
@@ -91,7 +91,7 @@ public class NavalStorylineAlleyFightMissionController : MissionLogic
 			SpawnEnemyTroop("sp_thug_3", "act_argue_trio_left");
 			team.SetPlayerRole(isPlayerGeneral: true, isPlayerSergeant: true);
 			formation.PlayerOwner = Agent.Main;
-			Mission.Current.OnDeploymentFinished();
+			base.Mission.OnInitialSpawnCompleted();
 		}
 		if (_willGunnarBecomeVulnerable)
 		{

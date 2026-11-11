@@ -92,8 +92,13 @@ public class SneakIntoTheVillaMissionController : MissionLogic
 		SpawnStealthAgents();
 		SpawnHeadman();
 		InitializeVolumeBoxes();
-		base.Mission.GetMissionBehavior<StealthFailCounterMissionLogic>().SetFailTexts(null, new TextObject("{=eJ3iAJ8U}You alerted the bandits. The camp erupts in confusion, but in the darkness you are able to slip away. You watch from a distance as the chaos and noise die down, and you sense that it won’t be long before this ill-disciplined gang relaxes their guard, giving you another chance. When you are ready, you can return to Tevea and try again."));
+		base.Mission.GetMissionBehavior<StealthFailCounterMissionLogic>().SetFailTexts(null, new TextObject("{=eJ3iAJ8U}You alerted the bandits. The camp erupts in confusion, but in the darkness you are able to slip away. You watch from a distance as the chaos and noise die down, and you sense that it won't be long before this ill-disciplined gang relaxes their guard, giving you another chance. When you are ready, you can return to Tevea and try again."));
 		Game.Current.EventManager.RegisterEvent<OnStealthMissionCounterFailedEvent>(OnCaughtInStealthZone);
+	}
+
+	public override void OnAfterMissionLoadingFinished()
+	{
+		base.Mission.OnInitialSpawnCompleted();
 	}
 
 	public static bool IsStealthTutorialReadyForActivation(MissionState missionState)
@@ -143,7 +148,7 @@ public class SneakIntoTheVillaMissionController : MissionLogic
 	private void ShowMissionFailedPopup()
 	{
 		TextObject textObject = new TextObject("{=DM6luo3c}Continue");
-		InformationManager.ShowInquiry(new InquiryData(new TextObject("{=wQbfWNZO}Mission Failed!").ToString(), new TextObject("{=45IBacqS}You are knocked to the ground, but in the confusion and darkness you are able to crawl away. You watch from a distance as the chaos and noise in the hideout die down, and you sense that it won’t be long before this ill-disciplined gang relaxes their guard, giving you another chance. When you are ready, you can return to Tevea and try again.").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, textObject.ToString(), null, delegate
+		InformationManager.ShowInquiry(new InquiryData(new TextObject("{=wQbfWNZO}Mission Failed!").ToString(), new TextObject("{=45IBacqS}You are knocked to the ground, but in the confusion and darkness you are able to crawl away. You watch from a distance as the chaos and noise in the hideout die down, and you sense that it won't be long before this ill-disciplined gang relaxes their guard, giving you another chance. When you are ready, you can return to Tevea and try again.").ToString(), isAffirmativeOptionShown: true, isNegativeOptionShown: false, textObject.ToString(), null, delegate
 		{
 			OnMainAgentIsWounded();
 		}, null), pauseGameActiveState: true);

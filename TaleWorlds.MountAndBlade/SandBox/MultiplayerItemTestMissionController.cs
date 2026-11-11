@@ -42,6 +42,11 @@ public class MultiplayerItemTestMissionController : MissionLogic
 		SpawnMultiplayerTroops();
 	}
 
+	public override void OnAfterMissionLoadingFinished()
+	{
+		base.Mission.OnInitialSpawnCompleted();
+	}
+
 	private void SpawnMultiplayerTroops()
 	{
 		foreach (BasicCharacterObject troop in _troops)

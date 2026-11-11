@@ -252,9 +252,14 @@ public class DefaultMissionDeploymentPlan : IMissionDeploymentPlan
 		return GetTeamPlanAux(team)?.HasDeploymentBoundaries() ?? false;
 	}
 
-	public MatrixFrame GetDeploymentFrame(Team team)
+	public MatrixFrame GetDeploymentZoneFrame(Team team)
 	{
-		return GetTeamPlan(team).GetDeploymentFrame();
+		return GetTeamPlan(team).GetDeploymentZoneFrame();
+	}
+
+	public MatrixFrame GetFormationsCenterFrameAndExtents(Team team, out Vec2 halfExtents, bool ignoreDimensionlessFormations = true)
+	{
+		return GetTeamPlan(team).GetFormationsCenterFrameAndExtents(out halfExtents, ignoreDimensionlessFormations);
 	}
 
 	public void ProjectPositionToDeploymentBoundaries(Team team, ref WorldPosition endPosition)
@@ -266,8 +271,7 @@ public class DefaultMissionDeploymentPlan : IMissionDeploymentPlan
 		Vec2 position = endPosition.AsVec2;
 		if (!IsPositionInsideDeploymentBoundaries(team, in position))
 		{
-			MatrixFrame deploymentFrame = GetDeploymentFrame(team);
-			WorldPosition startPosition = new WorldPosition(Mission.Current.Scene, UIntPtr.Zero, deploymentFrame.origin, hasValidZ: false);
+			WorldPosition startPosition = GetNavmeshValidPositionInDeploymentZone(team);
 			if (GetPathDeploymentBoundaryIntersection(team, in startPosition, in endPosition, out var intersection))
 			{
 				endPosition = intersection;
@@ -292,7 +296,8 @@ public class DefaultMissionDeploymentPlan : IMissionDeploymentPlan
 
 	public MatrixFrame GetZoomFocusFrame(Team team)
 	{
-		return GetDeploymentFrame(team);
+		Vec2 halfExtents;
+		return GetFormationsCenterFrameAndExtents(team, out halfExtents);
 	}
 
 	public float GetZoomOffset(Team team, float fovAngle)
@@ -448,6 +453,29 @@ public class DefaultMissionDeploymentPlan : IMissionDeploymentPlan
 	private DefaultTeamDeploymentPlan GetTeamPlanAux(Team team)
 	{
 		return _teamDeploymentPlans.FirstOrDefault(((Team team, DefaultTeamDeploymentPlan plan) t) => t.team == team).plan;
+	}
+
+	private WorldPosition GetNavmeshValidPositionInDeploymentZone(Team team)
+	{
+		DefaultTeamDeploymentPlan teamPlan = GetTeamPlan(team);
+		Scene scene = Mission.Current.Scene;
+		Vec3 position = teamPlan.GetDeploymentZoneFrame().origin;
+		UIntPtr navigationMeshForPosition = scene.GetNavigationMeshForPosition(in position);
+		if (navigationMeshForPosition != UIntPtr.Zero)
+		{
+			return new WorldPosition(scene, navigationMeshForPosition, position, hasValidZ: false);
+		}
+		for (FormationClass formationClass = FormationClass.Infantry; formationClass < FormationClass.NumberOfAllFormations; formationClass++)
+		{
+			IFormationDeploymentPlan formationPlan = teamPlan.GetFormationPlan(formationClass);
+			if (formationPlan.HasFrame())
+			{
+				Vec3 origin = formationPlan.GetFrame().origin;
+				return new WorldPosition(scene, UIntPtr.Zero, origin, hasValidZ: false);
+			}
+		}
+		Debug.FailedAssert("Unable to find a formation frame that is on navmesh", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Deployment\\DefaultMissionDeploymentPlan.cs", "GetNavmeshValidPositionInDeploymentZone", 623);
+		return new WorldPosition(scene, UIntPtr.Zero, position, hasValidZ: false);
 	}
 
 	bool IMissionDeploymentPlan.IsPositionInsideDeploymentBoundaries(Team team, in Vec2 position)

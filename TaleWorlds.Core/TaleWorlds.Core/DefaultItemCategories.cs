@@ -409,7 +409,7 @@ public class DefaultItemCategories
 		_itemCategoryUltraArmor.InitializeObject(isTradeGood: false, 3, 10);
 		_itemCategoryBanners.InitializeObject();
 		_itemCategoryUnassigned.InitializeObject(isTradeGood: false, 0, 0, ItemCategory.Property.None, null, 0f, isAnimal: false, isValid: false);
-		_itemCategoryFelt.InitializeObject(isTradeGood: true, 34, 23, ItemCategory.Property.BonusToFoodStores);
+		_itemCategoryFelt.InitializeObject(isTradeGood: true, 34, 23);
 		_itemCategoryPlanks.InitializeObject(isTradeGood: true, 25, 15);
 	}
 }

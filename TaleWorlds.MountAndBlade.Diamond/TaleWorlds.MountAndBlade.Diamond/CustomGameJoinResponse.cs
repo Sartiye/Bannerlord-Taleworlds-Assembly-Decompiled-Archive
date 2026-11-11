@@ -18,5 +18,9 @@ public enum CustomGameJoinResponse
 	AlreadyRequestedWaitingForServerResponse,
 	RequesterIsNotPartyLeader,
 	NotAllPlayersReady,
-	NotAllPlayersModulesMatchWithServer
+	NotAllPlayersModulesMatchWithServer,
+	StreamerCapacityIsFull,
+	StreamersNotAllowed,
+	StreamersCannotJoinAsParty,
+	WatchersCannotJoinAsParty
 }

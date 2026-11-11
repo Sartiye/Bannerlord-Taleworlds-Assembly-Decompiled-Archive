@@ -309,6 +309,40 @@ public static class Utilities
 		return EngineApplicationInterface.IUtil.GetFullCommandLineString();
 	}
 
+	public static string[] GetCommandLineModuleNames()
+	{
+		string fullCommandLineString = GetFullCommandLineString();
+		if (string.IsNullOrEmpty(fullCommandLineString))
+		{
+			return new string[0];
+		}
+		int num = fullCommandLineString.IndexOf("_MODULES_*", StringComparison.Ordinal);
+		if (num < 0)
+		{
+			return new string[0];
+		}
+		num += "_MODULES_*".Length;
+		int num2 = fullCommandLineString.IndexOf("*_MODULES_", num, StringComparison.Ordinal);
+		if (num2 < 0)
+		{
+			return new string[0];
+		}
+		return fullCommandLineString.Substring(num, num2 - num).Split(new char[1] { '*' }, StringSplitOptions.RemoveEmptyEntries);
+	}
+
+	public static bool IsModuleSelectedInCommandLine(string moduleName)
+	{
+		string[] commandLineModuleNames = GetCommandLineModuleNames();
+		for (int i = 0; i < commandLineModuleNames.Length; i++)
+		{
+			if (string.Equals(commandLineModuleNames[i], moduleName, StringComparison.Ordinal))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static void SetScreenTextRenderingState(bool state)
 	{
 		EngineApplicationInterface.IUtil.SetScreenTextRenderingState(state);
@@ -509,6 +543,16 @@ public static class Utilities
 		return EngineApplicationInterface.IUtil.GetReturnCode();
 	}
 
+	public static int GetUniqueAssertCount()
+	{
+		return EngineApplicationInterface.IUtil.GetUniqueAssertCount();
+	}
+
+	public static int GetUniqueWarningCount()
+	{
+		return EngineApplicationInterface.IUtil.GetUniqueWarningCount();
+	}
+
 	public static void DisableGlobalEditDataCacher()
 	{
 		EngineApplicationInterface.IUtil.DisableGlobalEditDataCacher();
@@ -657,6 +701,11 @@ public static class Utilities
 	public static void TakeScreenshot(string path)
 	{
 		EngineApplicationInterface.IUtil.TakeScreenshotFromStringPath(path);
+	}
+
+	public static void TakeScreenshotAsPng(string path)
+	{
+		EngineApplicationInterface.IUtil.TakeScreenshotAsPng(path);
 	}
 
 	public static void SetAllocationAlwaysValidScene(Scene scene)
@@ -944,6 +993,11 @@ public static class Utilities
 	public static bool IsAsyncPhysicsThread()
 	{
 		return EngineApplicationInterface.IUtil.IsAsyncPhysicsThread();
+	}
+
+	public static bool GetNavalDlcVersionMismatch()
+	{
+		return EngineApplicationInterface.IUtil.GetNavalDlcVersionMismatch();
 	}
 
 	public static void StartLoadingStuckCheckState(float timeoutThresholdSeconds)

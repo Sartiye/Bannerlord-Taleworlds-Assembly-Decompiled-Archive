@@ -34,26 +34,43 @@ public class DuelSpawningBehavior : SpawningBehaviorBase
 
 	protected override void SpawnAgents()
 	{
-		foreach (NetworkCommunicator networkPeer in GameNetwork.NetworkPeers)
+		foreach (NetworkCommunicator networkPeer2 in GameNetwork.NetworkPeers)
 		{
-			if (!networkPeer.IsSynchronized)
+			if (!networkPeer2.IsSynchronized)
 			{
 				continue;
 			}
-			MissionPeer component = networkPeer.GetComponent<MissionPeer>();
-			if (!(component.Representative is DuelMissionRepresentative) || !networkPeer.IsSynchronized || component.ControlledAgent != null || component.HasSpawnedAgentVisuals || component.Team == null || component.Team == base.Mission.SpectatorTeam || !component.TeamInitialPerkInfoReady || component.Culture == null || !component.SpawnTimer.Check(Mission.Current.CurrentTime))
+			MissionPeer component = networkPeer2.GetComponent<MissionPeer>();
+			if (!(component.Representative is DuelMissionRepresentative) || !networkPeer2.IsSynchronized || component.ControlledAgent != null || component.HasSpawnedAgentVisuals || component.Team == null || component.Team == base.Mission.SpectatorTeam || !component.TeamInitialPerkInfoReady || component.Culture == null || !component.SpawnTimer.Check(Mission.Current.CurrentTime))
 			{
 				continue;
 			}
 			MultiplayerClassDivisions.MPHeroClass mPHeroClassForPeer = MultiplayerClassDivisions.GetMPHeroClassForPeer(component);
 			if (mPHeroClassForPeer == null)
 			{
-				if (component.SelectedTroopIndex != 0)
+				if (component.SelectedTroopIndex == 0)
 				{
-					component.SelectedTroopIndex = 0;
-					GameNetwork.BeginBroadcastModuleEvent();
-					GameNetwork.WriteMessage(new UpdateSelectedTroopIndex(networkPeer, 0));
-					GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.ExcludeOtherTeamPlayers, networkPeer);
+					continue;
+				}
+				component.SelectedTroopIndex = 0;
+				int broadcastFlags = (GameMode.IsGameModeUsingOpposingTeams ? 64 : 0);
+				NetworkCommunicator targetPlayer = (GameMode.IsGameModeUsingOpposingTeams ? networkPeer2 : null);
+				GameNetwork.BeginBroadcastModuleEvent();
+				GameNetwork.WriteMessage(new UpdateSelectedTroopIndex(networkPeer2, component.SelectedTroopIndex));
+				GameNetwork.EndBroadcastModuleEvent((GameNetwork.EventBroadcastFlags)broadcastFlags, targetPlayer);
+				if (!GameMode.IsGameModeUsingOpposingTeams)
+				{
+					continue;
+				}
+				foreach (MissionPeer item in VirtualPlayer.Peers<MissionPeer>())
+				{
+					NetworkCommunicator networkPeer = item.GetNetworkPeer();
+					if (item.IsSpectator && !networkPeer.IsServerPeer && networkPeer.IsSynchronized)
+					{
+						GameNetwork.BeginModuleEventAsServer(networkPeer);
+						GameNetwork.WriteMessage(new UpdateSelectedTroopIndex(networkPeer2, component.SelectedTroopIndex));
+						GameNetwork.EndModuleEventAsServer();
+					}
 				}
 				continue;
 			}
@@ -62,9 +79,9 @@ public class DuelSpawningBehavior : SpawningBehaviorBase
 			IEnumerable<(EquipmentIndex, EquipmentElement)> enumerable = MPPerkObject.GetOnSpawnPerkHandler(component)?.GetAlternativeEquipments(isPlayer: true);
 			if (enumerable != null)
 			{
-				foreach (var item in enumerable)
+				foreach (var item2 in enumerable)
 				{
-					equipment[item.Item1] = item.Item2;
+					equipment[item2.Item1] = item2.Item2;
 				}
 			}
 			AgentBuildData agentBuildData = new AgentBuildData(heroCharacter).MissionPeer(component).Equipment(equipment).Team(component.Team)
@@ -74,7 +91,7 @@ public class DuelSpawningBehavior : SpawningBehaviorBase
 				.VisualsIndex(0)
 				.ClothingColor1(component.Culture.Color)
 				.ClothingColor2(component.Culture.Color2);
-			if (GameMode.ShouldSpawnVisualsForServer(networkPeer))
+			if (GameMode.ShouldSpawnVisualsForServer(networkPeer2))
 			{
 				base.AgentVisualSpawnComponent.SpawnAgentVisualsForPeer(component, agentBuildData, component.SelectedTroopIndex);
 				if (agentBuildData.AgentVisualsIndex == 0)
@@ -83,7 +100,7 @@ public class DuelSpawningBehavior : SpawningBehaviorBase
 					component.EquipmentUpdatingExpired = false;
 				}
 			}
-			GameMode.HandleAgentVisualSpawning(networkPeer, agentBuildData);
+			GameMode.HandleAgentVisualSpawning(networkPeer2, agentBuildData);
 		}
 	}
 

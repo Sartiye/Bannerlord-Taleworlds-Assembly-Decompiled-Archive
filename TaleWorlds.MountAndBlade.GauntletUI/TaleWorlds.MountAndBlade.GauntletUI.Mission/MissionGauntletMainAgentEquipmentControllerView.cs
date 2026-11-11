@@ -120,7 +120,7 @@ public class MissionGauntletMainAgentEquipmentControllerView : MissionView
 	public override void OnMissionScreenTick(float dt)
 	{
 		base.OnMissionScreenTick(dt);
-		if (IsMainAgentAvailable() && base.Mission.IsMainAgentItemInteractionEnabled)
+		if (IsMainAgentAvailable() && base.Mission.IsMainAgentItemInteractionEnabled && !base.MissionScreen.IsPhotoModeEnabled)
 		{
 			DropWeaponTick(dt);
 			EquipWeaponTick(dt);

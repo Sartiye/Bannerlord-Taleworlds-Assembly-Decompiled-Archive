@@ -8,6 +8,7 @@ using TaleWorlds.Core.ViewModelCollection.Selector;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.ModuleManager;
 using TaleWorlds.MountAndBlade.Diamond;
 using TaleWorlds.MountAndBlade.Diamond.Cosmetics;
 using TaleWorlds.MountAndBlade.Diamond.Cosmetics.CosmeticTypes;
@@ -733,6 +734,7 @@ public class MPArmoryCosmeticsVM : ViewModel
 			_clothingCategoriesLookup.Add(clothingCategory, new MPArmoryClothingCosmeticCategoryVM(clothingCategory));
 		}
 		_allCosmetics = new List<MPArmoryCosmeticItemBaseVM>();
+		CosmeticsManager.Initialize(ModuleHelper.GetModuleFullPath("Native") + "ModuleData");
 		List<CosmeticElement> list = CosmeticsManager.CosmeticElementsList.ToList();
 		for (int i = 0; i < list.Count; i++)
 		{
@@ -967,7 +969,7 @@ public class MPArmoryCosmeticsVM : ViewModel
 		}
 		else
 		{
-			Debug.FailedAssert("Previewing null item", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Armory\\MPArmoryCosmeticsVM.cs", "EquipItemOnHeroPreview", 529);
+			Debug.FailedAssert("Previewing null item", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Armory\\MPArmoryCosmeticsVM.cs", "EquipItemOnHeroPreview", 531);
 		}
 	}
 
@@ -1248,7 +1250,7 @@ public class MPArmoryCosmeticsVM : ViewModel
 			MPArmoryCosmeticTauntItemVM assignedTauntItem = TauntSlots[i].AssignedTauntItem;
 			if (assignedTauntItem != null && !assignedTauntItem.IsUnlocked)
 			{
-				Debug.FailedAssert("Assigned a taunt without ownership: " + assignedTauntItem.TauntID, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Armory\\MPArmoryCosmeticsVM.cs", "OnTauntItemEquipped", 872);
+				Debug.FailedAssert("Assigned a taunt without ownership: " + assignedTauntItem.TauntID, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Armory\\MPArmoryCosmeticsVM.cs", "OnTauntItemEquipped", 874);
 			}
 		}
 		_isLocalCosmeticsDirty = true;
@@ -1306,7 +1308,7 @@ public class MPArmoryCosmeticsVM : ViewModel
 		}
 		if (clothingCategory == null)
 		{
-			Debug.FailedAssert("Trying to filter by null clothing category", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Armory\\MPArmoryCosmeticsVM.cs", "FilterClothingsByCategory", 935);
+			Debug.FailedAssert("Trying to filter by null clothing category", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Armory\\MPArmoryCosmeticsVM.cs", "FilterClothingsByCategory", 937);
 			return;
 		}
 		_currentClothingCategory = clothingCategory.ClothingCategory;
@@ -1452,7 +1454,7 @@ public class MPArmoryCosmeticsVM : ViewModel
 			{
 				if (!mPArmoryCosmeticTauntItemVM.IsUnlocked)
 				{
-					Debug.FailedAssert("Trying to add non-owned cosmetic to taunt slot: " + mPArmoryCosmeticTauntItemVM.TauntID, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Armory\\MPArmoryCosmeticsVM.cs", "RefreshTaunts", 1113);
+					Debug.FailedAssert("Trying to add non-owned cosmetic to taunt slot: " + mPArmoryCosmeticTauntItemVM.TauntID, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Armory\\MPArmoryCosmeticsVM.cs", "RefreshTaunts", 1115);
 				}
 				else if (tauntIndex >= 0 && tauntIndex < TauntSlots.Count)
 				{

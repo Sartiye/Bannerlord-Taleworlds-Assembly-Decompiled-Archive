@@ -691,7 +691,7 @@ public class HeadmanNeedsGrainIssueBehavior : CampaignBehaviorBase
 
 		private void OnWarDeclared(IFaction faction1, IFaction faction2, DeclareWarAction.DeclareWarDetail detail)
 		{
-			if (detail == DeclareWarAction.DeclareWarDetail.CausedByCrimeRatingChange || (detail == DeclareWarAction.DeclareWarDetail.CausedByPlayerHostility && MobileParty.MainParty.MapEvent != null && MobileParty.MainParty.MapEvent.IsRaid && MobileParty.MainParty.MapEvent.MapEventSettlement.MapFaction == base.QuestGiver.MapFaction && base.QuestGiver.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction)))
+			if ((detail == DeclareWarAction.DeclareWarDetail.CausedByCrimeRatingChange || detail == DeclareWarAction.DeclareWarDetail.CausedByPlayerHostility) && MobileParty.MainParty.MapEvent != null && MobileParty.MainParty.MapEvent.IsRaid && MobileParty.MainParty.MapEvent.MapEventSettlement.MapFaction == base.QuestGiver.MapFaction && base.QuestGiver.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
 			{
 				CriminalRatingFail();
 			}

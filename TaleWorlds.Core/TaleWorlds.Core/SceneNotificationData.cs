@@ -83,6 +83,8 @@ public class SceneNotificationData
 
 	public virtual TextObject TitleText { get; }
 
+	public virtual TextObject DescriptionText { get; }
+
 	public virtual TextObject AffirmativeDescriptionText { get; }
 
 	public virtual TextObject NegativeDescriptionText { get; }
@@ -102,6 +104,8 @@ public class SceneNotificationData
 	public virtual bool IsAffirmativeOptionShown { get; }
 
 	public virtual bool IsNegativeOptionShown { get; }
+
+	public virtual bool ShouldAutoConfirm { get; }
 
 	public virtual bool PauseActiveState { get; } = true;
 

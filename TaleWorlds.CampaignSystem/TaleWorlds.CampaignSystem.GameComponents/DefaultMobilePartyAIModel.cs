@@ -29,7 +29,7 @@ public class DefaultMobilePartyAIModel : MobilePartyAIModel
 
 	public override float SettlementDefendingNearbyPartyCheckRadius => SettlementDefendingWaitingPositionRadius * 3f;
 
-	public override float SettlementDefendingWaitingPositionRadius => 3f;
+	public override float SettlementDefendingWaitingPositionRadius => Campaign.Current.Models.EncounterModel.GetEncounterJoiningRadius * 0.8f;
 
 	public override float NeededFoodsInDaysThresholdForSiege => 12f;
 
@@ -40,7 +40,7 @@ public class DefaultMobilePartyAIModel : MobilePartyAIModel
 		bool num = targetParty != MobileParty.MainParty || !MobileParty.MainParty.ShouldBeIgnored;
 		bool flag = targetParty != MobileParty.MainParty || party.Ai.DoNotAttackMainPartyUntil.IsPast;
 		bool flag2 = party.IsCurrentlyAtSea == targetParty.IsCurrentlyAtSea;
-		bool flag3 = party.CurrentSettlement != null && party.CurrentSettlement.IsFortification && party.CurrentSettlement.HasPort && party.HasNavalNavigationCapability;
+		bool flag3 = targetParty.IsCurrentlyAtSea && party.CurrentSettlement != null && party.CurrentSettlement.IsFortification && party.CurrentSettlement.HasPort && party.HasNavalNavigationCapability;
 		if (num && flag && (flag2 || flag3))
 		{
 			return MobilePartyHelper.CanPartyAttackWithCurrentMorale(party);
@@ -58,7 +58,7 @@ public class DefaultMobilePartyAIModel : MobilePartyAIModel
 		{
 			return false;
 		}
-		if (!(targetParty.Aggressiveness > 0.01f) || targetParty.IsInRaftState)
+		if (!(targetParty.Aggressiveness > 0.01f) || targetParty.IsInNavalAutoTravel)
 		{
 			return targetParty.IsGarrison;
 		}
@@ -143,7 +143,7 @@ public class DefaultMobilePartyAIModel : MobilePartyAIModel
 					continue;
 				}
 			}
-			if (mobileParty.IsLordParty && mobileParty2.IsBandit && mobileParty.DefaultBehavior == AiBehavior.PatrolAroundPoint && (mobileParty.TargetPosition.IsOnLand == mobileParty.IsCurrentlyAtSea || mobileParty.IsTransitionInProgress))
+			if (mobileParty.IsLordParty && mobileParty2.IsBandit && mobileParty.DefaultBehavior == AiBehavior.PatrolAroundPoint && !mobileParty.TargetPosition.IsOnLand && !mobileParty.IsCurrentlyAtSea)
 			{
 				mobileParty2 = MobileParty.FindNextLocatable(ref data);
 				continue;
@@ -174,17 +174,12 @@ public class DefaultMobilePartyAIModel : MobilePartyAIModel
 				}
 			}
 			float num2 = mobileParty.Position.Distance(v);
-			if (num2 >= getEncounterJoiningRadius * num * 3f)
-			{
-				mobileParty2 = MobileParty.FindNextLocatable(ref data);
-				continue;
-			}
 			if (bestInitiativeTargetParty != null && mobileParty.IsLordParty && !mobileParty2.IsLordParty && bestInitiativeBehavior == AiBehavior.EngageParty && bestInitiativeTargetParty.IsLordParty)
 			{
 				mobileParty2 = MobileParty.FindNextLocatable(ref data);
 				continue;
 			}
-			if (mobileParty2.SiegeEvent != null && mobileParty.DefaultBehavior == AiBehavior.DefendSettlement && mobileParty.TargetSettlement == mobileParty2.SiegeEvent.BesiegedSettlement && mobileParty2.MapEvent != null && mobileParty2.MapEvent.IsBlockade && !mobileParty.IsCurrentlyAtSea)
+			if (mobileParty2.SiegeEvent != null && mobileParty2.MapEvent != null && mobileParty2.MapEvent.IsBlockade && !mobileParty.IsCurrentlyAtSea)
 			{
 				mobileParty2 = MobileParty.FindNextLocatable(ref data);
 				continue;
@@ -252,7 +247,7 @@ public class DefaultMobilePartyAIModel : MobilePartyAIModel
 					mobileParty4 = MobileParty.FindNextLocatable(ref data2);
 					continue;
 				}
-				if (mobileParty4.IsInRaftState)
+				if (mobileParty4.IsInNavalAutoTravel)
 				{
 					mobileParty4 = MobileParty.FindNextLocatable(ref data2);
 					continue;
@@ -262,7 +257,7 @@ public class DefaultMobilePartyAIModel : MobilePartyAIModel
 					mobileParty4 = MobileParty.FindNextLocatable(ref data2);
 					continue;
 				}
-				if (mobileParty4.ShortTermBehavior == AiBehavior.EngageParty && mobileParty4.ShortTermTargetParty == mobileParty && mobileParty4.MapFaction != mobileParty2.MapFaction)
+				if ((mobileParty4.IsMainParty && mobileParty4.Party.EstimatedStrength > mobileParty.Party.EstimatedStrength) || (mobileParty4.ShortTermBehavior == AiBehavior.EngageParty && mobileParty4.ShortTermTargetParty == mobileParty && mobileParty4.MapFaction != mobileParty2.MapFaction))
 				{
 					flag = true;
 					break;
@@ -379,6 +374,11 @@ public class DefaultMobilePartyAIModel : MobilePartyAIModel
 					continue;
 				}
 			}
+			if (num10 > 1f && num2 >= getEncounterJoiningRadius * num * 3f)
+			{
+				mobileParty2 = MobileParty.FindNextLocatable(ref data);
+				continue;
+			}
 			CalculateInitiativeScoresForEnemy(mobileParty, mobileParty2, out var avoidScore, out var attackScore, num10, aggressiveness);
 			if (flag)
 			{
@@ -458,8 +458,8 @@ public class DefaultMobilePartyAIModel : MobilePartyAIModel
 		float num4 = MBMath.ClampFloat((localAdvantage < 1f) ? MBMath.ClampFloat(1f / localAdvantage, 0.05f, 3f) : 0f, 0.05f, 3f);
 		if (Campaign.Current.Models.MobilePartyAIModel.ShouldConsiderAttacking(mobileParty, enemyParty) && num3 > num4)
 		{
-			float initiativeDistanceForAttack = GetInitiativeDistanceForAttack(mobileParty, enemyParty, num);
 			float num5 = 1f;
+			float initiativeDistanceForAttack = GetInitiativeDistanceForAttack(mobileParty, enemyParty, num);
 			float num6 = ((mobileParty.IsBandit && mobileParty.HasNavalNavigationCapability) ? 10f : 5f);
 			if (mobileParty.IsCurrentlyAtSea && mobileParty.Army != null && mobileParty.Army.LeaderParty == mobileParty)
 			{

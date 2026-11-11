@@ -6,6 +6,7 @@ using Helpers;
 using NavalDLC.Missions.Objects;
 using NavalDLC.View.Map.Managers;
 using SandBox;
+using SandBox.View;
 using SandBox.View.Map;
 using SandBox.View.Map.Visuals;
 using TaleWorlds.CampaignSystem;
@@ -55,6 +56,10 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 
 		internal Vec3 _sideVectorEnd;
 
+		internal float _spawnSpeedFactor;
+
+		internal float _maxReachedFadeIn;
+
 		internal ShipFoamDecal()
 		{
 			_splashFoamDecal = null;
@@ -64,6 +69,8 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 			_cumulativeDtTillStart = 0f;
 			_randomScale = new Vec3(1f, 1f, 1f);
 			_currentSpeed = Vec3.Zero;
+			_spawnSpeedFactor = 1f;
+			_maxReachedFadeIn = 0f;
 		}
 	}
 
@@ -79,7 +86,55 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 
 	private const string BodyMeshTag = "body_mesh";
 
-	private const int NumberOfSplashDecal = 20;
+	private const string WakeParticlePointTag = "particle_point";
+
+	private const int NumberOfSplashDecal = 28;
+
+	private const float FoamDecalLifetime = 7f;
+
+	private const float FoamDecalFadeInStartDistance = 0.3f;
+
+	private const float FoamDecalFadeInEndDistance = 1.6f;
+
+	private const float FoamDecalFadeOutExponent = 5f;
+
+	private const float FoamDecalMinAlpha = 0.475f;
+
+	private const float FoamDecalMaxAlpha = 0.8f;
+
+	private const float FoamDecalSpawnDistance = 0.6f;
+
+	private const float FoamDecalSpawnDistanceRandomness = 0.1f;
+
+	private const float FoamDecalBaseHalfLength = 1f;
+
+	private const float FoamDecalDirectionSmoothing = 0.4f;
+
+	private const float FoamDecalSpawnHalfWidthHullFraction = 0.72f;
+
+	private const float FoamDecalFinalWidthMultiplier = 6f;
+
+	private const float FoamDecalWidthGrowthExponent = 1f;
+
+	private const float FoamDecalFallbackHullHalfWidth = 0.25f;
+
+	private const float FoamDecalLengthGrowth = 1f;
+
+	private const float FoamDecalRandomScaleRange = 0.15f;
+
+	private const float FoamDecalSidewaysDriftSpeed = 0f;
+
+	private const float FoamDecalBackwardDriftSpeed = 0f;
+
+	private const float FoamDecalRotationDegrees = 0f;
+
+	private const float FoamDecalSternOffsetMultiplier = 0.4f;
+
+	private const float FoamDecalTurnMinSizeFactor = 0.35f;
+
+	private const float FoamDecalTurnMinAlphaFactor = 0.3f;
+
+	private const float FoamDecalDetailTile = 1.2f;
 
 	private float _entityAlpha;
 
@@ -127,25 +182,37 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 
 	private float _bearingRotation;
 
-	private GameEntity _shipMovementParticleEntity;
-
-	private ParticleSystem _shipMovementParticle;
-
 	private GameEntity _shipStillMovementParticleEntity;
 
 	private ParticleSystem _shipStillMovementParticle;
+
+	private float _shipMovementParticleTimeMultiplier = 1f;
+
+	private readonly List<ParticleSystem> _shipMovementParticles = new List<ParticleSystem>();
+
+	private bool _shipMovementParticlesEmitting = true;
 
 	private BoundingBox _wakeBB;
 
 	private Scene _ownerSceneCached;
 
-	private ShipFoamDecal[] _splashFoamDecals = new ShipFoamDecal[20];
+	private ShipFoamDecal[] _splashFoamDecals = new ShipFoamDecal[28];
 
 	private Vec3 _lastDecalSpawnPosition = Vec3.Zero;
 
-	private float _nextDecalSpawnMetersSq = 0.09f;
-
 	private int _nextDecalToUse;
+
+	private Vec3 _lastShipPositionForFoam = Vec3.Zero;
+
+	private float _nextDecalSpawnMeters = 0.6f;
+
+	private ShipHull _ferryShipHull;
+
+	private bool _nextFoamDecalIsLeft = true;
+
+	private Vec3 _smoothedTrailDirection = Vec3.Zero;
+
+	private (string, GameEntity) _cachedBannerEntity;
 
 	private Scene MapScene
 	{
@@ -229,14 +296,19 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 		}
 	}
 
+	public override bool OnMapParleyClick()
+	{
+		return base.MapScreen.TryParleyWith(base.MapEntity);
+	}
+
 	public override bool OnMapClick(bool followModifierUsed)
 	{
-		MobileParty.NavigationType navigationType;
 		if (IsMainEntity)
 		{
 			MobileParty.MainParty.SetMoveModeHold();
+			return true;
 		}
-		else if (base.MapEntity.MobileParty.IsCurrentlyAtSea == MobileParty.MainParty.IsCurrentlyAtSea && NavigationHelper.CanPlayerNavigateToPosition(base.MapEntity.MobileParty.Position, out navigationType))
+		if (base.MapEntity.MobileParty.IsCurrentlyAtSea == MobileParty.MainParty.IsCurrentlyAtSea && NavigationHelper.CanPlayerNavigateToPosition(base.MapEntity.MobileParty.Position, out var navigationType))
 		{
 			if (followModifierUsed)
 			{
@@ -246,8 +318,9 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 			{
 				MobileParty.MainParty.SetMoveEngageParty(base.MapEntity.MobileParty, navigationType);
 			}
+			return true;
 		}
-		return true;
+		return false;
 	}
 
 	public override void OnHover()
@@ -403,19 +476,22 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 			ApplyWindEffect(windForPosition, entityFrame.rotation.f.AsVec2, realDt, dt);
 			TickSailingSound(num);
 			TickOars(dt, realDt);
-			TickIdleShipAnimation(base.MapEntity.FlagShip, ref _rockingPhase, ref entityFrame);
+			ShipHull shipHull = (base.MapEntity.MobileParty.IsInFerryState ? GetFerryShipHull() : base.MapEntity.FlagShip.ShipHull);
+			TickIdleShipAnimation(shipHull, ref _rockingPhase, ref entityFrame);
 			TickSwayingAnimation(ref entityFrame);
 			float speedUpMultiplier = Campaign.Current.SpeedUpMultiplier;
-			float num6 = realDt;
+			float num6 = 1f;
 			if (Campaign.Current.TimeControlMode == CampaignTimeControlMode.StoppableFastForward && !Campaign.Current.IsMainPartyWaiting)
 			{
-				num6 *= speedUpMultiplier;
+				num6 = speedUpMultiplier;
 			}
 			else if (Campaign.Current.TimeControlMode == CampaignTimeControlMode.UnstoppableFastForwardForPartyWaitTime || Campaign.Current.TimeControlMode == CampaignTimeControlMode.UnstoppableFastForward)
 			{
-				num6 *= speedUpMultiplier;
+				num6 = speedUpMultiplier;
 			}
-			TickFoamDecals(num6);
+			TickFoamDecals(realDt * num6);
+			TickMovementParticleTimeMultiplier(num6);
+			TickMovementParticleEmission();
 		}
 		if (!_shipToBlockadeShipVisualCache.IsEmpty())
 		{
@@ -423,7 +499,7 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 			{
 				BlockadeShipVisual value = item.Value;
 				MatrixFrame entityFrame2 = value.ShipEntity.GetLocalFrame();
-				TickIdleShipAnimation(item.Key, ref value.RockingPhase, ref entityFrame2, isBlockadeShip: true);
+				TickIdleShipAnimation(item.Key.ShipHull, ref value.RockingPhase, ref entityFrame2, isBlockadeShip: true);
 				value.ShipEntity.SetLocalFrame(ref entityFrame2, isTeleportation: true);
 				_shipToBlockadeShipVisualCache[item.Key] = value;
 			}
@@ -585,8 +661,10 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 			return;
 		}
 		base.MapEntity.MobileParty.OnNavalVisualsUpdated();
+		bool clearBannerEntityCache = true;
 		if (_raidAgentVisuals != null)
 		{
+			_raidAgentVisuals.SetVisible(value: false);
 			_raidAgentVisuals.Reset();
 			_raidAgentVisuals = null;
 		}
@@ -628,81 +706,58 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 					ResetPartyIcon();
 					AddRaftVisual();
 				}
+				else if (base.MapEntity.MobileParty.IsInFerryState)
+				{
+					ResetPartyIcon();
+					Ship flagship = new Ship(GetFerryShipHull());
+					AddShipVisual(flagship);
+				}
 				else if (base.MapEntity.Ships.Count > 0)
 				{
-					AddShipVisual();
+					Ship flagShip = base.MapEntity.FlagShip;
+					AddShipVisual(flagShip);
 				}
 				InitializePartyCollider(base.MapEntity);
-				if (base.MapEntity.MobileParty.MapEvent != null)
+				if (base.MapEntity.MobileParty.IsVisible && base.MapEntity.MobileParty.MapEvent != null)
 				{
 					Settlement mapEventSettlement = base.MapEntity.MobileParty.MapEvent.MapEventSettlement;
-					if (mapEventSettlement != null && mapEventSettlement.IsVillage)
+					if (mapEventSettlement != null && mapEventSettlement.IsVillage && _raidAgentVisuals == null)
 					{
-						if (_raidAgentVisuals == null)
-						{
-							AddRaidPartyVisual(base.MapEntity.MobileParty.Party);
-						}
-						MatrixFrame frame = MatrixFrame.Identity;
-						frame.origin = base.MapEntity.MobileParty.MapEvent.MapEventSettlement.Position.AsVec3();
-						frame.rotation.ApplyScaleLocal(_raidAgentVisuals.GetScale());
-						_raidAgentVisuals.GetWeakEntity().SetFrame(ref frame);
+						AddRaidPartyVisual(base.MapEntity.MobileParty.Party, ref clearBannerEntityCache);
 					}
 				}
 			}
 		}
+		if (clearBannerEntityCache)
+		{
+			_cachedBannerEntity = (null, null);
+		}
 		StrategicEntity.CheckResources(addToQueue: true, checkFaceResources: false);
 	}
 
-	private void AddRaidPartyVisual(PartyBase party)
+	private void AddRaidPartyVisual(PartyBase party, ref bool clearBannerEntityCache)
 	{
-		CharacterObject visualPartyLeader = PartyBaseHelper.GetVisualPartyLeader(party);
-		Equipment equipment = visualPartyLeader.Equipment.Clone();
-		GetMeleeWeaponToWield(party, out var wieldedItemIndex);
-		Monster baseMonsterFromRace = TaleWorlds.Core.FaceGen.GetBaseMonsterFromRace(visualPartyLeader.Race);
-		MBActionSet actionSetWithSuffix = MBGlobals.GetActionSetWithSuffix(baseMonsterFromRace, visualPartyLeader.IsFemale, "_map_with_banner");
-		AgentVisualsData data = new AgentVisualsData().UseMorphAnims(useMorphAnims: true).Equipment(equipment).BodyProperties(visualPartyLeader.GetBodyProperties(visualPartyLeader.Equipment))
-			.SkeletonType(visualPartyLeader.IsFemale ? SkeletonType.Female : SkeletonType.Male)
-			.Scale(0.3f)
-			.Frame(StrategicEntity.GetFrame())
-			.ActionSet(actionSetWithSuffix)
-			.Scene(MapScene)
-			.Monster(baseMonsterFromRace)
-			.PrepareImmediately(prepareImmediately: false)
-			.RightWieldedItemIndex(wieldedItemIndex)
-			.HasClippingPlane(hasClippingPlane: true)
-			.UseScaledWeapons(useScaledWeapons: true)
-			.ClothColor1((uint)(((int?)party.MapFaction?.Color) ?? (-3357781)))
-			.ClothColor2((uint)(((int?)party.MapFaction?.Color2) ?? (-3357781)))
-			.CharacterObjectStringId(visualPartyLeader.StringId)
-			.Race(visualPartyLeader.Race);
-		_raidAgentVisuals = AgentVisuals.Create(data, "PartyIcon " + visualPartyLeader.Name, isRandomProgress: false, needBatchedVersionForWeaponMeshes: false, forceUseFaceCache: false);
+		uint contourColor = (FactionManager.IsAtWarAgainstFaction(party.MapFaction, Hero.MainHero.MapFaction) ? 4294905856u : 4278206719u);
+		MatrixFrame identity = MatrixFrame.Identity;
+		identity.origin = base.MapEntity.MobileParty.MapEvent.MapEventSettlement.Position.AsVec3();
+		if (base.MapEntity.MapEventSide.OtherSide.LeaderParty != null)
+		{
+			Vec2 vec = ((base.MapEntity.MapEventSide.OtherSide.LeaderParty.IsMobile ? base.MapEntity.MapEventSide.OtherSide.LeaderParty.MobileParty.VisualPosition2DWithoutError : base.MapEntity.MapEventSide.OtherSide.LeaderParty.Position.ToVec2()) - base.MapEntity.MobileParty.VisualPosition2DWithoutError).Normalized();
+			if (base.MapEntity.MapEventSide.OtherSide.LeaderParty.IsMobile)
+			{
+				identity.origin -= vec.ToVec3() * 0.5f;
+			}
+			identity.rotation.RotateAboutUp(vec.RotationInRadians);
+		}
+		_raidAgentVisuals = SandBoxViewHelpers.MobilePartyVisualHelper.GetHumanAgentPartyVisual(MapScene, identity, party, contourColor, ActionIndexCache.act_map_raid, ref clearBannerEntityCache, ref _cachedBannerEntity, out var animationDuration);
 		if (_raidAgentVisuals != null)
 		{
-			_raidAgentVisuals.GetVisuals().GetSkeleton().SetAgentActionChannel(0, in ActionIndexCache.act_map_raid, MBRandom.NondeterministicRandomFloat * 0.7f);
+			float num = MBRandom.NondeterministicRandomFloat * 0.7f;
+			_raidAgentVisuals.GetVisuals().GetSkeleton().SetAgentActionChannel(0, in ActionIndexCache.act_map_raid, (animationDuration < 1f) ? num : (num / animationDuration));
 			WeakGameEntity weakEntity = _raidAgentVisuals.GetWeakEntity();
-			uint value = (FactionManager.IsAtWarAgainstFaction(party.MapFaction, Hero.MainHero.MapFaction) ? 4294905856u : 4278206719u);
-			weakEntity.SetContourColor(value, alwaysVisible: false);
 			float speed = TaleWorlds.Library.MathF.Min(0.25f, 20f);
 			_raidAgentVisuals.Tick(null, 0.0001f, isEntityMoving: false, speed);
 			weakEntity.Skeleton.ForceUpdateBoneFrames();
-		}
-	}
-
-	private void GetMeleeWeaponToWield(PartyBase party, out int wieldedItemIndex)
-	{
-		wieldedItemIndex = -1;
-		CharacterObject visualPartyLeader = PartyBaseHelper.GetVisualPartyLeader(party);
-		if (visualPartyLeader == null)
-		{
-			return;
-		}
-		for (int i = 0; i < 5; i++)
-		{
-			if (visualPartyLeader.Equipment[i].Item != null && visualPartyLeader.Equipment[i].Item.PrimaryWeapon.IsMeleeWeapon)
-			{
-				wieldedItemIndex = i;
-				break;
-			}
 		}
 	}
 
@@ -746,6 +801,7 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 			_shipEntity.ClearComponents();
 			_sailVisualCache.Clear();
 			_oars.Clear();
+			_shipMovementParticles.Clear();
 			_shipEntity = null;
 			_sailingSoundEvent?.Stop();
 			_sailingSoundEvent = null;
@@ -816,12 +872,12 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 
 	private float GetMapEventVisualRotation()
 	{
-		if (base.MapEntity.MapEventSide.OtherSide.LeaderParty != null && base.MapEntity.MapEventSide.OtherSide.LeaderParty.IsMobile && base.MapEntity.MapEventSide.OtherSide.LeaderParty.IsMobile)
+		if (base.MapEntity.MapEventSide.OtherSide.LeaderParty != null && base.MapEntity.MapEventSide.OtherSide.LeaderParty.IsMobile)
 		{
 			Vec2 vec = (base.MapEntity.MapEventSide.OtherSide.LeaderParty.MobileParty.VisualPosition2DWithoutError - base.MapEntity.MobileParty.VisualPosition2DWithoutError).Normalized();
 			if (base.MapEntity.MapEvent.IsNavalMapEvent)
 			{
-				vec.RotateCCW(0.6f);
+				vec.RotateCCW(System.MathF.PI / 2f);
 			}
 			return vec.RotationInRadians;
 		}
@@ -910,17 +966,16 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 		}
 	}
 
-	private void AddShipVisual()
+	private void AddShipVisual(Ship flagship)
 	{
 		if (!base.MapEntity.IsActive)
 		{
 			return;
 		}
 		_isSailFolded = true;
-		Ship flagShip = base.MapEntity.FlagShip;
-		if (_flagShipId == flagShip.ShipHull.StringId && _shipEntity != null && _isVisualInRaftState == base.MapEntity.MobileParty.IsInRaftState)
+		if (_flagShipId == flagship.ShipHull.StringId && _shipEntity != null && _isVisualInRaftState == base.MapEntity.MobileParty.IsInRaftState)
 		{
-			NavalDLCViewHelpers.ShipVisualHelper.RefreshShipVisuals(_shipEntity.WeakEntity, flagShip, _sailVisualCache);
+			NavalDLCViewHelpers.ShipVisualHelper.RefreshShipVisuals(_shipEntity.WeakEntity, flagship, _sailVisualCache);
 		}
 		else
 		{
@@ -943,7 +998,7 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 				_sailingSoundEvent = SoundEvent.CreateEventFromString("event:/map/army/sail", NavalMobilePartyVisualManager.Current.MapScene);
 				_sailingSoundEvent.SetPosition(GetVisualPosition());
 			}
-			_shipEntity = NavalDLCViewHelpers.ShipVisualHelper.GetShipEntityForCampaign(flagShip, StrategicEntity.Scene, flagShip.GetShipVisualSlotInfos());
+			_shipEntity = NavalDLCViewHelpers.ShipVisualHelper.GetShipEntityForCampaign(flagship, StrategicEntity.Scene, flagship.GetShipVisualSlotInfos());
 			NavalDLCViewHelpers.ShipVisualHelper.CollectSailVisuals(_shipEntity.WeakEntity, _sailVisualCache);
 			CollectOars();
 			float num = 50f;
@@ -960,11 +1015,8 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 			_bodyMeshEntity = _shipEntity.WeakEntity.GetFirstChildEntityWithTagRecursive("body_mesh");
 			StrategicEntity.AddChild(_shipEntity);
 			_shipEntity.SetVisibilityExcludeParents(visible: true);
-			_flagShipId = flagShip.ShipHull.StringId;
+			_flagShipId = flagship.ShipHull.StringId;
 			_ownerSceneCached = _shipEntity.Scene;
-			_shipMovementParticleEntity = GameEntity.CreateEmpty(_ownerSceneCached, isModifiableFromEditor: false, createPhysics: false, callScriptCallbacks: false);
-			_shipMovementParticleEntity.Name = "movement_particle";
-			_shipEntity.AddChild(_shipMovementParticleEntity);
 			MatrixFrame frame2 = MatrixFrame.Identity;
 			if (_bodyMeshEntity.IsValid)
 			{
@@ -974,17 +1026,23 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 					_wakeBB = metaMesh.GetBoundingBox();
 					frame2.origin.y += _wakeBB.max.y * 0.8f;
 					frame2.rotation.ApplyScaleLocal(20f);
-					_shipMovementParticleEntity.SetFrame(ref frame2);
 				}
 			}
-			_shipMovementParticleEntity.SetLocalFrame(ref frame2, isTeleportation: true);
-			_lastDecalSpawnPosition = _shipEntity.GetGlobalFrame().origin;
-			for (int i = 0; i < 20; i++)
+			ResetFoamDecalTrail(_shipEntity.GetGlobalFrame().origin);
+			_nextFoamDecalIsLeft = true;
+			for (int i = 0; i < 28; i++)
 			{
 				_splashFoamDecals[i] = new ShipFoamDecal();
 			}
 			MatrixFrame boneLocalFrame = MatrixFrame.Identity;
-			_shipMovementParticle = ParticleSystem.CreateParticleSystemAttachedToEntity("psys_campaign_ship_trail", _shipMovementParticleEntity, ref boneLocalFrame);
+			_shipMovementParticles.Clear();
+			string wakeParticleSystemName = GetWakeParticleSystemName(flagship.ShipHull);
+			foreach (WeakGameEntity item2 in _shipEntity.WeakEntity.CollectChildrenEntitiesWithTagAsEnumarable("particle_point"))
+			{
+				_shipMovementParticles.Add(ParticleSystem.CreateParticleSystemAttachedToEntity(wakeParticleSystemName, item2, ref boneLocalFrame));
+			}
+			_shipMovementParticleTimeMultiplier = 1f;
+			_shipMovementParticlesEmitting = true;
 			_shipStillMovementParticleEntity = GameEntity.CreateEmpty(_ownerSceneCached, isModifiableFromEditor: false, createPhysics: false, callScriptCallbacks: false);
 			_shipStillMovementParticleEntity.Name = "movement_particle_still";
 			_shipEntity.AddChild(_shipStillMovementParticleEntity);
@@ -996,6 +1054,16 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 		StrategicEntity.SetAlpha(GetTransitionProgress());
 		StrategicEntity.SetVisibilityExcludeParents(visible: true);
 		_isVisualInRaftState = false;
+	}
+
+	private static string GetWakeParticleSystemName(ShipHull shipHull)
+	{
+		return shipHull.Type switch
+		{
+			ShipHull.ShipType.Light => "psys_campaign_ship_trail_light", 
+			ShipHull.ShipType.Medium => "psys_campaign_ship_trail_medium", 
+			_ => "psys_campaign_ship_trail_heavy", 
+		};
 	}
 
 	private bool IsMoving()
@@ -1016,17 +1084,17 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 		return result;
 	}
 
-	private void TickIdleShipAnimation(Ship ship, ref float rockingPhase, ref MatrixFrame entityFrame, bool isBlockadeShip = false)
+	private void TickIdleShipAnimation(ShipHull shipHull, ref float rockingPhase, ref MatrixFrame entityFrame, bool isBlockadeShip = false)
 	{
 		if (MBMath.WrapAngle(base.MapEntity.MobileParty.Bearing.RotationInRadians - _bearingRotation).ApproximatelyEqualsTo(0f, 0.003f))
 		{
 			float num = 1f;
 			float num2 = System.MathF.PI / 40f;
-			if (ship.ShipHull.Type == ShipHull.ShipType.Light)
+			if (shipHull.Type == ShipHull.ShipType.Light)
 			{
 				num = 2f;
 			}
-			else if (ship.ShipHull.Type == ShipHull.ShipType.Medium)
+			else if (shipHull.Type == ShipHull.ShipType.Medium)
 			{
 				num = 1.5f;
 			}
@@ -1056,50 +1124,94 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 		}
 	}
 
+	private void TickMovementParticleTimeMultiplier(float timeSpeedUp)
+	{
+		if (_shipMovementParticles.Count == 0 || !(TaleWorlds.Library.MathF.Abs(_shipMovementParticleTimeMultiplier - timeSpeedUp) > 0.001f))
+		{
+			return;
+		}
+		_shipMovementParticleTimeMultiplier = timeSpeedUp;
+		foreach (ParticleSystem shipMovementParticle in _shipMovementParticles)
+		{
+			shipMovementParticle.SetRuntimeTimeMultiplier(timeSpeedUp);
+		}
+	}
+
+	private void TickMovementParticleEmission()
+	{
+		if (_shipMovementParticles.Count == 0)
+		{
+			return;
+		}
+		CampaignTimeControlMode timeControlMode = Campaign.Current.TimeControlMode;
+		bool flag = timeControlMode != 0 && timeControlMode != CampaignTimeControlMode.FastForwardStop && IsMoving();
+		if (flag == _shipMovementParticlesEmitting)
+		{
+			return;
+		}
+		_shipMovementParticlesEmitting = flag;
+		float runtimeEmissionRateMultiplier = (flag ? 1f : 0f);
+		foreach (ParticleSystem shipMovementParticle in _shipMovementParticles)
+		{
+			shipMovementParticle.SetRuntimeEmissionRateMultiplier(runtimeEmissionRateMultiplier);
+		}
+	}
+
 	private void TickFoamDecals(float dt)
 	{
 		MatrixFrame globalFrame = _shipEntity.GetGlobalFrame();
-		Vec3 scaleAmountXYZ = new Vec3(0.013f, 0.025f, 1f) * 1.176f * 2f;
-		Vec3 v = scaleAmountXYZ * 17.5f;
+		Vec3 origin = globalFrame.origin;
+		float length = globalFrame.rotation.f.Length;
+		float num = TaleWorlds.Library.MathF.Abs(_wakeBB.min.y) * length;
+		if (num <= 0f)
+		{
+			num = 0.5f;
+		}
+		float num2 = TaleWorlds.Library.MathF.Max(TaleWorlds.Library.MathF.Abs(_wakeBB.max.x), TaleWorlds.Library.MathF.Abs(_wakeBB.min.x)) * length;
+		if (num2 <= 0f)
+		{
+			num2 = 0.25f;
+		}
+		Vec3 f = globalFrame.rotation.f;
+		f.z = 0f;
+		f.Normalize();
+		Vec3 s = globalFrame.rotation.s;
+		s.z = 0f;
+		s.Normalize();
+		float num3 = num2 * 0.72f;
+		Vec3 vec = new Vec3(1f, num3, 1f);
+		Vec3 v = new Vec3(1f, num3 * 6f, 1f);
+		Vec3 vec2 = origin - f * num * 0.4f;
+		vec2.z = origin.z;
 		ShipFoamDecal[] splashFoamDecals = _splashFoamDecals;
 		foreach (ShipFoamDecal shipFoamDecal in splashFoamDecals)
 		{
-			if (shipFoamDecal._splashFoamDecal != null && shipFoamDecal._cumulativeDtTillStart < 3.15f)
+			if (shipFoamDecal._splashFoamDecal != null && shipFoamDecal._cumulativeDtTillStart < 7f)
 			{
 				shipFoamDecal._cumulativeDtTillStart += dt;
-				float num = 1f;
-				float y = 4f;
-				if (shipFoamDecal._cumulativeDtTillStart > 0.45f)
-				{
-					float num2 = shipFoamDecal._cumulativeDtTillStart - 0.45f;
-					num = TaleWorlds.Library.MathF.Clamp(1f - num2 / 2.7f, 0f, 1f);
-				}
-				else
-				{
-					num = TaleWorlds.Library.MathF.Clamp(shipFoamDecal._cumulativeDtTillStart / 0.45f, 0f, 1f);
-				}
-				float num3 = 0.475f;
-				float alpha = TaleWorlds.Library.MathF.Pow(num, y) * _entityAlpha * (0.95f - num3) + num3;
+				float cumulativeDtTillStart = shipFoamDecal._cumulativeDtTillStart;
+				float num4 = TaleWorlds.Library.MathF.Clamp(cumulativeDtTillStart / 7f, 0f, 1f);
+				float num5 = TaleWorlds.Library.MathF.Clamp(cumulativeDtTillStart / 7f, 0f, 1f);
+				float num6 = TaleWorlds.Library.MathF.Pow(1f - num5, 5f);
+				Vec3 vec3 = vec2 - shipFoamDecal._currentFrame.origin;
+				vec3.z = 0f;
+				float a = TaleWorlds.Library.MathF.Clamp((vec3.Length - 0.3f) / TaleWorlds.Library.MathF.Max(1.3f, 0.01f), 0f, 1f);
+				float alpha = num6 * (shipFoamDecal._maxReachedFadeIn = TaleWorlds.Library.MathF.Max(a, shipFoamDecal._maxReachedFadeIn)) * shipFoamDecal._spawnSpeedFactor * _entityAlpha * 0.32500002f + 0.475f;
 				shipFoamDecal._splashFoamDecal.SetAlpha(alpha);
 				shipFoamDecal._currentFrame.origin += shipFoamDecal._currentSpeed * dt;
-				Vec3 currentSpeed = shipFoamDecal._currentSpeed;
-				float num4 = currentSpeed.Normalize();
-				num4 = TaleWorlds.Library.MathF.Max(num4 - dt * 2.5f, 0f);
-				shipFoamDecal._currentSpeed = num4 * currentSpeed;
-				float x = TaleWorlds.Library.MathF.Clamp(shipFoamDecal._cumulativeDtTillStart / 3.15f, 0f, 1f);
-				x = TaleWorlds.Library.MathF.Pow(x, 0.4f);
-				Vec3 scaleAmountXYZ2 = Vec3.Lerp(scaleAmountXYZ, v, x);
-				scaleAmountXYZ2.x *= shipFoamDecal._randomScale.x;
-				scaleAmountXYZ2.y *= shipFoamDecal._randomScale.y;
-				scaleAmountXYZ2.z *= shipFoamDecal._randomScale.z;
-				float num5 = 3.15f;
-				float percent = TaleWorlds.Library.MathF.Clamp(shipFoamDecal._cumulativeDtTillStart / num5, 0f, 1f);
-				Vec3 s = Vec3.Slerp(shipFoamDecal._sideVectorStart, shipFoamDecal._sideVectorEnd, percent);
-				s.Normalize();
-				shipFoamDecal._currentFrame.rotation.s = s;
+				Vec3 scaleAmountXYZ = Vec3.Lerp(vec, v, num4);
+				float amount = TaleWorlds.Library.MathF.Pow(num4, 1f);
+				scaleAmountXYZ.y = TaleWorlds.Library.MathF.Lerp(vec.y, v.y, amount);
+				scaleAmountXYZ.x *= shipFoamDecal._randomScale.x;
+				scaleAmountXYZ.y *= shipFoamDecal._randomScale.y;
+				scaleAmountXYZ.z *= shipFoamDecal._randomScale.z;
+				Vec3 s2 = Vec3.Lerp(shipFoamDecal._sideVectorStart, shipFoamDecal._sideVectorEnd, num4);
+				s2.z = 0f;
+				s2.Normalize();
+				shipFoamDecal._currentFrame.rotation.s = s2;
 				shipFoamDecal._currentFrame.rotation.u = Vec3.Up;
 				shipFoamDecal._currentFrame.rotation.f = -shipFoamDecal._currentFrame.rotation.s.CrossProductWithUp();
-				shipFoamDecal._currentFrame.rotation.ApplyScaleLocal(in scaleAmountXYZ2);
+				shipFoamDecal._currentFrame.rotation.ApplyScaleLocal(in scaleAmountXYZ);
 				shipFoamDecal._splashFoamDecal.Frame = shipFoamDecal._currentFrame;
 			}
 			else if (shipFoamDecal._splashFoamDecal != null)
@@ -1107,64 +1219,119 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 				shipFoamDecal._splashFoamDecal.SetIsVisible(value: false);
 			}
 		}
-		Vec3 origin = globalFrame.origin;
-		float num6 = _lastDecalSpawnPosition.DistanceSquared(origin);
-		if (_nextDecalSpawnMetersSq < num6)
+		Vec3 vec4 = vec2 - origin;
+		vec4.z = 0f;
+		Vec3 vec5 = origin - _lastShipPositionForFoam;
+		vec5.z = 0f;
+		float length2 = vec5.Length;
+		float num7 = ((dt > 0f) ? (length2 / dt) : 0f);
+		_lastShipPositionForFoam = origin;
+		if (length2 > 8.400001f || _lastDecalSpawnPosition.Distance(origin) > 8.400001f)
 		{
-			Vec3 vec = globalFrame.rotation.f.NormalizedCopy() * 0.5f;
-			Vec3 s2 = globalFrame.rotation.s;
-			s2.z = 0f;
-			s2.Normalize();
-			ShipFoamDecal shipFoamDecal2 = _splashFoamDecals[_nextDecalToUse];
-			if (shipFoamDecal2._splashFoamDecal == null)
-			{
-				Decal decal = Decal.CreateDecal();
-				decal.SetMaterial(Material.GetFromResource("decal_water_foam"));
-				_ownerSceneCached.AddDecalInstance(decal, "editor_set", deletable: true);
-				shipFoamDecal2._splashFoamDecal = decal;
-			}
-			shipFoamDecal2._splashFoamDecal.SetIsVisible(value: true);
-			Vec3 origin2 = origin;
-			origin2 -= globalFrame.rotation.f * _wakeBB.max.z * 1.85f;
-			float num7 = (0.5f + (MBRandom.RandomFloat - 0.5f) * 0.5f) * 0.33f;
-			_nextDecalSpawnMetersSq = num7 * num7;
-			Vec3 v2 = s2;
-			MatrixFrame identity = MatrixFrame.Identity;
-			identity.origin = origin2;
-			identity.rotation.u = Vec3.Up;
-			Vec3 vec2 = globalFrame.rotation.TransformToParent(in v2);
-			vec2.z = 0f;
-			vec2.Normalize();
-			identity.rotation.s = vec2;
-			identity.rotation.f = -identity.rotation.s.CrossProductWithUp();
-			identity.rotation.f.Normalize();
-			shipFoamDecal2._cumulativeDtTillStart = 0f;
-			float num8 = 0.6f;
-			shipFoamDecal2._randomScale = Vec3.One * (0.9f + MBRandom.RandomFloat * 0.2f) * num8;
-			shipFoamDecal2._randomScale.x *= 1f * MBRandom.RandomFloat + 0.4f;
-			identity.rotation.ApplyScaleLocal(in scaleAmountXYZ);
-			shipFoamDecal2._splashFoamDecal.Frame = identity;
-			shipFoamDecal2._splashFoamDecal.SetAlpha(0f);
-			shipFoamDecal2._currentFrame = identity;
-			int num9 = MBRandom.RandomInt(3);
-			float vectorArgument = (float)(num9 % 2) * 0.5f;
-			float vectorArgument2 = (float)(num9 / 2) * 0.5f;
-			shipFoamDecal2._splashFoamDecal.SetVectorArgument(vectorArgument, vectorArgument2, -0.5f, -0.5f);
-			float num10 = 0.16f * (0.8f + MBRandom.RandomFloat * 0.4f);
-			float num11 = 0.45f * (0.8f + MBRandom.RandomFloat * 0.4f);
-			shipFoamDecal2._currentSpeed = vec * num11 + identity.rotation.s * vec.Length * num10;
-			float a = -0.34906584f * (0.8f + MBRandom.RandomFloat * 0.4f);
-			shipFoamDecal2._sideVectorStart = vec2;
-			shipFoamDecal2._sideVectorStart.RotateAboutZ(System.MathF.PI / 2f);
-			shipFoamDecal2._sideVectorEnd = shipFoamDecal2._sideVectorStart;
-			shipFoamDecal2._sideVectorEnd.RotateAboutZ(a);
-			Vec2 data = new Vec2(2.5f, 2.5f);
-			shipFoamDecal2._splashFoamDecal.OverrideRoadBoundaryP0(data);
-			Vec2 data2 = new Vec2(MBRandom.RandomFloat, MBRandom.RandomFloat);
-			shipFoamDecal2._splashFoamDecal.OverrideRoadBoundaryP1(data2);
-			_nextDecalToUse = (_nextDecalToUse + 1) % 20;
-			_lastDecalSpawnPosition = origin;
+			ResetFoamDecalTrail(origin);
 		}
+		else
+		{
+			if (!(length2 > 0f))
+			{
+				return;
+			}
+			Vec3 vec6 = vec5 / length2;
+			float num8 = TaleWorlds.Library.MathF.Clamp(Vec3.DotProduct(vec6, f), 0f, 1f);
+			float num9 = TaleWorlds.Library.MathF.Lerp(0.35f, 1f, num8);
+			float num10 = TaleWorlds.Library.MathF.Lerp(0.3f, 1f, num8);
+			float spawnSpeedFactor = TaleWorlds.Library.MathF.Clamp(num7 * num8 / 0.6f, 0.35f, 1f) * num10;
+			float num11 = num9;
+			int num12 = 28;
+			float num13 = _lastDecalSpawnPosition.Distance(origin);
+			while (num13 >= _nextDecalSpawnMeters * num11 && num12 > 0)
+			{
+				num12--;
+				Vec3 lastDecalSpawnPosition = _lastDecalSpawnPosition;
+				Vec3 vec7 = origin - lastDecalSpawnPosition;
+				vec7.z = 0f;
+				float length3 = vec7.Length;
+				Vec3 vec8 = ((length3 > 0.0001f) ? (vec7 / length3) : vec6);
+				lastDecalSpawnPosition += vec8 * _nextDecalSpawnMeters * num11;
+				lastDecalSpawnPosition.z = origin.z;
+				if (_smoothedTrailDirection.LengthSquared < 1E-06f)
+				{
+					_smoothedTrailDirection = vec8;
+				}
+				else
+				{
+					_smoothedTrailDirection = Vec3.Lerp(_smoothedTrailDirection, vec8, 0.4f);
+					_smoothedTrailDirection.z = 0f;
+					if (_smoothedTrailDirection.LengthSquared < 1E-06f)
+					{
+						_smoothedTrailDirection = vec8;
+					}
+					_smoothedTrailDirection.Normalize();
+				}
+				Vec3 anchorPosition = lastDecalSpawnPosition - _smoothedTrailDirection * vec4.Length;
+				SpawnFoamDecal(anchorPosition, _smoothedTrailDirection, spawnSpeedFactor, num9, vec);
+				_lastDecalSpawnPosition = lastDecalSpawnPosition;
+				_nextDecalSpawnMeters = 0.6f + (MBRandom.RandomFloat - 0.5f) * 2f * 0.1f;
+				num13 = _lastDecalSpawnPosition.Distance(origin);
+			}
+		}
+	}
+
+	private void ResetFoamDecalTrail(Vec3 shipPosition)
+	{
+		_lastDecalSpawnPosition = shipPosition;
+		_lastShipPositionForFoam = shipPosition;
+		_nextDecalSpawnMeters = 0.6f;
+		_smoothedTrailDirection = Vec3.Zero;
+	}
+
+	private void SpawnFoamDecal(Vec3 anchorPosition, Vec3 trailDirection, float spawnSpeedFactor, float sizeFactor, Vec3 baseFoamDecalScaleLocal)
+	{
+		ShipFoamDecal shipFoamDecal = _splashFoamDecals[_nextDecalToUse];
+		if (shipFoamDecal._splashFoamDecal == null)
+		{
+			Decal decal = Decal.CreateDecal();
+			decal.SetMaterial(Material.GetFromResource("decal_water_foam"));
+			_ownerSceneCached.AddDecalInstance(decal, "editor_set", deletable: true);
+			shipFoamDecal._splashFoamDecal = decal;
+		}
+		shipFoamDecal._splashFoamDecal.SetIsVisible(value: true);
+		float num = (_nextFoamDecalIsLeft ? (-1f) : 1f);
+		_nextFoamDecalIsLeft = !_nextFoamDecalIsLeft;
+		Vec3 vec = trailDirection.CrossProductWithUp();
+		vec.Normalize();
+		Vec3 vec2 = vec * num;
+		float num2 = (1f + (MBRandom.RandomFloat - 0.5f) * 2f * 0.15f) * sizeFactor;
+		float num3 = (1f + (MBRandom.RandomFloat - 0.5f) * 2f * 0.15f) * sizeFactor;
+		shipFoamDecal._randomScale = new Vec3(num2, num3, 1f);
+		shipFoamDecal._maxReachedFadeIn = 0f;
+		MatrixFrame identity = MatrixFrame.Identity;
+		identity.origin = anchorPosition;
+		identity.rotation.u = Vec3.Up;
+		identity.rotation.s = trailDirection;
+		identity.rotation.f = -identity.rotation.s.CrossProductWithUp();
+		identity.rotation.f.Normalize();
+		shipFoamDecal._cumulativeDtTillStart = 0f;
+		shipFoamDecal._spawnSpeedFactor = spawnSpeedFactor;
+		shipFoamDecal._currentFrame = identity;
+		Vec3 scaleAmountXYZ = new Vec3(baseFoamDecalScaleLocal.x * num2, baseFoamDecalScaleLocal.y * num3, 1f);
+		identity.rotation.ApplyScaleLocal(in scaleAmountXYZ);
+		shipFoamDecal._splashFoamDecal.Frame = identity;
+		shipFoamDecal._splashFoamDecal.SetAlpha(0.475f);
+		int num4 = MBRandom.RandomInt(3);
+		float vectorArgument = (float)(num4 % 2) * 0.5f;
+		float vectorArgument2 = (float)(num4 / 2) * 0.5f;
+		shipFoamDecal._splashFoamDecal.SetVectorArgument(vectorArgument, vectorArgument2, -0.5f, num * 0.5f);
+		shipFoamDecal._currentSpeed = vec2 * 0f - trailDirection * 0f;
+		float a = num * (System.MathF.PI / 180f) * 0f * (0.8f + MBRandom.RandomFloat * 0.4f);
+		shipFoamDecal._sideVectorStart = trailDirection;
+		shipFoamDecal._sideVectorEnd = trailDirection;
+		shipFoamDecal._sideVectorEnd.RotateAboutZ(a);
+		Vec2 data = new Vec2(1.2f, 1.2f);
+		shipFoamDecal._splashFoamDecal.OverrideRoadBoundaryP0(data);
+		Vec2 data2 = new Vec2(MBRandom.RandomFloat, MBRandom.RandomFloat);
+		shipFoamDecal._splashFoamDecal.OverrideRoadBoundaryP1(data2);
+		_nextDecalToUse = (_nextDecalToUse + 1) % 28;
 	}
 
 	private void TickSwayingAnimation(ref MatrixFrame entityFrame)
@@ -1261,14 +1428,17 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 				item3?.SailClothComponent?.SetForcedWind(vec * num, isLocal: false);
 			}
 		}
-		if (!_sailVisualCache.Any())
+		if (_sailVisualCache.Any())
 		{
-			return;
+			float num2 = TaleWorlds.Library.MathF.Clamp(length * 3f, 0.3f, 2.5f);
+			foreach (SailVisual item4 in _sailVisualCache)
+			{
+				item4?.SailTopBannerClothComponent?.SetForcedWind(vec * num2, isLocal: false);
+			}
 		}
-		float num2 = TaleWorlds.Library.MathF.Clamp(length * 3f, 0.3f, 2.5f);
-		foreach (SailVisual item4 in _sailVisualCache)
+		if (_raidAgentVisuals != null && !_raidAgentVisuals.GetEquipment()[EquipmentIndex.ExtraWeaponSlot].IsEmpty)
 		{
-			item4?.SailTopBannerClothComponent?.SetForcedWind(vec * num2, isLocal: false);
+			_raidAgentVisuals.SetClothWindToWeaponAtIndex(-StrategicEntity.GetGlobalFrame().rotation.f, isLocal: false, EquipmentIndex.ExtraWeaponSlot);
 		}
 	}
 
@@ -1301,7 +1471,7 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 
 	private bool HasNavalVisual()
 	{
-		if ((base.MapEntity.MobileParty.Ships.Count <= 0 && !base.MapEntity.MobileParty.IsInRaftState) || !base.MapEntity.MobileParty.IsCurrentlyAtSea || (base.MapEntity.MobileParty.CurrentSettlement != null && !base.MapEntity.MobileParty.IsTargetingPort))
+		if ((base.MapEntity.MobileParty.Ships.Count <= 0 && !base.MapEntity.MobileParty.IsInNavalAutoTravel) || !base.MapEntity.MobileParty.IsCurrentlyAtSea || (base.MapEntity.MobileParty.CurrentSettlement != null && !base.MapEntity.MobileParty.IsTargetingPort))
 		{
 			if (base.MapEntity.MobileParty.Ships.Count > 0 && base.MapEntity.MobileParty.SiegeEvent?.BesiegedSettlement != null)
 			{
@@ -1327,5 +1497,14 @@ public class NavalMobilePartyVisual : MapEntityVisual<PartyBase>
 		{
 			MapScreen.VisualsOfEntities.Remove(child.Pointer);
 		}
+	}
+
+	private ShipHull GetFerryShipHull()
+	{
+		if (_ferryShipHull == null)
+		{
+			_ferryShipHull = NavalDLCViewHelpers.ShipVisualHelper.GetFerryShipHullForSettlement(Campaign.Current.PlayerDataForNavalAutoTravel.DeparturedVillageWithFerry);
+		}
+		return _ferryShipHull;
 	}
 }

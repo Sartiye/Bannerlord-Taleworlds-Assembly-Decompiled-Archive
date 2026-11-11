@@ -68,7 +68,7 @@ public class SmithingMachine : UsableMachine
 		SetScriptComponentToTick(GetTickRequirement());
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		return new TextObject("{=OCRafO5h}Bellows");
 	}

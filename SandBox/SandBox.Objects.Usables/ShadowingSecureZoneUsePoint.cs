@@ -16,7 +16,7 @@ public class ShadowingSecureZoneUsePoint : UsableMissionObject
 		DescriptionMessage = new TextObject("{=!}Blend");
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		return new TextObject("{=!}Blend in");
 	}

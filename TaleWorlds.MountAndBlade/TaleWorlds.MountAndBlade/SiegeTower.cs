@@ -326,7 +326,7 @@ public class SiegeTower : SiegeWeapon, IPathHolder, IPrimarySiegeWeapon, IMoveab
 		return result;
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		if (!gameEntity.IsValid || !gameEntity.HasScriptOfType<UsableMissionObject>() || gameEntity.HasTag("move"))
 		{

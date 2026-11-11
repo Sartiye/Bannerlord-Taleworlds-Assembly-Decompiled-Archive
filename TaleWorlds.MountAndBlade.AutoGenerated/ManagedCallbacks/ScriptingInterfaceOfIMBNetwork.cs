@@ -176,11 +176,6 @@ internal class ScriptingInterfaceOfIMBNetwork : IMBNetwork
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
 	[SuppressUnmanagedCodeSecurity]
 	[MonoNativeFunctionWrapper]
-	public delegate void ServerPingDelegate(byte[] serverAddress, int port);
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-	[SuppressUnmanagedCodeSecurity]
-	[MonoNativeFunctionWrapper]
 	public delegate void SetServerBandwidthLimitInMbpsDelegate(double value);
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -301,8 +296,6 @@ internal class ScriptingInterfaceOfIMBNetwork : IMBNetwork
 	public static ResetDebugVariablesDelegate call_ResetDebugVariablesDelegate;
 
 	public static ResetMissionDataDelegate call_ResetMissionDataDelegate;
-
-	public static ServerPingDelegate call_ServerPingDelegate;
 
 	public static SetServerBandwidthLimitInMbpsDelegate call_SetServerBandwidthLimitInMbpsDelegate;
 
@@ -502,19 +495,6 @@ internal class ScriptingInterfaceOfIMBNetwork : IMBNetwork
 	public void ResetMissionData()
 	{
 		call_ResetMissionDataDelegate();
-	}
-
-	public void ServerPing(string serverAddress, int port)
-	{
-		byte[] array = null;
-		if (serverAddress != null)
-		{
-			int byteCount = _utf8.GetByteCount(serverAddress);
-			array = ((byteCount < 1024) ? CallbackStringBufferManager.StringBuffer0 : new byte[byteCount + 1]);
-			_utf8.GetBytes(serverAddress, 0, serverAddress.Length, array, 0);
-			array[byteCount] = 0;
-		}
-		call_ServerPingDelegate(array, port);
 	}
 
 	public void SetServerBandwidthLimitInMbps(double value)

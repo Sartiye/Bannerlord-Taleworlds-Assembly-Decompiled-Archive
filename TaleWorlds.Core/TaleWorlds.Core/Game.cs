@@ -135,10 +135,10 @@ public sealed class Game : IGameStateManagerOwner
 		}
 	}
 
-	public static Game CreateGame(GameType gameType, GameManagerBase gameManager, int seed)
+	public static Game CreateGame(GameType gameType, GameManagerBase gameManager, uint seed)
 	{
 		Game game = CreateGame(gameType, gameManager);
-		game.RandomGenerator = new MBFastRandom((uint)seed);
+		game.RandomGenerator = new MBFastRandom(seed);
 		return game;
 	}
 

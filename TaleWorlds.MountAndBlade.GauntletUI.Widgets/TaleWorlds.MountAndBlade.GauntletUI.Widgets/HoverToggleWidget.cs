@@ -1,5 +1,6 @@
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
+using TaleWorlds.InputSystem;
 
 namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets;
 
@@ -39,14 +40,15 @@ public class HoverToggleWidget : Widget
 		if (base.IsVisible)
 		{
 			IsOverWidget = IsPointInsideMeasuredArea(base.EventManager.MousePosition);
+			bool flag = Input.MouseMoveX != 0f || Input.MouseMoveY != 0f;
 			if (IsOverWidget && !_hoverBegan)
 			{
-				EventFired("HoverBegin");
+				EventFired("HoverBegin", flag);
 				_hoverBegan = true;
 			}
 			else if (!IsOverWidget && _hoverBegan)
 			{
-				EventFired("HoverEnd");
+				EventFired("HoverEnd", flag);
 				_hoverBegan = false;
 			}
 			if (WidgetToShow != null)

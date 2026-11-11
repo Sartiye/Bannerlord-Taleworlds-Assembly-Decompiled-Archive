@@ -50,10 +50,10 @@ public class FileDriver : ISaveDriver
 
 	public MetaData LoadMetaData(string saveName)
 	{
-		byte[] metaDataContent = FileHelper.GetMetaDataContent(GetSaveFilePath(saveName + ".sav"));
-		if (metaDataContent != null)
+		byte[] fileMetaDataContent = FileHelper.GetFileMetaDataContent(GetSaveFilePath(saveName + ".sav"));
+		if (fileMetaDataContent != null)
 		{
-			return MetaData.Deserialize(new MemoryStream(metaDataContent));
+			return MetaData.Deserialize(new MemoryStream(fileMetaDataContent));
 		}
 		Debug.Print("[Load meta data error]: " + saveName);
 		return null;

@@ -21,7 +21,9 @@ public sealed class AddTeam : GameNetworkMessage
 
 	public bool IsPlayerSergeant { get; private set; }
 
-	public AddTeam(int teamIndex, BattleSideEnum side, uint color, uint color2, string bannerCode, bool isPlayerGeneral, bool isPlayerSergeant)
+	public bool IsSpectatorTeam { get; private set; }
+
+	public AddTeam(int teamIndex, BattleSideEnum side, uint color, uint color2, string bannerCode, bool isPlayerGeneral, bool isPlayerSergeant, bool isSpectatorTeam = false)
 	{
 		TeamIndex = teamIndex;
 		Side = side;
@@ -30,6 +32,7 @@ public sealed class AddTeam : GameNetworkMessage
 		BannerCode = bannerCode;
 		IsPlayerGeneral = isPlayerGeneral;
 		IsPlayerSergeant = isPlayerSergeant;
+		IsSpectatorTeam = isSpectatorTeam;
 	}
 
 	public AddTeam()
@@ -46,6 +49,7 @@ public sealed class AddTeam : GameNetworkMessage
 		BannerCode = GameNetworkMessage.ReadStringFromPacket(ref bufferReadValid);
 		IsPlayerGeneral = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
 		IsPlayerSergeant = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
+		IsSpectatorTeam = GameNetworkMessage.ReadBoolFromPacket(ref bufferReadValid);
 		return bufferReadValid;
 	}
 
@@ -58,6 +62,7 @@ public sealed class AddTeam : GameNetworkMessage
 		GameNetworkMessage.WriteStringToPacket(BannerCode);
 		GameNetworkMessage.WriteBoolToPacket(IsPlayerGeneral);
 		GameNetworkMessage.WriteBoolToPacket(IsPlayerSergeant);
+		GameNetworkMessage.WriteBoolToPacket(IsSpectatorTeam);
 	}
 
 	protected override MultiplayerMessageFilter OnGetLogFilter()

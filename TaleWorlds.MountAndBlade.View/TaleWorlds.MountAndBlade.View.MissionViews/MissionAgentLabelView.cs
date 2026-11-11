@@ -55,8 +55,6 @@ public class MissionAgentLabelView : MissionView
 
 	private OrderController PlayerOrderController => base.Mission.PlayerTeam?.PlayerOrderController;
 
-	private SiegeWeaponController PlayerSiegeWeaponController => base.Mission.PlayerTeam?.PlayerOrderController.SiegeWeaponController;
-
 	public MissionAgentLabelView()
 	{
 		_agentMeshes = new Dictionary<Agent, MetaMesh>();
@@ -96,14 +94,14 @@ public class MissionAgentLabelView : MissionView
 		if (!_isOrderFlagVisible && isOrderFlagVisible)
 		{
 			UpdateAllAgentMeshVisibilities();
-			SetHighlightForAgents(highlight: false, useSiegeMachineUsers: false, useAllTeamAgents: false);
-			SetHighlightForAgents(highlight: false, useSiegeMachineUsers: true, useAllTeamAgents: false);
+			SetHighlightForAgents(highlight: false, useAllTeamAgents: false);
+			SetHighlightForAgents(highlight: false, useAllTeamAgents: false);
 		}
 		if (_isOrderFlagVisible && !isOrderFlagVisible)
 		{
 			UpdateAllAgentMeshVisibilities();
-			SetHighlightForAgents(highlight: true, useSiegeMachineUsers: false, useAllTeamAgents: false);
-			SetHighlightForAgents(highlight: true, useSiegeMachineUsers: true, useAllTeamAgents: false);
+			SetHighlightForAgents(highlight: true, useAllTeamAgents: false);
+			SetHighlightForAgents(highlight: true, useAllTeamAgents: false);
 		}
 		UpdateProximityBannerTransparencies();
 		IndicatorsActive = _alwaysShowFriendlyTroopBanners || base.Input.IsGameKeyDown(5);
@@ -201,7 +199,7 @@ public class MissionAgentLabelView : MissionView
 		if (_isOrderFlagVisible)
 		{
 			DehighlightAllAgents();
-			SetHighlightForAgents(highlight: true, useSiegeMachineUsers: false, useAllTeamAgents: false);
+			SetHighlightForAgents(highlight: true, useAllTeamAgents: false);
 		}
 	}
 
@@ -212,14 +210,12 @@ public class MissionAgentLabelView : MissionView
 		if (previousTeam?.PlayerOrderController != null)
 		{
 			previousTeam.PlayerOrderController.OnSelectedFormationsChanged -= OrderController_OnSelectedFormationsChanged;
-			previousTeam.PlayerOrderController.SiegeWeaponController.OnSelectedSiegeWeaponsChanged -= PlayerSiegeWeaponController_OnSelectedSiegeWeaponsChanged;
 		}
 		if (PlayerOrderController != null)
 		{
 			PlayerOrderController.OnSelectedFormationsChanged += OrderController_OnSelectedFormationsChanged;
-			PlayerSiegeWeaponController.OnSelectedSiegeWeaponsChanged += PlayerSiegeWeaponController_OnSelectedSiegeWeaponsChanged;
 		}
-		SetHighlightForAgents(highlight: true, useSiegeMachineUsers: false, useAllTeamAgents: true);
+		SetHighlightForAgents(highlight: true, useAllTeamAgents: true);
 		foreach (Agent agent in base.Mission.Agents)
 		{
 			UpdateVisibilityOfAgentMesh(agent);
@@ -233,14 +229,8 @@ public class MissionAgentLabelView : MissionView
 		UpdateIsOrderFlagVisible();
 		if (_isOrderFlagVisible)
 		{
-			SetHighlightForAgents(highlight: true, useSiegeMachineUsers: false, useAllTeamAgents: false);
+			SetHighlightForAgents(highlight: true, useAllTeamAgents: false);
 		}
-	}
-
-	private void PlayerSiegeWeaponController_OnSelectedSiegeWeaponsChanged()
-	{
-		DehighlightAllAgents();
-		SetHighlightForAgents(highlight: true, useSiegeMachineUsers: true, useAllTeamAgents: false);
 	}
 
 	private void BannerBearerLogic_OnBannerBearerAgentUpdated(Agent agent, bool isBannerBearer)
@@ -430,21 +420,6 @@ public class MissionAgentLabelView : MissionView
 		{
 			return true;
 		}
-		if (PlayerSiegeWeaponController != null && agent.IsUsingGameObject)
-		{
-			UsableMissionObject currentlyUsedGameObject = agent.CurrentlyUsedGameObject;
-			for (int i = 0; i < PlayerSiegeWeaponController.SelectedWeapons.Count; i++)
-			{
-				TaleWorlds.MountAndBlade.SiegeWeapon siegeWeapon = PlayerSiegeWeaponController.SelectedWeapons[i];
-				for (int j = 0; j < siegeWeapon.StandingPoints.Count; j++)
-				{
-					if (currentlyUsedGameObject == siegeWeapon.StandingPoints[j])
-					{
-						return true;
-					}
-				}
-			}
-		}
 		return false;
 	}
 
@@ -452,7 +427,7 @@ public class MissionAgentLabelView : MissionView
 	{
 		if (!_agentMeshes.TryGetValue(agent, out var value))
 		{
-			Debug.FailedAssert("Trying to update the banner of an agent that isn't present in _agentMeshes!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\MissionViews\\MissionAgentLabelView.cs", "SetBannerHighlightVisibility", 499);
+			Debug.FailedAssert("Trying to update the banner of an agent that isn't present in _agentMeshes!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.View\\MissionViews\\MissionAgentLabelView.cs", "SetBannerHighlightVisibility", 472);
 			return;
 		}
 		float num = (highlightVisibility ? 1f : (-1f));
@@ -473,27 +448,12 @@ public class MissionAgentLabelView : MissionView
 		_isOrderFlagVisible = PlayerOrderController != null && base.MissionScreen.OrderFlag != null && base.MissionScreen.OrderFlag.IsVisible;
 	}
 
-	private void SetHighlightForAgents(bool highlight, bool useSiegeMachineUsers, bool useAllTeamAgents)
+	private void SetHighlightForAgents(bool highlight, bool useAllTeamAgents)
 	{
 		if (PlayerOrderController == null)
 		{
 			bool flag = base.Mission.PlayerTeam == null;
 			Debug.Print($"PlayerOrderController is null and playerTeamIsNull: {flag}", 0, Debug.DebugColor.White, 17179869184uL);
-		}
-		if (useSiegeMachineUsers)
-		{
-			foreach (TaleWorlds.MountAndBlade.SiegeWeapon selectedWeapon in PlayerSiegeWeaponController.SelectedWeapons)
-			{
-				foreach (StandingPoint standingPoint in selectedWeapon.StandingPoints)
-				{
-					Agent userAgent = standingPoint.UserAgent;
-					if (userAgent != null)
-					{
-						SetBannerHighlightVisibility(userAgent, highlight);
-					}
-				}
-			}
-			return;
 		}
 		if (useAllTeamAgents)
 		{

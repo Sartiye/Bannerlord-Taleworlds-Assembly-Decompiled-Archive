@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NavalDLC.Storyline.MissionControllers;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
@@ -57,6 +58,8 @@ public class Quest5SetPieceBattleMissionView : MissionView
 
 	private const string PurigShipCutsceneCamTag = "purig_ship_cutscene_cam_tag";
 
+	private const string BarrelTag = "dromon_javelin_barrel";
+
 	private TextObject _restrictionNotificationText = new TextObject("{=GHuQ4xKj}The realm's borders hold firm. You are returned.");
 
 	private Quest5SetPieceBattleMissionViewState _state;
@@ -79,9 +82,13 @@ public class Quest5SetPieceBattleMissionView : MissionView
 
 	private bool _isMainAgentRotatedBeforeBossFight;
 
+	private bool _isBarrelListInitialized;
+
 	public Camera PurigShipCutsceneCamera;
 
 	public Quest5SetPieceBattleMissionController.Quest5SetPieceBattleMissionState LastHitCheckpoint;
+
+	private List<WeakGameEntity> _barrelEntities = new List<WeakGameEntity>();
 
 	public Quest5SetPieceBattleMissionView()
 	{
@@ -108,6 +115,19 @@ public class Quest5SetPieceBattleMissionView : MissionView
 		LastHitCheckpoint = _quest5SetPieceBattleMissionController.LastHitCheckpoint;
 	}
 
+	public override void OnMissionScreenFinalize()
+	{
+		base.OnMissionScreenFinalize();
+		MissionItemContourControllerView missionBehavior = base.Mission.GetMissionBehavior<MissionItemContourControllerView>();
+		if (missionBehavior != null)
+		{
+			for (int i = 0; i < _barrelEntities.Count; i++)
+			{
+				missionBehavior.RemoveAdditionalContourEntity(_barrelEntities[i]);
+			}
+		}
+	}
+
 	public override void OnMissionTick(float dt)
 	{
 		base.OnMissionTick(dt);
@@ -116,6 +136,10 @@ public class Quest5SetPieceBattleMissionView : MissionView
 		HandleApproachPlayerShipLocationCheck();
 		HandleEscapeShipStuckCheck();
 		HandlePurigCutsceneCameraChange();
+		if (!_isBarrelListInitialized)
+		{
+			InitializeBarrelList();
+		}
 		if (!_isPlayerShipRotationCorrectedAtTheStartOfTheMission && _quest5SetPieceBattleMissionController.State == Quest5SetPieceBattleMissionController.Quest5SetPieceBattleMissionState.Phase1GoToEnemyShip)
 		{
 			ChangeMainAgentRotation(_quest5SetPieceBattleMissionController.CalculateMissionStartDirection());
@@ -452,6 +476,27 @@ public class Quest5SetPieceBattleMissionView : MissionView
 				_escapeShipStuckCheckState = EscapeShipStuckCheckState.CheckForStuck;
 			}
 			break;
+		}
+	}
+
+	private void InitializeBarrelList()
+	{
+		MissionItemContourControllerView missionBehavior = base.Mission.GetMissionBehavior<MissionItemContourControllerView>();
+		if (missionBehavior == null)
+		{
+			return;
+		}
+		foreach (GameEntity item in Mission.Current.Scene.FindEntitiesWithTag("dromon_javelin_barrel"))
+		{
+			_barrelEntities.Add(item.WeakEntity);
+		}
+		for (int i = 0; i < _barrelEntities.Count; i++)
+		{
+			missionBehavior.AddAdditionalContourEntity(_barrelEntities[i]);
+		}
+		if (!_barrelEntities.IsEmpty())
+		{
+			_isBarrelListInitialized = true;
 		}
 	}
 }

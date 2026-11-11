@@ -79,7 +79,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_11_
 
 	private HintWidget _widget_0_4;
 
-	private BoolStateChangerWidget _widget_1;
+	private BoolStateChangerBrushWidget _widget_1;
 
 	private HintWidget _widget_2;
 
@@ -199,7 +199,7 @@ public class PortScreen__NavalDLC_ViewModelCollection_Port_PortVM_Dependency_11_
 		_widget_0.AddChild(_widget_0_3);
 		_widget_0_4 = new HintWidget(base.Context);
 		_widget_0.AddChild(_widget_0_4);
-		_widget_1 = new BoolStateChangerWidget(base.Context);
+		_widget_1 = new BoolStateChangerBrushWidget(base.Context);
 		_widget.AddChild(_widget_1);
 		_widget_2 = new HintWidget(base.Context);
 		_widget.AddChild(_widget_2);

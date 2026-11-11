@@ -534,10 +534,32 @@ public class LobbyGameClientHandler : ILobbyClientSessionHandler
 			}
 			if (customGameJoinResponse != CustomGameJoinResponse.PlayerBanned)
 			{
-				bool flag = MultiplayerOptions.OptionType.MaxNumberOfPlayers.GetIntValue() < GameNetwork.NetworkPeerCount + playerJoinData.Length;
-				if (flag)
+				int num = 0;
+				foreach (NetworkCommunicator networkPeer in GameNetwork.NetworkPeers)
 				{
-					customGameJoinResponse = ((!flag) ? CustomGameJoinResponse.UnspecifiedError : CustomGameJoinResponse.ServerCapacityIsFull);
+					if (networkPeer.IsStreamer)
+					{
+						num++;
+					}
+				}
+				int num2 = GameNetwork.NetworkPeers.Count - num;
+				int num3 = 0;
+				array = playerJoinData;
+				for (int i = 0; i < array.Length; i++)
+				{
+					if (array[i].JoinType == CustomGameJoinType.Streamer)
+					{
+						num3++;
+					}
+				}
+				int num4 = playerJoinData.Length - num3;
+				bool flag = MultiplayerOptions.OptionType.MaxNumberOfPlayers.GetIntValue() < num2 + num4;
+				int intValue = MultiplayerOptions.OptionType.MaxStreamerCount.GetIntValue();
+				bool flag2 = num3 > 0 && intValue == 0;
+				bool flag3 = num3 > 0 && intValue < num + num3;
+				if (flag || flag3 || flag2)
+				{
+					customGameJoinResponse = (flag ? CustomGameJoinResponse.ServerCapacityIsFull : (flag2 ? CustomGameJoinResponse.StreamersNotAllowed : ((!flag3) ? CustomGameJoinResponse.UnspecifiedError : CustomGameJoinResponse.StreamerCapacityIsFull)));
 				}
 				else
 				{
@@ -549,7 +571,7 @@ public class LobbyGameClientHandler : ILobbyClientSessionHandler
 						Dictionary<int, List<int>> usedIndicesFromIds = CosmeticsManagerHelper.GetUsedIndicesFromIds(playerJoinGameData.UsedCosmetics);
 						playerConnectionInfo.AddParameter("PlayerData", playerJoinGameData.PlayerData);
 						playerConnectionInfo.AddParameter("UsedCosmetics", usedIndicesFromIds);
-						playerConnectionInfo.AddParameter("IsAdmin", playerJoinGameData.IsAdmin);
+						playerConnectionInfo.AddParameter("JoinType", playerJoinGameData.JoinType.ToString());
 						playerConnectionInfo.AddParameter("IpAddress", playerJoinGameData.IpAddress);
 						playerConnectionInfo.Name = playerJoinGameData.Name;
 						list2.Add(playerConnectionInfo);
@@ -567,7 +589,7 @@ public class LobbyGameClientHandler : ILobbyClientSessionHandler
 								PeerIndex = networkCommunicator.Index,
 								SessionKey = networkCommunicator.SessionKey,
 								CustomGameJoinResponse = CustomGameJoinResponse.Success,
-								IsAdmin = networkCommunicator.IsAdmin
+								JoinType = playerJoinGameData2.JoinType
 							};
 							list.Add(item);
 						}
@@ -603,22 +625,13 @@ public class LobbyGameClientHandler : ILobbyClientSessionHandler
 		return list.ToArray();
 	}
 
-	void ILobbyClientSessionHandler.OnJoinCustomGameResponse(bool success, JoinGameData joinGameData, CustomGameJoinResponse failureReason, bool isAdmin)
+	void ILobbyClientSessionHandler.OnJoinCustomGameResponse(bool success, JoinGameData joinGameData, CustomGameJoinResponse failureReason, CustomGameJoinType joinType)
 	{
-		if (!success)
+		if (success)
 		{
-			return;
+			Module.CurrentModule.GetMultiplayerGameMode(joinGameData.GameServerProperties.GameType).JoinCustomGame(joinGameData);
+			Debug.Print("Join game successful", 0, Debug.DebugColor.Green);
 		}
-		Module.CurrentModule.GetMultiplayerGameMode(joinGameData.GameServerProperties.GameType).JoinCustomGame(joinGameData);
-		Task.Run(async delegate
-		{
-			while (!GameNetwork.IsMyPeerReady)
-			{
-				await Task.Delay(1);
-			}
-			GameNetwork.MyPeer.UpdateForJoiningCustomGame(isAdmin);
-		});
-		Debug.Print("Join game successful", 0, Debug.DebugColor.Green);
 	}
 
 	void ILobbyClientSessionHandler.OnJoinCustomGameFailureResponse(CustomGameJoinResponse response)

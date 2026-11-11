@@ -370,6 +370,11 @@ public class MissionMultiplayerDuel : MissionMultiplayerGameModeBase
 	protected override void HandleNewClientAfterSynchronized(NetworkCommunicator networkPeer)
 	{
 		MissionPeer component = networkPeer.GetComponent<MissionPeer>();
+		if (networkPeer.IsStreamer || networkPeer.IsWatcher)
+		{
+			component.Team = base.Mission.SpectatorTeam;
+			return;
+		}
 		component.Team = base.Mission.AttackerTeam;
 		_peersAndSelections.Add(new KeyValuePair<MissionPeer, TroopType>(component, TroopType.Invalid));
 	}
@@ -643,7 +648,7 @@ public class MissionMultiplayerDuel : MissionMultiplayerGameModeBase
 		}
 		else
 		{
-			Debug.FailedAssert("IsHavingDuel(duel.RequesteePeer) || IsHavingDuel(duel.RequesterPeer)", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MultiplayerGameModeLogics\\ServerGameModeLogics\\MissionMultiplayerDuel.cs", "PrepareDuel", 714);
+			Debug.FailedAssert("IsHavingDuel(duel.RequesteePeer) || IsHavingDuel(duel.RequesterPeer)", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MultiplayerGameModeLogics\\ServerGameModeLogics\\MissionMultiplayerDuel.cs", "PrepareDuel", 722);
 		}
 	}
 
@@ -797,8 +802,11 @@ public class MissionMultiplayerDuel : MissionMultiplayerGameModeBase
 			if (networkPeer != networkPeer2)
 			{
 				MissionPeer component2 = networkPeer2.GetComponent<MissionPeer>();
-				if (component2 != null)
+				if (component2 != null && !component2.IsSpectator && MissionNetworkComponent.HasValidTroopIndex(component2))
 				{
+					GameNetwork.BeginModuleEventAsServer(networkPeer);
+					GameNetwork.WriteMessage(new UpdateSelectedTroopIndex(networkPeer2, component2.SelectedTroopIndex));
+					GameNetwork.EndModuleEventAsServer();
 					GameNetwork.BeginModuleEventAsServer(networkPeer);
 					GameNetwork.WriteMessage(new SyncPerksForCurrentlySelectedTroop(networkPeer2, component2.Perks[component2.SelectedTroopIndex]));
 					GameNetwork.EndModuleEventAsServer();

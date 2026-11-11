@@ -1,3 +1,4 @@
+using System;
 using TaleWorlds.Avatar.PlayerServices;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
@@ -13,6 +14,8 @@ namespace TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection;
 
 public class MPPlayerVM : ViewModel
 {
+	private Action<MPPlayerVM> _onSelected;
+
 	private MultiplayerClassDivisions.MPHeroClass _cachedClass;
 
 	private BasicCultureObject _cachedCulture;
@@ -51,6 +54,8 @@ public class MPPlayerVM : ViewModel
 
 	private bool _isFocused;
 
+	private bool _isSelectable;
+
 	private MPTeammateCompassTargetVM _compassElement;
 
 	private PlayerAvatarImageIdentifierVM _avatar;
@@ -58,6 +63,8 @@ public class MPPlayerVM : ViewModel
 	private MPArmoryHeroPreviewVM _preview;
 
 	private MBBindingList<MPPerkVM> _activePerks;
+
+	private Color _teamColor = Color.White;
 
 	public MissionPeer Peer { get; private set; }
 
@@ -75,6 +82,23 @@ public class MPPlayerVM : ViewModel
 				return null;
 			}
 			return component.Team;
+		}
+	}
+
+	[DataSourceProperty]
+	public Color TeamColor
+	{
+		get
+		{
+			return _teamColor;
+		}
+		set
+		{
+			if (value != _teamColor)
+			{
+				_teamColor = value;
+				OnPropertyChangedWithValue(value, "TeamColor");
+			}
 		}
 	}
 
@@ -232,6 +256,23 @@ public class MPPlayerVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public bool IsSelectable
+	{
+		get
+		{
+			return _isSelectable;
+		}
+		set
+		{
+			if (value != _isSelectable)
+			{
+				_isSelectable = value;
+				OnPropertyChangedWithValue(value, "IsSelectable");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public MPTeammateCompassTargetVM CompassElement
 	{
 		get
@@ -362,6 +403,10 @@ public class MPPlayerVM : ViewModel
 			RefreshActivePerks();
 			CultureID = _cachedCulture.StringId;
 		}
+		if (Peer.Team != null)
+		{
+			TeamColor = Color.FromUint(Peer.Team.Color);
+		}
 		CompassElement.RefreshTargetIconType(targetIconType);
 	}
 
@@ -388,6 +433,10 @@ public class MPPlayerVM : ViewModel
 			Banner banner = new Banner(Peer.Peer.BannerCode, Peer.Team?.Color ?? 0, Peer.Team?.Color2 ?? 0);
 			CompassElement.RefreshTeam(banner, Peer.Team?.IsPlayerAlly ?? false);
 			CompassElement.RefreshColor(Peer.Team?.Color ?? 0, Peer.Team?.Color2 ?? 0);
+			if (Peer.Team != null)
+			{
+				TeamColor = Color.FromUint(Peer.Team.Color);
+			}
 		}
 	}
 
@@ -403,7 +452,7 @@ public class MPPlayerVM : ViewModel
 			}
 			else
 			{
-				ValuePercent = ((Peer.ControlledAgent != null) ? MathF.Ceiling(Peer.ControlledAgent.Health / Peer.ControlledAgent.HealthLimit * 100f) : 0);
+				ValuePercent = ((Peer.ControlledAgent != null) ? TaleWorlds.Library.MathF.Ceiling(Peer.ControlledAgent.Health / Peer.ControlledAgent.HealthLimit * 100f) : 0);
 			}
 		}
 	}
@@ -417,8 +466,7 @@ public class MPPlayerVM : ViewModel
 	public void RefreshActivePerks()
 	{
 		ActivePerks.Clear();
-		MultiplayerClassDivisions.MPHeroClass mPHeroClassForPeer = MultiplayerClassDivisions.GetMPHeroClassForPeer(Peer);
-		if (Peer == null || Peer.Culture == null || mPHeroClassForPeer == null)
+		if (Peer == null || Peer.Culture == null || MultiplayerClassDivisions.GetMPHeroClassForPeer(Peer) == null)
 		{
 			return;
 		}
@@ -432,16 +480,31 @@ public class MPPlayerVM : ViewModel
 	{
 		if (NetworkMain.GameClient == null)
 		{
-			Debug.FailedAssert("Network is not enabled when trying to refresh avatars", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MPPlayerVM.cs", "RefreshAvatar", 205);
+			Debug.FailedAssert("Network is not enabled when trying to refresh avatars", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MPPlayerVM.cs", "RefreshAvatar", 222);
 		}
 		else if (Peer == null)
 		{
-			Debug.FailedAssert("Trying to refresh avatar of a player without peer!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MPPlayerVM.cs", "RefreshAvatar", 211);
+			Debug.FailedAssert("Trying to refresh avatar of a player without peer!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MPPlayerVM.cs", "RefreshAvatar", 228);
 		}
 		else
 		{
 			Avatar = new PlayerAvatarImageIdentifierVM(forcedAvatarIndex: NetworkMain.GameClient.HasUserGeneratedContentPrivilege ? ((!BannerlordConfig.EnableGenericAvatars || _isKnownPlayer) ? (-1) : AvatarServices.GetForcedAvatarIndexOfPlayer(Peer.Peer.Id)) : AvatarServices.GetForcedAvatarIndexOfPlayer(Peer.Peer.Id), playerId: Peer.Peer.Id);
 		}
+	}
+
+	public void RefreshName()
+	{
+		Name = Peer.DisplayedName;
+	}
+
+	public void SetSelectionHandler(Action<MPPlayerVM> onSelected)
+	{
+		_onSelected = onSelected;
+	}
+
+	public virtual void ExecuteSelectPlayer()
+	{
+		_onSelected?.Invoke(this);
 	}
 
 	public void ExecuteFocusBegin()

@@ -608,11 +608,11 @@ public class CharacterDeveloperVM : ViewModel
 		{
 			if (applicableHero == null)
 			{
-				Debug.FailedAssert("Trying to use null hero for character developer", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CharacterDeveloper\\CharacterDeveloperVM.cs", ".ctor", 40);
+				Debug.FailedAssert("Trying to use null hero for character developer", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CharacterDeveloper\\CharacterDeveloperVM.cs", ".ctor", 39);
 			}
 			else if (applicableHero.HeroDeveloper == null)
 			{
-				Debug.FailedAssert("Hero does not have hero developer", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CharacterDeveloper\\CharacterDeveloperVM.cs", ".ctor", 46);
+				Debug.FailedAssert("Hero does not have hero developer", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CharacterDeveloper\\CharacterDeveloperVM.cs", ".ctor", 45);
 			}
 			else if (applicableHero == Hero.MainHero)
 			{
@@ -714,7 +714,7 @@ public class CharacterDeveloperVM : ViewModel
 		List<string> list = new List<string>();
 		for (int i = 0; i < _heroList.Count; i++)
 		{
-			list.Add(_heroList[i].HeroNameText);
+			list.Add(_heroList[i].GetNameWithNumOfUnopenedPerks());
 		}
 		CharacterList.Refresh(list, _heroIndex, OnCharacterSelection);
 	}

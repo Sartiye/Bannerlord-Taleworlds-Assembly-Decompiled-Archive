@@ -9,10 +9,8 @@ using TaleWorlds.CampaignSystem.ViewModelCollection;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
-using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
-using TaleWorlds.MountAndBlade;
 
 namespace NavalDLC.ViewModelCollection.OrderOfBattle;
 
@@ -209,9 +207,9 @@ public class NavalOrderOfBattleHeroItemVM : ViewModel
 				OnlyShowWhenNotExtended = true
 			});
 			List<PerkObject> compatiblePerks;
-			float captainRatingForTroopUsages = Campaign.Current.Models.BattleCaptainModel.GetCaptainRatingForTroopUsages(hero, FormationClass.Infantry.GetTroopUsageFlags(), out compatiblePerks);
+			float captainRatingForTroopUsages = Campaign.Current.Models.BattleCaptainModel.GetCaptainRatingForTroopUsages(hero, FormationClass.Infantry.GetTroopUsageFlags(), BattleEnvironment.Naval, out compatiblePerks);
 			List<PerkObject> compatiblePerks2;
-			float captainRatingForTroopUsages2 = Campaign.Current.Models.BattleCaptainModel.GetCaptainRatingForTroopUsages(hero, FormationClass.Ranged.GetTroopUsageFlags(), out compatiblePerks2);
+			float captainRatingForTroopUsages2 = Campaign.Current.Models.BattleCaptainModel.GetCaptainRatingForTroopUsages(hero, FormationClass.Ranged.GetTroopUsageFlags(), BattleEnvironment.Naval, out compatiblePerks2);
 			list.Add(new TooltipProperty(_infantryInfluenceText.ToString(), ((int)(captainRatingForTroopUsages * 100f)).ToString(), 0)
 			{
 				OnlyShowWhenNotExtended = true
@@ -244,14 +242,7 @@ public class NavalOrderOfBattleHeroItemVM : ViewModel
 			{
 				list.Add(new TooltipProperty(_noPerksText.ToString(), string.Empty, 0, onlyShowWhenExtended: true));
 			}
-			if (Input.IsGamepadActive)
-			{
-				GameTexts.SetVariable("EXTEND_KEY", Game.Current.GameTextManager.GetHotKeyGameText("MapHotKeyCategory", "MapFollowModifier").ToString());
-			}
-			else
-			{
-				GameTexts.SetVariable("EXTEND_KEY", Game.Current.GameTextManager.FindText("str_game_key_text", "anyalt").ToString());
-			}
+			GameTexts.SetVariable("EXTEND_KEY", HyperlinkTexts.GetTooltipExtendKeyHyperlinkText());
 			list.Add(new TooltipProperty(string.Empty, GameTexts.FindText("str_map_tooltip_info").ToString(), -1)
 			{
 				OnlyShowWhenNotExtended = true

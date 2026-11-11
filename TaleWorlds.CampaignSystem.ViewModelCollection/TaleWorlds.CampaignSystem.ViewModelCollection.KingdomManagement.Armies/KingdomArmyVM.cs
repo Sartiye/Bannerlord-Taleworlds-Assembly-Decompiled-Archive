@@ -27,6 +27,8 @@ public class KingdomArmyVM : KingdomCategoryVM
 
 	private HintViewModel _disbandHint;
 
+	private HintViewModel _showOnMapHint;
+
 	private string _categoryLeaderName;
 
 	private string _categoryLordCount;
@@ -515,6 +517,23 @@ public class KingdomArmyVM : KingdomCategoryVM
 		}
 	}
 
+	[DataSourceProperty]
+	public HintViewModel ShowOnMapHint
+	{
+		get
+		{
+			return _showOnMapHint;
+		}
+		set
+		{
+			if (value != _showOnMapHint)
+			{
+				_showOnMapHint = value;
+				OnPropertyChangedWithValue(value, "ShowOnMapHint");
+			}
+		}
+	}
+
 	public KingdomArmyVM(Action onManageArmy, Action refreshDecision, Action<Army> showArmyOnMap)
 	{
 		_onManageArmy = onManageArmy;
@@ -527,6 +546,7 @@ public class KingdomArmyVM : KingdomCategoryVM
 		DisbandCost = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfDisbandingArmy();
 		CreateArmyHint = new HintViewModel();
 		DisbandHint = new HintViewModel();
+		ShowOnMapHint = new HintViewModel();
 		ManageArmyHint = new HintViewModel();
 		base.IsAcceptableItemSelected = false;
 		RefreshArmyList();
@@ -545,13 +565,13 @@ public class KingdomArmyVM : KingdomCategoryVM
 		DisbandActionExplanationText = GameTexts.FindText("str_kingdom_disband_army_explanation").ToString();
 		ManageActionExplanationText = GameTexts.FindText("str_kingdom_manage_army_explanation").ToString();
 		ManageText = GameTexts.FindText("str_manage").ToString();
-		CreateArmyText = (PlayerHasArmy ? new TextObject("{=DAmdTxuC}Army Manage").ToString() : new TextObject("{=lc9s4rLZ}Create Army").ToString());
+		RefreshCreateArmyText();
 		base.CategoryNameText = new TextObject("{=j12VrGKz}Army").ToString();
 		ChangeLeaderText = new TextObject("{=NcYbdiyT}Change Leader").ToString();
 		PartiesText = new TextObject("{=t3tq0eoW}Parties").ToString();
 		DisbandText = new TextObject("{=xXSFaGW8}Disband").ToString();
 		ShowOnMapText = GameTexts.FindText("str_show_on_map").ToString();
-		CreateArmyText = new TextObject("{=lc9s4rLZ}Create Army").ToString();
+		ShowOnMapHint.HintText = GameTexts.FindText("str_show_on_map");
 		Armies.ApplyActionOnAllItems(delegate(KingdomArmyItemVM x)
 		{
 			x.RefreshValues();
@@ -573,7 +593,7 @@ public class KingdomArmyVM : KingdomCategoryVM
 		}
 		else
 		{
-			Debug.FailedAssert("Kingdom screen can't open if you're not in kingdom", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\KingdomManagement\\Armies\\KingdomArmyVM.cs", "RefreshArmyList", 81);
+			Debug.FailedAssert("Kingdom screen can't open if you're not in kingdom", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\KingdomManagement\\Armies\\KingdomArmyVM.cs", "RefreshArmyList", 82);
 		}
 		RefreshCanManageArmy();
 		if (Armies.Count == 0 && CurrentSelectedArmy != null)
@@ -711,5 +731,12 @@ public class KingdomArmyVM : KingdomCategoryVM
 		PlayerHasArmy = MobileParty.MainParty.Army != null;
 		CanCreateArmy = Campaign.Current.Models.ArmyManagementCalculationModel.CanPlayerCreateArmy(out var disabledReason);
 		CreateArmyHint.HintText = disabledReason;
+		RefreshCreateArmyText();
+	}
+
+	private void RefreshCreateArmyText()
+	{
+		bool flag = MobileParty.MainParty.Army?.LeaderParty == MobileParty.MainParty;
+		CreateArmyText = (flag ? new TextObject("{=UhFP3B8a}Manage Army").ToString() : new TextObject("{=lc9s4rLZ}Create Army").ToString());
 	}
 }

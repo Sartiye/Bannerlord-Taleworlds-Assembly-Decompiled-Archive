@@ -48,36 +48,51 @@ public static class DedicatedServerConsoleCommandManager
 			}
 			else if (text != "")
 			{
+				bool flag2 = true;
+				string text3 = null;
 				if (optionAttribute.OptionValueType == MultiplayerOptions.OptionValueType.String)
 				{
 					optionType.SetValue(text);
 				}
-				else if (optionAttribute.OptionValueType == MultiplayerOptions.OptionValueType.Integer)
+				else if (optionAttribute.OptionValueType == MultiplayerOptions.OptionValueType.Integer || optionAttribute.OptionValueType == MultiplayerOptions.OptionValueType.Enum)
 				{
-					if (int.TryParse(text, out var result))
+					if (int.TryParse(text.Trim(), out var result))
 					{
 						optionType.SetValue(result);
 					}
-				}
-				else if (optionAttribute.OptionValueType == MultiplayerOptions.OptionValueType.Enum)
-				{
-					if (int.TryParse(text, out var result2))
+					else
 					{
-						optionType.SetValue(result2);
+						flag2 = false;
+						text3 = (optionAttribute.HasBounds ? ("a whole number between " + optionAttribute.BoundsMin + " and " + optionAttribute.BoundsMax) : "a whole number");
 					}
 				}
 				else if (optionAttribute.OptionValueType == MultiplayerOptions.OptionValueType.Bool)
 				{
-					if (bool.TryParse(text, out var result3))
+					if (bool.TryParse(text.Trim(), out var result2))
 					{
-						optionType.SetValue(result3);
+						optionType.SetValue(result2);
+					}
+					else
+					{
+						flag2 = false;
+						text3 = "True or False";
 					}
 				}
 				else
 				{
-					Debug.FailedAssert("No valid type found for multiplayer option.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\DedicatedServerConsoleCommandManager.cs", "HandleConsoleCommand", 81);
+					flag2 = false;
+					Debug.FailedAssert("No valid type found for multiplayer option.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\DedicatedServerConsoleCommandManager.cs", "HandleConsoleCommand", 91);
 				}
-				Debug.Print(string.Concat("--Changed: ", optionType, ", to: ", optionType.GetValueText()), 0, Debug.DebugColor.White, 17179869184uL);
+				if (flag2)
+				{
+					Debug.Print(string.Concat("--Changed: ", optionType, ", to: ", optionType.GetValueText()), 0, Debug.DebugColor.White, 17179869184uL);
+				}
+				else
+				{
+					string text4 = string.Concat("--Ignored: ", optionType, ". Could not read '", text, "'", (text3 != null) ? ("; expected " + text3) : "", ". Value left at: ", optionType.GetValueText());
+					Debug.Print(text4, 0, Debug.DebugColor.Yellow, 17179869184uL);
+					Console.WriteLine(text4);
+				}
 			}
 			else
 			{

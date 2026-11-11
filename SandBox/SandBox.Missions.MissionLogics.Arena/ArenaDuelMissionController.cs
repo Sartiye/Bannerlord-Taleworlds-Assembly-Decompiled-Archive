@@ -62,6 +62,11 @@ public class ArenaDuelMissionController : MissionLogic
 		_duelAgent.Defensiveness = 1f;
 	}
 
+	public override void OnAfterMissionLoadingFinished()
+	{
+		base.Mission.OnInitialSpawnCompleted();
+	}
+
 	private void InitializeMissionTeams()
 	{
 		base.Mission.Teams.Add(BattleSideEnum.Defender, Hero.MainHero.MapFaction.Color, Hero.MainHero.MapFaction.Color2);

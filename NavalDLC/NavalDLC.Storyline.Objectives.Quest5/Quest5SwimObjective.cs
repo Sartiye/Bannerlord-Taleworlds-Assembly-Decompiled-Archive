@@ -61,7 +61,11 @@ public class Quest5SwimObjective : MissionObjective
 	{
 		if (_target != null)
 		{
-			return _targetShip.GetIsAgentOnShip(Agent.Main);
+			Agent main = Agent.Main;
+			if (main != null && main.IsActive())
+			{
+				return _targetShip.GetIsAgentOnShip(Agent.Main);
+			}
 		}
 		return false;
 	}

@@ -8,6 +8,14 @@ namespace TaleWorlds.CampaignSystem.CharacterDevelopment;
 
 public sealed class PerkObject : PropertyObject
 {
+	public enum EffectEnvironment
+	{
+		LandOnly,
+		NavalOnly,
+		NavalReduced,
+		All
+	}
+
 	public static MBReadOnlyList<PerkObject> All => Campaign.Current.AllPerks;
 
 	public SkillObject Skill { get; private set; }
@@ -36,6 +44,10 @@ public sealed class PerkObject : PropertyObject
 
 	public TextObject SecondaryDescription { get; private set; }
 
+	public EffectEnvironment PrimaryEffectEnvironment { get; private set; }
+
+	public EffectEnvironment SecondaryEffectEnvironment { get; private set; }
+
 	public bool IsTrash
 	{
 		get
@@ -63,7 +75,7 @@ public sealed class PerkObject : PropertyObject
 	{
 	}
 
-	public void Initialize(string name, SkillObject skill, int requiredSkillValue, PerkObject alternativePerk, string primaryDescription, PartyRole primaryRole, float primaryBonus, EffectIncrementType incrementType, string secondaryDescription = "", PartyRole secondaryRole = PartyRole.None, float secondaryBonus = 0f, EffectIncrementType secondaryIncrementType = EffectIncrementType.Invalid, TroopUsageFlags primaryTroopUsageMask = TroopUsageFlags.Undefined, TroopUsageFlags secondaryTroopUsageMask = TroopUsageFlags.Undefined)
+	public void Initialize(string name, SkillObject skill, int requiredSkillValue, PerkObject alternativePerk, string primaryDescription, PartyRole primaryRole, float primaryBonus, EffectIncrementType incrementType, string secondaryDescription = "", PartyRole secondaryRole = PartyRole.None, float secondaryBonus = 0f, EffectIncrementType secondaryIncrementType = EffectIncrementType.Invalid, TroopUsageFlags primaryTroopUsageMask = TroopUsageFlags.Undefined, TroopUsageFlags secondaryTroopUsageMask = TroopUsageFlags.Undefined, EffectEnvironment primaryEffectEnvironment = EffectEnvironment.All, EffectEnvironment secondaryEffectEnvironment = EffectEnvironment.All)
 	{
 		PrimaryDescription = new TextObject(primaryDescription);
 		SecondaryDescription = new TextObject(secondaryDescription);
@@ -97,6 +109,8 @@ public sealed class PerkObject : PropertyObject
 		SecondaryIncrementType = ((secondaryIncrementType == EffectIncrementType.Invalid) ? PrimaryIncrementType : secondaryIncrementType);
 		PrimaryTroopUsageMask = primaryTroopUsageMask;
 		SecondaryTroopUsageMask = secondaryTroopUsageMask;
+		PrimaryEffectEnvironment = primaryEffectEnvironment;
+		SecondaryEffectEnvironment = secondaryEffectEnvironment;
 		AfterInitialized();
 	}
 

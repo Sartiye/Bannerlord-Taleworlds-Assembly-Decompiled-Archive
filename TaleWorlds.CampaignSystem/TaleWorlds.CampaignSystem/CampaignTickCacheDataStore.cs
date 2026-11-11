@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.BattleWreckages;
 using TaleWorlds.CampaignSystem.Map;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
@@ -34,6 +35,10 @@ public class CampaignTickCacheDataStore
 	private MobileParty[] _exitingSettlementMobilePartyList;
 
 	private MobileParty[] _navigationTransitionedMobilePartyList;
+
+	private List<PartyBase> _previousFrameUpdatedPartyBases = new List<PartyBase>();
+
+	private List<PartyBase> _currentFrameUpdatedPartyBases = new List<PartyBase>();
 
 	private int[] _movingPartyIndices;
 
@@ -342,40 +347,89 @@ public class CampaignTickCacheDataStore
 
 	private void UpdateVisibilitiesAroundMainParty()
 	{
-		if (!MobileParty.MainParty.Position.IsValid() || Campaign.Current.GetSimplifiedTimeControlMode() == CampaignTimeControlMode.Stop)
+		if (!MobileParty.MainParty.Position.IsValid())
 		{
 			return;
 		}
 		if (MobileParty.MainParty.SiegeEvent != null && MobileParty.MainParty.SiegeEvent.BesiegedSettlement.HasPort)
 		{
-			UpdateVisibilitiesBasedOnPoint(MobileParty.MainParty.SiegeEvent.BesiegedSettlement.Position, MobileParty.MainParty.SeeingRange * 1.35f);
-			return;
-		}
-		MapEvent mapEvent = MobileParty.MainParty.MapEvent;
-		if (mapEvent != null && mapEvent.IsRaid && MobileParty.MainParty.MapEvent.MapEventSettlement.HasPort)
-		{
-			UpdateVisibilitiesBasedOnPoint(MobileParty.MainParty.MapEvent.MapEventSettlement.Position, MobileParty.MainParty.SeeingRange * 1.35f);
+			UpdateVisibilitiesBasedOnPoint(MobileParty.MainParty.SiegeEvent.BesiegedSettlement.GatePosition.ToVec2(), MobileParty.MainParty.SiegeEvent.BesiegedSettlement.PortPosition.ToVec2(), MobileParty.MainParty.SiegeEvent.BesiegerCamp.LeaderParty.Position.ToVec2());
 		}
 		else
 		{
-			UpdateVisibilitiesBasedOnPoint(MobileParty.MainParty.Position, MobileParty.MainParty.SeeingRange);
+			MapEvent mapEvent = MobileParty.MainParty.MapEvent;
+			if (mapEvent != null && mapEvent.IsRaid && MobileParty.MainParty.MapEvent.MapEventSettlement.HasPort)
+			{
+				UpdateVisibilitiesBasedOnPoint(MobileParty.MainParty.MapEvent.MapEventSettlement.GatePosition.ToVec2(), MobileParty.MainParty.MapEvent.MapEventSettlement.PortPosition.ToVec2());
+			}
+			else
+			{
+				UpdateVisibilitiesBasedOnPoint(MobileParty.MainParty.Position.ToVec2());
+			}
+		}
+		foreach (BattleWreckage wreckage in Campaign.Current.Wreckages)
+		{
+			wreckage.UpdateVisibility();
 		}
 	}
 
-	private void UpdateVisibilitiesBasedOnPoint(CampaignVec2 point, float mainPartyVisibilityRange)
+	private void UpdateVisibilitiesBasedOnPoint(params Vec2[] points)
 	{
-		LocatableSearchData<MobileParty> data = MobileParty.StartFindingLocatablesAroundPosition(point.ToVec2(), Campaign.Current.Models.MapVisibilityModel.MaximumSeeingRange() + 5f);
-		for (MobileParty mobileParty = MobileParty.FindNextLocatable(ref data); mobileParty != null; mobileParty = MobileParty.FindNextLocatable(ref data))
+		float seeingRange = MobileParty.MainParty.SeeingRange;
+		Vec2 zero = Vec2.Zero;
+		for (int i = 0; i < points.Length; i++)
 		{
-			if (!mobileParty.IsMilitia && !mobileParty.IsGarrison)
+			zero += points[i];
+		}
+		zero /= (float)points.Length;
+		float num = 0f;
+		for (int j = 0; j < points.Length; j++)
+		{
+			float num2 = zero.Distance(points[j]);
+			if (num2 > num)
 			{
-				mobileParty.Party.UpdateVisibilityAndInspected(point, mainPartyVisibilityRange);
+				num = num2;
 			}
 		}
-		LocatableSearchData<Settlement> data2 = Settlement.StartFindingLocatablesAroundPosition(point.ToVec2(), Campaign.Current.Models.MapVisibilityModel.MaximumSeeingRange() + 5f);
+		float radius = num + seeingRange;
+		LocatableSearchData<MobileParty> data = MobileParty.StartFindingLocatablesAroundPosition(zero, radius);
+		for (MobileParty mobileParty = MobileParty.FindNextLocatable(ref data); mobileParty != null; mobileParty = MobileParty.FindNextLocatable(ref data))
+		{
+			if (!Campaign.Current.Models.MapVisibilityModel.IsVisibilityPersistent(mobileParty))
+			{
+				Campaign.Current.Models.MapVisibilityModel.GetMobilePartyVisibilityAndInspectedState(mobileParty, points, seeingRange, out var isVisible, out var isInspected);
+				mobileParty.IsVisible = isVisible;
+				mobileParty.IsInspected = isInspected;
+				_currentFrameUpdatedPartyBases.Add(mobileParty.Party);
+				_previousFrameUpdatedPartyBases.Remove(mobileParty.Party);
+			}
+		}
+		LocatableSearchData<Settlement> data2 = Settlement.StartFindingLocatablesAroundPosition(zero, radius);
 		for (Settlement settlement = Settlement.FindNextLocatable(ref data2); settlement != null; settlement = Settlement.FindNextLocatable(ref data2))
 		{
-			settlement.Party.UpdateVisibilityAndInspected(point, mainPartyVisibilityRange);
+			Campaign.Current.Models.MapVisibilityModel.GetSettlementInspectedState(settlement, points, seeingRange, out var isInspected2, out var isDistanceDependent);
+			settlement.IsInspected = isInspected2;
+			if (isDistanceDependent)
+			{
+				_currentFrameUpdatedPartyBases.Add(settlement.Party);
+				_previousFrameUpdatedPartyBases.Remove(settlement.Party);
+			}
 		}
+		foreach (PartyBase previousFrameUpdatedPartyBasis in _previousFrameUpdatedPartyBases)
+		{
+			if (previousFrameUpdatedPartyBasis.IsSettlement)
+			{
+				previousFrameUpdatedPartyBasis.Settlement.IsInspected = false;
+			}
+			else if (previousFrameUpdatedPartyBasis.IsMobile && !Campaign.Current.Models.MapVisibilityModel.IsVisibilityPersistent(previousFrameUpdatedPartyBasis.MobileParty))
+			{
+				previousFrameUpdatedPartyBasis.MobileParty.IsVisible = false;
+				previousFrameUpdatedPartyBasis.MobileParty.IsInspected = false;
+			}
+		}
+		List<PartyBase> previousFrameUpdatedPartyBases = _previousFrameUpdatedPartyBases;
+		_previousFrameUpdatedPartyBases = _currentFrameUpdatedPartyBases;
+		_currentFrameUpdatedPartyBases = previousFrameUpdatedPartyBases;
+		_currentFrameUpdatedPartyBases.Clear();
 	}
 }

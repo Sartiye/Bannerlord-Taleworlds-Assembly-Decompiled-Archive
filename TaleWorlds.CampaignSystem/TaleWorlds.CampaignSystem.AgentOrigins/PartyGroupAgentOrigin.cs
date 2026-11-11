@@ -146,7 +146,7 @@ public class PartyGroupAgentOrigin : IAgentOriginBase
 
 	void IAgentOriginBase.OnScoreHit(BasicCharacterObject victim, BasicCharacterObject captain, int damage, bool isFatal, bool isTeamKill, WeaponComponentData attackerWeapon)
 	{
-		_supplier.OnTroopScoreHit(_descriptor, victim, damage, isFatal, isTeamKill, attackerWeapon);
+		_supplier.OnTroopScoreHit(_descriptor, victim, damage, isFatal, isTeamKill, attackerWeapon, captain);
 	}
 
 	public void SetBanner(Banner banner)

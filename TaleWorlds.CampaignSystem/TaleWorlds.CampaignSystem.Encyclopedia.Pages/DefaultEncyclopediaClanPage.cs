@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Helpers;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -49,7 +48,7 @@ public class DefaultEncyclopediaClanPage : EncyclopediaPage
 			{
 				return GetClanWealthStatusText(clan);
 			}
-			Debug.FailedAssert("Unable to get the gold of a non-clan object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaClanPage.cs", "GetComparedValueText", 157);
+			Debug.FailedAssert("Unable to get the gold of a non-clan object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaClanPage.cs", "GetComparedValueText", 161);
 			return "";
 		}
 	}
@@ -69,7 +68,7 @@ public class DefaultEncyclopediaClanPage : EncyclopediaPage
 			{
 				return tier.ToString();
 			}
-			Debug.FailedAssert("Unable to get the tier of a non-clan object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaClanPage.cs", "GetComparedValueText", 178);
+			Debug.FailedAssert("Unable to get the tier of a non-clan object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaClanPage.cs", "GetComparedValueText", 182);
 			return "";
 		}
 	}
@@ -89,7 +88,7 @@ public class DefaultEncyclopediaClanPage : EncyclopediaPage
 			{
 				return ((int)clan.CurrentTotalStrength).ToString();
 			}
-			Debug.FailedAssert("Unable to get the strength of a non-clan object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaClanPage.cs", "GetComparedValueText", 199);
+			Debug.FailedAssert("Unable to get the strength of a non-clan object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaClanPage.cs", "GetComparedValueText", 203);
 			return "";
 		}
 	}
@@ -109,7 +108,7 @@ public class DefaultEncyclopediaClanPage : EncyclopediaPage
 			{
 				return clan.Fiefs.Count.ToString();
 			}
-			Debug.FailedAssert("Unable to get the fief count of a non-clan object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaClanPage.cs", "GetComparedValueText", 220);
+			Debug.FailedAssert("Unable to get the fief count of a non-clan object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaClanPage.cs", "GetComparedValueText", 224);
 			return "";
 		}
 	}
@@ -129,7 +128,7 @@ public class DefaultEncyclopediaClanPage : EncyclopediaPage
 			{
 				return clan.Heroes.Count.ToString();
 			}
-			Debug.FailedAssert("Unable to get members of a non-clan object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaClanPage.cs", "GetComparedValueText", 241);
+			Debug.FailedAssert("Unable to get members of a non-clan object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaClanPage.cs", "GetComparedValueText", 245);
 			return "";
 		}
 	}
@@ -147,7 +146,7 @@ public class DefaultEncyclopediaClanPage : EncyclopediaPage
 				}
 				return num;
 			}
-			Debug.FailedAssert("Both objects should be clans.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaClanPage.cs", "CompareClans", 256);
+			Debug.FailedAssert("Both objects should be clans.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaClanPage.cs", "CompareClans", 260);
 			return 0;
 		}
 	}
@@ -174,19 +173,21 @@ public class DefaultEncyclopediaClanPage : EncyclopediaPage
 	protected override IEnumerable<EncyclopediaFilterGroup> InitializeFilterItems()
 	{
 		List<EncyclopediaFilterGroup> list = new List<EncyclopediaFilterGroup>();
+		List<EncyclopediaFilterItem> filters = new List<EncyclopediaFilterItem>
+		{
+			new EncyclopediaFilterItem(new TextObject("{=QwpHoMJu}Minor"), (object f) => ((IFaction)f).IsMinorFaction)
+		};
+		list.Add(new EncyclopediaFilterGroup(filters, new TextObject("{=zMMqgxb1}Type")));
+		List<EncyclopediaFilterItem> filters2 = new List<EncyclopediaFilterItem>
+		{
+			new EncyclopediaFilterItem(new TextObject("{=b8TV0bRy}Has Blood Feud"), (object f) => ((IFaction)f).IsClan && ((Clan)f).HasBloodFeudWithPlayer)
+		};
+		list.Add(new EncyclopediaFilterGroup(filters2, new TextObject("{=L7wn49Uz}Diplomacy")));
 		List<EncyclopediaFilterItem> list2 = new List<EncyclopediaFilterItem>();
-		list2.Add(new EncyclopediaFilterItem(new TextObject("{=QwpHoMJu}Minor"), (object f) => ((IFaction)f).IsMinorFaction));
-		list.Add(new EncyclopediaFilterGroup(list2, new TextObject("{=zMMqgxb1}Type")));
+		list2.Add(new EncyclopediaFilterItem(new TextObject("{=SlubkZ1A}Eliminated"), (object f) => ((IFaction)f).IsEliminated));
+		list2.Add(new EncyclopediaFilterItem(new TextObject("{=YRbSBxqT}Active"), (object f) => !((IFaction)f).IsEliminated));
+		list.Add(new EncyclopediaFilterGroup(list2, new TextObject("{=DXczLzml}Status")));
 		List<EncyclopediaFilterItem> list3 = new List<EncyclopediaFilterItem>();
-		list3.Add(new EncyclopediaFilterItem(new TextObject("{=lEHjxPTs}Ally"), (object f) => DiplomacyHelper.IsSameFactionAndNotEliminated((IFaction)f, Hero.MainHero.MapFaction)));
-		list3.Add(new EncyclopediaFilterItem(new TextObject("{=sPmQz21k}Enemy"), (object f) => FactionManager.IsAtWarAgainstFaction((IFaction)f, Hero.MainHero.MapFaction) && !((IFaction)f).IsBanditFaction));
-		list3.Add(new EncyclopediaFilterItem(new TextObject("{=3PzgpFGq}Neutral"), (object f) => FactionManager.IsNeutralWithFaction((IFaction)f, Hero.MainHero.MapFaction)));
-		list.Add(new EncyclopediaFilterGroup(list3, new TextObject("{=L7wn49Uz}Diplomacy")));
-		List<EncyclopediaFilterItem> list4 = new List<EncyclopediaFilterItem>();
-		list4.Add(new EncyclopediaFilterItem(new TextObject("{=SlubkZ1A}Eliminated"), (object f) => ((IFaction)f).IsEliminated));
-		list4.Add(new EncyclopediaFilterItem(new TextObject("{=YRbSBxqT}Active"), (object f) => !((IFaction)f).IsEliminated));
-		list.Add(new EncyclopediaFilterGroup(list4, new TextObject("{=DXczLzml}Status")));
-		List<EncyclopediaFilterItem> list5 = new List<EncyclopediaFilterItem>();
 		foreach (CultureObject culture in (from x in Game.Current.ObjectManager.GetObjectTypeList<CultureObject>()
 			where x.IsMainCulture
 			select x into f
@@ -195,10 +196,10 @@ public class DefaultEncyclopediaClanPage : EncyclopediaPage
 		{
 			if (culture.StringId != "neutral_culture" && !culture.IsBandit)
 			{
-				list5.Add(new EncyclopediaFilterItem(culture.Name, (object c) => ((IFaction)c).Culture == culture));
+				list3.Add(new EncyclopediaFilterItem(culture.Name, (object c) => ((IFaction)c).Culture == culture));
 			}
 		}
-		list.Add(new EncyclopediaFilterGroup(list5, GameTexts.FindText("str_culture")));
+		list.Add(new EncyclopediaFilterGroup(list3, GameTexts.FindText("str_culture")));
 		return list;
 	}
 

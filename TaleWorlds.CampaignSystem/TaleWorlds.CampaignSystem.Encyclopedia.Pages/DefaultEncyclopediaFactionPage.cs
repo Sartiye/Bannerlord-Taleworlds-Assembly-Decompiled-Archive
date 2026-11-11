@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Helpers;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -26,7 +25,7 @@ public class DefaultEncyclopediaFactionPage : EncyclopediaPage
 			{
 				return ((int)kingdom.CurrentTotalStrength).ToString();
 			}
-			Debug.FailedAssert("Unable to get the total strength of a non-kingdom object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaFactionPage.cs", "GetComparedValueText", 107);
+			Debug.FailedAssert("Unable to get the total strength of a non-kingdom object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaFactionPage.cs", "GetComparedValueText", 118);
 			return "";
 		}
 	}
@@ -46,7 +45,7 @@ public class DefaultEncyclopediaFactionPage : EncyclopediaPage
 			{
 				return kingdom.Fiefs.Count.ToString();
 			}
-			Debug.FailedAssert("Unable to get the fief count from a non-kingdom object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaFactionPage.cs", "GetComparedValueText", 128);
+			Debug.FailedAssert("Unable to get the fief count from a non-kingdom object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaFactionPage.cs", "GetComparedValueText", 139);
 			return "";
 		}
 	}
@@ -66,7 +65,7 @@ public class DefaultEncyclopediaFactionPage : EncyclopediaPage
 			{
 				return kingdom.Clans.Count.ToString();
 			}
-			Debug.FailedAssert("Unable to get the clan count from a non-kingdom object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaFactionPage.cs", "GetComparedValueText", 149);
+			Debug.FailedAssert("Unable to get the clan count from a non-kingdom object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaFactionPage.cs", "GetComparedValueText", 160);
 			return "";
 		}
 	}
@@ -84,7 +83,7 @@ public class DefaultEncyclopediaFactionPage : EncyclopediaPage
 				}
 				return num;
 			}
-			Debug.FailedAssert("Both objects should be kingdoms.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaFactionPage.cs", "CompareKingdoms", 164);
+			Debug.FailedAssert("Both objects should be kingdoms.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaFactionPage.cs", "CompareKingdoms", 175);
 			return 0;
 		}
 	}
@@ -145,13 +144,12 @@ public class DefaultEncyclopediaFactionPage : EncyclopediaPage
 	protected override IEnumerable<EncyclopediaFilterGroup> InitializeFilterItems()
 	{
 		List<EncyclopediaFilterGroup> list = new List<EncyclopediaFilterGroup>();
-		List<EncyclopediaFilterItem> list2 = new List<EncyclopediaFilterItem>();
-		list.Add(new EncyclopediaFilterGroup(new List<EncyclopediaFilterItem>
+		List<EncyclopediaFilterItem> filters = new List<EncyclopediaFilterItem>
 		{
-			new EncyclopediaFilterItem(new TextObject("{=lEHjxPTs}Ally"), (object f) => DiplomacyHelper.IsSameFactionAndNotEliminated((IFaction)f, Hero.MainHero.MapFaction)),
-			new EncyclopediaFilterItem(new TextObject("{=sPmQz21k}Enemy"), (object f) => FactionManager.IsAtWarAgainstFaction((IFaction)f, Hero.MainHero.MapFaction) && !((IFaction)f).IsBanditFaction),
-			new EncyclopediaFilterItem(new TextObject("{=3PzgpFGq}Neutral"), (object f) => FactionManager.IsNeutralWithFaction((IFaction)f, Hero.MainHero.MapFaction))
-		}, new TextObject("{=L7wn49Uz}Diplomacy")));
+			new EncyclopediaFilterItem(new TextObject("{=SlubkZ1A}Eliminated"), (object f) => ((IFaction)f).IsEliminated),
+			new EncyclopediaFilterItem(new TextObject("{=YRbSBxqT}Active"), (object f) => !((IFaction)f).IsEliminated)
+		};
+		list.Add(new EncyclopediaFilterGroup(filters, new TextObject("{=DXczLzml}Status")));
 		return list;
 	}
 

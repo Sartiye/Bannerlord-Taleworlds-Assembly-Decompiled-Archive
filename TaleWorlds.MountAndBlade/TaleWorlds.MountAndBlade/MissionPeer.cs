@@ -98,7 +98,7 @@ public class MissionPeer : PeerComponent
 			if (_selectedTroopIndex != value)
 			{
 				_selectedTroopIndex = value;
-				ResetSelectedPerks();
+				InvalidateSelectedPerks();
 				MissionPeer.OnEquipmentIndexRefreshed?.Invoke(this, value);
 			}
 		}
@@ -143,6 +143,8 @@ public class MissionPeer : PeerComponent
 			return MultiplayerClassDivisions.GetMPHeroClassForPeer(this).TroopName.ToString();
 		}
 	}
+
+	public MissionPeer LastKillVictimPeer { get; internal set; }
 
 	public MBReadOnlyList<MPPerkObject> SelectedPerks
 	{
@@ -304,6 +306,33 @@ public class MissionPeer : PeerComponent
 		}
 	}
 
+	public bool IsSpectator
+	{
+		get
+		{
+			if (!IsStreamer)
+			{
+				return IsOnSpectatorTeam;
+			}
+			return true;
+		}
+	}
+
+	public bool IsStreamer => this.GetNetworkPeer()?.IsStreamer ?? false;
+
+	public bool IsOnSpectatorTeam
+	{
+		get
+		{
+			Team team = Mission.Current?.SpectatorTeam;
+			if (team != null)
+			{
+				return _team == team;
+			}
+			return false;
+		}
+	}
+
 	public Team Team
 	{
 		get
@@ -429,6 +458,11 @@ public class MissionPeer : PeerComponent
 
 	public static event OnPlayerKilledDelegate OnPlayerKilled;
 
+	public void ResetLastKill()
+	{
+		LastKillVictimPeer = null;
+	}
+
 	public MissionPeer()
 	{
 		SpawnTimer = new Timer(Mission.Current.CurrentTime, 3f, autoReset: false);
@@ -498,7 +532,7 @@ public class MissionPeer : PeerComponent
 			}
 			if (num == SelectedTroopIndex)
 			{
-				ResetSelectedPerks();
+				InvalidateSelectedPerks();
 			}
 			MissionPeer.OnPerkSelectionUpdated?.Invoke(this);
 			return true;
@@ -693,6 +727,10 @@ public class MissionPeer : PeerComponent
 			{
 				_numberOfTimesPeerKilledPerPeer[victimPeer]++;
 			}
+			if (victimPeer != this)
+			{
+				LastKillVictimPeer = victimPeer;
+			}
 			MissionPeer.OnPlayerKilled?.Invoke(this, victimPeer);
 		}
 	}
@@ -749,6 +787,12 @@ public class MissionPeer : PeerComponent
 		}
 	}
 
+	private void InvalidateSelectedPerks()
+	{
+		ResetSelectedPerks();
+		_selectedPerks = (SelectedTroopIndex, null);
+	}
+
 	private void CultureChanged(BasicCultureObject newCulture)
 	{
 		List<MultiplayerClassDivisions.MPHeroClass> list = MultiplayerClassDivisions.GetMPHeroClasses(newCulture).ToList();
@@ -756,13 +800,13 @@ public class MissionPeer : PeerComponent
 		for (int i = 0; i < count; i++)
 		{
 			MultiplayerClassDivisions.MPHeroClass currentHeroClass = list[i];
-			List<MPPerkSelectionManager.MPPerkSelection> selectionsForHeroClass = MPPerkSelectionManager.Instance.GetSelectionsForHeroClass(currentHeroClass);
-			if (selectionsForHeroClass != null)
+			List<MPPerkSelectionManager.MPPerkSelection> list2 = (base.IsMine ? MPPerkSelectionManager.Instance.GetSelectionsForHeroClass(currentHeroClass) : null);
+			if (list2 != null && list2.Count > 0)
 			{
-				int count2 = selectionsForHeroClass.Count;
+				int count2 = list2.Count;
 				for (int j = 0; j < count2; j++)
 				{
-					MPPerkSelectionManager.MPPerkSelection mPPerkSelection = selectionsForHeroClass[j];
+					MPPerkSelectionManager.MPPerkSelection mPPerkSelection = list2[j];
 					_perks[i][mPPerkSelection.ListIndex] = mPPerkSelection.Index;
 				}
 			}
@@ -774,6 +818,7 @@ public class MissionPeer : PeerComponent
 				}
 			}
 		}
+		InvalidateSelectedPerks();
 		if (base.IsMine && GameNetwork.IsClient)
 		{
 			GameNetwork.BeginModuleEventAsClient();

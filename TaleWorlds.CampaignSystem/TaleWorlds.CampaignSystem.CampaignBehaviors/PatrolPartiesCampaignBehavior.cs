@@ -550,21 +550,9 @@ public class PatrolPartiesCampaignBehavior : CampaignBehaviorBase, IPatrolPartie
 
 	private void SettlementEntered(MobileParty party, Settlement settlement, Hero hero)
 	{
-		if (party == null || !party.IsPatrolParty || settlement != party.HomeSettlement)
+		if (party != null && party.IsPatrolParty && settlement == party.HomeSettlement)
 		{
-			return;
-		}
-		SetLastHomeSettlementVisitTime(party, CampaignTime.Now);
-		foreach (TroopRosterElement item in party.PrisonRoster.GetTroopRoster())
-		{
-			if (item.Character.HeroObject != null)
-			{
-				TransferPrisonerAction.Apply(item.Character, party.Party, settlement.Party);
-			}
-		}
-		if (party.PrisonRoster.Count > 0)
-		{
-			SellPrisonersAction.ApplyForAllPrisoners(party.Party, settlement.Party);
+			SetLastHomeSettlementVisitTime(party, CampaignTime.Now);
 		}
 	}
 

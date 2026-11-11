@@ -30,7 +30,7 @@ public class PartiesSellPrisonerCampaignBehavior : CampaignBehaviorBase
 		TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
 		foreach (TroopRosterElement item in mobileParty.PrisonRoster.GetTroopRoster())
 		{
-			if (!item.Character.IsHero || (!item.Character.IsPlayerCharacter && item.Character.HeroObject.MapFaction.IsAtWarWith(settlement.MapFaction)))
+			if (!item.Character.IsHero || (!item.Character.IsPlayerCharacter && item.Character.HeroObject.MapFaction.IsAtWarWith(settlement.MapFaction) && (!item.Character.HeroObject.Clan.HasBloodFeudWithPlayer || mobileParty.MapFaction == settlement.MapFaction)))
 			{
 				troopRoster.Add(item);
 			}

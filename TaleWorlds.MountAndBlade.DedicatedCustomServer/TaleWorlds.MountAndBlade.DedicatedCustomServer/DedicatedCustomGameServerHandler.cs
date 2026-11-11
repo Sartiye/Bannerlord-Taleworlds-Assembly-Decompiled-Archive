@@ -46,7 +46,29 @@ public class DedicatedCustomGameServerHandler : ICustomBattleServerSessionHandle
 
 	async Task<PlayerJoinGameResponseDataFromHost[]> ICustomBattleServerSessionHandler.OnClientWantsToConnectCustomGame(PlayerJoinGameData[] playerJoinData)
 	{
-		bool isFull = MultiplayerOptions.OptionType.MaxNumberOfPlayers.GetIntValue() < GameNetwork.NetworkPeerCount + playerJoinData.Length;
+		int num = 0;
+		foreach (NetworkCommunicator networkPeer in GameNetwork.NetworkPeers)
+		{
+			if (networkPeer.IsStreamer)
+			{
+				num++;
+			}
+		}
+		int num2 = GameNetwork.NetworkPeers.Count - num;
+		int num3 = 0;
+		PlayerJoinGameData[] array = playerJoinData;
+		for (int i = 0; i < array.Length; i++)
+		{
+			if (array[i].JoinType == CustomGameJoinType.Streamer)
+			{
+				num3++;
+			}
+		}
+		int num4 = playerJoinData.Length - num3;
+		bool isFull = MultiplayerOptions.OptionType.MaxNumberOfPlayers.GetIntValue() < num2 + num4;
+		int intValue = MultiplayerOptions.OptionType.MaxStreamerCount.GetIntValue();
+		bool streamersNotAllowed = num3 > 0 && intValue == 0;
+		bool isStreamerCapacityFull = num3 > 0 && intValue < num + num3;
 		List<PlayerJoinGameResponseDataFromHost> playerJoinResponses = new List<PlayerJoinGameResponseDataFromHost>();
 		bool peerTriedToJoinDuringLoading = false;
 		while (Mission.Current != null && Mission.Current.CurrentState != Mission.State.Continuing)
@@ -59,7 +81,7 @@ public class DedicatedCustomGameServerHandler : ICustomBattleServerSessionHandle
 			Debug.Print("Peers tried to join the custom game during loading...");
 		}
 		bool flag = false;
-		PlayerJoinGameData[] array = playerJoinData;
+		array = playerJoinData;
 		for (int i = 0; i < array.Length; i++)
 		{
 			if (CustomGameBannedPlayerManager.IsUserBanned(array[i].PlayerId))
@@ -69,9 +91,9 @@ public class DedicatedCustomGameServerHandler : ICustomBattleServerSessionHandle
 			}
 		}
 		CustomGameJoinResponse customGameJoinResponse;
-		if (isFull || flag)
+		if (isFull || isStreamerCapacityFull || streamersNotAllowed || flag)
 		{
-			customGameJoinResponse = (isFull ? CustomGameJoinResponse.ServerCapacityIsFull : ((!flag) ? CustomGameJoinResponse.UnspecifiedError : CustomGameJoinResponse.PlayerBanned));
+			customGameJoinResponse = (isFull ? CustomGameJoinResponse.ServerCapacityIsFull : (streamersNotAllowed ? CustomGameJoinResponse.StreamersNotAllowed : (isStreamerCapacityFull ? CustomGameJoinResponse.StreamerCapacityIsFull : ((!flag) ? CustomGameJoinResponse.UnspecifiedError : CustomGameJoinResponse.PlayerBanned))));
 		}
 		else
 		{
@@ -84,7 +106,7 @@ public class DedicatedCustomGameServerHandler : ICustomBattleServerSessionHandle
 				playerConnectionInfo.AddParameter("PlayerData", playerJoinGameData.PlayerData);
 				playerConnectionInfo.AddParameter("UsedCosmetics", usedIndicesFromIds);
 				playerConnectionInfo.AddParameter("PlayerId", playerJoinGameData.PlayerId);
-				playerConnectionInfo.AddParameter("IsAdmin", playerJoinGameData.IsAdmin);
+				playerConnectionInfo.AddParameter("JoinType", playerJoinGameData.JoinType.ToString());
 				playerConnectionInfo.AddParameter("IpAddress", playerJoinGameData.IpAddress);
 				playerConnectionInfo.Name = playerJoinGameData.Name;
 				list.Add(playerConnectionInfo);
@@ -99,7 +121,7 @@ public class DedicatedCustomGameServerHandler : ICustomBattleServerSessionHandle
 						PlayerId = playerJoinData[j].PlayerId,
 						PeerIndex = addPlayersResult.NetworkPeers[j].Index,
 						SessionKey = addPlayersResult.NetworkPeers[j].SessionKey,
-						IsAdmin = addPlayersResult.NetworkPeers[j].IsAdmin
+						JoinType = playerJoinData[j].JoinType
 					};
 					playerJoinResponses.Add(item);
 				}
@@ -120,7 +142,7 @@ public class DedicatedCustomGameServerHandler : ICustomBattleServerSessionHandle
 					PlayerId = playerJoinGameData2.PlayerId,
 					PeerIndex = -1,
 					SessionKey = -1,
-					IsAdmin = false
+					JoinType = playerJoinGameData2.JoinType
 				};
 				playerJoinResponses.Add(item2);
 			}

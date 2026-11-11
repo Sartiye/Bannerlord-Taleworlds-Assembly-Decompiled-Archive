@@ -12,13 +12,6 @@ namespace TaleWorlds.CampaignSystem.ViewModelCollection.CharacterDeveloper;
 
 public class SkillVM : ViewModel
 {
-	private enum SkillType
-	{
-		Default,
-		Party,
-		Leader
-	}
-
 	public const int MAX_SKILL_LEVEL = 300;
 
 	public readonly SkillObject Skill;
@@ -844,7 +837,7 @@ public class SkillVM : ViewModel
 		}
 		else
 		{
-			Debug.FailedAssert("Couldn't find Focus encyclopedia page", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CharacterDeveloper\\SkillVM.cs", "ExecuteShowFocusConcept", 253);
+			Debug.FailedAssert("Couldn't find Focus encyclopedia page", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CharacterDeveloper\\SkillVM.cs", "ExecuteShowFocusConcept", 246);
 		}
 	}
 
@@ -856,7 +849,7 @@ public class SkillVM : ViewModel
 		}
 		else
 		{
-			Debug.FailedAssert("Couldn't find Focus encyclopedia page", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CharacterDeveloper\\SkillVM.cs", "ExecuteShowSkillConcept", 265);
+			Debug.FailedAssert("Couldn't find Focus encyclopedia page", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\CharacterDeveloper\\SkillVM.cs", "ExecuteShowSkillConcept", 258);
 		}
 	}
 

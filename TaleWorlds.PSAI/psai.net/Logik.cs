@@ -229,14 +229,13 @@ internal class Logik
 			try
 			{
 				string text = ModuleHelper.GetModuleFullPath(pathToProjectFile) + "Music/soundtrack.xml";
-				StreamReader streamReader = new StreamReader(text);
-				PsaiProject psaiProject2 = null;
-				if (streamReader == null)
+				if (!File.Exists(text))
 				{
 					TaleWorlds.Library.Debug.Print("Cannot find the music xml for the following path: " + text, 0, TaleWorlds.Library.Debug.DebugColor.Red, 281474976710656uL);
 					continue;
 				}
-				psaiProject2 = PsaiProject.LoadProjectFromStream(streamReader, pathToProjectFile);
+				PsaiProject psaiProject2 = null;
+				psaiProject2 = PsaiProject.LoadProjectFromStream(new StreamReader(text), pathToProjectFile);
 				if (psaiProject == null)
 				{
 					psaiProject = psaiProject2;
@@ -251,10 +250,10 @@ internal class Logik
 				MBDebug.Print("\t Error Occurred: \n\t" + ex.Source + "\n\t" + ex.Message + "\n\t" + ex.StackTrace);
 			}
 		}
-		psaiProject.ReconstructReferencesAfterXmlDeserialization();
-		psaiProject.DebugCheckProjectIntegrity();
 		if (psaiProject != null)
 		{
+			psaiProject.ReconstructReferencesAfterXmlDeserialization();
+			psaiProject.DebugCheckProjectIntegrity();
 			return LoadSoundtrackByPsaiProject(psaiProject);
 		}
 		return PsaiResult.error_file;

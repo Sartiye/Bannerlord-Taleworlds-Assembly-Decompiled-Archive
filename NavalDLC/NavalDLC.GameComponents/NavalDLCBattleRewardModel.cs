@@ -91,16 +91,13 @@ public class NavalDLCBattleRewardModel : BattleRewardModel
 			for (int i = 0; i < lootItemChancesForWinnerParties.Count; i++)
 			{
 				PartyBase party = lootItemChancesForWinnerParties[i].Key.Party;
-				ExplainedNumber stat = new ExplainedNumber(lootItemChancesForWinnerParties[i].Value);
-				if (PartyBaseHelper.HasFeat(party, NavalCulturalFeats.NordHostileActionBonusFeat))
-				{
-					stat.AddFactor(NavalCulturalFeats.NordHostileActionBonusFeat.EffectBonus);
-				}
+				ExplainedNumber result = new ExplainedNumber(lootItemChancesForWinnerParties[i].Value);
+				FeatHelper.ApplyCultureFeat(party, NavalCulturalFeats.NordHostileActionBonusFeat, ref result);
 				if (defeatedParty.MobileParty.IsCaravan && defeatedParty.MobileParty.CaravanPartyComponent.CanHaveNavalNavigationCapability)
 				{
-					PerkHelper.AddPerkBonusForParty(NavalPerks.Mariner.PiratesProwess, party.MobileParty, isPrimaryBonus: false, ref stat);
+					PerkHelper.AddPerkBonusForParty(NavalPerks.Mariner.PiratesProwess, party.MobileParty, isPrimaryBonus: false, ref result);
 				}
-				lootItemChancesForWinnerParties[i] = new KeyValuePair<MapEventParty, float>(lootItemChancesForWinnerParties[i].Key, stat.ResultNumber);
+				lootItemChancesForWinnerParties[i] = new KeyValuePair<MapEventParty, float>(lootItemChancesForWinnerParties[i].Key, result.ResultNumber);
 			}
 		}
 		return lootItemChancesForWinnerParties;
@@ -142,7 +139,7 @@ public class NavalDLCBattleRewardModel : BattleRewardModel
 				PerkHelper.AddPerkBonusForParty(NavalPerks.Shipmaster.RiverRaider, key2.Party.MobileParty, isPrimaryBonus: false, ref stat2);
 			}
 			healthyMemberChances[k] = new KeyValuePair<MapEventParty, float>(key2, stat2.ResultNumber);
-			num += woundedMemberChances[k].Value;
+			num += healthyMemberChances[k].Value;
 		}
 		if (num > 0f)
 		{
@@ -294,14 +291,14 @@ public class NavalDLCBattleRewardModel : BattleRewardModel
 
 	private Ship GetShipToLootForWinnerParty(MapEventParty winnerParty, MBList<Ship> partyShipsToConsider, MBList<Ship> lootableShips)
 	{
-		float num = NavalDLCManager.Instance.GameModels.ShipDistributionModel.GetScoreForPartyShipComposition(winnerParty.Party.MobileParty, partyShipsToConsider);
+		float num = Campaign.Current.Models.ShipDistributionModel.GetScoreForPartyShipComposition(winnerParty.Party.MobileParty, partyShipsToConsider);
 		Ship result = null;
 		foreach (Ship lootableShip in lootableShips)
 		{
-			if (NavalDLCManager.Instance.GameModels.ShipDistributionModel.CanPartyTakeShip(winnerParty.Party, lootableShip))
+			if (Campaign.Current.Models.ShipDistributionModel.CanPartyTakeShip(winnerParty.Party, lootableShip))
 			{
 				partyShipsToConsider.Add(lootableShip);
-				float scoreForPartyShipComposition = NavalDLCManager.Instance.GameModels.ShipDistributionModel.GetScoreForPartyShipComposition(winnerParty.Party.MobileParty, partyShipsToConsider);
+				float scoreForPartyShipComposition = Campaign.Current.Models.ShipDistributionModel.GetScoreForPartyShipComposition(winnerParty.Party.MobileParty, partyShipsToConsider);
 				partyShipsToConsider.Remove(lootableShip);
 				if (scoreForPartyShipComposition > num)
 				{
@@ -343,7 +340,7 @@ public class NavalDLCBattleRewardModel : BattleRewardModel
 			result = -3f;
 			break;
 		default:
-			Debug.FailedAssert("Ship type not handled", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\GameComponents\\NavalDLCBattleRewardModel.cs", "GetSunkenShipMoraleEffect", 437);
+			Debug.FailedAssert("Ship type not handled", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\GameComponents\\NavalDLCBattleRewardModel.cs", "GetSunkenShipMoraleEffect", 434);
 			break;
 		}
 		return result;

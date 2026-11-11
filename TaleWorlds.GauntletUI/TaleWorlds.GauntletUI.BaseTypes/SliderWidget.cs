@@ -139,7 +139,7 @@ public class SliderWidget : ImageWidget
 		}
 		set
 		{
-			if (Locked || !(MathF.Abs(_valueFloat - value) > 1E-05f))
+			if (!(MathF.Abs(_valueFloat - value) > 1E-05f))
 			{
 				return;
 			}
@@ -275,6 +275,10 @@ public class SliderWidget : ImageWidget
 		base.OnUpdate(dt);
 		bool flag = false;
 		base.IsUsingNavigation = false;
+		if (Locked)
+		{
+			goto IL_01a7;
+		}
 		if (!base.IsPressed)
 		{
 			Widget handle = Handle;
@@ -283,11 +287,7 @@ public class SliderWidget : ImageWidget
 				Widget handleExtension = HandleExtension;
 				if (handleExtension == null || !handleExtension.IsPressed)
 				{
-					_downStartTime = -1f;
-					_handleClickOffset = Vector2.Zero;
-					_handleClicked = false;
-					_valueChangedByMouse = false;
-					goto IL_01c0;
+					goto IL_01a7;
 				}
 			}
 		}
@@ -330,8 +330,14 @@ public class SliderWidget : ImageWidget
 			_handleClickOffset = base.EventManager.MousePosition - Handle.AreaRect.GetCenter();
 		}
 		HandleMouseMove();
-		goto IL_01c0;
-		IL_01c0:
+		goto IL_01cb;
+		IL_01a7:
+		_downStartTime = -1f;
+		_handleClickOffset = Vector2.Zero;
+		_handleClicked = false;
+		_valueChangedByMouse = false;
+		goto IL_01cb;
+		IL_01cb:
 		UpdateScrollBar();
 		UpdateHandleLength();
 		Handle?.SetState(base.CurrentState);
@@ -446,7 +452,7 @@ public class SliderWidget : ImageWidget
 
 	private void HandleMouseMove()
 	{
-		if ((base.EventManager.IsControllerActive && Input.MouseMoveX == 0f && Input.MouseMoveY == 0f) || Handle == null)
+		if ((base.EventManager.IsControllerActive && Input.MouseMoveX == 0f && Input.MouseMoveY == 0f) || Handle == null || Locked)
 		{
 			return;
 		}
@@ -566,7 +572,7 @@ public class SliderWidget : ImageWidget
 
 	protected override bool OnPreviewMouseScroll()
 	{
-		if (UpdateValueOnScroll)
+		if (UpdateValueOnScroll && !Locked)
 		{
 			float num = base.EventManager.DeltaMouseScroll * 0.004f;
 			ValueFloat = MathF.Clamp(_valueFloat + _dynamicIncrement * num, MinValueFloat, MaxValueFloat);

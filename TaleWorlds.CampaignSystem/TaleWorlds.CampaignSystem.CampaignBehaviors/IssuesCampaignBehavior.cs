@@ -173,6 +173,55 @@ public class IssuesCampaignBehavior : CampaignBehaviorBase
 		{
 			item.CompleteIssueWithCancel();
 		}
+		if (!MBSaveLoad.IsUpdatingGameVersion || !MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.5.6.125291")))
+		{
+			return;
+		}
+		foreach (KeyValuePair<Hero, IssueBase> item2 in Campaign.Current.IssueManager.Issues.ToListQ())
+		{
+			IssueBase value = item2.Value;
+			if (!value.IsSolvingWithAlternative)
+			{
+				continue;
+			}
+			TroopRoster alternativeSolutionSentTroops = value.AlternativeSolutionSentTroops;
+			for (int num = alternativeSolutionSentTroops.Count - 1; num >= 0; num--)
+			{
+				CharacterObject characterAtIndex = alternativeSolutionSentTroops.GetCharacterAtIndex(num);
+				if (characterAtIndex.IsHero && characterAtIndex.HeroObject.IsDead)
+				{
+					value.CompleteIssueWithCancel();
+				}
+			}
+		}
+		foreach (MobileParty item3 in MobileParty.All)
+		{
+			TroopRoster memberRoster = item3.MemberRoster;
+			TroopRoster prisonRoster = item3.PrisonRoster;
+			ClearDeadOrDisabledHeroes(memberRoster);
+			ClearDeadOrDisabledHeroes(prisonRoster);
+		}
+		foreach (Settlement item4 in Settlement.All)
+		{
+			ClearDeadOrDisabledHeroes(item4.Party.PrisonRoster);
+		}
+		static void ClearDeadOrDisabledHeroes(TroopRoster troopRoster)
+		{
+			for (int num2 = troopRoster.Count - 1; num2 >= 0; num2--)
+			{
+				TroopRosterElement elementCopyAtIndex = troopRoster.GetElementCopyAtIndex(num2);
+				CharacterObject character = elementCopyAtIndex.Character;
+				if (character.IsHero && character != CharacterObject.PlayerCharacter)
+				{
+					Hero heroObject = character.HeroObject;
+					if ((heroObject.IsDead || (heroObject.Clan != Clan.PlayerClan && heroObject.IsDisabled)) && troopRoster.FindIndexOfTroop(character) > -1)
+					{
+						troopRoster.RemoveTroop(character, elementCopyAtIndex.Number);
+					}
+				}
+			}
+			troopRoster.RemoveZeroCounts();
+		}
 	}
 
 	private float GetIssueGenerationChance(float currentIssueCount, int maxIssueCount)

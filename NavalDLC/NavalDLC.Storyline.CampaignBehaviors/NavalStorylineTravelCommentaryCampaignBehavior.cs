@@ -373,7 +373,7 @@ public class NavalStorylineTravelCommentaryCampaignBehavior : CampaignBehaviorBa
 
 	private bool CanComment()
 	{
-		return MobileParty.MainParty.IsActive && MobileParty.MainParty.IsCurrentlyAtSea && IsStorylineActive && !MobileParty.MainParty.IsInRaftState && MobileParty.MainParty.MapEvent == null && MobileParty.MainParty.SiegeEvent == null;
+		return MobileParty.MainParty.IsActive && MobileParty.MainParty.IsCurrentlyAtSea && IsStorylineActive && !MobileParty.MainParty.IsInNavalAutoTravel && MobileParty.MainParty.MapEvent == null && MobileParty.MainParty.SiegeEvent == null;
 	}
 
 	private void AddNotification(TextObject text, MBInformationManager.NotificationPriority priority)

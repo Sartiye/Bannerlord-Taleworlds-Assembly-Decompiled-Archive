@@ -80,19 +80,16 @@ public class DefaultPartyTroopUpgradeModel : PartyTroopUpgradeModel
 		int roundedResultNumber2 = partyWageModel.GetTroopRecruitmentCost(characterObject, null, withoutItemCost: true).RoundedResultNumber;
 		bool flag = characterObject.Occupation == Occupation.Mercenary || characterObject.Occupation == Occupation.Gangster;
 		ExplainedNumber stat = new ExplainedNumber((float)(roundedResultNumber - roundedResultNumber2) / ((!flag) ? 2f : 3f));
-		if (party.MobileParty.HasPerk(DefaultPerks.Steward.SoundReserves))
-		{
-			PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.SoundReserves, party.MobileParty, isPrimaryBonus: true, ref stat);
-		}
-		if (characterObject.IsRanged && party.MobileParty.HasPerk(DefaultPerks.Bow.RenownedArcher, checkSecondaryRole: true))
+		PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.SoundReserves, party.MobileParty, isPrimaryBonus: true, ref stat);
+		if (characterObject.IsRanged)
 		{
 			PerkHelper.AddPerkBonusForParty(DefaultPerks.Bow.RenownedArcher, party.MobileParty, isPrimaryBonus: false, ref stat);
 		}
-		if (characterObject.IsMounted && PartyBaseHelper.HasFeat(party, DefaultCulturalFeats.KhuzaitRecruitUpgradeFeat))
+		if (characterObject.IsMounted)
 		{
-			stat.AddFactor(DefaultCulturalFeats.KhuzaitRecruitUpgradeFeat.EffectBonus, GameTexts.FindText("str_culture"));
+			FeatHelper.ApplyCultureFeat(party, DefaultCulturalFeats.KhuzaitRecruitUpgradeFeat, ref stat);
 		}
-		if (flag && party.MobileParty.HasPerk(DefaultPerks.Steward.Contractors))
+		if (flag)
 		{
 			PerkHelper.AddPerkBonusForParty(DefaultPerks.Steward.Contractors, party.MobileParty, isPrimaryBonus: true, ref stat);
 		}

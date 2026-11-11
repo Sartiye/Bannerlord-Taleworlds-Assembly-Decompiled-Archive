@@ -26,7 +26,7 @@ public class MissionGauntletNavalShipMarker : MissionBattleUIBaseView
 
 	private NavalShipsLogic _navalShipsLogic;
 
-	private MBReadOnlyList<MissionShip> _focusedShipsCache;
+	private MissionShip _focusedShip;
 
 	private readonly Vec3 _heightOffset = new Vec3(0f, 0f, 3f);
 
@@ -202,14 +202,14 @@ public class MissionGauntletNavalShipMarker : MissionBattleUIBaseView
 			if (navalShipMarkerItemVM.TeamType == 2)
 			{
 				bool isTargetingAShip = list.Contains(navalShipMarkerItemVM.Ship) || list2.Contains(navalShipMarkerItemVM.Formation);
-				navalShipMarkerItemVM.SetTargetedState(_focusedShipsCache?.Contains(navalShipMarkerItemVM.Ship) ?? false, isTargetingAShip);
+				navalShipMarkerItemVM.SetTargetedState(_focusedShip == navalShipMarkerItemVM.Ship, isTargetingAShip);
 			}
 		}
 	}
 
-	private void OnShipFocusedFromHandler(MBReadOnlyList<MissionShip> focusedShips)
+	private void OnShipFocusedFromHandler(MissionShip focusedShip)
 	{
-		_focusedShipsCache = focusedShips;
+		_focusedShip = focusedShip;
 	}
 
 	public override void OnPhotoModeActivated()

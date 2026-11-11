@@ -26,7 +26,7 @@ public class NavalStormriderCampaignBehaviour : CampaignBehaviorBase
 
 	private void TickEvent(float deltaTime)
 	{
-		if (!(_playerLastStormEnterTime.ElapsedDaysUntilNow > 1f) && !(_playerLastStormEnterTime == CampaignTime.Never))
+		if ((!(_playerLastStormEnterTime == CampaignTime.Never) && !(_playerLastStormEnterTime.ElapsedDaysUntilNow > 1f)) || !MobileParty.MainParty.HasPerk(NavalPerks.Shipmaster.Stormrider))
 		{
 			return;
 		}
@@ -35,7 +35,8 @@ public class NavalStormriderCampaignBehaviour : CampaignBehaviorBase
 			if (MobileParty.MainParty.Position.DistanceSquared(spawnedStorm.CurrentPosition) <= spawnedStorm.EffectRadius * spawnedStorm.EffectRadius)
 			{
 				_playerLastStormEnterTime = CampaignTime.Now;
-				AddXpToTroops(MobileParty.MainParty, TaleWorlds.Library.MathF.Round(NavalPerks.Shipmaster.Stormrider.PrimaryBonus));
+				int amount = TaleWorlds.Library.MathF.Round(NavalPerks.Shipmaster.Stormrider.PrimaryBonus);
+				AddXpToTroops(MobileParty.MainParty, amount);
 			}
 		}
 	}
@@ -67,7 +68,8 @@ public class NavalStormriderCampaignBehaviour : CampaignBehaviorBase
 		if (party.HasPerk(NavalPerks.Shipmaster.Stormrider))
 		{
 			_partiesEnteredStorm[party] = CampaignTime.Now;
-			AddXpToTroops(party, TaleWorlds.Library.MathF.Round(NavalPerks.Shipmaster.Stormrider.PrimaryBonus));
+			int amount = TaleWorlds.Library.MathF.Round(NavalPerks.Shipmaster.Stormrider.PrimaryBonus);
+			AddXpToTroops(party, amount);
 		}
 	}
 

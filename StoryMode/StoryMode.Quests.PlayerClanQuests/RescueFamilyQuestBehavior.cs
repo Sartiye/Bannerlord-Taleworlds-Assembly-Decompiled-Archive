@@ -134,6 +134,7 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 			_hideoutBoss = StoryModeHeroes.RadagosHenchman;
 			_targetSettlementForSiblings = null;
 			_hideout = SettlementHelper.FindNearestHideoutToMobileParty(MobileParty.MainParty, MobileParty.NavigationType.All, (Settlement s) => !s.IsSettlementBusy(this)).Settlement;
+			_hideout.Hideout.ResetNextPossibleAttackTime();
 			_rescueFamilyQuestState = RescueFamilyQuestStateEnum.None;
 			_raiderParties = new List<MobileParty>();
 			InitializeHideout();
@@ -176,13 +177,40 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 			_radagos.CharacterObject.SetTransferableInPartyScreen(isTransferable: false);
 			_radagos.CharacterObject.SetTransferableInHideouts(isTransferable: false);
 			_hideoutBoss = StoryModeHeroes.RadagosHenchman;
+			StoryModeHeroes.Radagos.CharacterObject.HiddenInEncyclopedia = false;
+			StoryModeHeroes.RadagosHenchman.CharacterObject.HiddenInEncyclopedia = false;
+			StoryModeHeroes.Radagos.UpdateLastKnownClosestSettlement(_hideout);
+			StoryModeHeroes.RadagosHenchman.UpdateLastKnownClosestSettlement(_hideout);
 			SetDialogs();
 			AddGameMenus();
 			SelectTargetSettlementForSiblings();
-			if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.CurrentVersion.IsOlderThan(ApplicationVersion.FromString("v1.4.0")) && _rescueFamilyQuestState == RescueFamilyQuestStateEnum.HideoutTalkWithRadagosDone && PlayerEncounter.Battle?.MapEventSettlement == _hideout)
+			if (MBSaveLoad.IsUpdatingGameVersion)
 			{
-				_rescueFamilyQuestState = RescueFamilyQuestStateEnum.HideoutBattleInProgress;
+				if (MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.4.0")) && _rescueFamilyQuestState == RescueFamilyQuestStateEnum.HideoutTalkWithRadagosDone && PlayerEncounter.Battle?.MapEventSettlement == _hideout)
+				{
+					_rescueFamilyQuestState = RescueFamilyQuestStateEnum.HideoutBattleInProgress;
+				}
+				if (MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.5.5.124508")) && (double)_hideout.Hideout.NextPossibleAttackTime.RemainingHoursFromNow > StoryModeData.StorylineQuestHideoutHiddenDuration.ToHours)
+				{
+					_hideout.Hideout.ResetNextPossibleAttackTime();
+				}
 			}
+		}
+
+		protected override void OnStartQuest()
+		{
+			base.OnStartQuest();
+			StoryModeHeroes.Radagos.CharacterObject.HiddenInEncyclopedia = false;
+			StoryModeHeroes.RadagosHenchman.CharacterObject.HiddenInEncyclopedia = false;
+			StoryModeHeroes.Radagos.UpdateLastKnownClosestSettlement(_hideout);
+			StoryModeHeroes.RadagosHenchman.UpdateLastKnownClosestSettlement(_hideout);
+		}
+
+		protected override void OnFinalize()
+		{
+			base.OnFinalize();
+			StoryModeHeroes.Radagos.CharacterObject.HiddenInEncyclopedia = true;
+			StoryModeHeroes.RadagosHenchman.CharacterObject.HiddenInEncyclopedia = true;
 		}
 
 		public override void OnHeroCanHaveCampaignIssuesInfoIsRequested(Hero hero, ref bool result)
@@ -195,6 +223,14 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 
 		protected override void OnCompleteWithSuccess()
 		{
+			if (!_hideoutBoss.IsDead)
+			{
+				KillCharacterAction.ApplyByRemove(_hideoutBoss);
+			}
+			if (_rescueFamilyQuestState == RescueFamilyQuestStateEnum.GoodbyeTalkWithRadagosDone && !_radagos.IsDisabled && !_radagos.IsDead)
+			{
+				DisableHeroAction.Apply(_radagos);
+			}
 			StoryModeHeroes.ElderBrother.Clan = Clan.PlayerClan;
 			StoryModeHeroes.LittleBrother.Clan = Clan.PlayerClan;
 			StoryModeHeroes.ElderBrother.ChangeState(Hero.CharacterStates.Active);
@@ -266,7 +302,6 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 					}
 				}
 			}
-			_hideout.Hideout.IsSpotted = true;
 			_hideout.IsVisible = true;
 		}
 
@@ -310,9 +345,7 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 			mobileParty.ActualClan = clan;
 			mobileParty.Position = _hideout.Position;
 			mobileParty.Party.SetVisualAsDirty();
-			float num = mobileParty.Party.CalculateCurrentStrength();
-			int initialGold = (int)(1f * MBRandom.RandomFloat * 20f * num + 50f);
-			mobileParty.InitializePartyTrade(initialGold);
+			mobileParty.InitializePartyTrade(QuestHelper.CalculateInitialGoldForBanditQuestParty(mobileParty));
 			mobileParty.SetMoveGoToSettlement(_hideout, MobileParty.NavigationType.Default, isTargetingThePort: false);
 			mobileParty.Ai.SetDoNotMakeNewDecisions(doNotMakeNewDecisions: true);
 			mobileParty.SetPartyUsedByQuest(isActivelyUsed: true);
@@ -416,7 +449,7 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 			}
 			else
 			{
-				Debug.FailedAssert("Hideout boss can not be set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Quests\\PlayerClanQuests\\RescueFamilyQuestBehavior.cs", "OnMissionStarted", 542);
+				Debug.FailedAssert("Hideout boss can not be set!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Quests\\PlayerClanQuests\\RescueFamilyQuestBehavior.cs", "OnMissionStarted", 579);
 			}
 		}
 
@@ -712,7 +745,7 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 
 		private void hideout_boss_prisoner_talk_consequence()
 		{
-			MBInformationManager.ShowSceneNotification(HeroExecutionSceneNotificationData.CreateForInformingPlayer(_radagos, _hideoutBoss, SceneNotificationData.RelevantContextType.Map, OnGalterExecutionIsDone));
+			MBInformationManager.ShowSceneNotification(HeroExecutionSceneNotificationData.CreateForInformingPlayer(_radagos, _hideoutBoss, CampaignTime.Now, SceneNotificationData.RelevantContextType.Map, OnGalterExecutionIsDone));
 			Campaign.Current.ConversationManager.ConversationEndOneShot += delegate
 			{
 				if (Campaign.Current.CurrentMenuContext != null)
@@ -728,6 +761,10 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 
 		private void OnGalterExecutionIsDone()
 		{
+			if (!_hideoutBoss.IsDead)
+			{
+				KillCharacterAction.ApplyByExecution(_hideoutBoss, _radagos, showNotification: true, isForced: true);
+			}
 			if (_rescueFamilyQuestState == RescueFamilyQuestStateEnum.ExecutionTalkWithGalterDone && !Campaign.Current.ConversationManager.IsConversationInProgress)
 			{
 				CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, noHorse: true, noWeapon: true), new ConversationCharacterData(StoryModeHeroes.ElderBrother.CharacterObject, null, noHorse: true, noWeapon: true));
@@ -748,8 +785,16 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 		private void execute_radagos_consequence()
 		{
 			AddLog(_executeRadagosEndQuestLogText);
-			MBInformationManager.ShowSceneNotification(HeroExecutionSceneNotificationData.CreateForInformingPlayer(Hero.MainHero, _radagos, SceneNotificationData.RelevantContextType.Map));
+			MBInformationManager.ShowSceneNotification(HeroExecutionSceneNotificationData.CreateForInformingPlayer(Hero.MainHero, _radagos, CampaignTime.Now, SceneNotificationData.RelevantContextType.Map, OnRadagosExecutionIsDone));
 			_rescueFamilyQuestState = RescueFamilyQuestStateEnum.GoodbyeTalkWithRadagosDone;
+		}
+
+		private void OnRadagosExecutionIsDone()
+		{
+			if (!_radagos.IsDead)
+			{
+				KillCharacterAction.ApplyByExecution(_radagos, Hero.MainHero, showNotification: true, isForced: true);
+			}
 		}
 
 		private void let_go_radagos_consequence()
@@ -847,6 +892,12 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 		{
 			return;
 		}
+		int flags = 0;
+		CampaignEventDispatcher.Instance.IsSettlementBusy(settlement, this, ref flags);
+		if (flags != 0)
+		{
+			return;
+		}
 		bool flag = false;
 		foreach (QuestBase quest in Campaign.Current.QuestManager.Quests)
 		{
@@ -889,7 +940,7 @@ public class RescueFamilyQuestBehavior : CampaignBehaviorBase
 
 	private void CanHeroDie(Hero hero, KillCharacterAction.KillCharacterActionDetail causeOfDeath, ref bool result)
 	{
-		if (hero == StoryModeHeroes.RadagosHenchman && (!StoryModeManager.Current.MainStoryLine.FamilyRescued || _rescueFamilyQuestReadyToStart || (Campaign.Current.QuestManager.IsThereActiveQuestWithType(typeof(RescueFamilyQuest)) && causeOfDeath != KillCharacterAction.KillCharacterActionDetail.Executed && causeOfDeath != KillCharacterAction.KillCharacterActionDetail.ExecutionAfterMapEvent)))
+		if (hero == StoryModeHeroes.RadagosHenchman && (!StoryModeManager.Current.MainStoryLine.FamilyRescued || _rescueFamilyQuestReadyToStart || (Campaign.Current.QuestManager.IsThereActiveQuestWithType(typeof(RescueFamilyQuest)) && causeOfDeath != KillCharacterAction.KillCharacterActionDetail.Executed)))
 		{
 			result = false;
 		}

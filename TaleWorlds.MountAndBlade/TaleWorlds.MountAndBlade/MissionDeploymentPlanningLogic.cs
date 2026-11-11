@@ -102,7 +102,12 @@ public abstract class MissionDeploymentPlanningLogic : MissionLogic, IMissionDep
 		throw new NotImplementedException();
 	}
 
-	public virtual MatrixFrame GetDeploymentFrame(Team team)
+	public virtual MatrixFrame GetDeploymentZoneFrame(Team team)
+	{
+		throw new NotImplementedException();
+	}
+
+	public virtual MatrixFrame GetFormationsCenterFrameAndExtents(Team team, out Vec2 halfExtents, bool ignoreDimensionlessFormations = true)
 	{
 		throw new NotImplementedException();
 	}

@@ -42,8 +42,6 @@ public class AgentNavalComponent : AgentComponent
 
 	private NavalDLC.Missions.NavalPhysics.NavalPhysics _steppedNavalPhysicsCached;
 
-	private PlankBridgeSteppedAgentManager _steppedPlankBridgeSteppedAgentManagerCached;
-
 	private readonly NavalShipsLogic _navalShipsLogic;
 
 	private readonly NavalAgentsLogic _navalAgentsLogic;
@@ -53,6 +51,8 @@ public class AgentNavalComponent : AgentComponent
 	public MissionShip SteppedShip { get; private set; }
 
 	public MissionShip FormationShip { get; private set; }
+
+	public PlankBridgeSteppedAgentManager SteppedPlankBridgeSteppedAgentManagerCached { get; private set; }
 
 	public bool BlockDrowning { get; private set; }
 
@@ -157,9 +157,9 @@ public class AgentNavalComponent : AgentComponent
 		{
 			return SteppedShip.ShipIslandCombinedID;
 		}
-		if (_steppedPlankBridgeSteppedAgentManagerCached != null)
+		if (SteppedPlankBridgeSteppedAgentManagerCached != null)
 		{
-			ShipAttachmentMachine.ShipAttachment shipAttachment = _steppedPlankBridgeSteppedAgentManagerCached?.NavmeshHolder?.CurrentAttachment;
+			ShipAttachmentMachine.ShipAttachment shipAttachment = SteppedPlankBridgeSteppedAgentManagerCached?.NavmeshHolder?.CurrentAttachment;
 			if (shipAttachment != null)
 			{
 				return shipAttachment.AttachmentSource.OwnerShip.ShipIslandCombinedID;
@@ -215,7 +215,7 @@ public class AgentNavalComponent : AgentComponent
 				SteppedShip = ((_steppedEntityCache != null) ? (root.GetFirstScriptWithNameHash(MissionShip.MissionShipScriptNameHash) as MissionShip) : null);
 				_navalAgentsLogic.OnAgentSteppedShipChanged(Agent, SteppedShip);
 				_steppedNavalPhysicsCached = root.GetFirstScriptOfType<NavalDLC.Missions.NavalPhysics.NavalPhysics>();
-				_steppedPlankBridgeSteppedAgentManagerCached = root.GetFirstScriptOfType<PlankBridgeSteppedAgentManager>();
+				SteppedPlankBridgeSteppedAgentManagerCached = root.GetFirstScriptOfTypeRecursive<PlankBridgeSteppedAgentManager>();
 			}
 		}
 		_lastMovementMode = agentMovementMode;
@@ -223,32 +223,49 @@ public class AgentNavalComponent : AgentComponent
 
 	public override void OnTick(float dt)
 	{
-		if (dt > 0f)
+		if (!(dt > 0f))
 		{
-			if (_lastJumpOffTime >= 0f && Mission.Current.CurrentTime - _lastJumpOffTime >= 2f)
+			return;
+		}
+		if (_lastJumpOffTime >= 0f && Mission.Current.CurrentTime - _lastJumpOffTime >= 2f)
+		{
+			_lastJumpOffTime = ((Agent.IsOnLand() || Agent.IsInWater()) ? (-1f) : (Mission.Current.CurrentTime - 1.9f));
+		}
+		if (!BlockCheckingOffShipConsideration && Agent.IsAIControlled && _lastOffShipCheckTime + 5f <= Agent.Mission.CurrentTime && _navalAgentsLogic.IsDeploymentFinished)
+		{
+			_lastOffShipCheckTime += 5f;
+			CheckAgentOffShip();
+		}
+		if (!BlockDrowning && !Agent.Mission.MissionEnded && _lastBreatheCheckTime + 5f <= Agent.Mission.CurrentTime && _navalAgentsLogic.IsDeploymentFinished)
+		{
+			_lastBreatheCheckTime += 5f;
+			CheckAgentDrown();
+		}
+		if (!BlockBurning && !Agent.Mission.MissionEnded && _lastBurnCheckTime + 1f <= Agent.Mission.CurrentTime && _navalAgentsLogic.IsDeploymentFinished)
+		{
+			_lastBurnCheckTime += 1f;
+			CheckAgentBurn();
+		}
+		if (SteppedShip != null)
+		{
+			_steppedNavalPhysicsCached?.AddAgentWeightAndPositionInformation(Agent);
+			Team team = Agent.Team;
+			if (team != null && team.Side == BattleSideEnum.Attacker)
 			{
-				_lastJumpOffTime = ((Agent.IsOnLand() || Agent.IsInWater()) ? (-1f) : (Mission.Current.CurrentTime - 1.9f));
+				SteppedShip.SetAttackerSideAgentExistsOnShip(value: true);
 			}
-			if (!BlockCheckingOffShipConsideration && Agent.IsAIControlled && _lastOffShipCheckTime + 5f <= Agent.Mission.CurrentTime && _navalAgentsLogic.IsDeploymentFinished)
+			else
 			{
-				_lastOffShipCheckTime += 5f;
-				CheckAgentOffShip();
+				Team team2 = Agent.Team;
+				if (team2 != null && team2.Side == BattleSideEnum.Defender)
+				{
+					SteppedShip.SetDefenderSideAgentExistsOnShip(value: true);
+				}
 			}
-			if (!BlockDrowning && !Agent.Mission.MissionEnded && _lastBreatheCheckTime + 5f <= Agent.Mission.CurrentTime && _navalAgentsLogic.IsDeploymentFinished)
-			{
-				_lastBreatheCheckTime += 5f;
-				CheckAgentDrown();
-			}
-			if (!BlockBurning && !Agent.Mission.MissionEnded && _lastBurnCheckTime + 1f <= Agent.Mission.CurrentTime && _navalAgentsLogic.IsDeploymentFinished)
-			{
-				_lastBurnCheckTime += 1f;
-				CheckAgentBurn();
-			}
-			if (SteppedShip != null)
-			{
-				_steppedNavalPhysicsCached?.AddAgentWeightAndPositionInformation(Agent);
-				_steppedPlankBridgeSteppedAgentManagerCached?.AddAgentWeightAndPositionInformation(Agent);
-			}
+		}
+		if (SteppedPlankBridgeSteppedAgentManagerCached != null)
+		{
+			SteppedPlankBridgeSteppedAgentManagerCached.AddAgentWeightAndPositionInformation(Agent);
 		}
 	}
 

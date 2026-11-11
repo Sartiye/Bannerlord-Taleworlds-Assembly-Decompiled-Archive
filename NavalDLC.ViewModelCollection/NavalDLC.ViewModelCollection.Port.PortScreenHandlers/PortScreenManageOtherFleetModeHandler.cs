@@ -134,6 +134,16 @@ public class PortScreenManageOtherFleetModeHandler : PortScreenHandler
 		return PortActionInfo.CreateInvalid();
 	}
 
+	protected override PortActionInfo CanStashShip(Ship ship)
+	{
+		return PortActionInfo.CreateInvalid();
+	}
+
+	protected override PortActionInfo CanViewStash(bool isRightRoster)
+	{
+		return PortActionInfo.CreateInvalid();
+	}
+
 	private bool CanSellShip(Ship ship, out TextObject disabledHint)
 	{
 		disabledHint = TextObject.GetEmpty();

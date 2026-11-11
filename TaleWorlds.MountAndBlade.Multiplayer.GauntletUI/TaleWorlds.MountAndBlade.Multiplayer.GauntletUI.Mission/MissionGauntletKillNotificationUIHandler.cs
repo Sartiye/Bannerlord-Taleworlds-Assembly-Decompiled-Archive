@@ -131,7 +131,8 @@ public class MissionGauntletKillNotificationUIHandler : MissionView
 		base.OnAgentRemoved(affectedAgent, affectorAgent, agentState, killingBlow);
 		if (_isGeneralFeedEnabled && !GameNetwork.IsDedicatedServer && affectorAgent != null && affectedAgent.IsHuman && (agentState == AgentState.Killed || agentState == AgentState.Unconscious))
 		{
-			_dataSource.OnAgentRemoved(affectedAgent, affectorAgent, _isPersonalFeedEnabled);
+			WeaponClass killWeaponClass = (killingBlow.IsValid ? ((WeaponClass)killingBlow.WeaponClass) : WeaponClass.Undefined);
+			_dataSource.OnAgentRemoved(affectedAgent, affectorAgent, _isPersonalFeedEnabled, killWeaponClass);
 		}
 	}
 }

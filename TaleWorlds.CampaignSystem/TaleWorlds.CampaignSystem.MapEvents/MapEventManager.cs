@@ -92,36 +92,4 @@ public class MapEventManager
 		PartyBase.MainParty.MapEvent.FinalizeEvent();
 		PlayerEncounter.Finish();
 	}
-
-	public MapEvent StartSiegeMapEvent(PartyBase attackerParty, PartyBase defenderParty)
-	{
-		MapEvent mapEvent = new MapEvent();
-		mapEvent.Initialize(attackerParty, defenderParty, null, MapEvent.BattleTypes.Siege);
-		OnMapEventCreated(mapEvent);
-		return mapEvent;
-	}
-
-	public MapEvent StartSallyOutMapEvent(PartyBase attackerParty, PartyBase defenderParty)
-	{
-		MapEvent mapEvent = new MapEvent();
-		mapEvent.Initialize(attackerParty, defenderParty, null, MapEvent.BattleTypes.SallyOut);
-		OnMapEventCreated(mapEvent);
-		return mapEvent;
-	}
-
-	public MapEvent StartSiegeOutsideMapEvent(PartyBase attackerParty, PartyBase defenderParty)
-	{
-		MapEvent mapEvent = new MapEvent();
-		mapEvent.Initialize(attackerParty, defenderParty, null, MapEvent.BattleTypes.SiegeOutside);
-		OnMapEventCreated(mapEvent);
-		return mapEvent;
-	}
-
-	public MapEvent StartBlockadeBattleMapEvent(PartyBase attackerParty, PartyBase defenderParty)
-	{
-		MapEvent mapEvent = new MapEvent();
-		mapEvent.Initialize(attackerParty, defenderParty, null, MapEvent.BattleTypes.BlockadeBattle);
-		OnMapEventCreated(mapEvent);
-		return mapEvent;
-	}
 }

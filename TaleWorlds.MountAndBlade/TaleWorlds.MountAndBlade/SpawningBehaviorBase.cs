@@ -86,22 +86,43 @@ public abstract class SpawningBehaviorBase
 		BasicCultureObject @object = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam1.GetStrValue());
 		BasicCultureObject object2 = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
 		MultiplayerBattleColors multiplayerBattleColors = MultiplayerBattleColors.CreateWith(@object, object2);
-		foreach (NetworkCommunicator networkPeer in GameNetwork.NetworkPeers)
+		foreach (NetworkCommunicator networkPeer2 in GameNetwork.NetworkPeers)
 		{
-			if (!networkPeer.IsSynchronized)
+			if (!networkPeer2.IsSynchronized)
 			{
 				continue;
 			}
-			MissionPeer component = networkPeer.GetComponent<MissionPeer>();
+			MissionPeer component = networkPeer2.GetComponent<MissionPeer>();
 			if (component == null || component.ControlledAgent != null || !component.HasSpawnedAgentVisuals || CanUpdateSpawnEquipment(component))
 			{
 				continue;
 			}
 			MultiplayerClassDivisions.MPHeroClass mPHeroClassForPeer = MultiplayerClassDivisions.GetMPHeroClassForPeer(component);
 			MPPerkObject.MPOnSpawnPerkHandler onSpawnPerkHandler = MPPerkObject.GetOnSpawnPerkHandler(component);
+			GameNetwork.EventBroadcastFlags broadcastFlags = (GameMode.IsGameModeUsingOpposingTeams ? GameNetwork.EventBroadcastFlags.ExcludeOtherTeamPlayers : GameNetwork.EventBroadcastFlags.None);
+			NetworkCommunicator targetPlayer = (GameMode.IsGameModeUsingOpposingTeams ? networkPeer2 : null);
 			GameNetwork.BeginBroadcastModuleEvent();
-			GameNetwork.WriteMessage(new SyncPerksForCurrentlySelectedTroop(networkPeer, component.Perks[component.SelectedTroopIndex]));
-			GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.ExcludeOtherTeamPlayers, networkPeer);
+			GameNetwork.WriteMessage(new UpdateSelectedTroopIndex(networkPeer2, component.SelectedTroopIndex));
+			GameNetwork.EndBroadcastModuleEvent(broadcastFlags, targetPlayer);
+			GameNetwork.BeginBroadcastModuleEvent();
+			GameNetwork.WriteMessage(new SyncPerksForCurrentlySelectedTroop(networkPeer2, component.Perks[component.SelectedTroopIndex]));
+			GameNetwork.EndBroadcastModuleEvent(broadcastFlags, targetPlayer);
+			if (GameMode.IsGameModeUsingOpposingTeams)
+			{
+				foreach (MissionPeer item in VirtualPlayer.Peers<MissionPeer>())
+				{
+					NetworkCommunicator networkPeer = item.GetNetworkPeer();
+					if (item.IsSpectator && !networkPeer.IsServerPeer && networkPeer.IsSynchronized)
+					{
+						GameNetwork.BeginModuleEventAsServer(networkPeer);
+						GameNetwork.WriteMessage(new UpdateSelectedTroopIndex(networkPeer2, component.SelectedTroopIndex));
+						GameNetwork.EndModuleEventAsServer();
+						GameNetwork.BeginModuleEventAsServer(networkPeer);
+						GameNetwork.WriteMessage(new SyncPerksForCurrentlySelectedTroop(networkPeer2, component.Perks[component.SelectedTroopIndex]));
+						GameNetwork.EndModuleEventAsServer();
+					}
+				}
+			}
 			int num2 = 0;
 			bool flag = false;
 			int intValue = MultiplayerOptions.OptionType.NumberOfBotsPerFormation.GetIntValue();
@@ -152,9 +173,9 @@ public abstract class SpawningBehaviorBase
 				IEnumerable<(EquipmentIndex, EquipmentElement)> enumerable2 = ((!flag2) ? enumerable : onSpawnPerkHandler?.GetAlternativeEquipments(isPlayer: true));
 				if (enumerable2 != null)
 				{
-					foreach (var item in enumerable2)
+					foreach (var item2 in enumerable2)
 					{
-						equipment[item.Item1] = item.Item2;
+						equipment[item2.Item1] = item2.Item2;
 					}
 				}
 				agentBuildData.Equipment(equipment);
@@ -179,7 +200,7 @@ public abstract class SpawningBehaviorBase
 				MatrixFrame spawnFrame = SpawnComponent.GetSpawnFrame(component.Team, equipment[EquipmentIndex.ArmorItemEndSlot].Item != null, component.SpawnCountThisRound == 0);
 				if (spawnFrame.IsIdentity)
 				{
-					goto IL_04ff;
+					goto IL_05f1;
 				}
 				Vec3 origin = spawnFrame.origin;
 				Vec3? agentInitialPosition = agentBuildData.AgentInitialPosition;
@@ -190,14 +211,14 @@ public abstract class SpawningBehaviorBase
 					Vec2? agentInitialDirection = agentBuildData.AgentInitialDirection;
 					if (!(value != agentInitialDirection))
 					{
-						goto IL_04ff;
+						goto IL_05f1;
 					}
 				}
 				agentBuildData.InitialPosition(in spawnFrame.origin);
 				value = spawnFrame.rotation.f.AsVec2.Normalized();
 				agentBuildData.InitialDirection(in value);
-				goto IL_0518;
-				IL_0518:
+				goto IL_060a;
+				IL_060a:
 				if (component.ControlledAgent != null && !flag2)
 				{
 					MatrixFrame frame = component.ControlledAgent.Frame;
@@ -221,9 +242,9 @@ public abstract class SpawningBehaviorBase
 				}
 				num3++;
 				continue;
-				IL_04ff:
-				Debug.FailedAssert("Spawn frame could not be found.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\SpawnBehaviors\\SpawningBehaviors\\SpawningBehaviorBase.cs", "OnTick", 213);
-				goto IL_0518;
+				IL_05f1:
+				Debug.FailedAssert("Spawn frame could not be found.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\SpawnBehaviors\\SpawningBehaviors\\SpawningBehaviorBase.cs", "OnTick", 242);
+				goto IL_060a;
 			}
 		}
 		int num5 = num + count;
@@ -405,7 +426,7 @@ public abstract class SpawningBehaviorBase
 		{
 			return networkPeer.PlayerConnectionInfo.GetParameter<PlayerData>("PlayerData").BodyProperties;
 		}
-		Debug.FailedAssert("networkCommunicator != null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\SpawnBehaviors\\SpawningBehaviors\\SpawningBehaviorBase.cs", "GetBodyProperties", 518);
+		Debug.FailedAssert("networkCommunicator != null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\SpawnBehaviors\\SpawningBehaviors\\SpawningBehaviorBase.cs", "GetBodyProperties", 547);
 		Team team = missionPeer.Team;
 		BasicCharacterObject troopCharacter = MultiplayerClassDivisions.GetMPHeroClasses(cultureLimit).ToMBList().GetRandomElement()
 			.TroopCharacter;

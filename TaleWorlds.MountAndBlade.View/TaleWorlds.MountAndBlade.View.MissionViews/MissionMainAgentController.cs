@@ -216,7 +216,7 @@ public class MissionMainAgentController : MissionView
 				{
 					AgentVisualsMovementCheck();
 				}
-				else if (component.FollowedAgent != null)
+				else if (component.FollowedAgent != null && !component.IsSpectator)
 				{
 					RequestToSpawnAsBotCheck();
 				}

@@ -5,7 +5,7 @@ namespace TaleWorlds.Core;
 [Flags]
 public enum TroopUsageFlags : ushort
 {
-	None = 0,
+	Undefined = 0,
 	OnFoot = 1,
 	Mounted = 2,
 	Melee = 4,
@@ -17,5 +17,5 @@ public enum TroopUsageFlags : ushort
 	BowUser = 0x100,
 	ThrownUser = 0x200,
 	CrossbowUser = 0x400,
-	Undefined = ushort.MaxValue
+	Any = ushort.MaxValue
 }

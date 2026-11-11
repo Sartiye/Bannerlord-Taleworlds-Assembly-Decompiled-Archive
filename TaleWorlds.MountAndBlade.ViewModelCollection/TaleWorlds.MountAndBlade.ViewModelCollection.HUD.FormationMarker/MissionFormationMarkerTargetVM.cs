@@ -9,7 +9,8 @@ public class MissionFormationMarkerTargetVM : ViewModel
 	{
 		PlayerTeam,
 		PlayerAllyTeam,
-		EnemyTeam
+		EnemyTeam,
+		Neutral
 	}
 
 	private Vec2 _screenPosition;
@@ -30,11 +31,27 @@ public class MissionFormationMarkerTargetVM : ViewModel
 
 	private int _teamType;
 
+	private Color _teamColor = Color.White;
+
 	private int _size;
 
 	private int _wSign;
 
 	private string _formationType;
+
+	private float _farAlphaTarget = 0.7f;
+
+	private float _farDistanceCutoff = 500f;
+
+	private float _closeDistanceCutoff = 10f;
+
+	private float _closestFadeoutRange = 5f;
+
+	private float _visibilityRatio = 1f;
+
+	private float _alwaysOnDistance = 25f;
+
+	private int _visibilityState = -1;
 
 	public Formation Formation { get; private set; }
 
@@ -158,6 +175,23 @@ public class MissionFormationMarkerTargetVM : ViewModel
 	}
 
 	[DataSourceProperty]
+	public Color TeamColor
+	{
+		get
+		{
+			return _teamColor;
+		}
+		set
+		{
+			if (_teamColor != value)
+			{
+				_teamColor = value;
+				OnPropertyChangedWithValue(value, "TeamColor");
+			}
+		}
+	}
+
+	[DataSourceProperty]
 	public Vec2 ScreenPosition
 	{
 		get
@@ -242,11 +276,140 @@ public class MissionFormationMarkerTargetVM : ViewModel
 		}
 	}
 
+	[DataSourceProperty]
+	public float FarAlphaTarget
+	{
+		get
+		{
+			return _farAlphaTarget;
+		}
+		set
+		{
+			if (_farAlphaTarget != value)
+			{
+				_farAlphaTarget = value;
+				OnPropertyChangedWithValue(value, "FarAlphaTarget");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float FarDistanceCutoff
+	{
+		get
+		{
+			return _farDistanceCutoff;
+		}
+		set
+		{
+			if (_farDistanceCutoff != value)
+			{
+				_farDistanceCutoff = value;
+				OnPropertyChangedWithValue(value, "FarDistanceCutoff");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float CloseDistanceCutoff
+	{
+		get
+		{
+			return _closeDistanceCutoff;
+		}
+		set
+		{
+			if (_closeDistanceCutoff != value)
+			{
+				_closeDistanceCutoff = value;
+				OnPropertyChangedWithValue(value, "CloseDistanceCutoff");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float ClosestFadeoutRange
+	{
+		get
+		{
+			return _closestFadeoutRange;
+		}
+		set
+		{
+			if (_closestFadeoutRange != value)
+			{
+				_closestFadeoutRange = value;
+				OnPropertyChangedWithValue(value, "ClosestFadeoutRange");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float VisibilityRatio
+	{
+		get
+		{
+			return _visibilityRatio;
+		}
+		set
+		{
+			if (!_visibilityRatio.ApproximatelyEqualsTo(value))
+			{
+				_visibilityRatio = value;
+				OnPropertyChangedWithValue(value, "VisibilityRatio");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public float AlwaysOnDistance
+	{
+		get
+		{
+			return _alwaysOnDistance;
+		}
+		set
+		{
+			if (!_alwaysOnDistance.ApproximatelyEqualsTo(value))
+			{
+				_alwaysOnDistance = value;
+				OnPropertyChangedWithValue(value, "AlwaysOnDistance");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public int VisibilityState
+	{
+		get
+		{
+			return _visibilityState;
+		}
+		set
+		{
+			if (value != _visibilityState)
+			{
+				_visibilityState = value;
+				OnPropertyChangedWithValue(value, "VisibilityState");
+			}
+		}
+	}
+
 	public MissionFormationMarkerTargetVM(Formation formation)
 	{
 		Formation = formation;
 		FormationType = GetFormationType(Formation.RepresentativeClass);
-		if (Formation.Team.IsPlayerTeam)
+		RefreshTeamType();
+	}
+
+	private void RefreshTeamType()
+	{
+		if (GameNetwork.IsMyPeerStreamer)
+		{
+			TeamType = 3;
+			TeamColor = Color.FromUint(Formation.Team.Color);
+		}
+		else if (Formation.Team.IsPlayerTeam)
 		{
 			TeamType = 0;
 		}
@@ -263,6 +426,8 @@ public class MissionFormationMarkerTargetVM : ViewModel
 	public void Refresh()
 	{
 		Size = Formation.CountOfUnits;
+		FormationType = GetFormationType(Formation.RepresentativeClass);
+		RefreshTeamType();
 	}
 
 	public void SetTargetedState(bool isFocused, bool isTargetingAFormation)

@@ -25,7 +25,7 @@ public class StoryModePrisonerRecruitmentCalculationModel : PrisonerRecruitmentC
 		return base.BaseModel.GetConformityNeededToRecruitPrisoner(character);
 	}
 
-	public override int GetPrisonerRecruitmentMoraleEffect(PartyBase party, CharacterObject character, int num)
+	public override float GetPrisonerRecruitmentMoraleEffect(PartyBase party, CharacterObject character, int num)
 	{
 		return base.BaseModel.GetPrisonerRecruitmentMoraleEffect(party, character, num);
 	}

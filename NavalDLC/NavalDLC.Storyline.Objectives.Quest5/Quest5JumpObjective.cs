@@ -56,7 +56,11 @@ public class Quest5JumpObjective : MissionObjective
 	{
 		if (_target != null)
 		{
-			return Agent.Main.IsInWater();
+			Agent main = Agent.Main;
+			if (main != null && main.IsActive())
+			{
+				return Agent.Main.IsInWater();
+			}
 		}
 		return false;
 	}

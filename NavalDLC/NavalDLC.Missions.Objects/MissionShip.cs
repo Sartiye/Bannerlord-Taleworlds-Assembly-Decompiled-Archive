@@ -105,6 +105,8 @@ public class MissionShip : MissionObject
 
 	public const string SailMeshTag = "sail_mesh_entity";
 
+	private const string MapParticleSystemEntityName = "map_particle_system";
+
 	public const float NavmeshDisableLimit = 0.35f;
 
 	private static TextObject PlayerSideShipSinkingText = new TextObject("{=jX6yqP3T}A friendly ship has started to sink!");
@@ -227,6 +229,10 @@ public class MissionShip : MissionObject
 
 	private List<ShipToEntityCollisionStatus> _currentCollisionStatesToShips = new List<ShipToEntityCollisionStatus>();
 
+	private bool _attackerSideAgentExistsOnShip;
+
+	private bool _defenderSideAgentExistsOnShip;
+
 	private readonly Dictionary<MissionShip, float> _shipDamageCooldowns = new Dictionary<MissionShip, float>();
 
 	private readonly ConcurrentQueue<ShipCollisionData> _shipCollisionData = new ConcurrentQueue<ShipCollisionData>();
@@ -259,21 +265,25 @@ public class MissionShip : MissionObject
 	{
 		get
 		{
-			Banner banner = ShipHelper.GetShipBanner(ShipOrigin, Captain);
-			if (banner == null)
+			if (!ShipHelper.TryGetShipBanner(ShipOrigin, out var banner, Captain) && Team != null)
 			{
-				Team team = Team;
-				if (team == null)
-				{
-					return null;
-				}
-				banner = team.Banner;
+				return Team.Banner;
 			}
 			return banner;
 		}
 	}
 
-	public (uint sailColor1, uint sailColor2) SailColors => ShipHelper.GetSailColors(ShipOrigin, Captain);
+	public (uint sailColor1, uint sailColor2) SailColors
+	{
+		get
+		{
+			if (!ShipHelper.TryGetSailColors(ShipOrigin, out (uint, uint) sailColors, Captain) && Team != null)
+			{
+				return (sailColor1: Team.Color, sailColor2: Team.Color2);
+			}
+			return sailColors;
+		}
+	}
 
 	public NavalDLC.Missions.NavalPhysics.NavalPhysics Physics => _physics;
 
@@ -331,7 +341,7 @@ public class MissionShip : MissionObject
 
 	public PlayerShipController PlayerController => (PlayerShipController)Controller;
 
-	public FormationClass FormationIndex => Formation?.FormationIndex ?? FormationClass.Infantry;
+	public FormationClass FormationIndex => Formation?.FormationIndex ?? FormationClass.NumberOfAllFormations;
 
 	public BattleSideEnum BattleSide => Team?.Side ?? BattleSideEnum.None;
 
@@ -436,6 +446,10 @@ public class MissionShip : MissionObject
 
 	public Agent SailBurnerAgent { get; private set; }
 
+	public bool CommittedAttackerSideAgentExistsOnShip { get; private set; }
+
+	public bool CommittedDefenderSideAgentExistsOnShip { get; private set; }
+
 	public SoundEvent SailBurningSoundEvent { get; private set; }
 
 	public ShipController Controller { get; private set; }
@@ -456,9 +470,9 @@ public class MissionShip : MissionObject
 
 	public GameEntity PlayerStandingPointEntity => _playerStandingPointEntity;
 
-	public bool BeingAbandoned { get; private set; }
-
 	public override TextObject HitObjectName => new TextObject("{=1nbU1tV5}Ship");
+
+	public bool BeingAbandoned { get; private set; }
 
 	public static uint MissionShipScriptNameHash => _missionShipScriptNameHash;
 
@@ -567,11 +581,6 @@ public class MissionShip : MissionObject
 		OriginalTeamSide = teamSide;
 	}
 
-	public void SetPlayerStandingPointEntity(GameEntity entity = null)
-	{
-		_playerStandingPointEntity = entity;
-	}
-
 	public void OnShipConnected(ShipAttachmentMachine.ShipAttachment currentAttachment)
 	{
 		if (currentAttachment.AttachmentTarget.OwnerShip != this || currentAttachment.AttachmentSource.OwnerShip.BattleSide == BattleSide)
@@ -592,6 +601,21 @@ public class MissionShip : MissionObject
 			_disconnectionBlockedShipTime = Mission.Current.CurrentTime + 30f;
 			_connectionBlockedShipTime = 0f;
 		}
+	}
+
+	public void SetAttackerSideAgentExistsOnShip(bool value)
+	{
+		_attackerSideAgentExistsOnShip = value;
+	}
+
+	public void SetDefenderSideAgentExistsOnShip(bool value)
+	{
+		_defenderSideAgentExistsOnShip = value;
+	}
+
+	public void SetPlayerStandingPointEntity(GameEntity entity = null)
+	{
+		_playerStandingPointEntity = entity;
 	}
 
 	public void OnShipDisconnected(ShipAttachmentMachine.ShipAttachment currentAttachment)
@@ -618,33 +642,41 @@ public class MissionShip : MissionObject
 
 	public override void OnDeploymentFinished()
 	{
-		foreach (ShipAttachmentMachine attachmentMachine in _attachmentMachines)
+		FinalizeDeployment(initializeMachines: false);
+	}
+
+	public void FinalizeDeployment(bool initializeMachines)
+	{
+		if (initializeMachines)
 		{
-			attachmentMachine.OnDeploymentFinished();
+			foreach (ShipAttachmentMachine attachmentMachine in _attachmentMachines)
+			{
+				attachmentMachine.OnDeploymentFinished();
+			}
+			foreach (ShipAttachmentPointMachine attachmentPointMachine in _attachmentPointMachines)
+			{
+				attachmentPointMachine.OnDeploymentFinished();
+			}
+			foreach (ShipOarMachine leftSideShipOarMachine in _leftSideShipOarMachines)
+			{
+				leftSideShipOarMachine.OnDeploymentFinished();
+			}
+			foreach (ShipOarMachine rightSideShipOarMachine in _rightSideShipOarMachines)
+			{
+				rightSideShipOarMachine.OnDeploymentFinished();
+			}
+			foreach (ClimbingMachine climbingMachine in _climbingMachines)
+			{
+				climbingMachine.OnDeploymentFinished();
+			}
+			ShipControllerMachine.OnDeploymentFinished();
+			ShipSiegeWeapon?.OnDeploymentFinished();
+			foreach (AmmoBarrelBase ammoBarrel in _ammoBarrels)
+			{
+				ammoBarrel.OnDeploymentFinished();
+			}
+			_ram?.OnDeploymentFinished();
 		}
-		foreach (ShipAttachmentPointMachine attachmentPointMachine in _attachmentPointMachines)
-		{
-			attachmentPointMachine.OnDeploymentFinished();
-		}
-		foreach (ShipOarMachine leftSideShipOarMachine in _leftSideShipOarMachines)
-		{
-			leftSideShipOarMachine.OnDeploymentFinished();
-		}
-		foreach (ShipOarMachine rightSideShipOarMachine in _rightSideShipOarMachines)
-		{
-			rightSideShipOarMachine.OnDeploymentFinished();
-		}
-		foreach (ClimbingMachine climbingMachine in _climbingMachines)
-		{
-			climbingMachine.OnDeploymentFinished();
-		}
-		ShipControllerMachine.OnDeploymentFinished();
-		ShipSiegeWeapon?.OnDeploymentFinished();
-		foreach (AmmoBarrelBase ammoBarrel in _ammoBarrels)
-		{
-			ammoBarrel.OnDeploymentFinished();
-		}
-		_ram?.OnDeploymentFinished();
 		SetSiegeWeaponsInitialAmmoCount();
 		CrewSizeOnMainDeck = MissionGameModels.Current.MissionShipParametersModel.CalculateMainDeckCrewSize(ShipOrigin, Formation.GetFirstUnit());
 		SetAnchor(isAnchored: false);
@@ -1034,7 +1066,7 @@ public class MissionShip : MissionObject
 		int partIndexAtPosition = _physics.GetPartIndexAtPosition(vec);
 		if (partIndexAtPosition < 0 || partIndexAtPosition >= _partialHitPoints.Length)
 		{
-			Debug.FailedAssert($"DealRammingDamage: GetPartIndexAtPosition for localPos {vec} returned {partIndexAtPosition}.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Missions\\Objects\\MissionShip.cs", "DealCollisionDamage", 1236);
+			Debug.FailedAssert($"DealRammingDamage: GetPartIndexAtPosition for localPos {vec} returned {partIndexAtPosition}.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Missions\\Objects\\MissionShip.cs", "DealCollisionDamage", 1269);
 			return;
 		}
 		_partialHitPoints[partIndexAtPosition] = TaleWorlds.Library.MathF.Max(0f, _partialHitPoints[partIndexAtPosition] - num);
@@ -1089,6 +1121,21 @@ public class MissionShip : MissionObject
 			}
 		}
 		return result;
+	}
+
+	public bool EnemyOfAgentExistsOnShip(Agent agent)
+	{
+		Team team = agent.Team;
+		if (team != null && team.Side == BattleSideEnum.Attacker)
+		{
+			return CommittedDefenderSideAgentExistsOnShip;
+		}
+		Team team2 = agent.Team;
+		if (team2 != null && team2.Side == BattleSideEnum.Defender)
+		{
+			return CommittedAttackerSideAgentExistsOnShip;
+		}
+		return false;
 	}
 
 	public bool GetIsConnected()
@@ -1330,6 +1377,25 @@ public class MissionShip : MissionObject
 		return false;
 		IL_0123:
 		return flag2;
+	}
+
+	public bool GetIsConnectedToShip(MissionShip missionShip)
+	{
+		foreach (ShipAttachmentMachine attachmentMachine in _attachmentMachines)
+		{
+			if (attachmentMachine.CurrentAttachment?.AttachmentTarget?.OwnerShip == missionShip)
+			{
+				return true;
+			}
+		}
+		foreach (ShipAttachmentPointMachine attachmentPointMachine in _attachmentPointMachines)
+		{
+			if (attachmentPointMachine.CurrentAttachment?.AttachmentSource?.OwnerShip == missionShip)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public bool GetIsConnectedToEnemy(out MissionShip connectedEnemyShip)
@@ -1841,6 +1907,22 @@ public class MissionShip : MissionObject
 		base.GameEntity.Scene.SetBlockerDirectionForFacesWithId(DynamicNavmeshIdStart + 49, base.GameEntity.GetGlobalFrame().rotation.f.AsVec2.RotationInRadians);
 	}
 
+	public MissionSail CheckHitSails(Agent attackerAgent, Mission.Missile missile, in Vec3 missileOldPosition, in Vec3 missilePosition, in MissionWeapon missileWeapon)
+	{
+		bool flag = false;
+		if (!base.IsDisabled && (flag || (Team != null && Team.IsEnemyOf(attackerAgent.Team))) && missileWeapon.CurrentUsageItem != null && missileWeapon.CurrentUsageItem.WeaponFlags.HasAnyFlag(WeaponFlags.Burning))
+		{
+			foreach (MissionSail sail in Sails)
+			{
+				if (missile.AlreadyHitEntityToIgnore != sail.SailEntity && sail.GetVisualSailEnabled() && sail.IntersectLineSegmentWithSail(in missileOldPosition, in missilePosition))
+				{
+					return sail;
+				}
+			}
+		}
+		return null;
+	}
+
 	protected override void AttachDynamicNavmeshToEntity()
 	{
 		if (Mission.Current != null && NavMeshPrefabName.Length > 0)
@@ -1857,22 +1939,6 @@ public class MissionShip : MissionObject
 				base.GameEntity.Scene.SetAbilityOfFacesWithId(DynamicNavmeshIdStart + 49, isEnabled: false);
 			}
 		}
-	}
-
-	public MissionSail CheckHitSails(Agent attackerAgent, Mission.Missile missile, in Vec3 missileOldPosition, in Vec3 missilePosition, in MissionWeapon missileWeapon)
-	{
-		bool flag = false;
-		if (!base.IsDisabled && (flag || (Team != null && Team.IsEnemyOf(attackerAgent.Team))) && missileWeapon.CurrentUsageItem != null && missileWeapon.CurrentUsageItem.WeaponFlags.HasAnyFlag(WeaponFlags.Burning))
-		{
-			foreach (MissionSail sail in Sails)
-			{
-				if (missile.AlreadyHitEntityToIgnore != sail.SailEntity && sail.GetVisualSailEnabled() && sail.IntersectLineSegmentWithSail(in missileOldPosition, in missilePosition))
-				{
-					return sail;
-				}
-			}
-		}
-		return null;
 	}
 
 	protected override bool OnHit(Agent attackerAgent, int inflictedDamage, Vec3 impactPosition, Vec3 impactDirection, in MissionWeapon weapon, int affectorWeaponSlotOrMissileIndex, ScriptComponentBehavior attackerScriptComponentBehavior, out bool reportDamage, out float finalDamage, out float fireDamage, out float modifiedFireDamage)
@@ -1941,50 +2007,12 @@ public class MissionShip : MissionObject
 		return num;
 	}
 
-	public void PrepareForAbandonment()
+	private void CommittedAndClearSteppedAgentInformation()
 	{
-		BeingAbandoned = true;
-		foreach (UsableMachine item in base.GameEntity.CollectScriptComponentsIncludingChildrenRecursive<UsableMachine>())
-		{
-			if (!(item is ShipAttachmentPointMachine))
-			{
-				item.SetIsDisabledForAI(isDisabledForAI: true);
-				item.SetScriptComponentToTick(item.GetTickRequirement());
-			}
-			foreach (StandingPoint standingPoint in item.StandingPoints)
-			{
-				standingPoint.SetIsDisabledForPlayersSynched(value: true);
-			}
-		}
-		List<WeakGameEntity> children = new List<WeakGameEntity>();
-		base.GameEntity.GetChildrenRecursive(ref children);
-		foreach (WeakGameEntity item2 in children)
-		{
-			if (item2.BodyFlag.HasAnyFlag(BodyFlags.Barrier) || item2.BodyFlag.HasAnyFlag(BodyFlags.Barrier3D) || item2.BodyFlag.HasAnyFlag(BodyFlags.AILimiter))
-			{
-				item2.SetVisibilityExcludeParents(visible: false);
-			}
-		}
-		foreach (ShipAttachmentPointMachine attachmentPointMachine in AttachmentPointMachines)
-		{
-			attachmentPointMachine.SetEnemyRangeToStopUsing(0f);
-			attachmentPointMachine.SetIsDisabledForAI(isDisabledForAI: false);
-			foreach (StandingPoint standingPoint2 in attachmentPointMachine.StandingPoints)
-			{
-				if (standingPoint2 == attachmentPointMachine.PilotStandingPoint)
-				{
-					standingPoint2.LockUserFrames = true;
-				}
-			}
-			foreach (GameEntity rampPhysics in attachmentPointMachine.RampPhysicsList)
-			{
-				rampPhysics.SetVisibilityExcludeParents(visible: true);
-			}
-		}
-		ShipOrder.StopUsingMachines(formationLeaving: false);
-		IsShipOrderActive = false;
-		SetController(ShipControllerType.None);
-		ShipsLogic.OnShipPreparedForAbandonment(this);
+		CommittedAttackerSideAgentExistsOnShip = _attackerSideAgentExistsOnShip;
+		CommittedDefenderSideAgentExistsOnShip = _defenderSideAgentExistsOnShip;
+		_attackerSideAgentExistsOnShip = false;
+		_defenderSideAgentExistsOnShip = false;
 	}
 
 	protected override void OnTick(float dt)
@@ -1992,6 +2020,7 @@ public class MissionShip : MissionObject
 		_isCachedWorldPositionOnDeckDirty = true;
 		if (!_isRemoved)
 		{
+			CommittedAndClearSteppedAgentInformation();
 			if (Mission.Current.IsDeploymentFinished)
 			{
 				if (_autoUpdateController)
@@ -2099,6 +2128,52 @@ public class MissionShip : MissionObject
 			base.GameEntity.RecomputeBoundingBox();
 			_localBoundingBoxCacheInvalid = false;
 		}
+	}
+
+	public void PrepareForAbandonment()
+	{
+		BeingAbandoned = true;
+		foreach (UsableMachine item in base.GameEntity.CollectScriptComponentsIncludingChildrenRecursive<UsableMachine>())
+		{
+			if (!(item is ShipAttachmentPointMachine))
+			{
+				item.SetIsDisabledForAI(isDisabledForAI: true);
+				item.SetScriptComponentToTick(item.GetTickRequirement());
+			}
+			foreach (StandingPoint standingPoint in item.StandingPoints)
+			{
+				standingPoint.SetIsDisabledForPlayersSynched(value: true);
+			}
+		}
+		List<WeakGameEntity> children = new List<WeakGameEntity>();
+		base.GameEntity.GetChildrenRecursive(ref children);
+		foreach (WeakGameEntity item2 in children)
+		{
+			if (item2.BodyFlag.HasAnyFlag(BodyFlags.Barrier) || item2.BodyFlag.HasAnyFlag(BodyFlags.Barrier3D) || item2.BodyFlag.HasAnyFlag(BodyFlags.AILimiter))
+			{
+				item2.SetVisibilityExcludeParents(visible: false);
+			}
+		}
+		foreach (ShipAttachmentPointMachine attachmentPointMachine in AttachmentPointMachines)
+		{
+			attachmentPointMachine.SetEnemyRangeToStopUsing(0f);
+			attachmentPointMachine.SetIsDisabledForAI(isDisabledForAI: false);
+			foreach (StandingPoint standingPoint2 in attachmentPointMachine.StandingPoints)
+			{
+				if (standingPoint2 == attachmentPointMachine.PilotStandingPoint)
+				{
+					standingPoint2.LockUserFrames = true;
+				}
+			}
+			foreach (GameEntity rampPhysics in attachmentPointMachine.RampPhysicsList)
+			{
+				rampPhysics.SetVisibilityExcludeParents(visible: true);
+			}
+		}
+		ShipOrder.StopUsingMachines(formationLeaving: false);
+		IsShipOrderActive = false;
+		SetController(ShipControllerType.None);
+		ShipsLogic.OnShipPreparedForAbandonment(this);
 	}
 
 	protected override void OnParallelFixedTick(float fixedDt)
@@ -2458,6 +2533,7 @@ public class MissionShip : MissionObject
 			if (!base.GameEntity.IsInEditorScene())
 			{
 				ClearFloaterVolumes();
+				RemoveMapParticleSystems();
 				WeakGameEntity firstChildEntityWithName = base.GameEntity.GetFirstChildEntityWithName("knobs_holder");
 				if (firstChildEntityWithName.IsValid)
 				{
@@ -2480,7 +2556,7 @@ public class MissionShip : MissionObject
 		}
 		else
 		{
-			Debug.FailedAssert("The ship is already initialized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Missions\\Objects\\MissionShip.cs", "InitForMission", 3224);
+			Debug.FailedAssert("The ship is already initialized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\Missions\\Objects\\MissionShip.cs", "InitForMission", 3305);
 		}
 	}
 
@@ -2499,7 +2575,7 @@ public class MissionShip : MissionObject
 		navalPhysicsParameters.OverrideMass = _missionShipObject.Mass;
 		navalPhysicsParameters.MassMultiplier = 1f + ((ShipOrigin != null) ? ShipOrigin.ShipWeightFactor : 0f);
 		navalPhysicsParameters.MomentOfInertiaMultiplier = _missionShipObject.MomentOfInertiaMultiplier;
-		navalPhysicsParameters.FloatingForceMultiplier = _missionShipObject.FloatingForceMultiplier;
+		navalPhysicsParameters.FloatingForceMultiplier = ((ShipOrigin != null) ? ShipOrigin.Hull.FloatingForceMultiplier : 1f);
 		navalPhysicsParameters.MaximumSubmergedVolumeRatio = _missionShipObject.MaximumSubmergedVolumeRatio;
 		navalPhysicsParameters.ForwardDragMultiplier = 1f + ((ShipOrigin != null) ? ShipOrigin.ForwardDragFactor : 0f);
 		navalPhysicsParameters.LinearFrictionMultiplier = _missionShipObject.LinearFrictionMultiplier;
@@ -2576,6 +2652,22 @@ public class MissionShip : MissionObject
 		if (weakGameEntity.IsValid)
 		{
 			weakGameEntity.RemoveAllChildren();
+		}
+	}
+
+	private void RemoveMapParticleSystems()
+	{
+		MBList<WeakGameEntity> mBList = new MBList<WeakGameEntity>();
+		foreach (WeakGameEntity child in base.GameEntity.GetChildren())
+		{
+			if (child.Name == "map_particle_system")
+			{
+				mBList.Add(child);
+			}
+		}
+		foreach (WeakGameEntity item in mBList)
+		{
+			base.GameEntity.RemoveChild(item, keepPhysics: false, keepScenePointer: false, callScriptCallbacks: true, 179);
 		}
 	}
 

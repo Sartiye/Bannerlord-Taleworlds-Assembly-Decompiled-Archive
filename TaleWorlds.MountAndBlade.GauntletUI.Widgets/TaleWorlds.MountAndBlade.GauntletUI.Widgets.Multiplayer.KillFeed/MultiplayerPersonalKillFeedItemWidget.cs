@@ -7,13 +7,11 @@ namespace TaleWorlds.MountAndBlade.GauntletUI.Widgets.Multiplayer.KillFeed;
 
 public class MultiplayerPersonalKillFeedItemWidget : Widget
 {
-	private float _speedModifier = 1f;
-
-	private float _maxTargetAlpha = 1f;
-
 	private bool _initialized;
 
-	private string _goldGainedSound = "multiplayer/coin_add";
+	private float _speedModifier;
+
+	private readonly string _goldGainedSound = "multiplayer/coin_add";
 
 	private bool _isDamage;
 
@@ -31,16 +29,14 @@ public class MultiplayerPersonalKillFeedItemWidget : Widget
 
 	public RichTextWidget MessageTextWidget { get; set; }
 
-	public float FadeInTime { get; set; } = 1f;
+	public float FadeInTime { get; set; } = 0.2f;
 
 
-	public float StayTime { get; set; } = 3f;
+	public float StayTime { get; set; } = 2f;
 
 
-	public float FadeOutTime { get; set; } = 0.5f;
+	public float FadeOutTime { get; set; } = 0.2f;
 
-
-	private float CurrentAlpha => base.AlphaFactor;
 
 	public float TimeSinceCreation { get; private set; }
 
@@ -118,10 +114,6 @@ public class MultiplayerPersonalKillFeedItemWidget : Widget
 		base.OnUpdate(dt);
 		if (!_initialized)
 		{
-			base.PositionYOffset = 0f;
-		}
-		if (!_initialized)
-		{
 			this.SetGlobalAlphaRecursively(0f);
 			UpdateNotificationBackgroundWidget();
 			UpdateNotificationTypeIconWidget();
@@ -143,29 +135,19 @@ public class MultiplayerPersonalKillFeedItemWidget : Widget
 
 	private void UpdateAlphaValues(float dt)
 	{
-		float end = 0f;
-		float amount = 0f;
-		TimeSinceCreation += dt;
-		if (_maxTargetAlpha == 0f)
-		{
-			EventFired("OnRemove");
-			return;
-		}
+		TimeSinceCreation += dt * _speedModifier;
 		if (TimeSinceCreation <= FadeInTime)
 		{
-			end = MathF.Min(1f, _maxTargetAlpha);
-			amount = TimeSinceCreation / FadeInTime;
+			this.SetGlobalAlphaRecursively(Mathf.Lerp(base.AlphaFactor, 1f, TimeSinceCreation / FadeInTime));
 		}
 		else if (TimeSinceCreation - FadeInTime <= StayTime)
 		{
-			end = MathF.Min(1f, _maxTargetAlpha);
-			amount = 1f;
+			this.SetGlobalAlphaRecursively(1f);
 		}
 		else if (TimeSinceCreation - (FadeInTime + StayTime) <= FadeOutTime)
 		{
-			end = 0f;
-			amount = (TimeSinceCreation - (FadeInTime + StayTime)) / FadeOutTime;
-			if (CurrentAlpha <= 0.1f)
+			this.SetGlobalAlphaRecursively(Mathf.Lerp(base.AlphaFactor, 0f, (TimeSinceCreation - (FadeInTime + StayTime)) / FadeOutTime));
+			if (base.AlphaFactor <= 0.1f)
 			{
 				EventFired("OnRemove");
 			}
@@ -174,7 +156,6 @@ public class MultiplayerPersonalKillFeedItemWidget : Widget
 		{
 			EventFired("OnRemove");
 		}
-		this.SetGlobalAlphaRecursively(Mathf.Lerp(CurrentAlpha, end, amount));
 	}
 
 	public void SetSpeedModifier(float newSpeed)
@@ -182,14 +163,6 @@ public class MultiplayerPersonalKillFeedItemWidget : Widget
 		if (newSpeed > _speedModifier)
 		{
 			_speedModifier = newSpeed;
-		}
-	}
-
-	public void SetMaxAlphaValue(float newMaxAlpha)
-	{
-		if (newMaxAlpha < _maxTargetAlpha)
-		{
-			_maxTargetAlpha = newMaxAlpha;
 		}
 	}
 
@@ -224,7 +197,7 @@ public class MultiplayerPersonalKillFeedItemWidget : Widget
 			NotificationTypeIconWidget.SetState("NormalKillHeadshot");
 			break;
 		default:
-			Debug.FailedAssert("Undefined personal feed notification type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Multiplayer\\KillFeed\\MultiplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationTypeIconWidget", 172);
+			Debug.FailedAssert("Undefined personal feed notification type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Multiplayer\\KillFeed\\MultiplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationTypeIconWidget", 122);
 			NotificationTypeIconWidget.IsVisible = false;
 			break;
 		}
@@ -262,7 +235,7 @@ public class MultiplayerPersonalKillFeedItemWidget : Widget
 			}
 			break;
 		default:
-			Debug.FailedAssert("Undefined personal feed notification type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Multiplayer\\KillFeed\\MultiplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationMessageWidget", 213);
+			Debug.FailedAssert("Undefined personal feed notification type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Multiplayer\\KillFeed\\MultiplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationMessageWidget", 163);
 			MessageTextWidget.IsVisible = false;
 			break;
 		}
@@ -305,7 +278,7 @@ public class MultiplayerPersonalKillFeedItemWidget : Widget
 			}
 			break;
 		default:
-			Debug.FailedAssert("Undefined personal feed notification type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Multiplayer\\KillFeed\\MultiplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationAmountWidget", 259);
+			Debug.FailedAssert("Undefined personal feed notification type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Multiplayer\\KillFeed\\MultiplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationAmountWidget", 209);
 			AmountTextWidget.IsVisible = false;
 			break;
 		}
@@ -338,21 +311,11 @@ public class MultiplayerPersonalKillFeedItemWidget : Widget
 			}
 			break;
 		default:
-			Debug.FailedAssert("Undefined personal feed notification type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Multiplayer\\KillFeed\\MultiplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationBackgroundWidget", 295);
+			Debug.FailedAssert("Undefined personal feed notification type", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI.Widgets\\Multiplayer\\KillFeed\\MultiplayerPersonalKillFeedItemWidget.cs", "UpdateNotificationBackgroundWidget", 245);
 			NotificationBackgroundWidget.SetState("Hidden");
 			break;
 		case 5:
 			break;
 		}
-	}
-
-	private float GetInitialVerticalPositionOfSelf()
-	{
-		float num = 0f;
-		for (int i = 0; i < GetSiblingIndex(); i++)
-		{
-			num += base.ParentWidget.GetChild(i).Size.Y * base._inverseScaleToUse;
-		}
-		return num;
 	}
 }

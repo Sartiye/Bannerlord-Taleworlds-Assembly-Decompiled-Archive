@@ -701,6 +701,13 @@ public class LandlordTrainingForRetainersIssueBehavior : CampaignBehaviorBase
 			CompleteQuestWithFail(CrimeLog);
 		}
 
+		public override void OnCanceled()
+		{
+			_questGivenChar = MBObjectManager.Instance.GetObject<CharacterObject>("borrowed_troop");
+			_questTargetChar = MBObjectManager.Instance.GetObject<CharacterObject>("veteran_borrowed_troop");
+			RemoveBorrowedTroopsFromParty(PartyBase.MainParty);
+		}
+
 		protected override void OnFinalize()
 		{
 			_questGivenChar = MBObjectManager.Instance.GetObject<CharacterObject>("borrowed_troop");

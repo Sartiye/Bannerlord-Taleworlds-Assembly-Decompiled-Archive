@@ -153,6 +153,8 @@ public sealed class CultureObject : BasicCultureObject
 
 	public CharacterObject BanditBoss { get; private set; }
 
+	public CharacterObject Executioner { get; private set; }
+
 	public MBBodyProperty DefaultCharacterCreationBodyProperty { get; private set; }
 
 	public TextObject EncyclopediaText { get; private set; }
@@ -336,6 +338,7 @@ public sealed class CultureObject : BasicCultureObject
 		BanditRaider = objectManager.ReadObjectReferenceFromXml<CharacterObject>("bandit_raider", node);
 		BanditChief = objectManager.ReadObjectReferenceFromXml<CharacterObject>("bandit_chief", node);
 		BanditBoss = objectManager.ReadObjectReferenceFromXml<CharacterObject>("bandit_boss", node);
+		Executioner = objectManager.ReadObjectReferenceFromXml<CharacterObject>("executioner", node);
 		DefaultCharacterCreationBodyProperty = ((node.Attributes["default_character_creation_body_property"] != null) ? objectManager.ReadObjectReferenceFromXml<MBBodyProperty>("default_character_creation_body_property", node) : null);
 		EncyclopediaText = ((node.Attributes["text"] != null) ? new TextObject(node.Attributes["text"].Value) : TextObject.GetEmpty());
 		float a = ((node.Attributes["start_point_position_x"] == null) ? 0f : Convert.ToSingle(node.Attributes["start_point_position_x"].Value));

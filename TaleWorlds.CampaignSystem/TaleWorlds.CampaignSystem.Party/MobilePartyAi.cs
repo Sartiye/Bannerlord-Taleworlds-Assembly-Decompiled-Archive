@@ -516,22 +516,22 @@ public class MobilePartyAi
 			}
 		}
 		IsAlerted = false;
-		AiBehavior shortTermBehavior = bestAiBehavior;
-		CampaignVec2 shortTermTargetPoint = bestTargetPoint;
-		Settlement shortTermTargetSettlement = _mobileParty.TargetSettlement;
+		AiBehavior goAroundPartyBehavior = bestAiBehavior;
+		CampaignVec2 goAroundPartyTargetPoint = bestTargetPoint;
+		Settlement fleeTargetSettlement = _mobileParty.TargetSettlement;
 		MobileParty shortTermTargetParty = mobileParty;
 		switch (bestAiBehavior)
 		{
 		case AiBehavior.GoAroundParty:
 			shortTermTargetParty = _mobileParty.TargetParty;
-			GetGoAroundPartyBehavior(_mobileParty.TargetParty, out shortTermBehavior, out shortTermTargetPoint);
+			GetGoAroundPartyBehavior(_mobileParty.TargetParty, out goAroundPartyBehavior, out goAroundPartyTargetPoint);
 			break;
 		case AiBehavior.EngageParty:
-			shortTermTargetPoint = shortTermTargetParty.Position;
+			goAroundPartyTargetPoint = shortTermTargetParty.Position;
 			if (shortTermTargetParty.SiegeEvent != null && _mobileParty.IsCurrentlyAtSea && _mobileParty.IsTargetingPort)
 			{
-				shortTermTargetPoint = shortTermTargetSettlement.PortPosition;
-				shortTermBehavior = AiBehavior.GoToSettlement;
+				goAroundPartyTargetPoint = fleeTargetSettlement.PortPosition;
+				goAroundPartyBehavior = AiBehavior.GoToSettlement;
 				_mobileParty.SetShortTermBehavior(AiBehavior.GoToSettlement, shortTermTargetParty.SiegeEvent.BesiegedSettlement.Party);
 			}
 			else
@@ -541,14 +541,14 @@ public class MobilePartyAi
 			break;
 		case AiBehavior.PatrolAroundPoint:
 		{
-			bool forceUpdate = _mobileParty.ShortTermBehavior == AiBehavior.FleeToPoint || (!_mobileParty.IsTransitionInProgress && shortTermTargetPoint.IsOnLand == _mobileParty.IsCurrentlyAtSea) || _mobileParty.TargetPosition == _mobileParty.MoveTargetPoint;
-			if (shortTermTargetPoint.IsOnLand)
+			bool forceUpdate = _mobileParty.ShortTermBehavior == AiBehavior.FleeToPoint || (!_mobileParty.IsTransitionInProgress && goAroundPartyTargetPoint.IsOnLand == _mobileParty.IsCurrentlyAtSea) || _mobileParty.TargetPosition == _mobileParty.MoveTargetPoint;
+			if (goAroundPartyTargetPoint.IsOnLand)
 			{
-				GetLandPatrolBehavior(out shortTermBehavior, out shortTermTargetPoint, _mobileParty.TargetPosition, forceUpdate);
+				GetLandPatrolBehavior(out goAroundPartyBehavior, out goAroundPartyTargetPoint, _mobileParty.TargetPosition, forceUpdate);
 			}
 			else
 			{
-				GetNavalPatrolBehavior(out shortTermBehavior, out shortTermTargetPoint, _mobileParty.TargetPosition, forceUpdate);
+				GetNavalPatrolBehavior(out goAroundPartyBehavior, out goAroundPartyTargetPoint, _mobileParty.TargetPosition, forceUpdate);
 			}
 			shortTermTargetParty = null;
 			_mobileParty.SetShortTermBehavior(AiBehavior.GoToPoint, null);
@@ -558,22 +558,22 @@ public class MobilePartyAi
 		case AiBehavior.FleeToGate:
 		case AiBehavior.FleeToParty:
 			IsAlerted = true;
-			GetFleeBehavior(out shortTermBehavior, out shortTermTargetPoint, ref shortTermTargetSettlement, mobileParty, averageEnemyVec);
+			GetFleeBehavior(out goAroundPartyBehavior, out goAroundPartyTargetPoint, ref fleeTargetSettlement, mobileParty, averageEnemyVec);
 			break;
 		case AiBehavior.EscortParty:
-			GetFollowBehavior(ref shortTermBehavior, ref shortTermTargetSettlement, mobileParty, out shortTermTargetPoint);
+			GetFollowBehavior(ref goAroundPartyBehavior, ref fleeTargetSettlement, mobileParty, out goAroundPartyTargetPoint);
 			break;
 		case AiBehavior.BesiegeSettlement:
 			if (!_mobileParty.IsMainParty)
 			{
-				GetBesiegeBehavior(out shortTermBehavior, out shortTermTargetPoint, out shortTermTargetSettlement);
+				GetBesiegeBehavior(out goAroundPartyBehavior, out goAroundPartyTargetPoint, out fleeTargetSettlement);
 			}
 			break;
 		case AiBehavior.GoToSettlement:
 			if (_mobileParty.CurrentSettlement == _mobileParty.TargetSettlement)
 			{
-				GetInSettlementBehavior(ref shortTermBehavior, ref shortTermTargetParty);
-				shortTermTargetPoint = shortTermTargetParty?.Position ?? _mobileParty.Position;
+				GetInSettlementBehavior(ref goAroundPartyBehavior, ref shortTermTargetParty);
+				goAroundPartyTargetPoint = shortTermTargetParty?.Position ?? _mobileParty.Position;
 			}
 			break;
 		case AiBehavior.DefendSettlement:
@@ -583,21 +583,26 @@ public class MobilePartyAi
 			{
 				targetSettlement = mobileParty.TargetSettlement;
 			}
-			if (targetSettlement.LastAttackerParty != null && targetSettlement.LastAttackerParty.IsActive)
+			MobileParty lastAttackerParty = targetSettlement.LastAttackerParty;
+			if (lastAttackerParty != null && lastAttackerParty.IsActive && lastAttackerParty.MapFaction != null && FactionManager.IsAtWarAgainstFaction(lastAttackerParty.MapFaction, _mobileParty.MapFaction))
 			{
-				GetDefendSettlementBehavior(targetSettlement, out shortTermBehavior, out shortTermTargetPoint, out shortTermTargetParty);
+				GetDefendSettlementBehavior(targetSettlement, out goAroundPartyBehavior, out goAroundPartyTargetPoint, out shortTermTargetParty);
 				break;
 			}
-			shortTermBehavior = AiBehavior.GoToPoint;
-			shortTermTargetPoint = ((_mobileParty.IsCurrentlyAtSea && targetSettlement.HasPort) ? targetSettlement.PortPosition : targetSettlement.GatePosition);
+			if (lastAttackerParty != null && lastAttackerParty.IsActive)
+			{
+				RethinkAtNextHourlyTick = true;
+			}
+			goAroundPartyBehavior = AiBehavior.GoToPoint;
+			goAroundPartyTargetPoint = ((_mobileParty.IsCurrentlyAtSea && targetSettlement.HasPort) ? targetSettlement.PortPosition : targetSettlement.GatePosition);
 			break;
 		}
 		case AiBehavior.MoveToNearestLandOrPort:
-			GetBestMoveToNearestLandBehavior(out shortTermBehavior, out shortTermTargetPoint, out shortTermTargetSettlement);
+			GetBestMoveToNearestLandBehavior(out goAroundPartyBehavior, out goAroundPartyTargetPoint, out fleeTargetSettlement);
 			break;
 		}
-		bestAiBehavior = shortTermBehavior;
-		bestTargetPoint = shortTermTargetPoint;
+		bestAiBehavior = goAroundPartyBehavior;
+		bestTargetPoint = goAroundPartyTargetPoint;
 		_ = bestTargetPoint.Face;
 		if (shortTermTargetParty != null)
 		{
@@ -605,7 +610,7 @@ public class MobilePartyAi
 		}
 		if (bestAiBehavior == AiBehavior.GoToSettlement || bestAiBehavior == AiBehavior.RaidSettlement || bestAiBehavior == AiBehavior.AssaultSettlement || bestAiBehavior == AiBehavior.BesiegeSettlement || (bestAiBehavior == AiBehavior.DefendSettlement && mobileParty == null))
 		{
-			behaviorObject = ((shortTermTargetSettlement != null) ? shortTermTargetSettlement.Party : _mobileParty.TargetSettlement.Party);
+			behaviorObject = ((fleeTargetSettlement != null) ? fleeTargetSettlement.Party : _mobileParty.TargetSettlement.Party);
 		}
 		else if (bestAiBehavior == AiBehavior.EngageParty || bestAiBehavior == AiBehavior.FleeToParty || bestAiBehavior == AiBehavior.GoAroundParty || bestAiBehavior == AiBehavior.EscortParty || bestAiBehavior == AiBehavior.JoinParty || bestAiBehavior == AiBehavior.FleeToPoint || (bestAiBehavior == AiBehavior.DefendSettlement && mobileParty != null))
 		{
@@ -613,7 +618,7 @@ public class MobilePartyAi
 		}
 		else if (bestAiBehavior == AiBehavior.FleeToGate)
 		{
-			behaviorObject = shortTermTargetSettlement?.Party ?? _mobileParty.ShortTermTargetSettlement.Party;
+			behaviorObject = fleeTargetSettlement?.Party ?? _mobileParty.ShortTermTargetSettlement.Party;
 		}
 		else if (bestAiBehavior == AiBehavior.MoveToNearestLandOrPort)
 		{
@@ -639,7 +644,7 @@ public class MobilePartyAi
 		}
 		else if (bestAiBehavior == AiBehavior.DoOperation)
 		{
-			Debug.FailedAssert("DoOperation", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\MobilePartyAi.cs", "GetBehaviors", 643);
+			Debug.FailedAssert("DoOperation", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\MobilePartyAi.cs", "GetBehaviors", 659);
 			behaviorObject = null;
 		}
 		else
@@ -1019,7 +1024,7 @@ public class MobilePartyAi
 					{
 						if (targetSettlement.IsVillage)
 						{
-							if (mostPowerfulLandAlly != null && mostPowerfulLandAlly != _mobileParty)
+							if (mostPowerfulLandAlly != null && mostPowerfulLandAlly != _mobileParty && !mostPowerfulLandAlly.IsCurrentlyAtSea)
 							{
 								shortTermBehavior = AiBehavior.GoToPoint;
 								shortTermTargetPoint = mostPowerfulLandAlly.Position;
@@ -1174,42 +1179,46 @@ public class MobilePartyAi
 				num3 = ((mobileParty.Army != null && mobileParty.Army.LeaderParty == mobileParty) ? mobileParty.Army.EstimatedStrength : mobileParty.Party.EstimatedStrength);
 				num4 = num3;
 			}
+			else
+			{
+				num3 = ((targetSettlement.LastAttackerParty.Army != null && targetSettlement.LastAttackerParty.Army.LeaderParty == targetSettlement.LastAttackerParty) ? targetSettlement.LastAttackerParty.Army.EstimatedStrength : targetSettlement.LastAttackerParty.Party.EstimatedStrength);
+			}
 			LocatableSearchData<MobileParty> data = MobileParty.StartFindingLocatablesAroundPosition(v.ToVec2(), Campaign.Current.Models.MobilePartyAIModel.SettlementDefendingNearbyPartyCheckRadius);
 			MobileParty mobileParty2 = MobileParty.FindNextLocatable(ref data);
 			float num5 = 0f;
 			float num6 = 0f;
 			float num7 = 0f;
 			float num8 = 0f;
-			float num9 = 0f;
-			float num10 = 0f;
+			float num9 = _mobileParty.Army?.EstimatedStrength ?? _mobileParty.Party.EstimatedStrength;
 			while (mobileParty2 != null)
 			{
 				if (mobileParty2.AttachedTo == null && ((mobileParty2.DefaultBehavior == AiBehavior.DefendSettlement && mobileParty2.TargetSettlement == targetSettlement) || (mobileParty2.ShortTermBehavior == AiBehavior.EngageParty && mobileParty2.ShortTermTargetParty == targetSettlement.LastAttackerParty)))
 				{
-					float num11 = mobileParty2.Army?.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.PlainBattle) ?? mobileParty2.Party.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.PlainBattle);
+					float num10 = mobileParty2.Army?.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.PlainBattle) ?? mobileParty2.Party.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.PlainBattle);
+					num5 += num10;
+					float num11 = 0f;
 					if (targetSettlement.HasPort)
 					{
-						float num12 = mobileParty2.Army?.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.SeaBattle) ?? mobileParty2.Party.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.SeaBattle);
-						num6 += num12;
-						if (mostPowerfulNavalAlly == null || num10 < num12)
+						num11 = mobileParty2.Army?.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.SeaBattle) ?? mobileParty2.Party.GetCustomStrength(BattleSideEnum.Attacker, MapEvent.PowerCalculationContext.SeaBattle);
+						num6 += num11;
+						if (mostPowerfulNavalAlly == null || num8 < num11)
 						{
 							mostPowerfulNavalAlly = mobileParty2;
-							num10 = num12;
+							num8 = num11;
 						}
 					}
-					num5 += num11;
-					if (mostPowerfulLandAlly == null || num9 < num11)
+					if (mostPowerfulLandAlly == null || num7 < num10)
 					{
 						mostPowerfulLandAlly = mobileParty2;
-						num9 = num11;
+						num7 = num10;
 					}
-					if (mobileParty2.IsCurrentlyAtSea)
+					if (mobileParty2.IsCurrentlyAtSea == _mobileParty.IsCurrentlyAtSea && mobileParty2 != _mobileParty)
 					{
-						num8 += mobileParty2.Army?.EstimatedStrength ?? mobileParty2.Party.EstimatedStrength;
-					}
-					else
-					{
-						num7 += mobileParty2.Army?.EstimatedStrength ?? mobileParty2.Party.EstimatedStrength;
+						CampaignVec2 v2 = ((_mobileParty.IsCurrentlyAtSea == targetSettlement.LastAttackerParty.IsCurrentlyAtSea) ? targetSettlement.LastAttackerParty.Position : ((_mobileParty.IsCurrentlyAtSea && targetSettlement.HasPort) ? targetSettlement.PortPosition : targetSettlement.GatePosition));
+						if (mobileParty2.Position.Distance(v2) <= Campaign.Current.Models.MobilePartyAIModel.SettlementDefendingWaitingPositionRadius * 1.1f)
+						{
+							num9 = ((!mobileParty2.IsCurrentlyAtSea) ? (num9 + num10) : (num9 + num11));
+						}
 					}
 				}
 				mobileParty2 = MobileParty.FindNextLocatable(ref data);
@@ -1217,28 +1226,24 @@ public class MobilePartyAi
 			shouldConsiderJoiningNearbyAllyParties = num5 > num3 || num6 > num4;
 			if (shouldConsiderJoiningNearbyAllyParties)
 			{
-				float num13 = num5 - num3;
-				float num14 = num6 - num4;
+				float num12 = num5 - num3;
+				float num13 = num6 - num4;
 				bool flag2 = targetSettlement.IsFortification && targetSettlement.Party.MapEventSide != null && !targetSettlement.Party.MapEvent.IsNavalMapEvent;
 				bool flag3 = targetSettlement.IsFortification && targetSettlement.Party.MapEventSide != null && targetSettlement.Party.MapEvent.IsNavalMapEvent;
-				if (num13 > 0f && num13 > num14)
+				if (num12 > 0f && num12 > num13)
 				{
 					shouldJoinLandSide = !flag3;
 				}
-				if (num14 > 0f && num14 > num13)
+				if (num13 > 0f && num13 > num12)
 				{
 					shouldJoinLandSide = flag2;
 				}
 				if (targetSettlement.IsVillage && targetSettlement.HasPort)
 				{
-					shouldJoinLandSide = num13 > num14;
+					shouldJoinLandSide = num12 > num13;
 				}
-				float num15 = (targetSettlement.IsFortification ? 1.2f : 1.05f);
-				if (shouldJoinLandSide && num7 > num3 * num15)
-				{
-					shouldEngage = true;
-				}
-				if (!shouldJoinLandSide && num8 > num4 * num15)
+				float num14 = (targetSettlement.IsFortification ? 1.2f : 1.05f);
+				if (num9 > (shouldJoinLandSide ? num3 : num4) * num14)
 				{
 					shouldEngage = true;
 				}
@@ -1247,6 +1252,11 @@ public class MobilePartyAi
 					shouldEngage = true;
 				}
 				if (!_mobileParty.HasNavalNavigationCapability && !shouldJoinLandSide)
+				{
+					shouldConsiderJoiningNearbyAllyParties = false;
+					shouldEngage = false;
+				}
+				if (mostPowerfulLandAlly == mostPowerfulNavalAlly && mostPowerfulLandAlly == _mobileParty)
 				{
 					shouldConsiderJoiningNearbyAllyParties = false;
 				}
@@ -1300,7 +1310,7 @@ public class MobilePartyAi
 				{
 					Vec2 vec2 = vec;
 					vec2.RotateCCW((float)j / 9f * (System.MathF.PI / 2f) * (float)i * 0.5f * (TaleWorlds.Library.MathF.Min(TaleWorlds.Library.MathF.Max(0f, length - defendRadius * defendRadius * 0.5f), 3f * defendRadius) / (3f * defendRadius)));
-					CampaignVec2 toPoint = targetPosition + vec2 * defendRadius * defendRadius * 0.5f * ((float)num / 5f);
+					CampaignVec2 toPoint = targetPosition + vec2 * defendRadius * ((float)num / 5f);
 					if (!toPoint.IsValid() || !NavigationHelper.IsPositionValidForNavigationType(toPoint, navigationType))
 					{
 						continue;
@@ -1360,9 +1370,9 @@ public class MobilePartyAi
 				terrainType = Campaign.Current.MapSceneWrapper.GetFaceTerrainType(zero.Face);
 				num++;
 			}
-			while (num < 100 && terrainType != TerrainType.CoastalSea && terrainType != TerrainType.NonNavigableRiver && terrainType != TerrainType.River && terrainType != TerrainType.UnderBridge);
+			while (num < 100 && (patrollingCenterPoint == zero || terrainType == TerrainType.OpenSea || terrainType == TerrainType.NonNavigableRiver));
 			patrolBehavior = AiBehavior.GoToPoint;
-			patrolTargetPoint = zero;
+			patrolTargetPoint = ((num == 100) ? patrollingCenterPoint : zero);
 		}
 		else
 		{
@@ -1437,7 +1447,7 @@ public class MobilePartyAi
 			_mobileParty.SetNavigationModeHold();
 			break;
 		default:
-			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\MobilePartyAi.cs", "UpdateBehavior", 1800);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Party\\MobilePartyAi.cs", "UpdateBehavior", 1835);
 			break;
 		case AiBehavior.FleeToPoint:
 		case AiBehavior.FleeToGate:

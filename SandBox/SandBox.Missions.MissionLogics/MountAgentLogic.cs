@@ -1,3 +1,4 @@
+using Helpers;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Party;
@@ -34,11 +35,10 @@ public class MountAgentLogic : MissionLogic
 		float randomFloat = MBRandom.RandomFloat;
 		float num = 0.05f;
 		float num2 = 0.2f;
-		if (Hero.MainHero.GetPerkValue(DefaultPerks.Riding.WellStraped))
+		if (Hero.MainHero.GetPerkValue(DefaultPerks.Riding.WellStraped) && PerkHelper.TryGetPerkEffectBonus(DefaultPerks.Riding.WellStraped, isPrimary: true, out var bonus, affectedAgent.CurrentBattleEnvironment))
 		{
-			float primaryBonus = DefaultPerks.Riding.WellStraped.PrimaryBonus;
-			num += num * primaryBonus;
-			num2 += num2 * primaryBonus;
+			num += num * bonus;
+			num2 += num2 * bonus;
 		}
 		bool flag = randomFloat < num2;
 		if (randomFloat < num || equipment[EquipmentIndex.ArmorItemEndSlot].ItemModifier?.StringId == "lame_horse")

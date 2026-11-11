@@ -1030,10 +1030,10 @@ public class ConversationManager
 			}
 			else
 			{
-				AssemblyName[] referencedAssemblies = activeGameAssembly.GetReferencedAssemblies();
-				for (int i = 0; i < referencedAssemblies.Length; i++)
+				AssemblyName[] referencedAssembliesSafe = activeGameAssembly.GetReferencedAssembliesSafe();
+				for (int i = 0; i < referencedAssembliesSafe.Length; i++)
 				{
-					if (referencedAssemblies[i].Name == name)
+					if (referencedAssembliesSafe[i].Name == name)
 					{
 						flag = true;
 						break;

@@ -275,14 +275,15 @@ public class SPScoreboardSideVM : ViewModel
 		Score.UpdateScores(scoreToBringOver.Remaining, scoreToBringOver.Dead, scoreToBringOver.Wounded, scoreToBringOver.Routed, scoreToBringOver.Kill, scoreToBringOver.ReadyToUpgrade);
 	}
 
-	public SPScoreboardShipVM GetShipAddIfNotExists(IShipOrigin ship, string shipType, IBattleCombatant owner, TeamSideEnum teamSideEnum)
+	public SPScoreboardShipVM GetShipAddIfNotExists(IShipOrigin ship, string shipType, IBattleCombatant owner, TeamSideEnum teamSideEnum, int formationIndex)
 	{
 		SPScoreboardShipVM sPScoreboardShipVM = Ships.FirstOrDefault((SPScoreboardShipVM p) => p.Ship == ship);
 		if (sPScoreboardShipVM == null)
 		{
-			sPScoreboardShipVM = new SPScoreboardShipVM(ship, shipType, owner, teamSideEnum);
+			sPScoreboardShipVM = new SPScoreboardShipVM(ship, shipType, owner, teamSideEnum, formationIndex);
 			Ships.Add(sPScoreboardShipVM);
 		}
+		sPScoreboardShipVM.FormationIndex = formationIndex;
 		return sPScoreboardShipVM;
 	}
 

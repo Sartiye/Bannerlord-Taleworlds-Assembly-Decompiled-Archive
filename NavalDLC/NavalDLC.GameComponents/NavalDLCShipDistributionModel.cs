@@ -1,5 +1,5 @@
-using NavalDLC.ComponentInterfaces;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
@@ -23,9 +23,9 @@ public class NavalDLCShipDistributionModel : ShipDistributionModel
 
 	public override bool CanSendShipToParty(Ship ship, MobileParty mobileParty)
 	{
-		if (mobileParty != MobileParty.MainParty && mobileParty.IsActive && (!mobileParty.IsCurrentlyAtSea || mobileParty.MapEvent == null) && !mobileParty.IsDisbanding && !mobileParty.IsCaravan && !mobileParty.IsCurrentlyUsedByAQuest && !mobileParty.IsMilitia && !mobileParty.IsPatrolParty)
+		if (mobileParty != MobileParty.MainParty && mobileParty.IsActive && (!mobileParty.IsCurrentlyAtSea || mobileParty.MapEvent == null) && !mobileParty.IsDisbanding && !mobileParty.IsCaravan && !mobileParty.IsCurrentlyUsedByAQuest && !mobileParty.IsMilitia && !mobileParty.IsPatrolParty && !mobileParty.IsVillager)
 		{
-			return !mobileParty.IsVillager;
+			return mobileParty.LeaderHero?.CanHaveFleet ?? true;
 		}
 		return false;
 	}
@@ -81,7 +81,7 @@ public class NavalDLCShipDistributionModel : ShipDistributionModel
 			num *= 0.95f;
 		}
 		int num5 = shipsToConsider.SumQ((Ship x) => x.SkeletalCrewCapacity);
-		int num6 = (int)Campaign.Current.Models.PartySizeLimitModel.GetPartyMemberSizeLimit(party.Party).ResultNumber;
+		int num6 = (int)Campaign.Current.Models.PartySizeLimitModel.GetPartyMemberSizeLimit(party.Party, party.IsCurrentlyAtSea).ResultNumber;
 		float num7 = (float)num6 * 0.5f;
 		int idealShipNumber = Campaign.Current.Models.PartyShipLimitModel.GetIdealShipNumber(party);
 		if (num7 < (float)num5)

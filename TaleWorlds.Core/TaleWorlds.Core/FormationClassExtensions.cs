@@ -64,7 +64,7 @@ public static class FormationClassExtensions
 			result = TroopType.Cavalry;
 			break;
 		default:
-			Debug.FailedAssert($"Undefined formation class {formationClass} for TroopType!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\FormationClass.cs", "GetTroopTypeForRegularFormation", 321);
+			Debug.FailedAssert($"Undefined formation class {formationClass} for TroopType!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\FormationClass.cs", "GetTroopTypeForRegularFormation", 323);
 			break;
 		}
 		return result;

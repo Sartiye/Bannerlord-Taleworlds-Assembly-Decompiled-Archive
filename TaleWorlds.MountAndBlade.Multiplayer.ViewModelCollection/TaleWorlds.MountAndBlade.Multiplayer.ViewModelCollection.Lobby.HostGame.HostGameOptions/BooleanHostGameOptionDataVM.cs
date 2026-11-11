@@ -21,6 +21,7 @@ public class BooleanHostGameOptionDataVM : GenericHostGameOptionDataVM
 				_isSelected = value;
 				OnPropertyChangedWithValue(value, "IsSelected");
 				base.OptionType.SetValue(value);
+				NotifyValueChanged();
 			}
 		}
 	}

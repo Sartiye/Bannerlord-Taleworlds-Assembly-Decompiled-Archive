@@ -20,7 +20,7 @@ namespace TaleWorlds.MountAndBlade.GauntletUI;
 
 public abstract class GauntletOrderUIHandler : MissionView
 {
-	protected MBReadOnlyList<Formation> _focusedFormationsCache;
+	protected Formation _focusedFormation;
 
 	protected string _radialOrderMovieName = "OrderRadial";
 
@@ -116,19 +116,13 @@ public abstract class GauntletOrderUIHandler : MissionView
 
 	protected VisualOrderExecutionParameters GetVisualOrderExecutionParameters()
 	{
-		Formation formation = null;
-		MBReadOnlyList<Formation> focusedFormationsCache = _focusedFormationsCache;
-		if (focusedFormationsCache != null && focusedFormationsCache.Count > 0)
-		{
-			formation = _focusedFormationsCache[0];
-		}
 		WorldPosition? worldPosition = null;
 		if (base.MissionScreen.Mission.Scene != null)
 		{
 			Vec3 orderFlagPosition = base.MissionScreen.GetOrderFlagPosition();
 			worldPosition = new WorldPosition(base.MissionScreen.Mission.Scene, orderFlagPosition);
 		}
-		return new VisualOrderExecutionParameters(Agent.Main, formation, worldPosition);
+		return new VisualOrderExecutionParameters(Agent.Main, _focusedFormation, worldPosition);
 	}
 
 	public override void OnMissionScreenActivate()
@@ -145,6 +139,12 @@ public abstract class GauntletOrderUIHandler : MissionView
 	public override void OnMissionScreenDeactivate()
 	{
 		base.OnMissionScreenDeactivate();
+		TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged = (Action)Delegate.Remove(TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged, new Action(OnGamepadActiveStateChanged));
+	}
+
+	public override void OnMissionScreenFinalize()
+	{
+		base.OnMissionScreenFinalize();
 		TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged = (Action)Delegate.Remove(TaleWorlds.InputSystem.Input.OnGamepadActiveStateChanged, new Action(OnGamepadActiveStateChanged));
 	}
 
@@ -201,7 +201,7 @@ public abstract class GauntletOrderUIHandler : MissionView
 					OrderSetVM selectedOrderSet = _dataSource.SelectedOrderSet;
 					if (selectedOrderSet == null || selectedOrderSet.HasSingleOrder)
 					{
-						if (_orderTroopPlacer.SuspendTroopPlacer && _dataSource.ActiveTargetState == 0)
+						if (_orderTroopPlacer.SuspendTroopPlacer)
 						{
 							_orderTroopPlacer.SuspendTroopPlacer = false;
 						}
@@ -235,7 +235,7 @@ public abstract class GauntletOrderUIHandler : MissionView
 					_gauntletLayer.InputRestrictions.SetMouseVisibility(isVisible: true);
 				}
 			}
-			base.MissionScreen.OrderFlag.IsTroop = _dataSource.ActiveTargetState == 0;
+			base.MissionScreen.OrderFlag.IsTroop = true;
 			TickOrderFlag(_latestDt, forceUpdate: false);
 		}
 		bool flag = IsOrderRadialActive();
@@ -309,12 +309,20 @@ public abstract class GauntletOrderUIHandler : MissionView
 		}
 		if (_dataSource.IsToggleOrderShown)
 		{
-			if (_dataSource.ActiveTargetState == 0 && (base.Input.IsKeyReleased(InputKey.LeftMouseButton) || base.Input.IsKeyReleased(InputKey.ControllerRTrigger)))
+			if (base.Input.IsKeyReleased(InputKey.LeftMouseButton) || base.Input.IsKeyReleased(InputKey.ControllerRTrigger))
 			{
 				if (_dataSource.SelectedOrderSet != null && TaleWorlds.InputSystem.Input.IsGamepadActive)
 				{
 					VisualOrderExecutionParameters visualOrderExecutionParameters = GetVisualOrderExecutionParameters();
 					_dataSource.SelectedOrderSet.Orders.FirstOrDefault((OrderItemVM o) => o.IsSelected)?.ExecuteAction(visualOrderExecutionParameters);
+					if (IsDeployment || _dataSource.IsHolding)
+					{
+						_dataSource.SelectedOrderSet?.ExecuteDeSelect();
+					}
+					else
+					{
+						_dataSource.TryCloseToggleOrder();
+					}
 				}
 				else
 				{
@@ -322,8 +330,7 @@ public abstract class GauntletOrderUIHandler : MissionView
 					{
 					case MissionOrderVM.CursorStates.Move:
 					{
-						MBReadOnlyList<Formation> focusedFormationsCache = _focusedFormationsCache;
-						if (focusedFormationsCache != null && focusedFormationsCache.Count > 0)
+						if (_focusedFormation != null)
 						{
 							OrderItemVM chargeOrder = GetChargeOrder();
 							VisualOrderExecutionParameters visualOrderExecutionParameters2 = GetVisualOrderExecutionParameters();
@@ -345,7 +352,7 @@ public abstract class GauntletOrderUIHandler : MissionView
 							}
 							else
 							{
-								Debug.FailedAssert("No selected formations when issuing order", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOrderUIBase.cs", "TickInput", 370);
+								Debug.FailedAssert("No selected formations when issuing order", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOrderUIBase.cs", "TickInput", 377);
 							}
 						}
 						break;
@@ -357,7 +364,7 @@ public abstract class GauntletOrderUIHandler : MissionView
 						_dataSource.OrderController.SetOrderWithPosition(OrderType.FormCustom, new WorldPosition(TaleWorlds.MountAndBlade.Mission.Current.Scene, UIntPtr.Zero, base.MissionScreen.GetOrderFlagPosition(), hasValidZ: false));
 						break;
 					default:
-						Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOrderUIBase.cs", "TickInput", 385);
+						Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletOrderUIBase.cs", "TickInput", 392);
 						break;
 					}
 				}

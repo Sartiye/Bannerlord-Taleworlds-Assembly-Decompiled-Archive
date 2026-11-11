@@ -375,7 +375,7 @@ public class Ballista : RangedSiegeWeapon, ISpawnable
 		return textObject;
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		return new TextObject("{=abbALYlp}Ballista");
 	}

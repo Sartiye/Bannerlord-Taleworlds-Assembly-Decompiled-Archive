@@ -91,18 +91,21 @@ public static class MBSaveLoad
 
 	public static SaveGameFileInfo[] GetSaveFiles(Func<SaveGameFileInfo, bool> condition = null)
 	{
-		SaveGameFileInfo[] saveGameFileInfos = _saveDriver.GetSaveGameFileInfos();
-		NumberOfCurrentSaves = saveGameFileInfos.Length;
-		List<SaveGameFileInfo> list = new List<SaveGameFileInfo>();
-		SaveGameFileInfo[] array = saveGameFileInfos;
-		foreach (SaveGameFileInfo saveGameFileInfo in array)
+		using (new PerformanceTestBlock("MBSaveLoad::GetSaveFiles"))
 		{
-			if (condition == null || condition(saveGameFileInfo))
+			SaveGameFileInfo[] allSaveFileInfos = GetAllSaveFileInfos();
+			NumberOfCurrentSaves = allSaveFileInfos.Length;
+			List<SaveGameFileInfo> list = new List<SaveGameFileInfo>();
+			SaveGameFileInfo[] array = allSaveFileInfos;
+			foreach (SaveGameFileInfo saveGameFileInfo in array)
 			{
-				list.Add(saveGameFileInfo);
+				if (condition == null || condition(saveGameFileInfo))
+				{
+					list.Add(saveGameFileInfo);
+				}
 			}
+			return list.OrderByDescending((SaveGameFileInfo info) => info.MetaData.GetCreationTime()).ToArray();
 		}
-		return list.OrderByDescending((SaveGameFileInfo info) => info.MetaData.GetCreationTime()).ToArray();
 	}
 
 	public static bool IsSaveGameFileExists(string saveFileName)
@@ -131,12 +134,37 @@ public static class MBSaveLoad
 
 	public static SaveGameFileInfo GetSaveFileWithName(string saveName)
 	{
-		SaveGameFileInfo[] saveFiles = GetSaveFiles((SaveGameFileInfo x) => x.Name.Equals(saveName));
-		if (saveFiles.Length == 0)
+		string[] saveGameFileNames = _saveDriver.GetSaveGameFileNames();
+		NumberOfCurrentSaves = saveGameFileNames.Length;
+		if (string.IsNullOrEmpty(saveName) || !saveGameFileNames.Contains(saveName))
 		{
 			return null;
 		}
-		return saveFiles[0];
+		MetaData metaData = LoadMetaDataOfSaveFile(saveName);
+		return new SaveGameFileInfo
+		{
+			Name = saveName,
+			MetaData = metaData,
+			IsCorrupted = (metaData == null || metaData.GetApplicationVersion() == ApplicationVersion.Empty)
+		};
+	}
+
+	private static SaveGameFileInfo[] GetAllSaveFileInfos()
+	{
+		return _saveDriver.GetSaveGameFileInfos();
+	}
+
+	private static MetaData LoadMetaDataOfSaveFile(string saveName)
+	{
+		return _saveDriver.LoadMetaData(saveName);
+	}
+
+	private static void SetCachedMetaData(string saveName, MetaData metaData)
+	{
+	}
+
+	private static void RemoveCachedMetaData(string saveName)
+	{
 	}
 
 	public static void QuickSaveCurrentGame(CampaignSaveMetaDataArgs campaignMetaData, Action<(SaveResult, string)> onSaveCompleted)
@@ -166,15 +194,24 @@ public static class MBSaveLoad
 
 	private static void OverwriteSaveAux(CampaignSaveMetaDataArgs campaignMetaData, string saveName, Action<(SaveResult, string)> onSaveCompleted)
 	{
-		MetaData saveMetaData = GetSaveMetaData(campaignMetaData);
+		MetaData metaData = GetSaveMetaData(campaignMetaData);
 		bool isOverwritingExistingSave = IsSaveGameFileExists(saveName);
+		RefreshNumberOfCurrentSaves();
 		if (IsMaxNumberOfSavesReached() && !isOverwritingExistingSave)
 		{
 			onSaveCompleted?.Invoke((SaveResult.SaveLimitReached, string.Empty));
 			return;
 		}
-		OverwriteSaveFile(saveMetaData, saveName, delegate(SaveResult r)
+		OverwriteSaveFile(metaData, saveName, delegate(SaveResult r)
 		{
+			if (r == SaveResult.Success)
+			{
+				SetCachedMetaData(saveName, metaData);
+			}
+			else
+			{
+				RemoveCachedMetaData(saveName);
+			}
 			onSaveCompleted?.Invoke((r, saveName));
 			if (r == SaveResult.Success && !isOverwritingExistingSave)
 			{
@@ -188,6 +225,7 @@ public static class MBSaveLoad
 		bool num = _saveDriver.Delete(saveName);
 		if (num)
 		{
+			RemoveCachedMetaData(saveName);
 			if (NumberOfCurrentSaves > 0)
 			{
 				NumberOfCurrentSaves--;
@@ -203,7 +241,7 @@ public static class MBSaveLoad
 	public static void Initialize(GameTextManager localizedTextProvider)
 	{
 		_textProvider = localizedTextProvider;
-		NumberOfCurrentSaves = _saveDriver.GetSaveGameFileInfos().Length;
+		RefreshNumberOfCurrentSaves();
 	}
 
 	public static void OnNewGame()
@@ -270,7 +308,7 @@ public static class MBSaveLoad
 		switch (result)
 		{
 		case SaveResult.PlatformFileHelperFailure:
-			Debug.FailedAssert("Save Failed:\n" + Common.PlatformFileHelper.GetError(), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\MBSaveLoad.cs", "ShowErrorFromResult", 314);
+			Debug.FailedAssert("Save Failed:\n" + Common.PlatformFileHelper.GetError(), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\MBSaveLoad.cs", "ShowErrorFromResult", 462);
 			break;
 		case SaveResult.Success:
 			return;
@@ -295,7 +333,7 @@ public static class MBSaveLoad
 		{
 			Debug.Print("Unable to create save game data");
 			Debug.Print(ex.Message);
-			Debug.SilentAssert(ModuleHelper.GetModules().Any((ModuleInfo m) => !m.IsOfficial), ex.Message, getDump: false, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\MBSaveLoad.cs", "SaveGame", 347);
+			Debug.SilentAssert(ModuleHelper.GetModules().Any((ModuleInfo m) => !m.IsOfficial), ex.Message, getDump: false, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\MBSaveLoad.cs", "SaveGame", 495);
 		}
 	}
 
@@ -327,5 +365,20 @@ public static class MBSaveLoad
 	public static bool IsMaxNumberOfSavesReached()
 	{
 		return NumberOfCurrentSaves >= GetMaxNumberOfSaves();
+	}
+
+	private static void RefreshNumberOfCurrentSaves()
+	{
+		NumberOfCurrentSaves = _saveDriver.GetSaveGameFileNames().Length;
+	}
+
+	public static bool IsQuickSaveBlockedBySaveLimit()
+	{
+		RefreshNumberOfCurrentSaves();
+		if (ActiveSaveSlotName == null || !IsSaveGameFileExists(ActiveSaveSlotName))
+		{
+			return IsMaxNumberOfSavesReached();
+		}
+		return false;
 	}
 }

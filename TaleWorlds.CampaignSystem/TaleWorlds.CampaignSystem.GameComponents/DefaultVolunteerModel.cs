@@ -95,17 +95,21 @@ public class DefaultVolunteerModel : VolunteerModel
 		float num3 = ((num2 < 46) ? ((float)num2 / 46f * ((float)num2 / 46f)) : 1f);
 		num += ((hero.CurrentSettlement != null && num3 < 1f) ? ((1f - num3) * 0.2f) : 0f);
 		float baseNumber = 0.75f * MathF.Clamp(MathF.Pow(num, index + 1), 0f, 1f);
-		ExplainedNumber explainedNumber = new ExplainedNumber(baseNumber);
+		ExplainedNumber bonuses = new ExplainedNumber(baseNumber);
 		if (hero.Clan?.Kingdom != null && hero.Clan.Kingdom.ActivePolicies.Contains(DefaultPolicies.Cantons))
 		{
-			explainedNumber.AddFactor(0.2f);
+			bonuses.AddFactor(0.2f);
 		}
 		Town town = (settlement.IsTown ? settlement.Town : settlement.Village.TradeBound?.Town);
-		if (town != null && hero.IsAlive && hero.VolunteerTypes[index] != null && hero.VolunteerTypes[index].IsMounted && PerkHelper.GetPerkValueForTown(DefaultPerks.Riding.CavalryTactics, town))
+		if (town != null && hero.IsAlive && hero.VolunteerTypes[index] != null && hero.VolunteerTypes[index].IsMounted)
 		{
-			explainedNumber.AddFactor(DefaultPerks.Riding.CavalryTactics.PrimaryBonus);
+			PerkHelper.AddPerkBonusForTown(DefaultPerks.Riding.CavalryTactics, town, isPrimaryBonus: false, ref bonuses);
 		}
-		return explainedNumber.ResultNumber;
+		if (Campaign.Current.Options.IsRecruitmentRateModifierEnabled)
+		{
+			bonuses.AddFactor(-0.9f);
+		}
+		return bonuses.ResultNumber;
 	}
 
 	public override CharacterObject GetBasicVolunteer(Hero sellerHero)

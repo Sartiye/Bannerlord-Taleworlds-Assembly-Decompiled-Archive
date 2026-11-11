@@ -113,7 +113,7 @@ public interface ILobbyClientSessionHandler
 
 	void OnClientQuitFromCustomGame(PlayerId playerId);
 
-	void OnJoinCustomGameResponse(bool success, JoinGameData joinGameData, CustomGameJoinResponse failureReason, bool isAdmin);
+	void OnJoinCustomGameResponse(bool success, JoinGameData joinGameData, CustomGameJoinResponse failureReason, CustomGameJoinType joinType);
 
 	void OnJoinCustomGameFailureResponse(CustomGameJoinResponse response);
 

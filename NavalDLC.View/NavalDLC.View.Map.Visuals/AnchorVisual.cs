@@ -14,11 +14,15 @@ namespace NavalDLC.View.Map.Visuals;
 
 public class AnchorVisual : MapEntityVisual<AnchorPoint>
 {
+	private const string BodyMeshTag = "body_mesh";
+
 	private ShipHull _flagshipHull;
 
 	private uint _cachedVersion;
 
 	private List<SailVisual> _sailVisuals = new List<SailVisual>();
+
+	private WeakGameEntity _bodyMeshEntity;
 
 	private Scene _mapScene;
 
@@ -62,8 +66,12 @@ public class AnchorVisual : MapEntityVisual<AnchorPoint>
 
 	public override bool OnMapClick(bool followModifierUsed)
 	{
-		MobileParty.MainParty.SetMoveGoToInteractablePoint(base.MapEntity, MobileParty.NavigationType.All);
-		return true;
+		if (IsInteractable())
+		{
+			MobileParty.MainParty.SetMoveGoToInteractablePoint(base.MapEntity, MobileParty.NavigationType.All);
+			return true;
+		}
+		return false;
 	}
 
 	public override void ReleaseResources()
@@ -72,6 +80,11 @@ public class AnchorVisual : MapEntityVisual<AnchorPoint>
 
 	public override void OnOpenEncyclopedia()
 	{
+	}
+
+	public override bool IsInteractable()
+	{
+		return base.MapEntity.IsInteractable();
 	}
 
 	public void OnStartup()
@@ -136,10 +149,35 @@ public class AnchorVisual : MapEntityVisual<AnchorPoint>
 	{
 		UpdateVersionCache();
 		Entity = NavalDLCViewHelpers.ShipVisualHelper.GetFlagshipEntity(PartyBase.MainParty, MapScene);
+		_bodyMeshEntity = Entity.WeakEntity.GetFirstChildEntityWithTagRecursive("body_mesh");
 		NavalDLCViewHelpers.ShipVisualHelper.CollectSailVisuals(Entity.WeakEntity, _sailVisuals);
 		Entity.SetVisibilityExcludeParents(visible: false);
-		Entity.AddSphereAsBody(new Vec3(0f, 0f, 0f, -1f), 3f, BodyFlags.Moveable | BodyFlags.OnlyCollideWithRaycast);
 		UpdateAnchorVisualPosition();
+		InitializeAnchorCollider();
+	}
+
+	private void InitializeAnchorCollider()
+	{
+		if (Entity != null)
+		{
+			if (_bodyMeshEntity.IsValid)
+			{
+				Vec3 eulerAngles = Entity.GetGlobalFrame().rotation.GetEulerAngles();
+				Vec3 eulerAngles2 = _bodyMeshEntity.GetGlobalFrame().rotation.GetEulerAngles();
+				BoundingBox localPhysicsBoundingBox = _bodyMeshEntity.GetLocalPhysicsBoundingBox(includeChildren: false);
+				localPhysicsBoundingBox.max.RotateAboutZ(eulerAngles.RotationZ - eulerAngles2.RotationZ);
+				localPhysicsBoundingBox.min.RotateAboutZ(eulerAngles.RotationZ - eulerAngles2.RotationZ);
+				float num = MathF.Abs(localPhysicsBoundingBox.max.x - localPhysicsBoundingBox.min.x) / 2f;
+				float num2 = num / 2f;
+				float num3 = MathF.Max(localPhysicsBoundingBox.max.y, localPhysicsBoundingBox.min.y);
+				float num4 = MathF.Min(localPhysicsBoundingBox.max.y, localPhysicsBoundingBox.min.y);
+				GameEntityPhysicsExtensions.AddCapsuleAsBody(p1: new Vec3(0f, num3 - num2, num2 + 0.4f), p2: new Vec3(0f, num4 + num2, num2 + 0.4f), gameEntity: Entity, radius: num, bodyFlags: BodyFlags.Moveable | BodyFlags.OnlyCollideWithRaycast);
+			}
+			else
+			{
+				Entity.AddSphereAsBody(new Vec3(0f, 0f, 0f, -1f), 5f, BodyFlags.Moveable | BodyFlags.OnlyCollideWithRaycast);
+			}
+		}
 	}
 
 	internal void UpdateAnchorVisualPosition()
@@ -160,14 +198,5 @@ public class AnchorVisual : MapEntityVisual<AnchorPoint>
 		identity.rotation.Orthonormalize();
 		identity.rotation.ApplyScaleLocal(in scaleAmountXYZ);
 		return identity;
-	}
-
-	private bool CanHaveAnchor()
-	{
-		if (base.MapEntity.Owner.HasNavalNavigationCapability && base.MapEntity.IsValid)
-		{
-			return !base.MapEntity.IsDisabled;
-		}
-		return false;
 	}
 }

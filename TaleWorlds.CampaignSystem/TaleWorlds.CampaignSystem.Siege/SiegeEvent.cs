@@ -875,10 +875,10 @@ public class SiegeEvent
 		switch (battleType)
 		{
 		case MapEvent.BattleTypes.SallyOut:
+		case MapEvent.BattleTypes.SiegeOutside:
 			_isBesiegerDefeated = winnerSide == BattleState.AttackerVictory;
 			break;
 		case MapEvent.BattleTypes.Siege:
-		case MapEvent.BattleTypes.SiegeOutside:
 			_isBesiegerDefeated = winnerSide == BattleState.DefenderVictory;
 			break;
 		}
@@ -916,16 +916,16 @@ public class SiegeEvent
 		return GetInvolvedPartiesForEventType(GetCurrentBattleType()).Contains(party);
 	}
 
-	public void SetPositionAfterMapChange(CampaignVec2 newPosition)
+	public void SetPositionAfterMapChange(CampaignVec2 newGatePosition, CampaignVec2 newPortPosition)
 	{
 		if (MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.3.0")))
 		{
 			BesiegerCamp.OnAfterLoad();
 		}
-		BesiegerCamp.SetPositionAfterMapChange(newPosition);
+		BesiegerCamp.SetPositionAfterMapChange(newGatePosition);
 		if (BesiegerCamp.LeaderParty.MapEvent != null && BesiegerCamp.LeaderParty.MapEvent.IsSiegeAssault)
 		{
-			BesiegerCamp.LeaderParty.MapEvent.SetPositionAfterMapChange(newPosition);
+			BesiegerCamp.LeaderParty.MapEvent.SetPositionAfterMapChange(newGatePosition, newPortPosition);
 		}
 	}
 

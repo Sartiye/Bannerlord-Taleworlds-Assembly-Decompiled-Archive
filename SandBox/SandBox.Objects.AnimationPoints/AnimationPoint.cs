@@ -585,7 +585,7 @@ public class AnimationPoint : StandingPoint
 				IsArriveActionFinished = true;
 				AddItemsToAgent();
 			}
-			if (IsRotationCorrectDuringUsage())
+			if (IsRotationCorrectDuringUsage() && _pairState == PairState.NoPair)
 			{
 				base.UserAgent.SetActionChannel(0, in LoopStartActionCode, ignorePriority: false, (AnimFlags)0uL, 0f, (ActionSpeed < 0.8f) ? ActionSpeed : MBRandom.RandomFloatRanged(0.8f, ActionSpeed), isSimulation ? 0f : (-0.2f), 0.4f, isSimulation ? MBRandom.RandomFloatRanged(0f, 0.5f) : 0f);
 			}

@@ -120,7 +120,7 @@ public class FishingPartyCampaignBehavior : CampaignBehaviorBase
 
 	public override void RegisterEvents()
 	{
-		CampaignEvents.OnNewGameCreatedEvent.AddNonSerializedListener(this, OnNewGameCreated);
+		CampaignEvents.OnNewGameCreatedPartialFollowUpEndEvent.AddNonSerializedListener(this, OnNewGameCreatedPartialFollowUpEnd);
 		CampaignEvents.HourlyTickPartyEvent.AddNonSerializedListener(this, OnHourlyTickParty);
 		CampaignEvents.DailyTickSettlementEvent.AddNonSerializedListener(this, OnDailySettlementTick);
 		CampaignEvents.OnGameEarlyLoadedEvent.AddNonSerializedListener(this, OnGameEarlyLoaded);
@@ -168,7 +168,7 @@ public class FishingPartyCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private void OnNewGameCreated(CampaignGameStarter starter)
+	private void OnNewGameCreatedPartialFollowUpEnd(CampaignGameStarter starter)
 	{
 		InitializeCachedData();
 		foreach (Village item in Village.All)

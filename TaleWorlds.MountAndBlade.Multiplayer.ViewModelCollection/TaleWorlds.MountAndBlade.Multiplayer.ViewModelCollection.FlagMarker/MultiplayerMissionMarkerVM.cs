@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.Core;
@@ -156,6 +157,7 @@ public class MultiplayerMissionMarkerVM : ViewModel
 			}
 		}
 		MissionPeer.OnTeamChanged += OnTeamChanged;
+		ManagedOptions.OnManagedOptionChanged = (ManagedOptions.OnManagedOptionChangedDelegate)Delegate.Combine(ManagedOptions.OnManagedOptionChanged, new ManagedOptions.OnManagedOptionChangedDelegate(OnManagedOptionChanged));
 		_friendIDs = new List<PlayerId>();
 		IFriendListService[] friendListServices = PlatformServices.Instance.GetFriendListServices();
 		foreach (IFriendListService friendListService in friendListServices)
@@ -177,6 +179,18 @@ public class MultiplayerMissionMarkerVM : ViewModel
 			}
 		}
 		MissionPeer.OnTeamChanged -= OnTeamChanged;
+		ManagedOptions.OnManagedOptionChanged = (ManagedOptions.OnManagedOptionChangedDelegate)Delegate.Remove(ManagedOptions.OnManagedOptionChanged, new ManagedOptions.OnManagedOptionChangedDelegate(OnManagedOptionChanged));
+	}
+
+	private void OnManagedOptionChanged(ManagedOptions.ManagedOptionsType changedManagedOptionsType)
+	{
+		if (changedManagedOptionsType == ManagedOptions.ManagedOptionsType.EnableGenericNames)
+		{
+			PeerTargets.ApplyActionOnAllItems(delegate(MissionPeerMarkerTargetVM target)
+			{
+				target.RefreshName();
+			});
+		}
 	}
 
 	public void Tick(float dt)
@@ -222,7 +236,6 @@ public class MultiplayerMissionMarkerVM : ViewModel
 				flagTarget.OnRemainingMoraleChanged(remainingMoraleGainsArr[flagIndex]);
 			}
 		}
-		Debug.Print("OnCapturePointRemainingMoraleGainsChanged: " + remainingMoraleGainsArr.Length);
 	}
 
 	private void OnTeamChanged(NetworkCommunicator peer, Team previousTeam, Team newTeam)
@@ -236,10 +249,11 @@ public class MultiplayerMissionMarkerVM : ViewModel
 			return;
 		}
 		SiegeEngineTargets.Clear();
+		bool flag = MultiplayerSpectatorHelper.IsLocalPeerStreamer();
 		foreach (WeakGameEntity item in Mission.Current.GetActiveEntitiesWithScriptComponentOfType<SiegeWeapon>())
 		{
 			SiegeWeapon firstScriptOfType = item.GetFirstScriptOfType<SiegeWeapon>();
-			if (newTeam.Side == firstScriptOfType.Side)
+			if (flag || newTeam.Side == firstScriptOfType.Side)
 			{
 				SiegeEngineTargets.Add(new MissionSiegeEngineMarkerTargetVM(firstScriptOfType));
 			}
@@ -317,10 +331,11 @@ public class MultiplayerMissionMarkerVM : ViewModel
 			return;
 		}
 		BattleSideEnum battleSideEnum = GameNetwork.MyPeer.ControlledAgent?.Team.Side ?? BattleSideEnum.None;
+		bool flag = MultiplayerSpectatorHelper.IsLocalPeerStreamer();
 		List<MissionPeerMarkerTargetVM> list = PeerTargets.ToList();
 		foreach (MissionPeer missionPeer in VirtualPlayer.Peers<MissionPeer>())
 		{
-			if (missionPeer?.Team == null || missionPeer.IsMine || missionPeer.Team.Side != battleSideEnum)
+			if (missionPeer?.Team == null || missionPeer.IsMine || (missionPeer.Team.Side != battleSideEnum && !flag) || missionPeer.Team == Mission.Current.SpectatorTeam)
 			{
 				continue;
 			}

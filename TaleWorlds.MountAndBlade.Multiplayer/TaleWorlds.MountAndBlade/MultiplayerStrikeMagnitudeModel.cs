@@ -57,6 +57,10 @@ public class MultiplayerStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 				float num2 = MathF.Max(MathF.Sqrt(1f + combatPerkHandler.GetSpeedBonusEffectiveness(weapon.CurrentUsageItem, (DamageTypes)collisionData.DamageType)) - 1f, 0f);
 				num += num * num2;
 			}
+			if (attackInformation.AttackerAgent.MountAgent != null && collisionData.StrikeType == 1)
+			{
+				num *= 0.75f;
+			}
 		}
 		return CombatStatCalculator.CalculateStrikeMagnitudeForThrust(thrustWeaponSpeed, weapon.Item.Weight, num, isThrown);
 	}
@@ -79,7 +83,7 @@ public class MultiplayerStrikeMagnitudeModel : StrikeMagnitudeCalculationModel
 				num4 = MathF.Max(0f, magnitude * (45f / (45f + armorEffectiveness)));
 				break;
 			default:
-				Debug.FailedAssert("Given damage type is invalid.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\ComponentInterfaces\\MultiplayerStrikeMagnitudeModel.cs", "ComputeRawDamage", 107);
+				Debug.FailedAssert("Given damage type is invalid.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\ComponentInterfaces\\MultiplayerStrikeMagnitudeModel.cs", "ComputeRawDamage", 112);
 				return 0f;
 			}
 			num3 += (1f - bluntDamageFactorByDamageType) * num4;

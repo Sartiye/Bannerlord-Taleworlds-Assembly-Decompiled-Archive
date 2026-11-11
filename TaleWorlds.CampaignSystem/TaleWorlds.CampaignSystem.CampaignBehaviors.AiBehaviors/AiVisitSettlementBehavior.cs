@@ -581,7 +581,7 @@ public class AiVisitSettlementBehavior : CampaignBehaviorBase
 			}
 			if (MBRandom.RandomFloatWithSeed((uint)mobileParty.RandomValue, (uint)CampaignTime.Now.ToDays) < 0.5f && settlement.IsFortification && leaderHero.Clan != Clan.PlayerClan && (settlement.OwnerClan.Leader == leaderHero || settlement.OwnerClan == leaderHero.Clan))
 			{
-				if (idealGarrisonStrengthPerWalledCenter == -1f)
+				if (idealGarrisonStrengthPerWalledCenter.ApproximatelyEqualsTo(-1f))
 				{
 					idealGarrisonStrengthPerWalledCenter = FactionHelper.FindIdealGarrisonStrengthPerWalledCenter(mapFaction as Kingdom);
 				}

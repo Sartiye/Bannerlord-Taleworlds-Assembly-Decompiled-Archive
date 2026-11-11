@@ -11,6 +11,10 @@ public class SaveLoadMainHeroVisualWidget : Widget
 
 	public bool IsVisualDisabledForMemoryPurposes { get; set; }
 
+	public bool IsLoadingSaves { get; set; }
+
+	public bool IsRefreshingSaves { get; set; }
+
 	public SaveLoadMainHeroVisualWidget(UIContext context)
 		: base(context)
 	{
@@ -19,7 +23,7 @@ public class SaveLoadMainHeroVisualWidget : Widget
 	protected override void OnLateUpdate(float dt)
 	{
 		base.OnLateUpdate(dt);
-		if (DefaultVisualWidget != null)
+		if (DefaultVisualWidget != null && !IsLoadingSaves && !IsRefreshingSaves)
 		{
 			if (IsVisualDisabledForMemoryPurposes)
 			{

@@ -345,6 +345,8 @@ public class MissionState : GameState
 		CurrentMission.AfterStart();
 		Utilities.SetLoadingScreenPercentage(0.56f);
 		Handler?.OnMissionLoadingFinished(CurrentMission);
+		Utilities.SetLoadingScreenPercentage(0.6f);
+		CurrentMission.AfterMissionLoadingFinished();
 		Utilities.SetLoadingScreenPercentage(0.62f);
 		CurrentMission.Scene.ResumeLoadingRenderings();
 	}

@@ -6,8 +6,6 @@ public interface IClient
 {
 	bool IsInCriticalState { get; }
 
-	long AliveCheckTimeInMiliSeconds { get; }
-
 	ILoginAccessProvider AccessProvider { get; }
 
 	void HandleMessage(Message message);

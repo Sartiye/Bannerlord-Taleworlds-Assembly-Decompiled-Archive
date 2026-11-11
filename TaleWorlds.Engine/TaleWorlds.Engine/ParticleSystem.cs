@@ -57,6 +57,11 @@ public sealed class ParticleSystem : GameEntityComponent
 		EngineApplicationInterface.IParticleSystem.SetRuntimeEmissionRateMultiplier(base.Pointer, multiplier);
 	}
 
+	public void SetRuntimeTimeMultiplier(float multiplier)
+	{
+		EngineApplicationInterface.IParticleSystem.SetRuntimeTimeMultiplier(base.Pointer, multiplier);
+	}
+
 	public void Restart()
 	{
 		EngineApplicationInterface.IParticleSystem.Restart(base.Pointer);

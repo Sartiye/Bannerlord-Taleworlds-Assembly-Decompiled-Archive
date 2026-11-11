@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection.ClassLoadout;
 
@@ -20,6 +22,8 @@ public class MPPerkVM : ViewModel
 	private bool _isSelectable;
 
 	private HintViewModel _hint;
+
+	private HintViewModel _hintWithTitle;
 
 	public int PerkIndex { get; private set; }
 
@@ -53,6 +57,23 @@ public class MPPerkVM : ViewModel
 			{
 				_hint = value;
 				OnPropertyChangedWithValue(value, "Hint");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public HintViewModel HintWithTitle
+	{
+		get
+		{
+			return _hintWithTitle;
+		}
+		set
+		{
+			if (value != _hintWithTitle)
+			{
+				_hintWithTitle = value;
+				OnPropertyChangedWithValue(value, "HintWithTitle");
 			}
 		}
 	}
@@ -125,10 +146,17 @@ public class MPPerkVM : ViewModel
 		Description = Perk.Description.ToString();
 		GameTexts.SetVariable("newline", "\n");
 		Hint = new HintViewModel(Perk.Description);
+		HintWithTitle = new HintViewModel(GetPerkTooltipWithTitle());
 	}
 
 	public void ExecuteSelectPerk()
 	{
 		_onSelectPerk(this);
+	}
+
+	private TextObject GetPerkTooltipWithTitle()
+	{
+		TextObject symbol = new TextObject("{=!}{newline}{newline}");
+		return GameTexts.GameTextHelper.MergeTextObjectsWithSymbol(new List<TextObject> { Perk.Name, Perk.Description }, symbol);
 	}
 }

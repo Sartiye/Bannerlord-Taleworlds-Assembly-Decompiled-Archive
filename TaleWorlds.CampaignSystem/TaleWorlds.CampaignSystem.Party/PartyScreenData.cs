@@ -27,7 +27,7 @@ public class PartyScreenData : IEnumerable<(TroopRosterElement, bool)>, IEnumera
 
 	public (int, int, int) PartyInfluenceChangeAmount;
 
-	public int PartyMoraleChangeAmount;
+	public float PartyMoraleChangeAmount;
 
 	public int PartyHorseChangeAmount;
 
@@ -56,7 +56,7 @@ public class PartyScreenData : IEnumerable<(TroopRosterElement, bool)>, IEnumera
 	{
 		PartyGoldChangeAmount = 0;
 		PartyInfluenceChangeAmount = (0, 0, 0);
-		PartyMoraleChangeAmount = 0;
+		PartyMoraleChangeAmount = 0f;
 		PartyHorseChangeAmount = 0;
 		RightRecruitableData = new Dictionary<CharacterObject, int>();
 		UpgradedTroopsHistory = new List<Tuple<CharacterObject, CharacterObject, int>>();
@@ -532,7 +532,7 @@ public class PartyScreenData : IEnumerable<(TroopRosterElement, bool)>, IEnumera
 		{
 			return false;
 		}
-		if (a.RightMemberRoster.Count != b.RightMemberRoster.Count || a.RightPrisonerRoster.Count != b.RightPrisonerRoster.Count || a.RightRecruitableData.Count != b.RightRecruitableData.Count || a.UpgradedTroopsHistory.Count != b.UpgradedTroopsHistory.Count || a.TransferredPrisonersHistory.Count != b.TransferredPrisonersHistory.Count || a.RecruitedPrisonersHistory.Count != b.RecruitedPrisonersHistory.Count || a.UsedUpgradeHorsesHistory.Count != b.UsedUpgradeHorsesHistory.Count)
+		if (a.RightMemberRoster.Count != b.RightMemberRoster.Count || a.RightPrisonerRoster.Count != b.RightPrisonerRoster.Count || a.LeftMemberRoster.Count != b.LeftMemberRoster.Count || a.LeftPrisonerRoster.Count != b.LeftPrisonerRoster.Count || a.RightRecruitableData.Count != b.RightRecruitableData.Count || a.UpgradedTroopsHistory.Count != b.UpgradedTroopsHistory.Count || a.TransferredPrisonersHistory.Count != b.TransferredPrisonersHistory.Count || a.RecruitedPrisonersHistory.Count != b.RecruitedPrisonersHistory.Count || a.UsedUpgradeHorsesHistory.Count != b.UsedUpgradeHorsesHistory.Count)
 		{
 			return false;
 		}
@@ -540,7 +540,15 @@ public class PartyScreenData : IEnumerable<(TroopRosterElement, bool)>, IEnumera
 		{
 			return false;
 		}
-		if (!TroopRoster.RostersAreIdentical(a.RightPrisonerRoster, b.LeftPrisonerRoster))
+		if (!TroopRoster.RostersAreIdentical(a.RightPrisonerRoster, b.RightPrisonerRoster))
+		{
+			return false;
+		}
+		if (!TroopRoster.RostersAreIdentical(a.LeftMemberRoster, b.LeftMemberRoster))
+		{
+			return false;
+		}
+		if (!TroopRoster.RostersAreIdentical(a.LeftPrisonerRoster, b.LeftPrisonerRoster))
 		{
 			return false;
 		}

@@ -125,10 +125,12 @@ public abstract class MissionLobbyComponent : MissionNetwork
 			registerer.RegisterBaseHandler<NetworkMessages.FromServer.CreateBanner>(HandleServerEventCreateBannerForPeer);
 			registerer.RegisterBaseHandler<ChangeCulture>(HandleServerEventChangeCulture);
 			registerer.RegisterBaseHandler<ChangeClassRestrictions>(HandleServerEventChangeClassRestrictions);
+			registerer.RegisterBaseHandler<PeerLastKillChange>(HandleServerEventPeerLastKillChange);
 		}
 		else if (GameNetwork.IsClientOrReplay)
 		{
 			registerer.RegisterBaseHandler<ChangeCulture>(HandleServerEventChangeCulture);
+			registerer.RegisterBaseHandler<PeerLastKillChange>(HandleServerEventPeerLastKillChange);
 		}
 		else if (GameNetwork.IsServer)
 		{
@@ -173,7 +175,7 @@ public abstract class MissionLobbyComponent : MissionNetwork
 	{
 		base.Mission.GetMissionBehavior<MissionNetworkComponent>().OnMyClientSynchronized -= OnMyClientSynchronized;
 		MissionPeer component = GameNetwork.MyPeer.GetComponent<MissionPeer>();
-		if (component != null && component.Culture == null)
+		if (component != null && component.Culture == null && !GameNetwork.IsMyPeerSpectator)
 		{
 			RequestCultureSelection();
 		}
@@ -197,7 +199,7 @@ public abstract class MissionLobbyComponent : MissionNetwork
 		{
 			if (GameNetwork.IsServer && (_warmupComponent == null || (!_warmupComponent.IsInWarmup && _timerComponent.CheckIfTimerPassed())))
 			{
-				int num = GameNetwork.NetworkPeers.Count((NetworkCommunicator x) => x.IsSynchronized);
+				int num = GameNetwork.NetworkPeers.Count((NetworkCommunicator x) => x.IsSynchronized && !IsSpectatorPeer(x));
 				int num2 = MultiplayerOptions.OptionType.NumberOfBotsTeam1.GetIntValue() + MultiplayerOptions.OptionType.NumberOfBotsTeam2.GetIntValue();
 				int intValue = MultiplayerOptions.OptionType.MinNumberOfPlayersForMatchStart.GetIntValue();
 				if (num + num2 >= intValue || MBCommon.CurrentGameType == MBCommon.GameType.MultiClientServer)
@@ -289,6 +291,16 @@ public abstract class MissionLobbyComponent : MissionNetwork
 		if (_missionScoreboardComponent != null)
 		{
 			_missionScoreboardComponent.PlayerPropertiesChanged(killDeathCountChange.VictimPeer);
+		}
+	}
+
+	private void HandleServerEventPeerLastKillChange(GameNetworkMessage baseMessage)
+	{
+		PeerLastKillChange peerLastKillChange = (PeerLastKillChange)baseMessage;
+		MissionPeer missionPeer = peerLastKillChange.KillerPeer?.GetComponent<MissionPeer>();
+		if (missionPeer != null)
+		{
+			missionPeer.LastKillVictimPeer = peerLastKillChange.VictimPeer?.GetComponent<MissionPeer>();
 		}
 	}
 
@@ -391,6 +403,32 @@ public abstract class MissionLobbyComponent : MissionNetwork
 		SendPeerInformationsToPeer(peer);
 	}
 
+	private void SendLastKill(MissionPeer killerPeer)
+	{
+		if (killerPeer.LastKillVictimPeer != null)
+		{
+			SendLastKillToSpectators(killerPeer.GetNetworkPeer(), killerPeer.LastKillVictimPeer.GetNetworkPeer());
+		}
+	}
+
+	public static void SendLastKillToSpectators(NetworkCommunicator killerNetworkPeer, NetworkCommunicator victimNetworkPeer)
+	{
+		foreach (NetworkCommunicator networkPeer in GameNetwork.NetworkPeers)
+		{
+			if (networkPeer.IsSynchronized && !networkPeer.IsServerPeer && IsSpectatorPeer(networkPeer))
+			{
+				GameNetwork.BeginModuleEventAsServer(networkPeer);
+				GameNetwork.WriteMessage(new PeerLastKillChange(killerNetworkPeer, victimNetworkPeer));
+				GameNetwork.EndModuleEventAsServer();
+			}
+		}
+	}
+
+	private static bool IsSpectatorPeer(NetworkCommunicator networkPeer)
+	{
+		return networkPeer.GetComponent<MissionPeer>()?.IsSpectator ?? false;
+	}
+
 	private void SendPeerInformationsToPeer(NetworkCommunicator peer)
 	{
 		foreach (NetworkCommunicator networkPeersIncludingDisconnectedPeer in GameNetwork.NetworkPeersIncludingDisconnectedPeers)
@@ -404,6 +442,12 @@ public abstract class MissionLobbyComponent : MissionNetwork
 					GameNetwork.BeginModuleEventAsServer(peer);
 					GameNetwork.WriteMessage(new KillDeathCountChange(component.GetNetworkPeer(), null, component.KillCount, component.AssistCount, component.DeathCount, component.Score));
 					GameNetwork.EndModuleEventAsServer();
+					if (component.LastKillVictimPeer != null && IsSpectatorPeer(peer))
+					{
+						GameNetwork.BeginModuleEventAsServer(peer);
+						GameNetwork.WriteMessage(new PeerLastKillChange(component.GetNetworkPeer(), component.LastKillVictimPeer.GetNetworkPeer()));
+						GameNetwork.EndModuleEventAsServer();
+					}
 					if (component.BotsUnderControlAlive != 0 || component.BotsUnderControlTotal != 0)
 					{
 						GameNetwork.BeginModuleEventAsServer(peer);
@@ -516,6 +560,7 @@ public abstract class MissionLobbyComponent : MissionNetwork
 		{
 			killerPeer.OnKillAnotherPeer(killedAgent.MissionPeer);
 		}
+		SendLastKill(killerPeer);
 		if (killerPeer.Team.IsEnemyOf(killedAgent.Team))
 		{
 			killerPeer.Score += _gameMode.GetScoreForKill(killedAgent);

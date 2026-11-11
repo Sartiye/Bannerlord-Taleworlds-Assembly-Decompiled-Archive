@@ -14,6 +14,8 @@ public struct NavalShipDeploymentLimit
 
 	public int NetDeploymentLimit => MathF.Min(MathF.Min(PartiesLimit, SkeletalCrewLimit), BattleAllocationLimit);
 
+	public int NetDeploymentLimitWithoutSkeletal => MathF.Min(PartiesLimit, BattleAllocationLimit);
+
 	public NavalShipDeploymentLimit(int partiesLimit, int skeletalCrewLimit, int battleAllocationLimit = 8)
 	{
 		PartiesLimit = partiesLimit;

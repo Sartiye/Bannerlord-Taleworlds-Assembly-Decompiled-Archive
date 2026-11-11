@@ -233,6 +233,8 @@ public class MissionScoreboardComponent : MissionNetwork
 
 	public BattleSideEnum RoundWinner => _mpGameModeBase.RoundComponent?.RoundWinner ?? BattleSideEnum.None;
 
+	public bool IsInitialized => _isInitialized;
+
 	public ScoreboardHeader[] Headers => _scoreboardData.GetScoreboardHeaders();
 
 	public IEnumerable<BattleSideEnum> RoundWinnerList => _roundWinnerList.AsReadOnly();
@@ -388,7 +390,7 @@ public class MissionScoreboardComponent : MissionNetwork
 	{
 		if ((int)side > _sides.Length || side < BattleSideEnum.Defender)
 		{
-			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MissionScoreboardComponent.cs", "GetRoundScore", 462);
+			Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MissionScoreboardComponent.cs", "GetRoundScore", 465);
 			return 0;
 		}
 		return GetSideSafe(side).SideScore;

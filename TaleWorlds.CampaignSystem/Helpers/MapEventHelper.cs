@@ -25,6 +25,14 @@ public static class MapEventHelper
 		{
 			return false;
 		}
+		if (mapEvent.AttackerSide?.LeaderParty?.MapFaction == null)
+		{
+			if (mapEvent.AttackerSide?.LeaderParty != null)
+			{
+				Debug.Print(string.Concat(mapEvent.AttackerSide.LeaderParty, " mapfaction is null"));
+			}
+			Debug.FailedAssert("GetRaidContext mapfaction is null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Helpers.cs", "GetRaidContext", 4500);
+		}
 		IFaction mapFaction = mapEvent.MapEventSettlement.MapFaction;
 		raiderSide = (mapEvent.AttackerSide.LeaderParty.MapFaction.IsAtWarWith(mapFaction) ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
 		BattleSideEnum otherSide = mapEvent.GetOtherSide(raiderSide);

@@ -29,6 +29,12 @@ public class FunctionResultJsonConverter : JsonConverter
 
 	public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
 	{
+		//IL_0001: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0008: Invalid comparison between Unknown and I4
+		if ((int)reader.TokenType == 11)
+		{
+			return null;
+		}
 		JObject val = JObject.Load(reader);
 		string key = (string)val["_type"];
 		if (_knownTypes.TryGetValue(key, out var value))

@@ -880,6 +880,8 @@ public class SpawnPointDebugView : ScriptComponentBehavior
 
 	private void CheckForWorkshops(IEnumerable<GameEntity> allGameEntitiesWithGivenTag, SpawnPointUnits spUnit)
 	{
+		List<WeakGameEntity> entities = new List<WeakGameEntity>();
+		base.Scene.GetEntitiesAsWeak(ref entities);
 		foreach (GameEntity item in allGameEntitiesWithGivenTag)
 		{
 			WorkshopAreaMarker workshopAreaMarker = item.GetFirstScriptOfType<WorkshopAreaMarker>();
@@ -888,14 +890,14 @@ public class SpawnPointDebugView : ScriptComponentBehavior
 				continue;
 			}
 			float areaRadius = workshopAreaMarker.AreaRadius;
-			List<GameEntity> entities = new List<GameEntity>();
-			base.Scene.GetEntities(ref entities);
+			List<WeakGameEntity> list = new List<WeakGameEntity>();
 			float num = areaRadius * areaRadius;
-			foreach (GameEntity item2 in entities.ToList())
+			Vec3 globalPosition = item.GlobalPosition;
+			foreach (WeakGameEntity item2 in entities)
 			{
-				if (!item2.HasScriptOfType<UsableMachine>() || item2.HasScriptOfType<Passage>() || item2.GlobalPosition.DistanceSquared(item.GlobalPosition) > num)
+				if (item2.HasScriptOfType<UsableMachine>() && !item2.HasScriptOfType<Passage>() && item2.GlobalPosition.DistanceSquared(globalPosition) <= num)
 				{
-					entities.Remove(item2);
+					list.Add(item2);
 				}
 			}
 			foreach (GameEntity item3 in base.Scene.FindEntitiesWithTag("sp_notables_parent").ToList())
@@ -929,9 +931,9 @@ public class SpawnPointDebugView : ScriptComponentBehavior
 					}
 				}
 			}
-			List<GameEntity> list = base.Scene.FindEntitiesWithTag("sp_player_conversation").ToList();
+			List<GameEntity> list2 = base.Scene.FindEntitiesWithTag("sp_player_conversation").ToList();
 			int num2 = 0;
-			foreach (GameEntity item4 in list)
+			foreach (GameEntity item4 in list2)
 			{
 				if (workshopAreaMarker.IsPositionInRange(item4.GlobalPosition))
 				{
@@ -947,7 +949,7 @@ public class SpawnPointDebugView : ScriptComponentBehavior
 				SpawnPointUnits spawnPointUnits5 = _spUnitsList.FirstOrDefault((SpawnPointUnits x) => x.SpName == "workshop_area_1_population" && x.Place == _sceneType);
 				if (spawnPointUnits5 != null)
 				{
-					spawnPointUnits5.CurrentCount += FindValidSpawnPointCountOfUsableMachine(entities);
+					spawnPointUnits5.CurrentCount += FindValidSpawnPointCountOfUsableMachine(list);
 				}
 			}
 			else if (workshopAreaMarker.AreaIndex == 2)
@@ -955,7 +957,7 @@ public class SpawnPointDebugView : ScriptComponentBehavior
 				SpawnPointUnits spawnPointUnits6 = _spUnitsList.FirstOrDefault((SpawnPointUnits x) => x.SpName == "workshop_area_2_population" && x.Place == _sceneType);
 				if (spawnPointUnits6 != null)
 				{
-					spawnPointUnits6.CurrentCount += FindValidSpawnPointCountOfUsableMachine(entities);
+					spawnPointUnits6.CurrentCount += FindValidSpawnPointCountOfUsableMachine(list);
 				}
 			}
 			else if (workshopAreaMarker.AreaIndex == 3)
@@ -963,10 +965,24 @@ public class SpawnPointDebugView : ScriptComponentBehavior
 				SpawnPointUnits spawnPointUnits7 = _spUnitsList.FirstOrDefault((SpawnPointUnits x) => x.SpName == "workshop_area_3_population" && x.Place == _sceneType);
 				if (spawnPointUnits7 != null)
 				{
-					spawnPointUnits7.CurrentCount += FindValidSpawnPointCountOfUsableMachine(entities);
+					spawnPointUnits7.CurrentCount += FindValidSpawnPointCountOfUsableMachine(list);
 				}
 			}
 		}
+	}
+
+	private int FindValidSpawnPointCountOfUsableMachine(List<WeakGameEntity> gameEntities)
+	{
+		int num = 0;
+		foreach (WeakGameEntity gameEntity in gameEntities)
+		{
+			UsableMachine firstScriptOfType = gameEntity.GetFirstScriptOfType<UsableMachine>();
+			if (firstScriptOfType != null)
+			{
+				num += MissionAgentHandler.GetPointCountOfUsableMachine(firstScriptOfType, checkForUnusedOnes: false);
+			}
+		}
+		return num;
 	}
 
 	private int FindValidSpawnPointCountOfUsableMachine(List<GameEntity> gameEntities)

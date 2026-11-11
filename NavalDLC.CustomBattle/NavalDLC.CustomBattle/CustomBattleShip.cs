@@ -194,7 +194,7 @@ public class CustomBattleShip : IShipOrigin
 		}
 	}
 
-	public int RandomValue => 123457;
+	public int RandomValue => MBRandom.RandomInt(1, int.MaxValue);
 
 	public string CustomSailPatternId { get; set; }
 

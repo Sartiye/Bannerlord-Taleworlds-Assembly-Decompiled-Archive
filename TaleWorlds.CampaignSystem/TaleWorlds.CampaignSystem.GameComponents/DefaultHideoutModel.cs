@@ -8,7 +8,7 @@ public class DefaultHideoutModel : HideoutModel
 {
 	public override CampaignTime HideoutHiddenDuration => CampaignTime.Days(10f);
 
-	public override int CanAttackHideoutStartTime => CampaignTime.SunSet + 1;
+	public override int CanAttackHideoutStartTime => CampaignTime.SunSet;
 
 	public override int CanAttackHideoutEndTime => CampaignTime.SunRise;
 

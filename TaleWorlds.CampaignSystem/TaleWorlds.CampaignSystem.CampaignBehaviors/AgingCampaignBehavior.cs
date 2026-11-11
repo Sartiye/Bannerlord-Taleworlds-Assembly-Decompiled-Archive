@@ -4,6 +4,7 @@ using Helpers;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Extensions;
+using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -28,6 +29,7 @@ public class AgingCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.PerkOpenedEvent.AddNonSerializedListener(this, OnPerkOpened);
 		CampaignEvents.HeroCreated.AddNonSerializedListener(this, OnHeroCreated);
 		CampaignEvents.HeroKilledEvent.AddNonSerializedListener(this, OnHeroKilled);
+		CampaignEvents.MapEventEnded.AddNonSerializedListener(this, OnMapEventEnded);
 		CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(this, OnGameLoaded);
 	}
 
@@ -51,6 +53,14 @@ public class AgingCampaignBehavior : CampaignBehaviorBase
 		if (_heroesYoungerThanHeroComesOfAge.ContainsKey(victim))
 		{
 			_heroesYoungerThanHeroComesOfAge.Remove(victim);
+		}
+	}
+
+	private void OnMapEventEnded(MapEvent mapEvent)
+	{
+		if (mapEvent.IsPlayerMapEvent && Hero.MainHero.DeathMark == KillCharacterAction.KillCharacterActionDetail.DiedInBattle)
+		{
+			KillCharacterAction.ApplyByDeathMark(Hero.MainHero);
 		}
 	}
 
@@ -97,7 +107,7 @@ public class AgingCampaignBehavior : CampaignBehaviorBase
 		}
 		if (hero.IsAlive && hero.CanDie(KillCharacterAction.KillCharacterActionDetail.DiedOfOldAge))
 		{
-			if (hero.DeathMark != 0 && (hero.PartyBelongedTo == null || (hero.PartyBelongedTo.MapEvent == null && hero.PartyBelongedTo.SiegeEvent == null)))
+			if (hero.DeathMark != 0 && hero.DeathMark != KillCharacterAction.KillCharacterActionDetail.ExecutionAfterMapEvent && (hero.PartyBelongedTo == null || (hero.PartyBelongedTo.MapEvent == null && hero.PartyBelongedTo.SiegeEvent == null)))
 			{
 				KillCharacterAction.ApplyByDeathMark(hero);
 			}
@@ -174,14 +184,21 @@ public class AgingCampaignBehavior : CampaignBehaviorBase
 	private void OnGameLoaded(CampaignGameStarter obj)
 	{
 		CheckYoungHeroes();
+		if (MBSaveLoad.IsUpdatingGameVersion && MBSaveLoad.LastLoadedGameVersion.IsOlderThan(ApplicationVersion.FromString("v1.4.0")) && Hero.MainHero.DeathMark == KillCharacterAction.KillCharacterActionDetail.DiedInBattle)
+		{
+			Hero.MainHero.AddDeathMark();
+		}
 	}
 
-	private void OnCharacterCreationIsOver()
+	private void OnCharacterCreationIsOver(int index)
 	{
-		_gameStartDay = (int)CampaignTime.Now.ToDays;
-		if (!CampaignOptions.IsLifeDeathCycleDisabled)
+		if (index == 1)
 		{
-			InitializeHeroesYoungerThanHeroComesOfAge();
+			_gameStartDay = (int)CampaignTime.Now.ToDays;
+			if (!CampaignOptions.IsLifeDeathCycleDisabled)
+			{
+				InitializeHeroesYoungerThanHeroComesOfAge();
+			}
 		}
 	}
 
@@ -271,12 +288,12 @@ public class AgingCampaignBehavior : CampaignBehaviorBase
 		Equipment equipment2 = Campaign.Current.Models.EquipmentSelectionModel.GetEquipmentForHeroComeOfAge(hero, Equipment.EquipmentType.Civilian);
 		if (equipment == null)
 		{
-			Debug.FailedAssert("Battle equipment should not be empty", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\AgingCampaignBehavior.cs", "OnHeroComesOfAge", 304);
+			Debug.FailedAssert("Battle equipment should not be empty", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\AgingCampaignBehavior.cs", "OnHeroComesOfAge", 331);
 			equipment = MBEquipmentRosterExtensions.All.Find((MBEquipmentRoster x) => x.StringId == "generic_bat_dummy").GetBattleEquipments().First();
 		}
 		if (equipment2 == null)
 		{
-			Debug.FailedAssert("Civilian equipment should not be empty", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\AgingCampaignBehavior.cs", "OnHeroComesOfAge", 313);
+			Debug.FailedAssert("Civilian equipment should not be empty", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\AgingCampaignBehavior.cs", "OnHeroComesOfAge", 340);
 			equipment2 = MBEquipmentRosterExtensions.All.Find((MBEquipmentRoster x) => x.StringId == "generic_civ_dummy").GetCivilianEquipments().First();
 		}
 		EquipmentHelper.AssignHeroEquipmentFromEquipment(hero, equipment);

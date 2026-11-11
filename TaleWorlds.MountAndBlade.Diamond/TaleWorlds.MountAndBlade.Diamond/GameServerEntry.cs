@@ -72,11 +72,20 @@ public class GameServerEntry
 	[JsonProperty]
 	public bool AllowsOptionalModules { get; private set; }
 
+	[JsonProperty]
+	public int SpectatorCount { get; private set; }
+
+	[JsonProperty]
+	public int MaxStreamerCount { get; private set; }
+
+	[JsonProperty]
+	public bool StreamerPasswordProtected { get; private set; }
+
 	public GameServerEntry()
 	{
 	}
 
-	public GameServerEntry(CustomBattleId id, string serverName, string address, int port, string region, string gameModule, string gameType, string map, string uniqueMapId, int playerCount, int maxPlayerCount, bool isOfficial, bool byOfficialProvider, bool crossplayEnabled, PlayerId hostId, string hostName, List<ModuleInfoModel> loadedModules, bool allowsOptionalModules, bool passwordProtected = false, int permission = 0)
+	public GameServerEntry(CustomBattleId id, string serverName, string address, int port, string region, string gameModule, string gameType, string map, string uniqueMapId, int playerCount, int maxPlayerCount, bool isOfficial, bool byOfficialProvider, bool crossplayEnabled, PlayerId hostId, string hostName, List<ModuleInfoModel> loadedModules, bool allowsOptionalModules, bool passwordProtected = false, int permission = 0, int streamerCount = 0, int maxStreamerCount = 0, bool streamerPasswordProtected = false)
 	{
 		Id = id;
 		ServerName = serverName;
@@ -98,6 +107,9 @@ public class GameServerEntry
 		AllowsOptionalModules = allowsOptionalModules;
 		PasswordProtected = passwordProtected;
 		Permission = permission;
+		SpectatorCount = streamerCount;
+		MaxStreamerCount = maxStreamerCount;
+		StreamerPasswordProtected = streamerPasswordProtected;
 	}
 
 	public static void FilterGameServerEntriesBasedOnCrossplay(ref List<GameServerEntry> serverList, bool hasCrossplayPrivilege)

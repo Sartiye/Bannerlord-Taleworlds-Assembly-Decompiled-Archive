@@ -45,7 +45,7 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 
 	private Widget _widget_0_0_0_3;
 
-	private EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_EncyclopediaClanSubPageElement__DependendPrefab _widget_0_0_0_3_0;
+	private EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_7_EncyclopediaClanSubPageElement__DependendPrefab _widget_0_0_0_3_0;
 
 	private Widget _widget_0_0_0_4;
 
@@ -69,7 +69,7 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 
 	private RichTextWidget _widget_0_0_2_0_0_0_0_0;
 
-	private EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_7_EncyclopediaDivider__DependendPrefab _widget_0_0_2_0_0_0_0_1;
+	private EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_8_EncyclopediaDivider__DependendPrefab _widget_0_0_2_0_0_0_0_1;
 
 	private NavigationScopeTargeter _widget_0_0_2_0_0_0_0_2;
 
@@ -83,25 +83,31 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 
 	private TextWidget _widget_0_0_2_0_0_0_0_3_2_0;
 
-	private EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_8_EncyclopediaSubPageElement__DependendPrefab _widget_0_0_2_0_0_0_0_3_2_1;
+	private EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_9_EncyclopediaSubPageElement__DependendPrefab _widget_0_0_2_0_0_0_0_3_2_1;
 
-	private EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_9_EncyclopediaDivider__DependendPrefab _widget_0_0_2_0_0_0_0_4;
+	private EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_10_EncyclopediaDivider__DependendPrefab _widget_0_0_2_0_0_0_0_4;
 
 	private NavigationScopeTargeter _widget_0_0_2_0_0_0_0_5;
 
 	private NavigatableGridWidget _widget_0_0_2_0_0_0_0_6;
 
-	private EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_10_EncyclopediaDivider__DependendPrefab _widget_0_0_2_0_0_0_0_7;
+	private EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_11_EncyclopediaDivider__DependendPrefab _widget_0_0_2_0_0_0_0_7;
 
 	private NavigationScopeTargeter _widget_0_0_2_0_0_0_0_8;
 
 	private NavigatableGridWidget _widget_0_0_2_0_0_0_0_9;
 
-	private EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_11_EncyclopediaDivider__DependendPrefab _widget_0_0_2_0_0_0_0_10;
+	private EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_12_EncyclopediaDivider__DependendPrefab _widget_0_0_2_0_0_0_0_10;
 
 	private NavigationScopeTargeter _widget_0_0_2_0_0_0_0_11;
 
 	private NavigatableGridWidget _widget_0_0_2_0_0_0_0_12;
+
+	private EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_13_EncyclopediaDivider__DependendPrefab _widget_0_0_2_0_0_0_0_13;
+
+	private NavigationScopeTargeter _widget_0_0_2_0_0_0_0_14;
+
+	private NavigatableGridWidget _widget_0_0_2_0_0_0_0_15;
 
 	private ListPanel _widget_0_0_2_0_0_1;
 
@@ -113,7 +119,7 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 
 	private BrushWidget _widget_0_1;
 
-	private EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_12_EncyclopediaQuickNavigation__DependendPrefab _widget_0_2;
+	private EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_14_EncyclopediaQuickNavigation__DependendPrefab _widget_0_2;
 
 	private EncyclopediaClanPageVM _datasource_Root;
 
@@ -132,6 +138,8 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 	private MBBindingList<EncyclopediaSettlementVM> _datasource_Root_Settlements;
 
 	private MBBindingList<EncyclopediaFactionVM> _datasource_Root_Enemies;
+
+	private MBBindingList<EncyclopediaFactionVM> _datasource_Root_BloodFeuds;
 
 	private MBBindingList<EncyclopediaHistoryEventVM> _datasource_Root_History;
 
@@ -167,7 +175,7 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0_0.AddChild(_widget_0_0_0_2);
 		_widget_0_0_0_3 = new Widget(base.Context);
 		_widget_0_0_0.AddChild(_widget_0_0_0_3);
-		_widget_0_0_0_3_0 = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_EncyclopediaClanSubPageElement__DependendPrefab(base.Context);
+		_widget_0_0_0_3_0 = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_7_EncyclopediaClanSubPageElement__DependendPrefab(base.Context);
 		_widget_0_0_0_3.AddChild(_widget_0_0_0_3_0);
 		_widget_0_0_0_3_0.CreateWidgets();
 		_widget_0_0_0_4 = new Widget(base.Context);
@@ -192,7 +200,7 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0_2_0_0_0.AddChild(_widget_0_0_2_0_0_0_0);
 		_widget_0_0_2_0_0_0_0_0 = new RichTextWidget(base.Context);
 		_widget_0_0_2_0_0_0_0.AddChild(_widget_0_0_2_0_0_0_0_0);
-		_widget_0_0_2_0_0_0_0_1 = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_7_EncyclopediaDivider__DependendPrefab(base.Context);
+		_widget_0_0_2_0_0_0_0_1 = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_8_EncyclopediaDivider__DependendPrefab(base.Context);
 		_widget_0_0_2_0_0_0_0.AddChild(_widget_0_0_2_0_0_0_0_1);
 		_widget_0_0_2_0_0_0_0_1.CreateWidgets();
 		_widget_0_0_2_0_0_0_0_2 = new NavigationScopeTargeter(base.Context);
@@ -207,30 +215,37 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0_2_0_0_0_0_3.AddChild(_widget_0_0_2_0_0_0_0_3_2);
 		_widget_0_0_2_0_0_0_0_3_2_0 = new TextWidget(base.Context);
 		_widget_0_0_2_0_0_0_0_3_2.AddChild(_widget_0_0_2_0_0_0_0_3_2_0);
-		_widget_0_0_2_0_0_0_0_3_2_1 = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_8_EncyclopediaSubPageElement__DependendPrefab(base.Context);
+		_widget_0_0_2_0_0_0_0_3_2_1 = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_9_EncyclopediaSubPageElement__DependendPrefab(base.Context);
 		_widget_0_0_2_0_0_0_0_3_2.AddChild(_widget_0_0_2_0_0_0_0_3_2_1);
 		_widget_0_0_2_0_0_0_0_3_2_1.CreateWidgets();
-		_widget_0_0_2_0_0_0_0_4 = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_9_EncyclopediaDivider__DependendPrefab(base.Context);
+		_widget_0_0_2_0_0_0_0_4 = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_10_EncyclopediaDivider__DependendPrefab(base.Context);
 		_widget_0_0_2_0_0_0_0.AddChild(_widget_0_0_2_0_0_0_0_4);
 		_widget_0_0_2_0_0_0_0_4.CreateWidgets();
 		_widget_0_0_2_0_0_0_0_5 = new NavigationScopeTargeter(base.Context);
 		_widget_0_0_2_0_0_0_0.AddChild(_widget_0_0_2_0_0_0_0_5);
 		_widget_0_0_2_0_0_0_0_6 = new NavigatableGridWidget(base.Context);
 		_widget_0_0_2_0_0_0_0.AddChild(_widget_0_0_2_0_0_0_0_6);
-		_widget_0_0_2_0_0_0_0_7 = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_10_EncyclopediaDivider__DependendPrefab(base.Context);
+		_widget_0_0_2_0_0_0_0_7 = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_11_EncyclopediaDivider__DependendPrefab(base.Context);
 		_widget_0_0_2_0_0_0_0.AddChild(_widget_0_0_2_0_0_0_0_7);
 		_widget_0_0_2_0_0_0_0_7.CreateWidgets();
 		_widget_0_0_2_0_0_0_0_8 = new NavigationScopeTargeter(base.Context);
 		_widget_0_0_2_0_0_0_0.AddChild(_widget_0_0_2_0_0_0_0_8);
 		_widget_0_0_2_0_0_0_0_9 = new NavigatableGridWidget(base.Context);
 		_widget_0_0_2_0_0_0_0.AddChild(_widget_0_0_2_0_0_0_0_9);
-		_widget_0_0_2_0_0_0_0_10 = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_11_EncyclopediaDivider__DependendPrefab(base.Context);
+		_widget_0_0_2_0_0_0_0_10 = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_12_EncyclopediaDivider__DependendPrefab(base.Context);
 		_widget_0_0_2_0_0_0_0.AddChild(_widget_0_0_2_0_0_0_0_10);
 		_widget_0_0_2_0_0_0_0_10.CreateWidgets();
 		_widget_0_0_2_0_0_0_0_11 = new NavigationScopeTargeter(base.Context);
 		_widget_0_0_2_0_0_0_0.AddChild(_widget_0_0_2_0_0_0_0_11);
 		_widget_0_0_2_0_0_0_0_12 = new NavigatableGridWidget(base.Context);
 		_widget_0_0_2_0_0_0_0.AddChild(_widget_0_0_2_0_0_0_0_12);
+		_widget_0_0_2_0_0_0_0_13 = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_13_EncyclopediaDivider__DependendPrefab(base.Context);
+		_widget_0_0_2_0_0_0_0.AddChild(_widget_0_0_2_0_0_0_0_13);
+		_widget_0_0_2_0_0_0_0_13.CreateWidgets();
+		_widget_0_0_2_0_0_0_0_14 = new NavigationScopeTargeter(base.Context);
+		_widget_0_0_2_0_0_0_0.AddChild(_widget_0_0_2_0_0_0_0_14);
+		_widget_0_0_2_0_0_0_0_15 = new NavigatableGridWidget(base.Context);
+		_widget_0_0_2_0_0_0_0.AddChild(_widget_0_0_2_0_0_0_0_15);
 		_widget_0_0_2_0_0_1 = new ListPanel(base.Context);
 		_widget_0_0_2_0_0.AddChild(_widget_0_0_2_0_0_1);
 		_widget_0_0_3 = new ScrollbarWidget(base.Context);
@@ -241,7 +256,7 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0_3.AddChild(_widget_0_0_3_1);
 		_widget_0_1 = new BrushWidget(base.Context);
 		_widget_0.AddChild(_widget_0_1);
-		_widget_0_2 = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_12_EncyclopediaQuickNavigation__DependendPrefab(base.Context);
+		_widget_0_2 = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_14_EncyclopediaQuickNavigation__DependendPrefab(base.Context);
 		_widget_0.AddChild(_widget_0_2);
 		_widget_0_2.CreateWidgets();
 	}
@@ -272,6 +287,9 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0_2_0_0_0_0_10.SetIds();
 		_widget_0_0_2_0_0_0_0_10.Id = "EnemiesDivider";
 		_widget_0_0_2_0_0_0_0_12.Id = "WarsGrid";
+		_widget_0_0_2_0_0_0_0_13.SetIds();
+		_widget_0_0_2_0_0_0_0_13.Id = "BloodFeudsDivider";
+		_widget_0_0_2_0_0_0_0_15.Id = "BloodFeudsGrid";
 		_widget_0_0_3.Id = "RightSideScrollbar";
 		_widget_0_0_3_1.Id = "RightSideScrollbarHandle";
 		_widget_0_2.SetIds();
@@ -500,6 +518,27 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0_2_0_0_0_0_12.MarginBottom = 50f;
 		_widget_0_0_2_0_0_0_0_12.AutoScrollTopOffset = 35;
 		_widget_0_0_2_0_0_0_0_12.AutoScrollBottomOffset = 35;
+		_widget_0_0_2_0_0_0_0_13.SetAttributes();
+		_widget_0_0_2_0_0_0_0_13.MarginTop = 20f;
+		_widget_0_0_2_0_0_0_0_13.GamepadNavigationIndex = 0;
+		_widget_0_0_2_0_0_0_0_14.ScopeID = "EncyclopediaClanBloodFeudsContentScope";
+		_widget_0_0_2_0_0_0_0_14.ScopeParent = _widget_0_0_2_0_0_0_0_15;
+		_widget_0_0_2_0_0_0_0_14.ScopeMovements = GamepadNavigationTypes.Vertical;
+		_widget_0_0_2_0_0_0_0_14.AlternateScopeMovements = GamepadNavigationTypes.Vertical;
+		_widget_0_0_2_0_0_0_0_14.AlternateMovementStepSize = 7;
+		_widget_0_0_2_0_0_0_0_15.WidthSizePolicy = SizePolicy.StretchToParent;
+		_widget_0_0_2_0_0_0_0_15.HeightSizePolicy = SizePolicy.CoverChildren;
+		_widget_0_0_2_0_0_0_0_15.SuggestedWidth = 350f;
+		_widget_0_0_2_0_0_0_0_15.SuggestedHeight = 350f;
+		_widget_0_0_2_0_0_0_0_15.DefaultCellWidth = 100f;
+		_widget_0_0_2_0_0_0_0_15.DefaultCellHeight = 100f;
+		_widget_0_0_2_0_0_0_0_15.HorizontalAlignment = HorizontalAlignment.Left;
+		_widget_0_0_2_0_0_0_0_15.ColumnCount = 7;
+		_widget_0_0_2_0_0_0_0_15.MarginTop = 10f;
+		_widget_0_0_2_0_0_0_0_15.MarginLeft = 20f;
+		_widget_0_0_2_0_0_0_0_15.MarginBottom = 50f;
+		_widget_0_0_2_0_0_0_0_15.AutoScrollTopOffset = 35;
+		_widget_0_0_2_0_0_0_0_15.AutoScrollBottomOffset = 35;
 		_widget_0_0_2_0_0_1.HeightSizePolicy = SizePolicy.CoverChildren;
 		_widget_0_0_2_0_0_1.WidthSizePolicy = SizePolicy.StretchToParent;
 		_widget_0_0_2_0_0_1.StackLayout.LayoutMethod = LayoutMethod.VerticalTopToBottom;
@@ -558,6 +597,7 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		_widget_0_0_2_0_0_0_0_4.DestroyDataSource();
 		_widget_0_0_2_0_0_0_0_7.DestroyDataSource();
 		_widget_0_0_2_0_0_0_0_10.DestroyDataSource();
+		_widget_0_0_2_0_0_0_0_13.DestroyDataSource();
 		_widget_0_2.DestroyDataSource();
 		_datasource_Root.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root;
 		_datasource_Root.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root;
@@ -758,14 +798,25 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 			}
 			_datasource_Root_Enemies = null;
 		}
+		if (_datasource_Root_BloodFeuds != null)
+		{
+			_datasource_Root_BloodFeuds.ListChanged -= OnList_datasource_Root_BloodFeudsChanged;
+			for (int num5 = _widget_0_0_2_0_0_0_0_15.ChildCount - 1; num5 >= 0; num5--)
+			{
+				Widget child5 = _widget_0_0_2_0_0_0_0_15.GetChild(num5);
+				((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate)child5).OnBeforeRemovedChild(child5);
+				((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate)_widget_0_0_2_0_0_0_0_15.GetChild(num5)).DestroyDataSource();
+			}
+			_datasource_Root_BloodFeuds = null;
+		}
 		if (_datasource_Root_History != null)
 		{
 			_datasource_Root_History.ListChanged -= OnList_datasource_Root_HistoryChanged;
-			for (int num5 = _widget_0_0_2_0_0_1.ChildCount - 1; num5 >= 0; num5--)
+			for (int num6 = _widget_0_0_2_0_0_1.ChildCount - 1; num6 >= 0; num6--)
 			{
-				Widget child5 = _widget_0_0_2_0_0_1.GetChild(num5);
-				((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate)child5).OnBeforeRemovedChild(child5);
-				((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate)_widget_0_0_2_0_0_1.GetChild(num5)).DestroyDataSource();
+				Widget child6 = _widget_0_0_2_0_0_1.GetChild(num6);
+				((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate)child6).OnBeforeRemovedChild(child6);
+				((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate)_widget_0_0_2_0_0_1.GetChild(num6)).DestroyDataSource();
 			}
 			_datasource_Root_History = null;
 		}
@@ -1420,6 +1471,9 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		case "Enemies":
 			RefreshDataSource_datasource_Root_Enemies(_datasource_Root.Enemies);
 			break;
+		case "BloodFeuds":
+			RefreshDataSource_datasource_Root_BloodFeuds(_datasource_Root.BloodFeuds);
+			break;
 		case "History":
 			RefreshDataSource_datasource_Root_History(_datasource_Root.History);
 			break;
@@ -1884,6 +1938,62 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		}
 	}
 
+	public void OnList_datasource_Root_BloodFeudsChanged(object sender, TaleWorlds.Library.ListChangedEventArgs e)
+	{
+		switch (e.ListChangedType)
+		{
+		case TaleWorlds.Library.ListChangedType.Reset:
+		{
+			for (int num = _widget_0_0_2_0_0_0_0_15.ChildCount - 1; num >= 0; num--)
+			{
+				Widget child3 = _widget_0_0_2_0_0_0_0_15.GetChild(num);
+				((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+				Widget child4 = _widget_0_0_2_0_0_0_0_15.GetChild(num);
+				((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate)child4).SetDataSource(null);
+				_widget_0_0_2_0_0_0_0_15.RemoveChild(child4);
+			}
+			break;
+		}
+		case TaleWorlds.Library.ListChangedType.Sorted:
+		{
+			for (int i = 0; i < _datasource_Root_BloodFeuds.Count; i++)
+			{
+				EncyclopediaFactionVM bindingObject = _datasource_Root_BloodFeuds[i];
+				_widget_0_0_2_0_0_0_0_15.FindChild((Widget widget) => widget.GetComponent<GeneratedWidgetData>().Data == bindingObject).SetSiblingIndex(i);
+			}
+			break;
+		}
+		case TaleWorlds.Library.ListChangedType.ItemAdded:
+		{
+			EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate(base.Context);
+			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate);
+			EncyclopediaFactionVM dataSource = (EncyclopediaFactionVM)(generatedWidgetData.Data = _datasource_Root_BloodFeuds[e.NewIndex]);
+			encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.AddComponent(generatedWidgetData);
+			_widget_0_0_2_0_0_0_0_15.AddChildAtIndex(encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate, e.NewIndex);
+			encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.CreateWidgets();
+			encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.SetIds();
+			encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.SetAttributes();
+			encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.SetDataSource(dataSource);
+			break;
+		}
+		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
+		{
+			Widget child2 = _widget_0_0_2_0_0_0_0_15.GetChild(e.NewIndex);
+			((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate)child2).OnBeforeRemovedChild(child2);
+			break;
+		}
+		case TaleWorlds.Library.ListChangedType.ItemDeleted:
+		{
+			Widget child = _widget_0_0_2_0_0_0_0_15.GetChild(e.NewIndex);
+			((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate)child).SetDataSource(null);
+			_widget_0_0_2_0_0_0_0_15.RemoveChild(child);
+			break;
+		}
+		case TaleWorlds.Library.ListChangedType.ItemChanged:
+			break;
+		}
+	}
+
 	public void OnList_datasource_Root_HistoryChanged(object sender, TaleWorlds.Library.ListChangedEventArgs e)
 	{
 		switch (e.ListChangedType)
@@ -1893,9 +2003,9 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 			for (int num = _widget_0_0_2_0_0_1.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child3 = _widget_0_0_2_0_0_1.GetChild(num);
-				((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate)child3).OnBeforeRemovedChild(child3);
+				((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate)child3).OnBeforeRemovedChild(child3);
 				Widget child4 = _widget_0_0_2_0_0_1.GetChild(num);
-				((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate)child4).SetDataSource(null);
+				((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate)child4).SetDataSource(null);
 				_widget_0_0_2_0_0_1.RemoveChild(child4);
 			}
 			break;
@@ -1911,27 +2021,27 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		}
 		case TaleWorlds.Library.ListChangedType.ItemAdded:
 		{
-			EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate(base.Context);
-			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate);
+			EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate(base.Context);
+			GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate);
 			EncyclopediaHistoryEventVM dataSource = (EncyclopediaHistoryEventVM)(generatedWidgetData.Data = _datasource_Root_History[e.NewIndex]);
-			encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.AddComponent(generatedWidgetData);
-			_widget_0_0_2_0_0_1.AddChildAtIndex(encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate, e.NewIndex);
-			encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.CreateWidgets();
-			encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.SetIds();
-			encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.SetAttributes();
-			encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.SetDataSource(dataSource);
+			encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate.AddComponent(generatedWidgetData);
+			_widget_0_0_2_0_0_1.AddChildAtIndex(encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate, e.NewIndex);
+			encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate.CreateWidgets();
+			encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate.SetIds();
+			encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate.SetAttributes();
+			encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate.SetDataSource(dataSource);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemBeforeDeleted:
 		{
 			Widget child2 = _widget_0_0_2_0_0_1.GetChild(e.NewIndex);
-			((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate)child2).OnBeforeRemovedChild(child2);
+			((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate)child2).OnBeforeRemovedChild(child2);
 			break;
 		}
 		case TaleWorlds.Library.ListChangedType.ItemDeleted:
 		{
 			Widget child = _widget_0_0_2_0_0_1.GetChild(e.NewIndex);
-			((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate)child).SetDataSource(null);
+			((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate)child).SetDataSource(null);
 			_widget_0_0_2_0_0_1.RemoveChild(child);
 			break;
 		}
@@ -1948,6 +2058,7 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 			_widget_0_0_2_0_0_0_0_4.SetDataSource(null);
 			_widget_0_0_2_0_0_0_0_7.SetDataSource(null);
 			_widget_0_0_2_0_0_0_0_10.SetDataSource(null);
+			_widget_0_0_2_0_0_0_0_13.SetDataSource(null);
 			_widget_0_2.SetDataSource(null);
 			_datasource_Root.PropertyChanged -= ViewModelPropertyChangedListenerOf_datasource_Root;
 			_datasource_Root.PropertyChangedWithValue -= ViewModelPropertyChangedWithValueListenerOf_datasource_Root;
@@ -2156,16 +2267,29 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 				}
 				_datasource_Root_Enemies = null;
 			}
+			if (_datasource_Root_BloodFeuds != null)
+			{
+				_datasource_Root_BloodFeuds.ListChanged -= OnList_datasource_Root_BloodFeudsChanged;
+				for (int num5 = _widget_0_0_2_0_0_0_0_15.ChildCount - 1; num5 >= 0; num5--)
+				{
+					Widget child9 = _widget_0_0_2_0_0_0_0_15.GetChild(num5);
+					((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate)child9).OnBeforeRemovedChild(child9);
+					Widget child10 = _widget_0_0_2_0_0_0_0_15.GetChild(num5);
+					((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate)child10).SetDataSource(null);
+					_widget_0_0_2_0_0_0_0_15.RemoveChild(child10);
+				}
+				_datasource_Root_BloodFeuds = null;
+			}
 			if (_datasource_Root_History != null)
 			{
 				_datasource_Root_History.ListChanged -= OnList_datasource_Root_HistoryChanged;
-				for (int num5 = _widget_0_0_2_0_0_1.ChildCount - 1; num5 >= 0; num5--)
+				for (int num6 = _widget_0_0_2_0_0_1.ChildCount - 1; num6 >= 0; num6--)
 				{
-					Widget child9 = _widget_0_0_2_0_0_1.GetChild(num5);
-					((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate)child9).OnBeforeRemovedChild(child9);
-					Widget child10 = _widget_0_0_2_0_0_1.GetChild(num5);
-					((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate)child10).SetDataSource(null);
-					_widget_0_0_2_0_0_1.RemoveChild(child10);
+					Widget child11 = _widget_0_0_2_0_0_1.GetChild(num6);
+					((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate)child11).OnBeforeRemovedChild(child11);
+					Widget child12 = _widget_0_0_2_0_0_1.GetChild(num6);
+					((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate)child12).SetDataSource(null);
+					_widget_0_0_2_0_0_1.RemoveChild(child12);
 				}
 				_datasource_Root_History = null;
 			}
@@ -2414,27 +2538,45 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_4_ItemTemplate.SetDataSource(dataSource4);
 			}
 		}
-		_datasource_Root_History = _datasource_Root.History;
-		if (_datasource_Root_History != null)
+		_datasource_Root_BloodFeuds = _datasource_Root.BloodFeuds;
+		if (_datasource_Root_BloodFeuds != null)
 		{
-			_datasource_Root_History.ListChanged += OnList_datasource_Root_HistoryChanged;
-			for (int m = 0; m < _datasource_Root_History.Count; m++)
+			_datasource_Root_BloodFeuds.ListChanged += OnList_datasource_Root_BloodFeudsChanged;
+			for (int m = 0; m < _datasource_Root_BloodFeuds.Count; m++)
 			{
 				EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate(base.Context);
 				GeneratedWidgetData generatedWidgetData5 = new GeneratedWidgetData(encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate);
-				EncyclopediaHistoryEventVM dataSource5 = (EncyclopediaHistoryEventVM)(generatedWidgetData5.Data = _datasource_Root_History[m]);
+				EncyclopediaFactionVM dataSource5 = (EncyclopediaFactionVM)(generatedWidgetData5.Data = _datasource_Root_BloodFeuds[m]);
 				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.AddComponent(generatedWidgetData5);
-				_widget_0_0_2_0_0_1.AddChildAtIndex(encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate, m);
+				_widget_0_0_2_0_0_0_0_15.AddChildAtIndex(encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate, m);
 				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.CreateWidgets();
 				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.SetIds();
 				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.SetAttributes();
 				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.SetDataSource(dataSource5);
 			}
 		}
+		_datasource_Root_History = _datasource_Root.History;
+		if (_datasource_Root_History != null)
+		{
+			_datasource_Root_History.ListChanged += OnList_datasource_Root_HistoryChanged;
+			for (int n = 0; n < _datasource_Root_History.Count; n++)
+			{
+				EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData6 = new GeneratedWidgetData(encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate);
+				EncyclopediaHistoryEventVM dataSource6 = (EncyclopediaHistoryEventVM)(generatedWidgetData6.Data = _datasource_Root_History[n]);
+				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate.AddComponent(generatedWidgetData6);
+				_widget_0_0_2_0_0_1.AddChildAtIndex(encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate, n);
+				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate.CreateWidgets();
+				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate.SetIds();
+				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate.SetAttributes();
+				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate.SetDataSource(dataSource6);
+			}
+		}
 		_widget_0_0_2_0_0_0_0_1.SetDataSource(_datasource_Root);
 		_widget_0_0_2_0_0_0_0_4.SetDataSource(_datasource_Root);
 		_widget_0_0_2_0_0_0_0_7.SetDataSource(_datasource_Root);
 		_widget_0_0_2_0_0_0_0_10.SetDataSource(_datasource_Root);
+		_widget_0_0_2_0_0_0_0_13.SetDataSource(_datasource_Root);
 		_widget_0_2.SetDataSource(_datasource_Root);
 	}
 
@@ -2750,6 +2892,41 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 		}
 	}
 
+	private void RefreshDataSource_datasource_Root_BloodFeuds(MBBindingList<EncyclopediaFactionVM> newDataSource)
+	{
+		if (_datasource_Root_BloodFeuds != null)
+		{
+			_datasource_Root_BloodFeuds.ListChanged -= OnList_datasource_Root_BloodFeudsChanged;
+			for (int num = _widget_0_0_2_0_0_0_0_15.ChildCount - 1; num >= 0; num--)
+			{
+				Widget child = _widget_0_0_2_0_0_0_0_15.GetChild(num);
+				((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate)child).OnBeforeRemovedChild(child);
+				Widget child2 = _widget_0_0_2_0_0_0_0_15.GetChild(num);
+				((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate)child2).SetDataSource(null);
+				_widget_0_0_2_0_0_0_0_15.RemoveChild(child2);
+			}
+			_datasource_Root_BloodFeuds = null;
+		}
+		_datasource_Root_BloodFeuds = newDataSource;
+		_datasource_Root_BloodFeuds = _datasource_Root.BloodFeuds;
+		if (_datasource_Root_BloodFeuds != null)
+		{
+			_datasource_Root_BloodFeuds.ListChanged += OnList_datasource_Root_BloodFeudsChanged;
+			for (int i = 0; i < _datasource_Root_BloodFeuds.Count; i++)
+			{
+				EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate);
+				EncyclopediaFactionVM dataSource = (EncyclopediaFactionVM)(generatedWidgetData.Data = _datasource_Root_BloodFeuds[i]);
+				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_0_2_0_0_0_0_15.AddChildAtIndex(encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate, i);
+				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.CreateWidgets();
+				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.SetIds();
+				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.SetAttributes();
+				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.SetDataSource(dataSource);
+			}
+		}
+	}
+
 	private void RefreshDataSource_datasource_Root_History(MBBindingList<EncyclopediaHistoryEventVM> newDataSource)
 	{
 		if (_datasource_Root_History != null)
@@ -2758,9 +2935,9 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 			for (int num = _widget_0_0_2_0_0_1.ChildCount - 1; num >= 0; num--)
 			{
 				Widget child = _widget_0_0_2_0_0_1.GetChild(num);
-				((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate)child).OnBeforeRemovedChild(child);
+				((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate)child).OnBeforeRemovedChild(child);
 				Widget child2 = _widget_0_0_2_0_0_1.GetChild(num);
-				((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate)child2).SetDataSource(null);
+				((EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate)child2).SetDataSource(null);
 				_widget_0_0_2_0_0_1.RemoveChild(child2);
 			}
 			_datasource_Root_History = null;
@@ -2772,15 +2949,15 @@ public class EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection
 			_datasource_Root_History.ListChanged += OnList_datasource_Root_HistoryChanged;
 			for (int i = 0; i < _datasource_Root_History.Count; i++)
 			{
-				EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate(base.Context);
-				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate);
+				EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate = new EncyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate(base.Context);
+				GeneratedWidgetData generatedWidgetData = new GeneratedWidgetData(encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate);
 				EncyclopediaHistoryEventVM dataSource = (EncyclopediaHistoryEventVM)(generatedWidgetData.Data = _datasource_Root_History[i]);
-				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.AddComponent(generatedWidgetData);
-				_widget_0_0_2_0_0_1.AddChildAtIndex(encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate, i);
-				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.CreateWidgets();
-				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.SetIds();
-				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.SetAttributes();
-				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_5_ItemTemplate.SetDataSource(dataSource);
+				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate.AddComponent(generatedWidgetData);
+				_widget_0_0_2_0_0_1.AddChildAtIndex(encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate, i);
+				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate.CreateWidgets();
+				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate.SetIds();
+				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate.SetAttributes();
+				encyclopediaClanPage__TaleWorlds_CampaignSystem_ViewModelCollection_Encyclopedia_Pages_EncyclopediaClanPageVM_Dependency_6_ItemTemplate.SetDataSource(dataSource);
 			}
 		}
 	}

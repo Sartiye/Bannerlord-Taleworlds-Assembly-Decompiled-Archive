@@ -47,7 +47,7 @@ public abstract class DeploymentHandler : MissionLogic
 		base.Mission.SetMissionMode(PreviousMissionMode, atStart: false);
 	}
 
-	public override void OnBattleSideDeployed(BattleSideEnum side)
+	public override void OnBattleSideSpawned(BattleSideEnum side)
 	{
 		if (side == base.Mission.PlayerTeam.Side)
 		{
@@ -209,5 +209,9 @@ public abstract class DeploymentHandler : MissionLogic
 				}
 			}
 		}
+	}
+
+	public virtual void HandleGeneralsDeploymentFrames()
+	{
 	}
 }

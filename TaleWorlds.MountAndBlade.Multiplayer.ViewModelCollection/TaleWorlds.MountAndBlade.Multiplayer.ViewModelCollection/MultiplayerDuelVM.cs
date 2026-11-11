@@ -61,6 +61,8 @@ public class MultiplayerDuelVM : ViewModel
 
 	private bool _isPlayerInDuel;
 
+	private bool _showPlayerStats;
+
 	private int _playerBounty;
 
 	private int _playerPreferredArenaType;
@@ -124,6 +126,23 @@ public class MultiplayerDuelVM : ViewModel
 			{
 				_isPlayerInDuel = value;
 				OnPropertyChangedWithValue(value, "IsPlayerInDuel");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool ShowPlayerStats
+	{
+		get
+		{
+			return _showPlayerStats;
+		}
+		set
+		{
+			if (value != _showPlayerStats)
+			{
+				_showPlayerStats = value;
+				OnPropertyChangedWithValue(value, "ShowPlayerStats");
 			}
 		}
 	}
@@ -321,6 +340,7 @@ public class MultiplayerDuelVM : ViewModel
 			RemainingRoundTime = TimeSpan.FromSeconds(remainingTime).ToString("mm':'ss");
 		}
 		Markers.Tick(dt);
+		ShowPlayerStats = !MultiplayerSpectatorHelper.IsLocalPeerSpectator();
 		if (PlayerDuelMatch.IsEnabled)
 		{
 			PlayerDuelMatch.Tick(dt);
@@ -549,7 +569,7 @@ public class MultiplayerDuelVM : ViewModel
 		case TroopType.Cavalry:
 			return "cavalry";
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("Invalid duel arena type!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MultiplayerDuelVM.cs", "GetArenaTypeName", 363);
+			TaleWorlds.Library.Debug.FailedAssert("Invalid duel arena type!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MultiplayerDuelVM.cs", "GetArenaTypeName", 365);
 			return "";
 		}
 	}
@@ -565,7 +585,7 @@ public class MultiplayerDuelVM : ViewModel
 		case TroopType.Cavalry:
 			return new TextObject("{=YVGtcLHF}Cavalry");
 		default:
-			TaleWorlds.Library.Debug.FailedAssert("Invalid duel arena type!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MultiplayerDuelVM.cs", "GetArenaTypeLocalizedName", 379);
+			TaleWorlds.Library.Debug.FailedAssert("Invalid duel arena type!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MultiplayerDuelVM.cs", "GetArenaTypeLocalizedName", 381);
 			return TextObject.GetEmpty();
 		}
 	}
@@ -582,7 +602,7 @@ public class MultiplayerDuelVM : ViewModel
 		else
 		{
 			result.Index = 0;
-			TaleWorlds.Library.Debug.FailedAssert("Flag has duel_area Tag Missing!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MultiplayerDuelVM.cs", "GetArenaPropertiesOfFlagEntity", 397);
+			TaleWorlds.Library.Debug.FailedAssert("Flag has duel_area Tag Missing!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\MultiplayerDuelVM.cs", "GetArenaPropertiesOfFlagEntity", 399);
 		}
 		result.ArenaTroopType = TroopType.Infantry;
 		for (TroopType troopType = TroopType.Infantry; troopType < TroopType.NumberOfTroopTypes; troopType++)

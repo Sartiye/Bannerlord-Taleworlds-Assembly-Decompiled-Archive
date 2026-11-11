@@ -82,7 +82,7 @@ public class DetachmentManager
 	{
 		DetachmentData detachmentData = _detachmentDataDictionary[joinedDetachment];
 		detachmentData.joinedFormations.Add(formation);
-		detachmentData.firstTime = MBCommon.GetTotalMissionTime();
+		detachmentData.firstTime = Mission.Current.CurrentTime;
 		joinedDetachment.FormationStartUsing(formation);
 	}
 
@@ -91,18 +91,18 @@ public class DetachmentManager
 		DetachmentData detachmentData = _detachmentDataDictionary[leftDetachment];
 		detachmentData.joinedFormations.Remove(formation);
 		detachmentData.agentScores.RemoveAll(((Agent, List<float>) ags) => ags.Item1.Formation == formation);
-		detachmentData.firstTime = MBCommon.GetTotalMissionTime();
+		detachmentData.firstTime = Mission.Current.CurrentTime;
 		leftDetachment.FormationStopUsing(formation);
 	}
 
 	public void TickDetachments()
 	{
-		float totalMissionTime = MBCommon.GetTotalMissionTime();
+		float currentTime = Mission.Current.CurrentTime;
 		if (!Mission.Current.IsLoadingFinished || !Mission.Current.AllowAiTicking)
 		{
 			foreach (var detachment2 in _detachments)
 			{
-				detachment2.Item2.firstTime = totalMissionTime;
+				detachment2.Item2.firstTime = currentTime;
 			}
 			return;
 		}
@@ -250,8 +250,8 @@ public class DetachmentManager
 		}
 		if (!agent.IsDetachedFromFormation)
 		{
-			float totalMissionTime = MBCommon.GetTotalMissionTime();
-			bool flag = totalMissionTime - agent.LastDetachmentTickAgentTime > 1.5f;
+			float currentTime = Mission.Current.CurrentTime;
+			bool flag = currentTime - agent.LastDetachmentTickAgentTime > 1.5f;
 			{
 				foreach (IDetachment detachment in agent.Formation.Detachments)
 				{
@@ -272,22 +272,22 @@ public class DetachmentManager
 						{
 							if (detachmentData.agentScores.Count == 0)
 							{
-								detachmentData.firstTime = totalMissionTime;
+								detachmentData.firstTime = currentTime;
 							}
 							List<float> templateCostsOfAgent = detachment.GetTemplateCostsOfAgent(agent, null);
 							detachmentData.agentScores.Add((agent, templateCostsOfAgent));
-							agent.SetLastDetachmentTickAgentTime(totalMissionTime);
+							agent.SetLastDetachmentTickAgentTime(currentTime);
 						}
 						else if (flag)
 						{
 							(Agent, List<float>) tuple = detachmentData.agentScores[num];
 							detachmentData.agentScores[num] = (tuple.Item1, detachment.GetTemplateCostsOfAgent(agent, tuple.Item2));
-							agent.SetLastDetachmentTickAgentTime(totalMissionTime);
+							agent.SetLastDetachmentTickAgentTime(currentTime);
 						}
 					}
 					else
 					{
-						detachmentData.firstTime = totalMissionTime;
+						detachmentData.firstTime = currentTime;
 					}
 				}
 				return;
@@ -297,7 +297,7 @@ public class DetachmentManager
 		{
 			return;
 		}
-		float totalMissionTime2 = MBCommon.GetTotalMissionTime();
+		float currentTime2 = Mission.Current.CurrentTime;
 		DetachmentData detachmentData2 = _detachmentDataDictionary[agent.Detachment];
 		int num2 = -1;
 		for (int j = 0; j < detachmentData2.agentScores.Count; j++)
@@ -312,17 +312,17 @@ public class DetachmentManager
 		{
 			if (detachmentData2.agentScores.Count == 0)
 			{
-				detachmentData2.firstTime = totalMissionTime2;
+				detachmentData2.firstTime = currentTime2;
 			}
 			List<float> templateCostsOfAgent2 = agent.Detachment.GetTemplateCostsOfAgent(agent, null);
 			detachmentData2.agentScores.Add((agent, templateCostsOfAgent2));
-			agent.SetLastDetachmentTickAgentTime(totalMissionTime2);
+			agent.SetLastDetachmentTickAgentTime(currentTime2);
 		}
-		else if (totalMissionTime2 - agent.LastDetachmentTickAgentTime > 1.5f)
+		else if (currentTime2 - agent.LastDetachmentTickAgentTime > 1.5f)
 		{
 			(Agent, List<float>) tuple2 = detachmentData2.agentScores[num2];
 			detachmentData2.agentScores[num2] = (tuple2.Item1, agent.Detachment.GetTemplateCostsOfAgent(agent, tuple2.Item2));
-			agent.SetLastDetachmentTickAgentTime(totalMissionTime2);
+			agent.SetLastDetachmentTickAgentTime(currentTime2);
 		}
 	}
 

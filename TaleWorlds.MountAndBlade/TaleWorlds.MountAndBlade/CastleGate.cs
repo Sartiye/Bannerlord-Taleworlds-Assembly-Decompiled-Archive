@@ -372,7 +372,7 @@ public class CastleGate : UsableMachine, IPointDefendable, ICastleKeyPosition, I
 		base.GameEntity.GetFirstScriptOfType<DestructableComponent>()?.SetDisabled();
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		return new TextObject("{=6wZUG0ev}Gate");
 	}

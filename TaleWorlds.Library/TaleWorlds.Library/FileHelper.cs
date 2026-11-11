@@ -70,9 +70,9 @@ public static class FileHelper
 		return Common.PlatformFileHelper.GetFileContent(filePath);
 	}
 
-	public static byte[] GetMetaDataContent(PlatformFilePath filePath)
+	public static byte[] GetFileMetaDataContent(PlatformFilePath filePath)
 	{
-		return Common.PlatformFileHelper.GetMetaDataContent(filePath);
+		return Common.PlatformFileHelper.GetFileMetaDataContent(filePath);
 	}
 
 	public static void CopyFile(PlatformFilePath source, PlatformFilePath target)

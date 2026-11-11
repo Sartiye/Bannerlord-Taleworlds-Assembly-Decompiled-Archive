@@ -217,7 +217,14 @@ public class MPEndOfBattleVM : ViewModel
 			IsAvailable = true;
 			InitSides();
 			BattleSideEnum battleSideEnum = _missionScoreboardComponent?.GetMatchWinnerSide() ?? BattleSideEnum.None;
-			if (battleSideEnum == _enemyBattleSide)
+			BattleSideEnum battleSideEnum2 = GameNetwork.MyPeer?.GetComponent<MissionPeer>()?.Team?.Side ?? BattleSideEnum.None;
+			if (battleSideEnum2 != BattleSideEnum.Attacker && battleSideEnum2 != 0)
+			{
+				BattleResult = 2;
+				MPEndOfBattleSideVM mPEndOfBattleSideVM = ((battleSideEnum == _allyBattleSide) ? AllySide : ((battleSideEnum == _enemyBattleSide) ? EnemySide : null));
+				ResultText = ((mPEndOfBattleSideVM == null) ? GameTexts.FindText("str_draw").ToString() : new TextObject("{=sKSvwXYM}{CULTURE} victorious!").SetTextVariable("CULTURE", mPEndOfBattleSideVM.Culture.Name).ToString());
+			}
+			else if (battleSideEnum == _enemyBattleSide)
 			{
 				BattleResult = 0;
 				ResultText = GameTexts.FindText("str_defeat").ToString();

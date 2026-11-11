@@ -17,7 +17,7 @@ public class SupportedFactionDefeatedSceneNotificationItem : SceneNotificationDa
 	{
 		get
 		{
-			GameTexts.SetVariable("FORMAL_NAME", CampaignSceneNotificationHelper.GetFormalNameForKingdom(Faction));
+			GameTexts.SetVariable("FORMAL_NAME", Faction.FormalName);
 			GameTexts.SetVariable("PLAYER_WANTS_RESTORE", PlayerWantsRestore ? 1 : 0);
 			GameTexts.SetVariable("DAY_OF_YEAR", CampaignSceneNotificationHelper.GetFormalDayAndSeasonText(_creationCampaignTime));
 			GameTexts.SetVariable("YEAR", _creationCampaignTime.GetYear);

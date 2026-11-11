@@ -102,8 +102,8 @@ public class LauncherOnlineImageTextureProvider : TextureProvider
 			}
 			if (_onlineImageCache.TryGetValue(guidOfRequestedURL, out var value))
 			{
-				OpenGLTexture openGLTexture = OpenGLTexture.FromFile(value);
-				if (openGLTexture == null)
+				DirectXTexture directXTexture = DirectXTexture.FromFile(value);
+				if (directXTexture == null)
 				{
 					_onlineImageCache.Remove(guidOfRequestedURL);
 					Debug.Print($"RETRYING TO DOWNLOAD: {_onlineSourceUrl} | RETRY COUNT: {_retryCount}", 0, Debug.DebugColor.Red);
@@ -111,8 +111,8 @@ public class LauncherOnlineImageTextureProvider : TextureProvider
 				}
 				else
 				{
-					openGLTexture.ClampToEdge = true;
-					Texture texture = new Texture(openGLTexture);
+					directXTexture.ClampToEdge = true;
+					Texture texture = new Texture(directXTexture);
 					OnTextureCreated(texture);
 					_requiresRetry = false;
 				}

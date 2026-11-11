@@ -26,7 +26,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 
 	private IconBrushWidget _widget_0_0_0_2;
 
-	private BoolStateChangerWidget _widget_1;
+	private BoolStateChangerBrushWidget _widget_1;
 
 	private Widget _widget_2;
 
@@ -56,7 +56,7 @@ public class SPScoreboard__TaleWorlds_MountAndBlade_ViewModelCollection_Scoreboa
 		_widget_0_0_0.AddChild(_widget_0_0_0_1);
 		_widget_0_0_0_2 = new IconBrushWidget(base.Context);
 		_widget_0_0_0.AddChild(_widget_0_0_0_2);
-		_widget_1 = new BoolStateChangerWidget(base.Context);
+		_widget_1 = new BoolStateChangerBrushWidget(base.Context);
 		_widget.AddChild(_widget_1);
 		_widget_2 = new Widget(base.Context);
 		_widget.AddChild(_widget_2);

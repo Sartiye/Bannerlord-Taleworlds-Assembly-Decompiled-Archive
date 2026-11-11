@@ -113,6 +113,7 @@ public class NavalStorylinePlayerTownVisitCampaignBehavior : CampaignBehaviorBas
 		{
 			return false;
 		}
+		args.optionLeaveType = GameMenuOption.LeaveType.RepairShips;
 		float goldCostToRepairShips = GetGoldCostToRepairShips();
 		if (goldCostToRepairShips > 0f)
 		{

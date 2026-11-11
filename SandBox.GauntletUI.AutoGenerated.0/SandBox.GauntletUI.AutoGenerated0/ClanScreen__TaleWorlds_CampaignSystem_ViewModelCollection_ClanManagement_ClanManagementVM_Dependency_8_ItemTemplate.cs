@@ -18,7 +18,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 
 	private EncyclopediaTraitItemVM _datasource_Root;
 
-	private HintViewModel _datasource_Root_Hint;
+	private BasicTooltipViewModel _datasource_Root_Hint;
 
 	public ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManagement_ClanManagementVM_Dependency_8_ItemTemplate(UIContext context)
 		: base(context)
@@ -370,7 +370,7 @@ public class ClanScreen__TaleWorlds_CampaignSystem_ViewModelCollection_ClanManag
 		}
 	}
 
-	private void RefreshDataSource_datasource_Root_Hint(HintViewModel newDataSource)
+	private void RefreshDataSource_datasource_Root_Hint(BasicTooltipViewModel newDataSource)
 	{
 		if (_datasource_Root_Hint != null)
 		{

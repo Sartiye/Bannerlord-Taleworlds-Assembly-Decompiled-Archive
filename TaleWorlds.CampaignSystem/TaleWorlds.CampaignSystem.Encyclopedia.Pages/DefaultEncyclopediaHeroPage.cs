@@ -30,7 +30,7 @@ public class DefaultEncyclopediaHeroPage : EncyclopediaPage
 				}
 				return ((int)hero.Age).ToString();
 			}
-			Debug.FailedAssert("Unable to get the age of a non-hero object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaHeroPage.cs", "GetComparedValueText", 179);
+			Debug.FailedAssert("Unable to get the age of a non-hero object.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaHeroPage.cs", "GetComparedValueText", 180);
 			return "";
 		}
 	}
@@ -60,7 +60,7 @@ public class DefaultEncyclopediaHeroPage : EncyclopediaPage
 				}
 				return GameTexts.FindText("str_plus_with_number").ToString();
 			}
-			Debug.FailedAssert("Unable to get the relation between a non-hero object and the player.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaHeroPage.cs", "GetComparedValueText", 209);
+			Debug.FailedAssert("Unable to get the relation between a non-hero object and the player.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaHeroPage.cs", "GetComparedValueText", 210);
 			return "";
 		}
 	}
@@ -111,7 +111,7 @@ public class DefaultEncyclopediaHeroPage : EncyclopediaPage
 				}
 				return num;
 			}
-			Debug.FailedAssert("Both objects should be heroes.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaHeroPage.cs", "CompareHeroes", 258);
+			Debug.FailedAssert("Both objects should be heroes.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\Encyclopedia\\Pages\\DefaultEncyclopediaHeroPage.cs", "CompareHeroes", 259);
 			return 0;
 		}
 	}
@@ -200,7 +200,8 @@ public class DefaultEncyclopediaHeroPage : EncyclopediaPage
 		}
 		list.Add(new EncyclopediaFilterGroup(list5, GameTexts.FindText("str_culture")));
 		List<EncyclopediaFilterItem> list6 = new List<EncyclopediaFilterItem>();
-		list6.Add(new EncyclopediaFilterItem(new TextObject("{=b9ty57rJ}Faction Leader"), (object h) => ((Hero)h).IsKingdomLeader || ((Hero)h).IsClanLeader));
+		list6.Add(new EncyclopediaFilterItem(new TextObject("{=9aaKyNQM}Kingdom Leader"), (object h) => ((Hero)h).IsKingdomLeader));
+		list6.Add(new EncyclopediaFilterItem(new TextObject("{=pqfz386V}Clan Leader"), (object h) => ((Hero)h).IsClanLeader));
 		list6.Add(new EncyclopediaFilterItem(new TextObject("{=4vleNtxb}Lord/Lady"), (object h) => ((Hero)h).IsLord));
 		list6.Add(new EncyclopediaFilterItem(new TextObject("{=vmMqs3Ck}Noble"), (object h) => ((Hero)h).Clan?.IsNoble ?? false));
 		list6.Add(new EncyclopediaFilterItem(new TextObject("{=FLa5OuyK}Wanderer"), (object h) => ((Hero)h).IsWanderer));

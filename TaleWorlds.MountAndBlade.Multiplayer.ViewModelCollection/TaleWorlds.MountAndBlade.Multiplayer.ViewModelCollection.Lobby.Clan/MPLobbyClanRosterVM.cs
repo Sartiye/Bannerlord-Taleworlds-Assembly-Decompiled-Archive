@@ -397,10 +397,10 @@ public class MPLobbyClanRosterVM : ViewModel
 		(memberObj as MPLobbyClanMemberItemVM).ExecuteShowProfile();
 	}
 
-	private void PromoteToClanLeader(PlayerId playerId)
+	private async void PromoteToClanLeader(PlayerId playerId)
 	{
 		bool dontUseNameForUnknownPlayer = BannerlordConfig.EnableGenericNames && !NetworkMain.GameClient.IsKnownPlayer(playerId);
-		NetworkMain.GameClient.PromoteToClanLeader(playerId, dontUseNameForUnknownPlayer);
+		await NetworkMain.GameClient.PromoteToClanLeader(playerId, dontUseNameForUnknownPlayer);
 	}
 
 	private void PromoteToClanOfficer(PlayerId playerId)

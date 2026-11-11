@@ -160,6 +160,12 @@ public class SpawnPathData
 		return identity;
 	}
 
+	public MatrixFrame GetCenterFrame()
+	{
+		float distance = PathLength * 0.5f;
+		return Path.GetFrameForDistance(distance);
+	}
+
 	public void GetSpawnPathFrameFacingTarget(float basePathOffset, float targetPathOffset, bool useTangentDirection, out Vec2 spawnPathPosition, out Vec2 spawnPathDirection, bool decideDirectionDynamically = false, float dynamicDistancePercentage = 0.2f)
 	{
 		ClampPathOffset(ref basePathOffset);

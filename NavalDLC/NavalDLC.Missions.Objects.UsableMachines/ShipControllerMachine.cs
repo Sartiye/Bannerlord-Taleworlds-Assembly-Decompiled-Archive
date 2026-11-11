@@ -386,7 +386,7 @@ public class ShipControllerMachine : UsableMachine
 		return float.MinValue;
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		if (AttachedShip.BattleSide == Mission.Current.PlayerTeam.Side)
 		{

@@ -505,7 +505,11 @@ public class ServerSideIntermissionManager
 					flag = true;
 				}
 			}
-			if (flag)
+			if (MultiplayerOptions.IsStreamerPasswordSameAsGamePassword())
+			{
+				Utilities.QuitGame();
+			}
+			else if (flag)
 			{
 				if (GameStateManager.Current.ActiveState is InitialListedGameServerState)
 				{
@@ -525,11 +529,14 @@ public class ServerSideIntermissionManager
 					}
 					string strValue3 = MultiplayerOptions.OptionType.GamePassword.GetStrValue();
 					string strValue4 = MultiplayerOptions.OptionType.AdminPassword.GetStrValue();
+					string strValue5 = MultiplayerOptions.OptionType.StreamerPassword.GetStrValue();
 					int intValue = MultiplayerOptions.OptionType.GameDefinitionId.GetIntValue();
 					string value = ((!string.IsNullOrEmpty(strValue3)) ? Common.CalculateMD5Hash(strValue3) : null);
 					string value2 = ((!string.IsNullOrEmpty(strValue4)) ? Common.CalculateMD5Hash(strValue4) : null);
+					string value3 = ((!string.IsNullOrEmpty(strValue5)) ? Common.CalculateMD5Hash(strValue5) : null);
 					MultiplayerOptions.OptionType.GamePassword.SetValue(value);
 					MultiplayerOptions.OptionType.AdminPassword.SetValue(value2);
+					MultiplayerOptions.OptionType.StreamerPassword.SetValue(value3);
 					string gameModule = MultiplayerGameTypes.GetGameTypeInfo(strValue).GameModule;
 					int portToUse = Module.CurrentModule.StartupInfo.ServerPort;
 					if (_portOverriden)
@@ -603,7 +610,7 @@ public class ServerSideIntermissionManager
 				GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.IncludeUnsynchronizedClients);
 				if (!Module.CurrentModule.StartMultiplayerGame(value2, value))
 				{
-					Debug.FailedAssert("[DEBUG]Invalid multiplayer game type.", "C:\\Develop\\MB3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ListedServer\\ServerSideIntermissionManager.cs", "StartMissionAux", 734);
+					Debug.FailedAssert("[DEBUG]Invalid multiplayer game type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.ListedServer\\ServerSideIntermissionManager.cs", "StartMissionAux", 747);
 				}
 				while (Mission.Current == null || Mission.Current.CurrentState != Mission.State.Continuing)
 				{

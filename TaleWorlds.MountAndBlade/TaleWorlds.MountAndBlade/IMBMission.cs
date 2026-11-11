@@ -12,6 +12,9 @@ internal interface IMBMission
 	[EngineMethod("clear_resources", false, null, false)]
 	void ClearResources(UIntPtr missionPointer);
 
+	[EngineMethod("defrag_render_buffers", false, null, false)]
+	void DefragRenderBuffers();
+
 	[EngineMethod("create_mission", false, null, false)]
 	UIntPtr CreateMission(Mission mission);
 

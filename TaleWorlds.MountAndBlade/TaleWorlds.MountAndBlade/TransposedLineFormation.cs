@@ -28,8 +28,12 @@ public class TransposedLineFormation : LineFormation
 		}
 		else
 		{
-			int unitCountOnLine = MathF.Ceiling(MathF.Sqrt(arrangement.UnitCount / ColumnFormation.ArrangementAspectRatio));
-			FormFromFlankWidth(unitCountOnLine);
+			int num = MathF.Ceiling(MathF.Sqrt(arrangement.UnitCount / ColumnFormation.ArrangementAspectRatio));
+			if (num > 0 && (float)(arrangement.UnitCount / num - 1) * (base.UnitDiameter + base.Distance) + base.UnitDiameter > 100f)
+			{
+				(owner as Formation).SetPositioning(null, null, 0);
+			}
+			FormFromFlankWidth(num);
 		}
 		base.RearrangeFrom(arrangement);
 	}

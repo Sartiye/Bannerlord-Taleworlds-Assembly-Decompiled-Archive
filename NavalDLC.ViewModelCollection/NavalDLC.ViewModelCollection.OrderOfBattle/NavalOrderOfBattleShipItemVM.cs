@@ -5,7 +5,6 @@ using NavalDLC.Missions.Objects;
 using TaleWorlds.CampaignSystem.Naval;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Information;
-using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
@@ -444,14 +443,7 @@ public class NavalOrderOfBattleShipItemVM : ViewModel
 		}
 		if (shipSlotAndPieceNames.Count > 0)
 		{
-			if (Input.IsGamepadActive)
-			{
-				GameTexts.SetVariable("EXTEND_KEY", Game.Current.GameTextManager.GetHotKeyGameText("MapHotKeyCategory", "MapFollowModifier").ToString());
-			}
-			else
-			{
-				GameTexts.SetVariable("EXTEND_KEY", Game.Current.GameTextManager.FindText("str_game_key_text", "anyalt").ToString());
-			}
+			GameTexts.SetVariable("EXTEND_KEY", HyperlinkTexts.GetTooltipExtendKeyHyperlinkText());
 			list.Add(new TooltipProperty(string.Empty, string.Empty, 0)
 			{
 				OnlyShowWhenNotExtended = true

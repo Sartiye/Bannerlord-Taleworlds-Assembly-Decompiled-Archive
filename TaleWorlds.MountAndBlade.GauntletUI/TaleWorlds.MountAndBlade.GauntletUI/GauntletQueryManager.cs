@@ -20,6 +20,8 @@ public class GauntletQueryManager : GlobalLayer
 
 	private bool _isLastActiveGameStatePaused;
 
+	private bool _isSuspendedBySceneNotification;
+
 	private GauntletLayer _gauntletLayer;
 
 	private SingleQueryPopUpVM _singleQueryPopupVM;
@@ -50,7 +52,7 @@ public class GauntletQueryManager : GlobalLayer
 			_singleQueryPopupVM = new SingleQueryPopUpVM(CloseQuery);
 			_multiSelectionQueryPopUpVM = new MultiSelectionQueryPopUpVM(CloseQuery);
 			_textQueryPopUpVM = new TextQueryPopUpVM(CloseQuery);
-			_gauntletLayer = new GauntletLayer("QueryManager", 19501);
+			_gauntletLayer = new GauntletLayer("QueryManager", 19300);
 			_createQueryActions = new Dictionary<Type, Action<object, bool, bool>>
 			{
 				{
@@ -100,7 +102,7 @@ public class GauntletQueryManager : GlobalLayer
 	protected override void OnEarlyTick(float dt)
 	{
 		base.OnEarlyTick(dt);
-		if (_activeDataSource != null)
+		if (_activeDataSource != null && !_isSuspendedBySceneNotification)
 		{
 			if (ScreenManager.FocusedLayer != base.Layer && (ScreenManager.FocusedLayer == null || ScreenManager.FocusedLayer.InputRestrictions.Order <= base.Layer.InputRestrictions.Order))
 			{
@@ -122,7 +124,19 @@ public class GauntletQueryManager : GlobalLayer
 	protected override void OnLateTick(float dt)
 	{
 		base.OnLateTick(dt);
-		_activeDataSource?.OnTick(dt);
+		if (_activeDataSource != null)
+		{
+			bool flag = MBInformationManager.GetIsAnySceneNotificationActive() == true;
+			if (flag != _isSuspendedBySceneNotification)
+			{
+				_isSuspendedBySceneNotification = flag;
+				SetLayerFocus(!_isSuspendedBySceneNotification);
+			}
+			if (!_isSuspendedBySceneNotification)
+			{
+				_activeDataSource.OnTick(dt);
+			}
+		}
 	}
 
 	private void CreateQuery(InquiryData data, bool pauseGameActiveState, bool prioritize)
@@ -131,11 +145,11 @@ public class GauntletQueryManager : GlobalLayer
 		{
 			if (data == null)
 			{
-				Debug.FailedAssert("Trying to create query with null data!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletQueryManager.cs", "CreateQuery", 127);
+				Debug.FailedAssert("Trying to create query with null data!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletQueryManager.cs", "CreateQuery", 143);
 			}
 			else if (CheckIfQueryDataIsEqual(_activeQueryData, data) || _inquiryQueue.Any((Tuple<Type, object, bool, bool> x) => CheckIfQueryDataIsEqual(x.Item2, data)))
 			{
-				Debug.FailedAssert("Trying to create query but it is already present! Title: " + data.TitleText, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletQueryManager.cs", "CreateQuery", 132);
+				Debug.FailedAssert("Trying to create query but it is already present! Title: " + data.TitleText, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletQueryManager.cs", "CreateQuery", 148);
 			}
 			else if (prioritize)
 			{
@@ -162,11 +176,11 @@ public class GauntletQueryManager : GlobalLayer
 		{
 			if (data == null)
 			{
-				Debug.FailedAssert("Trying to create textQuery with null data!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletQueryManager.cs", "CreateTextQuery", 162);
+				Debug.FailedAssert("Trying to create textQuery with null data!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletQueryManager.cs", "CreateTextQuery", 178);
 			}
 			else if (CheckIfQueryDataIsEqual(_activeQueryData, data) || _inquiryQueue.Any((Tuple<Type, object, bool, bool> x) => CheckIfQueryDataIsEqual(x.Item2, data)))
 			{
-				Debug.FailedAssert("Trying to create textQuery but it is already present! Title: " + data.TitleText, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletQueryManager.cs", "CreateTextQuery", 167);
+				Debug.FailedAssert("Trying to create textQuery but it is already present! Title: " + data.TitleText, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletQueryManager.cs", "CreateTextQuery", 183);
 			}
 			else if (prioritize)
 			{
@@ -193,11 +207,11 @@ public class GauntletQueryManager : GlobalLayer
 		{
 			if (data == null)
 			{
-				Debug.FailedAssert("Trying to create multiSelectionQuery with null data!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletQueryManager.cs", "CreateMultiSelectionQuery", 197);
+				Debug.FailedAssert("Trying to create multiSelectionQuery with null data!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletQueryManager.cs", "CreateMultiSelectionQuery", 213);
 			}
 			else if (CheckIfQueryDataIsEqual(_activeQueryData, data) || _inquiryQueue.Any((Tuple<Type, object, bool, bool> x) => CheckIfQueryDataIsEqual(x.Item2, data)))
 			{
-				Debug.FailedAssert("Trying to create multiSelectionQuery but it is already present! Title: " + data.TitleText, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletQueryManager.cs", "CreateMultiSelectionQuery", 202);
+				Debug.FailedAssert("Trying to create multiSelectionQuery but it is already present! Title: " + data.TitleText, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletQueryManager.cs", "CreateMultiSelectionQuery", 218);
 			}
 			else if (prioritize)
 			{
@@ -251,6 +265,7 @@ public class GauntletQueryManager : GlobalLayer
 			return;
 		}
 		SetLayerFocus(isFocused: false);
+		_isSuspendedBySceneNotification = false;
 		if (_isLastActiveGameStatePaused)
 		{
 			GameStateManager.Current.UnregisterActiveStateDisableRequest(this);
@@ -273,7 +288,7 @@ public class GauntletQueryManager : GlobalLayer
 			}
 			else
 			{
-				Debug.FailedAssert("Invalid data type for query", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletQueryManager.cs", "CloseQuery", 294);
+				Debug.FailedAssert("Invalid data type for query", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletQueryManager.cs", "CloseQuery", 311);
 			}
 		}
 	}

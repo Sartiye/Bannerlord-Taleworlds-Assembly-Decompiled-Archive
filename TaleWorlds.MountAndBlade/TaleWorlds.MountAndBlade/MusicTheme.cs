@@ -49,5 +49,6 @@ public enum MusicTheme
 	BattleNord = 10246,
 	NordCampaign = 10247,
 	SeaCampaignNorthern = 10248,
-	SeaCampaignSouthern = 10249
+	SeaCampaignSouthern = 10249,
+	NordVictory = 102410
 }

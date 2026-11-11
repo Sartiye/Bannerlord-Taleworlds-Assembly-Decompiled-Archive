@@ -26,7 +26,7 @@ public class SiegeMachineStonePile : UsableMachine, ISpawnable
 		return null;
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		if (gameEntity.HasTag(AmmoPickUpTag))
 		{

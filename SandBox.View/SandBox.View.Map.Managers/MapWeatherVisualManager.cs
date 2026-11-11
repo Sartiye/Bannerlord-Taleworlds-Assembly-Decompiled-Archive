@@ -78,7 +78,10 @@ public class MapWeatherVisualManager : EntityVisualManagerBase<WeatherNode>
 		WeatherNode[] allWeatherNodes = Campaign.Current.GetCampaignBehavior<MapWeatherCampaignBehavior>().AllWeatherNodes;
 		for (int j = 0; j < allWeatherNodes.Length; j++)
 		{
-			_allWeatherNodeVisuals[j] = new MapWeatherVisual(allWeatherNodes[j]);
+			if (allWeatherNodes[j] != null)
+			{
+				_allWeatherNodeVisuals[j] = new MapWeatherVisual(allWeatherNodes[j]);
+			}
 		}
 	}
 
@@ -86,7 +89,7 @@ public class MapWeatherVisualManager : EntityVisualManagerBase<WeatherNode>
 	{
 		for (int i = 0; i < _allWeatherNodeVisuals.Length; i++)
 		{
-			_allWeatherNodeVisuals[i].Tick();
+			_allWeatherNodeVisuals[i]?.Tick();
 		}
 		TWParallel.For(0, DimensionSquared, delegate(int startInclusive, int endExclusive)
 		{

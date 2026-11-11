@@ -409,7 +409,7 @@ public class StandingPoint : UsableMissionObject
 		return false;
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		return null;
 	}

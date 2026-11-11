@@ -29,6 +29,10 @@ public class ShipItemVM : ViewModel
 
 	private bool _isRenamed;
 
+	private bool _isStashed;
+
+	private bool _isRetrievedFromStash;
+
 	private float _maxHp;
 
 	private bool _isSold;
@@ -106,6 +110,40 @@ public class ShipItemVM : ViewModel
 			{
 				_isRenamed = value;
 				OnPropertyChangedWithValue(value, "IsRenamed");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsStashed
+	{
+		get
+		{
+			return _isStashed;
+		}
+		set
+		{
+			if (value != _isStashed)
+			{
+				_isStashed = value;
+				OnPropertyChangedWithValue(value, "IsStashed");
+			}
+		}
+	}
+
+	[DataSourceProperty]
+	public bool IsRetrievedFromStash
+	{
+		get
+		{
+			return _isRetrievedFromStash;
+		}
+		set
+		{
+			if (value != _isRetrievedFromStash)
+			{
+				_isRetrievedFromStash = value;
+				OnPropertyChangedWithValue(value, "IsRetrievedFromStash");
 			}
 		}
 	}
@@ -446,7 +484,7 @@ public class ShipItemVM : ViewModel
 		Ship = ship;
 		PrefabId = NavalUIHelper.GetPrefabIdOfShipHull(Ship.ShipHull);
 		Stats = new ShipStatsVM(Ship);
-		Upgrades = new ShipUpgradeContainerVM(this);
+		Upgrades = new ShipUpgradeContainerVM(Ship);
 		RefreshValues();
 	}
 
@@ -473,11 +511,13 @@ public class ShipItemVM : ViewModel
 		IsSold = handler.ShipsToSell.Any((PortScreenHandler.ShipTradeInfo x) => x.Ship == Ship);
 		IsRepaired = handler.ShipsToRepair.Contains(Ship);
 		IsRenamed = handler.ShipsToRename.Any((PortScreenHandler.ShipRenameInfo s) => s.Ship == Ship);
+		IsStashed = handler.ShipsToStash.Any((Ship s) => s == Ship);
+		IsRetrievedFromStash = handler.ShipsToRetrieveFromStash.Any((Ship s) => s == Ship);
 		InitialHp = Ship.HitPoints;
 		MaxHp = Ship.MaxHitPoints;
 		CurrentHp = (IsRepaired ? Ship.MaxHitPoints : Ship.HitPoints);
 		IsHealthRelevant = InitialHp < MaxHp;
-		HasChanges = IsBought || IsSold || IsRepaired || IsRenamed || Upgrades.UpgradeSlots.Any((ShipUpgradeSlotBaseVM s) => s.IsChanged);
+		HasChanges = IsBought || IsSold || IsRepaired || IsRenamed || IsRetrievedFromStash || IsStashed || Upgrades.UpgradeSlots.Any((ShipUpgradeSlotBaseVM s) => s.IsChanged);
 		if (handler.LeftShips.Contains(Ship))
 		{
 			PortActionInfo canBuyShip = handler.GetCanBuyShip(Ship);

@@ -37,7 +37,7 @@ public class Bird : MissionObject
 
 	private State _state;
 
-	private BasicMissionTimer _timer;
+	private BasicTimer _timer;
 
 	private State ComputeInitialState()
 	{
@@ -54,8 +54,6 @@ public class Bird : MissionObject
 		base.GameEntity.SetAnimationSoundActivation(activate: true);
 		base.GameEntity.Skeleton.SetAnimationAtChannel(_idleAnimation, 0);
 		base.GameEntity.Skeleton.SetAnimationParameterAtChannel(0, MBRandom.RandomFloat * 0.5f);
-		_timer = new BasicMissionTimer();
-		SetState(ComputeInitialState());
 		SetScriptComponentToTick(GetTickRequirement());
 	}
 
@@ -64,8 +62,6 @@ public class Bird : MissionObject
 		base.OnEditorInit();
 		base.GameEntity.Skeleton.SetAnimationAtChannel(_idleAnimation, 0);
 		base.GameEntity.Skeleton.SetAnimationParameterAtChannel(0, 0f);
-		_timer = new BasicMissionTimer();
-		SetState(ComputeInitialState());
 	}
 
 	public override TickRequirement GetTickRequirement()
@@ -103,13 +99,27 @@ public class Bird : MissionObject
 			_timer.Set(0f - MBRandom.RandomFloatRanged(5f, 18f));
 			break;
 		default:
-			Debug.FailedAssert("Unknown state please handle!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Bird.cs", "OnStateChanged", 138);
+			Debug.FailedAssert("Unknown state please handle!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Bird.cs", "OnStateChanged", 132);
 			break;
+		}
+	}
+
+	protected internal override void OnEditorTick(float dt)
+	{
+		if (_timer == null)
+		{
+			_timer = new BasicTimer();
+			SetState(ComputeInitialState());
 		}
 	}
 
 	protected internal override void OnTick(float dt)
 	{
+		if (_timer == null)
+		{
+			_timer = new BasicTimer();
+			SetState(ComputeInitialState());
+		}
 		switch (_state)
 		{
 		case State.TakingOff:

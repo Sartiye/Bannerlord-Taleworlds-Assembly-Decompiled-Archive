@@ -56,6 +56,8 @@ public class CharacterCreationState : PlayerGameState
 		Game.Current.GameStateManager.UnregisterActiveStateDisableRequest(this);
 		Game.Current.GameStateManager.CleanAndPushState(Game.Current.GameStateManager.CreateState<MapState>());
 		PartyBase.MainParty.SetVisualAsDirty();
+		Hero.MainHero.Gold = 1000;
+		MobileParty.MainParty.ItemRoster.AddToCounts(DefaultItems.Grain, 1);
 		_handler?.OnCharacterCreationFinalized();
 		CampaignEventDispatcher.Instance.OnCharacterCreationIsOver();
 	}

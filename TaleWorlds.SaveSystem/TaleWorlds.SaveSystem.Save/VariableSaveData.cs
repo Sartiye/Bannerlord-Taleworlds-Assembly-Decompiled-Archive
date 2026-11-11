@@ -83,7 +83,7 @@ internal abstract class VariableSaveData
 		}
 		if (TypeDefinition == null && !memberType.IsInterface)
 		{
-			string message = $"Cant find definition for: {memberType.Name}. Save id: {MemberSaveId}";
+			string message = $"[SaveSystem] Cant find definition for: {memberType.Name}. Save id: {MemberSaveId}";
 			Debug.Print(message, 0, Debug.DebugColor.Red);
 			Debug.FailedAssert(message, "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\VariableSaveData.cs", "InitializeData", 98);
 		}
@@ -117,7 +117,7 @@ internal abstract class VariableSaveData
 			TypeDefinition.SaveId.WriteTo(writer);
 			if (Context.DefinitionContext.TryGetTypeDefinition(TypeDefinition.SaveId) == null)
 			{
-				Debug.FailedAssert("Basic type definition cant be found: " + TypeDefinition.SaveId.GetStringId(), "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\VariableSaveData.cs", "SaveTo", 132);
+				Debug.FailedAssert("[SaveSystem] Basic type definition cant be found: " + TypeDefinition.SaveId.GetStringId(), "C:\\BuildAgent\\work\\mb3\\TaleWorlds.Shared\\Source\\Base\\TaleWorlds.SaveSystem\\Save\\VariableSaveData.cs", "SaveTo", 132);
 			}
 			((BasicTypeDefinition)TypeDefinition).Serializer.Serialize(writer, Value);
 		}

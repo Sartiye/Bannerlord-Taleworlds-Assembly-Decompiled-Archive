@@ -140,13 +140,38 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 
 	private AssemblyLoader.AssemblyLoadResult AddSubModule(SubModuleInfo subModuleInfo, Assembly subModuleAssembly)
 	{
-		ConstructorInfo constructor = subModuleAssembly.GetType(subModuleInfo.SubModuleClassTypeName).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.CreateInstance, null, new Type[0], null);
+		if (subModuleAssembly == null)
+		{
+			return AssemblyLoader.AssemblyLoadResult.CriticalError;
+		}
+		Type type = subModuleAssembly.GetType(subModuleInfo.SubModuleClassTypeName);
+		if (type == null)
+		{
+			return AssemblyLoader.AssemblyLoadResult.CriticalError;
+		}
+		if (!typeof(MBSubModuleBase).IsAssignableFrom(type))
+		{
+			return AssemblyLoader.AssemblyLoadResult.CriticalError;
+		}
+		ConstructorInfo constructor = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.CreateInstance, null, new Type[0], null);
+		if (constructor == null)
+		{
+			return AssemblyLoader.AssemblyLoadResult.CriticalError;
+		}
 		Dictionary<string, Type> types;
 		AssemblyLoader.AssemblyLoadResult assemblyLoadResult = CollectModuleAssemblyTypes(subModuleInfo, subModuleAssembly, out types);
 		if (assemblyLoadResult == AssemblyLoader.AssemblyLoadResult.Success)
 		{
+			MBSubModuleBase value;
+			try
+			{
+				value = (MBSubModuleBase)constructor.Invoke(new object[0]);
+			}
+			catch (Exception)
+			{
+				return AssemblyLoader.AssemblyLoadResult.CriticalError;
+			}
 			Managed.AddTypes(types);
-			MBSubModuleBase value = (MBSubModuleBase)constructor.Invoke(new object[0]);
 			_subModuleBases.Add(subModuleInfo, value);
 		}
 		return assemblyLoadResult;
@@ -201,9 +226,24 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 	private void InitializeSubModuleBases()
 	{
 		Managed.AddConstructorDelegateOfClass<SpawnedItemEntity>();
-		foreach (MBSubModuleBase value in _subModuleBases.Values)
+		foreach (KeyValuePair<SubModuleInfo, MBSubModuleBase> subModuleBasis in _subModuleBases)
 		{
-			value.OnSubModuleLoad();
+			try
+			{
+				subModuleBasis.Value.OnSubModuleLoad();
+			}
+			catch (Exception ex)
+			{
+				string text = ((subModuleBasis.Key != null) ? (subModuleBasis.Key.Name + " (" + subModuleBasis.Key.DLLName + ")") : "<unknown submodule>");
+				string text2 = "OnSubModuleLoad failed for " + text + ": " + ex.GetType().Name + ": " + ex.Message;
+				if (ex.InnerException != null)
+				{
+					text2 = text2 + "\nInner: " + ex.InnerException.GetType().Name + ": " + ex.InnerException.Message;
+				}
+				MBDebug.Print(text2);
+				TaleWorlds.Library.Debug.SetCrashReportCustomString(text2);
+				throw new Exception();
+			}
 		}
 	}
 
@@ -845,10 +885,10 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		{
 			return true;
 		}
-		AssemblyName[] referencedAssemblies = assembly.GetReferencedAssemblies();
-		for (int i = 0; i < referencedAssemblies.Length; i++)
+		AssemblyName[] referencedAssembliesSafe = assembly.GetReferencedAssembliesSafe();
+		for (int i = 0; i < referencedAssembliesSafe.Length; i++)
 		{
-			if (referencedAssemblies[i].FullName == assembly2.FullName)
+			if (referencedAssembliesSafe[i].FullName == assembly2.FullName)
 			{
 				return true;
 			}
@@ -1028,11 +1068,25 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		MBDebug.Print("Loading submodules...");
 		foreach (ModuleInfo module in modules)
 		{
-			XmlResource.GetMbprojxmls(module.Id);
-			XmlResource.GetXmlListAndApply(module.Id);
+			try
+			{
+				XmlResource.GetMbprojxmls(module.Id);
+				XmlResource.GetXmlListAndApply(module.Id);
+			}
+			catch (Exception ex)
+			{
+				string lpCaption = "XML Error in module '" + module.Name + "'";
+				string lpText = "Failed to read XML definitions for module '" + module.Name + "' (ID: " + module.Id + ").\n\n" + ex.Message;
+				if (!GameNetwork.IsDedicatedServer && !MBDebug.TestModeEnabled)
+				{
+					TaleWorlds.Library.Debug.ShowMessageBox(lpText, lpCaption, 256u);
+				}
+				throw;
+			}
 		}
 		List<SubModuleInfo> list = new List<SubModuleInfo>();
-		new List<ModuleInfo>();
+		List<ModuleInfo> list2 = new List<ModuleInfo>();
+		List<string> list3 = new List<string>();
 		foreach (ModuleInfo module2 in modules)
 		{
 			foreach (SubModuleInfo subModule in module2.SubModules)
@@ -1070,20 +1124,32 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 					}
 					if (result2 != 0)
 					{
-						HandleSubmoduleLoadError(module2, subModule, result2, mBList);
+						HandleSubmoduleLoadError(module2, subModule, result2, mBList, list2, list3);
 					}
 					else if (mBList.Count > 0)
 					{
-						HandleSubmoduleLoadError(module2, null, AssemblyLoader.AssemblyLoadResult.LoadedWithErrors, mBList);
+						HandleSubmoduleLoadError(module2, null, AssemblyLoader.AssemblyLoadResult.LoadedWithErrors, mBList, list2, list3);
 					}
 				}
 				else
 				{
-					string lpText = "Cannot find: " + text;
-					string lpCaption = "Error";
-					TaleWorlds.Library.Debug.ShowMessageBox(lpText, lpCaption, 4u);
+					string lpText2 = "Cannot find: " + text;
+					string lpCaption2 = "Error";
+					TaleWorlds.Library.Debug.ShowMessageBox(lpText2, lpCaption2, 4u);
 				}
 			}
+		}
+		if (list2.Count > 0)
+		{
+			string text6 = string.Join(Environment.NewLine + Environment.NewLine, list3);
+			string text7 = ((list2.Count == 1) ? ("Error while loading " + list2[0].Name) : $"Errors while loading {list2.Count} modules");
+			if (!GameNetwork.IsDedicatedServer && !MBDebug.TestModeEnabled)
+			{
+				TaleWorlds.Library.Debug.ShowMessageBox(text6, text7, 256u);
+			}
+			Utilities.DetachWatchdog();
+			MBDebug.AbortGame();
+			throw new Exception(text7 + ": " + text6);
 		}
 		if (loadNewModules)
 		{
@@ -1103,7 +1169,7 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		}
 	}
 
-	private void HandleSubmoduleLoadError(ModuleInfo module, SubModuleInfo subModule, AssemblyLoader.AssemblyLoadResult result, MBList<(string, AssemblyLoader.AssemblyLoadResult)> assemblyLoadResults)
+	private void HandleSubmoduleLoadError(ModuleInfo module, SubModuleInfo subModule, AssemblyLoader.AssemblyLoadResult result, MBList<(string, AssemblyLoader.AssemblyLoadResult)> assemblyLoadResults, List<ModuleInfo> modulesWithCriticalErrors, List<string> criticalErrorMessages)
 	{
 		TaleWorlds.Library.Debug.Print(module.Id + " could not be loaded correctly.");
 		string lpCaption = "Error while loading " + module.Name;
@@ -1111,12 +1177,15 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 		switch (result)
 		{
 		case AssemblyLoader.AssemblyLoadResult.CriticalError:
-			TaleWorlds.Library.Debug.Print(assemblyLoadResultsMessage);
-			if (!module.IsOfficial)
+		{
+			string item = assemblyLoadResultsMessage + Environment.NewLine + (module.IsOfficial ? "Game files may be corrupted or modified by a mod. Please disable your mods and verify the integrity of the game files." : "Please update or disable this mod and its dependencies, then restart the game.");
+			if (!modulesWithCriticalErrors.Contains(module))
 			{
-				TaleWorlds.Library.Debug.ShowMessageBox(assemblyLoadResultsMessage, lpCaption, 256u);
+				modulesWithCriticalErrors.Add(module);
 			}
-			throw new Exception();
+			criticalErrorMessages.Add(item);
+			break;
+		}
 		case AssemblyLoader.AssemblyLoadResult.LoadedWithErrors:
 			TaleWorlds.Library.Debug.Print(assemblyLoadResultsMessage);
 			if (!module.IsOfficial)
@@ -1131,7 +1200,18 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 	{
 		string text = ((subModule != null) ? ("\"" + module.Name + "." + subModule.Name + "\" submodule") : ("\"" + module.Name + "\" module"));
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.AppendLine(text + " could not be loaded correctly due to a dependency conflict. This may cause the game to experience stability issues.");
+		if (result == AssemblyLoader.AssemblyLoadResult.CriticalError)
+		{
+			stringBuilder.AppendLine(text + " could not be loaded due to a missing or conflicting dependency. The game cannot continue.");
+		}
+		else
+		{
+			stringBuilder.AppendLine(text + " could not be loaded correctly due to a dependency conflict. This may cause the game to experience stability issues.");
+		}
+		foreach (var (arg, assemblyLoadResult) in assemblyLoadResults)
+		{
+			stringBuilder.AppendLine($" - {arg}: {assemblyLoadResult}");
+		}
 		return stringBuilder.ToString();
 	}
 
@@ -1241,7 +1321,7 @@ public sealed class Module : DotNetObject, IGameStateManagerOwner
 	[MBCallback(null, false)]
 	internal static void MBThrowException()
 	{
-		TaleWorlds.Library.Debug.FailedAssert("MBThrowException", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Module.cs", "MBThrowException", 1614);
+		TaleWorlds.Library.Debug.FailedAssert("MBThrowException", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Module.cs", "MBThrowException", 1769);
 	}
 
 	[MBCallback(null, false)]

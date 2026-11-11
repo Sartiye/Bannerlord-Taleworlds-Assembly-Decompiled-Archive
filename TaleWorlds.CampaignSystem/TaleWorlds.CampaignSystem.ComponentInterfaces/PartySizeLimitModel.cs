@@ -11,7 +11,7 @@ public abstract class PartySizeLimitModel : MBGameModel<PartySizeLimitModel>
 {
 	public abstract int MinimumNumberOfVillagersAtVillagerParty { get; }
 
-	public abstract ExplainedNumber GetPartyMemberSizeLimit(PartyBase party, bool includeDescriptions = false);
+	public abstract ExplainedNumber GetPartyMemberSizeLimit(PartyBase party, bool isCurrentlyAtSea, bool includeDescriptions = false);
 
 	public abstract ExplainedNumber GetPartyPrisonerSizeLimit(PartyBase party, bool includeDescriptions = false);
 

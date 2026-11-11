@@ -65,7 +65,7 @@ public class StoryModePartySizeLimitModel : PartySizeLimitModel
 		return base.BaseModel.GetNextClanTierPartySizeEffectChangeForHero(hero);
 	}
 
-	public override ExplainedNumber GetPartyMemberSizeLimit(PartyBase party, bool includeDescriptions = false)
+	public override ExplainedNumber GetPartyMemberSizeLimit(PartyBase party, bool isCurrentlyAtSea, bool includeDescriptions = false)
 	{
 		if (party.IsMobile)
 		{
@@ -79,7 +79,7 @@ public class StoryModePartySizeLimitModel : PartySizeLimitModel
 				return new ExplainedNumber(600f);
 			}
 		}
-		return base.BaseModel.GetPartyMemberSizeLimit(party, includeDescriptions);
+		return base.BaseModel.GetPartyMemberSizeLimit(party, isCurrentlyAtSea, includeDescriptions);
 	}
 
 	public override ExplainedNumber GetPartyPrisonerSizeLimit(PartyBase party, bool includeDescriptions = false)

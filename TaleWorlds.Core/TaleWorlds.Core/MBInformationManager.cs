@@ -42,6 +42,8 @@ public static class MBInformationManager
 
 	public static event Func<bool> IsAnySceneNotificationActive;
 
+	public static event Func<SceneNotificationData> ActiveSceneNotificationData;
+
 	public static void AddQuickInformation(TextObject message, int extraTimeInMs = 0, BasicCharacterObject announcerCharacter = null, Equipment equipment = null, string soundEventPath = "")
 	{
 		MBInformationManager.FiringQuickInformation?.Invoke(message.ToString(), extraTimeInMs, announcerCharacter, equipment, soundEventPath);
@@ -91,6 +93,11 @@ public static class MBInformationManager
 	public static bool? GetIsAnySceneNotificationActive()
 	{
 		return MBInformationManager.IsAnySceneNotificationActive?.Invoke();
+	}
+
+	public static SceneNotificationData GetActiveSceneNotificationData()
+	{
+		return MBInformationManager.ActiveSceneNotificationData?.Invoke();
 	}
 
 	public static void Clear()

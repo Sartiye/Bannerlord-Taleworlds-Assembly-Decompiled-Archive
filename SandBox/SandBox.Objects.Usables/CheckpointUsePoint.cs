@@ -62,7 +62,7 @@ public class CheckpointUsePoint : UsableMachine
 		return new TextObject("{=G2IaEr2Z}Use");
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		return new TextObject("{=eO7p1Q3C}Checkpoint");
 	}

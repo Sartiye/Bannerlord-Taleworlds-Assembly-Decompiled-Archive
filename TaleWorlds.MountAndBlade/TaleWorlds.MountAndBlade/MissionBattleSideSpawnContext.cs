@@ -139,19 +139,32 @@ public class MissionBattleSideSpawnContext
 				teamFormationsSpawnData.Add((item2, array));
 			}
 		}
+		bool isPlayerSide = _side == mission.PlayerTeam.Side;
+		Dictionary<Team, List<IAgentOriginBase>> dictionary = new Dictionary<Team, List<IAgentOriginBase>>();
 		foreach (IAgentOriginBase reservedTroop in _reservedTroops)
 		{
-			FormationClass agentTroopClass = Mission.Current.GetAgentTroopClass(_side, reservedTroop.Troop);
-			bool isPlayerSide = _side == Mission.Current.PlayerTeam.Side;
-			Team troopTeam = Mission.GetAgentTeam(reservedTroop, isPlayerSide);
-			MissionFormationSpawnData[] item = teamFormationsSpawnData.FirstOrDefault(((Team team, MissionFormationSpawnData[] formationSpawnData) tf) => tf.team == troopTeam).formationSpawnData;
-			if (reservedTroop.Troop.HasMount() && SpawnWithHorses)
+			Team agentTeam = Mission.GetAgentTeam(reservedTroop, isPlayerSide);
+			if (!dictionary.TryGetValue(agentTeam, out var value))
 			{
-				item[(int)agentTroopClass].MountedTroopCount++;
+				value = (dictionary[agentTeam] = new List<IAgentOriginBase>());
 			}
-			else
+			value.Add(reservedTroop);
+		}
+		foreach (KeyValuePair<Team, List<IAgentOriginBase>> item3 in dictionary)
+		{
+			Team troopTeam = item3.Key;
+			List<IAgentOriginBase> value2 = item3.Value;
+			MissionFormationSpawnData[] item = teamFormationsSpawnData.FirstOrDefault(((Team team, MissionFormationSpawnData[] formationSpawnData) tf) => tf.team == troopTeam).formationSpawnData;
+			foreach (var (agentOriginBase, num) in MissionGameModels.Current.BattleSpawnModel.GetInitialSpawnAssignments(_side, value2))
 			{
-				item[(int)agentTroopClass].FootTroopCount++;
+				if (agentOriginBase.Troop.HasMount() && SpawnWithHorses)
+				{
+					item[num].MountedTroopCount++;
+				}
+				else
+				{
+					item[num].FootTroopCount++;
+				}
 			}
 		}
 	}
@@ -302,15 +315,15 @@ public class MissionBattleSideSpawnContext
 			{
 				list3 = MissionGameModels.Current.BattleSpawnModel.GetInitialSpawnAssignments(_side, item5.origins);
 			}
-			for (int j = 0; j < 8; j++)
+			for (int num5 = 7; num5 >= 0; num5--)
 			{
-				int num5 = 0;
 				int num6 = 0;
+				int num7 = 0;
 				list2.Clear();
 				IAgentOriginBase agentOriginBase = null;
-				foreach (var (agentOriginBase2, num7) in list3)
+				foreach (var (agentOriginBase2, num8) in list3)
 				{
-					if (j != num7)
+					if (num5 != num8)
 					{
 						continue;
 					}
@@ -321,11 +334,11 @@ public class MissionBattleSideSpawnContext
 					}
 					if (agentOriginBase2.Troop.HasMount())
 					{
-						num5++;
+						num6++;
 					}
 					else
 					{
-						num6++;
+						num7++;
 					}
 					list2.Add(agentOriginBase2);
 				}
@@ -333,52 +346,51 @@ public class MissionBattleSideSpawnContext
 				{
 					if (agentOriginBase.Troop.HasMount())
 					{
-						num5++;
+						num6++;
 					}
 					else
 					{
-						num6++;
+						num7++;
 					}
 					list2.Add(agentOriginBase);
 				}
 				int count = list2.Count;
-				if (count <= 0)
+				if (count > 0)
 				{
-					continue;
-				}
-				bool isMounted = _spawnWithHorses && DefaultMissionDeploymentPlan.HasSignificantMountedTroops(num6, num5);
-				int num8 = 0;
-				int num9 = count;
-				if (ReinforcementSpawnActive)
-				{
-					num8 = _reinforcementSpawnedUnitCountPerFormation[j].currentTroopIndex;
-					num9 = _reinforcementSpawnedUnitCountPerFormation[j].troopCount;
-				}
-				Formation formation = item5.team.GetFormation((FormationClass)j);
-				if (!formation.HasBeenPositioned)
-				{
-					formation.BeginSpawn(num9, isMounted);
-					current.SetFormationPositioningFromDeploymentPlan(formation);
-					_spawnedFormations.Add(formation);
-				}
-				foreach (IAgentOriginBase item7 in list2)
-				{
-					if (!item7.Troop.IsHero && _bannerBearerLogic != null && current.Mode != MissionMode.Deployment && _bannerBearerLogic.GetMissingBannerCount(formation) > 0)
+					bool isMounted = _spawnWithHorses && DefaultMissionDeploymentPlan.HasSignificantMountedTroops(num7, num6);
+					int num9 = 0;
+					int num10 = count;
+					if (ReinforcementSpawnActive)
 					{
-						_bannerBearerLogic.SpawnBannerBearer(item7, IsPlayerSide, formation, _spawnWithHorses, isReinforcement, num9, num8, isAlarmed: true, wieldInitialWeapons: true, null, null, null, current.IsSallyOutBattle);
+						num9 = _reinforcementSpawnedUnitCountPerFormation[num5].currentTroopIndex;
+						num10 = _reinforcementSpawnedUnitCountPerFormation[num5].troopCount;
 					}
-					else
+					Formation formation = item5.team.GetFormation((FormationClass)num5);
+					if (!formation.HasBeenPositioned)
 					{
-						bool spawnWithHorse = (item7.Troop.IsPlayerCharacter && ForceSpawnPlayerMounted) || _spawnWithHorses;
-						current.SpawnTroop(item7, IsPlayerSide, hasFormation: true, spawnWithHorse, isReinforcement, num9, num8, isAlarmed: true, wieldInitialWeapons: true, null, null, null, null, formation.FormationIndex, current.IsSallyOutBattle);
+						formation.BeginSpawn(num10, isMounted);
+						current.SetFormationPositioningFromDeploymentPlan(formation, isReinforcement);
+						_spawnedFormations.Add(formation);
 					}
-					_numSpawnedTroops++;
-					num8++;
-					num4++;
-				}
-				if (ReinforcementSpawnActive)
-				{
-					_reinforcementSpawnedUnitCountPerFormation[j].currentTroopIndex = num8;
+					foreach (IAgentOriginBase item7 in list2)
+					{
+						if (!item7.Troop.IsHero && _bannerBearerLogic != null && current.Mode != MissionMode.Deployment && _bannerBearerLogic.GetMissingBannerCount(formation) > 0)
+						{
+							_bannerBearerLogic.SpawnBannerBearer(item7, IsPlayerSide, formation, _spawnWithHorses, isReinforcement, num10, num9, isAlarmed: true, wieldInitialWeapons: true, null, null, null, current.IsSallyOutBattle);
+						}
+						else
+						{
+							bool spawnWithHorse = (item7.Troop.IsPlayerCharacter && ForceSpawnPlayerMounted) || _spawnWithHorses;
+							current.SpawnTroop(item7, IsPlayerSide, hasFormation: true, spawnWithHorse, isReinforcement, num10, num9, isAlarmed: true, wieldInitialWeapons: true, null, null, null, null, formation.FormationIndex, current.IsSallyOutBattle);
+						}
+						_numSpawnedTroops++;
+						num9++;
+						num4++;
+					}
+					if (ReinforcementSpawnActive)
+					{
+						_reinforcementSpawnedUnitCountPerFormation[num5].currentTroopIndex = num9;
+					}
 				}
 			}
 			if (num4 > 0)

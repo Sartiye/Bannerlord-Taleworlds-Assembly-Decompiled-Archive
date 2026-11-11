@@ -80,6 +80,8 @@ public class FormationQuerySystem
 
 	private readonly QueryData<float> _casualtyRatio;
 
+	private readonly QueryData<bool> _hasRecentlyTakenRangedDamage;
+
 	private readonly QueryData<bool> _isUnderRangedAttack;
 
 	private readonly QueryData<float> _underRangedAttackRatio;
@@ -243,6 +245,10 @@ public class FormationQuerySystem
 	public float CasualtyRatio => _casualtyRatio.Value;
 
 	public float CasualtyRatioReadOnly => _casualtyRatio.GetCachedValueUnlessTooOld();
+
+	public bool HasRecentlyTakenRangedDamage => _hasRecentlyTakenRangedDamage.Value;
+
+	public bool HasRecentlyTakenRangedDamageReadOnly => _hasRecentlyTakenRangedDamage.GetCachedValueUnlessTooOld();
 
 	public bool IsUnderRangedAttack => _isUnderRangedAttack.Value;
 
@@ -485,17 +491,18 @@ public class FormationQuerySystem
 			int num17 = mission.GetMissionBehavior<CasualtyHandler>()?.GetCasualtyCountOfFormation(formation) ?? 0;
 			return 1f - (float)num17 * 1f / (float)(num17 + formation.CountOfUnits);
 		}, 10f);
-		_isUnderRangedAttack = new QueryData<bool>(() => formation.GetUnderAttackTypeOfUnits(10f) == Agent.UnderAttackType.UnderRangedAttack, 3f);
+		_isUnderRangedAttack = new QueryData<bool>(() => formation.GetLastRecievedContactTypeOfUnits(5f) == Agent.LastRecievedAttackType.RangedContact, 3f);
+		_hasRecentlyTakenRangedDamage = new QueryData<bool>(() => formation.HasUnitWithLastRecievedAttackType(Agent.LastRecievedAttackType.RangedHit, 10f), 3f);
 		_underRangedAttackRatio = new QueryData<float>(delegate
 		{
-			float currentTime2 = MBCommon.GetTotalMissionTime();
-			int countOfUnitsWithCondition2 = formation.GetCountOfUnitsWithCondition((Agent agent) => currentTime2 - agent.LastRangedHitTime < 10f);
+			float currentTime2 = Mission.Current.CurrentTime;
+			int countOfUnitsWithCondition2 = formation.GetCountOfUnitsWithCondition((Agent agent) => currentTime2 - agent.LastRecievedRangedHitTime < 10f);
 			return (formation.CountOfUnits <= 0) ? 0f : ((float)countOfUnitsWithCondition2 / (float)formation.CountOfUnits);
 		}, 3f);
 		_makingRangedAttackRatio = new QueryData<float>(delegate
 		{
-			float currentTime = MBCommon.GetTotalMissionTime();
-			int countOfUnitsWithCondition = formation.GetCountOfUnitsWithCondition((Agent agent) => currentTime - agent.LastRangedAttackTime < 10f);
+			float currentTime = Mission.Current.CurrentTime;
+			int countOfUnitsWithCondition = formation.GetCountOfUnitsWithCondition((Agent agent) => currentTime - agent.LastRangedHitTime < 10f);
 			return (formation.CountOfUnits <= 0) ? 0f : ((float)countOfUnitsWithCondition / (float)formation.CountOfUnits);
 		}, 3f);
 		_closestEnemyAgent = new QueryData<Agent>(delegate
@@ -535,7 +542,7 @@ public class FormationQuerySystem
 						{
 							if (item2.QuerySystem.FormationPower / formationQuerySystem.FormationPower > 0.2f || item2.QuerySystem.FormationPower * formationQuerySystem.Team.TeamPower / (item2.Team.QuerySystem.TeamPower * formationQuerySystem.FormationPower) > 0.2f)
 							{
-								float num13 = item2.CachedMedianPosition.GetNavMeshVec3().DistanceSquared(new Vec3(formationQuerySystem.Formation.CachedAveragePosition, formationQuerySystem.Formation.CachedMedianPosition.GetNavMeshZ()));
+								float num13 = item2.CachedMedianPosition.GetNavMeshVec3MT().DistanceSquared(new Vec3(formationQuerySystem.Formation.CachedAveragePosition, formationQuerySystem.Formation.CachedMedianPosition.GetNavMeshZMT()));
 								if (num13 < num11)
 								{
 									num11 = num13;
@@ -544,7 +551,7 @@ public class FormationQuerySystem
 							}
 							else if (formation4 == null)
 							{
-								float num14 = item2.CachedMedianPosition.GetNavMeshVec3().DistanceSquared(new Vec3(formationQuerySystem.Formation.CachedAveragePosition, formationQuerySystem.Formation.CachedMedianPosition.GetNavMeshZ()));
+								float num14 = item2.CachedMedianPosition.GetNavMeshVec3MT().DistanceSquared(new Vec3(formationQuerySystem.Formation.CachedAveragePosition, formationQuerySystem.Formation.CachedMedianPosition.GetNavMeshZMT()));
 								if (num14 < num12)
 								{
 									num12 = num14;
@@ -623,7 +630,7 @@ public class FormationQuerySystem
 				return 0f;
 			}
 			float num4 = ((formationQuerySystem.MainFormation.GetReadonlyMovementOrderReference().OrderEnum == MovementOrder.MovementOrderEnum.Charge || formationQuerySystem.MainFormation.GetReadonlyMovementOrderReference().OrderEnum == MovementOrder.MovementOrderEnum.ChargeToTarget || formationQuerySystem.MainFormation.GetReadonlyMovementOrderReference() == MovementOrder.MovementOrderRetreat) ? 0.5f : 1f);
-			float num5 = ((formationQuerySystem.MainFormation.GetUnderAttackTypeOfUnits(10f) == Agent.UnderAttackType.UnderMeleeAttack) ? 0.8f : 1f);
+			float num5 = (formationQuerySystem.MainFormation.HasUnitWithLastRecievedAttackType(Agent.LastRecievedAttackType.MeleeHit) ? 0.8f : 1f);
 			return num4 * num5;
 		}, 5f);
 		_weightedAverageEnemyPosition = new QueryData<Vec2>(() => formationQuerySystem.Formation.Team.GetWeightedAverageOfEnemies(formationQuerySystem.Formation.CurrentPosition), 0.5f);

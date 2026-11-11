@@ -11,6 +11,8 @@ public class PlatformFileHelperPC : IPlatformFileHelper
 
 	private static string Error;
 
+	private const int MetaDataLengthPrefixSize = 4;
+
 	private string DocumentsPath => Environment.GetFolderPath(Environment.SpecialFolder.Personal);
 
 	private string ProgramDataPath => Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
@@ -27,7 +29,11 @@ public class PlatformFileHelperPC : IPlatformFileHelper
 		try
 		{
 			CreateDirectory(path.FolderPath);
-			File.WriteAllBytes(GetFileFullPath(path), data);
+			using (FileStream fileStream = new FileStream(GetFileFullPath(path), FileMode.Create, FileAccess.Write, FileShare.Read, 1048576))
+			{
+				fileStream.Write(data, 0, data.Length);
+				fileStream.Flush(flushToDisk: true);
+			}
 			return SaveResult.Success;
 		}
 		catch (Exception ex)
@@ -152,36 +158,6 @@ public class PlatformFileHelperPC : IPlatformFileHelper
 		return result;
 	}
 
-	public byte[] GetMetaDataContent(PlatformFilePath path)
-	{
-		if (!FileExists(path))
-		{
-			return null;
-		}
-		string fileFullPath = GetFileFullPath(path);
-		try
-		{
-			using FileStream fileStream = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
-			using System.IO.BinaryReader binaryReader = new System.IO.BinaryReader(fileStream);
-			int num = binaryReader.ReadInt32();
-			if (num > fileStream.Length - fileStream.Position)
-			{
-				return null;
-			}
-			byte[] array = new byte[num + 4];
-			BitConverter.GetBytes(num).CopyTo(array, 0);
-			if (binaryReader.Read(array, 4, num) < num)
-			{
-				return null;
-			}
-			return array;
-		}
-		catch (Exception)
-		{
-		}
-		return null;
-	}
-
 	public byte[] GetFileContent(PlatformFilePath path)
 	{
 		if (!FileExists(path))
@@ -201,6 +177,44 @@ public class PlatformFileHelperPC : IPlatformFileHelper
 			Debug.Print(Error);
 		}
 		return result;
+	}
+
+	public byte[] GetFileMetaDataContent(PlatformFilePath path)
+	{
+		if (!FileExists(path))
+		{
+			return null;
+		}
+		string fileFullPath = GetFileFullPath(path);
+		Error = "";
+		try
+		{
+			using FileStream fileStream = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+			byte[] array = new byte[4];
+			if (fileStream.Read(array, 0, 4) < 4)
+			{
+				return null;
+			}
+			int num = BitConverter.ToInt32(array, 0);
+			long num2 = fileStream.Length - fileStream.Position;
+			if (num < 0 || num > num2)
+			{
+				return null;
+			}
+			byte[] array2 = new byte[num + 4];
+			Buffer.BlockCopy(array, 0, array2, 0, 4);
+			if (fileStream.Read(array2, 4, num) < num)
+			{
+				return null;
+			}
+			return array2;
+		}
+		catch (Exception ex)
+		{
+			Error = ex.Message;
+			Debug.Print(Error);
+		}
+		return null;
 	}
 
 	public bool DeleteFile(PlatformFilePath path)

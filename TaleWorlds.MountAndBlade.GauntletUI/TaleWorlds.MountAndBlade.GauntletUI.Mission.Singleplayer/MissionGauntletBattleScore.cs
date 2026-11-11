@@ -173,7 +173,7 @@ public class MissionGauntletBattleScore : MissionView
 		{
 			OnOpen();
 		}
-		if (_dataSource.IsMainCharacterDead && !_dataSource.IsOver && (base.Mission.InputManager.IsHotKeyReleased("ToggleFastForward") || _gauntletLayer.Input.IsHotKeyReleased("ToggleFastForward")))
+		if (_dataSource.IsMainCharacterDead && !_dataSource.IsOver && CanOpenScoreboard() && (base.Mission.InputManager.IsHotKeyReleased("ToggleFastForward") || _gauntletLayer.Input.IsHotKeyReleased("ToggleFastForward")))
 		{
 			_dataSource.IsFastForwarding = !_dataSource.IsFastForwarding;
 			_dataSource.ExecuteFastForwardAction();

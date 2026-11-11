@@ -263,7 +263,7 @@ public class MissionMainAgentInteractionComponent
 						{
 							focusable = firstScriptOfType;
 							focusedObjectBoneIndex = -1;
-							if (CurrentMission.IsMainAgentObjectInteractionEnabled && !main.IsUsingGameObject && main.IsAbleToUseMachine() && main.ObjectHasVacantPosition(firstScriptOfType) && main.CanUseObject(firstScriptOfType))
+							if (CurrentMission.IsMainAgentObjectInteractionEnabled && (usableMachine == null || !usableMachine.IsDeactivated) && !main.IsUsingGameObject && main.IsAbleToUseMachine() && main.ObjectHasVacantPosition(firstScriptOfType) && main.CanUseObject(firstScriptOfType))
 							{
 								flag = true;
 							}

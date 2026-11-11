@@ -147,7 +147,7 @@ public class ShipPullingMachine : UsableMachine
 		return textObject;
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		return new TextObject("{=5Pf5coO6}Ship Pulling machine");
 	}

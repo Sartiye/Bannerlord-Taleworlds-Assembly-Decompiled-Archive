@@ -91,6 +91,6 @@ public class LocationCharacter
 	{
 		UniqueTroopDescriptor uniqueNo = new UniqueTroopDescriptor(FlattenedTroopRoster.GenerateUniqueNoFromParty(party, 0));
 		Monster monsterWithSuffix = FaceGen.GetMonsterWithSuffix(hero.CharacterObject.Race, "_settlement");
-		return new LocationCharacter(new AgentData(new PartyAgentOrigin(PartyBase.MainParty, hero.CharacterObject, -1, uniqueNo)).Monster(monsterWithSuffix).NoHorses(noHorses: true), addBehaviorsDelegate, null, fixedLocation: false, CharacterRelations.Friendly, null, !PlayerEncounter.LocationEncounter.Settlement.IsVillage);
+		return new LocationCharacter(new AgentData(new PartyAgentOrigin(PartyBase.MainParty, hero.CharacterObject, -1, uniqueNo)).Monster(monsterWithSuffix).NoHorses(noHorses: true), addBehaviorsDelegate, "npc_common_limited", fixedLocation: false, CharacterRelations.Friendly, null, !PlayerEncounter.LocationEncounter.Settlement.IsVillage);
 	}
 }

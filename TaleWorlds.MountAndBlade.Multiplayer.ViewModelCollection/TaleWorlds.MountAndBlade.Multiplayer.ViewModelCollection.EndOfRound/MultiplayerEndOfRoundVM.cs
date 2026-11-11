@@ -33,6 +33,20 @@ public class MultiplayerEndOfRoundVM : ViewModel
 
 	private readonly TextObject _roundEndReasonRoundTimeEndedWithDrawTextObject;
 
+	private readonly TextObject _neutralRoundWonTextObject;
+
+	private readonly TextObject _neutralRoundDrawTextObject;
+
+	private readonly TextObject _neutralRoundEndReasonRoundTimeEndedTextObject;
+
+	private readonly TextObject _neutralRoundEndReasonGameModeSpecificEndedTextObject;
+
+	private BattleSideEnum _leftSide;
+
+	private BattleSideEnum _rightSide;
+
+	private bool _isNeutralViewer;
+
 	private bool _isShown;
 
 	private bool _hasAttackerMVP;
@@ -293,15 +307,20 @@ public class MultiplayerEndOfRoundVM : ViewModel
 		_roundEndReasonAllyTeamRoundTimeEndedTextObject = new TextObject("{=x1HZy70i}Your team had the upper hand at timeout");
 		_roundEndReasonEnemyTeamRoundTimeEndedTextObject = new TextObject("{=Dc3fFblo}Enemy team had the upper hand at timeout");
 		_roundEndReasonRoundTimeEndedWithDrawTextObject = new TextObject("{=i3dJSlD0}No team had the upper hand at timeout");
+		_neutralRoundWonTextObject = new TextObject("{=o4vlU2ir}{CULTURE} won the round");
+		_neutralRoundDrawTextObject = new TextObject("{=rprmZL6q}Round Draw");
+		_neutralRoundEndReasonRoundTimeEndedTextObject = new TextObject("{=imscGPwm}{CULTURE} had the upper hand at timeout");
 		if (_missionLobbyComponent.MissionType == MultiplayerGameType.Battle || _missionLobbyComponent.MissionType == MultiplayerGameType.Captain || _missionLobbyComponent.MissionType == MultiplayerGameType.Skirmish)
 		{
 			_roundEndReasonAllyTeamGameModeSpecificEndedTextObject = new TextObject("{=xxuzZJ3G}Your team ran out of morale");
 			_roundEndReasonEnemyTeamGameModeSpecificEndedTextObject = new TextObject("{=c6c9eYrD}Enemy team ran out of morale");
+			_neutralRoundEndReasonGameModeSpecificEndedTextObject = new TextObject("{=ii02SQnZ}{CULTURE} ran out of morale");
 		}
 		else
 		{
 			_roundEndReasonAllyTeamGameModeSpecificEndedTextObject = TextObject.GetEmpty();
 			_roundEndReasonEnemyTeamGameModeSpecificEndedTextObject = TextObject.GetEmpty();
+			_neutralRoundEndReasonGameModeSpecificEndedTextObject = TextObject.GetEmpty();
 		}
 		AttackerSide = new MultiplayerEndOfRoundSideVM();
 		DefenderSide = new MultiplayerEndOfRoundSideVM();
@@ -318,58 +337,81 @@ public class MultiplayerEndOfRoundVM : ViewModel
 
 	public void Refresh()
 	{
-		BattleSideEnum allyBattleSideEnum = BattleSideEnum.None;
-		BattleSideEnum battleSideEnum = BattleSideEnum.None;
-		MissionPeer missionPeer = GameNetwork.MyPeer?.GetComponent<MissionPeer>();
-		if (missionPeer != null && missionPeer.Team != null)
-		{
-			allyBattleSideEnum = missionPeer.Team.Side;
-			battleSideEnum = ((allyBattleSideEnum != BattleSideEnum.Attacker) ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
-		}
-		bool num = allyBattleSideEnum == BattleSideEnum.Attacker;
-		MissionScoreboardComponent.MissionScoreboardSide missionScoreboardSide = _scoreboardComponent.Sides.FirstOrDefault((MissionScoreboardComponent.MissionScoreboardSide s) => s != null && s.Side == BattleSideEnum.Attacker);
-		MissionScoreboardComponent.MissionScoreboardSide missionScoreboardSide2 = _scoreboardComponent.Sides.FirstOrDefault((MissionScoreboardComponent.MissionScoreboardSide s) => s != null && s.Side == BattleSideEnum.Defender);
-		MissionScoreboardComponent.MissionScoreboardSide missionScoreboardSide3 = (num ? missionScoreboardSide : missionScoreboardSide2);
-		MissionScoreboardComponent.MissionScoreboardSide missionScoreboardSide4 = (num ? missionScoreboardSide2 : missionScoreboardSide);
-		BasicCultureObject culture = missionScoreboardSide3.GetCulture();
-		BasicCultureObject culture2 = missionScoreboardSide4.GetCulture();
-		bool isWinner = _multiplayerRoundComponent.RoundWinner == allyBattleSideEnum;
-		bool isWinner2 = _multiplayerRoundComponent.RoundWinner == battleSideEnum;
+		RefreshDisplayedSides();
+		MissionScoreboardComponent.MissionScoreboardSide missionScoreboardSide = _scoreboardComponent.Sides.FirstOrDefault((MissionScoreboardComponent.MissionScoreboardSide s) => s != null && s.Side == _leftSide);
+		MissionScoreboardComponent.MissionScoreboardSide missionScoreboardSide2 = _scoreboardComponent.Sides.FirstOrDefault((MissionScoreboardComponent.MissionScoreboardSide s) => s != null && s.Side == _rightSide);
+		BasicCultureObject culture = missionScoreboardSide.GetCulture();
+		BasicCultureObject culture2 = missionScoreboardSide2.GetCulture();
+		BattleSideEnum roundWinner = _multiplayerRoundComponent.RoundWinner;
 		AttackerMVPTitleText = GetMVPTitleText(culture);
 		DefenderMVPTitleText = GetMVPTitleText(culture2);
 		MultiplayerBattleColors multiplayerBattleColors = MultiplayerBattleColors.CreateWith(culture, culture2);
-		AttackerSide.SetData(culture, missionScoreboardSide3.SideScore, isWinner, multiplayerBattleColors.AttackerColors);
-		DefenderSide.SetData(culture2, missionScoreboardSide4.SideScore, isWinner2, multiplayerBattleColors.DefenderColors);
-		if (_scoreboardComponent.Sides.FirstOrDefault((MissionScoreboardComponent.MissionScoreboardSide s) => s != null && s.Side == allyBattleSideEnum) != null && _multiplayerRoundComponent != null)
+		AttackerSide.SetData(culture, missionScoreboardSide.SideScore, roundWinner == _leftSide, multiplayerBattleColors.AttackerColors);
+		DefenderSide.SetData(culture2, missionScoreboardSide2.SideScore, roundWinner == _rightSide, multiplayerBattleColors.DefenderColors);
+		RoundEndReason roundEndReason = _multiplayerRoundComponent.RoundEndReason;
+		if (_isNeutralViewer)
 		{
-			bool flag = false;
-			if (_multiplayerRoundComponent.RoundWinner == allyBattleSideEnum)
-			{
-				IsRoundWinner = true;
-				Title = _victoryText;
-			}
-			else if (_multiplayerRoundComponent.RoundWinner == battleSideEnum)
-			{
-				IsRoundWinner = false;
-				Title = _defeatText;
-			}
-			else
-			{
-				flag = true;
-			}
-			switch (_multiplayerRoundComponent.RoundEndReason)
-			{
-			case RoundEndReason.SideDepleted:
-				Description = (IsRoundWinner ? _roundEndReasonEnemyTeamSideDepletedTextObject.ToString() : _roundEndReasonAllyTeamSideDepletedTextObject.ToString());
-				break;
-			case RoundEndReason.GameModeSpecificEnded:
-				Description = (IsRoundWinner ? _roundEndReasonEnemyTeamGameModeSpecificEndedTextObject.ToString() : _roundEndReasonAllyTeamGameModeSpecificEndedTextObject.ToString());
-				break;
-			case RoundEndReason.RoundTimeEnded:
-				Description = (IsRoundWinner ? _roundEndReasonAllyTeamRoundTimeEndedTextObject.ToString() : (flag ? _roundEndReasonRoundTimeEndedWithDrawTextObject.ToString() : _roundEndReasonEnemyTeamRoundTimeEndedTextObject.ToString()));
-				break;
-			}
+			RefreshNeutralTexts(roundWinner, roundEndReason, (roundWinner == _leftSide) ? culture : culture2, (roundWinner == _leftSide) ? culture2 : culture);
 		}
+		else
+		{
+			RefreshAllyTexts(roundWinner, roundEndReason);
+		}
+	}
+
+	private void RefreshAllyTexts(BattleSideEnum roundWinner, RoundEndReason roundEndReason)
+	{
+		bool flag = false;
+		if (roundWinner == _leftSide)
+		{
+			IsRoundWinner = true;
+			Title = _victoryText;
+		}
+		else if (roundWinner == _rightSide)
+		{
+			IsRoundWinner = false;
+			Title = _defeatText;
+		}
+		else
+		{
+			flag = true;
+		}
+		switch (roundEndReason)
+		{
+		case RoundEndReason.SideDepleted:
+			Description = (IsRoundWinner ? _roundEndReasonEnemyTeamSideDepletedTextObject.ToString() : _roundEndReasonAllyTeamSideDepletedTextObject.ToString());
+			break;
+		case RoundEndReason.GameModeSpecificEnded:
+			Description = (IsRoundWinner ? _roundEndReasonEnemyTeamGameModeSpecificEndedTextObject.ToString() : _roundEndReasonAllyTeamGameModeSpecificEndedTextObject.ToString());
+			break;
+		case RoundEndReason.RoundTimeEnded:
+			Description = (IsRoundWinner ? _roundEndReasonAllyTeamRoundTimeEndedTextObject.ToString() : (flag ? _roundEndReasonRoundTimeEndedWithDrawTextObject.ToString() : _roundEndReasonEnemyTeamRoundTimeEndedTextObject.ToString()));
+			break;
+		}
+	}
+
+	private void RefreshNeutralTexts(BattleSideEnum roundWinner, RoundEndReason roundEndReason, BasicCultureObject winnerCulture, BasicCultureObject loserCulture)
+	{
+		IsRoundWinner = true;
+		bool flag = roundWinner == BattleSideEnum.None;
+		Title = (flag ? _neutralRoundDrawTextObject.ToString() : _neutralRoundWonTextObject.SetTextVariable("CULTURE", winnerCulture.Name).ToString());
+		switch (roundEndReason)
+		{
+		case RoundEndReason.GameModeSpecificEnded:
+			Description = _neutralRoundEndReasonGameModeSpecificEndedTextObject.SetTextVariable("CULTURE", loserCulture.Name).ToString();
+			break;
+		case RoundEndReason.RoundTimeEnded:
+			Description = (flag ? _roundEndReasonRoundTimeEndedWithDrawTextObject.ToString() : _neutralRoundEndReasonRoundTimeEndedTextObject.SetTextVariable("CULTURE", winnerCulture.Name).ToString());
+			break;
+		}
+	}
+
+	private void RefreshDisplayedSides()
+	{
+		BattleSideEnum battleSideEnum = GameNetwork.MyPeer?.GetComponent<MissionPeer>()?.Team?.Side ?? BattleSideEnum.None;
+		_isNeutralViewer = battleSideEnum != BattleSideEnum.Attacker && battleSideEnum != BattleSideEnum.Defender;
+		_leftSide = (_isNeutralViewer ? BattleSideEnum.Attacker : battleSideEnum);
+		_rightSide = ((_leftSide != BattleSideEnum.Attacker) ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
 	}
 
 	public void OnMVPSelected(MissionPeer mvpPeer)
@@ -377,8 +419,8 @@ public class MultiplayerEndOfRoundVM : ViewModel
 		BasicCharacterObject @object = MBObjectManager.Instance.GetObject<BasicCharacterObject>("mp_character");
 		@object.UpdatePlayerCharacterBodyProperties(mvpPeer.Peer.BodyProperties, mvpPeer.Peer.Race, mvpPeer.Peer.IsFemale);
 		@object.Age = mvpPeer.Peer.BodyProperties.Age;
-		MissionPeer obj = GameNetwork.MyPeer?.GetComponent<MissionPeer>();
-		if (mvpPeer.Team?.Side == obj.Team?.Side)
+		RefreshDisplayedSides();
+		if ((mvpPeer.Team?.Side ?? BattleSideEnum.None) == _leftSide)
 		{
 			AttackerMVP = new MPPlayerVM(mvpPeer);
 			AttackerMVP.RefreshDivision();
@@ -420,7 +462,7 @@ public class MultiplayerEndOfRoundVM : ViewModel
 		{
 			return new TextObject("{=wwbIcqsq}Conqueror").ToString();
 		}
-		Debug.FailedAssert("Invalid Culture ID for MVP Title", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\EndOfRound\\MultiplayerEndOfRoundVM.cs", "GetMVPTitleText", 205);
+		Debug.FailedAssert("Invalid Culture ID for MVP Title", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\EndOfRound\\MultiplayerEndOfRoundVM.cs", "GetMVPTitleText", 251);
 		return string.Empty;
 	}
 

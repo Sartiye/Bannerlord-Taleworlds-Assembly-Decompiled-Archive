@@ -82,7 +82,7 @@ public static class EnterSettlementAction
 		mobileParty.CurrentSettlement = settlement;
 		if (isCurrentlyAtSea && !mobileParty.IsCurrentlyAtSea && mobileParty.Ships.Any() && !mobileParty.Anchor.IsAtSettlement(settlement))
 		{
-			mobileParty.Anchor.SetSettlement(settlement);
+			mobileParty.Anchor.Settlement = settlement;
 		}
 		settlement.SettlementComponent.OnPartyEntered(mobileParty);
 		ApplyInternal(mobileParty.LeaderHero, mobileParty, settlement, EnterSettlementDetail.WarParty);

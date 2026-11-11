@@ -7,35 +7,91 @@ namespace TaleWorlds.MountAndBlade.View.MissionViews;
 
 public class MissionFormationTargetSelectionHandler : MissionView
 {
-	public const float MaxDistanceForFocusCheck = 1000f;
+	public enum FormationMarkerVisibility
+	{
+		NotEvaluated,
+		Hidden,
+		Visible
+	}
 
-	public const float MinDistanceForFocusCheck = 10f;
+	public struct VisibilityConfig
+	{
+		public MultiplayerOptions.FormationTargetingVisibilityModes Mode;
+
+		public int Threshold;
+	}
+
+	public const float MaxDistanceForFocusCheck = 1000f;
 
 	public readonly float MaxDistanceToCenterForFocus = 70f * (Screen.RealScreenResolutionHeight / 1080f);
 
-	private readonly List<(Formation, float)> _distanceCache;
+	private const int MaxSampledUnitsPerFormation = 24;
 
-	private readonly MBList<Formation> _focusedFormationCache;
+	private const float VisibilityResultCacheDuration = 0.2f;
+
+	private readonly List<(Formation Formation, float DistanceToScreenCenter)> _distanceCache = new List<(Formation, float)>();
+
+	private Formation _focusedFormation;
 
 	private Vec2 _centerOfScreen = new Vec2(Screen.RealScreenResolutionWidth / 2f, Screen.RealScreenResolutionHeight / 2f);
 
+	private VisibilityConfig _visibilityConfig;
+
+	private readonly Dictionary<Formation, (bool IsVisible, float VisibilityRatio, float ComputedAtTime)> _visibilityResultCache;
+
+	private readonly Dictionary<Formation, bool> _markerVisibilityCache;
+
+	private float _elapsedTime;
+
 	private bool _isTargetingDisabled;
+
+	private readonly List<Formation> _expiredVisibilityKeys;
+
+	private static readonly Comparison<(Formation, float)> DistanceToScreenCenterComparison = CompareByDistanceToScreenCenter;
+
+	public static float MinDistanceForFocusCheck
+	{
+		get
+		{
+			if (!GameNetwork.IsMultiplayer)
+			{
+				return 8f;
+			}
+			return 4.8f;
+		}
+	}
 
 	private Camera ActiveCamera => base.MissionScreen.CustomCamera ?? base.MissionScreen.CombatCamera;
 
-	public event Action<MBReadOnlyList<Formation>> OnFormationFocused;
+	public event Action<Formation> OnFormationFocused;
 
 	public MissionFormationTargetSelectionHandler()
 	{
-		_distanceCache = new List<(Formation, float)>();
-		_focusedFormationCache = new MBList<Formation>();
+		_visibilityResultCache = new Dictionary<Formation, (bool, float, float)>();
+		_markerVisibilityCache = new Dictionary<Formation, bool>();
+		_expiredVisibilityKeys = new List<Formation>();
+		_visibilityConfig = new VisibilityConfig
+		{
+			Mode = MultiplayerOptions.FormationTargetingVisibilityModes.Disabled,
+			Threshold = 0
+		};
+	}
+
+	public void SetVisibilityConfig(VisibilityConfig config)
+	{
+		_visibilityConfig = config;
+		_visibilityResultCache.Clear();
+		_markerVisibilityCache.Clear();
 	}
 
 	public override void OnPreDisplayMissionTick(float dt)
 	{
 		base.OnPreDisplayMissionTick(dt);
 		_distanceCache.Clear();
-		_focusedFormationCache.Clear();
+		_focusedFormation = null;
+		_markerVisibilityCache.Clear();
+		_elapsedTime += dt;
+		PruneExpiredVisibilityResults();
 		if (base.Mission?.Teams == null)
 		{
 			return;
@@ -45,6 +101,14 @@ public class MissionFormationTargetSelectionHandler : MissionView
 			Vec3 position = ActiveCamera.Position;
 			_centerOfScreen.x = Screen.RealScreenResolutionWidth / 2f;
 			_centerOfScreen.y = Screen.RealScreenResolutionHeight / 2f;
+			bool flag = _visibilityConfig.Mode != MultiplayerOptions.FormationTargetingVisibilityModes.Disabled;
+			MatrixFrame viewProj = MatrixFrame.Identity;
+			Vec3 cameraOrigin = Vec3.Zero;
+			if (flag)
+			{
+				ActiveCamera.GetViewProjMatrix(ref viewProj);
+				cameraOrigin = ActiveCamera.Position;
+			}
 			for (int i = 0; i < base.Mission.Teams.Count; i++)
 			{
 				Team team = base.Mission.Teams[i];
@@ -62,6 +126,11 @@ public class MissionFormationTargetSelectionHandler : MissionView
 						{
 							_distanceCache.Add((formation, distanceToScreenCenter));
 						}
+						if (flag)
+						{
+							bool flag2 = formation.CachedMedianPosition.AsVec2.Distance(position.AsVec2) < 1000f;
+							_markerVisibilityCache[formation] = flag2 && IsFormationVisibleEnough(formation, ref viewProj, cameraOrigin);
+						}
 					}
 				}
 			}
@@ -71,26 +140,35 @@ public class MissionFormationTargetSelectionHandler : MissionView
 			this.OnFormationFocused?.Invoke(null);
 			return;
 		}
-		Formation formation2 = null;
-		float num = MaxDistanceToCenterForFocus;
+		_distanceCache.Sort(DistanceToScreenCenterComparison);
+		MatrixFrame viewProj2 = MatrixFrame.Identity;
+		Vec3 cameraOrigin2 = Vec3.Zero;
+		bool flag3 = _visibilityConfig.Mode != MultiplayerOptions.FormationTargetingVisibilityModes.Disabled;
+		if (flag3)
+		{
+			ActiveCamera.GetViewProjMatrix(ref viewProj2);
+			cameraOrigin2 = ActiveCamera.Position;
+		}
 		for (int k = 0; k < _distanceCache.Count; k++)
 		{
-			(Formation, float) tuple = _distanceCache[k];
-			if (tuple.Item2 == 0f)
+			(Formation Formation, float DistanceToScreenCenter) tuple = _distanceCache[k];
+			var (formation2, _) = tuple;
+			if (tuple.DistanceToScreenCenter >= MaxDistanceToCenterForFocus)
 			{
-				_focusedFormationCache.Add(tuple.Item1);
+				break;
 			}
-			else if (tuple.Item2 < num)
+			if (!flag3 || IsFormationVisibleEnough(formation2, ref viewProj2, cameraOrigin2))
 			{
-				num = tuple.Item2;
-				(formation2, _) = tuple;
+				_focusedFormation = formation2;
+				break;
 			}
 		}
-		if (formation2 != null)
-		{
-			_focusedFormationCache.Add(formation2);
-		}
-		this.OnFormationFocused?.Invoke(_focusedFormationCache);
+		this.OnFormationFocused?.Invoke(_focusedFormation);
+	}
+
+	private static int CompareByDistanceToScreenCenter((Formation, float) a, (Formation, float) b)
+	{
+		return a.Item2.CompareTo(b.Item2);
 	}
 
 	private void TryGetFormationDistanceToCenter(Formation formation, Vec3 cameraPosition, out bool isFormationFocusable, out float distanceToScreenCenter)
@@ -102,26 +180,137 @@ public class MissionFormationTargetSelectionHandler : MissionView
 		float w = 0f;
 		MBWindowManager.WorldToScreenInsideUsableArea(ActiveCamera, cachedMedianPosition.GetGroundVec3() + new Vec3(0f, 0f, 3f), ref screenX, ref screenY, ref w);
 		bool flag = w <= 0f;
-		if (num >= 1000f)
+		if (num >= 1000f || num <= MinDistanceForFocusCheck || flag)
 		{
 			distanceToScreenCenter = 2.1474836E+09f;
 			isFormationFocusable = false;
-		}
-		else if (num <= 10f)
-		{
-			isFormationFocusable = !flag;
-			distanceToScreenCenter = 0f;
-		}
-		else if (flag)
-		{
-			isFormationFocusable = false;
-			distanceToScreenCenter = 2.1474836E+09f;
 		}
 		else
 		{
 			isFormationFocusable = true;
 			distanceToScreenCenter = new Vec2(screenX, screenY).Distance(_centerOfScreen);
 		}
+	}
+
+	private bool IsFormationVisibleEnough(Formation formation, ref MatrixFrame viewProjection, Vec3 cameraOrigin)
+	{
+		if (_visibilityResultCache.TryGetValue(formation, out (bool, float, float) value) && _elapsedTime - value.Item3 < 0.2f)
+		{
+			return value.Item1;
+		}
+		float visibilityRatio;
+		bool flag = ComputeFormationVisibility(formation, ref viewProjection, cameraOrigin, out visibilityRatio);
+		_visibilityResultCache[formation] = (flag, visibilityRatio, _elapsedTime);
+		return flag;
+	}
+
+	public float GetFormationVisibilityRatio(Formation formation)
+	{
+		if (_visibilityResultCache.TryGetValue(formation, out (bool, float, float) value) && _elapsedTime - value.Item3 < 0.2f)
+		{
+			return value.Item2;
+		}
+		return 1f;
+	}
+
+	public FormationMarkerVisibility GetFormationMarkerVisibility(Formation formation)
+	{
+		if (_isTargetingDisabled || _visibilityConfig.Mode == MultiplayerOptions.FormationTargetingVisibilityModes.Disabled)
+		{
+			return FormationMarkerVisibility.NotEvaluated;
+		}
+		if (_markerVisibilityCache.TryGetValue(formation, out var value))
+		{
+			if (!value)
+			{
+				return FormationMarkerVisibility.Hidden;
+			}
+			return FormationMarkerVisibility.Visible;
+		}
+		return FormationMarkerVisibility.NotEvaluated;
+	}
+
+	private void PruneExpiredVisibilityResults()
+	{
+		if (_visibilityResultCache.Count == 0)
+		{
+			return;
+		}
+		_expiredVisibilityKeys.Clear();
+		foreach (KeyValuePair<Formation, (bool, float, float)> item in _visibilityResultCache)
+		{
+			if (_elapsedTime - item.Value.Item3 >= 0.2f)
+			{
+				_expiredVisibilityKeys.Add(item.Key);
+			}
+		}
+		for (int i = 0; i < _expiredVisibilityKeys.Count; i++)
+		{
+			_visibilityResultCache.Remove(_expiredVisibilityKeys[i]);
+		}
+		_expiredVisibilityKeys.Clear();
+	}
+
+	private bool ComputeFormationVisibility(Formation formation, ref MatrixFrame viewProjection, Vec3 cameraOrigin, out float visibilityRatio)
+	{
+		visibilityRatio = 1f;
+		int countOfUnits = formation.CountOfUnits;
+		if (countOfUnits == 0)
+		{
+			visibilityRatio = 0f;
+			return false;
+		}
+		MBReadOnlyList<IFormationUnit> unitsWithoutLooseDetachedOnes = formation.UnitsWithoutLooseDetachedOnes;
+		MBReadOnlyList<Agent> detachedUnits = formation.DetachedUnits;
+		int count = unitsWithoutLooseDetachedOnes.Count;
+		int count2 = detachedUnits.Count;
+		int num = count + count2;
+		int num2 = ((num <= 24) ? 1 : ((num + 24 - 1) / 24));
+		int num3 = 0;
+		int num4 = 0;
+		for (int i = 0; i < num; i += num2)
+		{
+			Agent agent = ((i >= count) ? detachedUnits[i - count] : ((Agent)unitsWithoutLooseDetachedOnes[i]));
+			if (!agent.IsActive())
+			{
+				continue;
+			}
+			Vec3 chestGlobalPosition = agent.GetChestGlobalPosition();
+			Vec3 vec = chestGlobalPosition;
+			vec.w = 1f;
+			Vec3 vec2 = vec * viewProjection;
+			if (vec2.w <= 0f)
+			{
+				num3++;
+				continue;
+			}
+			float num5 = vec2.x / vec2.w;
+			float num6 = vec2.y / vec2.w;
+			if (num5 < -1f || num5 > 1f || num6 < -1f || num6 > 1f)
+			{
+				num3++;
+				continue;
+			}
+			if (!base.Mission.Scene.CheckPointCanSeePoint(cameraOrigin, chestGlobalPosition))
+			{
+				num3++;
+				continue;
+			}
+			num3++;
+			num4++;
+		}
+		if (num3 == 0)
+		{
+			visibilityRatio = 0f;
+			return false;
+		}
+		visibilityRatio = (float)num4 / (float)num3;
+		return _visibilityConfig.Mode switch
+		{
+			MultiplayerOptions.FormationTargetingVisibilityModes.Percentage => visibilityRatio * 100f >= (float)_visibilityConfig.Threshold, 
+			MultiplayerOptions.FormationTargetingVisibilityModes.AbsoluteCount => visibilityRatio * (float)countOfUnits >= (float)_visibilityConfig.Threshold, 
+			_ => true, 
+		};
 	}
 
 	public void SetIsFormationTargetingDisabled(bool isDisabled)
@@ -132,7 +321,9 @@ public class MissionFormationTargetSelectionHandler : MissionView
 			if (isDisabled)
 			{
 				_distanceCache.Clear();
-				_focusedFormationCache.Clear();
+				_focusedFormation = null;
+				_visibilityResultCache.Clear();
+				_markerVisibilityCache.Clear();
 				this.OnFormationFocused?.Invoke(null);
 			}
 		}
@@ -141,7 +332,10 @@ public class MissionFormationTargetSelectionHandler : MissionView
 	public override void OnRemoveBehavior()
 	{
 		_distanceCache.Clear();
-		_focusedFormationCache.Clear();
+		_focusedFormation = null;
+		_visibilityResultCache.Clear();
+		_markerVisibilityCache.Clear();
+		_expiredVisibilityKeys.Clear();
 		this.OnFormationFocused = null;
 		base.OnRemoveBehavior();
 	}

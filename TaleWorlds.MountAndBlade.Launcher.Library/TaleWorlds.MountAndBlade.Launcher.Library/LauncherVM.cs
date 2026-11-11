@@ -24,7 +24,7 @@ public class LauncherVM : ViewModel
 
 	private bool _isContinueSelected;
 
-	private const string _newsSourceURLBase = "https://taleworldswebsiteassets.blob.core.windows.net/upload/bannerlordnews/NewsFeed_";
+	private const string _newsSourceURLBase = "https://cdn.taleworlds.com/upload/bannerlordnews/NewsFeed_";
 
 	private bool _isMultiplayer;
 
@@ -558,7 +558,7 @@ public class LauncherVM : ViewModel
 		{
 			if (module?.Info == null)
 			{
-				Debug.FailedAssert("Info for module is null: " + (module?.Name ?? "---"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Launcher.Library\\ViewModels\\LauncherVM.cs", "GetApplicationVersionOfModule", 198);
+				Debug.FailedAssert("Info for module is null: " + (module?.Name ?? "---"), "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Launcher.Library\\ViewModels\\LauncherVM.cs", "GetApplicationVersionOfModule", 201);
 			}
 			if (module.Info.Id == id)
 			{
@@ -601,8 +601,8 @@ public class LauncherVM : ViewModel
 		_newsManager.UpdateLocalizationID(text);
 		if (!isInPreviewMode)
 		{
-			return "https://taleworldswebsiteassets.blob.core.windows.net/upload/bannerlordnews/NewsFeed_" + text + ".json";
+			return "https://cdn.taleworlds.com/upload/bannerlordnews/NewsFeed_" + text + ".json";
 		}
-		return "https://taleworldswebsiteassets.blob.core.windows.net/upload/bannerlordnews/NewsFeed_" + text + "_preview.json";
+		return "https://cdn.taleworlds.com/upload/bannerlordnews/NewsFeed_" + text + "_preview.json";
 	}
 }

@@ -7,9 +7,9 @@ namespace NavalDLC.GameComponents;
 
 public class NavalDLCSettlementGarrisonModel : SettlementGarrisonModel
 {
-	public override int GetMaximumDailyAutoRecruitmentCount(Town town)
+	public override ExplainedNumber GetMaximumDailyAutoRecruitmentCount(Town town, bool includeDescriptions = false)
 	{
-		return base.BaseModel.GetMaximumDailyAutoRecruitmentCount(town);
+		return base.BaseModel.GetMaximumDailyAutoRecruitmentCount(town, includeDescriptions);
 	}
 
 	public override ExplainedNumber CalculateBaseGarrisonChange(Settlement settlement, bool includeDescriptions = false)
@@ -20,11 +20,6 @@ public class NavalDLCSettlementGarrisonModel : SettlementGarrisonModel
 	public override int FindNumberOfTroopsToTakeFromGarrison(MobileParty mobileParty, Settlement settlement, float idealGarrisonStrengthPerWalledCenter = 0f)
 	{
 		return base.BaseModel.FindNumberOfTroopsToTakeFromGarrison(mobileParty, settlement, idealGarrisonStrengthPerWalledCenter);
-	}
-
-	public override int FindNumberOfTroopsToLeaveToGarrison(MobileParty mobileParty, Settlement settlement)
-	{
-		return base.BaseModel.FindNumberOfTroopsToLeaveToGarrison(mobileParty, settlement);
 	}
 
 	public override float GetMaximumDailyRepairAmount(Settlement settlement)

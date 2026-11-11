@@ -71,7 +71,17 @@ public class GameStateManager
 
 	public IEnumerable<GameState> GameStates => _gameStates.AsReadOnly();
 
-	public bool ActiveStateDisabledByUser => _activeStateDisableRequests.Count > 0;
+	public bool ActiveStateDisabledByUser
+	{
+		get
+		{
+			if (_activeStateDisableRequests.Count > 0)
+			{
+				return ActiveState?.CanBeDisabled ?? false;
+			}
+			return false;
+		}
+	}
 
 	public GameState ActiveState
 	{

@@ -163,31 +163,45 @@ public class DefaultDiplomacyModel : DiplomacyModel
 		return 0f;
 	}
 
-	public override float GetRelationIncreaseFactor(Hero hero1, Hero hero2, float relationChange)
+	public override int GetEffectiveRelationChange(Hero originalHero, Hero originalGainedRelationWith, int relationChange)
 	{
 		ExplainedNumber explainedNumber = new ExplainedNumber(relationChange);
-		Hero hero3 = ((!hero1.IsHumanPlayerCharacter && !hero2.IsHumanPlayerCharacter) ? ((MBRandom.RandomFloat < 0.5f) ? hero1 : hero2) : (hero1.IsHumanPlayerCharacter ? hero1 : hero2));
-		SkillHelper.AddSkillBonusForCharacter(DefaultSkillEffects.CharmRelationBonus, hero3.CharacterObject, ref explainedNumber);
-		if (hero1.IsFemale != hero2.IsFemale)
+		if (explainedNumber.ResultNumber > 0f)
 		{
-			if (hero3.GetPerkValue(DefaultPerks.Charm.InBloom))
+			Hero hero = ((!originalHero.IsHumanPlayerCharacter && !originalGainedRelationWith.IsHumanPlayerCharacter) ? ((MBRandom.RandomFloat < 0.5f) ? originalHero : originalGainedRelationWith) : (originalHero.IsHumanPlayerCharacter ? originalHero : originalGainedRelationWith));
+			SkillHelper.AddSkillBonusForCharacter(DefaultSkillEffects.CharmRelationBonus, hero.CharacterObject, ref explainedNumber);
+			if (originalHero.IsFemale != originalGainedRelationWith.IsFemale)
 			{
-				explainedNumber.AddFactor(DefaultPerks.Charm.InBloom.PrimaryBonus);
+				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Charm.InBloom, hero.CharacterObject, isPrimaryBonus: true, ref explainedNumber);
+			}
+			else
+			{
+				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Charm.YoungAndRespectful, hero.CharacterObject, isPrimaryBonus: true, ref explainedNumber);
+			}
+			if (originalGainedRelationWith.GetTraitLevel(DefaultTraits.Mercy) > 0)
+			{
+				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Charm.GoodNatured, hero.CharacterObject, isPrimaryBonus: false, ref explainedNumber);
+			}
+			if (originalGainedRelationWith.GetTraitLevel(DefaultTraits.Mercy) < 0)
+			{
+				PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Charm.Tribute, hero.CharacterObject, isPrimaryBonus: false, ref explainedNumber);
+			}
+			float traitEffectBonus = TraitEffectHelper.GetTraitEffectBonus(originalHero, DefaultPersonalityTraitEffects.HonorRelationGainEffect);
+			float traitEffectBonus2 = TraitEffectHelper.GetTraitEffectBonus(originalGainedRelationWith, DefaultPersonalityTraitEffects.HonorRelationGainEffect);
+			float num = ((traitEffectBonus > traitEffectBonus2) ? traitEffectBonus : traitEffectBonus2);
+			if (num != 0f)
+			{
+				explainedNumber.AddFactor(num, new TextObject("{=ENta0wCu}Personality"));
+			}
+			float num2 = (originalGainedRelationWith.IsClanLeader ? TraitEffectHelper.GetTraitEffectBonus(originalHero, DefaultPersonalityTraitEffects.HonorClanLeaderRelationEffect) : 0f);
+			float num3 = (originalHero.IsClanLeader ? TraitEffectHelper.GetTraitEffectBonus(originalGainedRelationWith, DefaultPersonalityTraitEffects.HonorClanLeaderRelationEffect) : 0f);
+			float num4 = ((num2 < num3) ? num2 : num3);
+			if (num4 != 0f)
+			{
+				explainedNumber.AddFactor(num4, new TextObject("{=ENta0wCu}Personality"));
 			}
 		}
-		else if (hero3.GetPerkValue(DefaultPerks.Charm.YoungAndRespectful))
-		{
-			explainedNumber.AddFactor(DefaultPerks.Charm.YoungAndRespectful.PrimaryBonus);
-		}
-		if (hero3.GetPerkValue(DefaultPerks.Charm.GoodNatured) && hero2.GetTraitLevel(DefaultTraits.Mercy) > 0)
-		{
-			explainedNumber.Add(DefaultPerks.Charm.GoodNatured.SecondaryBonus, DefaultPerks.Charm.GoodNatured.Name);
-		}
-		if (hero3.GetPerkValue(DefaultPerks.Charm.Tribute) && hero2.GetTraitLevel(DefaultTraits.Mercy) < 0)
-		{
-			explainedNumber.Add(DefaultPerks.Charm.Tribute.SecondaryBonus, DefaultPerks.Charm.Tribute.Name);
-		}
-		return explainedNumber.ResultNumber;
+		return explainedNumber.RoundedResultNumber;
 	}
 
 	public override int GetInfluenceAwardForSettlementCapturer(Settlement settlement)
@@ -840,10 +854,7 @@ public class DefaultDiplomacyModel : DiplomacyModel
 
 	private void GetPerkEffectsOnKingdomDecisionInfluenceCost(Clan proposingClan, ref ExplainedNumber cost)
 	{
-		if (proposingClan.Leader.GetPerkValue(DefaultPerks.Charm.Firebrand))
-		{
-			cost.AddFactor(DefaultPerks.Charm.Firebrand.PrimaryBonus, DefaultPerks.Charm.Firebrand.Name);
-		}
+		PerkHelper.AddPerkBonusForCharacter(DefaultPerks.Charm.Firebrand, proposingClan.Leader.CharacterObject, isPrimaryBonus: true, ref cost);
 	}
 
 	private int GetBaseRelationBetweenHeroes(Hero hero1, Hero hero2)
@@ -1063,9 +1074,9 @@ public class DefaultDiplomacyModel : DiplomacyModel
 
 	public override bool IsClanEligibleToBecomeRuler(Clan clan)
 	{
-		if (!clan.IsEliminated && clan.Leader.IsAlive)
+		if (!clan.IsEliminated && clan.Leader.IsAlive && !clan.IsUnderMercenaryService)
 		{
-			return !clan.IsUnderMercenaryService;
+			return !clan.IsClanTypeMercenary;
 		}
 		return false;
 	}
@@ -1094,7 +1105,7 @@ public class DefaultDiplomacyModel : DiplomacyModel
 		{
 			return true;
 		}
-		if (GetShallowDiplomaticStance(faction1, faction2) == DiplomacyStance.War)
+		if (Campaign.Current.Models.DiplomacyModel.GetShallowDiplomaticStance(faction1, faction2) == DiplomacyStance.War)
 		{
 			return true;
 		}

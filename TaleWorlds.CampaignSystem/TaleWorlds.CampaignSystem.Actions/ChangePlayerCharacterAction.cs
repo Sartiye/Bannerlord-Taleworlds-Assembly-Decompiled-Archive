@@ -10,14 +10,9 @@ public class ChangePlayerCharacterAction
 	{
 		Hero mainHero = Hero.MainHero;
 		MobileParty mainParty = MobileParty.MainParty;
-		CampaignVec2 position = MobileParty.MainParty.Anchor.Position;
-		CampaignVec2 lastUsedDisembarkPosition = MobileParty.MainParty.Anchor.GetLastUsedDisembarkPosition();
+		AnchorPoint anchor = new AnchorPoint(MobileParty.MainParty.Anchor);
 		bool isCurrentlyAtSea = MobileParty.MainParty.IsCurrentlyAtSea;
 		Game.Current.PlayerTroop = hero.CharacterObject;
-		if (MobileParty.MainParty.Anchor.IsMovingToPoint)
-		{
-			MobileParty.MainParty.Anchor.ResetMoveTarget();
-		}
 		CampaignEventDispatcher.Instance.OnBeforePlayerCharacterChanged(mainHero, hero);
 		Campaign.Current.OnPlayerCharacterChanged(out var isMainPartyChanged);
 		if (mainParty.Ships.Count > 0 && isMainPartyChanged)
@@ -35,10 +30,9 @@ public class ChangePlayerCharacterAction
 		{
 			mainParty.CancelNavigationTransition();
 		}
-		if (MobileParty.MainParty.Ships.Count > 0 && position.IsValid() && !MobileParty.MainParty.Anchor.IsValid && !MobileParty.MainParty.IsCurrentlyAtSea)
+		if (MobileParty.MainParty.Ships.Count > 0 && !MobileParty.MainParty.Anchor.IsValid && !MobileParty.MainParty.IsCurrentlyAtSea)
 		{
-			MobileParty.MainParty.Anchor.SetPosition(position);
-			MobileParty.MainParty.Anchor.SetLastUsedDisembarkPosition(lastUsedDisembarkPosition);
+			MobileParty.MainParty.SetAnchor(anchor);
 		}
 		if (mainParty != MobileParty.MainParty && mainParty.IsActive)
 		{
@@ -60,9 +54,5 @@ public class ChangePlayerCharacterAction
 		PartyBase.MainParty.SetVisualAsDirty();
 		mainParty.Party.SetVisualAsDirty();
 		Campaign.Current.MainHeroIllDays = -1;
-		for (int num2 = MobileParty.MainParty.Ships.Count - 1; num2 >= 0; num2--)
-		{
-			MobileParty.MainParty.Ships[num2].OnPlayerCharacterChanged();
-		}
 	}
 }

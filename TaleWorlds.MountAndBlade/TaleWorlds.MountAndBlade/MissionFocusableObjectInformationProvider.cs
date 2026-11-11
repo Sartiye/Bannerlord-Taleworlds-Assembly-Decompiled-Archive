@@ -197,7 +197,7 @@ public class MissionFocusableObjectInformationProvider
 		UsableMachine usableMachineFromPoint = GetUsableMachineFromPoint(usableMissionObject);
 		if (usableMachineFromPoint != null)
 		{
-			focusableObjectInformation.PrimaryInteractionText = usableMachineFromPoint.GetDescriptionText(usableMissionObject.GameEntity);
+			focusableObjectInformation.PrimaryInteractionText = usableMachineFromPoint.GetDescriptionText(usableMissionObject.GameEntity, requesterAgent);
 			focusableObjectInformation.SecondaryInteractionText = (isInteractable ? (usableMachineFromPoint.GetActionTextForStandingPoint(usableMissionObject) ?? TextObject.GetEmpty()) : TextObject.GetEmpty());
 			focusableObjectInformation.IsActive = true;
 		}
@@ -230,7 +230,7 @@ public class MissionFocusableObjectInformationProvider
 			focusableObjectInformation.IsActive = false;
 			return;
 		}
-		TextObject descriptionText = destructableComponent.GetDescriptionText(destructableComponent.GameEntity);
+		TextObject descriptionText = destructableComponent.GetDescriptionText(destructableComponent.GameEntity, requesterAgent);
 		bool flag = !TextObject.IsNullOrEmpty(descriptionText);
 		focusableObjectInformation.PrimaryInteractionText = (flag ? descriptionText : TextObject.GetEmpty());
 		focusableObjectInformation.SecondaryInteractionText = TextObject.GetEmpty();
@@ -245,7 +245,7 @@ public class MissionFocusableObjectInformationProvider
 			focusableObjectInformation.IsActive = false;
 			return;
 		}
-		focusableObjectInformation.PrimaryInteractionText = usableMachine.GetDescriptionText(usableMachine.GameEntity) ?? TextObject.GetEmpty();
+		focusableObjectInformation.PrimaryInteractionText = usableMachine.GetDescriptionText(usableMachine.GameEntity, requesterAgent) ?? TextObject.GetEmpty();
 		focusableObjectInformation.SecondaryInteractionText = TextObject.GetEmpty();
 		focusableObjectInformation.IsActive = true;
 	}
@@ -377,7 +377,7 @@ public class MissionFocusableObjectInformationProvider
 					focusableObjectInformation.PrimaryInteractionText = agent.NameTextObject;
 					if (isInteractable)
 					{
-						focusableObjectInformation.SecondaryInteractionText = ((IFocusable)agentComponent).GetDescriptionText(WeakGameEntity.Invalid);
+						focusableObjectInformation.SecondaryInteractionText = ((IFocusable)agentComponent).GetDescriptionText(WeakGameEntity.Invalid, requesterAgent);
 					}
 					else
 					{

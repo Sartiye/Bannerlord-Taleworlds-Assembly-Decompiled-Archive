@@ -8,11 +8,12 @@ using TaleWorlds.Diamond;
 using TaleWorlds.Diamond.ClientApplication;
 using TaleWorlds.Library;
 using TaleWorlds.ModuleManager;
+using TaleWorlds.MountAndBlade.Diamond.Cosmetics;
 using TaleWorlds.PlayerServices;
 
 namespace TaleWorlds.MountAndBlade.Diamond;
 
-public class CustomBattleServer : Client<CustomBattleServer>
+public class CustomBattleServer : Client
 {
 	public enum State
 	{
@@ -157,7 +158,9 @@ public class CustomBattleServer : Client<CustomBattleServer>
 
 	public MultipleBattleResult BattleResult { get; private set; }
 
-	public CustomBattleServer(DiamondClientApplication diamondClientApplication, IClientSessionProvider<CustomBattleServer> provider)
+	public override int MaxConsecutiveFailuresBeforeDisconnect => 15;
+
+	public CustomBattleServer(DiamondClientApplication diamondClientApplication, IClientSessionFactory provider)
 		: base(diamondClientApplication, provider, autoReconnect: false)
 	{
 		_peerId = new PeerId(Guid.NewGuid());
@@ -175,6 +178,13 @@ public class CustomBattleServer : Client<CustomBattleServer>
 		_badgeComponent = null;
 		_badgeComponentPlayers = new List<PlayerData>();
 		BattleResult = new MultipleBattleResult();
+		try
+		{
+			CosmeticsManager.Initialize(ModuleHelper.GetModuleFullPath("Native") + "ModuleData");
+		}
+		catch
+		{
+		}
 		_pendingDisconnects = new List<PlayerDisconnectData>();
 		_pendingJoinResponses = new List<PlayerJoinGameResponseDataFromHost>();
 		AddMessageHandler<ClientWantsToConnectCustomGameMessage>(OnClientWantsToConnectCustomGameMessage);
@@ -395,7 +405,7 @@ public class CustomBattleServer : Client<CustomBattleServer>
 						}
 						foreach (PlayerJoinGameData item3 in requestedGroup)
 						{
-							if (item3.PlayerId.Equals(playerJoinGameResponseDataFromHost.PlayerId))
+							if (item3.PlayerId.Equals(playerJoinGameResponseDataFromHost.PlayerId) && item3.JoinType != CustomGameJoinType.Streamer)
 							{
 								_badgeComponent.OnPlayerJoin(item3.PlayerData);
 								_badgeComponentPlayers.Add(item3.PlayerData);
@@ -467,12 +477,12 @@ public class CustomBattleServer : Client<CustomBattleServer>
 		SendMessage(new ResponseCustomGameClientConnectionMessage(playerJoinData));
 	}
 
-	public async Task RegisterGame(string gameModule, string gameType, string serverName, int maxPlayerCount, string scene, string uniqueSceneId, int port, string region, string gamePassword, string adminPassword, int permission)
+	public async Task RegisterGame(string gameModule, string gameType, string serverName, int maxPlayerCount, string scene, string uniqueSceneId, int port, string region, string gamePassword, string adminPassword, string streamerPassword, int permission, int maxStreamerCount = 0)
 	{
-		await RegisterGame(0, gameModule, gameType, serverName, maxPlayerCount, scene, uniqueSceneId, port, region, gamePassword, adminPassword, permission, string.Empty);
+		await RegisterGame(0, gameModule, gameType, serverName, maxPlayerCount, scene, uniqueSceneId, port, region, gamePassword, adminPassword, streamerPassword, permission, string.Empty, maxStreamerCount);
 	}
 
-	public async Task RegisterGame(int gameDefinitionId, string gameModule, string gameType, string serverName, int maxPlayerCount, string scene, string uniqueSceneId, int port, string region, string gamePassword, string adminPassword, int permission, string overriddenIP)
+	public async Task RegisterGame(int gameDefinitionId, string gameModule, string gameType, string serverName, int maxPlayerCount, string scene, string uniqueSceneId, int port, string region, string gamePassword, string adminPassword, string streamerPassword, int permission, string overriddenIP, int maxStreamerCount = 0)
 	{
 		Port = port;
 		CustomGameType = gameType;
@@ -488,7 +498,7 @@ public class CustomBattleServer : Client<CustomBattleServer>
 			isOverridingIP = true;
 			outValue = overriddenIP;
 		}
-		_shouldReportActivities = (await CallFunction<RegisterCustomGameMessageResponseMessage>(new RegisterCustomGameMessage(gameDefinitionId, gameModule, gameType, serverName, outValue, maxPlayerCount, scene, uniqueSceneId, gamePassword, adminPassword, port, region, permission, !_isSinglePlatformServer, isOverridingIP))).ShouldReportActivities;
+		_shouldReportActivities = ((await CallFunction<RegisterCustomGameMessageResponseMessage>(new RegisterCustomGameMessage(gameDefinitionId, gameModule, gameType, serverName, outValue, maxPlayerCount, scene, uniqueSceneId, gamePassword, adminPassword, streamerPassword, port, region, permission, !_isSinglePlatformServer, isOverridingIP, maxStreamerCount))).Result as RegisterCustomGameMessageResponseMessage)?.ShouldReportActivities ?? false;
 		CurrentState = State.RegisteredGame;
 		_timeoutTimer.Start();
 		if (_handler != null)
@@ -550,11 +560,11 @@ public class CustomBattleServer : Client<CustomBattleServer>
 		SendMessage(new CustomBattleServerFinishingMessage(gameLogs, _badgeComponent?.DataDictionary, BattleResult));
 	}
 
-	public void UpdateGameProperties(string gameType, string scene, string uniqueSceneId)
+	public void UpdateGameProperties(string gameType, string scene, string uniqueSceneId, int maxStreamerCount, string streamerPassword)
 	{
 		CustomGameType = gameType;
 		CustomGameScene = scene;
-		SendMessage(new UpdateGamePropertiesMessage(gameType, scene, uniqueSceneId));
+		SendMessage(new UpdateGamePropertiesMessage(gameType, scene, uniqueSceneId, maxStreamerCount, streamerPassword));
 	}
 
 	public void BeforeStartingNextBattle(GameLog[] gameLogs)

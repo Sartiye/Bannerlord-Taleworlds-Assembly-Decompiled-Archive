@@ -67,7 +67,7 @@ public static class CustomNavalMissions
 		int maximumDeployableTroopCountForTeam = NavalDLCManager.Instance.GameModels.ShipDeploymentModel.GetMaximumDeployableTroopCountForTeam(playerTeamShips, isPlayerTeam: true);
 		int maximumDeployableTroopCountForTeam2 = NavalDLCManager.Instance.GameModels.ShipDeploymentModel.GetMaximumDeployableTroopCountForTeam(enemyTeamShips);
 		int[] maxDeployableTroopCountPerTeam = new int[3] { maximumDeployableTroopCountForTeam, 0, maximumDeployableTroopCountForTeam2 };
-		int deployablePlayerShipCount = MathF.Min(playerTeamShips.Count, NavalShipDeploymentLimit.Max().NetDeploymentLimit);
+		int deployablePlayerShipCount = MathF.Min(playerTeamShips.Count, 8);
 		Mission mission2 = NavalMissionState.OpenNew("NavalCustomBattle", rec, (Mission mission) => new MissionBehavior[31]
 		{
 			new NavalShipsLogic(),
@@ -129,7 +129,7 @@ public static class CustomNavalMissions
 		rec.SceneLevels = "naval_raid";
 		int attackerTeamMaxDeployableTroopCount = NavalDLCManager.Instance.GameModels.ShipDeploymentModel.GetMaximumDeployableTroopCountForTeam(attackerShips, isPlayerAttacker);
 		attackerTeamMaxDeployableTroopCount = MathF.Min(troopSuppliers[1].NumTroopsNotSupplied, attackerTeamMaxDeployableTroopCount);
-		int commonLimit = MathF.Min(attackerShips.Count, NavalShipDeploymentLimit.Max().NetDeploymentLimit);
+		int commonLimit = MathF.Min(attackerShips.Count, 8);
 		NavalShipDeploymentLimit attackerShipsDeploymentLimit = new NavalShipDeploymentLimit(commonLimit);
 		CustomBattleCombatant customBattleCombatant = (isPlayerAttacker ? enemyParty : playerParty);
 		int defenderTeamMaxDeployableTroopCount = customBattleCombatant.NumberOfHealthyMembers;

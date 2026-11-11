@@ -23,9 +23,6 @@ internal interface IMBNetwork
 	[EngineMethod("terminate_client_side", false, null, false)]
 	void TerminateClientSide();
 
-	[EngineMethod("server_ping", false, null, false)]
-	void ServerPing(string serverAddress, int port);
-
 	[EngineMethod("add_peer_to_disconnect", false, null, false)]
 	void AddPeerToDisconnect(int peer);
 

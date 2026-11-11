@@ -8,6 +8,8 @@ namespace TaleWorlds.SaveSystem;
 
 public class MetaData
 {
+	public const int MetaDataLengthPrefixSize = 4;
+
 	[JsonProperty("List")]
 	private Dictionary<string, string> _list = new Dictionary<string, string>();
 

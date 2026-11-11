@@ -24,6 +24,8 @@ public class MPEndOfBattleSideVM : ViewModel
 
 	public MissionScoreboardComponent.MissionScoreboardSide Side { get; private set; }
 
+	public BasicCultureObject Culture => _culture;
+
 	[DataSourceProperty]
 	public string FactionName
 	{

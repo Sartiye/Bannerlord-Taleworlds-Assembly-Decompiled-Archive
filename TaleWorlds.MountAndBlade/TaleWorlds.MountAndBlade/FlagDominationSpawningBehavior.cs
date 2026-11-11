@@ -105,10 +105,10 @@ public class FlagDominationSpawningBehavior : SpawningBehaviorBase
 		BasicCultureObject object2 = MBObjectManager.Instance.GetObject<BasicCultureObject>(MultiplayerOptions.OptionType.CultureTeam2.GetStrValue());
 		MultiplayerBattleColors multiplayerBattleColors = MultiplayerBattleColors.CreateWith(@object, object2);
 		int intValue = MultiplayerOptions.OptionType.NumberOfBotsPerFormation.GetIntValue();
-		foreach (NetworkCommunicator networkPeer in GameNetwork.NetworkPeers)
+		foreach (NetworkCommunicator networkPeer2 in GameNetwork.NetworkPeers)
 		{
-			MissionPeer component = networkPeer.GetComponent<MissionPeer>();
-			if (!networkPeer.IsSynchronized || component.Team == null || component.Team.Side == BattleSideEnum.None || (intValue == 0 && CheckIfEnforcedSpawnTimerExpiredForPeer(component)))
+			MissionPeer component = networkPeer2.GetComponent<MissionPeer>();
+			if (!networkPeer2.IsSynchronized || component.Team == null || component.Team.Side == BattleSideEnum.None || (intValue == 0 && CheckIfEnforcedSpawnTimerExpiredForPeer(component)))
 			{
 				continue;
 			}
@@ -125,12 +125,29 @@ public class FlagDominationSpawningBehavior : SpawningBehaviorBase
 			int currentGoldForPeer = _flagDominationMissionController.GetCurrentGoldForPeer(component);
 			if (mPHeroClassForPeer == null || (_flagDominationMissionController.UseGold() && num2 > currentGoldForPeer))
 			{
-				if (currentGoldForPeer >= MultiplayerClassDivisions.GetMinimumTroopCost(basicCultureObject) && component.SelectedTroopIndex != 0)
+				if (currentGoldForPeer < MultiplayerClassDivisions.GetMinimumTroopCost(basicCultureObject) || component.SelectedTroopIndex == 0)
 				{
-					component.SelectedTroopIndex = 0;
-					GameNetwork.BeginBroadcastModuleEvent();
-					GameNetwork.WriteMessage(new UpdateSelectedTroopIndex(networkPeer, 0));
-					GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.ExcludeOtherTeamPlayers, networkPeer);
+					continue;
+				}
+				component.SelectedTroopIndex = 0;
+				int broadcastFlags = (GameMode.IsGameModeUsingOpposingTeams ? 64 : 0);
+				NetworkCommunicator targetPlayer = (GameMode.IsGameModeUsingOpposingTeams ? networkPeer2 : null);
+				GameNetwork.BeginBroadcastModuleEvent();
+				GameNetwork.WriteMessage(new UpdateSelectedTroopIndex(networkPeer2, component.SelectedTroopIndex));
+				GameNetwork.EndBroadcastModuleEvent((GameNetwork.EventBroadcastFlags)broadcastFlags, targetPlayer);
+				if (!GameMode.IsGameModeUsingOpposingTeams)
+				{
+					continue;
+				}
+				foreach (MissionPeer item in VirtualPlayer.Peers<MissionPeer>())
+				{
+					NetworkCommunicator networkPeer = item.GetNetworkPeer();
+					if (item.IsSpectator && !networkPeer.IsServerPeer && networkPeer.IsSynchronized)
+					{
+						GameNetwork.BeginModuleEventAsServer(networkPeer);
+						GameNetwork.WriteMessage(new UpdateSelectedTroopIndex(networkPeer2, component.SelectedTroopIndex));
+						GameNetwork.EndModuleEventAsServer();
+					}
 				}
 				continue;
 			}
@@ -163,9 +180,9 @@ public class FlagDominationSpawningBehavior : SpawningBehaviorBase
 			IEnumerable<(EquipmentIndex, EquipmentElement)> enumerable = onSpawnPerkHandler?.GetAlternativeEquipments(isPlayer: true);
 			if (enumerable != null)
 			{
-				foreach (var item in enumerable)
+				foreach (var item2 in enumerable)
 				{
-					equipment[item.Item1] = item.Item2;
+					equipment[item2.Item1] = item2.Item2;
 				}
 			}
 			int amountOfAgentVisualsForPeer = component.GetAmountOfAgentVisualsForPeer();
@@ -188,7 +205,7 @@ public class FlagDominationSpawningBehavior : SpawningBehaviorBase
 					agentBuildData.InitialDirection(in direction);
 				}
 			}
-			if (GameMode.ShouldSpawnVisualsForServer(networkPeer))
+			if (GameMode.ShouldSpawnVisualsForServer(networkPeer2))
 			{
 				base.AgentVisualSpawnComponent.SpawnAgentVisualsForPeer(component, agentBuildData, component.SelectedTroopIndex);
 				if (agentBuildData.AgentVisualsIndex == 0)
@@ -197,7 +214,7 @@ public class FlagDominationSpawningBehavior : SpawningBehaviorBase
 					component.EquipmentUpdatingExpired = false;
 				}
 			}
-			GameMode.HandleAgentVisualSpawning(networkPeer, agentBuildData);
+			GameMode.HandleAgentVisualSpawning(networkPeer2, agentBuildData);
 			component.ControlledFormation = formation;
 			if (intValue <= 0)
 			{

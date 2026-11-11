@@ -14,7 +14,7 @@ public class ExitDoor : UsableMachine
 		return textObject;
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		return null;
 	}

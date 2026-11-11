@@ -7,6 +7,7 @@ using TaleWorlds.DotNet;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
+using TaleWorlds.MountAndBlade.Objects;
 
 namespace NavalDLC.Missions.NavalPhysics;
 
@@ -291,6 +292,12 @@ public class NavalPhysics : ScriptComponentBehavior
 			_committedWeightedAgentsPosition = Vec3.Zero;
 			_committedTotalMass = 0f;
 			CustomNavalPhysicsParameters customNavalPhysicsParameters = base.GameEntity.GetFirstScriptOfType<CustomNavalPhysicsParameters>() ?? new CustomNavalPhysicsParameters();
+			ShipVisual firstScriptOfType = base.GameEntity.GetFirstScriptOfType<ShipVisual>();
+			if (firstScriptOfType != null)
+			{
+				customNavalPhysicsParameters.FloatingForceMultiplier = firstScriptOfType.FloatingForceMultiplier;
+				customNavalPhysicsParameters.BehaveLikeShip = true;
+			}
 			ShipPhysicsReference basePhysicsRef = (customNavalPhysicsParameters.BehaveLikeShip ? ShipPhysicsReference.Default : ShipPhysicsReference.DefaultDebris);
 			NavalPhysicsParameters navalPhysicsParameters = default(NavalPhysicsParameters);
 			navalPhysicsParameters.OverrideMass = 0f;
@@ -924,7 +931,8 @@ public class NavalPhysics : ScriptComponentBehavior
 	{
 		float totalMass = agent.GetTotalMass();
 		Vec3 v = agent.Position;
-		if (PhysicsBoundingBoxWithoutChildren.PointInsideBox(base.GameEntity.GetBodyWorldTransform().TransformToLocal(in v), 0.1f))
+		Vec3 point = base.GameEntity.GetBodyWorldTransform().TransformToLocal(in v);
+		if (PhysicsBoundingBoxWithoutChildren.PointInsideBox(point, 0.1f))
 		{
 			_weightedAgentsPosition += totalMass * v;
 			_totalMass += totalMass;

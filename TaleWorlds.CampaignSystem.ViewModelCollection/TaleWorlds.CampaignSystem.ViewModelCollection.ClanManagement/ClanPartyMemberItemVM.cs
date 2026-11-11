@@ -107,7 +107,7 @@ public class ClanPartyMemberItemVM : ViewModel
 	public ClanPartyMemberItemVM(Hero hero, MobileParty party)
 	{
 		HeroObject = hero;
-		IsLeader = hero == party.LeaderHero;
+		IsLeader = party == null || hero == party.LeaderHero;
 		CharacterCode characterCode = CampaignUIHelper.GetCharacterCode(hero.CharacterObject);
 		Visual = new CharacterImageIdentifierVM(characterCode);
 		HeroModel = new HeroViewModel();

@@ -107,16 +107,18 @@ public static class StringHelpers
 
 	public static void SetEffectIncrementTypeTextVariable(string tag, TextObject description, float bonus, EffectIncrementType effectIncrementType)
 	{
+		description.SetTextVariable(tag, GetEffectIncrementTypeBonusText(bonus, effectIncrementType));
+	}
+
+	public static string GetEffectIncrementTypeBonusText(float bonus, EffectIncrementType effectIncrementType)
+	{
 		float num = ((effectIncrementType == EffectIncrementType.AddFactor) ? (bonus * 100f) : bonus);
 		string text = $"{num:0.#}";
-		if (bonus > 0f)
+		if (!(bonus > 0f))
 		{
-			description.SetTextVariable(tag, "+" + text);
+			return text;
 		}
-		else
-		{
-			description.SetTextVariable(tag, text ?? "");
-		}
+		return "+" + text;
 	}
 
 	public static string RemoveDiacritics(string originalText)

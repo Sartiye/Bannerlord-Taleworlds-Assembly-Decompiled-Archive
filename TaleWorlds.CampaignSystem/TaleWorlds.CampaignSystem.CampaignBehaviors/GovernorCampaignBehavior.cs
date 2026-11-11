@@ -63,7 +63,8 @@ public class GovernorCampaignBehavior : CampaignBehaviorBase
 			Hero randomElementWithPredicate = settlement.Notables.GetRandomElementWithPredicate((Hero x) => x.IsFemale != governor.IsFemale);
 			if (randomElementWithPredicate != null)
 			{
-				ChangeRelationAction.ApplyRelationChangeBetweenHeroes(governor.Clan.Leader, randomElementWithPredicate, 1);
+				int relationChange = 1;
+				ChangeRelationAction.ApplyRelationChangeBetweenHeroes(governor.Clan.Leader, randomElementWithPredicate, relationChange);
 			}
 		}
 		if (MBRandom.RandomFloat <= DefaultPerks.Charm.YoungAndRespectful.SecondaryBonus && governor.GetPerkValue(DefaultPerks.Charm.YoungAndRespectful))
@@ -71,7 +72,8 @@ public class GovernorCampaignBehavior : CampaignBehaviorBase
 			Hero randomElementWithPredicate2 = settlement.Notables.GetRandomElementWithPredicate((Hero x) => x.IsFemale == governor.IsFemale);
 			if (randomElementWithPredicate2 != null)
 			{
-				ChangeRelationAction.ApplyRelationChangeBetweenHeroes(governor.Clan.Leader, randomElementWithPredicate2, 1);
+				int relationChange2 = 1;
+				ChangeRelationAction.ApplyRelationChangeBetweenHeroes(governor.Clan.Leader, randomElementWithPredicate2, relationChange2);
 			}
 		}
 		if (MBRandom.RandomFloat <= DefaultPerks.Charm.MeaningfulFavors.SecondaryBonus && governor.GetPerkValue(DefaultPerks.Charm.MeaningfulFavors))
@@ -80,7 +82,8 @@ public class GovernorCampaignBehavior : CampaignBehaviorBase
 			{
 				if (notable.Power >= 200f)
 				{
-					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(settlement.OwnerClan.Leader, notable, 1);
+					int relationChange3 = 1;
+					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(settlement.OwnerClan.Leader, notable, relationChange3);
 				}
 			}
 		}

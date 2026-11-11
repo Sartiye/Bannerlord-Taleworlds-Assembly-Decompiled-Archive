@@ -76,6 +76,12 @@ public class RansomOfferCampaignBehavior : CampaignBehaviorBase
 		{
 			return;
 		}
+		bool result = true;
+		CampaignEventDispatcher.Instance.CanHeroBeReleased(hero, ref result);
+		if (!result)
+		{
+			return;
+		}
 		Hero hero2 = ((hero.Clan.Leader != hero) ? hero.Clan.Leader : hero.Clan.AliveLords.Where((Hero t) => t != hero.Clan.Leader).GetRandomElementInefficiently());
 		if (hero2 == Hero.MainHero && hero2.IsPrisoner)
 		{
@@ -83,7 +89,7 @@ public class RansomOfferCampaignBehavior : CampaignBehaviorBase
 		}
 		if (captorClanOfPrisoner == Clan.PlayerClan || hero.Clan == Clan.PlayerClan)
 		{
-			if (_currentRansomHero != null || MobileParty.MainParty.IsInRaftState)
+			if (_currentRansomHero != null || MobileParty.MainParty.IsInNavalAutoTravel)
 			{
 				return;
 			}

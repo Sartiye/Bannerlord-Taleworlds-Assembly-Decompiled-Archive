@@ -17,6 +17,11 @@ public class NavalAgentStatCalculateModel : AgentStatCalculateModel
 {
 	private Dictionary<Agent, Figurehead> _agentFigureHeadSpawnMap = new Dictionary<Agent, Figurehead>();
 
+	public void ClearMissionState()
+	{
+		_agentFigureHeadSpawnMap.Clear();
+	}
+
 	public override float GetDifficultyModifier()
 	{
 		return base.BaseModel.GetDifficultyModifier();
@@ -87,44 +92,47 @@ public class NavalAgentStatCalculateModel : AgentStatCalculateModel
 	public override void InitializeMissionEquipmentAfterDeploymentFinished(Agent agent)
 	{
 		base.BaseModel.InitializeMissionEquipmentAfterDeploymentFinished(agent);
-		if (Mission.Current.IsNavalBattle && agent.IsHuman && agent.Character is CharacterObject characterObject)
+		if (Mission.Current.IsNavalBattle && agent.IsHuman)
 		{
-			CharacterObject characterObject2 = agent.Formation?.Captain?.Character as CharacterObject;
-			if (characterObject == characterObject2)
+			CharacterObject characterObject = agent.Character as CharacterObject;
+			BattleEnvironment currentBattleEnvironment = agent.CurrentBattleEnvironment;
+			if (characterObject != null)
 			{
-				characterObject2 = null;
-			}
-			MissionEquipment equipment = agent.Equipment;
-			for (int i = 0; i < 5; i++)
-			{
-				EquipmentIndex equipmentIndex = (EquipmentIndex)i;
-				MissionWeapon missionWeapon = equipment[equipmentIndex];
-				if (missionWeapon.IsEmpty)
+				CharacterObject characterObject2 = agent.Formation?.Captain?.Character as CharacterObject;
+				if (characterObject == characterObject2)
 				{
-					continue;
+					characterObject2 = null;
 				}
-				WeaponComponentData currentUsageItem = missionWeapon.CurrentUsageItem;
-				if (currentUsageItem != null && currentUsageItem.IsConsumable && currentUsageItem.RelevantSkill != null)
+				MissionEquipment equipment = agent.Equipment;
+				for (int i = 0; i < 5; i++)
 				{
-					ExplainedNumber explainedNumber = new ExplainedNumber(0f, includeDescriptions: false, null);
-					if (currentUsageItem.RelevantSkill == DefaultSkills.Throwing && characterObject2 != null && characterObject2.GetPerkValue(NavalPerks.Boatswain.WellStocked))
+					EquipmentIndex equipmentIndex = (EquipmentIndex)i;
+					MissionWeapon missionWeapon = equipment[equipmentIndex];
+					if (missionWeapon.IsEmpty)
 					{
-						explainedNumber.Add(NavalPerks.Boatswain.WellStocked.SecondaryBonus);
+						continue;
 					}
-					int num = MathF.Round(explainedNumber.ResultNumber);
-					ExplainedNumber explainedNumber2 = new ExplainedNumber(missionWeapon.Amount + num);
-					if ((currentUsageItem.RelevantSkill == DefaultSkills.Bow || currentUsageItem.RelevantSkill == DefaultSkills.Crossbow || currentUsageItem.RelevantSkill == DefaultSkills.Throwing) && characterObject2 != null && characterObject2.GetPerkValue(NavalPerks.Boatswain.WellStocked))
+					WeaponComponentData currentUsageItem = missionWeapon.CurrentUsageItem;
+					if (currentUsageItem != null && currentUsageItem.IsConsumable && currentUsageItem.RelevantSkill != null)
 					{
-						explainedNumber2.AddFactor(NavalPerks.Boatswain.WellStocked.PrimaryBonus);
-					}
-					if (characterObject2 != null && characterObject2.GetPerkValue(NavalPerks.Boatswain.ShipwrightsInsight))
-					{
-						explainedNumber2.AddFactor(NavalPerks.Boatswain.ShipwrightsInsight.SecondaryBonus);
-					}
-					int num2 = MathF.Round(explainedNumber2.ResultNumber);
-					if (num2 != missionWeapon.Amount)
-					{
-						equipment.SetAmountOfSlot(equipmentIndex, (short)num2, addOverflowToMaxAmount: true);
+						ExplainedNumber explainedNumber = new ExplainedNumber(0f, includeDescriptions: false, null);
+						if (currentUsageItem.RelevantSkill == DefaultSkills.Throwing && characterObject2 != null && characterObject2.GetPerkValue(NavalPerks.Boatswain.WellStocked))
+						{
+							float secondaryBonus = NavalPerks.Boatswain.WellStocked.SecondaryBonus;
+							explainedNumber.Add(secondaryBonus);
+						}
+						int num = MathF.Round(explainedNumber.ResultNumber);
+						ExplainedNumber bonuses = new ExplainedNumber(missionWeapon.Amount + num);
+						if ((currentUsageItem.RelevantSkill == DefaultSkills.Bow || currentUsageItem.RelevantSkill == DefaultSkills.Crossbow || currentUsageItem.RelevantSkill == DefaultSkills.Throwing) && characterObject2 != null && characterObject2.GetPerkValue(NavalPerks.Boatswain.WellStocked) && PerkHelper.TryGetPerkEffectBonus(NavalPerks.Boatswain.WellStocked, isPrimary: true, out var bonus, agent.CurrentBattleEnvironment))
+						{
+							bonuses.AddFactor(bonus);
+						}
+						PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Boatswain.ShipwrightsInsight, characterObject2, ref bonuses, currentBattleEnvironment);
+						int num2 = MathF.Round(bonuses.ResultNumber);
+						if (num2 != missionWeapon.Amount)
+						{
+							equipment.SetAmountOfSlot(equipmentIndex, (short)num2, addOverflowToMaxAmount: true);
+						}
 					}
 				}
 			}
@@ -247,7 +255,9 @@ public class NavalAgentStatCalculateModel : AgentStatCalculateModel
 		explainedNumber5.LimitMin(0f);
 		explainedNumber6.LimitMin(0f);
 		explainedNumber7.LimitMin(0f);
-		CharacterObject characterObject = agent.Character as CharacterObject;
+		BasicCharacterObject character = agent.Character;
+		BattleEnvironment currentBattleEnvironment = agent.CurrentBattleEnvironment;
+		CharacterObject characterObject = character as CharacterObject;
 		if (agent.IsHero)
 		{
 			int effectiveSkill = GetEffectiveSkill(agent, NavalSkills.Mariner);
@@ -271,19 +281,19 @@ public class NavalAgentStatCalculateModel : AgentStatCalculateModel
 			SkillHelper.AddSkillBonusForSkillLevel(NavalSkillEffects.NavalBattleCombatPenaltyNegation, ref explainedNumber7, skillLevel);
 		}
 		MissionEquipment equipment = agent.Equipment;
-		CharacterObject captainCharacter = agent.Formation?.Captain?.Character as CharacterObject;
+		CharacterObject captainCharacter = (agent.Formation?.Captain)?.Character as CharacterObject;
 		if (agent.Formation?.Captain == agent)
 		{
 			captainCharacter = null;
 		}
-		PerkHelper.AddPerkBonusForCharacter(NavalPerks.Shipmaster.WindRider, characterObject, isPrimaryBonus: true, ref explainedNumber6);
-		PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Shipmaster.WindRider, captainCharacter, ref explainedNumber6);
-		PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.RollingThunder, characterObject, isPrimaryBonus: true, ref explainedNumber3);
+		PerkHelper.AddPerkBonusForCharacter(NavalPerks.Shipmaster.WindRider, characterObject, isPrimaryBonus: true, ref explainedNumber6, currentBattleEnvironment);
+		PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Shipmaster.WindRider, captainCharacter, ref explainedNumber6, currentBattleEnvironment);
+		PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.RollingThunder, characterObject, isPrimaryBonus: true, ref explainedNumber3, currentBattleEnvironment);
 		EquipmentIndex primaryWieldedItemIndex = agent.GetPrimaryWieldedItemIndex();
 		WeaponComponentData weaponComponentData = ((primaryWieldedItemIndex != EquipmentIndex.None) ? equipment[primaryWieldedItemIndex].CurrentUsageItem : null);
 		if (weaponComponentData != null && weaponComponentData.IsRangedWeapon)
 		{
-			PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.RollingThunder, characterObject, isPrimaryBonus: true, ref explainedNumber2);
+			PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.RollingThunder, characterObject, isPrimaryBonus: true, ref explainedNumber2, currentBattleEnvironment);
 			float num = 1f + explainedNumber2.ResultNumber;
 			agentDrivenProperties.WeaponMaxMovementAccuracyPenalty *= num;
 			agentDrivenProperties.WeaponMaxUnsteadyAccuracyPenalty *= num;
@@ -369,7 +379,7 @@ public class NavalAgentStatCalculateModel : AgentStatCalculateModel
 	{
 		if (agent.IsHuman)
 		{
-			CharacterObject characterObject = agent.Formation?.Captain?.Character as CharacterObject;
+			CharacterObject characterObject = (agent.Formation?.Captain)?.Character as CharacterObject;
 			CharacterObject characterObject2 = agent.Character as CharacterObject;
 			float breatheHoldMaxDuration = base.BaseModel.GetBreatheHoldMaxDuration(agent, baseBreatheHoldMaxDuration);
 			if (characterObject2 == characterObject)
@@ -395,7 +405,7 @@ public class NavalAgentStatCalculateModel : AgentStatCalculateModel
 			ExplainedNumber bonuses = new ExplainedNumber(breatheHoldMaxDuration);
 			if (Mission.Current.IsNavalBattle && characterObject != null)
 			{
-				PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Shipmaster.OldSaltsTouch, characterObject, ref bonuses);
+				PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Shipmaster.OldSaltsTouch, characterObject, ref bonuses, agent.CurrentBattleEnvironment);
 			}
 			return bonuses.ResultNumber;
 		}
@@ -404,6 +414,7 @@ public class NavalAgentStatCalculateModel : AgentStatCalculateModel
 
 	private void SetNavalPerksAndEffectsOnAgent(Agent agent, CharacterObject agentCharacter, AgentDrivenProperties agentDrivenProperties, WeaponComponentData equippedWeaponComponent)
 	{
+		BattleEnvironment currentBattleEnvironment = agent.CurrentBattleEnvironment;
 		CharacterObject characterObject = agent.Formation?.Captain?.Character as CharacterObject;
 		if (agent.Formation?.Captain == agent)
 		{
@@ -413,27 +424,33 @@ public class NavalAgentStatCalculateModel : AgentStatCalculateModel
 		if (equippedWeaponComponent != null && flag)
 		{
 			ExplainedNumber bonuses = new ExplainedNumber(agentDrivenProperties.HandlingMultiplier);
-			PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.PiratesProwess, agentCharacter, isPrimaryBonus: true, ref bonuses);
+			PerkHelper.AddPerkBonusForCharacter(NavalPerks.Mariner.PiratesProwess, agentCharacter, isPrimaryBonus: true, ref bonuses, currentBattleEnvironment);
 			agentDrivenProperties.HandlingMultiplier = bonuses.ResultNumber;
 		}
 		float num = 0f;
 		float num2 = 0f;
 		bool flag2 = false;
-		if (characterObject != null)
+		if (characterObject == null)
 		{
-			if (agentCharacter.Tier <= 3 && characterObject.GetPerkValue(NavalPerks.Boatswain.SpecialArrows))
+			return;
+		}
+		if (agentCharacter.Tier <= 3)
+		{
+			ExplainedNumber bonuses2 = new ExplainedNumber(0f, includeDescriptions: false, null);
+			PerkHelper.AddPerkBonusFromCaptain(NavalPerks.Boatswain.SpecialArrows, characterObject, ref bonuses2, agent.CurrentBattleEnvironment);
+			if (bonuses2.ResultNumber > 0f)
 			{
-				num += NavalPerks.Boatswain.SpecialArrows.PrimaryBonus;
+				num += bonuses2.ResultNumber;
 				flag2 = true;
 			}
-			if (flag2)
-			{
-				float num3 = 1f + num2;
-				agentDrivenProperties.ArmorHead = MathF.Max(0f, (agentDrivenProperties.ArmorHead + num) * num3);
-				agentDrivenProperties.ArmorTorso = MathF.Max(0f, (agentDrivenProperties.ArmorTorso + num) * num3);
-				agentDrivenProperties.ArmorArms = MathF.Max(0f, (agentDrivenProperties.ArmorArms + num) * num3);
-				agentDrivenProperties.ArmorLegs = MathF.Max(0f, (agentDrivenProperties.ArmorLegs + num) * num3);
-			}
+		}
+		if (flag2)
+		{
+			float num3 = 1f + num2;
+			agentDrivenProperties.ArmorHead = MathF.Max(0f, (agentDrivenProperties.ArmorHead + num) * num3);
+			agentDrivenProperties.ArmorTorso = MathF.Max(0f, (agentDrivenProperties.ArmorTorso + num) * num3);
+			agentDrivenProperties.ArmorArms = MathF.Max(0f, (agentDrivenProperties.ArmorArms + num) * num3);
+			agentDrivenProperties.ArmorLegs = MathF.Max(0f, (agentDrivenProperties.ArmorLegs + num) * num3);
 		}
 	}
 }

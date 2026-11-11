@@ -335,19 +335,19 @@ public class LobbyState : GameState
 		}
 		string strValue = MultiplayerOptions.OptionType.GamePassword.GetStrValue();
 		string strValue2 = MultiplayerOptions.OptionType.AdminPassword.GetStrValue();
-		string value = ((!string.IsNullOrEmpty(strValue)) ? Common.CalculateMD5Hash(strValue) : null);
-		string value2 = ((!string.IsNullOrEmpty(strValue2)) ? Common.CalculateMD5Hash(strValue2) : null);
-		MultiplayerOptions.OptionType.GamePassword.SetValue(value);
-		MultiplayerOptions.OptionType.AdminPassword.SetValue(value2);
-		string strValue3 = MultiplayerOptions.OptionType.GameType.GetStrValue();
-		string gameModule = MultiplayerGameTypes.GetGameTypeInfo(strValue3).GameModule;
-		string strValue4 = MultiplayerOptions.OptionType.Map.GetStrValue();
+		string strValue3 = MultiplayerOptions.OptionType.StreamerPassword.GetStrValue();
+		string gamePassword = ((!string.IsNullOrEmpty(strValue)) ? Common.CalculateMD5Hash(strValue) : null);
+		string adminPassword = ((!string.IsNullOrEmpty(strValue2)) ? Common.CalculateMD5Hash(strValue2) : null);
+		string streamerPassword = ((!string.IsNullOrEmpty(strValue3)) ? Common.CalculateMD5Hash(strValue3) : null);
+		string strValue4 = MultiplayerOptions.OptionType.GameType.GetStrValue();
+		string gameModule = MultiplayerGameTypes.GetGameTypeInfo(strValue4).GameModule;
+		string strValue5 = MultiplayerOptions.OptionType.Map.GetStrValue();
 		string uniqueMapId = null;
-		if (Utilities.TryGetUniqueIdentifiersForScene(strValue4, out var identifiers))
+		if (Utilities.TryGetUniqueIdentifiersForScene(strValue5, out var identifiers))
 		{
 			uniqueMapId = identifiers.Serialize();
 		}
-		NetworkMain.GameClient.RegisterCustomGame(gameModule, strValue3, MultiplayerOptions.OptionType.ServerName.GetStrValue(), MultiplayerOptions.OptionType.MaxNumberOfPlayers.GetIntValue(), strValue4, uniqueMapId, MultiplayerOptions.OptionType.GamePassword.GetStrValue(), MultiplayerOptions.OptionType.AdminPassword.GetStrValue(), 9999);
+		NetworkMain.GameClient.RegisterCustomGame(gameModule, strValue4, MultiplayerOptions.OptionType.ServerName.GetStrValue(), MultiplayerOptions.OptionType.MaxNumberOfPlayers.GetIntValue(), strValue5, uniqueMapId, gamePassword, adminPassword, streamerPassword, 9999, MultiplayerOptions.OptionType.MaxStreamerCount.GetIntValue());
 	}
 
 	public void CreatePremadeGame()
@@ -1027,7 +1027,7 @@ public class LobbyState : GameState
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Lobby state is finalized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyState.cs", "RegisterForCustomServerAction", 1179);
+			TaleWorlds.Library.Debug.FailedAssert("Lobby state is finalized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyState.cs", "RegisterForCustomServerAction", 1182);
 		}
 	}
 
@@ -1039,7 +1039,7 @@ public class LobbyState : GameState
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("Lobby state is finalized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyState.cs", "UnregisterForCustomServerAction", 1191);
+			TaleWorlds.Library.Debug.FailedAssert("Lobby state is finalized", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer\\LobbyState.cs", "UnregisterForCustomServerAction", 1194);
 		}
 	}
 }

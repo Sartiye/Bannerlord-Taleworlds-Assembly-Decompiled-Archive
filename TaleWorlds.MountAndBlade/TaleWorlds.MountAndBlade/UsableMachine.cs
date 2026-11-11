@@ -574,6 +574,11 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 	protected internal override void OnMissionReset()
 	{
 		base.OnMissionReset();
+		if (base.IsDisabled)
+		{
+			SetEnabled();
+			SetScriptComponentToTick(GetTickRequirement());
+		}
 		foreach (UsableMissionObjectComponent component in _components)
 		{
 			component.OnMissionReset();
@@ -1109,7 +1114,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 		}
 		else
 		{
-			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Usables\\UsableMachine.cs", "AddAgent", 1449);
+			TaleWorlds.Library.Debug.FailedAssert("false", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Usables\\UsableMachine.cs", "AddAgent", 1457);
 		}
 	}
 
@@ -1176,7 +1181,7 @@ public abstract class UsableMachine : SynchedMissionObject, IFocusable, IOrderab
 		return StandingPoints.FirstOrDefault((StandingPoint sp) => !sp.IsDeactivated && (sp.IsInstantUse || (!sp.HasUser && !sp.HasAIMovingTo)) && (agent == null || !sp.IsDisabledForAgent(agent)) && (agents == null || agents.Any((Agent a) => !sp.IsDisabledForAgent(a))) && (agentValuePairs == null || agentValuePairs.Any(((Agent, float) avp) => !sp.IsDisabledForAgent(avp.Item1))) && !IsStandingPointNotUsedOnAccountOfBeingAmmoLoad(sp));
 	}
 
-	public abstract TextObject GetDescriptionText(WeakGameEntity gameEntity);
+	public abstract TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent);
 
 	protected virtual bool ShouldDisableTickIfMachineDisabled()
 	{

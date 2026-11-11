@@ -11,14 +11,16 @@ public class DedicatedCustomServerSubModule : MBSubModuleBase
 
 	public CustomBattleServer DedicatedCustomGameServer { get; private set; }
 
+	public DedicatedCustomServerIntermissionManagerHandler IntermissionManagerHandler { get; private set; }
+
 	protected override void OnSubModuleLoad()
 	{
 		base.OnSubModuleLoad();
 		Instance = this;
-		DedicatedCustomServerIntermissionManagerHandler dedicatedCustomServerIntermissionManagerHandler = new DedicatedCustomServerIntermissionManagerHandler();
-		DedicatedCustomGameServer = dedicatedCustomServerIntermissionManagerHandler.DedicatedCustomGameServer;
+		DedicatedCustomServerIntermissionManagerHandler dedicatedCustomServerIntermissionManagerHandler2 = (IntermissionManagerHandler = new DedicatedCustomServerIntermissionManagerHandler());
+		DedicatedCustomGameServer = dedicatedCustomServerIntermissionManagerHandler2.DedicatedCustomGameServer;
 		MissionLobbyComponent.AddLobbyComponentType(typeof(MissionCustomGameServerComponent), LobbyMissionType.Custom, isSeverComponent: true);
-		ServerSideIntermissionManager = ServerSideIntermissionManager.Instantiate(dedicatedCustomServerIntermissionManagerHandler);
+		ServerSideIntermissionManager = ServerSideIntermissionManager.Instantiate(dedicatedCustomServerIntermissionManagerHandler2);
 		ListedServerCommandManager.Initialize(ServerSideIntermissionManager);
 	}
 

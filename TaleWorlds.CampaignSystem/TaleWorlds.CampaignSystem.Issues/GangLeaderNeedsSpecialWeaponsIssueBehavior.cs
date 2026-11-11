@@ -448,7 +448,7 @@ public class GangLeaderNeedsSpecialWeaponsIssueBehavior : CampaignBehaviorBase
 		private CraftingOrder GetDaggerCraftingOrder()
 		{
 			CraftingTemplate templateFromId = CraftingTemplate.GetTemplateFromId("Dagger");
-			CraftingOrder craftingOrder = _craftingBehavior.CreateCustomOrderForHero(base.QuestGiver, GetCraftingDifficulty(), null, templateFromId);
+			CraftingOrder craftingOrder = _craftingBehavior.CreateCustomOrderForHero(base.QuestGiver.CurrentSettlement.Town, base.QuestGiver, GetCraftingDifficulty(), null, templateFromId);
 			AddTrackedObject(craftingOrder);
 			return craftingOrder;
 		}

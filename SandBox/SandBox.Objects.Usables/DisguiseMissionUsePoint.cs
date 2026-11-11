@@ -18,7 +18,7 @@ public class DisguiseMissionUsePoint : UsableMissionObject
 		DescriptionMessage = new TextObject("{=!}Information.");
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		return new TextObject("{=!}Steal the information");
 	}

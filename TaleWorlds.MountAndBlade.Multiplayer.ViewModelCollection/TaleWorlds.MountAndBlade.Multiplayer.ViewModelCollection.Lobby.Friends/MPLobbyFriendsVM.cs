@@ -1,6 +1,6 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Generic;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.InputSystem;
@@ -504,6 +504,7 @@ public class MPLobbyFriendsVM : ViewModel
 		}
 		TotalOnlineFriendCount = num;
 		IsInParty = NetworkMain.GameClient.IsInParty;
+		RemoveAnsweredNotifications();
 	}
 
 	public void OnPlayerInvitedToParty(PlayerId playerId)
@@ -734,35 +735,96 @@ public class MPLobbyFriendsVM : ViewModel
 		}
 	}
 
+	private static bool TryGetRequesterID(LobbyNotification notification, out PlayerId requesterID)
+	{
+		requesterID = default(PlayerId);
+		if (notification?.Parameters == null || !notification.Parameters.TryGetValue("friend_requester", out var value) || string.IsNullOrEmpty(value))
+		{
+			return false;
+		}
+		try
+		{
+			requesterID = PlayerId.FromString(value);
+			return true;
+		}
+		catch (Exception)
+		{
+			return false;
+		}
+	}
+
+	private bool IsFriendRequestPending(PlayerId playerID)
+	{
+		FriendInfo[] friendInfos = NetworkMain.GameClient.FriendInfos;
+		if (friendInfos == null)
+		{
+			return false;
+		}
+		FriendInfo[] array = friendInfos;
+		foreach (FriendInfo friendInfo in array)
+		{
+			if (friendInfo.Id == playerID)
+			{
+				return friendInfo.Status == FriendStatus.Received;
+			}
+		}
+		return false;
+	}
+
+	private void RefreshNotificationCount()
+	{
+		NotificationCount = _activeNotifications.Count;
+		HasNotification = _activeNotifications.Count > 0;
+	}
+
+	private void RemoveAnsweredNotifications(PlayerId? justAnsweredID = null)
+	{
+		bool flag = false;
+		for (int num = _activeNotifications.Count - 1; num >= 0; num--)
+		{
+			LobbyNotification lobbyNotification = _activeNotifications[num];
+			if (!TryGetRequesterID(lobbyNotification, out var requesterID) || !(requesterID != justAnsweredID) || !IsFriendRequestPending(requesterID))
+			{
+				NetworkMain.GameClient.MarkNotificationAsRead(lobbyNotification.Id);
+				_activeNotifications.RemoveAt(num);
+				flag = true;
+			}
+		}
+		if (flag)
+		{
+			RefreshNotificationCount();
+		}
+	}
+
 	public void OnFriendRequestNotificationsReceived(List<LobbyNotification> notifications)
 	{
-		foreach (LobbyNotification item in _activeNotifications.Except(notifications).ToList())
-		{
-			_activeNotifications.Remove(item);
-			NotificationCount--;
-		}
 		foreach (LobbyNotification notification in notifications)
 		{
-			string notificationPlayerIDString = notification.Parameters["friend_requester"];
-			if (!_activeNotifications.Where((LobbyNotification n) => n.Parameters["friend_requester"].Equals(notificationPlayerIDString)).IsEmpty())
+			if (!TryGetRequesterID(notification, out var notificationPlayerID))
 			{
-				continue;
+				NetworkMain.GameClient.MarkNotificationAsRead(notification.Id);
 			}
-			PlayerId notificationPlayerID = PlayerId.FromString(notificationPlayerIDString);
-			PlatformServices.Instance.CheckPrivilege(Privilege.Communication, displayResolveUI: false, delegate(bool privilegeResult)
+			else
 			{
-				if (!privilegeResult)
+				if (_activeNotifications.Exists((LobbyNotification n) => TryGetRequesterID(n, out var requesterID) && requesterID == notificationPlayerID))
 				{
-					ProcessNotification(notification, notificationPlayerID, allowed: false);
+					continue;
 				}
-				else
+				PlatformServices.Instance.CheckPrivilege(Privilege.Communication, displayResolveUI: false, delegate(bool privilegeResult)
 				{
-					PlatformServices.Instance.CheckPermissionWithUser(Permission.CommunicateUsingText, notificationPlayerID, delegate(bool permissionResult)
+					if (!privilegeResult)
 					{
-						ProcessNotification(notification, notificationPlayerID, permissionResult);
-					});
-				}
-			});
+						ProcessNotification(notification, notificationPlayerID, allowed: false);
+					}
+					else
+					{
+						PlatformServices.Instance.CheckPermissionWithUser(Permission.CommunicateUsingText, notificationPlayerID, delegate(bool permissionResult)
+						{
+							ProcessNotification(notification, notificationPlayerID, permissionResult);
+						});
+					}
+				});
+			}
 		}
 	}
 
@@ -778,22 +840,20 @@ public class MPLobbyFriendsVM : ViewModel
 			NetworkMain.GameClient.RespondToFriendRequest(notificationPlayerID, dontUseNameForUnknownPlayer, isAccepted: false, isBlocked: true);
 			NetworkMain.GameClient.MarkNotificationAsRead(notification.Id);
 		}
+		else if (!IsFriendRequestPending(notificationPlayerID))
+		{
+			NetworkMain.GameClient.MarkNotificationAsRead(notification.Id);
+		}
 		else
 		{
 			_activeNotifications.Add(notification);
-			NotificationCount++;
+			RefreshNotificationCount();
 		}
 	}
 
 	private void OnFriendRequestAnswered(PlayerId playerID)
 	{
-		IEnumerable<LobbyNotification> enumerable = _activeNotifications.Where((LobbyNotification n) => n.Parameters["friend_requester"].Equals(playerID.ToString()));
-		foreach (LobbyNotification item in enumerable)
-		{
-			NotificationCount--;
-			NetworkMain.GameClient.MarkNotificationAsRead(item.Id);
-		}
-		_activeNotifications = _activeNotifications.Except(enumerable).ToList();
+		RemoveAnsweredNotifications(playerID);
 	}
 
 	public MBBindingList<MPLobbyPlayerBaseVM> GetAllFriends()
@@ -887,14 +947,23 @@ public class MPLobbyFriendsVM : ViewModel
 
 	private void ActivateFriendPlayerActions(MPLobbyFriendItemVM player)
 	{
+		if (player.CanSpectate && !NetworkMain.GameClient.IsInParty)
+		{
+			PlayerActions.Add(new StringPairItemWithActionVM(ExecuteSpectateMatch, new TextObject("{=V0zs1LfD}Watch Game").ToString(), "SpectateMatch", player));
+		}
 		MultiplayerPlayerContextMenuHelper.AddLobbyViewProfileOptions(player, PlayerActions);
+	}
+
+	private void ExecuteSpectateMatch(object playerObj)
+	{
+		(playerObj as MPLobbyPlayerBaseVM)?.ExecuteSpectateMatch();
 	}
 
 	private void ExecuteSwitchToNextService()
 	{
 		if (FriendServices.Count == 0)
 		{
-			Debug.FailedAssert("Friend service list is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "ExecuteSwitchToNextService", 557);
+			Debug.FailedAssert("Friend service list is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "ExecuteSwitchToNextService", 636);
 			return;
 		}
 		_activeServiceIndex++;
@@ -909,7 +978,7 @@ public class MPLobbyFriendsVM : ViewModel
 	{
 		if (FriendServices.Count == 0)
 		{
-			Debug.FailedAssert("Friend service list is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "ExecuteSwitchToPreviousService", 574);
+			Debug.FailedAssert("Friend service list is empty!", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "ExecuteSwitchToPreviousService", 653);
 			return;
 		}
 		_activeServiceIndex--;
@@ -924,13 +993,13 @@ public class MPLobbyFriendsVM : ViewModel
 	{
 		if (_activeServiceIndex < 0 || _activeServiceIndex >= FriendServices.Count)
 		{
-			Debug.FailedAssert($"Multiplayer service index is invalid: {_activeServiceIndex}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "UpdateActiveService", 591);
+			Debug.FailedAssert($"Multiplayer service index is invalid: {_activeServiceIndex}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "UpdateActiveService", 670);
 			if (FriendServices.Count <= 0)
 			{
-				Debug.FailedAssert("Cancelling service update request.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "UpdateActiveService", 599);
+				Debug.FailedAssert("Cancelling service update request.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "UpdateActiveService", 678);
 				return;
 			}
-			Debug.FailedAssert("Defaulting to first available service: " + FriendServices[0].ServiceName, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "UpdateActiveService", 594);
+			Debug.FailedAssert("Defaulting to first available service: " + FriendServices[0].ServiceName, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.Multiplayer.ViewModelCollection\\Lobby\\Friends\\MPLobbyFriendsVM.cs", "UpdateActiveService", 673);
 			_activeServiceIndex = 0;
 		}
 		ActiveService = FriendServices[_activeServiceIndex];

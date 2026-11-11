@@ -137,6 +137,20 @@ public class SettlementNameplatesVM : ViewModel
 		}
 	}
 
+	public void Reset(IEnumerable<Tuple<Settlement, GameEntity>> settlements)
+	{
+		for (int i = 0; i < _allNameplates.Count; i++)
+		{
+			_allNameplates[i].OnFinalize();
+		}
+		_allNameplates.Clear();
+		_allNameplatesBySettlements.Clear();
+		SmallNameplates.Clear();
+		MediumNameplates.Clear();
+		LargeNameplates.Clear();
+		Initialize(settlements);
+	}
+
 	public void Initialize(IEnumerable<Tuple<Settlement, GameEntity>> settlements)
 	{
 		_allRegularSettlements = settlements.Where((Tuple<Settlement, GameEntity> x) => !x.Item1.IsHideout && !(x.Item1.SettlementComponent is RetirementSettlementComponent));
@@ -152,7 +166,7 @@ public class SettlementNameplatesVM : ViewModel
 		}
 		foreach (Tuple<Settlement, GameEntity> allHideout in _allHideouts)
 		{
-			if (allHideout.Item1.Hideout.IsSpotted)
+			if (allHideout.Item1.IsVisible)
 			{
 				SettlementNameplateVM nameplate2 = new SettlementNameplateVM(allHideout.Item1, allHideout.Item2, _mapCamera, _fastMoveCameraToPosition);
 				AddNameplate(nameplate2);
@@ -162,7 +176,7 @@ public class SettlementNameplatesVM : ViewModel
 		{
 			if (allRetreat.Item1.SettlementComponent is RetirementSettlementComponent retirementSettlementComponent)
 			{
-				if (retirementSettlementComponent.IsSpotted)
+				if (retirementSettlementComponent.Settlement.IsVisible)
 				{
 					SettlementNameplateVM nameplate3 = new SettlementNameplateVM(allRetreat.Item1, allRetreat.Item2, _mapCamera, _fastMoveCameraToPosition);
 					AddNameplate(nameplate3);
@@ -170,7 +184,7 @@ public class SettlementNameplatesVM : ViewModel
 			}
 			else
 			{
-				Debug.FailedAssert("A seetlement which is IsRetreat doesn't have a retirement component.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Nameplate\\SettlementNameplatesVM.cs", "Initialize", 120);
+				Debug.FailedAssert("A settlement which is IsRetreat doesn't have a retirement component.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\SandBox.ViewModelCollection\\Nameplate\\SettlementNameplatesVM.cs", "Initialize", 136);
 			}
 		}
 		for (int i = 0; i < _allNameplates.Count; i++)

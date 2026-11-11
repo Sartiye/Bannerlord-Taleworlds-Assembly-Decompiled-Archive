@@ -12,6 +12,8 @@ public class InventoryScreenWidget : Widget
 {
 	private readonly int TooltipHideFrameLength = 2;
 
+	private const float MapBarReservedHeight = 90f;
+
 	private Widget _latestMouseDownWidget;
 
 	private InventoryItemButtonWidget _currentHoveredItemWidget;
@@ -559,7 +561,8 @@ public class InventoryScreenWidget : Widget
 			{
 				InventoryTooltip.ScaledPositionXOffset = _currentHoveredItemWidget.ParentWidget.GlobalPosition.X + _currentHoveredItemWidget.ParentWidget.Size.X - 10f * base._scaleToUse;
 			}
-			float max = base.EventManager.PageSize.Y - InventoryTooltip.MeasuredSize.Y;
+			float num = 90f * base._scaleToUse;
+			float max = Mathf.Max(base.EventManager.PageSize.Y - num - InventoryTooltip.MeasuredSize.Y, 0f);
 			InventoryTooltip.ScaledPositionYOffset = Mathf.Clamp(_currentHoveredItemWidget.GlobalPosition.Y, 0f, max);
 			_lastDisplayedTooltipItem = _currentHoveredItemWidget;
 		}

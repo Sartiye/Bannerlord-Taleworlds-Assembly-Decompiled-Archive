@@ -76,7 +76,7 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 	private void OnMapEventEnded(MapEvent mapEvent)
 	{
 		BattleSideEnum battleSideEnum = ((!mapEvent.IsSallyOut && !mapEvent.IsBlockadeSallyOut) ? BattleSideEnum.Attacker : BattleSideEnum.Defender);
-		if ((!mapEvent.IsSiegeAssault && !mapEvent.IsSiegeOutside && !mapEvent.IsSallyOut && !mapEvent.IsBlockadeSallyOut) || mapEvent.WinningSide != battleSideEnum || mapEvent.MapEventSettlement == null)
+		if ((!mapEvent.IsSiegeAssault && !mapEvent.IsSallyOut && !mapEvent.IsBlockadeSallyOut) || mapEvent.WinningSide != battleSideEnum || mapEvent.MapEventSettlement == null)
 		{
 			return;
 		}
@@ -92,15 +92,12 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 		{
 			_playerEncounterAftermathDamagedBuildings.Clear();
 			_wasPlayerArmyMember = false;
+			_settlementProsperityCache = -1f;
 			_besiegerParty = mapEvent.GetMapEventSide(battleSideEnum).LeaderParty.MobileParty;
 			_prevSettlementOwnerClan = mapEvent.MapEventSettlement.OwnerClan;
 			if (_besiegerParty != MobileParty.MainParty)
 			{
-				if (_besiegerParty.Army != null && _besiegerParty.Army.Parties.Contains(MobileParty.MainParty))
-				{
-					_wasPlayerArmyMember = true;
-				}
-				else if (MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty != MobileParty.MainParty)
+				if (MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty != MobileParty.MainParty)
 				{
 					_wasPlayerArmyMember = true;
 				}
@@ -116,7 +113,7 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 		}
 		else
 		{
-			Debug.FailedAssert("Siege event is null in siege aftermath", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\SiegeAftermathCampaignBehavior.cs", "OnMapEventEnded", 143);
+			Debug.FailedAssert("Siege event is null in siege aftermath", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\SiegeAftermathCampaignBehavior.cs", "OnMapEventEnded", 141);
 		}
 	}
 
@@ -147,7 +144,7 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 			if (previousSettlementOwner.Leader == null)
 			{
 				Debug.Print($"{previousSettlementOwner.StringId}: {previousSettlementOwner} leader was null");
-				Debug.FailedAssert($"{previousSettlementOwner.StringId}: {previousSettlementOwner} leader was null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\SiegeAftermathCampaignBehavior.cs", "OnSiegeAftermathApplied", 185);
+				Debug.FailedAssert($"{previousSettlementOwner.StringId}: {previousSettlementOwner} leader was null", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\SiegeAftermathCampaignBehavior.cs", "OnSiegeAftermathApplied", 183);
 			}
 			if (attackerParty.LeaderHero != null)
 			{
@@ -322,7 +319,7 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 
 	private void menu_settlement_taken_player_army_member_on_init(MenuCallbackArgs args)
 	{
-		bool flag = _besiegerParty.Army != null && _besiegerParty.Army.Parties.Contains(MobileParty.MainParty);
+		bool flag = MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty != MobileParty.MainParty;
 		Settlement currentSettlement = _besiegerParty.CurrentSettlement;
 		TextObject textObject;
 		if (_playerEncounterAftermath == SiegeAftermathAction.SiegeAftermath.Devastate)
@@ -338,7 +335,7 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 			}
 			else if (_wasPlayerArmyMember)
 			{
-				Debug.FailedAssert("_wasPlayerArmyMember", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\SiegeAftermathCampaignBehavior.cs", "menu_settlement_taken_player_army_member_on_init", 433);
+				Debug.FailedAssert("_wasPlayerArmyMember", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\SiegeAftermathCampaignBehavior.cs", "menu_settlement_taken_player_army_member_on_init", 431);
 				textObject = new TextObject("{=99v8GTTe}{DEFAULT_TEXT}Before {?ARMY_LEADER.GENDER}she{?}he{\\?} fell, {ARMY_LEADER.LINK} granted {?ARMY_LEADER.GENDER}her{?}his{\\?} men their customary right of pillage after a successful siege. They may take property but must spare the townsfolk's lives.");
 			}
 			else
@@ -356,7 +353,7 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 			else if (_wasPlayerArmyMember)
 			{
 				textObject = new TextObject("{=F5Xc0m5O}{DEFAULT_TEXT}{ARMY_LEADER.LINK} fell during the fighting. {?ARMY_LEADER.GENDER}Her{?}His{\\?} troops, reluctant to harm their {CULTURE_ADJ} kinfolk, forego their traditional right of pillage.");
-				textObject.SetTextVariable("CULTURE_ADJ", FactionHelper.GetAdjectiveForFaction(_besiegerParty.MapFaction));
+				textObject.SetTextVariable("CULTURE_ADJ", FactionHelper.GetAdjectiveForFactionCulture(_besiegerParty.MapFaction.Culture));
 			}
 			else
 			{
@@ -369,7 +366,7 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 		}
 		else if (_wasPlayerArmyMember)
 		{
-			Debug.FailedAssert("_wasPlayerArmyMember", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\SiegeAftermathCampaignBehavior.cs", "menu_settlement_taken_player_army_member_on_init", 468);
+			Debug.FailedAssert("_wasPlayerArmyMember", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\CampaignBehaviors\\SiegeAftermathCampaignBehavior.cs", "menu_settlement_taken_player_army_member_on_init", 466);
 			textObject = new TextObject("{=ULtzLvXi}{DEFAULT_TEXT}Before {?ARMY_LEADER.GENDER}she{?}he{\\?} fell, {ARMY_LEADER.LINK} gave orders that mercy should be shown to the people of {SETTLEMENT}.");
 		}
 		else
@@ -520,7 +517,7 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 
 	private TextObject GetSiegeAftermathConsequencesText(MobileParty attackerParty, Settlement settlement, SiegeAftermathAction.SiegeAftermath aftermath, bool isTooltip)
 	{
-		TextObject textObject = new TextObject("{=!}{PROSPERITY_TEXT}{TOWN_PROJECTS_TEXT}{LOYALTY_TEXT}{NOTABLE_POWER_TEXT}{PARTY_MORALE_TEXT}{ARMY_GOLD_TEXT}{PARTY_GOLD_TEXT}{OWNER_RELATION_TEXT}");
+		TextObject textObject = new TextObject("{=!}{PROSPERITY_TEXT}{TOWN_PROJECTS_TEXT}{LOYALTY_TEXT}{NOTABLE_POWER_TEXT}{PARTY_MORALE_TEXT}{ARMY_GOLD_TEXT}{PARTY_GOLD_TEXT}{TRAIT_CHANGE}{OWNER_RELATION_TEXT}");
 		TextObject textObject2 = new TextObject("{=ERh2DVEa} • Prosperity Lost: {PROSPERITY_LOST_AMOUNT}");
 		textObject2.SetTextVariable("PROSPERITY_LOST_AMOUNT", -1 * (int)GetSiegeAftermathProsperityPenalty(attackerParty, settlement, aftermath));
 		textObject.SetTextVariable("PROSPERITY_TEXT", textObject2);
@@ -606,6 +603,20 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 			textObject.SetTextVariable("ARMY_GOLD_TEXT", "");
 			textObject.SetTextVariable("PARTY_GOLD_TEXT", "");
 		}
+		TextObject textObject15 = new TextObject("{=wuQo5VtM}{newline} • Increase reputation for being {TRAIT}");
+		switch (aftermath)
+		{
+		case SiegeAftermathAction.SiegeAftermath.ShowMercy:
+			textObject15.SetTextVariable("TRAIT", HeroHelper.GetPersonalityTraitChangeName(DefaultTraits.Mercy, Hero.MainHero, isPositive: true));
+			break;
+		case SiegeAftermathAction.SiegeAftermath.Devastate:
+			textObject15.SetTextVariable("TRAIT", HeroHelper.GetPersonalityTraitChangeName(DefaultTraits.Mercy, Hero.MainHero, isPositive: false));
+			break;
+		default:
+			textObject15 = TextObject.GetEmpty();
+			break;
+		}
+		textObject.SetTextVariable("TRAIT_CHANGE", textObject15);
 		return textObject;
 	}
 
@@ -853,5 +864,6 @@ public class SiegeAftermathCampaignBehavior : CampaignBehaviorBase
 		dataStore.SyncData("_siegeEventPartyContributions", ref _siegeEventPartyContributions);
 		dataStore.SyncData("_wasPlayerArmyMember", ref _wasPlayerArmyMember);
 		dataStore.SyncData("_playerEncounterAftermathDamagedBuildings", ref _playerEncounterAftermathDamagedBuildings);
+		dataStore.SyncData("_settlementProsperityCache", ref _settlementProsperityCache);
 	}
 }

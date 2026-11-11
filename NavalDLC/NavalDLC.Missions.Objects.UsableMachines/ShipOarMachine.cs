@@ -402,7 +402,7 @@ public class ShipOarMachine : UsableMachine, IShipOarScriptComponent
 		return textObject;
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		return new TextObject("{=4b2SXZG8}Oar");
 	}

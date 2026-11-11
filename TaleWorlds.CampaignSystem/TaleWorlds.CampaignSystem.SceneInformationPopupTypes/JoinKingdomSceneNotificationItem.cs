@@ -26,7 +26,7 @@ public class JoinKingdomSceneNotificationItem : SceneNotificationData
 			GameTexts.SetVariable("CLAN_NAME", NewMemberClan.Name);
 			GameTexts.SetVariable("DAY_OF_YEAR", CampaignSceneNotificationHelper.GetFormalDayAndSeasonText(_creationCampaignTime));
 			GameTexts.SetVariable("YEAR", _creationCampaignTime.GetYear);
-			GameTexts.SetVariable("KINGDOM_FORMALNAME", CampaignSceneNotificationHelper.GetFormalNameForKingdom(KingdomToUse));
+			GameTexts.SetVariable("KINGDOM_FORMALNAME", KingdomToUse.FormalName);
 			return GameTexts.FindText("str_new_faction_member");
 		}
 	}

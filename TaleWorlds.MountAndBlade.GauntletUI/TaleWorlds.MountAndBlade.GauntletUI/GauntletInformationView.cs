@@ -37,9 +37,11 @@ public class GauntletInformationView : GlobalLayer
 		{
 			_current = new GauntletInformationView();
 			ScreenManager.AddGlobalLayer(_current, isFocusable: false);
-			PropertyBasedTooltipVM.AddKeyType("MapClick", () => _current.GetKey("MapHotKeyCategory", "MapClick"));
-			PropertyBasedTooltipVM.AddKeyType("FollowModifier", () => _current.GetKey("MapHotKeyCategory", "MapFollowModifier"));
-			PropertyBasedTooltipVM.AddKeyType("ExtendModifier", () => _current.GetExtendTooltipKeyText());
+			PropertyBasedTooltipVM.AddKeyType("MapClick", () => GetKeyVisual("MapHotKeyCategory", "MapClick"));
+			PropertyBasedTooltipVM.AddKeyType("FollowModifier", () => GetKeyVisual("MapHotKeyCategory", "MapFollowModifier"));
+			PropertyBasedTooltipVM.AddKeyType("ParleyModifier", () => GetKeyVisual("MapHotKeyCategory", "MapParleyModifier"));
+			PropertyBasedTooltipVM.AddKeyType("ParleyClick", () => GetKeyVisual("MapHotKeyCategory", "MapParleyClick"));
+			PropertyBasedTooltipVM.AddKeyType("ExtendModifier", HyperlinkTexts.GetTooltipExtendKeyHyperlinkText);
 		}
 	}
 
@@ -71,23 +73,9 @@ public class GauntletInformationView : GlobalLayer
 		}
 	}
 
-	private string GetExtendTooltipKeyText()
+	private static string GetKeyVisual(string categoryId, string keyId)
 	{
-		if (Input.IsGamepadActive)
-		{
-			return GetKey("MapHotKeyCategory", "MapFollowModifier");
-		}
-		return Game.Current.GameTextManager.FindText("str_game_key_text", "anyalt").ToString();
-	}
-
-	private string GetKey(string categoryId, string keyId)
-	{
-		return Game.Current.GameTextManager.GetHotKeyGameText(categoryId, keyId).ToString();
-	}
-
-	private string GetKey(string categoryId, int keyId)
-	{
-		return Game.Current.GameTextManager.GetHotKeyGameText(categoryId, keyId).ToString();
+		return HyperlinkTexts.GetKeyHyperlinkText(HotKeyManager.GetHotKeyId(categoryId, keyId), 0.5f);
 	}
 
 	private void OnShowTooltip(Type type, object[] args)
@@ -103,11 +91,11 @@ public class GauntletInformationView : GlobalLayer
 			}
 			catch (Exception arg)
 			{
-				Debug.FailedAssert($"Failed to display tooltip of type: {type.FullName}. Exception: {arg}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletInformationView.cs", "OnShowTooltip", 112);
+				Debug.FailedAssert($"Failed to display tooltip of type: {type.FullName}. Exception: {arg}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletInformationView.cs", "OnShowTooltip", 97);
 				return;
 			}
 		}
-		Debug.FailedAssert("Unable to show tooltip. Either the given type or the corresponding tooltip type is not added to TooltipMappingProvider. Given type: " + type.FullName, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletInformationView.cs", "OnShowTooltip", 117);
+		Debug.FailedAssert("Unable to show tooltip. Either the given type or the corresponding tooltip type is not added to TooltipMappingProvider. Given type: " + type.FullName, "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\GauntletInformationView.cs", "OnShowTooltip", 102);
 	}
 
 	private void OnHideTooltip()

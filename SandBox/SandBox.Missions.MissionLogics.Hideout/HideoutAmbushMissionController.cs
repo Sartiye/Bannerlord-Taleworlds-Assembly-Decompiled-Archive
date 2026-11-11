@@ -51,7 +51,7 @@ public class HideoutAmbushMissionController : MissionLogic
 
 	private const int FirstPhaseEndInSeconds = 4;
 
-	private int _initialHideoutPopulation;
+	private readonly int _initialHideoutPopulation;
 
 	private bool _troopsInitialized;
 
@@ -73,7 +73,7 @@ public class HideoutAmbushMissionController : MissionLogic
 
 	private List<IAgentOriginBase> _allEnemyTroopTypesCache;
 
-	private List<StealthAreaMissionLogic.StealthAreaData> _stealthAreaData;
+	private readonly List<StealthAreaMissionLogic.StealthAreaData> _stealthAreaData;
 
 	private Timer _waitTimerToChangeStealthModeIntoBattle;
 
@@ -103,7 +103,7 @@ public class HideoutAmbushMissionController : MissionLogic
 
 	private IAgentOriginBase _overriddenHideoutBossAgentOrigin;
 
-	private int _playerTroopCount;
+	private readonly int _playerTroopCount;
 
 	private LocateTheMainCampObjective _locateTheMainCampObjective;
 
@@ -113,7 +113,7 @@ public class HideoutAmbushMissionController : MissionLogic
 
 	private readonly List<Agent> _clearObjectiveTargetAgents = new List<Agent>();
 
-	private IMissionTroopSupplier[] _suppliers;
+	private readonly IMissionTroopSupplier[] _suppliers;
 
 	public bool IsReadyForCallTroopsCinematic => _currentHideoutMissionState == HideoutMissionState.CallTroopsCutSceneState;
 
@@ -176,6 +176,11 @@ public class HideoutAmbushMissionController : MissionLogic
 		Mission.Current.GetMissionBehavior<StealthFailCounterMissionLogic>().FailCounterSeconds = 15f;
 		_locateTheMainCampObjective = new LocateTheMainCampObjective(base.Mission);
 		_missionObjectiveLogic.StartObjective(_locateTheMainCampObjective);
+	}
+
+	public override void OnAfterMissionLoadingFinished()
+	{
+		base.Mission.OnInitialSpawnCompleted();
 	}
 
 	public override void OnRemoveBehavior()
@@ -497,7 +502,18 @@ public class HideoutAmbushMissionController : MissionLogic
 	{
 		MatrixFrame globalFrame = spawnPoint.GetGlobalFrame();
 		Agent agent = Mission.Current.SpawnTroop(character, isPlayerSide: true, hasFormation: false, spawnWithHorse: false, isReinforcement: false, 0, 0, isAlarmed: true, wieldInitialWeapons: true, globalFrame.origin, globalFrame.rotation.f.AsVec2.Normalized());
-		WorldPosition position2 = new WorldPosition(position: Mission.Current.GetRandomPositionAroundPoint(position, 0f, 2f, nearFirst: true), scene: spawnPoint.Scene);
+		if (character.Troop is CharacterObject { IsHero: not false } characterObject)
+		{
+			Equipment stealthEquipment = characterObject.HeroObject.StealthEquipment;
+			if (stealthEquipment != null && !stealthEquipment.IsEmpty())
+			{
+				agent.SetClothingColor1(4279111698u);
+				agent.SetClothingColor2(4279111698u);
+				agent.UpdateSpawnEquipmentAndRefreshVisuals(stealthEquipment);
+			}
+		}
+		Vec3 randomPositionAroundPoint = Mission.Current.GetRandomPositionAroundPoint(position, 0f, 2f, nearFirst: true);
+		WorldPosition position2 = new WorldPosition(spawnPoint.Scene, randomPositionAroundPoint);
 		agent.SetScriptedPosition(ref position2, addHumanLikeDelay: true, Agent.AIScriptedFrameFlags.NoAttack | Agent.AIScriptedFrameFlags.Crouch);
 		return agent;
 	}

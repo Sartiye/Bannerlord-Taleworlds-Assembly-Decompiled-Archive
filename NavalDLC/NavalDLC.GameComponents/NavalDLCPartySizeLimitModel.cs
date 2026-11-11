@@ -47,7 +47,7 @@ public class NavalDLCPartySizeLimitModel : PartySizeLimitModel
 		return base.BaseModel.GetNextClanTierPartySizeEffectChangeForHero(hero);
 	}
 
-	public override ExplainedNumber GetPartyMemberSizeLimit(PartyBase party, bool includeDescriptions = false)
+	public override ExplainedNumber GetPartyMemberSizeLimit(PartyBase party, bool isCurrentlyAtSea, bool includeDescriptions = false)
 	{
 		if (party.IsNavalStorylineQuestParty(out var partyData) && partyData.IsQuestParty)
 		{
@@ -61,7 +61,7 @@ public class NavalDLCPartySizeLimitModel : PartySizeLimitModel
 		{
 			return CalculatePatrolPartySizeLimit(party.MobileParty, includeDescriptions);
 		}
-		return base.BaseModel.GetPartyMemberSizeLimit(party, includeDescriptions);
+		return base.BaseModel.GetPartyMemberSizeLimit(party, isCurrentlyAtSea, includeDescriptions);
 	}
 
 	private ExplainedNumber CalculatePatrolPartySizeLimit(MobileParty mobileParty, bool includeDescriptions)

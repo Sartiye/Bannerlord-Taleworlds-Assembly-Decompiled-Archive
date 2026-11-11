@@ -356,7 +356,9 @@ public class PerkResetCampaignBehavior : CampaignBehaviorBase
 		{
 			int index = (i + num) % count;
 			Hero hero = Clan.PlayerClan.Companions[index];
-			if (hero.PartyBelongedTo?.MapEvent == null && hero.CurrentSettlement?.Party.MapEvent == null && !Campaign.Current.IssueManager.IssueSolvingCompanionList.Contains(hero))
+			bool result = true;
+			CampaignEventDispatcher.Instance.CanHeroBeReleased(hero, ref result);
+			if (hero.PartyBelongedTo?.MapEvent == null && hero.CurrentSettlement?.Party.MapEvent == null && !Campaign.Current.IssueManager.IssueSolvingCompanionList.Contains(hero) && hero.PartyBelongedToAsPrisoner == null && result)
 			{
 				KillCharacterAction.ApplyByRemove(hero, showNotification: true);
 				break;

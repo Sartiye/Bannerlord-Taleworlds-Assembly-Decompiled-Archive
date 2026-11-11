@@ -27,7 +27,11 @@ public class GameServerProperties
 
 	public string AdminPassword { get; set; }
 
+	public string StreamerPassword { get; set; }
+
 	public int MaxPlayerCount { get; set; }
+
+	public int MaxStreamerCount { get; set; }
 
 	public bool PasswordProtected { get; set; }
 
@@ -51,7 +55,7 @@ public class GameServerProperties
 	{
 	}
 
-	public GameServerProperties(string name, string address, int port, string region, string gameModule, string gameType, string map, string uniqueMapId, string gamePassword, string adminPassword, int maxPlayerCount, bool isOfficial, bool byOfficialProvider, bool crossplayEnabled, PlayerId hostId, string hostName, List<ModuleInfoModel> loadedModules, bool allowsOptionalModules, int permission)
+	public GameServerProperties(string name, string address, int port, string region, string gameModule, string gameType, string map, string uniqueMapId, string gamePassword, string adminPassword, string streamerPassword, int maxPlayerCount, bool isOfficial, bool byOfficialProvider, bool crossplayEnabled, PlayerId hostId, string hostName, List<ModuleInfoModel> loadedModules, bool allowsOptionalModules, int permission, int maxStreamerCount)
 	{
 		Name = name;
 		Address = address;
@@ -63,6 +67,7 @@ public class GameServerProperties
 		GamePassword = gamePassword;
 		UniqueMapId = uniqueMapId;
 		AdminPassword = adminPassword;
+		StreamerPassword = streamerPassword;
 		MaxPlayerCount = maxPlayerCount;
 		IsOfficial = isOfficial;
 		ByOfficialProvider = byOfficialProvider;
@@ -73,6 +78,7 @@ public class GameServerProperties
 		AllowsOptionalModules = allowsOptionalModules;
 		PasswordProtected = gamePassword != null;
 		Permission = permission;
+		MaxStreamerCount = maxStreamerCount;
 	}
 
 	public void CheckAndReplaceProxyAddress(IReadOnlyDictionary<string, string> proxyAddressMap)

@@ -170,6 +170,7 @@ public class BrushListPanel : ListPanel
 
 	protected bool IsBrushUpdateNeeded()
 	{
+		_ = Brush;
 		if (base.IsVisible && BrushRenderer.IsUpdateNeeded())
 		{
 			return AreaRect.IsCollide(in base.EventManager.AreaRectangle);

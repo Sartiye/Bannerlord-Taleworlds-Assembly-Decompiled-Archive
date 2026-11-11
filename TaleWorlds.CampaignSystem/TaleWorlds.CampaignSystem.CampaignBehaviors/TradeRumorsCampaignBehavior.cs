@@ -96,7 +96,8 @@ public class TradeRumorsCampaignBehavior : CampaignBehaviorBase, ITradeRumorCamp
 
 	public void OnSettlementEntered(MobileParty mobileParty, Settlement settlement, Hero hero)
 	{
-		if (mobileParty == null || (!mobileParty.IsMainParty && (!mobileParty.IsCaravan || mobileParty.Party.Owner == null || mobileParty.Party.Owner.Clan != Clan.PlayerClan || !Hero.MainHero.GetPerkValue(DefaultPerks.Trade.TravelingRumors))) || !settlement.IsTown || settlement.Town?.MarketData == null || (_enteredSettlements.ContainsKey(settlement) && (!_enteredSettlements.ContainsKey(settlement) || !(CampaignTime.Now - _enteredSettlements[settlement] >= CampaignTime.Days(1f)))))
+		bool flag = mobileParty != null && mobileParty.IsCaravan && mobileParty.Party.Owner != null && mobileParty.Party.Owner.Clan == Clan.PlayerClan && Hero.MainHero.GetPerkValue(DefaultPerks.Trade.TravelingRumors);
+		if (mobileParty == null || !(mobileParty.IsMainParty || flag) || !settlement.IsTown || settlement.Town?.MarketData == null || (_enteredSettlements.ContainsKey(settlement) && (!_enteredSettlements.ContainsKey(settlement) || !(CampaignTime.Now - _enteredSettlements[settlement] >= CampaignTime.Days(1f)))))
 		{
 			return;
 		}

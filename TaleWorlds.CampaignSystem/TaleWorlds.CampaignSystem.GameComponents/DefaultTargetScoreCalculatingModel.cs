@@ -379,14 +379,6 @@ public class DefaultTargetScoreCalculatingModel : TargetScoreCalculatingModel
 			}
 		}
 		float num34 = num27 * num * num23 * num24 * num25 * num28 * num29 * num30 * num21;
-		if (mobileParty.Objective == MobileParty.PartyObjective.Defensive && missionType == Army.ArmyTypes.Defender)
-		{
-			num34 *= 1.2f;
-		}
-		else if (mobileParty.Objective == MobileParty.PartyObjective.Aggressive && (missionType == Army.ArmyTypes.Besieger || missionType == Army.ArmyTypes.Raider))
-		{
-			num34 *= 1.2f;
-		}
 		return (num34 < 0f) ? 0f : num34;
 	}
 }

@@ -404,7 +404,6 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 		{
 			if (party == MobileParty.MainParty && settlement == base.QuestGiver.CurrentSettlement)
 			{
-				_questHideout.Hideout.IsSpotted = true;
 				_questHideout.IsVisible = true;
 				AddTrackedObject(_questHideout);
 				TextObject textObject = new TextObject("{=R9R6imnU}Scouts working for {QUEST_GIVER.NAME} marked the hideout on your map");
@@ -528,7 +527,7 @@ public class CapturedByBountyHuntersIssueBehavior : CampaignBehaviorBase
 
 	private Settlement FindSuitableHideout(Hero issueGiver)
 	{
-		return SettlementHelper.FindNearestHideoutToSettlement(issueGiver.CurrentSettlement, MobileParty.NavigationType.Default, (Settlement s) => s.Hideout.IsInfested && !s.IsSettlementBusy(this) && Campaign.Current.Models.MapDistanceModel.GetDistance(issueGiver.CurrentSettlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) < ValidHideoutDistance)?.Settlement;
+		return SettlementHelper.FindNearestHideoutToSettlement(issueGiver.CurrentSettlement, MobileParty.NavigationType.Default, (Settlement s) => s.Hideout.IsInfested && s.Hideout.NextPossibleAttackTime.IsPast && !s.IsSettlementBusy(this) && Campaign.Current.Models.MapDistanceModel.GetDistance(issueGiver.CurrentSettlement, s, isFromPort: false, isTargetingPort: false, MobileParty.NavigationType.Default) < ValidHideoutDistance)?.Settlement;
 	}
 
 	public void OnCheckForIssue(Hero hero)

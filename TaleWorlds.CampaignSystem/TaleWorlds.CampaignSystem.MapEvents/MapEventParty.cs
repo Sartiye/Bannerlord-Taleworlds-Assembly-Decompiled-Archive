@@ -42,6 +42,12 @@ public class MapEventParty
 	[SaveableProperty(1)]
 	public PartyBase Party { get; private set; }
 
+	[SaveableProperty(10)]
+	public int PlunderedGold { get; set; }
+
+	[SaveableProperty(11)]
+	public int GoldLost { get; set; }
+
 	public float GainedRenown => GainedRenownExplained.ResultNumber;
 
 	public float GainedInfluence => GainedInfluenceExplained.ResultNumber;
@@ -53,12 +59,6 @@ public class MapEventParty
 	public ExplainedNumber GainedInfluenceExplained { get; private set; }
 
 	public ExplainedNumber GainedMoraleExplained { get; private set; }
-
-	[SaveableProperty(10)]
-	public int PlunderedGold { get; set; }
-
-	[SaveableProperty(11)]
-	public int GoldLost { get; set; }
 
 	public int HealthyManCountAtStart => _healthyManCountAtStart;
 
@@ -372,14 +372,14 @@ public class MapEventParty
 		}
 	}
 
-	public void OnTroopScoreHit(UniqueTroopDescriptor attackerTroopDesc, CharacterObject attackedTroop, int damage, bool isFatal, bool isTeamKill, WeaponComponentData attackerWeapon, bool isSimulatedHit)
+	public void OnTroopScoreHit(UniqueTroopDescriptor attackerTroopDesc, CharacterObject attackedTroop, int damage, bool isFatal, bool isTeamKill, WeaponComponentData attackerWeapon, bool isSimulatedHit, CharacterObject captain)
 	{
 		if (isTeamKill)
 		{
 			return;
 		}
 		CharacterObject troop = _roster[attackerTroopDesc].Troop;
-		ExplainedNumber xpFromHit = Campaign.Current.Models.CombatXpModel.GetXpFromHit(troop, null, attackedTroop, Party, damage, isFatal, isSimulatedHit ? CombatXpModel.MissionTypeEnum.SimulationBattle : CombatXpModel.MissionTypeEnum.Battle);
+		ExplainedNumber xpFromHit = Campaign.Current.Models.CombatXpModel.GetXpFromHit(troop, captain, attackedTroop, Party, damage, isFatal, isSimulatedHit ? CombatXpModel.MissionTypeEnum.SimulationBattle : CombatXpModel.MissionTypeEnum.Battle);
 		if (!troop.IsHero)
 		{
 			if (xpFromHit.RoundedResultNumber > 0)

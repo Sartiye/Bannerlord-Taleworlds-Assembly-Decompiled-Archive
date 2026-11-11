@@ -40,23 +40,18 @@ public class TrainingFieldCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.OnCharacterCreationIsOverEvent.AddNonSerializedListener(this, OnCharacterCreationIsOver);
 	}
 
-	private void OnCharacterCreationIsOver()
+	private void OnCharacterCreationIsOver(int index)
 	{
-		if (!SkipTutorialMission)
+		if (index == 1)
 		{
-			Settlement settlement = Settlement.Find("tutorial_training_field");
-			MobileParty.MainParty.Position = settlement.Position;
-			EncounterManager.StartSettlementEncounter(MobileParty.MainParty, settlement);
-			PlayerEncounter.LocationEncounter.CreateAndOpenMissionController(LocationComplex.Current.GetLocationWithId("training_field"));
-		}
-		SkipTutorialMission = false;
-		foreach (MobileParty item in MobileParty.All)
-		{
-			item.Party.UpdateVisibilityAndInspected(MobileParty.MainParty.Position);
-		}
-		foreach (Settlement item2 in Settlement.All)
-		{
-			item2.Party.UpdateVisibilityAndInspected(MobileParty.MainParty.Position);
+			if (!SkipTutorialMission)
+			{
+				Settlement settlement = Settlement.Find("tutorial_training_field");
+				MobileParty.MainParty.Position = settlement.Position;
+				EncounterManager.StartSettlementEncounter(MobileParty.MainParty, settlement);
+				PlayerEncounter.LocationEncounter.CreateAndOpenMissionController(LocationComplex.Current.GetLocationWithId("training_field"));
+			}
+			SkipTutorialMission = false;
 		}
 	}
 

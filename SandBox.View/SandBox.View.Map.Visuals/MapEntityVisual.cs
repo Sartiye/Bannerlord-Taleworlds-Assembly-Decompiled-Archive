@@ -29,6 +29,11 @@ public abstract class MapEntityVisual
 
 	public abstract Vec3 GetVisualPosition();
 
+	public virtual bool OnMapParleyClick()
+	{
+		return false;
+	}
+
 	public virtual void ReleaseResources()
 	{
 	}
@@ -54,6 +59,11 @@ public abstract class MapEntityVisual
 	public virtual bool IsInSameFaction(IFaction faction)
 	{
 		return false;
+	}
+
+	public virtual bool IsInteractable()
+	{
+		return true;
 	}
 }
 public abstract class MapEntityVisual<T> : MapEntityVisual

@@ -140,7 +140,7 @@ public class TrainingIcon : UsableMachine
 		}
 	}
 
-	public override TextObject GetDescriptionText(WeakGameEntity gameEntity)
+	public override TextObject GetDescriptionText(WeakGameEntity gameEntity, Agent requesterAgent)
 	{
 		TextObject textObject = new TextObject("{=!}{TRAINING_TYPE}");
 		textObject.SetTextVariable("TRAINING_TYPE", GameTexts.FindText("str_tutorial_" + _descriptionTextOfIcon));

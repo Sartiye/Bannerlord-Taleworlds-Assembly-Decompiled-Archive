@@ -35,52 +35,12 @@ public class CharacterRelationCampaignBehavior : CampaignBehaviorBase
 		CampaignEvents.OnNewGameCreatedEvent.AddNonSerializedListener(this, UpdateFriendshipAndEnemies);
 		CampaignEvents.RaidCompletedEvent.AddNonSerializedListener(this, OnRaidCompleted);
 		CampaignEvents.DailyTickPartyEvent.AddNonSerializedListener(this, DailyTickParty);
-		CampaignEvents.MapEventEnded.AddNonSerializedListener(this, MapEventEnded);
+		CampaignEvents.MapEventEnded.AddNonSerializedListener(this, OnMapEventEnded);
 		CampaignEvents.OnPrisonerDonatedToSettlementEvent.AddNonSerializedListener(this, OnPrisonerDonatedToSettlement);
 		CampaignEvents.HeroRelationChanged.AddNonSerializedListener(this, OnHeroRelationChanged);
 		CampaignEvents.BeforeHeroesMarried.AddNonSerializedListener(this, OnHeroesMarried);
 		CampaignEvents.OnHeroUnregisteredEvent.AddNonSerializedListener(this, OnHeroUnregistered);
-		CampaignEvents.HeroKilledEvent.AddNonSerializedListener(this, OnHeroKilled);
 		CampaignEvents.OnClanChangedKingdomEvent.AddNonSerializedListener(this, OnClanChangedKingdom);
-	}
-
-	private void OnHeroKilled(Hero victim, Hero killer, KillCharacterAction.KillCharacterActionDetail detail, bool showNotification = true)
-	{
-		if ((detail != KillCharacterAction.KillCharacterActionDetail.Executed && detail != KillCharacterAction.KillCharacterActionDetail.ExecutionAfterMapEvent) || killer != Hero.MainHero || victim.Clan == null)
-		{
-			return;
-		}
-		int num = 0;
-		foreach (Clan item in Clan.All)
-		{
-			if (item.IsEliminated || item.IsBanditFaction || item == Clan.PlayerClan)
-			{
-				continue;
-			}
-			bool showQuickNotification;
-			int relationChangeForExecutingHero = Campaign.Current.Models.ExecutionRelationModel.GetRelationChangeForExecutingHero(victim, item.Leader, out showQuickNotification);
-			if (relationChangeForExecutingHero != 0)
-			{
-				Hero leader = item.Leader;
-				ChangeRelationAction.ApplyPlayerRelation(leader, relationChangeForExecutingHero, affectRelatives: true, showQuickNotification: false);
-				if (showQuickNotification)
-				{
-					num++;
-					TextObject textObject = GameTexts.FindText("str_your_relation_decreased_with_clan");
-					textObject.SetTextVariable("CLAN_LEADER", item.Name);
-					textObject.SetTextVariable("VALUE", leader.GetRelation(killer));
-					textObject.SetTextVariable("MAGNITUDE", MathF.Abs(relationChangeForExecutingHero));
-					InformationManager.DisplayMessage(new InformationMessage(textObject.ToString()));
-				}
-			}
-		}
-		if (num > 0)
-		{
-			TextObject textObject2 = new TextObject("{=oqO9kjeW}The execution has hurt your relations with {COUNT} {?IS_PLURAL}clans{?}clan{\\?}.");
-			MBTextManager.SetTextVariable("IS_PLURAL", (num > 1) ? 1 : 0);
-			textObject2.SetTextVariable("COUNT", num);
-			MBInformationManager.AddQuickInformation(textObject2);
-		}
 	}
 
 	private void OnHeroUnregistered(Hero hero)
@@ -96,7 +56,7 @@ public class CharacterRelationCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private void MapEventEnded(MapEvent mapEvent)
+	private void OnMapEventEnded(MapEvent mapEvent)
 	{
 		if (!mapEvent.HasWinner)
 		{
@@ -123,7 +83,8 @@ public class CharacterRelationCampaignBehavior : CampaignBehaviorBase
 					Hero randomElementWithPredicate = Hero.AllAliveHeroes.GetRandomElementWithPredicate((Hero x) => x.IsActive && x.IsNotable && x.CurrentSettlement?.MapFaction == winnerSide.LeaderParty.MapFaction);
 					if (randomElementWithPredicate != null)
 					{
-						ChangeRelationAction.ApplyRelationChangeBetweenHeroes(winnerSide.LeaderParty.LeaderHero, randomElementWithPredicate, (int)DefaultPerks.Charm.Oratory.SecondaryBonus);
+						int relationChange = (int)DefaultPerks.Charm.Oratory.SecondaryBonus;
+						ChangeRelationAction.ApplyRelationChangeBetweenHeroes(winnerSide.LeaderParty.LeaderHero, randomElementWithPredicate, relationChange);
 					}
 				}
 				Hero leaderHero2 = winnerSide.LeaderParty.LeaderHero;
@@ -132,7 +93,8 @@ public class CharacterRelationCampaignBehavior : CampaignBehaviorBase
 					Hero randomElementWithPredicate2 = winnerSide.LeaderParty.MapFaction.AliveLords.GetRandomElementWithPredicate((Hero x) => x != winnerSide.LeaderParty.LeaderHero);
 					if (randomElementWithPredicate2 != null)
 					{
-						ChangeRelationAction.ApplyRelationChangeBetweenHeroes(winnerSide.LeaderParty.LeaderHero, randomElementWithPredicate2, (int)DefaultPerks.Charm.Warlord.SecondaryBonus);
+						int relationChange2 = (int)DefaultPerks.Charm.Warlord.SecondaryBonus;
+						ChangeRelationAction.ApplyRelationChangeBetweenHeroes(winnerSide.LeaderParty.LeaderHero, randomElementWithPredicate2, relationChange2);
 					}
 				}
 			}
@@ -201,8 +163,8 @@ public class CharacterRelationCampaignBehavior : CampaignBehaviorBase
 			{
 				if (item4.HomeSettlement != null && item4.HomeSettlement.OwnerClan != null && party2.LeaderHero != null && item4.HomeSettlement.OwnerClan.Leader.Clan != party2.LeaderHero.Clan && item4.Party.Owner != null && item4.Party.Owner != Hero.MainHero && item4.Party.Owner.IsAlive && party2.LeaderHero.Clan.Leader != null && party2.LeaderHero.Clan.Leader.IsAlive && !item4.IsCurrentlyUsedByAQuest)
 				{
-					int relationChange = MBRandom.RoundRandomized(6f * num2);
-					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(item4.Party.Owner, party2.LeaderHero.Clan.Leader, relationChange);
+					int relationChange3 = MBRandom.RoundRandomized(6f * num2);
+					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(item4.Party.Owner, party2.LeaderHero.Clan.Leader, relationChange3);
 				}
 			}
 		}
@@ -332,7 +294,8 @@ public class CharacterRelationCampaignBehavior : CampaignBehaviorBase
 				Hero randomElementWithPredicate = mobileParty.CurrentSettlement.Notables.GetRandomElementWithPredicate((Hero x) => x.Age >= 40f && x.IsAlive);
 				if (randomElementWithPredicate != null)
 				{
-					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(mobileParty.LeaderHero, randomElementWithPredicate, (int)DefaultPerks.Medicine.BestMedicine.SecondaryBonus);
+					int relationChange = (int)DefaultPerks.Medicine.BestMedicine.SecondaryBonus;
+					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(mobileParty.LeaderHero, randomElementWithPredicate, relationChange);
 				}
 			}
 			if (mobileParty.LeaderHero.GetPerkValue(DefaultPerks.Medicine.GoodLogdings))
@@ -340,7 +303,8 @@ public class CharacterRelationCampaignBehavior : CampaignBehaviorBase
 				Hero randomElement = TownHelpers.GetHeroesInSettlement(mobileParty.CurrentSettlement, (Hero x) => x.Age >= 40f && x != mobileParty.LeaderHero && x.IsLord).GetRandomElement();
 				if (randomElement != null)
 				{
-					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(mobileParty.LeaderHero, randomElement, (int)DefaultPerks.Medicine.GoodLogdings.SecondaryBonus);
+					int relationChange2 = (int)DefaultPerks.Medicine.GoodLogdings.SecondaryBonus;
+					ChangeRelationAction.ApplyRelationChangeBetweenHeroes(mobileParty.LeaderHero, randomElement, relationChange2);
 				}
 			}
 		}
@@ -354,7 +318,8 @@ public class CharacterRelationCampaignBehavior : CampaignBehaviorBase
 			Hero hero = randomElementWithPredicate2.MemberRoster.GetTroopRoster().GetRandomElementWithPredicate((TroopRosterElement x) => x.Character.IsHero && x.Character.Occupation == Occupation.Lord && x.Character.HeroObject != mobileParty.LeaderHero).Character?.HeroObject;
 			if (hero != null)
 			{
-				ChangeRelationAction.ApplyRelationChangeBetweenHeroes(mobileParty.LeaderHero, hero, 1);
+				int relationChange3 = 1;
+				ChangeRelationAction.ApplyRelationChangeBetweenHeroes(mobileParty.LeaderHero, hero, relationChange3);
 			}
 		}
 	}

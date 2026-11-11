@@ -135,7 +135,7 @@ public class DefaultHeroCreationModel : HeroCreationModel
 		return settlement4;
 	}
 
-	public override StaticBodyProperties GetStaticBodyProperties(Hero hero, bool isOffspring, float variationAmount = 0.35f)
+	public override StaticBodyProperties GetStaticBodyProperties(Hero hero, bool isOffspring, float variationAmount = 0.2f)
 	{
 		if (isOffspring)
 		{

@@ -83,7 +83,7 @@ public class DefeatThePiratesQuest : NavalStorylineQuestBase
 				PirateBattleMissionController missionBehavior2 = Mission.Current.GetMissionBehavior<PirateBattleMissionController>();
 				Campaign.Current.ConversationManager.ConversationEndOneShot += missionBehavior2.OnPlayerSelectedSecondShipToCommand;
 			})
-			.NpcLine("{=qauwgx3r}Splendid. Let's go chase down that second Sea Hound.")
+			.NpcLine("{=qauwgx3r}[if:convo_huge_smile][ib:hip]Splendid. Let's go chase down that second Sea Hound.")
 			.CloseDialog()
 			.PlayerOption("{=cnjTiMmv}Very good. I'll keep command of our old knarr. You captain this agile snekkja.")
 			.Consequence(delegate
@@ -91,12 +91,12 @@ public class DefeatThePiratesQuest : NavalStorylineQuestBase
 				PirateBattleMissionController missionBehavior = Mission.Current.GetMissionBehavior<PirateBattleMissionController>();
 				Campaign.Current.ConversationManager.ConversationEndOneShot += missionBehavior.OnPlayerSelectedFirstShipToCommand;
 			})
-			.NpcLine("{=qauwgx3r}Splendid. Let's go chase down that second Sea Hound.")
+			.NpcLine("{=qauwgx3r}[if:convo_huge_smile][ib:hip]Splendid. Let's go chase down that second Sea Hound.")
 			.CloseDialog()
 			.EndPlayerOptions()
 			.CloseDialog(), this);
 		string token = "";
-		Campaign.Current.ConversationManager.AddDialogFlow(DialogFlow.CreateDialogFlow("start", 1200).NpcLine("{=dF7jeK5a}I'm new at this, my {?PLAYER.GENDER}lady{?}lord{\\?}! I'm just a farmer who fell on hard times. I signed on with this ship in Varcheg a month ago. They told me we'd be trading grain and ivory across the Byalic. I didn't know we'd be attacking honest folk like yourselves![ib:weary]", IsPirate, IsMainHero).Condition(delegate
+		Campaign.Current.ConversationManager.AddDialogFlow(DialogFlow.CreateDialogFlow("start", 1200).NpcLine("{=dF7jeK5a}[ib:weary][if:convo_beaten]I'm new at this, my {?PLAYER.GENDER}lady{?}lord{\\?}! I'm just a farmer who fell on hard times. I signed on with this ship in Varcheg a month ago. They told me we'd be trading grain and ivory across the Byalic. I didn't know we'd be attacking honest folk like yourselves!", IsPirate, IsMainHero).Condition(delegate
 		{
 			StringHelpers.SetCharacterProperties("PLAYER", CharacterObject.PlayerCharacter);
 			return CharacterObject.OneToOneConversationCharacter == ConversationHelper.GetConversationCharacterPartyLeader(_pirateParty?.Party);
@@ -115,16 +115,16 @@ public class DefeatThePiratesQuest : NavalStorylineQuestBase
 					Campaign.Current.ConversationManager.AddConversationAgents(new List<IAgent> { item }, setActionsInstantly: true);
 				}
 			})
-			.NpcLine("{=GsPj9ptT}Listen - these Sea Hounds are trolls and demons, not men! I want no part of this any more! Spare me, and I promise I'll go back to my old life.", IsPirate, IsMainHero)
+			.NpcLine("{=GsPj9ptT}[if:convo_nervous2]Listen - these Sea Hounds are trolls and demons, not men! I want no part of this any more! Spare me, and I promise I'll go back to my old life.", IsPirate, IsMainHero)
 			.BeginPlayerOptions()
 			.PlayerOption("{=LBoq4sXI}Tell me the truth, and I'll let you live.", IsPirate, null, token)
 			.PlayerOption("{=wTEbf3gc}I am looking for my sister. Let me know how to find her, and we will spare your life.", IsPirate, null, token)
 			.EndPlayerOptions()
 			.GenerateToken(out token)
-			.NpcLine("{=Q3bpobtL}We purchased some slaves from some bandits in Ostican. We were planning on selling them onward to another buyer further south along the coast. Perhaps your sister was one of them? Will you spare me?", IsPirate)
-			.NpcLine("{=b1saAIdA}Are you really a farmer, now? Callouses such as those on your hands are made by oars, not ploughs. And I see a scar on your sword-arm that doesn't look like it came from the kick of a mule. Indeed, I might even recall your name. Hralgar Eel-Nose, is it not?", IsGunnar)
-			.NpcLine("{=tiHQafDb}[if:convo_predatory][ib:warrior]Gunnar of Langshofn… Three of your old shipmates have we visited while reeving. One died well. The others… It's said that your people are mean and stingy hosts, but those two gave us some fine entertainment.", IsPirate)
-			.NpcLine("{=yhEKOBfT}As for you, friend of Gunnar... I told you where to seek your sister. Best rescue her quick, or she may take a liking to one of our brave lads and give you a litter of Sea Puppies. So there you have it… I fulfilled my end of the bargain. Put me ashore.", IsPirate)
+			.NpcLine("{=Q3bpobtL}[if:convo_nervous]We purchased some slaves from some bandits in Ostican. We were planning on selling them onward to another buyer further south along the coast. Perhaps your sister was one of them? Will you spare me?", IsPirate)
+			.NpcLine("{=b1saAIdA}[ib:hip]Are you really a farmer, now? Callouses such as those on your hands are made by oars, not ploughs. And I see a scar on your sword-arm that doesn't look like it came from the kick of a mule. Indeed, I might even recall your name. Hralgar Eel-Nose, is it not?", IsGunnar, IsPirate)
+			.NpcLine("{=tiHQafDb}[if:convo_predatory][ib:aggressive]Gunnar of Langshofn… Three of your old shipmates have we visited while reeving. One died well. The others… It's said that your people are mean and stingy hosts, but those two gave us some fine entertainment.", IsPirate, IsGunnar)
+			.NpcLine("{=yhEKOBfT}[ib:warrior]As for you, friend of Gunnar... I told you where to seek your sister. Best rescue her quick, or she may take a liking to one of our brave lads and give you a litter of Sea Puppies. So there you have it… I fulfilled my end of the bargain. Put me ashore.", IsPirate, IsMainHero)
 			.BeginPlayerOptions()
 			.PlayerOption("{=00iNZpwG}You lied. The bargain is void. Gunnar, do what you will with him.")
 			.Consequence(delegate

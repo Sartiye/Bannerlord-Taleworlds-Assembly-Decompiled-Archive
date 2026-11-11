@@ -488,6 +488,11 @@ public class TrainingFieldMissionController : MissionLogic
 		_playerCampaignHealth = Agent.Main.Health;
 	}
 
+	public override void OnAfterMissionLoadingFinished()
+	{
+		base.Mission.OnInitialSpawnCompleted();
+	}
+
 	private void LoadTutorialScores()
 	{
 		_tutorialScores = StoryModeManager.Current.MainStoryLine.GetTutorialScores();
@@ -1074,7 +1079,7 @@ public class TrainingFieldMissionController : MissionLogic
 		}
 		else
 		{
-			Debug.FailedAssert("There are no spawn points for bow npc.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "SpawnBowNPC", 1091);
+			Debug.FailedAssert("There are no spawn points for bow npc.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "SpawnBowNPC", 1096);
 		}
 		Location locationWithId = LocationComplex.Current.GetLocationWithId("training_field");
 		CharacterObject @object = Game.Current.ObjectManager.GetObject<CharacterObject>("tutorial_npc_ranged");
@@ -1244,7 +1249,7 @@ public class TrainingFieldMissionController : MissionLogic
 		}
 		else
 		{
-			Debug.FailedAssert("There are no spawn points for advanced melee trainer.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "SpawnAdvancedMeleeTrainerEasy", 1319);
+			Debug.FailedAssert("There are no spawn points for advanced melee trainer.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "SpawnAdvancedMeleeTrainerEasy", 1324);
 		}
 		CharacterObject @object = Game.Current.ObjectManager.GetObject<CharacterObject>("tutorial_npc_advanced_melee_easy");
 		AgentBuildData agentBuildData = new AgentBuildData(@object).Team(base.Mission.PlayerTeam).InitialPosition(in _advancedMeleeTrainerEasyInitialPosition.origin);
@@ -1272,7 +1277,7 @@ public class TrainingFieldMissionController : MissionLogic
 		}
 		else
 		{
-			Debug.FailedAssert("There are no spawn points for advanced melee trainer.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "SpawnAdvancedMeleeTrainerNormal", 1351);
+			Debug.FailedAssert("There are no spawn points for advanced melee trainer.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "SpawnAdvancedMeleeTrainerNormal", 1356);
 		}
 		CharacterObject @object = Game.Current.ObjectManager.GetObject<CharacterObject>("tutorial_npc_advanced_melee_normal");
 		AgentBuildData agentBuildData = new AgentBuildData(@object).Team(base.Mission.PlayerTeam).InitialPosition(in _advancedMeleeTrainerNormalInitialPosition.origin);
@@ -1574,7 +1579,7 @@ public class TrainingFieldMissionController : MissionLogic
 		}
 		else
 		{
-			Debug.FailedAssert("There are no spawn points for basic melee trainer.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "InitializeMeleeTraining", 1729);
+			Debug.FailedAssert("There are no spawn points for basic melee trainer.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "InitializeMeleeTraining", 1734);
 		}
 		CharacterObject @object = Game.Current.ObjectManager.GetObject<CharacterObject>("tutorial_npc_basic_melee");
 		AgentBuildData agentBuildData = new AgentBuildData(@object).Team(base.Mission.PlayerTeam).InitialPosition(in matrixFrame.origin);
@@ -1927,7 +1932,7 @@ public class TrainingFieldMissionController : MissionLogic
 		case MouseObjectives.DefendDown:
 			return MouseObjectives.DefendUp;
 		default:
-			Debug.FailedAssert($"Inverse direction is not defined for: {objective}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "GetInverseDirection", 2208);
+			Debug.FailedAssert($"Inverse direction is not defined for: {objective}", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "GetInverseDirection", 2213);
 			return MouseObjectives.None;
 		}
 	}
@@ -1955,7 +1960,7 @@ public class TrainingFieldMissionController : MissionLogic
 		}
 		else
 		{
-			Debug.FailedAssert("There are no spawn points for mounted ai.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "SpawnMountedAI", 2253);
+			Debug.FailedAssert("There are no spawn points for mounted ai.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\Missions\\TrainingFieldMissionController.cs", "SpawnMountedAI", 2258);
 		}
 		CharacterObject @object = Game.Current.ObjectManager.GetObject<CharacterObject>("tutorial_npc_mounted_ai");
 		AgentBuildData agentBuildData = new AgentBuildData(@object).Team(base.Mission.PlayerTeam).InitialPosition(in _mountedAISpawnPosition.origin);

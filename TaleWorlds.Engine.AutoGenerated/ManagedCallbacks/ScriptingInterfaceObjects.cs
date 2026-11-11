@@ -87,6 +87,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_Config_get_debug_login_username,
 		enm_IMono_Config_get_default_rgl_config,
 		enm_IMono_Config_get_desktop_resolution,
+		enm_IMono_Config_get_detailed_debug_mode,
 		enm_IMono_Config_get_development_mode,
 		enm_IMono_Config_get_disable_gui_messages,
 		enm_IMono_Config_get_disable_sound,
@@ -801,6 +802,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_ParticleSystem_set_particle_effect_by_name,
 		enm_IMono_ParticleSystem_set_previous_global_frame,
 		enm_IMono_ParticleSystem_set_runtime_emission_rate_multiplier,
+		enm_IMono_ParticleSystem_set_runtime_time_multiplier,
 		enm_IMono_Path_add_path_point,
 		enm_IMono_Path_delete_path_point,
 		enm_IMono_Path_get_arc_length,
@@ -907,6 +909,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_Scene_get_campaign_entity_with_name,
 		enm_IMono_Scene_get_engine_physics_enabled,
 		enm_IMono_Scene_get_entities,
+		enm_IMono_Scene_get_entities_as_weak,
 		enm_IMono_Scene_get_entity_count,
 		enm_IMono_Scene_get_entity_with_guid,
 		enm_IMono_Scene_get_fall_density,
@@ -1039,6 +1042,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_Scene_set_aberration_size,
 		enm_IMono_Scene_set_aberration_smooth,
 		enm_IMono_Scene_set_ability_of_faces_with_id,
+		enm_IMono_Scene_set_ability_of_face_with_index,
 		enm_IMono_Scene_set_active_visibility_levels,
 		enm_IMono_Scene_set_antialiasing_mode,
 		enm_IMono_Scene_set_atmosphere_with_name,
@@ -1331,6 +1335,18 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_TableauView_set_delete_after_rendering,
 		enm_IMono_TableauView_set_do_not_render_this_frame,
 		enm_IMono_TableauView_set_sort_meshes,
+		enm_IMono_TerrainEdit_add_empty_layer,
+		enm_IMono_TerrainEdit_add_layer_from_material,
+		enm_IMono_TerrainEdit_add_placed_flora,
+		enm_IMono_TerrainEdit_add_procedural_flora_to_layer,
+		enm_IMono_TerrainEdit_create_terrain,
+		enm_IMono_TerrainEdit_finalize,
+		enm_IMono_TerrainEdit_finalize_flora,
+		enm_IMono_TerrainEdit_set_layer_property_float,
+		enm_IMono_TerrainEdit_set_layer_property_string,
+		enm_IMono_TerrainEdit_set_layer_texture,
+		enm_IMono_TerrainEdit_set_node_height_data,
+		enm_IMono_TerrainEdit_set_node_layer_weight_data,
 		enm_IMono_Texture_check_and_get_from_resource,
 		enm_IMono_Texture_create_depth_target,
 		enm_IMono_Texture_create_from_byte_array,
@@ -1410,6 +1426,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_Util_do_light_only_bake_all_levels_automated,
 		enm_IMono_Util_do_light_only_bake_single_level_automated,
 		enm_IMono_Util_dump_gpu_memory_statistics,
+		enm_IMono_Util_dump_render_buffer_memory,
 		enm_IMono_Util_enable_global_edit_data_cacher,
 		enm_IMono_Util_enable_global_loading_window,
 		enm_IMono_Util_enable_single_gpu_query_per_frame,
@@ -1458,6 +1475,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_Util_get_memory_usage_of_category,
 		enm_IMono_Util_get_modules_code,
 		enm_IMono_Util_get_native_memory_statistics,
+		enm_IMono_Util_get_naval_dlc_version_mismatch,
 		enm_IMono_Util_get_number_of_shader_compilations_in_progress,
 		enm_IMono_Util_get_pc_info,
 		enm_IMono_Util_get_platform_module_paths,
@@ -1467,6 +1485,8 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_Util_get_single_module_scenes_of_module,
 		enm_IMono_Util_get_steam_appid,
 		enm_IMono_Util_get_system_language,
+		enm_IMono_Util_get_unique_assert_count,
+		enm_IMono_Util_get_unique_warning_count,
 		enm_IMono_Util_get_vertex_buffer_chunk_system_memory_usage,
 		enm_IMono_Util_get_visual_tests_test_files_path,
 		enm_IMono_Util_get_visual_tests_validate_path,
@@ -1526,6 +1546,7 @@ internal static class ScriptingInterfaceObjects
 		enm_IMono_Util_set_window_title,
 		enm_IMono_Util_start_loading_stuck_check_state,
 		enm_IMono_Util_start_scene_performance_report,
+		enm_IMono_Util_take_screenshot_as_png,
 		enm_IMono_Util_take_screenshot_from_platform_path,
 		enm_IMono_Util_take_screenshot_from_string_path,
 		enm_IMono_Util_take_ss_from_top,
@@ -1695,6 +1716,10 @@ internal static class ScriptingInterfaceObjects
 			{
 				"TaleWorlds.Engine.ITableauView",
 				new ScriptingInterfaceOfITableauView()
+			},
+			{
+				"TaleWorlds.Engine.ITerrainEdit",
+				new ScriptingInterfaceOfITerrainEdit()
 			},
 			{
 				"TaleWorlds.Engine.ITexture",
@@ -1971,6 +1996,9 @@ internal static class ScriptingInterfaceObjects
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Config_get_desktop_resolution:
 			ScriptingInterfaceOfIConfig.call_GetDesktopResolutionDelegate = (ScriptingInterfaceOfIConfig.GetDesktopResolutionDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIConfig.GetDesktopResolutionDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Config_get_detailed_debug_mode:
+			ScriptingInterfaceOfIConfig.call_GetDetailedDebugModeDelegate = (ScriptingInterfaceOfIConfig.GetDetailedDebugModeDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIConfig.GetDetailedDebugModeDelegate));
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Config_get_development_mode:
 			ScriptingInterfaceOfIConfig.call_GetDevelopmentModeDelegate = (ScriptingInterfaceOfIConfig.GetDevelopmentModeDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIConfig.GetDevelopmentModeDelegate));
@@ -4114,6 +4142,9 @@ internal static class ScriptingInterfaceObjects
 		case EngineInterfaceGeneratedEnum.enm_IMono_ParticleSystem_set_runtime_emission_rate_multiplier:
 			ScriptingInterfaceOfIParticleSystem.call_SetRuntimeEmissionRateMultiplierDelegate = (ScriptingInterfaceOfIParticleSystem.SetRuntimeEmissionRateMultiplierDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIParticleSystem.SetRuntimeEmissionRateMultiplierDelegate));
 			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_ParticleSystem_set_runtime_time_multiplier:
+			ScriptingInterfaceOfIParticleSystem.call_SetRuntimeTimeMultiplierDelegate = (ScriptingInterfaceOfIParticleSystem.SetRuntimeTimeMultiplierDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIParticleSystem.SetRuntimeTimeMultiplierDelegate));
+			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Path_add_path_point:
 			ScriptingInterfaceOfIPath.call_AddPathPointDelegate = (ScriptingInterfaceOfIPath.AddPathPointDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIPath.AddPathPointDelegate));
 			break;
@@ -4431,6 +4462,9 @@ internal static class ScriptingInterfaceObjects
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_get_entities:
 			ScriptingInterfaceOfIScene.call_GetEntitiesDelegate = (ScriptingInterfaceOfIScene.GetEntitiesDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.GetEntitiesDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_get_entities_as_weak:
+			ScriptingInterfaceOfIScene.call_GetEntitiesAsWeakDelegate = (ScriptingInterfaceOfIScene.GetEntitiesAsWeakDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.GetEntitiesAsWeakDelegate));
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_get_entity_count:
 			ScriptingInterfaceOfIScene.call_GetEntityCountDelegate = (ScriptingInterfaceOfIScene.GetEntityCountDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.GetEntityCountDelegate));
@@ -4827,6 +4861,9 @@ internal static class ScriptingInterfaceObjects
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_set_ability_of_faces_with_id:
 			ScriptingInterfaceOfIScene.call_SetAbilityOfFacesWithIdDelegate = (ScriptingInterfaceOfIScene.SetAbilityOfFacesWithIdDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.SetAbilityOfFacesWithIdDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_set_ability_of_face_with_index:
+			ScriptingInterfaceOfIScene.call_SetAbilityOfFaceWithIndexDelegate = (ScriptingInterfaceOfIScene.SetAbilityOfFaceWithIndexDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.SetAbilityOfFaceWithIndexDelegate));
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Scene_set_active_visibility_levels:
 			ScriptingInterfaceOfIScene.call_SetActiveVisibilityLevelsDelegate = (ScriptingInterfaceOfIScene.SetActiveVisibilityLevelsDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIScene.SetActiveVisibilityLevelsDelegate));
@@ -5704,6 +5741,42 @@ internal static class ScriptingInterfaceObjects
 		case EngineInterfaceGeneratedEnum.enm_IMono_TableauView_set_sort_meshes:
 			ScriptingInterfaceOfITableauView.call_SetSortingEnabledDelegate = (ScriptingInterfaceOfITableauView.SetSortingEnabledDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfITableauView.SetSortingEnabledDelegate));
 			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_TerrainEdit_add_empty_layer:
+			ScriptingInterfaceOfITerrainEdit.call_AddEmptyLayerDelegate = (ScriptingInterfaceOfITerrainEdit.AddEmptyLayerDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfITerrainEdit.AddEmptyLayerDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_TerrainEdit_add_layer_from_material:
+			ScriptingInterfaceOfITerrainEdit.call_AddLayerFromMaterialDelegate = (ScriptingInterfaceOfITerrainEdit.AddLayerFromMaterialDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfITerrainEdit.AddLayerFromMaterialDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_TerrainEdit_add_placed_flora:
+			ScriptingInterfaceOfITerrainEdit.call_AddPlacedFloraDelegate = (ScriptingInterfaceOfITerrainEdit.AddPlacedFloraDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfITerrainEdit.AddPlacedFloraDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_TerrainEdit_add_procedural_flora_to_layer:
+			ScriptingInterfaceOfITerrainEdit.call_AddProceduralFloraToLayerDelegate = (ScriptingInterfaceOfITerrainEdit.AddProceduralFloraToLayerDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfITerrainEdit.AddProceduralFloraToLayerDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_TerrainEdit_create_terrain:
+			ScriptingInterfaceOfITerrainEdit.call_CreateTerrainDelegate = (ScriptingInterfaceOfITerrainEdit.CreateTerrainDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfITerrainEdit.CreateTerrainDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_TerrainEdit_finalize:
+			ScriptingInterfaceOfITerrainEdit.call_FinalizeDelegate = (ScriptingInterfaceOfITerrainEdit.FinalizeDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfITerrainEdit.FinalizeDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_TerrainEdit_finalize_flora:
+			ScriptingInterfaceOfITerrainEdit.call_FinalizeFloraDelegate = (ScriptingInterfaceOfITerrainEdit.FinalizeFloraDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfITerrainEdit.FinalizeFloraDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_TerrainEdit_set_layer_property_float:
+			ScriptingInterfaceOfITerrainEdit.call_SetLayerPropertyFloatDelegate = (ScriptingInterfaceOfITerrainEdit.SetLayerPropertyFloatDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfITerrainEdit.SetLayerPropertyFloatDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_TerrainEdit_set_layer_property_string:
+			ScriptingInterfaceOfITerrainEdit.call_SetLayerPropertyStringDelegate = (ScriptingInterfaceOfITerrainEdit.SetLayerPropertyStringDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfITerrainEdit.SetLayerPropertyStringDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_TerrainEdit_set_layer_texture:
+			ScriptingInterfaceOfITerrainEdit.call_SetLayerTextureDelegate = (ScriptingInterfaceOfITerrainEdit.SetLayerTextureDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfITerrainEdit.SetLayerTextureDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_TerrainEdit_set_node_height_data:
+			ScriptingInterfaceOfITerrainEdit.call_SetNodeHeightDataDelegate = (ScriptingInterfaceOfITerrainEdit.SetNodeHeightDataDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfITerrainEdit.SetNodeHeightDataDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_TerrainEdit_set_node_layer_weight_data:
+			ScriptingInterfaceOfITerrainEdit.call_SetNodeLayerWeightDataDelegate = (ScriptingInterfaceOfITerrainEdit.SetNodeLayerWeightDataDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfITerrainEdit.SetNodeLayerWeightDataDelegate));
+			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Texture_check_and_get_from_resource:
 			ScriptingInterfaceOfITexture.call_CheckAndGetFromResourceDelegate = (ScriptingInterfaceOfITexture.CheckAndGetFromResourceDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfITexture.CheckAndGetFromResourceDelegate));
 			break;
@@ -5941,6 +6014,9 @@ internal static class ScriptingInterfaceObjects
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_dump_gpu_memory_statistics:
 			ScriptingInterfaceOfIUtil.call_DumpGPUMemoryStatisticsDelegate = (ScriptingInterfaceOfIUtil.DumpGPUMemoryStatisticsDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.DumpGPUMemoryStatisticsDelegate));
 			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Util_dump_render_buffer_memory:
+			ScriptingInterfaceOfIUtil.call_DumpRenderBufferMemoryDelegate = (ScriptingInterfaceOfIUtil.DumpRenderBufferMemoryDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.DumpRenderBufferMemoryDelegate));
+			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_enable_global_edit_data_cacher:
 			ScriptingInterfaceOfIUtil.call_EnableGlobalEditDataCacherDelegate = (ScriptingInterfaceOfIUtil.EnableGlobalEditDataCacherDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.EnableGlobalEditDataCacherDelegate));
 			break;
@@ -6085,6 +6161,9 @@ internal static class ScriptingInterfaceObjects
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_get_native_memory_statistics:
 			ScriptingInterfaceOfIUtil.call_GetNativeMemoryStatisticsDelegate = (ScriptingInterfaceOfIUtil.GetNativeMemoryStatisticsDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.GetNativeMemoryStatisticsDelegate));
 			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Util_get_naval_dlc_version_mismatch:
+			ScriptingInterfaceOfIUtil.call_GetNavalDlcVersionMismatchDelegate = (ScriptingInterfaceOfIUtil.GetNavalDlcVersionMismatchDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.GetNavalDlcVersionMismatchDelegate));
+			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_get_number_of_shader_compilations_in_progress:
 			ScriptingInterfaceOfIUtil.call_GetNumberOfShaderCompilationsInProgressDelegate = (ScriptingInterfaceOfIUtil.GetNumberOfShaderCompilationsInProgressDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.GetNumberOfShaderCompilationsInProgressDelegate));
 			break;
@@ -6111,6 +6190,12 @@ internal static class ScriptingInterfaceObjects
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_get_system_language:
 			ScriptingInterfaceOfIUtil.call_GetSystemLanguageDelegate = (ScriptingInterfaceOfIUtil.GetSystemLanguageDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.GetSystemLanguageDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Util_get_unique_assert_count:
+			ScriptingInterfaceOfIUtil.call_GetUniqueAssertCountDelegate = (ScriptingInterfaceOfIUtil.GetUniqueAssertCountDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.GetUniqueAssertCountDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Util_get_unique_warning_count:
+			ScriptingInterfaceOfIUtil.call_GetUniqueWarningCountDelegate = (ScriptingInterfaceOfIUtil.GetUniqueWarningCountDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.GetUniqueWarningCountDelegate));
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_get_vertex_buffer_chunk_system_memory_usage:
 			ScriptingInterfaceOfIUtil.call_GetVertexBufferChunkSystemMemoryUsageDelegate = (ScriptingInterfaceOfIUtil.GetVertexBufferChunkSystemMemoryUsageDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.GetVertexBufferChunkSystemMemoryUsageDelegate));
@@ -6288,6 +6373,9 @@ internal static class ScriptingInterfaceObjects
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_start_scene_performance_report:
 			ScriptingInterfaceOfIUtil.call_StartScenePerformanceReportDelegate = (ScriptingInterfaceOfIUtil.StartScenePerformanceReportDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.StartScenePerformanceReportDelegate));
+			break;
+		case EngineInterfaceGeneratedEnum.enm_IMono_Util_take_screenshot_as_png:
+			ScriptingInterfaceOfIUtil.call_TakeScreenshotAsPngDelegate = (ScriptingInterfaceOfIUtil.TakeScreenshotAsPngDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.TakeScreenshotAsPngDelegate));
 			break;
 		case EngineInterfaceGeneratedEnum.enm_IMono_Util_take_screenshot_from_platform_path:
 			ScriptingInterfaceOfIUtil.call_TakeScreenshotFromPlatformPathDelegate = (ScriptingInterfaceOfIUtil.TakeScreenshotFromPlatformPathDelegate)Marshal.GetDelegateForFunctionPointer(pointer, typeof(ScriptingInterfaceOfIUtil.TakeScreenshotFromPlatformPathDelegate));

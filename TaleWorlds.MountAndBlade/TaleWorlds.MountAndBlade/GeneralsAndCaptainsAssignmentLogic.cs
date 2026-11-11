@@ -41,28 +41,31 @@ public class GeneralsAndCaptainsAssignmentLogic : MissionLogic
 		_bannerLogic = base.Mission.GetMissionBehavior<BannerBearerLogic>();
 	}
 
-	public override void OnTeamDeployed(Team team)
+	public override void OnBattleSideSpawned(BattleSideEnum side)
 	{
-		SetGeneralAgentOfTeam(team);
-		if (team.IsPlayerTeam)
+		foreach (Team item in Mission.GetTeamsOfSide(side))
 		{
-			if (!MissionGameModels.Current.BattleInitializationModel.CanPlayerSideDeployWithOrderOfBattle())
+			SetGeneralAgentOfTeam(item);
+			if (item.IsPlayerTeam)
 			{
-				if (CanTeamHaveGeneralsFormation(team))
+				if (!MissionGameModels.Current.BattleInitializationModel.CanPlayerSideDeployWithOrderOfBattle())
 				{
-					CreateGeneralFormationForTeam(team);
-					_isPlayerTeamGeneralFormationSet = true;
+					if (CanTeamHaveGeneralsFormation(item))
+					{
+						CreateGeneralFormationForTeam(item);
+						_isPlayerTeamGeneralFormationSet = true;
+					}
+					AssignBestCaptainsForTeam(item);
 				}
-				AssignBestCaptainsForTeam(team);
 			}
-		}
-		else
-		{
-			if (CanTeamHaveGeneralsFormation(team))
+			else
 			{
-				CreateGeneralFormationForTeam(team);
+				if (CanTeamHaveGeneralsFormation(item))
+				{
+					CreateGeneralFormationForTeam(item);
+				}
+				AssignBestCaptainsForTeam(item);
 			}
-			AssignBestCaptainsForTeam(team);
 		}
 	}
 

@@ -61,6 +61,7 @@ public sealed class MissionNetworkComponent : MissionNetwork
 			registerer.RegisterBaseHandler<SetMissionObjectGlobalFrameOverTime>(HandleServerEventSetMissionObjectGlobalFrameOverTime);
 			registerer.RegisterBaseHandler<SetMissionObjectAnimationAtChannel>(HandleServerEventSetMissionObjectAnimationAtChannel);
 			registerer.RegisterBaseHandler<SetMissionObjectAnimationChannelParameter>(HandleServerEventSetMissionObjectAnimationChannelParameter);
+			registerer.RegisterBaseHandler<SetMissionObjectAnimationChannelSpeed>(HandleServerEventSetMissionObjectAnimationChannelSpeed);
 			registerer.RegisterBaseHandler<SetMissionObjectAnimationPaused>(HandleServerEventSetMissionObjectAnimationPaused);
 			registerer.RegisterBaseHandler<SetMissionObjectVertexAnimation>(HandleServerEventSetMissionObjectVertexAnimation);
 			registerer.RegisterBaseHandler<SetMissionObjectVertexAnimationProgress>(HandleServerEventSetMissionObjectVertexAnimationProgress);
@@ -360,7 +361,7 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		}
 		else
 		{
-			Debug.FailedAssert("Invalid item type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MissionNetworkComponent.cs", "HandleServerEventSetWeaponAmmoData", 468);
+			Debug.FailedAssert("Invalid item type.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MissionNetworkComponent.cs", "HandleServerEventSetWeaponAmmoData", 469);
 		}
 	}
 
@@ -399,7 +400,11 @@ public sealed class MissionNetworkComponent : MissionNetwork
 	{
 		AddTeam addTeam = (AddTeam)baseMessage;
 		Banner banner = (string.IsNullOrEmpty(addTeam.BannerCode) ? null : new Banner(addTeam.BannerCode, addTeam.Color, addTeam.Color2));
-		base.Mission.Teams.Add(addTeam.Side, addTeam.Color, addTeam.Color2, banner, addTeam.IsPlayerGeneral, addTeam.IsPlayerSergeant);
+		Team spectatorTeam = base.Mission.Teams.Add(addTeam.Side, addTeam.Color, addTeam.Color2, banner, addTeam.IsPlayerGeneral, addTeam.IsPlayerSergeant);
+		if (addTeam.IsSpectatorTeam)
+		{
+			base.Mission.SpectatorTeam = spectatorTeam;
+		}
 	}
 
 	private void HandleServerEventTeamSetIsEnemyOf(GameNetworkMessage baseMessage)
@@ -595,6 +600,12 @@ public sealed class MissionNetworkComponent : MissionNetwork
 	{
 		SetMissionObjectAnimationChannelParameter setMissionObjectAnimationChannelParameter = (SetMissionObjectAnimationChannelParameter)baseMessage;
 		Mission.MissionNetworkHelper.GetMissionObjectFromMissionObjectId(setMissionObjectAnimationChannelParameter.MissionObjectId)?.GameEntity.Skeleton.SetAnimationParameterAtChannel(setMissionObjectAnimationChannelParameter.ChannelNo, setMissionObjectAnimationChannelParameter.Parameter);
+	}
+
+	private void HandleServerEventSetMissionObjectAnimationChannelSpeed(GameNetworkMessage baseMessage)
+	{
+		SetMissionObjectAnimationChannelSpeed setMissionObjectAnimationChannelSpeed = (SetMissionObjectAnimationChannelSpeed)baseMessage;
+		Mission.MissionNetworkHelper.GetMissionObjectFromMissionObjectId(setMissionObjectAnimationChannelSpeed.MissionObjectId)?.GameEntity.Skeleton.SetAnimationSpeedAtChannel(setMissionObjectAnimationChannelSpeed.ChannelNo, setMissionObjectAnimationChannelSpeed.Speed);
 	}
 
 	private void HandleServerEventSetMissionObjectVertexAnimation(GameNetworkMessage baseMessage)
@@ -982,8 +993,11 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		MissionPeer component = networkPeer.GetComponent<MissionPeer>();
 		if (component != null)
 		{
-			Agent agentFromIndex = Mission.MissionNetworkHelper.GetAgentFromIndex(setFollowedAgent.AgentIndex, canBeNull: true);
-			component.FollowedAgent = agentFromIndex;
+			Agent agent = (component.FollowedAgent = Mission.MissionNetworkHelper.GetAgentFromIndex(setFollowedAgent.AgentIndex, canBeNull: true));
+			if (!networkPeer.IsServerPeer && component.IsSpectator && CanBeFollowedForData(agent))
+			{
+				SendFollowedAgentSnapshot(networkPeer, agent);
+			}
 		}
 		return true;
 	}
@@ -1266,6 +1280,10 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		{
 			return false;
 		}
+		if (component.IsSpectator)
+		{
+			return false;
+		}
 		if (component.HasSpawnTimerExpired)
 		{
 			component.WantsToSpawnAsBot = true;
@@ -1315,15 +1333,24 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		GameNetwork.EndModuleEventAsServer();
 	}
 
-	private void SendTroopSelectionInformation(NetworkCommunicator networkPeer)
+	public void SendTroopSelectionInformation(NetworkCommunicator targetPeer)
 	{
+		MissionPeer component = targetPeer.GetComponent<MissionPeer>();
+		Team team = component.Team;
+		if (team == null || component.IsSpectator)
+		{
+			return;
+		}
 		foreach (NetworkCommunicator networkPeersIncludingDisconnectedPeer in GameNetwork.NetworkPeersIncludingDisconnectedPeers)
 		{
-			MissionPeer component = networkPeersIncludingDisconnectedPeer.GetComponent<MissionPeer>();
-			if (component != null && component.SelectedTroopIndex != 0)
+			MissionPeer component2 = networkPeersIncludingDisconnectedPeer.GetComponent<MissionPeer>();
+			if (component2 != null && component2.Team == team && component2.Culture != null && component2.SelectedTroopIndex >= 0 && component2.SelectedTroopIndex < MultiplayerClassDivisions.GetMPHeroClasses(component2.Culture).Count())
 			{
-				GameNetwork.BeginModuleEventAsServer(networkPeer);
-				GameNetwork.WriteMessage(new UpdateSelectedTroopIndex(networkPeersIncludingDisconnectedPeer, component.SelectedTroopIndex));
+				GameNetwork.BeginModuleEventAsServer(targetPeer);
+				GameNetwork.WriteMessage(new UpdateSelectedTroopIndex(networkPeersIncludingDisconnectedPeer, component2.SelectedTroopIndex));
+				GameNetwork.EndModuleEventAsServer();
+				GameNetwork.BeginModuleEventAsServer(targetPeer);
+				GameNetwork.WriteMessage(new SyncPerksForCurrentlySelectedTroop(networkPeersIncludingDisconnectedPeer, component2.Perks[component2.SelectedTroopIndex]));
 				GameNetwork.EndModuleEventAsServer();
 			}
 		}
@@ -1335,7 +1362,7 @@ public sealed class MissionNetworkComponent : MissionNetwork
 		{
 			MBDebug.Print("Syncing a team to peer: " + networkPeer.UserName + " with index: " + networkPeer.Index, 0, Debug.DebugColor.White, 17179869184uL);
 			GameNetwork.BeginModuleEventAsServer(networkPeer);
-			GameNetwork.WriteMessage(new AddTeam(team.TeamIndex, team.Side, team.Color, team.Color2, (team.Banner != null) ? team.Banner.BannerCode : string.Empty, team.IsPlayerGeneral, team.IsPlayerSergeant));
+			GameNetwork.WriteMessage(new AddTeam(team.TeamIndex, team.Side, team.Color, team.Color2, (team.Banner != null) ? team.Banner.BannerCode : string.Empty, team.IsPlayerGeneral, team.IsPlayerSergeant, team == base.Mission.SpectatorTeam));
 			GameNetwork.EndModuleEventAsServer();
 		}
 	}
@@ -1735,12 +1762,8 @@ public sealed class MissionNetworkComponent : MissionNetwork
 			MBDebug.Print("----------OnAddTeam-");
 			MBDebug.Print("Adding a team and sending it to all clients", 0, Debug.DebugColor.White, 17179869184uL);
 			GameNetwork.BeginBroadcastModuleEvent();
-			GameNetwork.WriteMessage(new AddTeam(team.TeamIndex, team.Side, team.Color, team.Color2, (team.Banner != null) ? team.Banner.BannerCode : string.Empty, team.IsPlayerGeneral, team.IsPlayerSergeant));
+			GameNetwork.WriteMessage(new AddTeam(team.TeamIndex, team.Side, team.Color, team.Color2, (team.Banner != null) ? team.Banner.BannerCode : string.Empty, team.IsPlayerGeneral, team.IsPlayerSergeant, team == base.Mission.SpectatorTeam));
 			GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.AddToMissionRecord);
-		}
-		else if (team.Side != BattleSideEnum.Attacker && team.Side != 0 && base.Mission.SpectatorTeam == null)
-		{
-			base.Mission.SpectatorTeam = team;
 		}
 	}
 
@@ -1798,6 +1821,84 @@ public sealed class MissionNetworkComponent : MissionNetwork
 			}
 		}
 		base.OnEndMission();
+	}
+
+	private static bool CanBeFollowedForData(Agent agent)
+	{
+		if (agent != null && agent.IsActive())
+		{
+			return !agent.IsMount;
+		}
+		return false;
+	}
+
+	private static void SendFollowedAgentSnapshot(NetworkCommunicator follower, Agent agent)
+	{
+		SendAgentHealthToPeer(follower, agent);
+		if (agent.MountAgent != null)
+		{
+			SendAgentHealthToPeer(follower, agent.MountAgent);
+		}
+		MissionPeer cardPeer = GetCardPeer(agent);
+		if (cardPeer != null && HasValidTroopIndex(cardPeer))
+		{
+			SendTroopIndexToPeer(follower, cardPeer);
+			SendPerksToPeer(follower, cardPeer);
+		}
+	}
+
+	private static MissionPeer GetCardPeer(Agent agent)
+	{
+		MissionPeer missionPeer = agent.MissionPeer;
+		if (missionPeer == null)
+		{
+			missionPeer = agent.OwningAgentMissionPeer;
+			if (missionPeer == null)
+			{
+				Formation formation = agent.Formation;
+				if (formation == null)
+				{
+					return null;
+				}
+				Agent playerOwner = formation.PlayerOwner;
+				if (playerOwner == null)
+				{
+					return null;
+				}
+				missionPeer = playerOwner.MissionPeer;
+			}
+		}
+		return missionPeer;
+	}
+
+	public static bool HasValidTroopIndex(MissionPeer missionPeer)
+	{
+		if (missionPeer.Culture != null && missionPeer.SelectedTroopIndex >= 0)
+		{
+			return missionPeer.SelectedTroopIndex < MultiplayerClassDivisions.GetMPHeroClasses(missionPeer.Culture).Count();
+		}
+		return false;
+	}
+
+	private static void SendTroopIndexToPeer(NetworkCommunicator receiver, MissionPeer missionPeer)
+	{
+		GameNetwork.BeginModuleEventAsServer(receiver);
+		GameNetwork.WriteMessage(new UpdateSelectedTroopIndex(missionPeer.GetNetworkPeer(), missionPeer.SelectedTroopIndex));
+		GameNetwork.EndModuleEventAsServer();
+	}
+
+	private static void SendPerksToPeer(NetworkCommunicator receiver, MissionPeer missionPeer)
+	{
+		GameNetwork.BeginModuleEventAsServer(receiver);
+		GameNetwork.WriteMessage(new SyncPerksForCurrentlySelectedTroop(missionPeer.GetNetworkPeer(), missionPeer.Perks[missionPeer.SelectedTroopIndex]));
+		GameNetwork.EndModuleEventAsServer();
+	}
+
+	private static void SendAgentHealthToPeer(NetworkCommunicator peer, Agent agent)
+	{
+		GameNetwork.BeginModuleEventAsServer(peer);
+		GameNetwork.WriteMessage(new SetAgentHealth(agent.Index, (int)agent.Health));
+		GameNetwork.EndModuleEventAsServer();
 	}
 
 	public void OnPeerSelectedTeam(MissionPeer missionPeer)

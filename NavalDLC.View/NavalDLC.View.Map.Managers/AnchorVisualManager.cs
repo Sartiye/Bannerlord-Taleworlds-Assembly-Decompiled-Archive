@@ -38,7 +38,7 @@ public class AnchorVisualManager : EntityVisualManagerBase<AnchorPoint>
 	protected override void OnInitialize()
 	{
 		base.OnInitialize();
-		if (CanPartyHaveAnchor())
+		if (CanPlayerHaveAnchor())
 		{
 			if (_anchorVisual == null)
 			{
@@ -92,7 +92,7 @@ public class AnchorVisualManager : EntityVisualManagerBase<AnchorPoint>
 		{
 			RemoveAnchorVisual();
 		}
-		if (CanPartyHaveAnchor())
+		if (CanPlayerHaveAnchor())
 		{
 			if (_anchorVisual != null)
 			{
@@ -119,7 +119,7 @@ public class AnchorVisualManager : EntityVisualManagerBase<AnchorPoint>
 	{
 		if (_anchorVisual != null)
 		{
-			if (CanPartyHaveAnchor())
+			if (CanPlayerHaveAnchor())
 			{
 				_anchorVisual.UpdateAnchorVisualPosition();
 			}
@@ -128,19 +128,10 @@ public class AnchorVisualManager : EntityVisualManagerBase<AnchorPoint>
 				RemoveAnchorVisual();
 			}
 		}
-		else if (CanPartyHaveAnchor())
+		else if (CanPlayerHaveAnchor())
 		{
 			CreateNewVisual();
 		}
-	}
-
-	private bool CanPartyHaveAnchor()
-	{
-		if (!MobileParty.MainParty.IsCurrentlyAtSea && MobileParty.MainParty.IsActive && MobileParty.MainParty.Anchor.IsValid && MobileParty.MainParty.HasNavalNavigationCapability)
-		{
-			return !MobileParty.MainParty.Anchor.IsDisabled;
-		}
-		return false;
 	}
 
 	private void CreateNewVisual()
@@ -166,5 +157,14 @@ public class AnchorVisualManager : EntityVisualManagerBase<AnchorPoint>
 		{
 			MapScreen.VisualsOfEntities.Add(_anchorVisual.Entity.Pointer, _anchorVisual);
 		}
+	}
+
+	public static bool CanPlayerHaveAnchor()
+	{
+		if (!MobileParty.MainParty.IsCurrentlyAtSea && MobileParty.MainParty.IsActive && MobileParty.MainParty.Anchor.IsValid && MobileParty.MainParty.HasNavalNavigationCapability)
+		{
+			return !MobileParty.MainParty.Anchor.IsDisabled;
+		}
+		return false;
 	}
 }

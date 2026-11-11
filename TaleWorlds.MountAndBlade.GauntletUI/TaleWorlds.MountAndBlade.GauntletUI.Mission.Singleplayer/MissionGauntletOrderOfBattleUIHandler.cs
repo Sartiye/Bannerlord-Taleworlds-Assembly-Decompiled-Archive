@@ -244,7 +244,7 @@ public class MissionGauntletOrderOfBattleUIHandler : MissionView
 	{
 		if (base.Mission.PlayerTeam == null)
 		{
-			Debug.FailedAssert("Player team must be initialized before OOB", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\Mission\\Singleplayer\\MissionGauntletOrderOfBattleUIHandler.cs", "OnPlayerTurnToChooseFormationToLead", 285);
+			Debug.FailedAssert("Player team must be initialized before OOB", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade.GauntletUI\\Mission\\Singleplayer\\MissionGauntletOrderOfBattleUIHandler.cs", "OnPlayerTurnToChooseFormationToLead", 284);
 		}
 		_cachedOrderTypeSetting = ManagedOptions.GetConfig(ManagedOptions.ManagedOptionsType.OrderType);
 		ManagedOptions.SetConfig(ManagedOptions.ManagedOptionsType.OrderType, 1f);
@@ -284,12 +284,13 @@ public class MissionGauntletOrderOfBattleUIHandler : MissionView
 	private void OnAutoDeploy()
 	{
 		_orderUIHandler.OnAutoDeploy();
+		_dataSource.SiegeDeployment?.AutoDeploySiegeMachines();
 	}
 
 	private void OnBeginMission()
 	{
 		_orderUIHandler.OnFiltersSet(_dataSource.CurrentConfiguration);
-		_orderUIHandler.OnBeginMission();
+		_orderUIHandler.OnBeginMission(_dataSource.SiegeDeployment?.HasUndeployedSiegeMachines() ?? false);
 	}
 
 	private void OnUnitDeployed()

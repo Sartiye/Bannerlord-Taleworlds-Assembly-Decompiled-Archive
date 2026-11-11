@@ -53,6 +53,22 @@ public class NavalTransitionCampaignBehavior : CampaignBehaviorBase
 			PlayerEncounter.Current.IsPlayerWaiting = false;
 			GameMenu.SwitchToMenu("port_menu");
 		}, isLeave: true);
+		campaignGameStarter.AddGameMenuOption("castle", "leave_at_sea", "{=3sRdGQou}Leave", game_menu_leave_at_sea_on_condition, set_sail_consequence, isLeave: true);
+		campaignGameStarter.AddGameMenuOption("village", "leave_at_sea", "{=3sRdGQou}Leave", game_menu_leave_at_sea_on_condition, set_sail_consequence, isLeave: true);
+	}
+
+	private static bool game_menu_leave_at_sea_on_condition(MenuCallbackArgs args)
+	{
+		args.optionLeaveType = GameMenuOption.LeaveType.Leave;
+		if (MobileParty.MainParty.IsCurrentlyAtSea)
+		{
+			if (MobileParty.MainParty.Army != null)
+			{
+				return MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty;
+			}
+			return true;
+		}
+		return false;
 	}
 
 	[GameMenuInitializationHandler("port_menu")]
@@ -73,33 +89,38 @@ public class NavalTransitionCampaignBehavior : CampaignBehaviorBase
 	private bool call_fleet_condition(MenuCallbackArgs args)
 	{
 		args.optionLeaveType = GameMenuOption.LeaveType.CallFleet;
-		if (!CanMainPartySail() || MobileParty.MainParty.Anchor.IsAtSettlement(Settlement.CurrentSettlement))
+		if (!MobileParty.MainParty.HasNavalNavigationCapability || MobileParty.MainParty.Anchor.IsAtSettlement(Settlement.CurrentSettlement))
 		{
 			return false;
 		}
-		args.Tooltip = GetWaitingForFleetText();
+		args.Tooltip = GetCallFleetEtaExplanation();
 		args.IsEnabled = !IsFleetMovingToCurrentSettlement();
 		return true;
 	}
 
-	private TextObject GetWaitingForFleetText()
+	private TextObject GetCallFleetEtaExplanation()
 	{
-		if (!CanMainPartySail() || MobileParty.MainParty.Anchor == null)
+		if (MobileParty.MainParty.Anchor == null || !MobileParty.MainParty.HasNavalNavigationCapability)
 		{
-			return null;
-		}
-		if (MobileParty.MainParty.Anchor.IsAtSettlement(Settlement.CurrentSettlement))
-		{
-			return new TextObject("{=1DY0jYK1}Your fleet has arrived.");
+			return TextObject.GetEmpty();
 		}
 		TextObject obj = (IsFleetMovingToCurrentSettlement() ? new TextObject("{=u6UWSZMW}Your fleet is on its way and is {ETA}.") : new TextObject("{=nywEqaW2}Your fleet is {ETA}."));
 		obj.SetTextVariable("ETA", GetETAText());
 		return obj;
 	}
 
+	private TextObject GetPortWaitStatusText()
+	{
+		if (MobileParty.MainParty.Anchor == null || !MobileParty.MainParty.HasNavalNavigationCapability || !MobileParty.MainParty.Anchor.IsMovingToPoint)
+		{
+			return TextObject.GetEmpty();
+		}
+		return GetCallFleetEtaExplanation();
+	}
+
 	private TextObject GetETAText()
 	{
-		int num = (IsFleetMovingToCurrentSettlement() ? ((int)Math.Ceiling((MobileParty.MainParty.Anchor.ArrivalTime - CampaignTime.Now).ToHours + 1.0)) : ((int)Math.Ceiling(Campaign.Current.Models.PartyTransitionModel.GetFleetTravelTimeToSettlement(MobileParty.MainParty, Settlement.CurrentSettlement).ToHours)));
+		int num = Math.Max(1, (int)Math.Ceiling(Campaign.Current.Models.PartyTransitionModel.GetFleetTravelTimeToSettlement(MobileParty.MainParty, Settlement.CurrentSettlement).ToHours));
 		if ((float)num < 6f)
 		{
 			TextObject textObject = new TextObject("{=QDWuxaQI}{HOURS} {?(HOURS > 1)}hours{?}hour{\\?} away");
@@ -162,11 +183,6 @@ public class NavalTransitionCampaignBehavior : CampaignBehaviorBase
 		GameMenu.ActivateGameMenu("port_menu");
 	}
 
-	private bool CanMainPartySail()
-	{
-		return MobileParty.MainParty.HasNavalNavigationCapability;
-	}
-
 	private void SetSail()
 	{
 		MobileParty.MainParty.SetSailAtPosition(Settlement.CurrentSettlement.PortPosition);
@@ -197,7 +213,7 @@ public class NavalTransitionCampaignBehavior : CampaignBehaviorBase
 
 	private bool GetIsSetSailEnabled()
 	{
-		if (CanMainPartySail())
+		if ((MobileParty.MainParty.Army == null || MobileParty.MainParty.Army.LeaderParty == MobileParty.MainParty) && MobileParty.MainParty.HasNavalNavigationCapability)
 		{
 			return MobileParty.MainParty.Anchor.IsAtSettlement(Settlement.CurrentSettlement);
 		}
@@ -231,7 +247,7 @@ public class NavalTransitionCampaignBehavior : CampaignBehaviorBase
 			}
 			else
 			{
-				Debug.FailedAssert("There is a problem in here with ship repair cost calculation", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\CampaignBehaviors\\NavalTransitionCampaignBehavior.cs", "repair_ships_condition", 256);
+				Debug.FailedAssert("There is a problem in here with ship repair cost calculation", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\NavalDLC\\CampaignBehaviors\\NavalTransitionCampaignBehavior.cs", "repair_ships_condition", 268);
 			}
 		}
 		else
@@ -258,7 +274,12 @@ public class NavalTransitionCampaignBehavior : CampaignBehaviorBase
 	private bool set_sail_condition(MenuCallbackArgs args)
 	{
 		args.optionLeaveType = GameMenuOption.LeaveType.SetSail;
-		if (!CanMainPartySail())
+		if (MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty != MobileParty.MainParty)
+		{
+			args.Tooltip = new TextObject("{=NrM7h508}You cannot set sail while you're a member of an army.");
+			args.IsEnabled = false;
+		}
+		else if (!MobileParty.MainParty.HasNavalNavigationCapability)
 		{
 			args.Tooltip = new TextObject("{=HUUd7Ohd}You don't own any ships!");
 			args.IsEnabled = false;
@@ -396,7 +417,7 @@ public class NavalTransitionCampaignBehavior : CampaignBehaviorBase
 				PlayerEncounter.Current.IsPlayerWaiting = true;
 			}
 			_isWaitingForFleet = IsFleetMovingToCurrentSettlement();
-			MBTextManager.SetTextVariable("FURTHER_EXPLANATION", GetWaitingForFleetText());
+			MBTextManager.SetTextVariable("FURTHER_EXPLANATION", GetPortWaitStatusText());
 		}
 	}
 
@@ -415,7 +436,7 @@ public class NavalTransitionCampaignBehavior : CampaignBehaviorBase
 
 	private void wait_menu_on_tick(MenuCallbackArgs args, CampaignTime dt)
 	{
-		MBTextManager.SetTextVariable("FURTHER_EXPLANATION", GetWaitingForFleetText());
+		MBTextManager.SetTextVariable("FURTHER_EXPLANATION", GetPortWaitStatusText());
 		SwitchToMenuIfThereIsAnInterrupt(args.MenuContext.GameMenu.StringId);
 	}
 
@@ -428,16 +449,8 @@ public class NavalTransitionCampaignBehavior : CampaignBehaviorBase
 		}
 		if (text != currentMenuId)
 		{
-			if (!string.IsNullOrEmpty(text))
-			{
-				PlayerEncounter.Current.IsPlayerWaiting = false;
-				GameMenu.SwitchToMenu(text);
-			}
-			else
-			{
-				PlayerEncounter.Current.IsPlayerWaiting = false;
-				GameMenu.SwitchToMenu("port_menu");
-			}
+			PlayerEncounter.Current.IsPlayerWaiting = false;
+			GameMenu.SwitchToMenu((!string.IsNullOrEmpty(text)) ? text : "port_menu");
 		}
 		else if (_isWaitingForFleet)
 		{
@@ -445,6 +458,7 @@ public class NavalTransitionCampaignBehavior : CampaignBehaviorBase
 			if (anchor != null && anchor.IsAtSettlement(Settlement.CurrentSettlement))
 			{
 				PlayerEncounter.Current.IsPlayerWaiting = false;
+				_isWaitingForFleet = false;
 				GameMenu.SwitchToMenu("port_menu");
 			}
 		}

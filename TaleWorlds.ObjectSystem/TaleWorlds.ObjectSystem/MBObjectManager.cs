@@ -820,10 +820,6 @@ public sealed class MBObjectManager
 	public static void MergeElements(XElement element1, XElement element2, string xsdPath)
 	{
 		bool num = MergeElementAttributes(element1, element2);
-		if (element1.Value != "" && element2.Value != "")
-		{
-			element1.Value = element2.Value;
-		}
 		Dictionary<string, XmlResource.XsdElement> elementSchema = XmlResource.XsdElementDictionary[xsdPath];
 		IEnumerable<XElement> enumerable = element2.Elements() ?? Enumerable.Empty<XElement>();
 		if (num)

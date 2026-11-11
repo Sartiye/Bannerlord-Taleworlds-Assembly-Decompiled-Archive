@@ -289,11 +289,13 @@ public class MPLobbyHomeChangeSigilPopupVM : ViewModel
 		IsEnabled = false;
 	}
 
-	public void ExecuteChangeSigil()
+	public async void ExecuteChangeSigil()
 	{
-		NetworkMain.GameClient.ChangeSigil(SelectedSigil.CosmeticID);
-		NetworkMain.GameClient.PlayerData.IsUsingClanSigil = IsUsingClanSigil;
-		IsEnabled = false;
+		if (await NetworkMain.GameClient.ChangeSigil(SelectedSigil.CosmeticID))
+		{
+			NetworkMain.GameClient.PlayerData.IsUsingClanSigil = IsUsingClanSigil;
+			IsEnabled = false;
+		}
 	}
 
 	private void OnSigilObtainRequested(MPLobbyCosmeticSigilItemVM sigilItem)

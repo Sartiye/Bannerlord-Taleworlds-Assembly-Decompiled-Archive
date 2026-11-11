@@ -156,19 +156,22 @@ public class TutorialPhaseCampaignBehavior : CampaignBehaviorBase
 		}
 	}
 
-	private void OnCharacterCreationIsOver()
+	private void OnCharacterCreationIsOver(int index)
 	{
-		ActivityManager.SetActivityAvailability("CompleteMainQuest", isAvailable: true);
-		ActivityManager.StartActivity("CompleteMainQuest");
-		_mainHeroEquipmentBackup[0] = Hero.MainHero.BattleEquipment.Clone();
-		_mainHeroEquipmentBackup[1] = Hero.MainHero.CivilianEquipment.Clone();
-		_brotherEquipmentBackup[0] = StoryModeHeroes.ElderBrother.BattleEquipment.Clone();
-		_brotherEquipmentBackup[1] = StoryModeHeroes.ElderBrother.CivilianEquipment.Clone();
-		Settlement settlement = Settlement.Find("village_ES3_2");
-		StoryModeHeroes.LittleBrother.UpdateLastKnownClosestSettlement(settlement);
-		StoryModeHeroes.LittleSister.UpdateLastKnownClosestSettlement(settlement);
-		StoryModeHeroes.MainHeroMother.UpdateLastKnownClosestSettlement(settlement);
-		StoryModeHeroes.MainHeroFather.UpdateLastKnownClosestSettlement(settlement);
+		if (index == 1)
+		{
+			ActivityManager.SetActivityAvailability("CompleteMainQuest", isAvailable: true);
+			ActivityManager.StartActivity("CompleteMainQuest");
+			_mainHeroEquipmentBackup[0] = Hero.MainHero.BattleEquipment.Clone();
+			_mainHeroEquipmentBackup[1] = Hero.MainHero.CivilianEquipment.Clone();
+			_brotherEquipmentBackup[0] = StoryModeHeroes.ElderBrother.BattleEquipment.Clone();
+			_brotherEquipmentBackup[1] = StoryModeHeroes.ElderBrother.CivilianEquipment.Clone();
+			Settlement settlement = Settlement.Find("village_ES3_2");
+			StoryModeHeroes.LittleBrother.UpdateLastKnownClosestSettlement(settlement);
+			StoryModeHeroes.LittleSister.UpdateLastKnownClosestSettlement(settlement);
+			StoryModeHeroes.MainHeroMother.UpdateLastKnownClosestSettlement(settlement);
+			StoryModeHeroes.MainHeroFather.UpdateLastKnownClosestSettlement(settlement);
+		}
 	}
 
 	private void OnNewGameCreatedPartialFollowUp(CampaignGameStarter campaignGameStarter, int i)
@@ -207,7 +210,7 @@ public class TutorialPhaseCampaignBehavior : CampaignBehaviorBase
 		Settlement settlement = Settlement.Find("village_ES3_2");
 		if (settlement.Notables.Count > 1)
 		{
-			Debug.FailedAssert("There are more than one notable in tutorial phase, control it.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\GameComponents\\CampaignBehaviors\\TutorialPhaseCampaignBehavior.cs", "FinalizeTutorialPhase", 265);
+			Debug.FailedAssert("There are more than one notable in tutorial phase, control it.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\StoryMode\\GameComponents\\CampaignBehaviors\\TutorialPhaseCampaignBehavior.cs", "FinalizeTutorialPhase", 266);
 			foreach (Hero notable in settlement.Notables)
 			{
 				notable.SetPersonalRelation(Hero.MainHero, 0);

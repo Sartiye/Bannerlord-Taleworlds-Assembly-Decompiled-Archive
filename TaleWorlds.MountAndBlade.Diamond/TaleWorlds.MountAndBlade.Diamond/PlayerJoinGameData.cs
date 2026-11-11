@@ -22,24 +22,24 @@ public class PlayerJoinGameData
 	public string IpAddress { get; private set; }
 
 	[JsonProperty]
-	public bool IsAdmin { get; private set; }
+	public CustomGameJoinType JoinType { get; private set; }
 
 	public PlayerJoinGameData()
 	{
 	}
 
-	public PlayerJoinGameData(PlayerData playerData, string name, Guid? partyId, Dictionary<string, List<string>> usedCosmetics, string ipAddress, bool isAdmin)
+	public PlayerJoinGameData(PlayerData playerData, string name, Guid? partyId, Dictionary<string, List<string>> usedCosmetics, string ipAddress, CustomGameJoinType joinType)
 	{
 		PlayerData = playerData;
 		Name = name;
 		PartyId = partyId;
 		UsedCosmetics = usedCosmetics;
 		IpAddress = ipAddress;
-		IsAdmin = isAdmin;
+		JoinType = joinType;
 	}
 
 	public override string ToString()
 	{
-		return $"Player Join Game Data: {PlayerId}, name={Name}, party={PartyId}, cosmetics={UsedCosmetics.Count}, ip={IpAddress}, isAdmin={IsAdmin}";
+		return $"Player Join Game Data: {PlayerId}, name={Name}, party={PartyId}, cosmetics={UsedCosmetics.Count}, ip={IpAddress}, joinType={JoinType}";
 	}
 }

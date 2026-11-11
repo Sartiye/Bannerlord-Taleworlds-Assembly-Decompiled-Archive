@@ -134,9 +134,12 @@ public abstract class MissionMultiplayerGameModeBase : MissionNetwork
 			missionPeer.KillCount = 0;
 			missionPeer.Score = 0;
 			missionPeer.ResetRequestedKickPollCount();
+			missionPeer.ResetKillRegistry();
+			missionPeer.ResetLastKill();
 			GameNetwork.BeginBroadcastModuleEvent();
 			GameNetwork.WriteMessage(new KillDeathCountChange(missionPeer.GetNetworkPeer(), null, missionPeer.KillCount, missionPeer.AssistCount, missionPeer.DeathCount, missionPeer.Score));
 			GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.None);
+			MissionLobbyComponent.SendLastKillToSpectators(missionPeer.GetNetworkPeer(), null);
 		}
 	}
 
@@ -166,9 +169,30 @@ public abstract class MissionMultiplayerGameModeBase : MissionNetwork
 	public void HandleAgentVisualSpawning(NetworkCommunicator spawningNetworkPeer, AgentBuildData spawningAgentBuildData, int troopCountInFormation = 0, bool useCosmetics = true)
 	{
 		MissionPeer component = spawningNetworkPeer.GetComponent<MissionPeer>();
+		int broadcastFlags = (IsGameModeUsingOpposingTeams ? 64 : 0);
+		NetworkCommunicator targetPlayer = (IsGameModeUsingOpposingTeams ? spawningNetworkPeer : null);
+		GameNetwork.BeginBroadcastModuleEvent();
+		GameNetwork.WriteMessage(new UpdateSelectedTroopIndex(spawningNetworkPeer, component.SelectedTroopIndex));
+		GameNetwork.EndBroadcastModuleEvent((GameNetwork.EventBroadcastFlags)broadcastFlags, targetPlayer);
 		GameNetwork.BeginBroadcastModuleEvent();
 		GameNetwork.WriteMessage(new SyncPerksForCurrentlySelectedTroop(spawningNetworkPeer, component.Perks[component.SelectedTroopIndex]));
-		GameNetwork.EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags.ExcludeOtherTeamPlayers, spawningNetworkPeer);
+		GameNetwork.EndBroadcastModuleEvent((GameNetwork.EventBroadcastFlags)broadcastFlags, targetPlayer);
+		if (IsGameModeUsingOpposingTeams)
+		{
+			foreach (MissionPeer item in VirtualPlayer.Peers<MissionPeer>())
+			{
+				NetworkCommunicator networkPeer = item.GetNetworkPeer();
+				if (item.IsSpectator && !networkPeer.IsServerPeer && networkPeer.IsSynchronized)
+				{
+					GameNetwork.BeginModuleEventAsServer(networkPeer);
+					GameNetwork.WriteMessage(new UpdateSelectedTroopIndex(spawningNetworkPeer, component.SelectedTroopIndex));
+					GameNetwork.EndModuleEventAsServer();
+					GameNetwork.BeginModuleEventAsServer(networkPeer);
+					GameNetwork.WriteMessage(new SyncPerksForCurrentlySelectedTroop(spawningNetworkPeer, component.Perks[component.SelectedTroopIndex]));
+					GameNetwork.EndModuleEventAsServer();
+				}
+			}
+		}
 		component.HasSpawnedAgentVisuals = true;
 		component.EquipmentUpdatingExpired = false;
 		if (useCosmetics)
@@ -364,7 +388,7 @@ public abstract class MissionMultiplayerGameModeBase : MissionNetwork
 		{
 			return MissionLobbyComponent.IsClassAvailable(result);
 		}
-		Debug.FailedAssert("\"" + heroClass.ClassGroup.StringId + "\" does not match with any FormationClass.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MultiplayerGameModeLogics\\ServerGameModeLogics\\MissionMultiplayerGameModeBase.cs", "IsClassAvailable", 389);
+		Debug.FailedAssert("\"" + heroClass.ClassGroup.StringId + "\" does not match with any FormationClass.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Missions\\Multiplayer\\MissionNetworkLogics\\MultiplayerGameModeLogics\\ServerGameModeLogics\\MissionMultiplayerGameModeBase.cs", "IsClassAvailable", 427);
 		return false;
 	}
 }

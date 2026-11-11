@@ -1350,6 +1350,7 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 			return;
 		}
 		Vec3 globalDirection = new Vec3((target - MissileStartingGlobalPositionForSimulation).AsVec2).NormalizedCopy();
+		globalDirection *= TaleWorlds.Library.MathF.Cos(targetReleaseAngle);
 		globalDirection += new Vec3(0f, 0f, TaleWorlds.Library.MathF.Sin(targetReleaseAngle));
 		globalDirection.Normalize();
 		Vec3 globalVelocity = GetGlobalVelocity();
@@ -1560,23 +1561,17 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 			if (_currentReloaderCount != num)
 			{
 				_currentReloaderCount = num;
-				float animationSpeed = TaleWorlds.Library.MathF.Sqrt(_currentReloaderCount);
-				for (int j = 0; j < SkeletonOwnerObjects.Length; j++)
-				{
-					float animationParameterAtChannel2 = SkeletonOwnerObjects[j].GameEntity.Skeleton.GetAnimationParameterAtChannel(0);
-					SkeletonOwnerObjects[j].SetAnimationAtChannelSynched(SetUpAnimations[j], 0, animationSpeed);
-					if (animationParameterAtChannel2 > 0f)
-					{
-						SkeletonOwnerObjects[j].SetAnimationChannelParameterSynched(0, animationParameterAtChannel2);
-					}
-				}
+			}
+			float num2 = TaleWorlds.Library.MathF.Sqrt(_currentReloaderCount);
+			for (int j = 0; j < SkeletonOwnerObjects.Length; j++)
+			{
+				SkeletonOwnerObjects[j].SetAnimationChannelSpeedSynched(0, FinalReloadSpeed * ReloadSpeedMultiplier * num2);
 			}
 			for (int k = 0; k < Skeletons.Length; k++)
 			{
 				int animationIndexAtChannel2 = Skeletons[k].GetAnimationIndexAtChannel(0);
-				float animationParameterAtChannel3 = Skeletons[k].GetAnimationParameterAtChannel(0);
-				Skeletons[k].SetAnimationSpeedAtChannel(0, FinalReloadSpeed * ReloadSpeedMultiplier);
-				if (animationIndexAtChannel2 == SetUpAnimationIndices[k] && animationParameterAtChannel3 >= 0.9999f)
+				float animationParameterAtChannel2 = Skeletons[k].GetAnimationParameterAtChannel(0);
+				if (animationIndexAtChannel2 == SetUpAnimationIndices[k] && animationParameterAtChannel2 >= 0.9999f)
 				{
 					State = WeaponState.LoadingAmmo;
 					_animationTimeElapsed = 0f;
@@ -1651,7 +1646,7 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 			break;
 		}
 		default:
-			Debug.FailedAssert("Invalid WeaponState.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\RangedSiegeWeapon.cs", "UpdateState", 2000);
+			Debug.FailedAssert("Invalid WeaponState.", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.MountAndBlade\\Objects\\Siege\\RangedSiegeWeapon.cs", "UpdateState", 1996);
 			break;
 		case WeaponState.Idle:
 		case WeaponState.WaitingAfterShooting:
@@ -2061,6 +2056,6 @@ public abstract class RangedSiegeWeapon : SiegeWeapon
 	public override void OnDeploymentFinished()
 	{
 		base.OnDeploymentFinished();
-		(base.Ai as RangedSiegeWeaponAi).InitializeThreatSeeker();
+		(base.Ai as RangedSiegeWeaponAi).ResetThreatSeeker();
 	}
 }

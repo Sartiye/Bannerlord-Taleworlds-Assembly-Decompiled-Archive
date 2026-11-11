@@ -71,37 +71,50 @@ internal class Tokenizer
 	{
 		MBStringBuilder mBStringBuilder = default(MBStringBuilder);
 		mBStringBuilder.Initialize(16, "FindTokenMatchesAndText");
-		int num = 0;
-		while (num < text.Length)
+		bool flag = false;
+		try
 		{
-			if (text[num] == '{')
+			int num = 0;
+			while (num < text.Length)
 			{
-				if (mBStringBuilder.Length > 0)
+				if (text[num] == '{')
 				{
-					string value = mBStringBuilder.ToStringAndRelease();
-					mBStringBuilder.Initialize(16, "FindTokenMatchesAndText");
-					mbTokenMatches.Add(new MBTextToken(TokenType.Text, value));
+					if (mBStringBuilder.Length > 0)
+					{
+						string value = mBStringBuilder.ToStringAndRelease();
+						mBStringBuilder.Initialize(16, "FindTokenMatchesAndText");
+						mbTokenMatches.Add(new MBTextToken(TokenType.Text, value));
+					}
+					int num2 = FindExpressionEnd(text, num + 1);
+					if (!FindTokenMatches(text, num, num2, mbTokenMatches))
+					{
+						mbTokenMatches.Clear();
+						string value2 = mBStringBuilder.ToStringAndRelease();
+						flag = true;
+						mbTokenMatches.Add(new MBTextToken(TokenType.Text, value2));
+						return;
+					}
+					num = num2;
 				}
-				int num2 = FindExpressionEnd(text, num + 1);
-				if (!FindTokenMatches(text, num, num2, mbTokenMatches))
+				else
 				{
-					mbTokenMatches.Clear();
-					string value2 = mBStringBuilder.ToStringAndRelease();
-					mbTokenMatches.Add(new MBTextToken(TokenType.Text, value2));
-					return;
+					mBStringBuilder.Append(text[num]);
+					num++;
 				}
-				num = num2;
 			}
-			else
+			string text2 = mBStringBuilder.ToStringAndRelease();
+			flag = true;
+			if (text2.Length > 0)
 			{
-				mBStringBuilder.Append(text[num]);
-				num++;
+				mbTokenMatches.Add(new MBTextToken(TokenType.Text, text2));
 			}
 		}
-		string text2 = mBStringBuilder.ToStringAndRelease();
-		if (text2.Length > 0)
+		finally
 		{
-			mbTokenMatches.Add(new MBTextToken(TokenType.Text, text2));
+			if (!flag)
+			{
+				mBStringBuilder.Release();
+			}
 		}
 	}
 
@@ -153,7 +166,7 @@ internal class Tokenizer
 			}
 			if (!flag)
 			{
-				MBTextManager.ThrowLocalizationError("Unexpected token at position " + num2 + " in:" + text);
+				MBTextManager.ThrowLocalizationError("Unexpected token at position " + num2 + " [language: " + MBTextManager.ActiveTextLanguage + "] in:" + text);
 				return false;
 			}
 		}

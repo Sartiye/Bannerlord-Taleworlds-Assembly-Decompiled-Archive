@@ -166,7 +166,7 @@ public class FirstPhaseCampaignBehavior : CampaignBehaviorBase
 
 	private void SelectClanName()
 	{
-		InformationManager.ShowTextInquiry(new TextInquiryData(new TextObject("{=JJiKk4ow}Select your family name: ").ToString(), string.Empty, isAffirmativeOptionShown: true, isNegativeOptionShown: false, GameTexts.FindText("str_done").ToString(), null, OnChangeClanNameDone, null, shouldInputBeObfuscated: false, FactionHelper.IsClanNameApplicable, "", Clan.PlayerClan.Name.ToString()));
+		InformationManager.ShowTextInquiry(new TextInquiryData(new TextObject("{=RSn1j3tA}Choose your family name: ").ToString(), string.Empty, isAffirmativeOptionShown: true, isNegativeOptionShown: false, GameTexts.FindText("str_done").ToString(), null, OnChangeClanNameDone, null, shouldInputBeObfuscated: false, FactionHelper.IsClanNameApplicable, "", Clan.PlayerClan.Name.ToString()));
 	}
 
 	private void OnChangeClanNameDone(string newClanName)

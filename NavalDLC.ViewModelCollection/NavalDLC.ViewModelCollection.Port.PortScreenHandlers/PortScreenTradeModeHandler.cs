@@ -115,6 +115,29 @@ public class PortScreenTradeModeHandler : PortScreenHandler
 		return PortActionInfo.CreateValid(Campaign.Current.Models.FleetManagementModel.CanSendShipToPlayerClan(ship, base.RightShips.Count, troopsCountToSend, out hint), 0, GameTexts.FindText("str_port_send_ship_to_clan"), hint);
 	}
 
+	protected override PortActionInfo CanStashShip(Ship ship)
+	{
+		if (Settlement.CurrentSettlement == null)
+		{
+			PortActionInfo.CreateInvalid();
+		}
+		return PortActionInfo.CreateValid(isEnabled: true, 0, GameTexts.FindText("str_port_stash_ship"), TextObject.GetEmpty());
+	}
+
+	protected override PortActionInfo CanViewStash(bool isRightRoster)
+	{
+		if (Settlement.CurrentSettlement == null)
+		{
+			PortActionInfo.CreateInvalid();
+		}
+		if (base.ShipsToStash.Count > 0 || Settlement.All.Sum((Settlement x) => x.ShipStash.Count) > base.ShipsToRetrieveFromStash.Count)
+		{
+			TextObject name = GameTexts.FindText("str_port_view_stash");
+			return PortActionInfo.CreateValid(isEnabled: true, 0, name, TextObject.GetEmpty());
+		}
+		return PortActionInfo.CreateInvalid();
+	}
+
 	public override int GetTradeCostOfShip(Ship ship, bool isRightSideSelling)
 	{
 		PartyBase seller = (isRightSideSelling ? _rightOwner : _leftOwner);
@@ -180,25 +203,29 @@ public class PortScreenTradeModeHandler : PortScreenHandler
 			Ship ship = base.ShipsToBuy[i].Ship;
 			ChangeShipOwnerAction.ApplyByTrade(_rightOwner, ship);
 		}
-		for (int j = 0; j < base.ShipsToSell.Count; j++)
+		for (int j = 0; j < base.ShipsToRetrieveFromStash.Count; j++)
 		{
-			Ship ship2 = base.ShipsToSell[j].Ship;
+			ChangeShipOwnerAction.ApplyByUnstashingShipFromSettlement(MobileParty.MainParty.Party, _leftOwner.Settlement, base.ShipsToRetrieveFromStash[j]);
+		}
+		for (int k = 0; k < base.ShipsToSell.Count; k++)
+		{
+			Ship ship2 = base.ShipsToSell[k].Ship;
 			ChangeShipOwnerAction.ApplyByTrade(_leftOwner, ship2);
 		}
-		for (int k = 0; k < base.ShipsToRepair.Count; k++)
+		for (int l = 0; l < base.ShipsToRepair.Count; l++)
 		{
-			RepairShipAction.Apply(base.ShipsToRepair[k], Settlement.CurrentSettlement);
+			RepairShipAction.Apply(base.ShipsToRepair[l], Settlement.CurrentSettlement);
 		}
-		for (int l = 0; l < base.ShipsToRename.Count; l++)
+		for (int m = 0; m < base.ShipsToRename.Count; m++)
 		{
-			ShipRenameInfo shipRenameInfo = base.ShipsToRename[l];
+			ShipRenameInfo shipRenameInfo = base.ShipsToRename[m];
 			shipRenameInfo.Ship.SetName(new TextObject("{=!}" + shipRenameInfo.NewName));
 		}
-		for (int m = 0; m < base.SelectedShipPieces.Count; m++)
+		for (int n = 0; n < base.SelectedShipPieces.Count; n++)
 		{
-			Ship ship3 = base.SelectedShipPieces[m].Ship;
-			string shipSlotTag = base.SelectedShipPieces[m].ShipSlotTag;
-			ShipUpgradePiece piece = base.SelectedShipPieces[m].Piece;
+			Ship ship3 = base.SelectedShipPieces[n].Ship;
+			string shipSlotTag = base.SelectedShipPieces[n].ShipSlotTag;
+			ShipUpgradePiece piece = base.SelectedShipPieces[n].Piece;
 			int num = 0;
 			if (piece != null)
 			{
@@ -214,16 +241,20 @@ public class PortScreenTradeModeHandler : PortScreenHandler
 				GiveGoldAction.ApplyForSettlementToCharacter(_leftOwner.Settlement, Hero.MainHero, -num);
 			}
 		}
-		for (int n = 0; n < base.SelectedFigureheads.Count; n++)
+		for (int num2 = 0; num2 < base.SelectedFigureheads.Count; num2++)
 		{
-			Ship ship4 = base.SelectedFigureheads[n].Ship;
-			Figurehead figurehead = base.SelectedFigureheads[n].Figurehead;
+			Ship ship4 = base.SelectedFigureheads[num2].Ship;
+			Figurehead figurehead = base.SelectedFigureheads[num2].Figurehead;
 			ship4.ChangeFigurehead(figurehead);
 		}
 		IFleetManagementCampaignBehavior campaignBehavior = Campaign.Current.GetCampaignBehavior<IFleetManagementCampaignBehavior>();
-		for (int num2 = 0; num2 < base.ShipsToSend.Count; num2++)
+		for (int num3 = 0; num3 < base.ShipsToSend.Count; num3++)
 		{
-			campaignBehavior.SendShipToClan(base.ShipsToSend[num2], Clan.PlayerClan);
+			campaignBehavior.SendShipToClan(base.ShipsToSend[num3], Clan.PlayerClan);
+		}
+		for (int num4 = 0; num4 < base.ShipsToStash.Count; num4++)
+		{
+			ChangeShipOwnerAction.ApplyByStashingShipIntoSettlement(_leftOwner.Settlement, base.ShipsToStash[num4]);
 		}
 		if (MobileParty.MainParty.Ships.Count == 0 && MobileParty.MainParty.Anchor.IsValid)
 		{
@@ -231,7 +262,7 @@ public class PortScreenTradeModeHandler : PortScreenHandler
 		}
 		else if (MobileParty.MainParty.Ships.Count > 0 && !MobileParty.MainParty.Anchor.IsValid && _leftOwner.IsSettlement)
 		{
-			MobileParty.MainParty.Anchor.SetSettlement(_leftOwner.Settlement);
+			MobileParty.MainParty.Anchor.Settlement = _leftOwner.Settlement;
 		}
 	}
 
@@ -242,17 +273,17 @@ public class PortScreenTradeModeHandler : PortScreenHandler
 		{
 			list.Add(new PortChangeInfo(base.ShipsToBuy[i].Price, new TextObject("{=9AIOcUuH}Buy {SHIP_NAME}").SetTextVariable("SHIP_NAME", base.ShipsToBuy[i].Ship.Name).ToString()));
 		}
-		for (int j = 0; j < base.ShipsToRename.Count; j++)
+		for (int j = 0; j < base.ShipsToRetrieveFromStash.Count; j++)
 		{
-			list.Add(new PortChangeInfo(0f, new TextObject("{=Fidoxgd1}Rename {SHIP_NAME} to {NEW_SHIP_NAME}").SetTextVariable("SHIP_NAME", base.ShipsToRename[j].Ship.Name).SetTextVariable("NEW_SHIP_NAME", base.ShipsToRename[j].NewName).ToString()));
+			list.Add(new PortChangeInfo(0f, new TextObject("{=OWbPPwRR}Retrieve {SHIP_NAME} from stash").SetTextVariable("SHIP_NAME", base.ShipsToRetrieveFromStash[j].Name).ToString()));
 		}
-		for (int k = 0; k < base.ShipsToRepair.Count; k++)
+		for (int k = 0; k < base.ShipsToRename.Count; k++)
 		{
-			list.Add(new PortChangeInfo(GetRepairCostOfShip(base.ShipsToRepair[k], isRightSideRepairing: true), new TextObject("{=HQK9kUD9}Repair {SHIP_NAME}").SetTextVariable("SHIP_NAME", GetShipNameConsideringRenames(base.ShipsToRepair[k])).ToString()));
+			list.Add(new PortChangeInfo(0f, new TextObject("{=Fidoxgd1}Rename {SHIP_NAME} to {NEW_SHIP_NAME}").SetTextVariable("SHIP_NAME", base.ShipsToRename[k].Ship.Name).SetTextVariable("NEW_SHIP_NAME", base.ShipsToRename[k].NewName).ToString()));
 		}
-		for (int l = 0; l < base.ShipsToSend.Count; l++)
+		for (int l = 0; l < base.ShipsToRepair.Count; l++)
 		{
-			list.Add(new PortChangeInfo(0f, new TextObject("{=L1x30kUJ}Send {SHIP_NAME} to clan").SetTextVariable("SHIP_NAME", GetShipNameConsideringRenames(base.ShipsToSend[l])).ToString()));
+			list.Add(new PortChangeInfo(GetRepairCostOfShip(base.ShipsToRepair[l], isRightSideRepairing: true), new TextObject("{=HQK9kUD9}Repair {SHIP_NAME}").SetTextVariable("SHIP_NAME", GetShipNameConsideringRenames(base.ShipsToRepair[l])).ToString()));
 		}
 		for (int m = 0; m < base.SelectedShipPieces.Count; m++)
 		{
@@ -280,9 +311,17 @@ public class PortScreenTradeModeHandler : PortScreenHandler
 				list.Add(new PortChangeInfo(0f, new TextObject("{=jwgUwyKO}Add {PIECE_NAME} to {SHIP_NAME}").SetTextVariable("SHIP_NAME", GetShipNameConsideringRenames(base.SelectedFigureheads[n].Ship)).SetTextVariable("PIECE_NAME", figurehead.GetName()).ToString()));
 			}
 		}
-		for (int num = 0; num < base.ShipsToSell.Count; num++)
+		for (int num = 0; num < base.ShipsToSend.Count; num++)
 		{
-			list.Add(new PortChangeInfo(-base.ShipsToSell[num].Price, new TextObject("{=1Yaq0qy1}Sell {SHIP_NAME}").SetTextVariable("SHIP_NAME", base.ShipsToSell[num].Ship.Name).ToString()));
+			list.Add(new PortChangeInfo(0f, new TextObject("{=L1x30kUJ}Send {SHIP_NAME} to clan").SetTextVariable("SHIP_NAME", GetShipNameConsideringRenames(base.ShipsToSend[num])).ToString()));
+		}
+		for (int num2 = 0; num2 < base.ShipsToStash.Count; num2++)
+		{
+			list.Add(new PortChangeInfo(0f, new TextObject("{=b8gqqEHE}Stash {SHIP_NAME}").SetTextVariable("SHIP_NAME", GetShipNameConsideringRenames(base.ShipsToStash[num2])).ToString()));
+		}
+		for (int num3 = 0; num3 < base.ShipsToSell.Count; num3++)
+		{
+			list.Add(new PortChangeInfo(-base.ShipsToSell[num3].Price, new TextObject("{=1Yaq0qy1}Sell {SHIP_NAME}").SetTextVariable("SHIP_NAME", base.ShipsToSell[num3].Ship.Name).ToString()));
 		}
 		return list;
 	}

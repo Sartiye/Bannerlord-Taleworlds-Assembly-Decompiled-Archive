@@ -2032,10 +2032,10 @@ public class PartyVM : ViewModel
 
 	private void OnPartyMoraleChanged()
 	{
-		MBTextManager.SetTextVariable("PAY_OR_GET", (PartyScreenLogic.CurrentData.PartyMoraleChangeAmount > 0) ? 1 : 0);
+		MBTextManager.SetTextVariable("PAY_OR_GET", (PartyScreenLogic.CurrentData.PartyMoraleChangeAmount > 0f) ? 1 : 0);
 		MBTextManager.SetTextVariable("MORALE_ICON", "{=!}<img src=\"General\\Icons\\Morale@2x\" extend=\"4\">");
 		MBTextManager.SetTextVariable("TRADE_AMOUNT", TaleWorlds.Library.MathF.Abs(PartyScreenLogic.CurrentData.PartyMoraleChangeAmount));
-		MoraleChangeText = ((PartyScreenLogic.CurrentData.PartyMoraleChangeAmount == 0) ? "" : GameTexts.FindText("str_party_morale_label").ToString());
+		MoraleChangeText = ((PartyScreenLogic.CurrentData.PartyMoraleChangeAmount == 0f) ? "" : GameTexts.FindText("str_party_morale_label").ToString());
 	}
 
 	private void OnPartyInfluenceChanged()
@@ -3313,14 +3313,14 @@ public class PartyVM : ViewModel
 		{
 			if (list[i].Count != list2[i].Count)
 			{
-				TaleWorlds.Library.Debug.FailedAssert("Logic and VM list counts do not match", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "EnsureLogicRostersAreInSyncWithVMLists", 1818);
+				TaleWorlds.Library.Debug.FailedAssert("Logic and VM list counts do not match", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "EnsureLogicRostersAreInSyncWithVMLists", 1817);
 				continue;
 			}
 			for (int j = 0; j < list[i].Count; j++)
 			{
 				if (list[i].GetCharacterAtIndex(j).StringId != list2[i][j].Character.StringId)
 				{
-					TaleWorlds.Library.Debug.FailedAssert("Logic and VM rosters do not match", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "EnsureLogicRostersAreInSyncWithVMLists", 1826);
+					TaleWorlds.Library.Debug.FailedAssert("Logic and VM rosters do not match", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\Party\\PartyVM.cs", "EnsureLogicRostersAreInSyncWithVMLists", 1825);
 					return;
 				}
 			}

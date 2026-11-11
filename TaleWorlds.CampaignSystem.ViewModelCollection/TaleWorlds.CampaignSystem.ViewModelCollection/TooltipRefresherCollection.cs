@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Helpers;
+using TaleWorlds.CampaignSystem.BattleWreckages;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.Extensions;
@@ -19,6 +20,7 @@ using TaleWorlds.CampaignSystem.Siege;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Core.ViewModelCollection.Information.RundownTooltip;
+using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -28,11 +30,47 @@ public static class TooltipRefresherCollection
 {
 	private static readonly IEqualityComparer<(ItemCategory, int)> itemCategoryDistinctComparer = new CampaignUIHelper.ProductInputOutputEqualityComparer();
 
-	private static string ExtendKeyId = "ExtendModifier";
+	private const string ExtendKeyId = "ExtendModifier";
 
-	private static string FollowModifierKeyId = "FollowModifier";
+	private const string ParleyModifierKeyId = "ParleyModifier";
 
-	private static string MapClickKeyId = "MapClick";
+	private const string ParleyClickKeyId = "ParleyClick";
+
+	private const string MapClickKeyId = "MapClick";
+
+	public static void AddTooltipHintProperties(PropertyBasedTooltipVM propertyBasedTooltipVM, bool isExtendInfoAvailable = true, PartyBase parleyParty = null)
+	{
+		bool flag = isExtendInfoAvailable && !propertyBasedTooltipVM.IsExtended;
+		TextObject explanation;
+		bool flag2 = parleyParty != null && Campaign.Current.Models.EncounterModel.CanMainHeroDoParleyWithParty(parleyParty, out explanation);
+		if (!flag && !flag2)
+		{
+			return;
+		}
+		propertyBasedTooltipVM.AddProperty(string.Empty, string.Empty, -1);
+		if (flag)
+		{
+			TextObject textObject = GameTexts.FindText("str_map_tooltip_info");
+			textObject.SetTextVariable("EXTEND_KEY", propertyBasedTooltipVM.GetKeyText("ExtendModifier"));
+			propertyBasedTooltipVM.AddProperty(string.Empty, textObject.ToString(), -1);
+		}
+		if (flag2)
+		{
+			TextObject textObject2;
+			if (TaleWorlds.InputSystem.Input.IsGamepadActive)
+			{
+				textObject2 = GameTexts.FindText("str_map_parley_info_gamepad");
+				textObject2.SetTextVariable("PARLEY_KEY", propertyBasedTooltipVM.GetKeyText("ParleyClick"));
+			}
+			else
+			{
+				textObject2 = GameTexts.FindText("str_map_parley_info");
+				textObject2.SetTextVariable("MODIFIER_KEY", propertyBasedTooltipVM.GetKeyText("ParleyModifier"));
+				textObject2.SetTextVariable("CLICK_KEY", propertyBasedTooltipVM.GetKeyText("MapClick"));
+			}
+			propertyBasedTooltipVM.AddProperty(string.Empty, textObject2.ToString(), -1);
+		}
+	}
 
 	public static void RefreshExplainedNumberTooltip(RundownTooltipVM explainedNumberTooltip, object[] args)
 	{
@@ -147,31 +185,36 @@ public static class TooltipRefresherCollection
 		{
 			propertyBasedTooltipVM.AddProperty(GameTexts.FindText("str_clan").ToString(), hero.Clan.Name.ToString());
 		}
+		Clan clan = hero.Clan;
+		if (clan != null && clan.HasBloodFeudWithPlayer)
+		{
+			propertyBasedTooltipVM.AddProperty("", (hero.Clan.IsEliminated ? new TextObject("{=arOtrYDD}{BLOOD_ICON} Was in a blood feud with the {CLAN_NAME}") : new TextObject("{=AZaCxlzZ}{BLOOD_ICON} In a blood feud with the {CLAN_NAME}")).SetTextVariable("BLOOD_ICON", "{=!}<img src=\"SPGeneral\\blood_feud_icon\" extend=\"3\">").SetTextVariable("CLAN_NAME", Clan.PlayerClan.Name).ToString());
+		}
 		propertyBasedTooltipVM.AddProperty("", "", -1);
 		if (!num)
 		{
 			List<TextObject> list = new List<TextObject>();
-			foreach (Settlement item2 in Settlement.All)
+			foreach (Settlement item in Settlement.All)
 			{
-				if (item2.IsTown)
+				if (item.IsTown)
 				{
-					Town town = item2.Town;
+					Town town = item.Town;
 					list.AddRange(from x in town.Workshops
 						where x.Owner == hero && !x.WorkshopType.IsHidden
 						select x.WorkshopType.Name);
 				}
-				if (!item2.IsTown && !item2.IsVillage)
+				if (!item.IsTown && !item.IsVillage)
 				{
 					continue;
 				}
-				foreach (Alley alley in item2.Alleys)
+				foreach (Alley alley in item.Alleys)
 				{
 					if (alley.Owner == hero)
 					{
-						MBTextManager.SetTextVariable("RANK", alley.Name);
-						MBTextManager.SetTextVariable("NUMBER", Campaign.Current.Models.AlleyModel.GetTroopsOfAIOwnedAlley(alley).TotalManCount);
-						TextObject item = GameTexts.FindText("str_RANK_with_NUM_between_parenthesis");
-						list.Add(item);
+						TextObject textObject = GameTexts.FindText("str_RANK_with_NUM_between_parenthesis");
+						textObject.SetTextVariable("RANK", alley.Name);
+						textObject.SetTextVariable("NUMBER", Campaign.Current.Models.AlleyModel.GetTroopsOfAIOwnedAlley(alley).TotalManCount);
+						list.Add(textObject);
 					}
 				}
 			}
@@ -181,13 +224,13 @@ public static class TooltipRefresherCollection
 			{
 				propertyBasedTooltipVM.AddProperty("", value, 0, TooltipProperty.TooltipPropertyFlags.MultiLine);
 			}
-			TextObject textObject = new TextObject("{=C2qpwFq5}Owner of {SETTLEMENTS}");
+			TextObject textObject2 = new TextObject("{=C2qpwFq5}Owner of {SETTLEMENTS}");
 			IEnumerable<TextObject> enumerable = from x in Settlement.FindAll((Settlement x) => x.IsFortification && x.OwnerClan != null && x.OwnerClan.Leader == hero)
 				select x.Name;
 			MBTextManager.SetTextVariable("SETTLEMENTS", CampaignUIHelper.GetCommaSeparatedText(null, enumerable));
 			if (enumerable.Count() > 0)
 			{
-				propertyBasedTooltipVM.AddProperty("", textObject.ToString(), 0, TooltipProperty.TooltipPropertyFlags.MultiLine);
+				propertyBasedTooltipVM.AddProperty("", textObject2.ToString(), 0, TooltipProperty.TooltipPropertyFlags.MultiLine);
 			}
 			if (hero.OwnedCaravans.Count > 0)
 			{
@@ -201,8 +244,8 @@ public static class TooltipRefresherCollection
 			{
 				MBTextManager.SetTextVariable("STR1", new TextObject("{=jQdBl4hf}Governor of "));
 				MBTextManager.SetTextVariable("STR2", hero.GovernorOf.Name);
-				TextObject textObject2 = GameTexts.FindText("str_STR1_STR2");
-				propertyBasedTooltipVM.AddProperty("", textObject2.ToString);
+				TextObject textObject3 = GameTexts.FindText("str_STR1_STR2");
+				propertyBasedTooltipVM.AddProperty("", textObject3.ToString);
 			}
 			if (hero != Hero.MainHero)
 			{
@@ -804,12 +847,7 @@ public static class TooltipRefresherCollection
 		{
 			AddPartyTroopProperties(propertyBasedTooltipVM, troopRoster2, GameTexts.FindText("str_map_tooltip_prisoners"), flag, funcToDoBeforeLambda2);
 		}
-		if (!Campaign.Current.IsMapTooltipLongForm && !propertyBasedTooltipVM.IsExtended)
-		{
-			propertyBasedTooltipVM.AddProperty("", "", -1);
-			GameTexts.SetVariable("EXTEND_KEY", propertyBasedTooltipVM.GetKeyText(ExtendKeyId));
-			propertyBasedTooltipVM.AddProperty("", GameTexts.FindText("str_map_tooltip_info").ToString());
-		}
+		AddTooltipHintProperties(propertyBasedTooltipVM, !Campaign.Current.IsMapTooltipLongForm);
 	}
 
 	public static void RefreshSiegeEventTooltip(PropertyBasedTooltipVM propertyBasedTooltipVM, object[] args)
@@ -833,12 +871,7 @@ public static class TooltipRefresherCollection
 			MBList<PartyBase> parties = new MBReadOnlyList<PartyBase>(siegeEvent.BesiegerCamp.GetInvolvedPartiesForEventType()).Where((PartyBase x) => !x.IsSettlement).ToMBList();
 			MBList<PartyBase> parties2 = new MBReadOnlyList<PartyBase>(siegeEvent.BesiegedSettlement.GetInvolvedPartiesForEventType()).Where((PartyBase x) => !x.IsSettlement).ToMBList();
 			AddEncounterParties(propertyBasedTooltipVM, parties, parties2, propertyBasedTooltipVM.IsExtended);
-			if (!propertyBasedTooltipVM.IsExtended)
-			{
-				propertyBasedTooltipVM.AddProperty("", "", -1);
-				GameTexts.SetVariable("EXTEND_KEY", propertyBasedTooltipVM.GetKeyText(ExtendKeyId));
-				propertyBasedTooltipVM.AddProperty("", GameTexts.FindText("str_map_tooltip_info").ToString());
-			}
+			AddTooltipHintProperties(propertyBasedTooltipVM);
 		}
 	}
 
@@ -881,12 +914,7 @@ public static class TooltipRefresherCollection
 			where !x.Party.IsSettlement
 			select x).ToMBList();
 		AddEncounterParties(propertyBasedTooltipVM, parties, parties2, propertyBasedTooltipVM.IsExtended);
-		if (!propertyBasedTooltipVM.IsExtended)
-		{
-			propertyBasedTooltipVM.AddProperty("", "", -1);
-			GameTexts.SetVariable("EXTEND_KEY", propertyBasedTooltipVM.GetKeyText(ExtendKeyId));
-			propertyBasedTooltipVM.AddProperty("", GameTexts.FindText("str_map_tooltip_info").ToString());
-		}
+		AddTooltipHintProperties(propertyBasedTooltipVM);
 	}
 
 	public static void RefreshSettlementTooltip(PropertyBasedTooltipVM propertyBasedTooltipVM, object[] args)
@@ -986,11 +1014,11 @@ public static class TooltipRefresherCollection
 				{
 					int num5 = (int)settlementAsParty.Settlement.Town.FoodChange;
 					int variable3 = (int)settlementAsParty.Settlement.Town.FoodStocks;
-					TextObject textObject9 = new TextObject("{=Jyfkahka}{VALUE} ({?POSITIVE}+{?}{\\?}{DELTA_VALUE})");
-					textObject9.SetTextVariable("VALUE", variable3);
-					textObject9.SetTextVariable("POSITIVE", (num5 > 0) ? 1 : 0);
-					textObject9.SetTextVariable("DELTA_VALUE", num5);
-					return textObject9.ToString();
+					TextObject textObject7 = new TextObject("{=Jyfkahka}{VALUE} ({?POSITIVE}+{?}{\\?}{DELTA_VALUE})");
+					textObject7.SetTextVariable("VALUE", variable3);
+					textObject7.SetTextVariable("POSITIVE", (num5 > 0) ? 1 : 0);
+					textObject7.SetTextVariable("DELTA_VALUE", num5);
+					return textObject7.ToString();
 				};
 				propertyBasedTooltipVM.AddProperty(GameTexts.FindText("str_map_tooltip_food_stocks").ToString(), value);
 			}
@@ -1000,11 +1028,11 @@ public static class TooltipRefresherCollection
 				{
 					float num4 = float.Parse($"{(settlementAsParty.Settlement.IsFortification ? settlementAsParty.Settlement.Town.ProsperityChange : settlementAsParty.Settlement.Village.HearthChange):0.00}");
 					int variable2 = (int)(settlementAsParty.Settlement.IsFortification ? settlementAsParty.Settlement.Town.Prosperity : settlementAsParty.Settlement.Village.Hearth);
-					TextObject textObject8 = new TextObject("{=Jyfkahka}{VALUE} ({?POSITIVE}+{?}{\\?}{DELTA_VALUE})");
-					textObject8.SetTextVariable("VALUE", variable2);
-					textObject8.SetTextVariable("POSITIVE", (num4 > 0f) ? 1 : 0);
-					textObject8.SetTextVariable("DELTA_VALUE", num4);
-					return textObject8.ToString();
+					TextObject textObject6 = new TextObject("{=Jyfkahka}{VALUE} ({?POSITIVE}+{?}{\\?}{DELTA_VALUE})");
+					textObject6.SetTextVariable("VALUE", variable2);
+					textObject6.SetTextVariable("POSITIVE", (num4 > 0f) ? 1 : 0);
+					textObject6.SetTextVariable("DELTA_VALUE", num4);
+					return textObject6.ToString();
 				};
 				propertyBasedTooltipVM.AddProperty(settlementAsParty.Settlement.IsFortification ? GameTexts.FindText("str_map_tooltip_prosperity").ToString() : GameTexts.FindText("str_map_tooltip_hearths").ToString(), value2);
 			}
@@ -1012,20 +1040,20 @@ public static class TooltipRefresherCollection
 			{
 				Func<string> value3 = delegate
 				{
-					TextObject textObject7 = new TextObject("{=Jyfkahka}{VALUE} ({?POSITIVE}+{?}{\\?}{DELTA_VALUE})");
-					textObject7.SetTextVariable("VALUE", settlement.Town.Loyalty);
-					textObject7.SetTextVariable("POSITIVE", (settlement.Town.LoyaltyChange > 0f) ? 1 : 0);
-					textObject7.SetTextVariable("DELTA_VALUE", settlement.Town.LoyaltyChange);
-					return textObject7.ToString();
+					TextObject textObject5 = new TextObject("{=Jyfkahka}{VALUE} ({?POSITIVE}+{?}{\\?}{DELTA_VALUE})");
+					textObject5.SetTextVariable("VALUE", settlement.Town.Loyalty);
+					textObject5.SetTextVariable("POSITIVE", (settlement.Town.LoyaltyChange > 0f) ? 1 : 0);
+					textObject5.SetTextVariable("DELTA_VALUE", settlement.Town.LoyaltyChange);
+					return textObject5.ToString();
 				};
 				propertyBasedTooltipVM.AddProperty(GameTexts.FindText("str_loyalty").ToString(), value3);
 				Func<string> value4 = delegate
 				{
-					TextObject textObject6 = new TextObject("{=Jyfkahka}{VALUE} ({?POSITIVE}+{?}{\\?}{DELTA_VALUE})");
-					textObject6.SetTextVariable("VALUE", settlement.Town.Security);
-					textObject6.SetTextVariable("POSITIVE", (settlement.Town.SecurityChange > 0f) ? 1 : 0);
-					textObject6.SetTextVariable("DELTA_VALUE", settlement.Town.SecurityChange);
-					return textObject6.ToString();
+					TextObject textObject4 = new TextObject("{=Jyfkahka}{VALUE} ({?POSITIVE}+{?}{\\?}{DELTA_VALUE})");
+					textObject4.SetTextVariable("VALUE", settlement.Town.Security);
+					textObject4.SetTextVariable("POSITIVE", (settlement.Town.SecurityChange > 0f) ? 1 : 0);
+					textObject4.SetTextVariable("DELTA_VALUE", settlement.Town.SecurityChange);
+					return textObject4.ToString();
 				};
 				propertyBasedTooltipVM.AddProperty(GameTexts.FindText("str_security").ToString(), value4);
 			}
@@ -1177,20 +1205,7 @@ public static class TooltipRefresherCollection
 		{
 			propertyBasedTooltipVM.AddProperty(string.Empty, GameTexts.FindText("str_settlement_rebellious_state").ToString(), -1);
 		}
-		propertyBasedTooltipVM.AddProperty(string.Empty, string.Empty, -1);
-		if (!settlement.IsHideout && !propertyBasedTooltipVM.IsExtended && flag)
-		{
-			TextObject textObject4 = GameTexts.FindText("str_map_tooltip_info");
-			textObject4.SetTextVariable("EXTEND_KEY", propertyBasedTooltipVM.GetKeyText(ExtendKeyId));
-			propertyBasedTooltipVM.AddProperty(string.Empty, textObject4.ToString(), -1);
-		}
-		if (Campaign.Current.Models.EncounterModel.CanMainHeroDoParleyWithParty(settlementAsParty, out disableReason))
-		{
-			TextObject textObject5 = new TextObject("{=uEeLvYXT}Press '{MODIFIER_KEY}' + '{CLICK_KEY}' to parley.");
-			textObject5.SetTextVariable("MODIFIER_KEY", propertyBasedTooltipVM.GetKeyText(FollowModifierKeyId));
-			textObject5.SetTextVariable("CLICK_KEY", propertyBasedTooltipVM.GetKeyText(MapClickKeyId));
-			propertyBasedTooltipVM.AddProperty(string.Empty, textObject5.ToString(), -1);
-		}
+		AddTooltipHintProperties(propertyBasedTooltipVM, !settlement.IsHideout && flag, settlementAsParty);
 	}
 
 	public static void RefreshMobilePartyTooltip(PropertyBasedTooltipVM propertyBasedTooltipVM, object[] args)
@@ -1234,6 +1249,18 @@ public static class TooltipRefresherCollection
 		if (isInspected)
 		{
 			propertyBasedTooltipVM.AddProperty("", CampaignUIHelper.GetMobilePartyBehaviorText(mobileParty));
+		}
+		if (flag || propertyBasedTooltipVM.IsExtended)
+		{
+			Clan actualClan = mobileParty.ActualClan;
+			if (actualClan != null && actualClan.HasBloodFeudWithPlayer)
+			{
+				if (isInspected)
+				{
+					propertyBasedTooltipVM.AddProperty("", "", -1);
+				}
+				propertyBasedTooltipVM.AddProperty("", (mobileParty.ActualClan.IsEliminated ? new TextObject("{=arOtrYDD}{BLOOD_ICON} Was in a blood feud with the {CLAN_NAME}") : new TextObject("{=AZaCxlzZ}{BLOOD_ICON} In a blood feud with the {CLAN_NAME}")).SetTextVariable("BLOOD_ICON", "{=!}<img src=\"SPGeneral\\blood_feud_icon\" extend=\"3\">").SetTextVariable("CLAN_NAME", Clan.PlayerClan.Name).ToString());
+			}
 		}
 		propertyBasedTooltipVM.AddProperty(string.Empty, string.Empty, -1);
 		propertyBasedTooltipVM.AddProperty(GameTexts.FindText("str_owner").ToString(), " ");
@@ -1299,12 +1326,7 @@ public static class TooltipRefresherCollection
 		{
 			AddPartyShipProperties(propertyBasedTooltipVM, new MBList<MobileParty> { mobileParty }, flag, flag2);
 		}
-		if (!propertyBasedTooltipVM.IsExtended)
-		{
-			propertyBasedTooltipVM.AddProperty("", "", -1);
-			GameTexts.SetVariable("EXTEND_KEY", propertyBasedTooltipVM.GetKeyText(ExtendKeyId));
-			propertyBasedTooltipVM.AddProperty("", GameTexts.FindText("str_map_tooltip_info").ToString(), -1);
-		}
+		AddTooltipHintProperties(propertyBasedTooltipVM, isExtendInfoAvailable: true, mobileParty.Party);
 	}
 
 	public static void RefreshArmyTooltip(PropertyBasedTooltipVM propertyBasedTooltipVM, object[] args)
@@ -1340,6 +1362,14 @@ public static class TooltipRefresherCollection
 		if (leaderParty.IsInspected || !flag2)
 		{
 			propertyBasedTooltipVM.AddProperty("", CampaignUIHelper.GetMobilePartyBehaviorText(leaderParty));
+		}
+		if ((flag || propertyBasedTooltipVM.IsExtended) && army.Parties.Any((MobileParty x) => x.ActualClan?.HasBloodFeudWithPlayer ?? false))
+		{
+			if (leaderParty.IsInspected || !flag2)
+			{
+				propertyBasedTooltipVM.AddProperty("", "", -1);
+			}
+			propertyBasedTooltipVM.AddProperty("", new TextObject("{=a5EFOx2U}{BLOOD_ICON} Some members are in a blood feud with the {CLAN_NAME}").SetTextVariable("BLOOD_ICON", "{=!}<img src=\"SPGeneral\\blood_feud_icon\" extend=\"3\">").SetTextVariable("CLAN_NAME", Clan.PlayerClan.Name).ToString());
 		}
 		propertyBasedTooltipVM.AddProperty(string.Empty, string.Empty, -1);
 		propertyBasedTooltipVM.AddProperty(GameTexts.FindText("str_owner").ToString(), " ");
@@ -1379,12 +1409,7 @@ public static class TooltipRefresherCollection
 		{
 			AddPartyShipProperties(propertyBasedTooltipVM, mBList, flag, flag2);
 		}
-		if (!propertyBasedTooltipVM.IsExtended)
-		{
-			propertyBasedTooltipVM.AddProperty("", "", -1);
-			GameTexts.SetVariable("EXTEND_KEY", propertyBasedTooltipVM.GetKeyText(ExtendKeyId));
-			propertyBasedTooltipVM.AddProperty("", GameTexts.FindText("str_map_tooltip_info").ToString(), -1);
-		}
+		AddTooltipHintProperties(propertyBasedTooltipVM);
 		TroopRoster GetTempPrisonerRoster()
 		{
 			TroopRoster troopRoster3 = TroopRoster.CreateDummyTroopRoster();
@@ -1441,6 +1466,11 @@ public static class TooltipRefresherCollection
 		{
 			propertyBasedTooltipVM.Mode = 1;
 		}
+		if (clan != Clan.PlayerClan && clan.HasBloodFeudWithPlayer)
+		{
+			propertyBasedTooltipVM.AddProperty("", (clan.IsEliminated ? new TextObject("{=arOtrYDD}{BLOOD_ICON} Was in a blood feud with the {CLAN_NAME}") : new TextObject("{=AZaCxlzZ}{BLOOD_ICON} In a blood feud with the {CLAN_NAME}")).SetTextVariable("BLOOD_ICON", "{=!}<img src=\"SPGeneral\\blood_feud_icon\" extend=\"3\">").SetTextVariable("CLAN_NAME", Clan.PlayerClan.Name).ToString());
+			propertyBasedTooltipVM.AddProperty("", "", -1);
+		}
 		if (clan.IsEliminated)
 		{
 			propertyBasedTooltipVM.AddProperty("", new TextObject("{=SlubkZ1A}Eliminated").ToString());
@@ -1477,12 +1507,7 @@ public static class TooltipRefresherCollection
 				propertyBasedTooltipVM.AddProperty(new TextObject("{=zZlWRZjO}Wars").ToString(), CampaignUIHelper.GetCommaNewlineSeparatedText(TextObject.GetEmpty(), list).ToString());
 			}
 		}
-		if (!propertyBasedTooltipVM.IsExtended && (count > 0 || list.Count > 0))
-		{
-			propertyBasedTooltipVM.AddProperty("", "", -1);
-			GameTexts.SetVariable("EXTEND_KEY", propertyBasedTooltipVM.GetKeyText(ExtendKeyId));
-			propertyBasedTooltipVM.AddProperty("", GameTexts.FindText("str_map_tooltip_info").ToString(), -1);
-		}
+		AddTooltipHintProperties(propertyBasedTooltipVM, count > 0 || list.Count > 0);
 	}
 
 	public static void RefreshKingdomTooltip(PropertyBasedTooltipVM propertyBasedTooltipVM, object[] args)
@@ -1532,12 +1557,7 @@ public static class TooltipRefresherCollection
 				propertyBasedTooltipVM.AddProperty(new TextObject("{=zZlWRZjO}Wars").ToString(), CampaignUIHelper.GetCommaNewlineSeparatedText(TextObject.GetEmpty(), list).ToString());
 			}
 		}
-		if (!propertyBasedTooltipVM.IsExtended && (count > 0 || list.Count > 0))
-		{
-			propertyBasedTooltipVM.AddProperty("", "", -1);
-			GameTexts.SetVariable("EXTEND_KEY", propertyBasedTooltipVM.GetKeyText(ExtendKeyId));
-			propertyBasedTooltipVM.AddProperty("", GameTexts.FindText("str_map_tooltip_info").ToString(), -1);
-		}
+		AddTooltipHintProperties(propertyBasedTooltipVM, count > 0 || list.Count > 0);
 	}
 
 	private static void AddEncounterParties(PropertyBasedTooltipVM propertyBasedTooltipVM, MBReadOnlyList<PartyBase> parties1, MBReadOnlyList<PartyBase> parties2, bool isExtended)
@@ -2059,7 +2079,11 @@ public static class TooltipRefresherCollection
 				continue;
 			}
 			CharacterObject hero = elementCopyAtIndex2.Character;
-			propertyBasedTooltipVM.AddProperty(elementCopyAtIndex2.Character.Name.ToString(), delegate
+			TextObject name = hero.Name;
+			Clan clan = hero.HeroObject.Clan;
+			string definition = ((clan != null && clan.HasBloodFeudWithPlayer) ? GameTexts.FindText("str_STR1_STR2").SetTextVariable("STR1", name).SetTextVariable("STR2", "{=!}<img src=\"SPGeneral\\blood_feud_icon\" extend=\"3\">")
+				.ToString() : name.ToString());
+			propertyBasedTooltipVM.AddProperty(definition, delegate
 			{
 				TroopRoster troopRoster3 = ((funcToDoBeforeLambda != null) ? funcToDoBeforeLambda() : troopRoster);
 				int num2 = troopRoster3.FindIndexOfTroop(hero);
@@ -2186,5 +2210,20 @@ public static class TooltipRefresherCollection
 		MapMarker mapMarker = args[0] as MapMarker;
 		propertyBasedTooltipVM.Mode = 1;
 		propertyBasedTooltipVM.AddProperty("", mapMarker.Name.ToString, 0, TooltipProperty.TooltipPropertyFlags.Title);
+	}
+
+	public static void RefreshBattleWreckageTooltip(PropertyBasedTooltipVM propertyBasedTooltipVM, object[] args)
+	{
+		BattleWreckage battleWreckage = args[0] as BattleWreckage;
+		propertyBasedTooltipVM.Mode = 1;
+		if (battleWreckage.IsInvestigated)
+		{
+			TextObject textObject = new TextObject("{=NFavDfWG}Battle Remains");
+			propertyBasedTooltipVM.AddProperty("", textObject.ToString(), 0, TooltipProperty.TooltipPropertyFlags.Title);
+		}
+		else
+		{
+			propertyBasedTooltipVM.AddProperty("", battleWreckage.Name.ToString(), 0, TooltipProperty.TooltipPropertyFlags.Title);
+		}
 	}
 }

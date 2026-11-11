@@ -28,6 +28,8 @@ internal class ContainerSaveData
 
 	public Type Type { get; private set; }
 
+	internal int CapturedElementCount => _elementCount;
+
 	internal int ElementPropertyCount
 	{
 		get
@@ -143,10 +145,20 @@ internal class ContainerSaveData
 		headerWriter.Write3ByteInt(folderId);
 		headerWriter.Write3ByteInt(-1);
 		headerWriter.WriteByte(9);
-		headerWriter.WriteShort((short)GetHeaderDataSize());
+		int headerDataSize = GetHeaderDataSize();
+		if (headerDataSize > 32767)
+		{
+			Context.ReportSaveIntegrityDrift($"[SaveSystem] Ctr {Type?.FullName} header size {headerDataSize} overflows short");
+		}
+		headerWriter.WriteShort((short)headerDataSize);
 		_typeDefinition.SaveId.WriteTo(headerWriter);
 		headerWriter.WriteByte((byte)_containerType);
-		headerWriter.WriteInt(GetElementCount());
+		headerWriter.WriteInt(_elementCount);
+		int elementCount = GetElementCount();
+		if (_elementCount != elementCount)
+		{
+			Context.ReportSaveIntegrityDrift($"[SaveSystem] Ctr[{ObjectId}] {Type?.FullName} elem count changed captured={_elementCount} live={elementCount}");
+		}
 	}
 
 	public void SaveHeaderFolderTo(BinaryWriter headerWriter, int folderId)
@@ -284,11 +296,9 @@ internal class ContainerSaveData
 		for (int i = 0; i < _elementCount; i++)
 		{
 			WriteElementEntry(writer, _values[i], folderId, i, SaveEntryExtension.Value);
-			_values[i].SaveTo(writer);
 			if (_containerType == ContainerType.Dictionary)
 			{
 				WriteElementEntry(writer, _keys[i], folderId, i, SaveEntryExtension.Key);
-				_keys[i].SaveTo(writer);
 			}
 		}
 		folderId++;
@@ -334,10 +344,23 @@ internal class ContainerSaveData
 
 	private void WriteElementEntry(BinaryWriter writer, ElementSaveData data, int parentFolderId, int id, SaveEntryExtension extension)
 	{
+		int dataSize = data.GetDataSize();
+		BinaryWriter binaryWriter = new BinaryWriter((dataSize > 0) ? dataSize : 16);
+		data.SaveTo(binaryWriter);
+		int length = binaryWriter.Length;
+		if (dataSize != length)
+		{
+			Context.ReportSaveIntegrityDrift($"[SaveSystem] Ctr[{ObjectId}] {Type?.FullName} elem {extension}[{id}] len mismatch predicted={dataSize} actual={length}");
+		}
 		writer.Write3ByteInt(parentFolderId);
 		writer.Write3ByteInt(id);
 		writer.WriteByte((byte)extension);
-		writer.WriteShort((short)data.GetDataSize());
+		if (length > 32767)
+		{
+			Context.ReportSaveIntegrityDrift($"[SaveSystem] Ctr {Type?.FullName} elem {extension}[{id}] size {length} overflows short");
+		}
+		writer.WriteShort((short)length);
+		writer.AppendData(binaryWriter);
 	}
 
 	internal int GetElementCount()
